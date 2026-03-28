@@ -3,7 +3,7 @@
 ## Overview
 | Phase | Name | Dependencies | Status |
 |-------|------|-------------|--------|
-| 1.1 | Auth Service Core (JWT + Login) | - | pending |
+| 1.1 | Auth Service Core (JWT + Login) | - | completed |
 | 1.2 | Auth Service OTP + Change Password | 1.1 | pending |
 | 1.3 | API Gateway JWT Filter + Routing | 1.1 | pending |
 | 1.4 | Seed Data + Integration Testing | 1.1, 1.2, 1.3 | pending |

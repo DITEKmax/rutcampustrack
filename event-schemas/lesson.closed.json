@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "lesson.closed",
+  "description": "Пара перешла в статус CLOSED. Генерируется Schedule Service.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "lesson.closed" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["lesson_id", "group_id"],
+      "properties": {
+        "lesson_id": { "type": "integer" },
+        "group_id": { "type": "integer" },
+        "subject_id": { "type": "integer" }
+      }
+    }
+  }
+}

@@ -1,0 +1,107 @@
+version: "3.9"
+
+services:
+  # ============================================================
+  # INFRASTRUCTURE
+  # ============================================================
+
+  postgres-academic:
+    image: postgres:16
+    container_name: rct-postgres-academic
+    environment:
+      POSTGRES_DB: academic_db
+      POSTGRES_USER: rct_user
+      POSTGRES_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD:-rct_dev_pass}
+    expose:
+      - "5432"
+    volumes:
+      - pg-academic-data:/var/lib/postgresql/data
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rct_user -d academic_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-schedule:
+    image: postgres:16
+    container_name: rct-postgres-schedule
+    environment:
+      POSTGRES_DB: schedule_db
+      POSTGRES_USER: rct_user
+      POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD:-rct_dev_pass}
+    expose:
+      - "5432"
+    volumes:
+      - pg-schedule-data:/var/lib/postgresql/data
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rct_user -d schedule_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-attendance:
+    image: mongo:7
+    container_name: rct-mongo-attendance
+    environment:
+      MONGO_INITDB_DATABASE: attendance_db
+    expose:
+      - "27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: rct-redis
+    expose:
+      - "6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rct-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-rct_user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-rct_dev_pass}
+    expose:
+      - "5672"
+    ports:
+      - "15672:15672"   # Management UI — только для dev, убрать в production
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  private_net:
+    driver: bridge
+
+volumes:
+  pg-academic-data:
+  pg-schedule-data:
+  mongo-data:
+  redis-data:
+  rabbitmq-data:

@@ -1,0 +1,16 @@
+server:
+  port: 9094
+
+spring:
+  application:
+    name: notification-web
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: ${RABBITMQ_USER:rct_user}
+    password: ${RABBITMQ_PASSWORD:rct_dev_pass}
+
+logging:
+  level:
+    ru.rutcampustrack: DEBUG

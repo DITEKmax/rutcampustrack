@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package rutcampustrack.schedule;
+
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.schedule.grpc";
+
+service ScheduleGrpcService {
+
+  // Получить активную пару для группы в данный момент
+  rpc GetActiveLesson (ActiveLessonRequest) returns (LessonResponse);
+
+  // Получить пару по ID
+  rpc GetLessonById (LessonByIdRequest) returns (LessonResponse);
+
+  // Получить все пары группы за период
+  rpc GetLessonsByGroup (LessonsByGroupRequest) returns (LessonsResponse);
+}
+
+message ActiveLessonRequest {
+  int64 group_id = 1;
+  string timestamp = 2;  // ISO-8601
+}
+
+message LessonByIdRequest {
+  int64 lesson_id = 1;
+}
+
+message LessonsByGroupRequest {
+  int64 group_id = 1;
+  int64 semester_id = 2;
+  string date_from = 3;  // ISO date
+  string date_to = 4;
+}
+
+message LessonResponse {
+  int64 id = 1;
+  int64 schedule_item_id = 2;
+  int64 group_id = 3;
+  int64 subject_id = 4;
+  int64 teacher_id = 5;
+  string date = 6;
+  int32 lesson_number = 7;
+  string start_time = 8;
+  string end_time = 9;
+  string status = 10;       // planned, active, closed, cancelled
+  bool is_geo_blocked = 11;
+  string room = 12;
+}
+
+message LessonsResponse {
+  repeated LessonResponse lessons = 1;
+}

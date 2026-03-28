@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "attendance.marked",
+  "description": "Студент отметился на паре. Генерируется Attendance Service.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "attendance.marked" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["lesson_id", "user_id", "group_id", "status", "marked_by"],
+      "properties": {
+        "lesson_id": { "type": "integer" },
+        "user_id": { "type": "integer" },
+        "group_id": { "type": "integer" },
+        "status": { "type": "string", "enum": ["present", "absent", "excused", "free_attendance"] },
+        "marked_by": { "type": "string", "enum": ["student_geo", "headman", "auto_scheduler", "late_checkin"] }
+      }
+    }
+  }
+}

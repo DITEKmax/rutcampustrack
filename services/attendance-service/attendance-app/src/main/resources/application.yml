@@ -1,0 +1,26 @@
+server:
+  port: 9093
+
+spring:
+  application:
+    name: attendance-service
+
+  data:
+    mongodb:
+      uri: mongodb://mongo-attendance:27017/attendance_db
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: ${RABBITMQ_USER:rct_user}
+    password: ${RABBITMQ_PASSWORD:rct_dev_pass}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    ru.rutcampustrack: DEBUG

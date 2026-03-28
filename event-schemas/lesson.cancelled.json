@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "lesson.cancelled",
+  "description": "Пара отменена старостой. Генерируется Schedule Service.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "lesson.cancelled" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["lesson_id", "group_id", "subject_id", "date"],
+      "properties": {
+        "lesson_id": { "type": "integer" },
+        "group_id": { "type": "integer" },
+        "subject_id": { "type": "integer" },
+        "date": { "type": "string", "format": "date" },
+        "cancel_reason": { "type": "string" }
+      }
+    }
+  }
+}

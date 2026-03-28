@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "lesson.started",
+  "description": "Пара перешла в статус ACTIVE. Генерируется Schedule Service.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "lesson.started" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["lesson_id", "group_id", "subject_id", "teacher_id", "lesson_number", "start_time", "end_time"],
+      "properties": {
+        "lesson_id": { "type": "integer" },
+        "group_id": { "type": "integer" },
+        "subject_id": { "type": "integer" },
+        "teacher_id": { "type": "integer" },
+        "lesson_number": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "start_time": { "type": "string", "format": "time" },
+        "end_time": { "type": "string", "format": "time" },
+        "room": { "type": "string" }
+      }
+    }
+  }
+}

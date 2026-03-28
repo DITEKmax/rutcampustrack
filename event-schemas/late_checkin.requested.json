@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "late_checkin.requested",
+  "description": "Студент запросил подтверждение присутствия (забыл отметиться). Генерируется Attendance Service.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "late_checkin.requested" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["user_id", "group_id", "lesson_id"],
+      "properties": {
+        "user_id": { "type": "integer" },
+        "group_id": { "type": "integer" },
+        "lesson_id": { "type": "integer" },
+        "student_name": { "type": "string" },
+        "lesson_date": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}

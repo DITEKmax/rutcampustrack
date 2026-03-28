@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://auth-service:9090
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+
+        - id: academic-service
+          uri: http://academic-service:9091
+          predicates:
+            - Path=/api/academic/**
+          filters:
+            - StripPrefix=1
+
+        - id: schedule-service
+          uri: http://schedule-service:9092
+          predicates:
+            - Path=/api/schedule/**
+          filters:
+            - StripPrefix=1
+
+        - id: attendance-service
+          uri: http://attendance-service:9093
+          predicates:
+            - Path=/api/attendance/**, /api/reports/**
+          filters:
+            - StripPrefix=1
+
+        - id: notification-web
+          uri: http://notification-web:9094
+          predicates:
+            - Path=/api/ws/**
+          filters:
+            - StripPrefix=1
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

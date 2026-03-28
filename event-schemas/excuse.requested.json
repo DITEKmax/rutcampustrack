@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "excuse.requested",
+  "description": "Студент запросил уважительную причину или подал excuse-тикет. Генерируется Attendance Service.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "excuse.requested" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["user_id", "group_id", "excuse_type"],
+      "properties": {
+        "user_id": { "type": "integer" },
+        "group_id": { "type": "integer" },
+        "excuse_type": { "type": "string", "enum": ["illness", "summons", "university_order", "exemption", "free_attendance", "other"] },
+        "ticket_id": { "type": "string" },
+        "lesson_ids": { "type": "array", "items": { "type": "integer" } },
+        "has_attachments": { "type": "boolean" }
+      }
+    }
+  }
+}

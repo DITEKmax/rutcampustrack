@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package rutcampustrack.academic;
+
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.academic.grpc";
+
+// Academic Structure Service — gRPC контракт
+// Используется другими сервисами для получения справочных данных
+
+service AcademicGrpcService {
+
+  // Получить информацию о группе
+  rpc GetGroup (GroupRequest) returns (GroupResponse);
+
+  // Получить состав группы (список студентов)
+  rpc GetGroupMembers (GroupMembersRequest) returns (GroupMembersResponse);
+
+  // Получить предметы преподавателя (для авторизации в Report)
+  rpc GetTeacherSubjects (TeacherSubjectsRequest) returns (TeacherSubjectsResponse);
+
+  // Проверить, является ли пользователь старостой группы
+  rpc IsHeadman (HeadmanCheckRequest) returns (HeadmanCheckResponse);
+
+  // Получить активный семестр
+  rpc GetActiveSemester (Empty) returns (SemesterResponse);
+
+  // Получить геофенс кампуса
+  rpc GetCampusGeofence (Empty) returns (GeofenceResponse);
+
+  // Получить пользователя по ID
+  rpc GetUserById (UserRequest) returns (UserResponse);
+}
+
+message Empty {}
+
+message GroupRequest {
+  int64 group_id = 1;
+}
+
+message GroupResponse {
+  int64 id = 1;
+  string name = 2;
+  string code = 3;
+  bool is_active = 4;
+}
+
+message GroupMembersRequest {
+  int64 group_id = 1;
+}
+
+message GroupMembersResponse {
+  repeated StudentInfo students = 1;
+}
+
+message StudentInfo {
+  int64 user_id = 1;
+  string display_name = 2;
+  bool is_headman = 3;
+  int64 telegram_id = 4;
+}
+
+message TeacherSubjectsRequest {
+  int64 teacher_id = 1;
+  int64 semester_id = 2;
+}
+
+message TeacherSubjectsResponse {
+  repeated TeacherSubjectInfo subjects = 1;
+}
+
+message TeacherSubjectInfo {
+  int64 subject_id = 1;
+  string subject_name = 2;
+  string subject_type = 3;
+  int64 group_id = 4;
+  string group_name = 5;
+}
+
+message HeadmanCheckRequest {
+  int64 user_id = 1;
+  int64 group_id = 2;
+}
+
+message HeadmanCheckResponse {
+  bool is_headman = 1;
+}
+
+message SemesterResponse {
+  int64 id = 1;
+  string name = 2;
+  string date_from = 3;
+  string date_to = 4;
+}
+
+message GeofenceResponse {
+  double lat = 1;
+  double lng = 2;
+  int32 radius_m = 3;
+}
+
+message UserRequest {
+  int64 user_id = 1;
+}
+
+message UserResponse {
+  int64 id = 1;
+  string login = 2;
+  string display_name = 3;
+  string role = 4;
+  string status = 5;
+  int64 group_id = 6;
+  bool is_headman = 7;
+  int64 telegram_id = 8;
+}

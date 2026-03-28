@@ -10,6 +10,24 @@ spring:
       host: redis
       port: 6379
 
+  datasource:
+    url: jdbc:postgresql://postgres-academic:5432/academic_db
+    username: rct_user
+    password: ${POSTGRES_ACADEMIC_PASSWORD:rct_dev_pass}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+
+  flyway:
+    enabled: false
+
 springdoc:
   api-docs:
     path: /api-docs
@@ -17,9 +35,21 @@ springdoc:
     path: /swagger-ui.html
 
 jwt:
+  key-dir: ${JWT_KEY_DIR:./keys}
   access-token-expiration: 900        # 15 минут
   refresh-token-expiration: 604800    # 7 дней
 
 logging:
   level:
     ru.rutcampustrack: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/academic_db
+  data:
+    redis:
+      host: localhost

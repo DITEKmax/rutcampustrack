@@ -16,7 +16,7 @@ dependencies {
     api("org.springframework.hateoas:spring-hateoas:2.4.1")
 
     // OpenAPI / Swagger annotations
-    api("io.swagger.v3:swagger-annotations-jakarta:2.2.28")
+    api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
 
     // Jackson annotations (для @JsonInclude и т.д.)
     api("com.fasterxml.jackson.core:jackson-annotations:2.18.2")

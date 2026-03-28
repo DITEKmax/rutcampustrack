@@ -37,3 +37,8 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 
 ### Previous: Phase 0 (completed)
 Scaffold, contracts, infrastructure. See docs/phase-0-report.md.
+
+## Current State
+Phase 1.1 complete (2026-03-29) — Auth Service Core: JWT RSA token generation/validation, login/refresh/logout endpoints, Redis refresh token storage, JwtAuthenticationFilter, Spring Security config, test seed data. Next: Phase 1.2 (OTP + Change Password).
+
+Last updated: 2026-03-29

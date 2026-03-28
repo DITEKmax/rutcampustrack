@@ -4,7 +4,7 @@
 | Phase | Name | Dependencies | Status |
 |-------|------|-------------|--------|
 | 1.1 | Auth Service Core (JWT + Login) | - | completed |
-| 1.2 | Auth Service OTP + Change Password | 1.1 | pending |
+| 1.2 | Auth Service OTP + Change Password | 1.1 | planned |
 | 1.3 | API Gateway JWT Filter + Routing | 1.1 | pending |
 | 1.4 | Seed Data + Integration Testing | 1.1, 1.2, 1.3 | pending |
 
@@ -41,6 +41,11 @@
 ## Phase 1.2: Auth Service OTP + Change Password
 
 **Goal**: OTP-based authentication via Telegram and password change functionality.
+
+**Plans:** 1 plan
+
+Plans:
+- [ ] 01.2-01-PLAN.md — OTP flow (request/verify) with Redis rate limiting + change password endpoint
 
 **Scope**:
 - OtpService: generate, store, verify OTP codes in Redis

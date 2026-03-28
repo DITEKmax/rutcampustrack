@@ -1,0 +1,799 @@
+# Phase 1.1: Auth Service Core (JWT + Login)
+
+---
+phase: 1.1-auth-core
+plan: 01
+type: execute
+wave: 1
+depends_on: []
+files_modified:
+  - services/auth-service/build.gradle.kts
+  - services/auth-service/src/main/resources/application.yml
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/config/JwtProperties.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/config/LowercaseEnumConverter.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/config/EnumConverters.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/entity/User.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/entity/enums/UserRole.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/entity/enums/AccountStatus.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/repository/UserRepository.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/LoginRequest.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/RefreshRequest.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/TokenResponse.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/PublicKeyResponse.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/ErrorResponse.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/exception/InvalidCredentialsException.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/exception/TokenRefreshException.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/service/JwtService.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/service/AuthService.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java
+  - services/auth-service/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java
+  - services/academic-service/academic-app/src/main/resources/db/migration/V2__seed_test_data.sql
+autonomous: true
+requirements: [FR-1, FR-2, FR-3, FR-4, NFR-1, NFR-4]
+
+must_haves:
+  truths:
+    - "POST /auth/login with valid credentials returns 200 with accessToken + refreshToken"
+    - "POST /auth/login with invalid credentials returns 401 with RFC 7807 error"
+    - "POST /auth/refresh with valid refresh token returns new accessToken + refreshToken"
+    - "POST /auth/refresh with invalid/expired refresh token returns 401"
+    - "POST /auth/logout invalidates refresh token in Redis"
+    - "GET /auth/public-key returns RSA public key in PEM format"
+    - "RSA keys persist across restarts (loaded from filesystem)"
+    - "Refresh tokens stored in Redis with 7-day TTL"
+    - "Only active users can authenticate (status=active checked)"
+  artifacts:
+    - path: "services/auth-service/src/main/java/ru/rutcampustrack/auth/service/JwtService.java"
+      provides: "RSA key management, JWT generation and validation"
+    - path: "services/auth-service/src/main/java/ru/rutcampustrack/auth/service/AuthService.java"
+      provides: "Login, refresh, logout business logic"
+    - path: "services/auth-service/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java"
+      provides: "REST endpoints: login, refresh, logout, public-key"
+    - path: "services/auth-service/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java"
+      provides: "Spring Security filter chain, public/authenticated routes"
+    - path: "services/auth-service/src/main/java/ru/rutcampustrack/auth/entity/User.java"
+      provides: "JPA entity mapping to academic_db.users table"
+    - path: "services/academic-service/academic-app/src/main/resources/db/migration/V2__seed_test_data.sql"
+      provides: "Test users with BCrypt password hashes"
+  key_links:
+    - from: "AuthController"
+      to: "AuthService"
+      via: "Constructor injection"
+    - from: "AuthService"
+      to: "UserRepository"
+      via: "findByLogin() for credential validation"
+    - from: "AuthService"
+      to: "JwtService"
+      via: "generateAccessToken/generateRefreshToken"
+    - from: "AuthService"
+      to: "StringRedisTemplate"
+      via: "refresh:{userId}:{jti} key storage and deletion"
+    - from: "JwtService"
+      to: "RSA keys on filesystem"
+      via: "Load from jwt.key-dir, generate if missing"
+---
+
+## Objective
+
+Implement Auth Service core: RSA-based JWT token generation/validation, login/refresh/logout endpoints, and read-only connection to academic_db for user credential verification.
+
+Purpose: Enable user authentication as the foundation for all subsequent protected API access through the Gateway.
+
+Output: Working Auth Service with 4 REST endpoints, JWT with RSA256, Redis refresh token storage, test seed data.
+
+## Context
+
+Reference documentation:
+- `CLAUDE.md` — project conventions (contract-first, enums, naming, REST patterns)
+- `docs/phases-plan.md` — Phase 1 full scope (this plan covers Auth Service only, NO OTP, NO Gateway)
+- `docs/database-schema.md` — `users` table schema in academic_db
+- `docs/architecture.md` — service topology, JWT claims structure
+
+Existing codebase patterns:
+- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/LowercaseEnumConverter.java` — copy this pattern
+- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/EnumConverters.java` — copy this pattern
+- `services/academic-service/academic-app/src/main/resources/application.yml` — reference for datasource/JPA config
+
+## Tasks
+
+---
+
+### Task 1: Dependencies, Configuration, and Properties
+
+**Files:**
+- `services/auth-service/build.gradle.kts`
+- `services/auth-service/src/main/resources/application.yml`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/config/JwtProperties.java`
+
+**Action:**
+
+1. **Update `build.gradle.kts`** — add two dependencies:
+   ```kotlin
+   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+   runtimeOnly("org.postgresql:postgresql")
+   ```
+   Do NOT add Flyway. Auth-service reads academic_db but does not own its schema.
+
+2. **Update `application.yml`** — add datasource, JPA, and Flyway-disable config. Keep existing config, add:
+   ```yaml
+   spring:
+     datasource:
+       url: jdbc:postgresql://postgres-academic:5432/academic_db
+       username: rct_user
+       password: ${POSTGRES_ACADEMIC_PASSWORD:rct_dev_pass}
+       driver-class-name: org.postgresql.Driver
+
+     jpa:
+       hibernate:
+         ddl-auto: validate
+       open-in-view: false
+       properties:
+         hibernate:
+           dialect: org.hibernate.dialect.PostgreSQLDialect
+           default_schema: public
+
+     flyway:
+       enabled: false
+
+   jwt:
+     key-dir: ${JWT_KEY_DIR:./keys}
+     access-token-expiration: 900
+     refresh-token-expiration: 604800
+   ```
+   Note: `spring.data.redis` config already exists. Preserve it. Also add local dev profile datasource override with `localhost` for running outside Docker:
+   ```yaml
+   ---
+   spring:
+     config:
+       activate:
+         on-profile: local
+     datasource:
+       url: jdbc:postgresql://localhost:5432/academic_db
+     data:
+       redis:
+         host: localhost
+   ```
+
+3. **Create `JwtProperties.java`** — `@ConfigurationProperties(prefix = "jwt")` record-style class:
+   ```java
+   package ru.rutcampustrack.auth.config;
+
+   import org.springframework.boot.context.properties.ConfigurationProperties;
+
+   @ConfigurationProperties(prefix = "jwt")
+   public record JwtProperties(
+       String keyDir,
+       long accessTokenExpiration,
+       long refreshTokenExpiration
+   ) {}
+   ```
+   Add `@EnableConfigurationProperties(JwtProperties.class)` to `AuthApplication.java`.
+
+**Verify:**
+```bash
+cd C:/Users/maksd/IntelliJIDEA/rutcampustrack && ./gradlew.bat :services:auth-service:compileJava --no-daemon 2>&1 | tail -5
+```
+Must compile without errors.
+
+**Done:** Auth-service has JPA + PostgreSQL driver dependencies, datasource pointing to academic_db, Flyway disabled, JWT properties bound.
+
+---
+
+### Task 2: Enums, Entity, Repository, DTOs, Exceptions
+
+**Files:**
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/entity/enums/UserRole.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/entity/enums/AccountStatus.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/config/LowercaseEnumConverter.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/config/EnumConverters.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/entity/User.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/repository/UserRepository.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/LoginRequest.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/RefreshRequest.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/TokenResponse.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/PublicKeyResponse.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/dto/ErrorResponse.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/exception/InvalidCredentialsException.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/exception/TokenRefreshException.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/exception/GlobalExceptionHandler.java`
+
+**Action:**
+
+1. **Create local enum copies** (auth-service has NO dependency on academic-api-contract):
+
+   `UserRole.java`:
+   ```java
+   package ru.rutcampustrack.auth.entity.enums;
+   public enum UserRole { ADMIN, TEACHER, STUDENT }
+   ```
+
+   `AccountStatus.java`:
+   ```java
+   package ru.rutcampustrack.auth.entity.enums;
+   public enum AccountStatus { ACTIVE, EXPELLED, SUSPENDED, ARCHIVED }
+   ```
+
+2. **Create `LowercaseEnumConverter.java`** — exact copy of the pattern from `services/academic-service/academic-app/.../config/LowercaseEnumConverter.java`, but in package `ru.rutcampustrack.auth.config`.
+
+3. **Create `EnumConverters.java`** — two converters with `autoApply = true`:
+   ```java
+   package ru.rutcampustrack.auth.config;
+
+   import jakarta.persistence.Converter;
+   import ru.rutcampustrack.auth.entity.enums.AccountStatus;
+   import ru.rutcampustrack.auth.entity.enums.UserRole;
+
+   public class EnumConverters {
+       @Converter(autoApply = true)
+       public static class UserRoleConverter extends LowercaseEnumConverter<UserRole> {
+           public UserRoleConverter() { super(UserRole.class); }
+       }
+
+       @Converter(autoApply = true)
+       public static class AccountStatusConverter extends LowercaseEnumConverter<AccountStatus> {
+           public AccountStatusConverter() { super(AccountStatus.class); }
+       }
+   }
+   ```
+
+4. **Create `User.java`** entity — read-only JPA mapping to `users` table in academic_db:
+   ```java
+   package ru.rutcampustrack.auth.entity;
+
+   import jakarta.persistence.*;
+   import lombok.Getter;
+   import lombok.NoArgsConstructor;
+   import ru.rutcampustrack.auth.entity.enums.AccountStatus;
+   import ru.rutcampustrack.auth.entity.enums.UserRole;
+   import java.time.OffsetDateTime;
+
+   @Entity
+   @Table(name = "users")
+   @Getter
+   @NoArgsConstructor
+   public class User {
+       @Id
+       @GeneratedValue(strategy = GenerationType.IDENTITY)
+       private Long id;
+
+       @Column(nullable = false, unique = true, length = 32)
+       private String login;
+
+       @Column(name = "password_hash")
+       private String passwordHash;
+
+       @Column(name = "display_name", nullable = false)
+       private String displayName;
+
+       private String email;
+       private String phone;
+
+       @Column(name = "telegram_id")
+       private Long telegramId;
+
+       @Column(name = "telegram_username", length = 64)
+       private String telegramUsername;
+
+       @Column(name = "employee_number", length = 32)
+       private String employeeNumber;
+
+       @Column(nullable = false)
+       private UserRole role;
+
+       @Column(nullable = false)
+       private AccountStatus status;
+
+       @Column(name = "is_headman", nullable = false)
+       private boolean isHeadman;
+
+       @Column(name = "group_id")
+       private Long groupId;
+
+       @Column(name = "initial_password", length = 128)
+       private String initialPassword;
+
+       @Column(name = "password_changed", nullable = false)
+       private boolean passwordChanged;
+
+       @Column(name = "created_at", nullable = false, updatable = false)
+       private OffsetDateTime createdAt;
+
+       @Column(name = "updated_at", nullable = false)
+       private OffsetDateTime updatedAt;
+   }
+   ```
+   Lombok `@Getter` and `@NoArgsConstructor` are fine here (this is an *-app module, not a contract). No setters needed — auth-service is read-only on users table. No `@Enumerated` annotation — converters with autoApply handle it.
+
+5. **Create `UserRepository.java`**:
+   ```java
+   package ru.rutcampustrack.auth.repository;
+
+   import org.springframework.data.jpa.repository.JpaRepository;
+   import ru.rutcampustrack.auth.entity.User;
+   import java.util.Optional;
+
+   public interface UserRepository extends JpaRepository<User, Long> {
+       Optional<User> findByLogin(String login);
+       Optional<User> findByTelegramId(Long telegramId);
+   }
+   ```
+
+6. **Create DTOs** (all Java records with validation annotations):
+
+   `LoginRequest.java`:
+   ```java
+   package ru.rutcampustrack.auth.dto;
+
+   import jakarta.validation.constraints.NotBlank;
+
+   public record LoginRequest(
+       @NotBlank String login,
+       @NotBlank String password
+   ) {}
+   ```
+
+   `RefreshRequest.java`:
+   ```java
+   package ru.rutcampustrack.auth.dto;
+
+   import jakarta.validation.constraints.NotBlank;
+
+   public record RefreshRequest(
+       @NotBlank String refreshToken
+   ) {}
+   ```
+
+   `TokenResponse.java`:
+   ```java
+   package ru.rutcampustrack.auth.dto;
+
+   public record TokenResponse(
+       String accessToken,
+       String refreshToken,
+       long expiresIn
+   ) {}
+   ```
+
+   `PublicKeyResponse.java`:
+   ```java
+   package ru.rutcampustrack.auth.dto;
+
+   public record PublicKeyResponse(
+       String publicKey,
+       String algorithm
+   ) {}
+   ```
+
+7. **Create `ErrorResponse.java`** (local copy, RFC 7807):
+   ```java
+   package ru.rutcampustrack.auth.dto;
+
+   import java.time.Instant;
+
+   public record ErrorResponse(
+       String type,
+       String title,
+       int status,
+       String detail,
+       String instance,
+       Instant timestamp
+   ) {}
+   ```
+
+8. **Create exceptions**:
+
+   `InvalidCredentialsException.java` — extends `RuntimeException`, message "Invalid login or password". No field, just constructor with default message and optional custom message constructor.
+
+   `TokenRefreshException.java` — extends `RuntimeException`, for expired/invalid/revoked refresh tokens.
+
+9. **Create `GlobalExceptionHandler.java`** — `@RestControllerAdvice`:
+   - Handle `InvalidCredentialsException` -> 401, type "about:blank", title "Unauthorized"
+   - Handle `TokenRefreshException` -> 401, type "about:blank", title "Token Refresh Failed"
+   - Handle `MethodArgumentNotValidException` -> 400, type "about:blank", title "Validation Error", detail lists field errors
+   - Handle generic `Exception` -> 500, type "about:blank", title "Internal Server Error"
+   - All responses use `ErrorResponse` record with `Instant.now()` timestamp
+   - Use `HttpServletRequest.getRequestURI()` for `instance` field
+
+**Verify:**
+```bash
+cd C:/Users/maksd/IntelliJIDEA/rutcampustrack && ./gradlew.bat :services:auth-service:compileJava --no-daemon 2>&1 | tail -5
+```
+Must compile without errors.
+
+**Done:** User entity maps to academic_db.users, repository has findByLogin/findByTelegramId, all DTOs are records, exceptions and GlobalExceptionHandler produce RFC 7807 responses.
+
+---
+
+### Task 3: JwtService (RSA Key Management + Token Generation/Validation)
+
+**Files:**
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/service/JwtService.java`
+
+**Action:**
+
+Create `JwtService.java` as a `@Service` with constructor injection of `JwtProperties` and `StringRedisTemplate`.
+
+**Key management (init on startup via `@PostConstruct`):**
+- Check if `{jwt.key-dir}/private.key` and `{jwt.key-dir}/public.key` exist on filesystem
+- If NOT exist: generate RSA 2048-bit key pair using `java.security.KeyPairGenerator`, save private key as PKCS8 PEM and public key as X509 PEM to `{jwt.key-dir}/`
+- If exist: load from files, parse PEM using `java.security.KeyFactory` with PKCS8EncodedKeySpec (private) and X509EncodedKeySpec (public)
+- Store `PrivateKey` and `PublicKey` as instance fields
+- Cache the public key PEM string in Redis: key `jwt:public_key`, TTL 3600 seconds
+
+**PEM format helpers:**
+- `writeKeyToFile(Key key, String filename, String type)` — writes `-----BEGIN {type}-----\n{base64}\n-----END {type}-----`
+- `readKeyFromFile(String filename)` — reads PEM, strips headers, decodes Base64
+
+**Token generation:**
+- `generateAccessToken(User user)`: returns signed JWT string
+  - Claims: `sub` = user.getId().toString(), `role` = user.getRole().name(), `group_id` = user.getGroupId() (null-safe), `is_headman` = user.isHeadman()
+  - Issued at: now, Expiration: now + accessTokenExpiration seconds
+  - Sign with RSA private key using `Jwts.builder().signWith(privateKey, Jwts.SIG.RS256)`
+  - Use JJWT 0.12.x API (NOT deprecated methods)
+
+- `generateRefreshToken(User user)`: returns signed JWT string
+  - Claims: `sub` = user.getId().toString(), `jti` = UUID.randomUUID().toString()
+  - Expiration: now + refreshTokenExpiration seconds
+  - Sign with RSA private key
+
+**Token parsing:**
+- `parseToken(String token)`: returns `Jws<Claims>`
+  - Use `Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token)`
+  - Let JJWT throw its own exceptions (ExpiredJwtException, SignatureException, etc.)
+
+- `extractUserId(String token)`: returns Long — parse and get `sub` claim
+- `extractJti(String token)`: returns String — parse and get `jti` claim (for refresh tokens)
+
+**Public key accessor:**
+- `getPublicKeyPem()`: returns the PEM string (from instance field, not from file every time)
+
+**Important JJWT 0.12.x API notes:**
+- Do NOT use deprecated `signWith(key, algorithm)` — use `signWith(privateKey, Jwts.SIG.RS256)`
+- Do NOT use `Jwts.parser().setSigningKey()` — use `Jwts.parser().verifyWith(publicKey)`
+- Do NOT use `parseClaimsJws()` — use `parseSignedClaims()`
+
+**Verify:**
+```bash
+cd C:/Users/maksd/IntelliJIDEA/rutcampustrack && ./gradlew.bat :services:auth-service:compileJava --no-daemon 2>&1 | tail -5
+```
+Must compile without errors.
+
+**Done:** JwtService generates/loads RSA keys from filesystem, creates access/refresh JWTs with correct claims, parses and validates tokens, exposes public key PEM.
+
+---
+
+### Task 4: AuthService (Login, Refresh, Logout Business Logic)
+
+**Files:**
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/service/AuthService.java`
+
+**Action:**
+
+Create `AuthService.java` as a `@Service` with constructor injection of `UserRepository`, `JwtService`, `PasswordEncoder` (BCrypt, will come from SecurityConfig), `StringRedisTemplate`, `JwtProperties`.
+
+**Methods:**
+
+1. `login(LoginRequest request)` -> `TokenResponse`:
+   - Find user by login via `userRepository.findByLogin(request.login())`
+   - If not found -> throw `InvalidCredentialsException`
+   - If user.getStatus() != AccountStatus.ACTIVE -> throw `InvalidCredentialsException` (same message, don't leak account status)
+   - If passwordHash is null -> throw `InvalidCredentialsException` (Telegram-only user)
+   - If `!passwordEncoder.matches(request.password(), user.getPasswordHash())` -> throw `InvalidCredentialsException`
+   - Generate access token via `jwtService.generateAccessToken(user)`
+   - Generate refresh token via `jwtService.generateRefreshToken(user)`
+   - Extract JTI from refresh token
+   - Store in Redis: key `refresh:{userId}:{jti}`, value `"valid"`, TTL = refreshTokenExpiration seconds
+   - Return `new TokenResponse(accessToken, refreshToken, jwtProperties.accessTokenExpiration())`
+
+2. `refresh(RefreshRequest request)` -> `TokenResponse`:
+   - Parse the refresh token via `jwtService.parseToken(request.refreshToken())` — wrap in try/catch, on any JJWT exception throw `TokenRefreshException("Invalid or expired refresh token")`
+   - Extract userId and jti from claims
+   - Check Redis key `refresh:{userId}:{jti}` exists — if not, throw `TokenRefreshException("Refresh token has been revoked")`
+   - Delete old Redis key (token rotation — old refresh token is single-use)
+   - Load user from DB by userId — if not found or not ACTIVE, throw `TokenRefreshException`
+   - Generate new access + refresh tokens
+   - Store new refresh token in Redis
+   - Return new TokenResponse
+
+3. `logout(String refreshToken)` -> `void`:
+   - Parse the refresh token (ignore expiration for logout — user should be able to logout even with near-expired token). Use try/catch: if unparseable, just return silently (idempotent logout).
+   - Extract userId and jti
+   - Delete Redis key `refresh:{userId}:{jti}`
+
+4. `getPublicKey()` -> `PublicKeyResponse`:
+   - Return `new PublicKeyResponse(jwtService.getPublicKeyPem(), "RS256")`
+
+**Redis key pattern:** `"refresh:" + userId + ":" + jti`
+
+**StringRedisTemplate usage:**
+- SET with TTL: `redisTemplate.opsForValue().set(key, "valid", Duration.ofSeconds(ttl))`
+- GET: `redisTemplate.opsForValue().get(key)`
+- DELETE: `redisTemplate.delete(key)`
+- EXISTS: `Boolean.TRUE.equals(redisTemplate.hasKey(key))`
+
+**Verify:**
+```bash
+cd C:/Users/maksd/IntelliJIDEA/rutcampustrack && ./gradlew.bat :services:auth-service:compileJava --no-daemon 2>&1 | tail -5
+```
+Must compile without errors.
+
+**Done:** AuthService handles login (BCrypt verification, active-user check), refresh (token rotation with Redis), logout (Redis key deletion), public key retrieval.
+
+---
+
+### Task 5: SecurityConfig + AuthController
+
+**Files:**
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java`
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java`
+
+**Action:**
+
+1. **Create `SecurityConfig.java`** — `@Configuration` + `@EnableWebSecurity`:
+   ```java
+   @Bean
+   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+       return http
+           .csrf(csrf -> csrf.disable())
+           .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+           .authorizeHttpRequests(auth -> auth
+               .requestMatchers(
+                   "/auth/login",
+                   "/auth/refresh",
+                   "/auth/public-key",
+                   "/auth/otp/**",
+                   "/api-docs/**",
+                   "/swagger-ui/**",
+                   "/swagger-ui.html"
+               ).permitAll()
+               .anyRequest().authenticated()
+           )
+           .build();
+   }
+
+   @Bean
+   public PasswordEncoder passwordEncoder() {
+       return new BCryptPasswordEncoder();
+   }
+   ```
+   Note: No JWT filter in auth-service itself. Auth-service issues tokens, it does not validate them on incoming requests (Gateway does that). The `authenticated()` matcher is for future endpoints like `/auth/change-password` and `/auth/logout` — these will need a JWT filter added in Phase 1.2 or can be accessed via Gateway which adds X-User-Id headers. For now, `/auth/logout` accepts the refresh token in the request body so no authentication filter is needed — mark `/auth/logout` as `permitAll()` too.
+
+   Update the permitAll list to include `/auth/logout`.
+
+2. **Create `AuthController.java`** — `@RestController` + `@RequestMapping("/auth")`:
+
+   ```java
+   @Tag(name = "Authentication", description = "JWT authentication endpoints")
+   ```
+
+   Endpoints:
+
+   a) `POST /auth/login`:
+      ```java
+      @Operation(summary = "Login with credentials", description = "Authenticate with login and password, returns JWT token pair")
+      @ApiResponse(responseCode = "200", description = "Successfully authenticated")
+      @ApiResponse(responseCode = "401", description = "Invalid credentials")
+      @PostMapping("/login")
+      public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+          return ResponseEntity.ok(authService.login(request));
+      }
+      ```
+
+   b) `POST /auth/refresh`:
+      ```java
+      @Operation(summary = "Refresh access token", description = "Exchange refresh token for new token pair (rotation)")
+      @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully")
+      @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
+      @PostMapping("/refresh")
+      public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+          return ResponseEntity.ok(authService.refresh(request));
+      }
+      ```
+
+   c) `POST /auth/logout`:
+      ```java
+      @Operation(summary = "Logout", description = "Invalidate refresh token")
+      @ApiResponse(responseCode = "204", description = "Successfully logged out")
+      @PostMapping("/logout")
+      public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequest request) {
+          authService.logout(request.refreshToken());
+          return ResponseEntity.noContent().build();
+      }
+      ```
+
+   d) `GET /auth/public-key`:
+      ```java
+      @Operation(summary = "Get RSA public key", description = "Returns RSA public key in PEM format for JWT verification")
+      @ApiResponse(responseCode = "200", description = "Public key retrieved")
+      @GetMapping("/public-key")
+      public ResponseEntity<PublicKeyResponse> getPublicKey() {
+          return ResponseEntity.ok(authService.getPublicKey());
+      }
+      ```
+
+   Constructor injection of `AuthService`. No business logic in controller — just delegates and returns ResponseEntity.
+
+**Verify:**
+```bash
+cd C:/Users/maksd/IntelliJIDEA/rutcampustrack && ./gradlew.bat :services:auth-service:compileJava --no-daemon 2>&1 | tail -5
+```
+Must compile without errors.
+
+**Done:** SecurityConfig allows public access to all auth endpoints and Swagger, stateless sessions, CSRF disabled. AuthController exposes 4 endpoints with OpenAPI annotations.
+
+---
+
+### Task 6: Seed Test Data (Flyway V2 in Academic Service)
+
+**Files:**
+- `services/academic-service/academic-app/src/main/resources/db/migration/V2__seed_test_data.sql`
+
+**Action:**
+
+Create Flyway V2 migration in academic-app (NOT in auth-service) that inserts test data.
+
+**Important:** BCrypt hash must be pre-computed. Use the hash for password `password123`:
+`$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy`
+
+Actually, generate a proper BCrypt hash. The standard test value for `password` (the word "password") with BCrypt cost 10 is: `$2a$10$dXJ3SW6G7P50lGmMQgel6uVktDQd/FBhMjFi1VPmHh2szMJgRqWdC`. Use a well-known constant instead — compute by running a quick Java snippet or use the common test hash. For simplicity and reproducibility, use this approach:
+
+The migration should insert:
+
+1. A test group:
+   ```sql
+   INSERT INTO groups (name, code, is_active) VALUES ('IVT-21-1', 'ivt-21-1', true);
+   ```
+
+2. A test semester:
+   ```sql
+   INSERT INTO semesters (name, date_from, date_to, is_active) VALUES ('Spring 2026', '2026-02-01', '2026-06-30', true);
+   ```
+
+3. Test users (3 users, all with password = `password`):
+   ```sql
+   -- BCrypt hash of 'password' (cost 10)
+   -- Generate with: new BCryptPasswordEncoder().encode("password")
+   -- Use placeholder that will be documented
+
+   INSERT INTO users (login, password_hash, display_name, role, status, is_headman, group_id)
+   VALUES
+     ('admin', '$2a$10$EqKcp1WFKycJMKRMhUbBhOkGMFjHLED3k.xaelVdaw2TGZ7eFzH.m', 'Test Admin', 'admin', 'active', false, NULL),
+     ('teacher', '$2a$10$EqKcp1WFKycJMKRMhUbBhOkGMFjHLED3k.xaelVdaw2TGZ7eFzH.m', 'Test Teacher', 'teacher', 'active', false, NULL),
+     ('student', '$2a$10$EqKcp1WFKycJMKRMhUbBhOkGMFjHLED3k.xaelVdaw2TGZ7eFzH.m', 'Test Student', 'student', 'active', true, 1);
+   ```
+
+   **CRITICAL:** The BCrypt hash above is a PLACEHOLDER. Before writing the migration, generate the actual hash by creating a temporary Java main method or test that runs `new BCryptPasswordEncoder().encode("password")` and prints the result. Use that exact hash in the SQL. All three test users use the same password `password` for development convenience.
+
+4. Also insert teacher with employee_number for future testing:
+   ```sql
+   UPDATE users SET employee_number = 'T00001' WHERE login = 'teacher';
+   ```
+
+5. Campus settings (needed for future geofence testing):
+   ```sql
+   INSERT INTO campus_settings (name, lat, lng, radius_m) VALUES ('Main Campus', 55.7699, 37.7039, 200);
+   ```
+   Coordinates: RUT MIIT main campus approximate location.
+
+**Verify:**
+```bash
+cd C:/Users/maksd/IntelliJIDEA/rutcampustrack && ./gradlew.bat :services:academic-service:academic-app:compileJava --no-daemon 2>&1 | tail -5
+```
+Must compile. The migration SQL file just needs to exist in the correct location.
+
+**Done:** V2 migration seeds test group, semester, 3 test users (admin/teacher/student) with BCrypt passwords, and campus settings. Password for all test users is `password`.
+
+---
+
+### Task 7: Build Verification and Integration Test Plan
+
+**Files:** None (verification only)
+
+**Action:**
+
+1. **Full build verification:**
+   ```bash
+   cd C:/Users/maksd/IntelliJIDEA/rutcampustrack
+   ./gradlew.bat :services:auth-service:build --no-daemon
+   ./gradlew.bat :services:academic-service:academic-app:build --no-daemon
+   ```
+   Both must pass (compile + tests).
+
+2. **Verify auth-service JAR packages correctly:**
+   ```bash
+   ./gradlew.bat :services:auth-service:bootJar --no-daemon
+   ```
+
+3. **Document manual integration test sequence** (for Phase 1.1 completion verification):
+
+   Prerequisites: `docker compose up -d` (PostgreSQL, Redis running)
+
+   Start academic-app first (runs Flyway V1+V2 migrations):
+   ```bash
+   ./gradlew.bat :services:academic-service:academic-app:bootRun --no-daemon
+   ```
+   Wait for startup, then stop it (migrations are persisted).
+
+   Start auth-service:
+   ```bash
+   ./gradlew.bat :services:auth-service:bootRun --no-daemon --args='--spring.profiles.active=local'
+   ```
+
+   Test endpoints:
+   ```bash
+   # Login with test student
+   curl -s -X POST http://localhost:9090/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"login":"student","password":"password"}' | jq .
+
+   # Expected: 200 with {accessToken, refreshToken, expiresIn: 900}
+
+   # Login with wrong password
+   curl -s -X POST http://localhost:9090/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"login":"student","password":"wrong"}' | jq .
+
+   # Expected: 401 with RFC 7807 error
+
+   # Refresh token (use refreshToken from login response)
+   curl -s -X POST http://localhost:9090/auth/refresh \
+     -H "Content-Type: application/json" \
+     -d '{"refreshToken":"<paste_refresh_token>"}' | jq .
+
+   # Expected: 200 with new token pair
+
+   # Public key
+   curl -s http://localhost:9090/auth/public-key | jq .
+
+   # Expected: 200 with {publicKey: "-----BEGIN PUBLIC KEY-----...", algorithm: "RS256"}
+
+   # Logout
+   curl -s -X POST http://localhost:9090/auth/logout \
+     -H "Content-Type: application/json" \
+     -d '{"refreshToken":"<paste_refresh_token>"}' -w "\n%{http_code}"
+
+   # Expected: 204
+
+   # Try refresh after logout (should fail)
+   curl -s -X POST http://localhost:9090/auth/refresh \
+     -H "Content-Type: application/json" \
+     -d '{"refreshToken":"<paste_same_token>"}' | jq .
+
+   # Expected: 401
+   ```
+
+**Verify:**
+```bash
+cd C:/Users/maksd/IntelliJIDEA/rutcampustrack && ./gradlew.bat :services:auth-service:build :services:academic-service:academic-app:build --no-daemon 2>&1 | tail -10
+```
+Both builds pass with BUILD SUCCESSFUL.
+
+**Done:** Auth-service and academic-app build successfully. Integration test plan documented for manual verification.
+
+---
+
+## Verification
+
+After all tasks complete:
+
+1. `./gradlew.bat :services:auth-service:build` passes
+2. `./gradlew.bat :services:academic-service:academic-app:build` passes
+3. Auth-service has 4 REST endpoints: POST /auth/login, POST /auth/refresh, POST /auth/logout, GET /auth/public-key
+4. JwtService generates RSA-256 key pair, persists to filesystem, generates/validates JWT tokens
+5. AuthService validates credentials against academic_db users table via read-only JPA
+6. Refresh tokens stored in Redis with TTL, token rotation implemented
+7. GlobalExceptionHandler returns RFC 7807 error responses
+8. V2 migration in academic-app seeds test users with BCrypt passwords
+9. SecurityConfig is stateless, CSRF disabled, auth endpoints are public
+
+## Success Criteria
+
+- Auth-service compiles and builds cleanly with all new code
+- Academic-app builds cleanly with V2 seed migration
+- JWT tokens contain correct claims: sub (userId), role, group_id, is_headman
+- Refresh token rotation works: old token invalidated, new token issued
+- RSA keys persist on filesystem across application restarts
+- All DTOs are Java records
+- Enums use LowercaseEnumConverter with autoApply (no @Enumerated anywhere)
+- Error responses follow RFC 7807 format

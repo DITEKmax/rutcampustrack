@@ -1,21 +1,18 @@
 ---
 phase: 1.1-auth-core
-verified: 2026-03-29T00:00:00Z
-status: gaps_found
-score: 8/9 must-haves verified
-re_verification: false
-gaps:
-  - truth: "POST /auth/logout invalidates refresh token in Redis"
-    status: partial
-    reason: "FR-3.2 states logout requires valid JWT (authenticated endpoint), but SecurityConfig lists /auth/logout under permitAll(). The endpoint is unauthenticated. Token invalidation logic itself works correctly (redis delete via refreshToken body), but the security constraint from FR-3.2 is not enforced."
-    artifacts:
-      - path: "services/auth-service/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java"
-        issue: "/auth/logout is permitAll() — not an authenticated endpoint as FR-3.2 requires"
-    missing:
-      - "Move /auth/logout out of the permitAll() list in SecurityConfig, making it require authentication, OR formally document the deviation as an accepted architectural decision in PLAN and SUMMARY"
+verified: 2026-03-29T12:00:00Z
+status: passed
+score: 9/9 must-haves verified
+re_verification:
+  previous_status: gaps_found
+  previous_score: 8/9
+  gaps_closed:
+    - "POST /auth/logout invalidates refresh token in Redis (FR-3.2: logout is now an authenticated endpoint)"
+  gaps_remaining: []
+  regressions: []
 human_verification:
   - test: "Full login + refresh + logout cycle with real Redis"
-    expected: "POST /auth/login returns 200 with accessToken+refreshToken; POST /auth/refresh returns new pair; POST /auth/logout returns 204; second POST /auth/refresh with old token returns 401"
+    expected: "POST /auth/login returns 200 with accessToken+refreshToken; POST /auth/refresh returns new pair; POST /auth/logout with valid Bearer returns 204; POST /auth/logout without Bearer returns 401; second POST /auth/refresh with old token returns 401"
     why_human: "Requires running auth-service with local profile and live Redis/PostgreSQL to verify end-to-end token lifecycle"
   - test: "RSA key persistence across restart"
     expected: "Tokens issued before restart remain valid after restart (keys reloaded from filesystem, not regenerated)"
@@ -26,8 +23,8 @@ human_verification:
 
 **Phase Goal:** Auth Service can authenticate users via login/password and issue JWT tokens.
 **Verified:** 2026-03-29
-**Status:** gaps_found — 1 gap blocking full requirement compliance
-**Re-verification:** No — initial verification
+**Status:** passed — all 9 must-haves verified
+**Re-verification:** Yes — after gap closure (FR-3.2 logout authentication enforcement)
 
 ---
 
@@ -41,13 +38,13 @@ human_verification:
 | 2 | POST /auth/login with invalid credentials returns 401 with RFC 7807 error | VERIFIED | AuthService throws InvalidCredentialsException on bad creds; GlobalExceptionHandler returns HTTP 401 with ErrorResponse record (type, title, status, detail, instance, timestamp) |
 | 3 | POST /auth/refresh with valid refresh token returns new accessToken + refreshToken | VERIFIED | AuthService.refresh() parses token, checks Redis key exists, deletes old, generates new pair, stores new refresh:{userId}:{jti} in Redis, returns TokenResponse |
 | 4 | POST /auth/refresh with invalid/expired refresh token returns 401 | VERIFIED | AuthService.refresh() catches parse exception and throws TokenRefreshException; GlobalExceptionHandler returns HTTP 401 |
-| 5 | POST /auth/logout invalidates refresh token in Redis | PARTIAL | Token deletion via redisTemplate.delete("refresh:{userId}:{jti}") is implemented and correct. However, FR-3.2 requires logout to be an authenticated endpoint — SecurityConfig has /auth/logout under permitAll() instead |
+| 5 | POST /auth/logout invalidates refresh token in Redis | VERIFIED | Token deletion via redisTemplate.delete("refresh:{userId}:{jti}") is implemented correctly. SecurityConfig now places /auth/logout under .anyRequest().authenticated() — JWT filter validates Bearer token before handler is reached. JwtAuthenticationFilter validates RS256 token and populates SecurityContext. FR-3.2 is satisfied. |
 | 6 | GET /auth/public-key returns RSA public key in PEM format | VERIFIED | AuthController.getPublicKey() → AuthService.getPublicKey() → JwtService.getPublicKeyPem() returns PEM string; PublicKeyResponse record includes algorithm "RS256" |
 | 7 | RSA keys persist across restarts (loaded from filesystem) | VERIFIED | JwtService.init() checks Files.exists(privateKeyPath) and Files.exists(publicKeyPath) before generating; loads from jwt.key-dir (default ./keys, overridable via JWT_KEY_DIR env var) |
 | 8 | Refresh tokens stored in Redis with 7-day TTL | VERIFIED | redisTemplate.opsForValue().set(redisKey, "valid", Duration.ofSeconds(jwtProperties.refreshTokenExpiration())); application.yml sets refresh-token-expiration: 604800 (7 days) |
 | 9 | Only active users can authenticate (status=active checked) | VERIFIED | AuthService.login() checks user.getStatus() != AccountStatus.ACTIVE → throws InvalidCredentialsException; AccountStatus enum has ACTIVE, EXPELLED, SUSPENDED, ARCHIVED; LowercaseEnumConverter auto-maps to/from DB lowercase strings |
 
-**Score:** 8/9 truths verified (1 partial)
+**Score:** 9/9 truths verified
 
 ---
 
@@ -58,7 +55,8 @@ human_verification:
 | `services/auth-service/src/main/java/ru/rutcampustrack/auth/service/JwtService.java` | RSA key management, JWT generation and validation | VERIFIED | 148 lines; RSA 2048 keygen/load, generateAccessToken (RS256, sub+role+group_id+is_headman claims, 15min TTL), generateRefreshToken (RS256, sub+jti, 7-day TTL), parseToken, getPublicKeyPem |
 | `services/auth-service/src/main/java/ru/rutcampustrack/auth/service/AuthService.java` | Login, refresh, logout business logic | VERIFIED | 114 lines; full login/refresh/logout/getPublicKey logic, Redis integration, token rotation |
 | `services/auth-service/src/main/java/ru/rutcampustrack/auth/controller/AuthController.java` | REST endpoints: login, refresh, logout, public-key | VERIFIED | 4 endpoints: POST /auth/login, POST /auth/refresh, POST /auth/logout (204), GET /auth/public-key; @Valid on request bodies; Swagger @Operation annotations |
-| `services/auth-service/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java` | Spring Security filter chain, public/authenticated routes | PARTIAL | Stateless, CSRF disabled, PasswordEncoder bean; /auth/logout listed as permitAll() — conflicts with FR-3.2 |
+| `services/auth-service/src/main/java/ru/rutcampustrack/auth/config/SecurityConfig.java` | Spring Security filter chain, public/authenticated routes | VERIFIED | Stateless, CSRF disabled, PasswordEncoder bean; /auth/logout is under .anyRequest().authenticated() (NOT in permitAll); JwtAuthenticationFilter added before UsernamePasswordAuthenticationFilter via addFilterBefore() |
+| `services/auth-service/src/main/java/ru/rutcampustrack/auth/config/JwtAuthenticationFilter.java` | Bearer token validation filter (gap fix artifact) | VERIFIED | 56 lines; OncePerRequestFilter; extracts Bearer token from Authorization header; calls jwtService.parseToken(); extracts sub+role claims; populates SecurityContextHolder with UsernamePasswordAuthenticationToken + ROLE_ authority; invalid tokens silently ignored (Spring Security handles as unauthenticated) |
 | `services/auth-service/src/main/java/ru/rutcampustrack/auth/entity/User.java` | JPA entity mapping to academic_db.users table | VERIFIED | All required fields: id, login, passwordHash, role (UserRole), status (AccountStatus), isHeadman, groupId; @Table(name="users"); Lombok @Getter @NoArgsConstructor |
 | `services/academic-service/academic-app/src/main/resources/db/migration/V2__seed_test_data.sql` | Test users with BCrypt password hashes | VERIFIED | Inserts admin/teacher/student with BCrypt hash of "password" (cost 10), test group IVT-21-1, test semester Spring 2026, campus geofence settings |
 
@@ -72,7 +70,9 @@ human_verification:
 | AuthService | UserRepository | findByLogin() for credential validation | WIRED | userRepository.findByLogin(request.login()) in login(); userRepository.findById(userId) in refresh() |
 | AuthService | JwtService | generateAccessToken/generateRefreshToken | WIRED | jwtService.generateAccessToken(user), jwtService.generateRefreshToken(user), jwtService.extractJti/extractUserId used throughout |
 | AuthService | StringRedisTemplate | refresh:{userId}:{jti} key storage and deletion | WIRED | redisTemplate.opsForValue().set() with TTL in login/refresh; redisTemplate.delete() in refresh (rotation) and logout; redisTemplate.hasKey() in refresh validation |
-| JwtService | RSA keys on filesystem | Load from jwt.key-dir, generate if missing | WIRED | @PostConstruct init() checks Files.exists() → loads via loadPrivateKey/loadPublicKey; generates and writes if missing; application.yml: jwt.key-dir: ${JWT_KEY_DIR:./keys} |
+| JwtService | RSA keys on filesystem | Load from jwt.key-dir, generate if missing | WIRED | @PostConstruct init() checks Files.exists() → loads via loadPrivateKey/loadPublicKey; generates and writes if missing; jwt.key-dir: ${JWT_KEY_DIR:./keys} |
+| SecurityConfig | JwtAuthenticationFilter | addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) | WIRED | Constructor-injected; filter added in securityFilterChain() bean; /auth/logout falls under .anyRequest().authenticated() — filter runs before every request |
+| JwtAuthenticationFilter | JwtService | parseToken() | WIRED | JwtAuthenticationFilter(JwtService jwtService) constructor injection; jwtService.parseToken(token) called in doFilterInternal() to validate access tokens |
 
 ---
 
@@ -101,7 +101,7 @@ Step 7b: SKIPPED — Running the auth service requires live Docker infrastructur
 | FR-2.2 | Validate refresh token exists in Redis and not expired | SATISFIED | redisTemplate.hasKey(redisKey) check; token parse catches expiry |
 | FR-2.3 | Delete old refresh token, create new one (rotation) | SATISFIED | redisTemplate.delete(redisKey) before generating new pair |
 | FR-3.1 | POST /auth/logout invalidates refresh token (delete from Redis) | SATISFIED | redisTemplate.delete("refresh:{userId}:{jti}") in AuthService.logout() |
-| FR-3.2 | Requires valid JWT (authenticated endpoint) | BLOCKED | SecurityConfig lists /auth/logout as permitAll() — no JWT required to call this endpoint |
+| FR-3.2 | Requires valid JWT (authenticated endpoint) | SATISFIED | /auth/logout removed from permitAll(); falls under .anyRequest().authenticated(); JwtAuthenticationFilter validates Bearer token and populates SecurityContextHolder before the handler is invoked |
 | FR-4.1 | GET /auth/public-key returns RSA public key in PEM format | SATISFIED | PublicKeyResponse.publicKey contains PEM string from JwtService.getPublicKeyPem() |
 | FR-4.2 | Key cached in Redis with TTL 3600 sec | SATISFIED | JwtService.init(): redisTemplate.opsForValue().set("jwt:public_key", publicKeyPem, Duration.ofSeconds(3600)) |
 | NFR-1 | RSA key pair generated on first startup, persisted; BCrypt strength 10; no plaintext secrets | SATISFIED | RSA keygen in JwtService.init(); BCryptPasswordEncoder() in SecurityConfig (default strength 10); POSTGRES_ACADEMIC_PASSWORD and JWT_KEY_DIR externalized via env vars with dev defaults |
@@ -113,20 +113,24 @@ Step 7b: SKIPPED — Running the auth service requires live Docker infrastructur
 
 ## Anti-Patterns Found
 
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| SecurityConfig.java | 25 | /auth/logout is permitAll() — contradicts FR-3.2 requirement | Warning | FR-3.2 compliance gap; logout works functionally but is not authenticated |
+No blockers found. No TODO/FIXME/PLACEHOLDER comments. No return null/empty stubs. No empty lambda handlers. All implementations are substantive.
 
-No TODO/FIXME/PLACEHOLDER comments found. No return null/empty stubs found. No empty lambda handlers found. All implementations are substantive.
+Previous warning (SecurityConfig.java: /auth/logout is permitAll()) is now RESOLVED — /auth/logout is under .anyRequest().authenticated() in the updated SecurityConfig.
 
 ---
 
 ## Human Verification Required
 
-### 1. Full Authentication Lifecycle
+### 1. Full Authentication Lifecycle (including authenticated logout)
 
-**Test:** Start docker compose, run academic-app to apply Flyway migrations, then start auth-service with `--spring.profiles.active=local`. Execute: POST /auth/login with `{"login":"student","password":"password"}`, then POST /auth/refresh with the returned refreshToken, then POST /auth/logout, then POST /auth/refresh again with the same old refreshToken.
-**Expected:** Login returns 200 with accessToken+refreshToken+expiresIn=900. Refresh returns 200 with new token pair. Logout returns 204. Second refresh with old token returns 401 RFC 7807 error.
+**Test:** Start docker compose, run academic-app to apply Flyway migrations, then start auth-service with `--spring.profiles.active=local`. Execute in sequence:
+1. POST /auth/login with `{"login":"student","password":"password"}` — save accessToken and refreshToken
+2. POST /auth/refresh with the refreshToken — verify new pair returned
+3. POST /auth/logout with `Authorization: Bearer <accessToken>` and body `{"refreshToken":"<refreshToken>"}` — verify 204
+4. POST /auth/logout without Authorization header — verify 401
+5. POST /auth/refresh with the old refreshToken — verify 401
+
+**Expected:** Steps 1-2 return 200 with token pairs. Step 3 returns 204. Step 4 returns 401 (Spring Security rejects unauthenticated request). Step 5 returns 401 (token already deleted from Redis).
 **Why human:** Requires running Docker infrastructure (PostgreSQL + Redis) and live service startup.
 
 ### 2. RSA Key Persistence Across Restart
@@ -135,26 +139,21 @@ No TODO/FIXME/PLACEHOLDER comments found. No return null/empty stubs found. No e
 **Expected:** Token remains valid after restart — keys loaded from filesystem, not regenerated.
 **Why human:** Requires service start/stop cycle with filesystem state between runs.
 
-### 3. FR-3.2 Gap — Logout Authentication Policy Decision
-
-**Test:** Call POST /auth/logout without any Authorization header or with an invalid token in the body.
-**Expected per FR-3.2:** Should return 401 if no valid JWT is provided.
-**Actual behavior:** Currently returns 204 always (idempotent, permitAll).
-**Why human:** Architectural decision needed — either enforce FR-3.2 by moving logout out of permitAll(), or formally accept the deviation as intentional (idempotent logout is a valid design choice).
-
 ---
 
 ## Gaps Summary
 
-**1 gap found** — FR-3.2 compliance.
+No gaps. All 9 must-haves are verified.
 
-The phase goal ("Auth Service can authenticate users via login/password and issue JWT tokens") is functionally achieved. Login, refresh, and public key endpoints work correctly. The RSA/JWT infrastructure is fully implemented and wired.
+**Gap closed since initial verification:**
 
-The single gap is a security configuration deviation: FR-3.2 requires POST /auth/logout to be an authenticated endpoint requiring a valid JWT, but the current SecurityConfig places /auth/logout in the public (permitAll) route list. The token invalidation logic itself is correct — the refresh token is deleted from Redis. The gap is that any caller (without authentication) can attempt to trigger a logout, and the endpoint accepts requests without verifying the caller's identity via JWT.
+FR-3.2 (logout authentication enforcement) is now satisfied. The fix introduced two changes:
 
-This may be an intentional design choice (idempotent logout for resilience), but it was not documented as a deviation in SUMMARY.md (which states "None — plan executed exactly as written"). The decision should either be reversed to match FR-3.2 or formally recorded as an accepted deviation.
+1. `JwtAuthenticationFilter.java` — a new `OncePerRequestFilter` that reads the `Authorization: Bearer` header, validates the token via `JwtService.parseToken()`, and sets `SecurityContextHolder` authentication. Invalid or missing tokens do not set authentication (allowing Spring Security to reject protected endpoints with 401).
 
-**Recommendation:** Either add `/auth/logout` back to the `.anyRequest().authenticated()` branch in SecurityConfig (forcing callers to present a Bearer token) and update GlobalExceptionHandler to return 401 for authentication failures, or document this as an accepted deviation from FR-3.2 in PLAN.md decisions.
+2. `SecurityConfig.java` — `/auth/logout` was removed from the `permitAll()` matcher list. It now falls under `.anyRequest().authenticated()`. The `JwtAuthenticationFilter` is wired before `UsernamePasswordAuthenticationFilter` via `addFilterBefore()`. Callers must present a valid Bearer access token to reach the logout handler; unauthenticated requests will receive 401.
+
+The phase goal ("Auth Service can authenticate users via login/password and issue JWT tokens") is fully achieved. All endpoints are implemented, all security constraints are enforced, and all data flows are wired correctly.
 
 ---
 

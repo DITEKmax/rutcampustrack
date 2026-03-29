@@ -5,12 +5,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
+import ru.rutcampustrack.auth.dto.OtpRequest;
+import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.PublicKeyResponse;
 import ru.rutcampustrack.auth.dto.RefreshRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.service.AuthService;
+import ru.rutcampustrack.auth.service.OtpService;
 
 @RestController
 @RequestMapping("/auth")
@@ -18,9 +23,11 @@ import ru.rutcampustrack.auth.service.AuthService;
 public class AuthController {
 
     private final AuthService authService;
+    private final OtpService otpService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, OtpService otpService) {
         this.authService = authService;
+        this.otpService = otpService;
     }
 
     @Operation(summary = "Login with credentials", description = "Authenticate with login and password, returns JWT token pair")
@@ -52,5 +59,33 @@ public class AuthController {
     @GetMapping("/public-key")
     public ResponseEntity<PublicKeyResponse> getPublicKey() {
         return ResponseEntity.ok(authService.getPublicKey());
+    }
+
+    @Operation(summary = "Request OTP code", description = "Generate OTP code for Telegram-based authentication")
+    @ApiResponse(responseCode = "200", description = "OTP code generated and stored")
+    @ApiResponse(responseCode = "429", description = "Rate limited — too many requests")
+    @PostMapping("/otp/request")
+    public ResponseEntity<Void> requestOtp(@Valid @RequestBody OtpRequest request) {
+        otpService.requestOtp(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Verify OTP code", description = "Verify OTP code and receive JWT token pair")
+    @ApiResponse(responseCode = "200", description = "OTP verified, JWT pair returned")
+    @ApiResponse(responseCode = "401", description = "Invalid or expired OTP code")
+    @PostMapping("/otp/verify")
+    public ResponseEntity<TokenResponse> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
+        return ResponseEntity.ok(otpService.verifyOtp(request));
+    }
+
+    @Operation(summary = "Change password", description = "Change password for authenticated user")
+    @ApiResponse(responseCode = "200", description = "Password changed successfully")
+    @ApiResponse(responseCode = "401", description = "Current password is incorrect")
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request,
+                                               Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getName());
+        authService.changePassword(userId, request);
+        return ResponseEntity.ok().build();
     }
 }

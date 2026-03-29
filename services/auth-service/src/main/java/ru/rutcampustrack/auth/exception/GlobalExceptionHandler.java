@@ -11,6 +11,8 @@ import ru.rutcampustrack.auth.dto.ErrorResponse;
 
 import java.time.Instant;
 import java.util.stream.Collectors;
+import ru.rutcampustrack.auth.exception.OtpExpiredException;
+import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -55,6 +57,34 @@ public class GlobalExceptionHandler {
                         "Validation Error",
                         HttpStatus.BAD_REQUEST.value(),
                         detail,
+                        request.getRequestURI(),
+                        Instant.now()
+                ));
+    }
+
+    @ExceptionHandler(OtpExpiredException.class)
+    public ResponseEntity<ErrorResponse> handleOtpExpired(
+            OtpExpiredException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(
+                        "about:blank",
+                        "OTP Verification Failed",
+                        HttpStatus.UNAUTHORIZED.value(),
+                        ex.getMessage(),
+                        request.getRequestURI(),
+                        Instant.now()
+                ));
+    }
+
+    @ExceptionHandler(OtpRateLimitException.class)
+    public ResponseEntity<ErrorResponse> handleOtpRateLimit(
+            OtpRateLimitException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(new ErrorResponse(
+                        "about:blank",
+                        "Rate Limited",
+                        HttpStatus.TOO_MANY_REQUESTS.value(),
+                        ex.getMessage(),
                         request.getRequestURI(),
                         Instant.now()
                 ));

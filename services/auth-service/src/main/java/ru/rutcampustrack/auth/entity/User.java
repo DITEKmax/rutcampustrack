@@ -3,6 +3,7 @@ package ru.rutcampustrack.auth.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.rutcampustrack.auth.entity.enums.AccountStatus;
 import ru.rutcampustrack.auth.entity.enums.UserRole;
 
@@ -21,6 +22,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 32)
     private String login;
 
+    @Setter
     @Column(name = "password_hash")
     private String passwordHash;
 
@@ -51,9 +53,11 @@ public class User {
     @Column(name = "group_id")
     private Long groupId;
 
+    @Setter
     @Column(name = "initial_password", length = 128)
     private String initialPassword;
 
+    @Setter
     @Column(name = "password_changed", nullable = false)
     private boolean passwordChanged;
 

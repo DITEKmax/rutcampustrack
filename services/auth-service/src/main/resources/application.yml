@@ -39,6 +39,13 @@ jwt:
   access-token-expiration: 900        # 15 минут
   refresh-token-expiration: 604800    # 7 дней
 
+otp:
+  code-length: 6
+  ttl-seconds: 120
+  max-attempts: 3
+  attempts-window-seconds: 300
+  resend-cooldown-seconds: 60
+
 logging:
   level:
     ru.rutcampustrack: DEBUG

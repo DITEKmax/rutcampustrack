@@ -3,6 +3,7 @@ package ru.rutcampustrack.auth.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.auth.config.JwtProperties;
+import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.PublicKeyResponse;
 import ru.rutcampustrack.auth.dto.RefreshRequest;
@@ -106,6 +107,21 @@ public class AuthService {
         } catch (Exception e) {
             // Idempotent logout — silently ignore unparseable tokens
         }
+    }
+
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(InvalidCredentialsException::new);
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new InvalidCredentialsException();
+        }
+
+        String newHash = passwordEncoder.encode(request.newPassword());
+        user.setPasswordHash(newHash);
+        user.setPasswordChanged(true);
+        user.setInitialPassword(null);
+        userRepository.save(user);
     }
 
     public PublicKeyResponse getPublicKey() {

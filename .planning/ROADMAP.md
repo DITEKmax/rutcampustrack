@@ -5,7 +5,7 @@
 |-------|------|-------------|--------|
 | 1.1 | Auth Service Core (JWT + Login) | - | completed |
 | 1.2 | Auth Service OTP + Change Password | 1.1 | planned |
-| 1.3 | API Gateway JWT Filter + Routing | 1.1 | pending |
+| 1.3 | API Gateway JWT Filter + Routing | 1.1 | planned |
 | 1.4 | Seed Data + Integration Testing | 1.1, 1.2, 1.3 | pending |
 
 ---
@@ -71,6 +71,11 @@ Plans:
 ## Phase 1.3: API Gateway JWT Filter + Routing
 
 **Goal**: Gateway validates JWT tokens and routes requests to downstream services with user context headers.
+
+**Plans:** 1 plan
+
+Plans:
+- [ ] 01.3-01-PLAN.md — JWT authentication filter (PublicKeyConfig + JwtAuthenticationFilter GlobalFilter) + routing verification
 
 **Scope**:
 - JwtAuthenticationFilter (GatewayFilter): validate Bearer token, inject X-User-Id/X-User-Role/X-Group-Id/X-Is-Headman headers

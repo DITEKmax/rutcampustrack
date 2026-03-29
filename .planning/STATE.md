@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 1.1-01-PLAN.md (Auth Service Core)
-last_updated: "2026-03-28T22:22:52.991Z"
+stopped_at: Completed 01.2-01-PLAN.md (OTP + Change Password)
+last_updated: "2026-03-29T06:46:50.372Z"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
 ---
 
 # Project State
@@ -45,6 +45,9 @@ Phase 1.2: OTP Flow + Password Change — PLANNED
 3. RSA 2048-bit keys persisted to filesystem (jwt.key-dir), generated on first startup
 4. Refresh token rotation: old token deleted from Redis on each use, new token issued
 5. Logout is idempotent: unparseable tokens silently ignored
+- [Phase 01.2]: OTP Telegram delivery stubbed — code stored in Redis only, actual delivery deferred to notification-bot phase
+- [Phase 01.2]: OtpExpiredException used for both expired and wrong code to avoid revealing OTP state (security)
+- [Phase 01.2]: Field-level @Setter (not class-level) on User entity to minimize mutation surface
 
 ## Blockers
 
@@ -55,6 +58,7 @@ None
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 1.1 | 01 | 7m 23s | 7 | 23 |
+| Phase 01.2 P01 | 4min | 3 tasks | 12 files |
 
 ## Last Updated
 
@@ -62,4 +66,4 @@ None
 
 ## Last Session
 
-Stopped at: Completed 1.1-01-PLAN.md (Auth Service Core)
+Stopped at: Completed 01.2-01-PLAN.md (OTP + Change Password)

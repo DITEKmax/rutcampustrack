@@ -3,6 +3,7 @@ package ru.rutcampustrack.academic.user;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.lang.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -57,7 +58,7 @@ public class UserService {
                        StudentGroupHistoryRepository studentGroupHistoryRepository,
                        RequestContext requestContext,
                        UserAssembler userAssembler,
-                       CacheManager cacheManager) {
+                       @Nullable CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.headmanAssistantRepository = headmanAssistantRepository;
         this.studentGroupHistoryRepository = studentGroupHistoryRepository;
@@ -158,7 +159,7 @@ public class UserService {
         }
 
         // After headman flag change — evict groups and group_members caches for this user's group (per D-10)
-        if (request.isHeadman() != null && user.getGroupId() != null) {
+        if (request.isHeadman() != null && user.getGroupId() != null && cacheManager != null) {
             Cache groupsCache = cacheManager.getCache("groups");
             if (groupsCache != null) {
                 groupsCache.evict(user.getGroupId());
@@ -220,13 +221,15 @@ public class UserService {
         user.setUpdatedAt(OffsetDateTime.now());
 
         // Evict caches for old group (ID only known at runtime) and transferred user
-        Cache groupMembersCache = cacheManager.getCache("group_members");
-        if (groupMembersCache != null && oldGroupId != null) {
-            groupMembersCache.evict(oldGroupId);
-        }
-        Cache usersCache = cacheManager.getCache("users");
-        if (usersCache != null) {
-            usersCache.evict(id);
+        if (cacheManager != null) {
+            Cache groupMembersCache = cacheManager.getCache("group_members");
+            if (groupMembersCache != null && oldGroupId != null) {
+                groupMembersCache.evict(oldGroupId);
+            }
+            Cache usersCache = cacheManager.getCache("users");
+            if (usersCache != null) {
+                usersCache.evict(id);
+            }
         }
 
         return userRepository.save(user);

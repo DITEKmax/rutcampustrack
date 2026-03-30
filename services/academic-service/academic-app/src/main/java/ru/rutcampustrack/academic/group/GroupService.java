@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.group;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
@@ -27,13 +29,16 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final RequestContext requestContext;
+    private final ApplicationEventPublisher eventPublisher;
 
     public GroupService(GroupRepository groupRepository,
                         UserRepository userRepository,
-                        RequestContext requestContext) {
+                        RequestContext requestContext,
+                        ApplicationEventPublisher eventPublisher) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.requestContext = requestContext;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -71,7 +76,9 @@ public class GroupService {
         group.setName(request.name());
         group.setCode(request.code());
         group.setActive(request.active());
-        return groupRepository.save(group);
+        Group saved = groupRepository.save(group);
+        eventPublisher.publishEvent(new GroupUpdatedEvent(this, saved.getId()));
+        return saved;
     }
 
     @Caching(evict = {
@@ -82,6 +89,7 @@ public class GroupService {
     public void deleteGroup(Long id) {
         Group group = findGroupById(id);
         groupRepository.delete(group);
+        eventPublisher.publishEvent(new GroupUpdatedEvent(this, id));
     }
 
     public Page<User> getMyGroupMembers(Pageable pageable) {

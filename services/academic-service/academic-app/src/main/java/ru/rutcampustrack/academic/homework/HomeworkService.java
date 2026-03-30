@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.homework;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,8 @@ import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.HomeworkCompletion;
+import ru.rutcampustrack.academic.event.HomeworkPublishedEvent;
+import ru.rutcampustrack.academic.event.HomeworkUpdatedEvent;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
@@ -29,15 +32,18 @@ public class HomeworkService {
     private final HomeworkCompletionRepository completionRepository;
     private final HeadmanAssistantRepository assistantRepository;
     private final RequestContext requestContext;
+    private final ApplicationEventPublisher eventPublisher;
 
     public HomeworkService(HomeworkRepository homeworkRepository,
                             HomeworkCompletionRepository completionRepository,
                             HeadmanAssistantRepository assistantRepository,
-                            RequestContext requestContext) {
+                            RequestContext requestContext,
+                            ApplicationEventPublisher eventPublisher) {
         this.homeworkRepository = homeworkRepository;
         this.completionRepository = completionRepository;
         this.assistantRepository = assistantRepository;
         this.requestContext = requestContext;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -67,7 +73,12 @@ public class HomeworkService {
                 request.title(), request.description(), request.link(),
                 requestContext.getUserId()
         );
-        return homeworkRepository.save(homework);
+        Homework saved = homeworkRepository.save(homework);
+        eventPublisher.publishEvent(new HomeworkPublishedEvent(
+                this, saved.getId(), saved.getGroupId(), saved.getSubjectId(),
+                saved.getTitle(), saved.getLink() != null
+        ));
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -102,7 +113,11 @@ public class HomeworkService {
         homework.setDescription(request.description());
         homework.setLink(request.link());
         homework.setUpdatedAt(OffsetDateTime.now());
-        return homeworkRepository.save(homework);
+        Homework saved = homeworkRepository.save(homework);
+        eventPublisher.publishEvent(new HomeworkUpdatedEvent(
+                this, saved.getId(), saved.getGroupId(), saved.getTitle()
+        ));
+        return saved;
     }
 
     @Transactional

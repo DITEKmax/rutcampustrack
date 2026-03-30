@@ -3,6 +3,7 @@ package ru.rutcampustrack.academic.user;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.StudentGroupHistory;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
@@ -52,19 +54,22 @@ public class UserService {
     private final RequestContext requestContext;
     private final UserAssembler userAssembler;
     private final CacheManager cacheManager;
+    private final ApplicationEventPublisher eventPublisher;
 
     public UserService(UserRepository userRepository,
                        HeadmanAssistantRepository headmanAssistantRepository,
                        StudentGroupHistoryRepository studentGroupHistoryRepository,
                        RequestContext requestContext,
                        UserAssembler userAssembler,
-                       @Nullable CacheManager cacheManager) {
+                       @Nullable CacheManager cacheManager,
+                       ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.headmanAssistantRepository = headmanAssistantRepository;
         this.studentGroupHistoryRepository = studentGroupHistoryRepository;
         this.requestContext = requestContext;
         this.userAssembler = userAssembler;
         this.cacheManager = cacheManager;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -232,7 +237,10 @@ public class UserService {
             }
         }
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        eventPublisher.publishEvent(new GroupUpdatedEvent(this, oldGroupId));
+        eventPublisher.publishEvent(new GroupUpdatedEvent(this, request.newGroupId()));
+        return saved;
     }
 
     public User getMe() {

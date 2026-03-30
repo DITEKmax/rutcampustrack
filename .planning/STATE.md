@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
-status: planning
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-30T10:31:42.537Z"
-last_activity: 2026-03-30 — Roadmap created for v2.0 (5 phases, 37 requirements mapped)
+status: executing
+stopped_at: Completed 05-01-PLAN.md (Entity and Repository Foundation)
+last_updated: "2026-03-30T11:03:01.991Z"
+last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -22,10 +22,10 @@ v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis
 
 ## Current Position
 
-Phase: 5 of 9 (Entity and Repository Foundation)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-30 — Roadmap created for v2.0 (5 phases, 37 requirements mapped)
+Phase: 05 (entity-and-repository-foundation) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-03-30)
 
 **Core value:** Working authentication and authorization perimeter — all downstream services receive validated user context through the Gateway.
-**Current focus:** Phase 5 — Entity and Repository Foundation
+**Current focus:** Phase 05 — entity-and-repository-foundation
 
 ## Accumulated Context
 
@@ -45,6 +45,9 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [v2.0 research]: V1/V2 Flyway migrations are immutable; all new schema changes start at V3.
 - [v2.0 research]: RabbitMQ events must use @TransactionalEventListener(AFTER_COMMIT) — never publish inside @Transactional before commit.
 - [v2.0 research]: Login generation must use PostgreSQL sequences (not MAX()+1) to avoid race conditions.
+- [Phase 05]: Semester.date_from/date_to use LocalDate (DATE columns), not OffsetDateTime — aligns with V1 schema
+- [Phase 05]: AbstractAcademicIntegrationTest excludes RabbitMQ and Redis autoconfigurations to avoid connection failures in tests
+- [Phase 05]: CampusSetting PK is SERIAL (not BIGSERIAL) but mapped to Long — JDBC widens safely
 
 ### Pending Todos
 
@@ -57,6 +60,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:31:42.495Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-entity-and-repository-foundation/05-CONTEXT.md
+Last session: 2026-03-30T11:03:01.988Z
+Stopped at: Completed 05-01-PLAN.md (Entity and Repository Foundation)
+Resume file: None

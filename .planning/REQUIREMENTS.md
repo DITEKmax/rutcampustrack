@@ -20,14 +20,14 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 
 ### Groups & Semesters
 
-- [ ] **GSEM-01**: Admin can CRUD groups (name, code, active flag)
-- [ ] **GSEM-02**: Admin can CRUD semesters (name, date range)
-- [ ] **GSEM-03**: Admin can activate semester (only one active at a time, DB-enforced)
-- [ ] **GSEM-04**: Admin can delete semester with confirmation phrase guard
+- [x] **GSEM-01**: Admin can CRUD groups (name, code, active flag)
+- [x] **GSEM-02**: Admin can CRUD semesters (name, date range)
+- [x] **GSEM-03**: Admin can activate semester (only one active at a time, DB-enforced)
+- [x] **GSEM-04**: Admin can delete semester with confirmation phrase guard
 
 ### Subjects & Assignments
 
-- [ ] **SUBJ-01**: Headman can CRUD subjects with type (lecture/practice/lab)
+- [x] **SUBJ-01**: Headman can CRUD subjects with type (lecture/practice/lab)
 - [ ] **SUBJ-02**: Headman can assign teacher to subject+group (search by employee number)
 - [ ] **SUBJ-03**: Headman can remove teacher-subject-group assignment
 
@@ -113,11 +113,11 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 | USER-06 | Phase 6 | Pending |
 | USER-07 | Phase 6 | Pending |
 | USER-08 | Phase 6 | Pending |
-| GSEM-01 | Phase 5 + Phase 6 | Pending |
-| GSEM-02 | Phase 5 + Phase 6 | Pending |
-| GSEM-03 | Phase 5 + Phase 6 | Pending |
-| GSEM-04 | Phase 5 + Phase 6 | Pending |
-| SUBJ-01 | Phase 5 + Phase 6 | Pending |
+| GSEM-01 | Phase 5 + Phase 6 | Complete |
+| GSEM-02 | Phase 5 + Phase 6 | Complete |
+| GSEM-03 | Phase 5 + Phase 6 | Complete |
+| GSEM-04 | Phase 5 + Phase 6 | Complete |
+| SUBJ-01 | Phase 5 + Phase 6 | Complete |
 | SUBJ-02 | Phase 5 + Phase 6 | Pending |
 | SUBJ-03 | Phase 5 + Phase 6 | Pending |
 | ASST-01 | Phase 5 + Phase 6 | Pending |

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "homework.updated",
+  "description": "Домашнее задание обновлено. Генерируется Academic Service.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "homework.updated" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["homework_id", "group_id", "title"],
+      "properties": {
+        "homework_id": { "type": "integer" },
+        "group_id": { "type": "integer" },
+        "title": { "type": "string" }
+      }
+    }
+  }
+}

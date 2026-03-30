@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "semester.archived",
+  "description": "Семестр деактивирован. Генерируется Academic Service.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "semester.archived" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["semester_id"],
+      "properties": {
+        "semester_id": { "type": "integer" }
+      }
+    }
+  }
+}

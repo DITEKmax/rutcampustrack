@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
-status: executing
-stopped_at: Completed 07-01-PLAN.md (gRPC server config + 7 RPCs)
-last_updated: "2026-03-30T20:37:14.289Z"
+status: verifying
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-03-30T20:54:36.749Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -24,7 +24,7 @@ v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis
 
 Phase: 07 (grpc-server) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -58,6 +58,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 06 Plan 02]: Semester activateSemester uses deactivateAllActive() + entityManager.flush() + saveAndFlush() to avoid UNIQUE constraint violation on concurrent activation
 - [Phase 07-grpc-server]: Direct repository injection in gRPC service — avoids RequestContext scope issues when injecting REST service layer
 - [Phase 07-grpc-server]: javax.annotation-api:1.3.2 compileOnly — generated gRPC stubs use @javax.annotation.Generated removed in Java 9+
+- [Phase 07]: Use unique in-process name 'academic-grpc-test' to prevent gRPC name collision between test contexts
+- [Phase 07]: grpc.server.port=-1 in application-test.yml disables Netty port binding in all test classes
 
 ### Pending Todos
 
@@ -70,6 +72,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T20:37:14.285Z
-Stopped at: Completed 07-01-PLAN.md (gRPC server config + 7 RPCs)
+Last session: 2026-03-30T20:54:36.746Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None

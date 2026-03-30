@@ -25,7 +25,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 - [ ] **Phase 5: Entity and Repository Foundation** - JPA entities, repositories, Flyway V3, login sequence
 - [ ] **Phase 6: REST API + HATEOAS** - Full CRUD by role, RequestContext, assemblers, pagination
-- [ ] **Phase 7: gRPC Server** - 7 RPCs implementing academic.proto, port 19091
+- [x] **Phase 7: gRPC Server** - 7 RPCs implementing academic.proto, port 19091 (completed 2026-03-30)
 - [ ] **Phase 8: Redis Caching** - @Cacheable on 5 cache keys, cascading @CacheEvict
 - [ ] **Phase 9: RabbitMQ Events** - Fanout publisher, AFTER_COMMIT transactional wiring
 
@@ -73,10 +73,10 @@ Plans:
   3. `GetActiveSemester` returns the current active semester; when no semester is active the call returns `NOT_FOUND` status
   4. `IsHeadman` returns true when the given user is the headman of the given group, false otherwise
   5. All 7 RPCs are covered by Testcontainers integration tests running against a real PostgreSQL instance on the dedicated gRPC port 19091
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 07-01-PLAN.md — Gradle protobuf plugin + gRPC server config + AcademicGrpcServiceImpl (7 RPCs) + GrpcExceptionAdvice
-- [ ] 07-02-PLAN.md — Integration tests for all 7 gRPC RPCs with Testcontainers PostgreSQL
+- [x] 07-02-PLAN.md — Integration tests for all 7 gRPC RPCs with Testcontainers PostgreSQL
 
 ### Phase 8: Redis Caching
 **Goal**: Read-heavy gRPC paths return cached data within configured TTLs; mutations invalidate the correct cache entries including cascading scenarios (student transfer invalidates two group member caches).
@@ -111,6 +111,6 @@ Plans:
 | 1.4 Seed Data + Integration Tests | v1.0 | 1/1 | Complete | 2026-03-30 |
 | 5. Entity and Repository Foundation | v2.0 | 1/2 | In Progress|  |
 | 6. REST API + HATEOAS | v2.0 | 2/4 | In Progress|  |
-| 7. gRPC Server | v2.0 | 1/2 | In Progress|  |
+| 7. gRPC Server | v2.0 | 2/2 | Complete   | 2026-03-30 |
 | 8. Redis Caching | v2.0 | 0/TBD | Not started | - |
 | 9. RabbitMQ Events | v2.0 | 0/TBD | Not started | - |

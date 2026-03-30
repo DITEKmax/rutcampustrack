@@ -48,6 +48,9 @@ dependencies {
     // Required for generated gRPC stubs (javax.annotation.Generated removed in Java 9+)
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 
+    // Jackson Hibernate6 module — normalizes Hibernate proxy class names during Redis serialization
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6:2.18.2")
+
     // Lombok (только для entity и внутренних классов, НЕ для DTO контракта)
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

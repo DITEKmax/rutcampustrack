@@ -100,7 +100,10 @@ Plans:
   1. Adding or removing a student from a group publishes a `group.updated` event to `rut-uit.events` exchange containing the group ID and occurred_at timestamp
   2. Archiving (deactivating) a semester publishes a `semester.archived` event after the transaction commits; a transaction rollback produces no event
   3. Creating a homework item publishes `homework.published`; updating it publishes `homework.updated` — both events include a unique `event_id` UUID for idempotent downstream processing
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 09-01-PLAN.md — Event infrastructure (DomainEvent base, concrete events, RabbitConfig, DomainEventListener, JSON schemas) + service wiring
+- [ ] 09-02-PLAN.md — AbstractAcademicEventIntegrationTest + EventIntegrationTest (6 tests for EVENT-01, EVENT-02, EVENT-03)
 
 ## Progress
 
@@ -116,4 +119,4 @@ Plans:
 | 6. REST API + HATEOAS | v2.0 | 2/4 | In Progress|  |
 | 7. gRPC Server | v2.0 | 2/2 | Complete   | 2026-03-30 |
 | 8. Redis Caching | v2.0 | 1/2 | In Progress | - |
-| 9. RabbitMQ Events | v2.0 | 0/TBD | Not started | - |
+| 9. RabbitMQ Events | v2.0 | 0/2 | Not started | - |

@@ -41,6 +41,10 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+grpc:
+  server:
+    port: 19091
+
 logging:
   level:
     ru.rutcampustrack: DEBUG

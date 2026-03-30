@@ -12,6 +12,9 @@ dependencies {
     // Spring Web annotations (для @RequestMapping, @GetMapping и т.д.)
     api("org.springframework:spring-web:6.2.1")
 
+    // Spring Data Commons (для Pageable, PagedResourcesAssembler)
+    api("org.springframework.data:spring-data-commons:3.4.1")
+
     // Spring HATEOAS (для RepresentationModel, EntityModel)
     api("org.springframework.hateoas:spring-hateoas:2.4.1")
 

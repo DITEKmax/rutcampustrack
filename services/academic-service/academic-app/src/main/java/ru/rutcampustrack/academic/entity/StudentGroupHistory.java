@@ -17,9 +17,11 @@ public class StudentGroupHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @Setter
     @Column(name = "group_id", nullable = false)
     private Long groupId;
 
@@ -35,6 +37,7 @@ public class StudentGroupHistory {
     @Column(length = 255)
     private String reason;
 
+    @Setter
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 }

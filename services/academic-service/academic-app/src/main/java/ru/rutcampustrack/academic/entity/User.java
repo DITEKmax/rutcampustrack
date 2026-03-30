@@ -74,6 +74,7 @@ public class User {
     @Column(name = "password_changed", nullable = false)
     private boolean passwordChanged;
 
+    @Setter
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

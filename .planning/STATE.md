@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
 status: verifying
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-30T11:36:55.357Z"
+stopped_at: Completed 06-03-PLAN.md — Subject/Assignment/Assistant/Homework/Threshold domains
+last_updated: "2026-03-30T18:53:46.061Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 6
+  completed_plans: 3
   percent: 0
 ---
 
@@ -50,6 +50,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 05]: CampusSetting PK is SERIAL (not BIGSERIAL) but mapped to Long — JDBC widens safely
 - [Phase 05]: V4 migration: campus_settings.id was SERIAL (INT4) but CampusSetting entity maps to Long (BIGINT); Hibernate ddl-auto:validate fails — fix with ALTER COLUMN TYPE BIGINT
 - [Phase 05]: HeadmanAssistant.permissions uses String[] with @JdbcTypeCode(SqlTypes.ARRAY) — conversion to List<AssistantPermission> is service layer responsibility
+- [Phase 06]: Contract API interfaces exclude PagedResourcesAssembler parameters — Spring Data web concern handled in controller layer
+- [Phase 06]: Entity @PrePersist callbacks added to Subject, TeacherSubjectGroup, HeadmanAssistant, Homework, HomeworkCompletion, AttendanceThreshold for timestamp auto-population
 
 ### Pending Todos
 
@@ -62,6 +64,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:36:55.354Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-rest-api-hateoas/06-CONTEXT.md
+Last session: 2026-03-30T18:53:46.058Z
+Stopped at: Completed 06-03-PLAN.md — Subject/Assignment/Assistant/Homework/Threshold domains
+Resume file: None

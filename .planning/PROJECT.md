@@ -77,7 +77,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 
 ## Current State
-Milestone 1 shipped. Auth Service (JWT, OTP, change password) and API Gateway (JWT filter, 5 route groups) are production-ready. 26 tests (15 integration + 11 unit). Next: Academic Service (CRUD, gRPC, Redis cache).
+Milestone 1 shipped. Phase 5 complete — all 11 JPA entities and repositories for Academic Service created with Testcontainers integration tests. V3/V4 Flyway migrations added. Next: Phase 6 REST API + HATEOAS.
 
 ## Key Decisions
 
@@ -89,6 +89,8 @@ Milestone 1 shipped. Auth Service (JWT, OTP, change password) and API Gateway (J
 | OTP Telegram delivery deferred | — Pending, notification-bot phase | v1.0 |
 | Null-safe header injection | ✓ TEACHER/ADMIN don't get "null" headers | v1.0 |
 | Testcontainers over H2 | ✓ Real PostgreSQL ENUMs, no false positives | v1.0 |
+| No JPA associations (@ManyToOne etc.) | ✓ FK columns as Long IDs, prevents N+1 and cascade issues | v2.0 |
+| campus_settings.id SERIAL→BIGINT | ✓ V4 migration fixes V1 inconsistency with BIGSERIAL convention | v2.0 |
 
 ## Evolution
 
@@ -108,4 +110,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after v2.0 milestone start*
+*Last updated: 2026-03-30 after Phase 5 completion*

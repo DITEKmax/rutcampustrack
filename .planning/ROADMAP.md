@@ -55,9 +55,9 @@ Plans:
   3. Student can view their own profile and group member list; attempting to view another group's members returns 403
   4. Admin can activate a semester and only one semester is active at a time — a second activation call deactivates the previous one atomically
   5. All list endpoints return `PagedModel` with `_links` (self, next, prev); all item endpoints return `EntityModel` with self link
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 Plans:
-- [ ] 06-01-PLAN.md — Security infrastructure (RequestContext, @RequireRole AOP, GlobalExceptionHandler) + all API contract interfaces and DTOs
+- [x] 06-01-PLAN.md — Security infrastructure (RequestContext, @RequireRole AOP, GlobalExceptionHandler) + all API contract interfaces and DTOs
 - [ ] 06-02-PLAN.md — Admin domains: User, Group, Semester controllers + services + assemblers
 - [ ] 06-03-PLAN.md — Headman domains: Subject, Assignment, Assistant, Homework, Threshold controllers + services + assemblers
 - [ ] 06-04-PLAN.md — Dashboard endpoint, API Gateway route, integration tests
@@ -107,7 +107,7 @@ Plans:
 | 1.3 Gateway JWT Filter | v1.0 | 1/1 | Complete | 2026-03-30 |
 | 1.4 Seed Data + Integration Tests | v1.0 | 1/1 | Complete | 2026-03-30 |
 | 5. Entity and Repository Foundation | v2.0 | 1/2 | In Progress|  |
-| 6. REST API + HATEOAS | v2.0 | 0/4 | Not started | - |
+| 6. REST API + HATEOAS | v2.0 | 1/4 | In Progress|  |
 | 7. gRPC Server | v2.0 | 0/TBD | Not started | - |
 | 8. Redis Caching | v2.0 | 0/TBD | Not started | - |
 | 9. RabbitMQ Events | v2.0 | 0/TBD | Not started | - |

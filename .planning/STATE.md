@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
 status: verifying
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-30T11:36:55.357Z"
+stopped_at: Completed 06-01-PLAN.md — security infrastructure and API contracts
+last_updated: "2026-03-30T18:31:48.013Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 6
+  completed_plans: 3
   percent: 0
 ---
 
@@ -50,6 +50,9 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 05]: CampusSetting PK is SERIAL (not BIGSERIAL) but mapped to Long — JDBC widens safely
 - [Phase 05]: V4 migration: campus_settings.id was SERIAL (INT4) but CampusSetting entity maps to Long (BIGINT); Hibernate ddl-auto:validate fails — fix with ALTER COLUMN TYPE BIGINT
 - [Phase 05]: HeadmanAssistant.permissions uses String[] with @JdbcTypeCode(SqlTypes.ARRAY) — conversion to List<AssistantPermission> is service layer responsibility
+- [Phase 06]: @RequestMapping paths use /academic/* — Gateway StripPrefix=1 strips /api before forwarding
+- [Phase 06]: ScopedProxyMode.TARGET_CLASS mandatory on RequestContext — singleton AOP aspects must receive scoped proxy
+- [Phase 06]: AOP @RequireRole (no Spring Security) — role enforcement via X-User-Role header injected by Gateway
 
 ### Pending Todos
 
@@ -62,6 +65,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:36:55.354Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-rest-api-hateoas/06-CONTEXT.md
+Last session: 2026-03-30T18:31:48.009Z
+Stopped at: Completed 06-01-PLAN.md — security infrastructure and API contracts
+Resume file: None

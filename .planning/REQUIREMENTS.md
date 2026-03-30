@@ -14,9 +14,9 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 - [x] **USER-03**: Admin can assign headman flag to a student in a group
 - [x] **USER-04**: Admin can revoke headman (auto-deactivates all assistants)
 - [x] **USER-05**: Admin can transfer student between groups with reason (history tracked)
-- [ ] **USER-06**: Student can view own profile
-- [ ] **USER-07**: Student can view group composition (members list)
-- [ ] **USER-08**: Teacher can view own assigned subjects and groups
+- [x] **USER-06**: Student can view own profile
+- [x] **USER-07**: Student can view group composition (members list)
+- [x] **USER-08**: Teacher can view own assigned subjects and groups
 
 ### Groups & Semesters
 
@@ -52,7 +52,7 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 
 ### Admin Dashboard
 
-- [ ] **DASH-01**: Admin can view summary statistics (students, groups, teachers count)
+- [x] **DASH-01**: Admin can view summary statistics (students, groups, teachers count)
 
 ### gRPC Server
 
@@ -110,9 +110,9 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 | USER-03 | Phase 5 + Phase 6 | Complete |
 | USER-04 | Phase 5 + Phase 6 | Complete |
 | USER-05 | Phase 5 + Phase 6 | Complete |
-| USER-06 | Phase 6 | Pending |
-| USER-07 | Phase 6 | Pending |
-| USER-08 | Phase 6 | Pending |
+| USER-06 | Phase 6 | Complete |
+| USER-07 | Phase 6 | Complete |
+| USER-08 | Phase 6 | Complete |
 | GSEM-01 | Phase 5 + Phase 6 | Complete |
 | GSEM-02 | Phase 5 + Phase 6 | Complete |
 | GSEM-03 | Phase 5 + Phase 6 | Complete |
@@ -130,7 +130,7 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 | THRSH-02 | Phase 5 + Phase 6 | Complete |
 | THRSH-03 | Phase 5 + Phase 6 | Complete |
 | THRSH-04 | Phase 6 | Complete |
-| DASH-01 | Phase 6 | Pending |
+| DASH-01 | Phase 6 | Complete |
 | GRPC-01 | Phase 7 | Pending |
 | GRPC-02 | Phase 7 | Pending |
 | GRPC-03 | Phase 7 | Pending |

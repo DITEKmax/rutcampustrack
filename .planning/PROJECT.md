@@ -46,20 +46,20 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ FR-1 through FR-10: User login, token refresh, logout, public key, OTP flow, change password, Gateway JWT filter, routing, public routes, seed data — v1.0
 - ✓ NFR-1: RSA key generation, BCrypt hashing — v1.0
 - ✓ NFR-4: RFC 7807 error responses, Java records for DTOs — v1.0
+- ✓ CRUD users with auto-generated logins/passwords (ADMIN) — Phase 6
+- ✓ CRUD groups, assign/revoke headman (ADMIN) — Phase 6
+- ✓ CRUD semesters with confirmation phrase for delete (ADMIN) — Phase 6
+- ✓ Student transfers between groups with history (ADMIN) — Phase 6
+- ✓ Admin dashboard with summary statistics — Phase 6
+- ✓ CRUD subjects with type (lecture/practice/lab) (HEADMAN) — Phase 6
+- ✓ Teacher-subject-group assignments (HEADMAN) — Phase 6
+- ✓ Headman assistants management with granular permissions (HEADMAN) — Phase 6
+- ✓ CRUD homeworks with homework_completions tracker (HEADMAN/STUDENT) — Phase 6
+- ✓ Red zone threshold configuration (global/group/subject) — Phase 6
+- ✓ Student profile and group composition view (STUDENT) — Phase 6
+- ✓ Teacher own subjects and groups view (TEACHER) — Phase 6
 
 ### Active
-- [ ] CRUD users with auto-generated logins/passwords (ADMIN)
-- [ ] CRUD groups, assign/revoke headman (ADMIN)
-- [ ] CRUD semesters with confirmation phrase for delete (ADMIN)
-- [ ] Student transfers between groups with history (ADMIN)
-- [ ] Admin dashboard with summary statistics
-- [ ] CRUD subjects with type (lecture/practice/lab) (HEADMAN)
-- [ ] Teacher-subject-group assignments (HEADMAN)
-- [ ] Headman assistants management with granular permissions (HEADMAN)
-- [ ] CRUD homeworks with homework_completions tracker (HEADMAN/STUDENT)
-- [ ] Red zone threshold configuration (global/group/subject)
-- [ ] Student profile and group composition view (STUDENT)
-- [ ] Teacher own subjects and groups view (TEACHER)
 - [ ] gRPC server implementing academic.proto (7 RPCs)
 - [ ] Redis caching with invalidation for read-heavy methods
 - [ ] RabbitMQ event publishing (group.updated, semester.archived, homework.*)
@@ -77,7 +77,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 
 ## Current State
-Milestone 1 shipped. Phase 5 complete — all 11 JPA entities and repositories for Academic Service created with Testcontainers integration tests. V3/V4 Flyway migrations added. Next: Phase 6 REST API + HATEOAS.
+Milestone 1 shipped. Phase 6 complete — full REST API with HATEOAS Level 3, contract-first interfaces, role-based access (@RequireRole AOP), 9 controllers implementing 9 API contracts, 25+ DTOs, assemblers, RFC 7807 errors, 12 integration tests. Next: Phase 7 gRPC Server.
 
 ## Key Decisions
 
@@ -91,6 +91,9 @@ Milestone 1 shipped. Phase 5 complete — all 11 JPA entities and repositories f
 | Testcontainers over H2 | ✓ Real PostgreSQL ENUMs, no false positives | v1.0 |
 | No JPA associations (@ManyToOne etc.) | ✓ FK columns as Long IDs, prevents N+1 and cascade issues | v2.0 |
 | campus_settings.id SERIAL→BIGINT | ✓ V4 migration fixes V1 inconsistency with BIGSERIAL convention | v2.0 |
+| Contract-first REST (api-contract interfaces) | ✓ Controllers implement interfaces, Swagger in contract | v2.0 Phase 6 |
+| @RequireRole AOP over Spring Security | ✓ Simpler, Gateway already validates JWT — service checks role only | v2.0 Phase 6 |
+| V5 migration: implicit casts for PostgreSQL enums | ✓ JPA sends varchar, PostgreSQL needs CAST for custom enum columns | v2.0 Phase 6 |
 
 ## Evolution
 
@@ -110,4 +113,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 5 completion*
+*Last updated: 2026-03-30 after Phase 6 completion*

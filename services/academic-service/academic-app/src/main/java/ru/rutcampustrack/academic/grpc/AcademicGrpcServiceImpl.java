@@ -2,15 +2,11 @@ package ru.rutcampustrack.academic.grpc;
 
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
-import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Group;
-import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.TeacherSubjectGroup;
 import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.repository.CampusSettingRepository;
 import ru.rutcampustrack.academic.repository.GroupRepository;
-import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
@@ -20,32 +16,30 @@ import java.util.Optional;
 
 /**
  * gRPC service implementation for Academic Service.
- * Queries repositories directly — does NOT use REST service layer to avoid
- * RequestContext scope issues in gRPC context.
+ * Delegates cached read operations to AcademicReadService to ensure
+ * Spring AOP @Cacheable proxy is not bypassed via self-invocation (per D-01).
+ * Non-cached methods (getTeacherSubjects, isHeadman) query repositories directly.
  */
 @GrpcService
 public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrpcServiceImplBase {
 
+    private final AcademicReadService academicReadService;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
-    private final SemesterRepository semesterRepository;
     private final SubjectRepository subjectRepository;
     private final TeacherSubjectGroupRepository assignmentRepository;
-    private final CampusSettingRepository campusSettingRepository;
 
     public AcademicGrpcServiceImpl(
+            AcademicReadService academicReadService,
             GroupRepository groupRepository,
             UserRepository userRepository,
-            SemesterRepository semesterRepository,
             SubjectRepository subjectRepository,
-            TeacherSubjectGroupRepository assignmentRepository,
-            CampusSettingRepository campusSettingRepository) {
+            TeacherSubjectGroupRepository assignmentRepository) {
+        this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
-        this.semesterRepository = semesterRepository;
         this.subjectRepository = subjectRepository;
         this.assignmentRepository = assignmentRepository;
-        this.campusSettingRepository = campusSettingRepository;
     }
 
     /**
@@ -53,8 +47,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
      */
     @Override
     public void getGroup(GroupRequest request, StreamObserver<GroupResponse> responseObserver) {
-        Group group = groupRepository.findById(request.getGroupId())
-                .orElseThrow(() -> new ResourceNotFoundException("Group", "id", request.getGroupId()));
+        Group group = academicReadService.fetchGroup(request.getGroupId());
 
         GroupResponse response = GroupResponse.newBuilder()
                 .setId(group.getId())
@@ -72,7 +65,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
      */
     @Override
     public void getGroupMembers(GroupMembersRequest request, StreamObserver<GroupMembersResponse> responseObserver) {
-        List<User> users = userRepository.findByGroupId(request.getGroupId());
+        List<User> users = academicReadService.fetchGroupMembers(request.getGroupId());
 
         List<StudentInfo> studentInfos = users.stream()
                 .map(user -> StudentInfo.newBuilder()
@@ -93,6 +86,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
     /**
      * GRPC-03: Get subjects taught by a teacher in a given semester.
+     * Not cached (per D-02).
      */
     @Override
     public void getTeacherSubjects(TeacherSubjectsRequest request, StreamObserver<TeacherSubjectsResponse> responseObserver) {
@@ -129,6 +123,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
     /**
      * GRPC-04: Check if a user is headman of a given group.
+     * Not cached (per D-02).
      */
     @Override
     public void isHeadman(HeadmanCheckRequest request, StreamObserver<HeadmanCheckResponse> responseObserver) {
@@ -153,8 +148,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
      */
     @Override
     public void getActiveSemester(Empty request, StreamObserver<SemesterResponse> responseObserver) {
-        Semester semester = semesterRepository.findByIsActiveTrue()
-                .orElseThrow(() -> new ResourceNotFoundException("Semester", "isActive", true));
+        ru.rutcampustrack.academic.entity.Semester semester = academicReadService.fetchActiveSemester();
 
         SemesterResponse response = SemesterResponse.newBuilder()
                 .setId(semester.getId())
@@ -172,8 +166,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
      */
     @Override
     public void getCampusGeofence(Empty request, StreamObserver<GeofenceResponse> responseObserver) {
-        ru.rutcampustrack.academic.entity.CampusSetting setting = campusSettingRepository.findById(1L)
-                .orElseThrow(() -> new ResourceNotFoundException("CampusSetting", "id", 1L));
+        ru.rutcampustrack.academic.entity.CampusSetting setting = academicReadService.fetchCampusGeofence();
 
         GeofenceResponse response = GeofenceResponse.newBuilder()
                 .setLat(setting.getLat())
@@ -187,13 +180,12 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
     /**
      * GRPC-07: Get user by ID including archived users.
-     * Uses native query to bypass @SQLRestriction so downstream services
+     * Uses cached lookup that bypasses @SQLRestriction so downstream services
      * can access historical data for archived users.
      */
     @Override
     public void getUserById(UserRequest request, StreamObserver<UserResponse> responseObserver) {
-        User user = userRepository.findByIdIncludingArchived(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getUserId()));
+        User user = academicReadService.fetchUserById(request.getUserId());
 
         UserResponse response = UserResponse.newBuilder()
                 .setId(user.getId())

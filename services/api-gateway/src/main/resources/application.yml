@@ -43,6 +43,10 @@ spring:
           filters:
             - StripPrefix=1
 
+gateway:
+  auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
+
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
+    ru.rutcampustrack: DEBUG

@@ -2,6 +2,7 @@ package ru.rutcampustrack.auth.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,10 +18,13 @@ import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final MediaType PROBLEM_JSON = MediaType.parseMediaType("application/problem+json");
+
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleInvalidCredentials(
             InvalidCredentialsException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .contentType(PROBLEM_JSON)
                 .body(new ErrorResponse(
                         "about:blank",
                         "Unauthorized",
@@ -35,6 +39,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTokenRefresh(
             TokenRefreshException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .contentType(PROBLEM_JSON)
                 .body(new ErrorResponse(
                         "about:blank",
                         "Token Refresh Failed",
@@ -52,6 +57,7 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(PROBLEM_JSON)
                 .body(new ErrorResponse(
                         "about:blank",
                         "Validation Error",
@@ -66,6 +72,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleOtpExpired(
             OtpExpiredException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .contentType(PROBLEM_JSON)
                 .body(new ErrorResponse(
                         "about:blank",
                         "OTP Verification Failed",
@@ -80,6 +87,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleOtpRateLimit(
             OtpRateLimitException ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .contentType(PROBLEM_JSON)
                 .body(new ErrorResponse(
                         "about:blank",
                         "Rate Limited",
@@ -94,6 +102,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneric(
             Exception ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(PROBLEM_JSON)
                 .body(new ErrorResponse(
                         "about:blank",
                         "Internal Server Error",

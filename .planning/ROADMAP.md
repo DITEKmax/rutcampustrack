@@ -3,6 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 Auth Service + API Gateway** — Phases 1.1-1.4 (shipped 2026-03-30)
+- 🚧 **v2.0 Academic Service** — Phases 5-9 (in progress)
 
 ## Phases
 
@@ -17,3 +18,88 @@
 Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 </details>
+
+### 🚧 v2.0 Academic Service (In Progress)
+
+**Milestone Goal:** Full CRUD for university structure — users, groups, semesters, subjects, homework, thresholds — plus gRPC server (7 RPCs) for downstream services, Redis caching on hot paths, and RabbitMQ event publishing.
+
+- [ ] **Phase 5: Entity and Repository Foundation** - JPA entities, repositories, Flyway V3, login sequence
+- [ ] **Phase 6: REST API + HATEOAS** - Full CRUD by role, RequestContext, assemblers, pagination
+- [ ] **Phase 7: gRPC Server** - 7 RPCs implementing academic.proto, port 19091
+- [ ] **Phase 8: Redis Caching** - @Cacheable on 5 cache keys, cascading @CacheEvict
+- [ ] **Phase 9: RabbitMQ Events** - Fanout publisher, AFTER_COMMIT transactional wiring
+
+## Phase Details
+
+### Phase 5: Entity and Repository Foundation
+**Goal**: All JPA entities match the existing Flyway schema and are query-ready with correct soft delete, no JPA associations, and a race-condition-free login generator.
+**Depends on**: Nothing (first v2.0 phase; schema already exists in V1/V2)
+**Requirements**: USER-01, USER-02, USER-03, USER-04, USER-05, GSEM-01, GSEM-02, GSEM-03, GSEM-04, SUBJ-01, SUBJ-02, SUBJ-03, ASST-01, ASST-02, ASST-03, HW-01, HW-02, HW-03, THRSH-01, THRSH-02, THRSH-03, THRSH-04
+**Success Criteria** (what must be TRUE):
+  1. All 11 JPA entities (`Group`, `User`, `Semester`, `Subject`, `TeacherSubjectGroup`, `HeadmanAssistant`, `AttendanceThreshold`, `Homework`, `HomeworkCompletion`, `CampusSetting`, `StudentGroupHistory`) load without Hibernate validation errors against the live academic_db schema
+  2. V3 Flyway migration adds PostgreSQL login sequences; `student_login_seq` and `teacher_login_seq` exist and increment without concurrent conflicts
+  3. Spring Data repositories return correct results for soft-deleted users (status = 'archived' excluded from default queries via @Where)
+  4. Auth Service continues to start without schema validation errors (no breaking column changes)
+**Plans**: TBD
+
+### Phase 6: REST API + HATEOAS
+**Goal**: Every role can perform their authorized operations via REST with correct HATEOAS links, pagination, and RFC 7807 errors — no role can access another role's endpoints.
+**Depends on**: Phase 5
+**Requirements**: USER-01, USER-02, USER-03, USER-04, USER-05, USER-06, USER-07, USER-08, GSEM-01, GSEM-02, GSEM-03, GSEM-04, SUBJ-01, SUBJ-02, SUBJ-03, ASST-01, ASST-02, ASST-03, HW-01, HW-02, HW-03, THRSH-01, THRSH-02, THRSH-03, THRSH-04, DASH-01
+**Success Criteria** (what must be TRUE):
+  1. Admin can create a user and receive back a response containing the auto-generated login (e.g., `student00001`) and a one-time initial password
+  2. Headman can CRUD subjects and assign/remove teachers from subject-group pairs; a student or teacher calling the same endpoints receives 403
+  3. Student can view their own profile and group member list; attempting to view another group's members returns 403
+  4. Admin can activate a semester and only one semester is active at a time — a second activation call deactivates the previous one atomically
+  5. All list endpoints return `PagedModel` with `_links` (self, next, prev); all item endpoints return `EntityModel` with self link
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 7: gRPC Server
+**Goal**: Internal services can call all 7 Academic Service gRPC RPCs on port 19091 and receive correct, serialized responses.
+**Depends on**: Phase 6
+**Requirements**: GRPC-01, GRPC-02, GRPC-03, GRPC-04, GRPC-05, GRPC-06, GRPC-07
+**Success Criteria** (what must be TRUE):
+  1. A gRPC client calling `GetGroup` with a valid group ID receives group name, code, and active flag; an invalid ID returns `NOT_FOUND` status
+  2. `GetGroupMembers` returns only active (non-archived) students for the given group ID
+  3. `GetActiveSemester` returns the current active semester; when no semester is active the call returns `NOT_FOUND` status
+  4. `IsHeadman` returns true when the given user is the headman of the given group, false otherwise
+  5. All 7 RPCs are covered by Testcontainers integration tests running against a real PostgreSQL instance on the dedicated gRPC port 19091
+**Plans**: TBD
+
+### Phase 8: Redis Caching
+**Goal**: Read-heavy gRPC paths return cached data within configured TTLs; mutations invalidate the correct cache entries including cascading scenarios (student transfer invalidates two group member caches).
+**Depends on**: Phase 7
+**Requirements**: CACHE-01, CACHE-02
+**Success Criteria** (what must be TRUE):
+  1. Calling `GetGroup` twice for the same group ID results in exactly one database query — the second call is served from Redis
+  2. After a student is transferred to a new group, subsequent `GetGroupMembers` calls for both the old group and the new group reflect the updated membership (no stale data)
+  3. After a headman change, `GetGroup` and `GetGroupMembers` caches for that group are both invalidated
+  4. `GetActiveSemester` cache TTL is configurable and respects the configured value (verified by integration test measuring Redis TTL directly)
+**Plans**: TBD
+
+### Phase 9: RabbitMQ Events
+**Goal**: Qualifying mutations publish typed events to the fanout exchange after the database transaction commits — no events are published for rolled-back transactions.
+**Depends on**: Phase 8
+**Requirements**: EVENT-01, EVENT-02, EVENT-03
+**Success Criteria** (what must be TRUE):
+  1. Adding or removing a student from a group publishes a `group.updated` event to `rut-uit.events` exchange containing the group ID and occurred_at timestamp
+  2. Archiving (deactivating) a semester publishes a `semester.archived` event after the transaction commits; a transaction rollback produces no event
+  3. Creating a homework item publishes `homework.published`; updating it publishes `homework.updated` — both events include a unique `event_id` UUID for idempotent downstream processing
+**Plans**: TBD
+
+## Progress
+
+**Execution Order:** 5 → 6 → 7 → 8 → 9
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1.1 Auth Service Core | v1.0 | 1/1 | Complete | 2026-03-28 |
+| 1.2 OTP + Change Password | v1.0 | 1/1 | Complete | 2026-03-29 |
+| 1.3 Gateway JWT Filter | v1.0 | 1/1 | Complete | 2026-03-30 |
+| 1.4 Seed Data + Integration Tests | v1.0 | 1/1 | Complete | 2026-03-30 |
+| 5. Entity and Repository Foundation | v2.0 | 0/TBD | Not started | - |
+| 6. REST API + HATEOAS | v2.0 | 0/TBD | Not started | - |
+| 7. gRPC Server | v2.0 | 0/TBD | Not started | - |
+| 8. Redis Caching | v2.0 | 0/TBD | Not started | - |
+| 9. RabbitMQ Events | v2.0 | 0/TBD | Not started | - |

@@ -105,50 +105,50 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| USER-01 | TBD | Pending |
-| USER-02 | TBD | Pending |
-| USER-03 | TBD | Pending |
-| USER-04 | TBD | Pending |
-| USER-05 | TBD | Pending |
-| USER-06 | TBD | Pending |
-| USER-07 | TBD | Pending |
-| USER-08 | TBD | Pending |
-| GSEM-01 | TBD | Pending |
-| GSEM-02 | TBD | Pending |
-| GSEM-03 | TBD | Pending |
-| GSEM-04 | TBD | Pending |
-| SUBJ-01 | TBD | Pending |
-| SUBJ-02 | TBD | Pending |
-| SUBJ-03 | TBD | Pending |
-| ASST-01 | TBD | Pending |
-| ASST-02 | TBD | Pending |
-| ASST-03 | TBD | Pending |
-| HW-01 | TBD | Pending |
-| HW-02 | TBD | Pending |
-| HW-03 | TBD | Pending |
-| THRSH-01 | TBD | Pending |
-| THRSH-02 | TBD | Pending |
-| THRSH-03 | TBD | Pending |
-| THRSH-04 | TBD | Pending |
-| DASH-01 | TBD | Pending |
-| GRPC-01 | TBD | Pending |
-| GRPC-02 | TBD | Pending |
-| GRPC-03 | TBD | Pending |
-| GRPC-04 | TBD | Pending |
-| GRPC-05 | TBD | Pending |
-| GRPC-06 | TBD | Pending |
-| GRPC-07 | TBD | Pending |
-| CACHE-01 | TBD | Pending |
-| CACHE-02 | TBD | Pending |
-| EVENT-01 | TBD | Pending |
-| EVENT-02 | TBD | Pending |
-| EVENT-03 | TBD | Pending |
+| USER-01 | Phase 5 + Phase 6 | Pending |
+| USER-02 | Phase 5 + Phase 6 | Pending |
+| USER-03 | Phase 5 + Phase 6 | Pending |
+| USER-04 | Phase 5 + Phase 6 | Pending |
+| USER-05 | Phase 5 + Phase 6 | Pending |
+| USER-06 | Phase 6 | Pending |
+| USER-07 | Phase 6 | Pending |
+| USER-08 | Phase 6 | Pending |
+| GSEM-01 | Phase 5 + Phase 6 | Pending |
+| GSEM-02 | Phase 5 + Phase 6 | Pending |
+| GSEM-03 | Phase 5 + Phase 6 | Pending |
+| GSEM-04 | Phase 5 + Phase 6 | Pending |
+| SUBJ-01 | Phase 5 + Phase 6 | Pending |
+| SUBJ-02 | Phase 5 + Phase 6 | Pending |
+| SUBJ-03 | Phase 5 + Phase 6 | Pending |
+| ASST-01 | Phase 5 + Phase 6 | Pending |
+| ASST-02 | Phase 5 + Phase 6 | Pending |
+| ASST-03 | Phase 5 + Phase 6 | Pending |
+| HW-01 | Phase 5 + Phase 6 | Pending |
+| HW-02 | Phase 6 | Pending |
+| HW-03 | Phase 6 | Pending |
+| THRSH-01 | Phase 5 + Phase 6 | Pending |
+| THRSH-02 | Phase 5 + Phase 6 | Pending |
+| THRSH-03 | Phase 5 + Phase 6 | Pending |
+| THRSH-04 | Phase 6 | Pending |
+| DASH-01 | Phase 6 | Pending |
+| GRPC-01 | Phase 7 | Pending |
+| GRPC-02 | Phase 7 | Pending |
+| GRPC-03 | Phase 7 | Pending |
+| GRPC-04 | Phase 7 | Pending |
+| GRPC-05 | Phase 7 | Pending |
+| GRPC-06 | Phase 7 | Pending |
+| GRPC-07 | Phase 7 | Pending |
+| CACHE-01 | Phase 8 | Pending |
+| CACHE-02 | Phase 8 | Pending |
+| EVENT-01 | Phase 9 | Pending |
+| EVENT-02 | Phase 9 | Pending |
+| EVENT-03 | Phase 9 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 37 total
-- Mapped to phases: 0
-- Unmapped: 37 (pending roadmap creation)
+- Mapped to phases: 37
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-30*
-*Last updated: 2026-03-30 after initial definition*
+*Last updated: 2026-03-30 after roadmap creation*

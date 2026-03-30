@@ -39,6 +39,6 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 Scaffold, contracts, infrastructure. See docs/phase-0-report.md.
 
 ## Current State
-Phase 1.3 complete (2026-03-30) — API Gateway JWT Filter + Routing: PublicKeyConfig fetches RSA public key from Auth Service on startup with 3-retry/5s delay, caches in AtomicReference, refreshes hourly via @Scheduled. JwtAuthenticationFilter (GlobalFilter, order -100) validates Bearer tokens, injects X-User-Id/X-User-Role headers always, X-Group-Id/X-Is-Headman only when non-null. Public routes bypass (/api/auth/login, /refresh, /public-key, /otp/**). RFC 7807 application/problem+json 401 responses. 11 unit tests. All 5 route groups confirmed. Next: Phase 1.4 (Seed Data + Integration Testing).
+**Milestone 1 COMPLETE** (2026-03-30) — All 4 phases delivered: Auth Service Core (JWT + Login), OTP + Change Password, API Gateway JWT Filter + Routing, Seed Data + Integration Testing. 15 integration tests (Testcontainers PostgreSQL + Redis) + 11 gateway unit tests all passing. Gateway E2E verification script at `scripts/verify-gateway-e2e.sh`. Full auth flow works end-to-end: login → JWT → Gateway validation → header injection → downstream routing.
 
 Last updated: 2026-03-30

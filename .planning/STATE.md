@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
-status: verifying
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-30T21:19:29.117Z"
-last_activity: 2026-03-30
+status: executing
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-31T00:00:00.000Z"
+last_activity: 2026-03-31 -- Phase 08 Plan 01 completed
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 10
+  completed_plans: 9
   percent: 0
 ---
 
@@ -22,10 +22,10 @@ v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis
 
 ## Current Position
 
-Phase: 8
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-03-30
+Phase: 08 (redis-caching) — EXECUTING
+Plan: 2 of 2
+Status: Plan 01 complete — executing Plan 02
+Last activity: 2026-03-31 -- 08-01 completed (Redis cache infrastructure)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-03-30)
 
 **Core value:** Working authentication and authorization perimeter — all downstream services receive validated user context through the Gateway.
-**Current focus:** Phase 07 — grpc-server
+**Current focus:** Phase 08 — redis-caching
 
 ## Accumulated Context
 
@@ -60,6 +60,9 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 07-grpc-server]: javax.annotation-api:1.3.2 compileOnly — generated gRPC stubs use @javax.annotation.Generated removed in Java 9+
 - [Phase 07]: Use unique in-process name 'academic-grpc-test' to prevent gRPC name collision between test contexts
 - [Phase 07]: grpc.server.port=-1 in application-test.yml disables Netty port binding in all test classes
+- [Phase 08 Plan 01]: AcademicReadService is a separate @Service bean — avoids AOP self-invocation where @Cacheable proxy would be bypassed if methods were in AcademicGrpcServiceImpl
+- [Phase 08 Plan 01]: String literal keys used for zero-arg @Cacheable methods: key="'current'" and key="'global'" produce readable Redis keys instead of SimpleKey.EMPTY
+- [Phase 08 Plan 01]: Programmatic CacheManager eviction used in UserService for runtime-only keys (old group on transfer, groups+group_members on headman change per D-10)
 
 ### Pending Todos
 
@@ -72,6 +75,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T21:19:29.113Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-redis-caching/08-CONTEXT.md
+Last session: 2026-03-31T00:00:00.000Z
+Stopped at: Completed 08-01-PLAN.md
+Resume file: None

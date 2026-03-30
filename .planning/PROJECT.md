@@ -60,7 +60,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ Teacher own subjects and groups view (TEACHER) — Phase 6
 
 ### Active
-- [ ] gRPC server implementing academic.proto (7 RPCs)
+- ✓ gRPC server implementing academic.proto (7 RPCs) — Phase 7
 - [ ] Redis caching with invalidation for read-heavy methods
 - [ ] RabbitMQ event publishing (group.updated, semester.archived, homework.*)
 
@@ -77,7 +77,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 
 ## Current State
-Milestone 1 shipped. Phase 6 complete — full REST API with HATEOAS Level 3, contract-first interfaces, role-based access (@RequireRole AOP), 9 controllers implementing 9 API contracts, 25+ DTOs, assemblers, RFC 7807 errors, 12 integration tests. Next: Phase 7 gRPC Server.
+Milestone 1 shipped. Phase 7 complete — gRPC server on port 19091 with all 7 RPCs (getGroup, getGroupMembers, getTeacherSubjects, isHeadman, getActiveSemester, getCampusGeofence, getUserById), protobuf plugin, centralized exception advice, 15 integration tests. Next: Phase 8 Redis Caching.
 
 ## Key Decisions
 
@@ -89,6 +89,7 @@ Milestone 1 shipped. Phase 6 complete — full REST API with HATEOAS Level 3, co
 | OTP Telegram delivery deferred | — Pending, notification-bot phase | v1.0 |
 | Null-safe header injection | ✓ TEACHER/ADMIN don't get "null" headers | v1.0 |
 | Testcontainers over H2 | ✓ Real PostgreSQL ENUMs, no false positives | v1.0 |
+| gRPC queries repositories directly, not REST services | ✓ Avoids RequestContext scope issues in gRPC threads | v2.0 Phase 7 |
 | No JPA associations (@ManyToOne etc.) | ✓ FK columns as Long IDs, prevents N+1 and cascade issues | v2.0 |
 | campus_settings.id SERIAL→BIGINT | ✓ V4 migration fixes V1 inconsistency with BIGSERIAL convention | v2.0 |
 | Contract-first REST (api-contract interfaces) | ✓ Controllers implement interfaces, Swagger in contract | v2.0 Phase 6 |
@@ -113,4 +114,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 6 completion*
+*Last updated: 2026-03-31 after Phase 7 completion*

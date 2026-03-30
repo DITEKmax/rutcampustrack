@@ -5,8 +5,8 @@
 | Фаза | Содержание | Статус |
 |------|-----------|--------|
 | 0 | Каркас, контракты, инфраструктура | ✅ ЗАВЕРШЕНА |
-| 1 | Auth Service + API Gateway | ⏳ СЛЕДУЮЩАЯ |
-| 2 | Academic Service | ⬜ |
+| 1 | Auth Service + API Gateway | ✅ ЗАВЕРШЕНА |
+| 2 | Academic Service | ⏳ СЛЕДУЮЩАЯ |
 | 3 | Schedule Service + Attendance Service | ⬜ |
 | 4 | Notification Service (Web + Bot) | ⬜ |
 | 5 | Фронтенды (Mini App, Web Panel, Landing) | ⬜ |
@@ -44,7 +44,9 @@
 
 ---
 
-## Фаза 1: Auth Service + API Gateway
+## Фаза 1: Auth Service + API Gateway ✅
+
+**Завершена:** 2026-03-30 | **Отчёт:** `docs/phase-1-report.md`
 
 ### Цель
 

@@ -1,0 +1,81 @@
+package ru.rutcampustrack.academic.group;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
+import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.academic.security.RequestContext;
+
+import java.time.OffsetDateTime;
+
+/**
+ * Business logic for Group domain: CRUD and member listing.
+ */
+@Service
+public class GroupService {
+
+    private final GroupRepository groupRepository;
+    private final UserRepository userRepository;
+    private final RequestContext requestContext;
+
+    public GroupService(GroupRepository groupRepository,
+                        UserRepository userRepository,
+                        RequestContext requestContext) {
+        this.groupRepository = groupRepository;
+        this.userRepository = userRepository;
+        this.requestContext = requestContext;
+    }
+
+    @Transactional
+    public Group createGroup(CreateGroupRequest request) {
+        if (groupRepository.existsByCode(request.code())) {
+            throw new ConflictException("Группа с кодом '" + request.code() + "' уже существует");
+        }
+        Group group = new Group();
+        group.setName(request.name());
+        group.setCode(request.code());
+        group.setActive(true);
+        group.setCreatedAt(OffsetDateTime.now());
+        return groupRepository.save(group);
+    }
+
+    public Group findGroupById(Long id) {
+        return groupRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Group", "id", id));
+    }
+
+    public Page<Group> listGroups(Boolean active, Pageable pageable) {
+        if (active != null) {
+            return groupRepository.findByIsActive(active, pageable);
+        }
+        return groupRepository.findAll(pageable);
+    }
+
+    @Transactional
+    public Group updateGroup(Long id, UpdateGroupRequest request) {
+        Group group = findGroupById(id);
+        group.setName(request.name());
+        group.setCode(request.code());
+        group.setActive(request.active());
+        return groupRepository.save(group);
+    }
+
+    @Transactional
+    public void deleteGroup(Long id) {
+        Group group = findGroupById(id);
+        groupRepository.delete(group);
+    }
+
+    public Page<User> getMyGroupMembers(Pageable pageable) {
+        Long groupId = requestContext.getGroupId();
+        return userRepository.findByGroupId(groupId, pageable);
+    }
+}

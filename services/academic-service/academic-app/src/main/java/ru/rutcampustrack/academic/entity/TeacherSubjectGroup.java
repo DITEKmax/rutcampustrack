@@ -31,4 +31,18 @@ public class TeacherSubjectGroup {
 
     @Column(name = "assigned_at", nullable = false, updatable = false)
     private OffsetDateTime assignedAt;
+
+    public TeacherSubjectGroup(Long teacherId, Long subjectId, Long groupId, Long semesterId) {
+        this.teacherId = teacherId;
+        this.subjectId = subjectId;
+        this.groupId = groupId;
+        this.semesterId = semesterId;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (assignedAt == null) {
+            assignedAt = OffsetDateTime.now();
+        }
+    }
 }

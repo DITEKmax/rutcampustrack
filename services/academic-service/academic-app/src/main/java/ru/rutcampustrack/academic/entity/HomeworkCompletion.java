@@ -24,4 +24,16 @@ public class HomeworkCompletion {
 
     @Column(name = "completed_at", nullable = false, updatable = false)
     private OffsetDateTime completedAt;
+
+    public HomeworkCompletion(Long homeworkId, Long studentId) {
+        this.homeworkId = homeworkId;
+        this.studentId = studentId;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (completedAt == null) {
+            completedAt = OffsetDateTime.now();
+        }
+    }
 }

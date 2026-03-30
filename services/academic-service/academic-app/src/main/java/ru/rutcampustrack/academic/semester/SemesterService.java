@@ -1,6 +1,7 @@
 package ru.rutcampustrack.academic.semester;
 
 import jakarta.persistence.EntityManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -67,6 +68,7 @@ public class SemesterService {
      * Deactivates all active semesters first, flushes to avoid constraint conflicts,
      * then activates the target semester.
      */
+    @CacheEvict(value = "active_semester", allEntries = true)
     @Transactional
     public Semester activateSemester(Long id) {
         // Step 1: deactivate all currently active semesters

@@ -87,7 +87,10 @@ Plans:
   2. After a student is transferred to a new group, subsequent `GetGroupMembers` calls for both the old group and the new group reflect the updated membership (no stale data)
   3. After a headman change, `GetGroup` and `GetGroupMembers` caches for that group are both invalidated
   4. `GetActiveSemester` cache TTL is configurable and respects the configured value (verified by integration test measuring Redis TTL directly)
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [x] 08-01-PLAN.md — CacheConfig + AcademicReadService + @Cacheable on 5 gRPC reads + @CacheEvict on REST mutations + TTL config
+- [ ] 08-02-PLAN.md — AbstractAcademicCacheIntegrationTest + CacheIntegrationTest (9 tests for CACHE-01 and CACHE-02)
 
 ### Phase 9: RabbitMQ Events
 **Goal**: Qualifying mutations publish typed events to the fanout exchange after the database transaction commits — no events are published for rolled-back transactions.
@@ -112,5 +115,5 @@ Plans:
 | 5. Entity and Repository Foundation | v2.0 | 1/2 | In Progress|  |
 | 6. REST API + HATEOAS | v2.0 | 2/4 | In Progress|  |
 | 7. gRPC Server | v2.0 | 2/2 | Complete   | 2026-03-30 |
-| 8. Redis Caching | v2.0 | 0/TBD | Not started | - |
+| 8. Redis Caching | v2.0 | 1/2 | In Progress | - |
 | 9. RabbitMQ Events | v2.0 | 0/TBD | Not started | - |

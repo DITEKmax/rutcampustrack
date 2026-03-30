@@ -45,6 +45,14 @@ grpc:
   server:
     port: 19091
 
+cache:
+  ttl:
+    groups: PT5M
+    group-members: PT5M
+    users: PT5M
+    active-semester: PT10M
+    campus-geofence: PT1H
+
 logging:
   level:
     ru.rutcampustrack: DEBUG

@@ -1,5 +1,7 @@
 package ru.rutcampustrack.academic.group;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -59,6 +61,10 @@ public class GroupService {
         return groupRepository.findAll(pageable);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "groups", key = "#id"),
+        @CacheEvict(value = "group_members", key = "#id")
+    })
     @Transactional
     public Group updateGroup(Long id, UpdateGroupRequest request) {
         Group group = findGroupById(id);
@@ -68,6 +74,10 @@ public class GroupService {
         return groupRepository.save(group);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "groups", key = "#id"),
+        @CacheEvict(value = "group_members", key = "#id")
+    })
     @Transactional
     public void deleteGroup(Long id) {
         Group group = findGroupById(id);

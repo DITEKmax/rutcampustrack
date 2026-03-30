@@ -1,0 +1,66 @@
+package ru.rutcampustrack.academic.subject;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import ru.rutcampustrack.academic.contract.api.SubjectApi;
+import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
+import ru.rutcampustrack.academic.contract.dto.subject.SubjectResponse;
+import ru.rutcampustrack.academic.contract.dto.subject.UpdateSubjectRequest;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.entity.Subject;
+import ru.rutcampustrack.academic.security.RequireRole;
+
+@RestController
+public class SubjectController implements SubjectApi {
+
+    private final SubjectService subjectService;
+    private final SubjectAssembler subjectAssembler;
+    private final PagedResourcesAssembler<Subject> pagedAssembler;
+
+    public SubjectController(SubjectService subjectService,
+                              SubjectAssembler subjectAssembler,
+                              PagedResourcesAssembler<Subject> pagedAssembler) {
+        this.subjectService = subjectService;
+        this.subjectAssembler = subjectAssembler;
+        this.pagedAssembler = pagedAssembler;
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<EntityModel<SubjectResponse>> createSubject(CreateSubjectRequest request) {
+        Subject subject = subjectService.createSubject(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(subjectAssembler.toModel(subject));
+    }
+
+    @Override
+    public ResponseEntity<EntityModel<SubjectResponse>> getSubject(Long id) {
+        Subject subject = subjectService.getSubject(id);
+        return ResponseEntity.ok(subjectAssembler.toModel(subject));
+    }
+
+    @Override
+    public ResponseEntity<PagedModel<EntityModel<SubjectResponse>>> listSubjects(Pageable pageable) {
+        Page<Subject> page = subjectService.listSubjects(pageable);
+        return ResponseEntity.ok(pagedAssembler.toModel(page, subjectAssembler));
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<EntityModel<SubjectResponse>> updateSubject(Long id, UpdateSubjectRequest request) {
+        Subject subject = subjectService.updateSubject(id, request);
+        return ResponseEntity.ok(subjectAssembler.toModel(subject));
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<Void> deleteSubject(Long id) {
+        subjectService.deleteSubject(id);
+        return ResponseEntity.noContent().build();
+    }
+}

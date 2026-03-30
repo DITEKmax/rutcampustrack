@@ -50,4 +50,25 @@ public class Homework {
     @Setter
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    public Homework(Long groupId, Long subjectId, Long semesterId,
+                    String title, String description, String link, Long publishedBy) {
+        this.groupId = groupId;
+        this.subjectId = subjectId;
+        this.semesterId = semesterId;
+        this.title = title;
+        this.description = description;
+        this.link = link;
+        this.publishedBy = publishedBy;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = OffsetDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = OffsetDateTime.now();
+        }
+    }
 }

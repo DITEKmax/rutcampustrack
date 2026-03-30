@@ -43,4 +43,19 @@ public class HeadmanAssistant {
     @Setter
     @Column(name = "revoked_at")
     private OffsetDateTime revokedAt;
+
+    public HeadmanAssistant(Long groupId, Long studentId, String[] permissions, Long assignedBy) {
+        this.groupId = groupId;
+        this.studentId = studentId;
+        this.permissions = permissions;
+        this.assignedBy = assignedBy;
+        this.isActive = true;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (assignedAt == null) {
+            assignedAt = OffsetDateTime.now();
+        }
+    }
 }

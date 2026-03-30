@@ -98,7 +98,7 @@ public class UserService {
 
     public Page<User> listUsers(UserRole roleFilter, Pageable pageable) {
         if (roleFilter != null) {
-            return userRepository.findByRole(roleFilter, pageable);
+            return userRepository.findByRole(roleFilter.name().toLowerCase(), pageable);
         }
         return userRepository.findAll(pageable);
     }

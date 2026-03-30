@@ -71,9 +71,9 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 
 ### RabbitMQ Events
 
-- [ ] **EVENT-01**: group.updated published on group composition changes
-- [ ] **EVENT-02**: semester.archived published on semester deactivation
-- [ ] **EVENT-03**: homework.published / homework.updated published on homework changes
+- [x] **EVENT-01**: group.updated published on group composition changes
+- [x] **EVENT-02**: semester.archived published on semester deactivation
+- [x] **EVENT-03**: homework.published / homework.updated published on homework changes
 
 ## Future Requirements
 
@@ -140,9 +140,9 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 | GRPC-07 | Phase 7 | Complete |
 | CACHE-01 | Phase 8 | Complete |
 | CACHE-02 | Phase 8 | Complete |
-| EVENT-01 | Phase 9 | Pending |
-| EVENT-02 | Phase 9 | Pending |
-| EVENT-03 | Phase 9 | Pending |
+| EVENT-01 | Phase 9 | Complete |
+| EVENT-02 | Phase 9 | Complete |
+| EVENT-03 | Phase 9 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 37 total

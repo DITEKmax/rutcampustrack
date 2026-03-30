@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
-status: verifying
-stopped_at: Phase 9 context gathered
-last_updated: "2026-03-30T23:22:13.469Z"
+status: executing
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-30T23:58:33.581Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 12
+  completed_plans: 11
   percent: 0
 ---
 
@@ -22,9 +22,9 @@ v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis
 
 ## Current Position
 
-Phase: 9
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 09 (rabbitmq-events) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-03-30)
 
 **Core value:** Working authentication and authorization perimeter — all downstream services receive validated user context through the Gateway.
-**Current focus:** Phase 08 — redis-caching
+**Current focus:** Phase 09 — rabbitmq-events
 
 ## Accumulated Context
 
@@ -65,6 +65,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 08 Plan 01]: Programmatic CacheManager eviction used in UserService for runtime-only keys (old group on transfer, groups+group_members on headman change per D-10)
 - [Phase 08-redis-caching]: ObjectProvider<RedisConnectionFactory> in CacheConfig avoids @ConditionalOnBean timing bug — user @Configuration beans evaluated before Redis autoconfiguration registers the factory
 - [Phase 08-redis-caching]: NON_FINAL default typing required for GenericJackson2JsonRedisSerializer — OBJECT_AND_NON_CONCRETE omits @class for concrete types causing deserialization failure
+- [Phase 09-rabbitmq-events]: SemesterRepository.findByIsActiveTrue() returns Optional<Semester> -- activateSemester uses ifPresent to publish SemesterArchivedEvent
+- [Phase 09-rabbitmq-events]: RabbitConfig injects Spring Boot autoconfigured ObjectMapper (no @class fields) -- CacheConfig ObjectMapper is only a local variable, not a Spring bean
 
 ### Pending Todos
 
@@ -77,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T23:22:13.465Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-rabbitmq-events/09-CONTEXT.md
+Last session: 2026-03-30T23:58:33.577Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: None

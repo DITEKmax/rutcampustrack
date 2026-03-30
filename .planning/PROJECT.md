@@ -77,7 +77,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 
 ## Current State
-Milestone 1 shipped. Phase 7 complete — gRPC server on port 19091 with all 7 RPCs (getGroup, getGroupMembers, getTeacherSubjects, isHeadman, getActiveSemester, getCampusGeofence, getUserById), protobuf plugin, centralized exception advice, 15 integration tests. Next: Phase 8 Redis Caching.
+Milestone 1 shipped. Phase 8 complete — Redis caching added to Academic Service with 5 @Cacheable gRPC read paths (groups, group_members, active_semester, campus_geofence, users), configurable per-cache TTLs, @CacheEvict on all mutation methods, 10 Testcontainers integration tests. Next: Phase 9 RabbitMQ Events.
 
 ## Key Decisions
 

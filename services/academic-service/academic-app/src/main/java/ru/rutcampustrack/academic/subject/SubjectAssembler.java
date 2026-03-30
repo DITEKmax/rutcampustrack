@@ -13,14 +13,18 @@ public class SubjectAssembler implements RepresentationModelAssembler<Subject, E
 
     @Override
     public EntityModel<SubjectResponse> toModel(Subject subject) {
-        SubjectResponse response = new SubjectResponse(
+        SubjectResponse response = toResponse(subject);
+        return EntityModel.of(response,
+                linkTo(methodOn(SubjectController.class).getSubject(subject.getId())).withSelfRel()
+        );
+    }
+
+    public SubjectResponse toResponse(Subject subject) {
+        return new SubjectResponse(
                 subject.getId(),
                 subject.getName(),
                 subject.getType(),
                 subject.getCreatedAt()
-        );
-        return EntityModel.of(response,
-                linkTo(methodOn(SubjectController.class).getSubject(subject.getId())).withSelfRel()
         );
     }
 }

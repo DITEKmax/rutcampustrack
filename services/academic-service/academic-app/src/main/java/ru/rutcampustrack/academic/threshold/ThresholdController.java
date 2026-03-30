@@ -20,14 +20,11 @@ public class ThresholdController implements ThresholdApi {
 
     private final ThresholdService thresholdService;
     private final ThresholdAssembler thresholdAssembler;
-    private final PagedResourcesAssembler<AttendanceThreshold> pagedAssembler;
 
     public ThresholdController(ThresholdService thresholdService,
-                                ThresholdAssembler thresholdAssembler,
-                                PagedResourcesAssembler<AttendanceThreshold> pagedAssembler) {
+                                ThresholdAssembler thresholdAssembler) {
         this.thresholdService = thresholdService;
         this.thresholdAssembler = thresholdAssembler;
-        this.pagedAssembler = pagedAssembler;
     }
 
     @Override
@@ -61,8 +58,12 @@ public class ThresholdController implements ThresholdApi {
 
     @Override
     @RequireRole({UserRole.ADMIN})
-    public ResponseEntity<PagedModel<EntityModel<ThresholdResponse>>> listThresholds(Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<ThresholdResponse>>> listThresholds(
+            Pageable pageable,
+            PagedResourcesAssembler<ThresholdResponse> assembler) {
         Page<AttendanceThreshold> page = thresholdService.listThresholds(pageable);
-        return ResponseEntity.ok(pagedAssembler.toModel(page, thresholdAssembler));
+        Page<ThresholdResponse> responsePage = page.map(thresholdAssembler::toResponse);
+        return ResponseEntity.ok(assembler.toModel(responsePage,
+                response -> EntityModel.of(response)));
     }
 }

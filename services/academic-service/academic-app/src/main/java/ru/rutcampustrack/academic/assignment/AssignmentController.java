@@ -20,14 +20,11 @@ public class AssignmentController implements AssignmentApi {
 
     private final AssignmentService assignmentService;
     private final AssignmentAssembler assignmentAssembler;
-    private final PagedResourcesAssembler<TeacherSubjectGroup> pagedAssembler;
 
     public AssignmentController(AssignmentService assignmentService,
-                                 AssignmentAssembler assignmentAssembler,
-                                 PagedResourcesAssembler<TeacherSubjectGroup> pagedAssembler) {
+                                 AssignmentAssembler assignmentAssembler) {
         this.assignmentService = assignmentService;
         this.assignmentAssembler = assignmentAssembler;
-        this.pagedAssembler = pagedAssembler;
     }
 
     @Override
@@ -40,9 +37,12 @@ public class AssignmentController implements AssignmentApi {
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
     public ResponseEntity<PagedModel<EntityModel<AssignmentResponse>>> listAssignments(
-            Long groupId, Long semesterId, Pageable pageable) {
+            Long groupId, Long semesterId, Pageable pageable,
+            PagedResourcesAssembler<AssignmentResponse> assembler) {
         Page<TeacherSubjectGroup> page = assignmentService.listAssignments(groupId, semesterId, pageable);
-        return ResponseEntity.ok(pagedAssembler.toModel(page, assignmentAssembler));
+        Page<AssignmentResponse> responsePage = page.map(assignmentAssembler::toResponse);
+        return ResponseEntity.ok(assembler.toModel(responsePage,
+                response -> EntityModel.of(response)));
     }
 
     @Override
@@ -54,8 +54,12 @@ public class AssignmentController implements AssignmentApi {
 
     @Override
     @RequireRole({UserRole.TEACHER})
-    public ResponseEntity<PagedModel<EntityModel<AssignmentResponse>>> getMyAssignments(Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<AssignmentResponse>>> getMyAssignments(
+            Pageable pageable,
+            PagedResourcesAssembler<AssignmentResponse> assembler) {
         Page<TeacherSubjectGroup> page = assignmentService.getMyAssignments(pageable);
-        return ResponseEntity.ok(pagedAssembler.toModel(page, assignmentAssembler));
+        Page<AssignmentResponse> responsePage = page.map(assignmentAssembler::toResponse);
+        return ResponseEntity.ok(assembler.toModel(responsePage,
+                response -> EntityModel.of(response)));
     }
 }

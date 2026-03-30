@@ -21,14 +21,11 @@ public class HomeworkController implements HomeworkApi {
 
     private final HomeworkService homeworkService;
     private final HomeworkAssembler homeworkAssembler;
-    private final PagedResourcesAssembler<Homework> pagedAssembler;
 
     public HomeworkController(HomeworkService homeworkService,
-                               HomeworkAssembler homeworkAssembler,
-                               PagedResourcesAssembler<Homework> pagedAssembler) {
+                               HomeworkAssembler homeworkAssembler) {
         this.homeworkService = homeworkService;
         this.homeworkAssembler = homeworkAssembler;
-        this.pagedAssembler = pagedAssembler;
     }
 
     @Override
@@ -47,12 +44,14 @@ public class HomeworkController implements HomeworkApi {
     @Override
     @RequireRole({UserRole.STUDENT, UserRole.ADMIN})
     public ResponseEntity<PagedModel<EntityModel<HomeworkResponse>>> listHomeworks(
-            Long groupId, Long semesterId, Pageable pageable) {
+            Long groupId, Long semesterId, Pageable pageable,
+            PagedResourcesAssembler<HomeworkResponse> assembler) {
         Page<Homework> page = homeworkService.listHomeworks(groupId, semesterId, pageable);
         // For student context, annotate completion status per homework
-        PagedModel<EntityModel<HomeworkResponse>> pagedModel = pagedAssembler.toModel(page,
-                hw -> homeworkAssembler.toModel(hw, homeworkService.isCompleted(hw.getId())));
-        return ResponseEntity.ok(pagedModel);
+        Page<HomeworkResponse> responsePage = page.map(
+                hw -> homeworkAssembler.toModel(hw, homeworkService.isCompleted(hw.getId())).getContent());
+        return ResponseEntity.ok(assembler.toModel(responsePage,
+                response -> EntityModel.of(response)));
     }
 
     @Override

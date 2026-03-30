@@ -28,6 +28,13 @@ public class AssignmentAssembler implements RepresentationModelAssembler<Teacher
 
     @Override
     public EntityModel<AssignmentResponse> toModel(TeacherSubjectGroup tsg) {
+        AssignmentResponse response = toResponse(tsg);
+        return EntityModel.of(response,
+                linkTo(methodOn(AssignmentController.class).removeAssignment(tsg.getId())).withSelfRel()
+        );
+    }
+
+    public AssignmentResponse toResponse(TeacherSubjectGroup tsg) {
         String teacherName = userRepository.findById(tsg.getTeacherId())
                 .map(u -> u.getDisplayName()).orElse("Unknown");
         String subjectName = subjectRepository.findById(tsg.getSubjectId())
@@ -35,15 +42,12 @@ public class AssignmentAssembler implements RepresentationModelAssembler<Teacher
         String groupName = groupRepository.findById(tsg.getGroupId())
                 .map(g -> g.getName()).orElse("Unknown");
 
-        AssignmentResponse response = new AssignmentResponse(
+        return new AssignmentResponse(
                 tsg.getId(),
                 tsg.getTeacherId(), teacherName,
                 tsg.getSubjectId(), subjectName,
                 tsg.getGroupId(), groupName,
                 tsg.getSemesterId()
-        );
-        return EntityModel.of(response,
-                linkTo(methodOn(AssignmentController.class).removeAssignment(tsg.getId())).withSelfRel()
         );
     }
 }

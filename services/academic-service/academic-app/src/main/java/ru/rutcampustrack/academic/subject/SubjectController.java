@@ -21,14 +21,11 @@ public class SubjectController implements SubjectApi {
 
     private final SubjectService subjectService;
     private final SubjectAssembler subjectAssembler;
-    private final PagedResourcesAssembler<Subject> pagedAssembler;
 
     public SubjectController(SubjectService subjectService,
-                              SubjectAssembler subjectAssembler,
-                              PagedResourcesAssembler<Subject> pagedAssembler) {
+                              SubjectAssembler subjectAssembler) {
         this.subjectService = subjectService;
         this.subjectAssembler = subjectAssembler;
-        this.pagedAssembler = pagedAssembler;
     }
 
     @Override
@@ -45,9 +42,13 @@ public class SubjectController implements SubjectApi {
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<SubjectResponse>>> listSubjects(Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<SubjectResponse>>> listSubjects(
+            Pageable pageable,
+            PagedResourcesAssembler<SubjectResponse> assembler) {
         Page<Subject> page = subjectService.listSubjects(pageable);
-        return ResponseEntity.ok(pagedAssembler.toModel(page, subjectAssembler));
+        Page<SubjectResponse> responsePage = page.map(subjectAssembler::toResponse);
+        return ResponseEntity.ok(assembler.toModel(responsePage,
+                response -> EntityModel.of(response)));
     }
 
     @Override

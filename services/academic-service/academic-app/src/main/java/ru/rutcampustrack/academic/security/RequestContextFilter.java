@@ -16,7 +16,7 @@ import java.io.IOException;
  *
  * Headers: X-User-Id, X-User-Role, X-Group-Id (optional), X-Is-Headman.
  */
-@Component
+@Component("academicRequestContextFilter")
 public class RequestContextFilter extends OncePerRequestFilter {
 
     private final RequestContext requestContext;

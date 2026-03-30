@@ -13,16 +13,20 @@ public class ThresholdAssembler implements RepresentationModelAssembler<Attendan
 
     @Override
     public EntityModel<ThresholdResponse> toModel(AttendanceThreshold threshold) {
+        ThresholdResponse response = toResponse(threshold);
+        return EntityModel.of(response,
+                linkTo(methodOn(ThresholdController.class).listThresholds(null, null)).withSelfRel()
+        );
+    }
+
+    public ThresholdResponse toResponse(AttendanceThreshold threshold) {
         ThresholdResponse response = new ThresholdResponse();
         response.setId(threshold.getId());
         response.setGroupId(threshold.getGroupId());
         response.setSubjectId(threshold.getSubjectId());
         response.setMinPercentage(threshold.getThresholdPct());
-        // updatedAt not stored separately ��� use createdAt as updated
+        // updatedAt not stored separately - use createdAt as updated
         response.setUpdatedAt(threshold.getCreatedAt());
-
-        return EntityModel.of(response,
-                linkTo(methodOn(ThresholdController.class).listThresholds(null)).withSelfRel()
-        );
+        return response;
     }
 }

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
-status: executing
-stopped_at: Completed 05-01-PLAN.md (Entity and Repository Foundation)
-last_updated: "2026-03-30T11:03:01.991Z"
+status: verifying
+stopped_at: Completed 05-02-PLAN.md (Entity and Repository Foundation Wave 2)
+last_updated: "2026-03-30T11:17:10.816Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -24,7 +24,7 @@ v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis
 
 Phase: 05 (entity-and-repository-foundation) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -48,6 +48,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 05]: Semester.date_from/date_to use LocalDate (DATE columns), not OffsetDateTime — aligns with V1 schema
 - [Phase 05]: AbstractAcademicIntegrationTest excludes RabbitMQ and Redis autoconfigurations to avoid connection failures in tests
 - [Phase 05]: CampusSetting PK is SERIAL (not BIGSERIAL) but mapped to Long — JDBC widens safely
+- [Phase 05]: V4 migration: campus_settings.id was SERIAL (INT4) but CampusSetting entity maps to Long (BIGINT); Hibernate ddl-auto:validate fails — fix with ALTER COLUMN TYPE BIGINT
+- [Phase 05]: HeadmanAssistant.permissions uses String[] with @JdbcTypeCode(SqlTypes.ARRAY) — conversion to List<AssistantPermission> is service layer responsibility
 
 ### Pending Todos
 
@@ -60,6 +62,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:03:01.988Z
-Stopped at: Completed 05-01-PLAN.md (Entity and Repository Foundation)
+Last session: 2026-03-30T11:17:10.813Z
+Stopped at: Completed 05-02-PLAN.md (Entity and Repository Foundation Wave 2)
 Resume file: None

@@ -43,7 +43,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Plans:** 1/2 plans executed
 Plans:
 - [x] 05-01-PLAN.md — Infrastructure, V3 migration, simple entities (Group, Semester, Subject, CampusSetting) + repositories
-- [ ] 05-02-PLAN.md — Complex entities (User, HeadmanAssistant, AttendanceThreshold, etc.) + repositories + integration tests
+- [x] 05-02-PLAN.md — Complex entities (User, HeadmanAssistant, AttendanceThreshold, etc.) + repositories + integration tests
 
 ### Phase 6: REST API + HATEOAS
 **Goal**: Every role can perform their authorized operations via REST with correct HATEOAS links, pagination, and RFC 7807 errors — no role can access another role's endpoints.

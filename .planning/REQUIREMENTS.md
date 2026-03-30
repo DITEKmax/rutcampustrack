@@ -9,11 +9,11 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 
 ### User Management
 
-- [ ] **USER-01**: Admin can create user with auto-generated login (student00001/teacher00001) and initial password
-- [ ] **USER-02**: Admin can view, update, and soft-delete (archive) users
-- [ ] **USER-03**: Admin can assign headman flag to a student in a group
-- [ ] **USER-04**: Admin can revoke headman (auto-deactivates all assistants)
-- [ ] **USER-05**: Admin can transfer student between groups with reason (history tracked)
+- [x] **USER-01**: Admin can create user with auto-generated login (student00001/teacher00001) and initial password
+- [x] **USER-02**: Admin can view, update, and soft-delete (archive) users
+- [x] **USER-03**: Admin can assign headman flag to a student in a group
+- [x] **USER-04**: Admin can revoke headman (auto-deactivates all assistants)
+- [x] **USER-05**: Admin can transfer student between groups with reason (history tracked)
 - [ ] **USER-06**: Student can view own profile
 - [ ] **USER-07**: Student can view group composition (members list)
 - [ ] **USER-08**: Teacher can view own assigned subjects and groups
@@ -28,27 +28,27 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 ### Subjects & Assignments
 
 - [x] **SUBJ-01**: Headman can CRUD subjects with type (lecture/practice/lab)
-- [ ] **SUBJ-02**: Headman can assign teacher to subject+group (search by employee number)
-- [ ] **SUBJ-03**: Headman can remove teacher-subject-group assignment
+- [x] **SUBJ-02**: Headman can assign teacher to subject+group (search by employee number)
+- [x] **SUBJ-03**: Headman can remove teacher-subject-group assignment
 
 ### Headman Assistants
 
-- [ ] **ASST-01**: Headman can assign assistant with granular permissions
-- [ ] **ASST-02**: Headman can revoke assistant
-- [ ] **ASST-03**: Headman can update assistant permissions
+- [x] **ASST-01**: Headman can assign assistant with granular permissions
+- [x] **ASST-02**: Headman can revoke assistant
+- [x] **ASST-03**: Headman can update assistant permissions
 
 ### Homeworks
 
-- [ ] **HW-01**: Headman can CRUD homeworks (title, description, optional link)
-- [ ] **HW-02**: Student can view group homeworks
-- [ ] **HW-03**: Student can mark/unmark homework as completed (personal tracker)
+- [x] **HW-01**: Headman can CRUD homeworks (title, description, optional link)
+- [x] **HW-02**: Student can view group homeworks
+- [x] **HW-03**: Student can mark/unmark homework as completed (personal tracker)
 
 ### Red Zone Thresholds
 
-- [ ] **THRSH-01**: Admin can set global attendance threshold
-- [ ] **THRSH-02**: Headman can set group-level threshold
-- [ ] **THRSH-03**: Headman can set subject-level threshold
-- [ ] **THRSH-04**: System resolves threshold with most-specific-wins logic
+- [x] **THRSH-01**: Admin can set global attendance threshold
+- [x] **THRSH-02**: Headman can set group-level threshold
+- [x] **THRSH-03**: Headman can set subject-level threshold
+- [x] **THRSH-04**: System resolves threshold with most-specific-wins logic
 
 ### Admin Dashboard
 
@@ -105,11 +105,11 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| USER-01 | Phase 5 + Phase 6 | Pending |
-| USER-02 | Phase 5 + Phase 6 | Pending |
-| USER-03 | Phase 5 + Phase 6 | Pending |
-| USER-04 | Phase 5 + Phase 6 | Pending |
-| USER-05 | Phase 5 + Phase 6 | Pending |
+| USER-01 | Phase 5 + Phase 6 | Complete |
+| USER-02 | Phase 5 + Phase 6 | Complete |
+| USER-03 | Phase 5 + Phase 6 | Complete |
+| USER-04 | Phase 5 + Phase 6 | Complete |
+| USER-05 | Phase 5 + Phase 6 | Complete |
 | USER-06 | Phase 6 | Pending |
 | USER-07 | Phase 6 | Pending |
 | USER-08 | Phase 6 | Pending |
@@ -118,18 +118,18 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 | GSEM-03 | Phase 5 + Phase 6 | Complete |
 | GSEM-04 | Phase 5 + Phase 6 | Complete |
 | SUBJ-01 | Phase 5 + Phase 6 | Complete |
-| SUBJ-02 | Phase 5 + Phase 6 | Pending |
-| SUBJ-03 | Phase 5 + Phase 6 | Pending |
-| ASST-01 | Phase 5 + Phase 6 | Pending |
-| ASST-02 | Phase 5 + Phase 6 | Pending |
-| ASST-03 | Phase 5 + Phase 6 | Pending |
-| HW-01 | Phase 5 + Phase 6 | Pending |
-| HW-02 | Phase 6 | Pending |
-| HW-03 | Phase 6 | Pending |
-| THRSH-01 | Phase 5 + Phase 6 | Pending |
-| THRSH-02 | Phase 5 + Phase 6 | Pending |
-| THRSH-03 | Phase 5 + Phase 6 | Pending |
-| THRSH-04 | Phase 6 | Pending |
+| SUBJ-02 | Phase 5 + Phase 6 | Complete |
+| SUBJ-03 | Phase 5 + Phase 6 | Complete |
+| ASST-01 | Phase 5 + Phase 6 | Complete |
+| ASST-02 | Phase 5 + Phase 6 | Complete |
+| ASST-03 | Phase 5 + Phase 6 | Complete |
+| HW-01 | Phase 5 + Phase 6 | Complete |
+| HW-02 | Phase 6 | Complete |
+| HW-03 | Phase 6 | Complete |
+| THRSH-01 | Phase 5 + Phase 6 | Complete |
+| THRSH-02 | Phase 5 + Phase 6 | Complete |
+| THRSH-03 | Phase 5 + Phase 6 | Complete |
+| THRSH-04 | Phase 6 | Complete |
 | DASH-01 | Phase 6 | Pending |
 | GRPC-01 | Phase 7 | Pending |
 | GRPC-02 | Phase 7 | Pending |

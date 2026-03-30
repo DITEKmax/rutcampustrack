@@ -28,6 +28,12 @@ dependencies {
     // OpenAPI / Swagger UI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
+    // Security crypto (BCrypt password encoding)
+    implementation("org.springframework.security:spring-security-crypto")
+
+    // AOP support (@Aspect, @Around for @RequireRole)
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+
     // PostgreSQL
     runtimeOnly("org.postgresql:postgresql")
 

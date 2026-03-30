@@ -7,6 +7,12 @@ plugins {
 group = "ru.rutcampustrack"
 version = "0.1.0"
 
+dependencyManagement {
+    imports {
+        mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
+    }
+}
+
 dependencies {
     // Наш контракт
     implementation(project(":services:academic-service:academic-api-contract"))
@@ -38,5 +44,8 @@ dependencies {
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

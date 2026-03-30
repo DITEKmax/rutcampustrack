@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.config;
 
 import jakarta.persistence.Converter;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.enums.AssistantPermission;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 
@@ -24,5 +25,10 @@ public class EnumConverters {
     @Converter(autoApply = true)
     public static class SubjectTypeConverter extends LowercaseEnumConverter<SubjectType> {
         public SubjectTypeConverter() { super(SubjectType.class); }
+    }
+
+    @Converter(autoApply = true)
+    public static class AssistantPermissionConverter extends LowercaseEnumConverter<AssistantPermission> {
+        public AssistantPermissionConverter() { super(AssistantPermission.class); }
     }
 }

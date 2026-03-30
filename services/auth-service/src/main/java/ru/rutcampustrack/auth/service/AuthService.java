@@ -118,10 +118,7 @@ public class AuthService {
         }
 
         String newHash = passwordEncoder.encode(request.newPassword());
-        user.setPasswordHash(newHash);
-        user.setPasswordChanged(true);
-        user.setInitialPassword(null);
-        userRepository.save(user);
+        userRepository.updatePassword(userId, newHash);
     }
 
     public PublicKeyResponse getPublicKey() {

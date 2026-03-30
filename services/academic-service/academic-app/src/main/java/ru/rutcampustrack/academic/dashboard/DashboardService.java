@@ -33,8 +33,8 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public EntityModel<DashboardStatsResponse> getStats() {
-        long totalStudents = userRepository.countByRole(UserRole.STUDENT);
-        long totalTeachers = userRepository.countByRole(UserRole.TEACHER);
+        long totalStudents = userRepository.countByRole(UserRole.STUDENT.name().toLowerCase());
+        long totalTeachers = userRepository.countByRole(UserRole.TEACHER.name().toLowerCase());
         long totalGroups = groupRepository.count();
         long activeGroups = groupRepository.countByIsActive(true);
         String activeSemesterName = semesterRepository.findByIsActiveTrue()

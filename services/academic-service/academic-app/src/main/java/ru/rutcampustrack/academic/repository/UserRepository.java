@@ -21,11 +21,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByGroupId(Long groupId);
     Page<User> findByGroupId(Long groupId, Pageable pageable);
 
-    Page<User> findByRole(UserRole role, Pageable pageable);
+    @Query(value = "SELECT * FROM users WHERE role = cast(:role AS user_role) AND status <> 'archived'", nativeQuery = true)
+    Page<User> findByRole(@Param("role") String role, Pageable pageable);
 
-    long countByRole(UserRole role);
+    @Query(value = "SELECT COUNT(*) FROM users WHERE role = cast(:role AS user_role) AND status <> 'archived'", nativeQuery = true)
+    long countByRole(@Param("role") String role);
 
-    Page<User> findByGroupIdAndRole(Long groupId, UserRole role, Pageable pageable);
+    @Query(value = "SELECT * FROM users WHERE group_id = :groupId AND role = cast(:role AS user_role) AND status <> 'archived'", nativeQuery = true)
+    Page<User> findByGroupIdAndRole(@Param("groupId") Long groupId, @Param("role") String role, Pageable pageable);
 
     /** Login generation — atomic via PostgreSQL sequence (per D-03/D-04) */
     @Query(value = "SELECT nextval('student_login_seq')", nativeQuery = true)

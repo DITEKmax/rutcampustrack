@@ -15,13 +15,15 @@ import java.io.IOException;
  * the API Gateway. Runs once per request.
  *
  * Headers: X-User-Id, X-User-Role, X-Group-Id (optional), X-Is-Headman.
+ *
+ * Named UserContextFilter to avoid conflict with Spring Boot's built-in requestContextFilter bean.
  */
 @Component
-public class RequestContextFilter extends OncePerRequestFilter {
+public class UserContextFilter extends OncePerRequestFilter {
 
     private final RequestContext requestContext;
 
-    public RequestContextFilter(RequestContext requestContext) {
+    public UserContextFilter(RequestContext requestContext) {
         this.requestContext = requestContext;
     }
 

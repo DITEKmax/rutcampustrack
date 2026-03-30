@@ -56,13 +56,13 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 
 ### gRPC Server
 
-- [ ] **GRPC-01**: GetGroup returns group info by ID
-- [ ] **GRPC-02**: GetGroupMembers returns active students in a group
-- [ ] **GRPC-03**: GetTeacherSubjects returns teacher's subjects with groups
-- [ ] **GRPC-04**: IsHeadman checks if user is headman of a group
-- [ ] **GRPC-05**: GetActiveSemester returns current active semester
-- [ ] **GRPC-06**: GetCampusGeofence returns campus coordinates and radius
-- [ ] **GRPC-07**: GetUserById returns user info (display_name, telegram_id)
+- [x] **GRPC-01**: GetGroup returns group info by ID
+- [x] **GRPC-02**: GetGroupMembers returns active students in a group
+- [x] **GRPC-03**: GetTeacherSubjects returns teacher's subjects with groups
+- [x] **GRPC-04**: IsHeadman checks if user is headman of a group
+- [x] **GRPC-05**: GetActiveSemester returns current active semester
+- [x] **GRPC-06**: GetCampusGeofence returns campus coordinates and radius
+- [x] **GRPC-07**: GetUserById returns user info (display_name, telegram_id)
 
 ### Redis Caching
 
@@ -131,13 +131,13 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 | THRSH-03 | Phase 5 + Phase 6 | Complete |
 | THRSH-04 | Phase 6 | Complete |
 | DASH-01 | Phase 6 | Complete |
-| GRPC-01 | Phase 7 | Pending |
-| GRPC-02 | Phase 7 | Pending |
-| GRPC-03 | Phase 7 | Pending |
-| GRPC-04 | Phase 7 | Pending |
-| GRPC-05 | Phase 7 | Pending |
-| GRPC-06 | Phase 7 | Pending |
-| GRPC-07 | Phase 7 | Pending |
+| GRPC-01 | Phase 7 | Complete |
+| GRPC-02 | Phase 7 | Complete |
+| GRPC-03 | Phase 7 | Complete |
+| GRPC-04 | Phase 7 | Complete |
+| GRPC-05 | Phase 7 | Complete |
+| GRPC-06 | Phase 7 | Complete |
+| GRPC-07 | Phase 7 | Complete |
 | CACHE-01 | Phase 8 | Pending |
 | CACHE-02 | Phase 8 | Pending |
 | EVENT-01 | Phase 9 | Pending |

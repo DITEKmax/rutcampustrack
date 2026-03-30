@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
 status: executing
-stopped_at: Phase 7 context gathered
-last_updated: "2026-03-30T20:06:32.925Z"
+stopped_at: Completed 07-01-PLAN.md (gRPC server config + 7 RPCs)
+last_updated: "2026-03-30T20:37:14.289Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 0
 ---
 
@@ -22,9 +22,9 @@ v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis
 
 ## Current Position
 
-Phase: 7
-Plan: Not started
-Status: In progress
+Phase: 07 (grpc-server) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-03-30)
 
 **Core value:** Working authentication and authorization perimeter — all downstream services receive validated user context through the Gateway.
-**Current focus:** Phase 05 — entity-and-repository-foundation
+**Current focus:** Phase 07 — grpc-server
 
 ## Accumulated Context
 
@@ -56,6 +56,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 06 Plan 02]: spring-data-commons added to academic-api-contract — contract interfaces use Pageable/PagedResourcesAssembler
 - [Phase 06 Plan 02]: Page<Entity>->Page<ResponseDto> mapping done in controller before PagedResourcesAssembler (matches contract signature with <ResponseDto>)
 - [Phase 06 Plan 02]: Semester activateSemester uses deactivateAllActive() + entityManager.flush() + saveAndFlush() to avoid UNIQUE constraint violation on concurrent activation
+- [Phase 07-grpc-server]: Direct repository injection in gRPC service — avoids RequestContext scope issues when injecting REST service layer
+- [Phase 07-grpc-server]: javax.annotation-api:1.3.2 compileOnly — generated gRPC stubs use @javax.annotation.Generated removed in Java 9+
 
 ### Pending Todos
 
@@ -68,6 +70,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T20:06:32.901Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-grpc-server/07-CONTEXT.md
+Last session: 2026-03-30T20:37:14.285Z
+Stopped at: Completed 07-01-PLAN.md (gRPC server config + 7 RPCs)
+Resume file: None

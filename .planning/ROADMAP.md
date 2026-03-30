@@ -73,9 +73,9 @@ Plans:
   3. `GetActiveSemester` returns the current active semester; when no semester is active the call returns `NOT_FOUND` status
   4. `IsHeadman` returns true when the given user is the headman of the given group, false otherwise
   5. All 7 RPCs are covered by Testcontainers integration tests running against a real PostgreSQL instance on the dedicated gRPC port 19091
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 07-01-PLAN.md — Gradle protobuf plugin + gRPC server config + AcademicGrpcServiceImpl (7 RPCs) + GrpcExceptionAdvice
+- [x] 07-01-PLAN.md — Gradle protobuf plugin + gRPC server config + AcademicGrpcServiceImpl (7 RPCs) + GrpcExceptionAdvice
 - [ ] 07-02-PLAN.md — Integration tests for all 7 gRPC RPCs with Testcontainers PostgreSQL
 
 ### Phase 8: Redis Caching
@@ -111,6 +111,6 @@ Plans:
 | 1.4 Seed Data + Integration Tests | v1.0 | 1/1 | Complete | 2026-03-30 |
 | 5. Entity and Repository Foundation | v2.0 | 1/2 | In Progress|  |
 | 6. REST API + HATEOAS | v2.0 | 2/4 | In Progress|  |
-| 7. gRPC Server | v2.0 | 0/2 | Not started | - |
+| 7. gRPC Server | v2.0 | 1/2 | In Progress|  |
 | 8. Redis Caching | v2.0 | 0/TBD | Not started | - |
 | 9. RabbitMQ Events | v2.0 | 0/TBD | Not started | - |

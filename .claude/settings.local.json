@@ -2,7 +2,20 @@
   "permissions": {
     "allow": [
       "mcp__github__search_repositories",
-      "WebSearch"
+      "WebSearch",
+      "Bash(JAVA_HOME=\"C:/Users/maksd/.jdks/ms-21.0.9\" ./gradlew.bat :services:auth-service:test)",
+      "Bash(bash -n scripts/verify-gateway-e2e.sh)",
+      "Bash(JAVA_HOME=\"C:/Users/maksd/.jdks/ms-21.0.9\" ./gradlew.bat :services:auth-service:test :services:api-gateway:test)",
+      "Bash(node \"$HOME/.claude/get-shit-done/bin/gsd-tools.cjs\" roadmap update-plan-progress \"01.4\" \"01\" \"complete\")",
+      "Bash(bash -n \"C:/Users/maksd/IntelliJIDEA/rutcampustrack/scripts/verify-gateway-e2e.sh\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(git -C \"C:/Users/maksd/IntelliJIDEA/rutcampustrack\" log --oneline)",
+      "Bash(git -C C:/Users/maksd/IntelliJIDEA/rutcampustrack show --stat 91c373f 85523c1 f7a8973 f7470cd)",
+      "Bash(head -5 grep -n \"localhost:8080/api/auth\\\\|GATEWAY_URL.*api/auth\" \"C:/Users/maksd/IntelliJIDEA/rutcampustrack/scripts/verify-gateway-e2e.sh\")",
+      "Bash(for h:*)",
+      "Bash(do git:*)",
+      "Bash(done)",
+      "Bash(node \"$HOME/.claude/get-shit-done/bin/gsd-tools.cjs\" phase complete \"01.4\")"
     ]
   }
 }

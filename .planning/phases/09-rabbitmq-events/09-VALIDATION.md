@@ -2,7 +2,7 @@
 phase: 9
 slug: rabbitmq-events
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-03-31
 ---
@@ -38,9 +38,10 @@ created: 2026-03-31
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 09-01-01 | 01 | 1 | EVENT-01 | integration | `./gradlew :services:academic-service:academic-app:test --tests "*GroupEventIntegrationTest*"` | ❌ W0 | ⬜ pending |
-| 09-01-02 | 01 | 1 | EVENT-02 | integration | `./gradlew :services:academic-service:academic-app:test --tests "*SemesterEventIntegrationTest*"` | ❌ W0 | ⬜ pending |
-| 09-01-03 | 01 | 1 | EVENT-03 | integration | `./gradlew :services:academic-service:academic-app:test --tests "*HomeworkEventIntegrationTest*"` | ❌ W0 | ⬜ pending |
+| 09-01-01 | 01 | 1 | EVENT-01, EVENT-02, EVENT-03 | compilation | `./gradlew :services:academic-service:academic-app:compileJava` | n/a | ⬜ pending |
+| 09-01-02 | 01 | 1 | EVENT-01, EVENT-02, EVENT-03 | compilation | `./gradlew :services:academic-service:academic-app:compileJava` | n/a | ⬜ pending |
+| 09-02-01 | 02 | 2 | EVENT-01, EVENT-02, EVENT-03 | compilation | `./gradlew :services:academic-service:academic-app:compileTestJava` | n/a | ⬜ pending |
+| 09-02-02 | 02 | 2 | EVENT-01, EVENT-02, EVENT-03 | integration | `./gradlew :services:academic-service:academic-app:test --tests "*EventIntegrationTest*"` | ⬜ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,9 +51,7 @@ created: 2026-03-31
 
 - [ ] `testImplementation("org.testcontainers:rabbitmq")` in `build.gradle.kts` — RabbitMQContainer class
 - [ ] `src/test/.../integration/AbstractAcademicEventIntegrationTest.java` — shared base class with PostgreSQL + RabbitMQ containers
-- [ ] `src/test/.../integration/GroupEventIntegrationTest.java` — stubs for EVENT-01
-- [ ] `src/test/.../integration/SemesterEventIntegrationTest.java` — stubs for EVENT-02
-- [ ] `src/test/.../integration/HomeworkEventIntegrationTest.java` — stubs for EVENT-03
+- [ ] `src/test/.../integration/EventIntegrationTest.java` — integration tests for all event types (EVENT-01, EVENT-02, EVENT-03)
 
 ---
 
@@ -68,11 +67,11 @@ created: 2026-03-31
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s
 - [ ] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
 status: verifying
-stopped_at: Completed 06-01-PLAN.md — security infrastructure and API contracts
-last_updated: "2026-03-30T18:31:48.013Z"
+stopped_at: Completed 06-02-PLAN.md — admin controllers User/Group/Semester
+last_updated: "2026-03-30T18:45:00Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -23,8 +23,8 @@ v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis
 ## Current Position
 
 Phase: 6
-Plan: Not started
-Status: Phase complete — ready for verification
+Plan: 2 of 4 complete
+Status: In progress
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -53,6 +53,9 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 06]: @RequestMapping paths use /academic/* — Gateway StripPrefix=1 strips /api before forwarding
 - [Phase 06]: ScopedProxyMode.TARGET_CLASS mandatory on RequestContext — singleton AOP aspects must receive scoped proxy
 - [Phase 06]: AOP @RequireRole (no Spring Security) — role enforcement via X-User-Role header injected by Gateway
+- [Phase 06 Plan 02]: spring-data-commons added to academic-api-contract — contract interfaces use Pageable/PagedResourcesAssembler
+- [Phase 06 Plan 02]: Page<Entity>->Page<ResponseDto> mapping done in controller before PagedResourcesAssembler (matches contract signature with <ResponseDto>)
+- [Phase 06 Plan 02]: Semester activateSemester uses deactivateAllActive() + entityManager.flush() + saveAndFlush() to avoid UNIQUE constraint violation on concurrent activation
 
 ### Pending Todos
 
@@ -65,6 +68,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T18:31:48.009Z
-Stopped at: Completed 06-01-PLAN.md — security infrastructure and API contracts
+Last session: 2026-03-30T18:45:00Z
+Stopped at: Completed 06-02-PLAN.md — admin controllers User/Group/Semester
 Resume file: None

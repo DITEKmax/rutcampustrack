@@ -102,7 +102,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 01.4-01-PLAN.md — Testcontainers integration tests for all auth endpoints (login, refresh, logout, OTP, change-password)
+- [x] 01.4-01-PLAN.md — Testcontainers integration tests for all auth endpoints (login, refresh, logout, OTP, change-password)
 
 **Scope**:
 - Flyway V2__seed_test_data.sql: test users (admin, student, teacher) with BCrypt passwords, test group, test semester

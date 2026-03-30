@@ -39,6 +39,6 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 Scaffold, contracts, infrastructure. See docs/phase-0-report.md.
 
 ## Current State
-Phase 1.2 complete (2026-03-29) — Auth Service OTP + Change Password: OtpService with Redis-backed rate limiting (3 attempts/5min, 60s cooldown, 120s TTL), POST /auth/otp/request, POST /auth/otp/verify, POST /auth/change-password endpoints, OtpProperties config, RFC 7807 error handling (401/429). OTP Telegram delivery deferred to notification-bot phase. Next: Phase 1.3 (API Gateway JWT Filter + Routing).
+Phase 1.3 complete (2026-03-30) — API Gateway JWT Filter + Routing: PublicKeyConfig fetches RSA public key from Auth Service on startup with 3-retry/5s delay, caches in AtomicReference, refreshes hourly via @Scheduled. JwtAuthenticationFilter (GlobalFilter, order -100) validates Bearer tokens, injects X-User-Id/X-User-Role headers always, X-Group-Id/X-Is-Headman only when non-null. Public routes bypass (/api/auth/login, /refresh, /public-key, /otp/**). RFC 7807 application/problem+json 401 responses. 11 unit tests. All 5 route groups confirmed. Next: Phase 1.4 (Seed Data + Integration Testing).
 
-Last updated: 2026-03-29
+Last updated: 2026-03-30

@@ -1,5 +1,8 @@
 package ru.rutcampustrack.academic.user;
 
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -47,17 +50,20 @@ public class UserService {
     private final StudentGroupHistoryRepository studentGroupHistoryRepository;
     private final RequestContext requestContext;
     private final UserAssembler userAssembler;
+    private final CacheManager cacheManager;
 
     public UserService(UserRepository userRepository,
                        HeadmanAssistantRepository headmanAssistantRepository,
                        StudentGroupHistoryRepository studentGroupHistoryRepository,
                        RequestContext requestContext,
-                       UserAssembler userAssembler) {
+                       UserAssembler userAssembler,
+                       CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.headmanAssistantRepository = headmanAssistantRepository;
         this.studentGroupHistoryRepository = studentGroupHistoryRepository;
         this.requestContext = requestContext;
         this.userAssembler = userAssembler;
+        this.cacheManager = cacheManager;
     }
 
     @Transactional
@@ -103,6 +109,7 @@ public class UserService {
         return userRepository.findAll(pageable);
     }
 
+    @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User updateUser(Long id, UpdateUserRequest request) {
         User user = findUserById(id);
@@ -115,6 +122,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User patchUser(Long id, PatchUserRequest request) {
         User user = findUserById(id);
@@ -149,10 +157,23 @@ public class UserService {
             user.setHeadman(true);
         }
 
+        // After headman flag change — evict groups and group_members caches for this user's group (per D-10)
+        if (request.isHeadman() != null && user.getGroupId() != null) {
+            Cache groupsCache = cacheManager.getCache("groups");
+            if (groupsCache != null) {
+                groupsCache.evict(user.getGroupId());
+            }
+            Cache groupMembersCache = cacheManager.getCache("group_members");
+            if (groupMembersCache != null) {
+                groupMembersCache.evict(user.getGroupId());
+            }
+        }
+
         user.setUpdatedAt(OffsetDateTime.now());
         return userRepository.save(user);
     }
 
+    @CacheEvict(value = "users", key = "#id")
     @Transactional
     public void archiveUser(Long id) {
         User user = findUserById(id);
@@ -161,6 +182,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @CacheEvict(value = "group_members", key = "#request.newGroupId()")
     @Transactional
     public User transferStudent(Long id, TransferStudentRequest request) {
         User user = findUserById(id);
@@ -196,6 +218,17 @@ public class UserService {
         }
 
         user.setUpdatedAt(OffsetDateTime.now());
+
+        // Evict caches for old group (ID only known at runtime) and transferred user
+        Cache groupMembersCache = cacheManager.getCache("group_members");
+        if (groupMembersCache != null && oldGroupId != null) {
+            groupMembersCache.evict(oldGroupId);
+        }
+        Cache usersCache = cacheManager.getCache("users");
+        if (usersCache != null) {
+            usersCache.evict(id);
+        }
+
         return userRepository.save(user);
     }
 

@@ -6,6 +6,9 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 ## Core Problem
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
+## Core Value
+Working authentication and authorization perimeter — all downstream services receive validated user context (X-User-Id, X-User-Role, X-Group-Id, X-Is-Headman) through the Gateway.
+
 ## Target Users
 - **Students** (500-5000): geo-checkin, excuse tickets, homework tracker
 - **Headmen** (student + is_headman): attendance marking, schedule, subjects, assistants
@@ -25,20 +28,41 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 ## Developer
 Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, deploy to VPS with Docker.
 
+## Requirements
+
+### Validated
+- ✓ FR-1 through FR-10: User login, token refresh, logout, public key, OTP flow, change password, Gateway JWT filter, routing, public routes, seed data — v1.0
+- ✓ NFR-1: RSA key generation, BCrypt hashing — v1.0
+- ✓ NFR-4: RFC 7807 error responses, Java records for DTOs — v1.0
+
+### Active
+(Next milestone requirements — defined via `/gsd:new-milestone`)
+
+### Out of Scope
+- Mobile native apps — web-first (Telegram Mini App + Angular panel)
+- Key Management Service — RSA keys on filesystem for now
+
 ## Milestones
 
-### Milestone 1: Auth Service + API Gateway (current)
-**Goal**: Working authentication — user can login, get JWT, refresh token, reset password via OTP. Gateway validates JWT and routes requests.
-
-**Scope**:
-- Auth Service (port 9090): JWT RSA, login/refresh/logout, OTP flow, change-password, BCrypt, Redis, reads academic_db
-- API Gateway (port 8080): JWT filter, route config, public routes, header injection (X-User-Id, X-User-Role, X-Group-Id, X-Is-Headman)
-- Test seed data (V2 Flyway migration)
+### v1.0: Auth Service + API Gateway — ✅ SHIPPED 2026-03-30
+4 phases, 4 plans, 26 tests. Full auth flow: login → JWT → Gateway validation → header injection → downstream routing. See `docs/phase-1-report.md`.
 
 ### Previous: Phase 0 (completed)
-Scaffold, contracts, infrastructure. See docs/phase-0-report.md.
+Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 
 ## Current State
-**Milestone 1 COMPLETE** (2026-03-30) — All 4 phases delivered: Auth Service Core (JWT + Login), OTP + Change Password, API Gateway JWT Filter + Routing, Seed Data + Integration Testing. 15 integration tests (Testcontainers PostgreSQL + Redis) + 11 gateway unit tests all passing. Gateway E2E verification script at `scripts/verify-gateway-e2e.sh`. Full auth flow works end-to-end: login → JWT → Gateway validation → header injection → downstream routing.
+Milestone 1 shipped. Auth Service (JWT, OTP, change password) and API Gateway (JWT filter, 5 route groups) are production-ready. 26 tests (15 integration + 11 unit). Next: Academic Service (CRUD, gRPC, Redis cache).
 
-Last updated: 2026-03-30
+## Key Decisions
+
+| Decision | Outcome | Milestone |
+|----------|---------|-----------|
+| Auth reads academic_db via JPA (Flyway disabled) | ✓ Works well, no schema drift | v1.0 |
+| RSA keys on filesystem | ✓ Simple, sufficient for VPS | v1.0 |
+| Refresh token rotation (delete on use) | ✓ Prevents replay attacks | v1.0 |
+| OTP Telegram delivery deferred | — Pending, notification-bot phase | v1.0 |
+| Null-safe header injection | ✓ TEACHER/ADMIN don't get "null" headers | v1.0 |
+| Testcontainers over H2 | ✓ Real PostgreSQL ENUMs, no false positives | v1.0 |
+
+---
+*Last updated: 2026-03-30 after v1.0 milestone*

@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: Planning next milestone
-stopped_at: v1.0 milestone complete
-last_updated: "2026-03-30T09:30:00.000Z"
+milestone: v2.0
+milestone_name: Academic Service
+status: Defining requirements
+stopped_at: null
+last_updated: "2026-03-30T12:00:00.000Z"
 progress:
   total_phases: 0
   completed_phases: 0
@@ -16,14 +16,21 @@ progress:
 
 ## Current Milestone
 
-None — v1.0 shipped, next milestone not yet defined.
+v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis.
+
+## Current Position
+
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-30 — Milestone v2.0 started
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-03-30)
 
 **Core value:** Working authentication and authorization perimeter
-**Current focus:** Planning next milestone
+**Current focus:** Academic Service — CRUD, gRPC, Redis cache
 
 ## Blockers
 
@@ -35,4 +42,4 @@ None
 
 ## Last Session
 
-Stopped at: v1.0 milestone complete — Auth Service + API Gateway shipped
+Stopped at: Milestone v2.0 initialized, defining requirements

@@ -9,6 +9,18 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 ## Core Value
 Working authentication and authorization perimeter — all downstream services receive validated user context (X-User-Id, X-User-Role, X-Group-Id, X-Is-Headman) through the Gateway.
 
+## Current Milestone: v2.0 Academic Service
+
+**Goal:** Full CRUD for university structure with gRPC server for internal calls and Redis caching.
+
+**Target features:**
+- REST API через контракт (UserApi, GroupApi, SemesterApi, SubjectApi, AssignmentApi, HomeworkApi, ThresholdApi) с HATEOAS + пагинацией
+- CRUD endpoints по ролям: ADMIN (users, groups, semesters, headman, transfers, dashboard), HEADMAN (subjects, teacher assignments, assistants, homeworks, thresholds), STUDENT (profile, group, homework completions), TEACHER (own subjects/groups)
+- gRPC-сервер (academic.proto): GetGroup, GetGroupMembers, GetTeacherSubjects, IsHeadman, GetActiveSemester, GetCampusGeofence, GetUserById
+- Redis-кэширование read-heavy методов с инвалидацией
+- RabbitMQ events: group.updated, semester.archived, homework.published/updated
+- Автогенерация логинов (student00001, teacher00001) с initial_password
+
 ## Target Users
 - **Students** (500-5000): geo-checkin, excuse tickets, homework tracker
 - **Headmen** (student + is_headman): attendance marking, schedule, subjects, assistants
@@ -36,7 +48,21 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ NFR-4: RFC 7807 error responses, Java records for DTOs — v1.0
 
 ### Active
-(Next milestone requirements — defined via `/gsd:new-milestone`)
+- [ ] CRUD users with auto-generated logins/passwords (ADMIN)
+- [ ] CRUD groups, assign/revoke headman (ADMIN)
+- [ ] CRUD semesters with confirmation phrase for delete (ADMIN)
+- [ ] Student transfers between groups with history (ADMIN)
+- [ ] Admin dashboard with summary statistics
+- [ ] CRUD subjects with type (lecture/practice/lab) (HEADMAN)
+- [ ] Teacher-subject-group assignments (HEADMAN)
+- [ ] Headman assistants management with granular permissions (HEADMAN)
+- [ ] CRUD homeworks with homework_completions tracker (HEADMAN/STUDENT)
+- [ ] Red zone threshold configuration (global/group/subject)
+- [ ] Student profile and group composition view (STUDENT)
+- [ ] Teacher own subjects and groups view (TEACHER)
+- [ ] gRPC server implementing academic.proto (7 RPCs)
+- [ ] Redis caching with invalidation for read-heavy methods
+- [ ] RabbitMQ event publishing (group.updated, semester.archived, homework.*)
 
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
@@ -64,5 +90,22 @@ Milestone 1 shipped. Auth Service (JWT, OTP, change password) and API Gateway (J
 | Null-safe header injection | ✓ TEACHER/ADMIN don't get "null" headers | v1.0 |
 | Testcontainers over H2 | ✓ Real PostgreSQL ENUMs, no false positives | v1.0 |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-03-30 after v1.0 milestone*
+*Last updated: 2026-03-30 after v2.0 milestone start*

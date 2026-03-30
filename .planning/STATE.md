@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 1.1-01-PLAN.md (Auth Service Core)
-last_updated: "2026-03-28T22:22:52.991Z"
+stopped_at: Completed 01.3-01-PLAN.md (API Gateway JWT Filter)
+last_updated: "2026-03-30T06:47:46.279Z"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  total_plans: 2
+  completed_plans: 2
 ---
 
 # Project State
@@ -45,6 +45,9 @@ Phase 1.2: OTP Flow + Password Change — PLANNED
 3. RSA 2048-bit keys persisted to filesystem (jwt.key-dir), generated on first startup
 4. Refresh token rotation: old token deleted from Redis on each use, new token issued
 5. Logout is idempotent: unparseable tokens silently ignored
+- [Phase 01.3]: parsePemPublicKey made package-private for testability without reflection
+- [Phase 01.3]: X-Group-Id and X-Is-Headman headers omitted when JWT claims are null (TEACHER/ADMIN)
+- [Phase 01.3]: RFC 7807 Problem Details body in all 401 responses per CLAUDE.md mandate
 
 ## Blockers
 
@@ -55,6 +58,7 @@ None
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 1.1 | 01 | 7m 23s | 7 | 23 |
+| Phase 01.3 P01 | 15m | 3 tasks | 6 files |
 
 ## Last Updated
 
@@ -62,4 +66,4 @@ None
 
 ## Last Session
 
-Stopped at: Completed 1.1-01-PLAN.md (Auth Service Core)
+Stopped at: Completed 01.3-01-PLAN.md (API Gateway JWT Filter)

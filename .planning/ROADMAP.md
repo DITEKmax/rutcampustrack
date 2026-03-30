@@ -42,10 +42,10 @@
 
 **Goal**: OTP-based authentication via Telegram and password change functionality.
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 01.2-01-PLAN.md — OTP flow (request/verify) with Redis rate limiting + change password endpoint
+- [x] 01.2-01-PLAN.md — OTP flow (request/verify) with Redis rate limiting + change password endpoint
 
 **Scope**:
 - OtpService: generate, store, verify OTP codes in Redis

@@ -13,3 +13,11 @@ logging:
   level:
     ru.rutcampustrack: DEBUG
     org.hibernate.SQL: DEBUG
+grpc:
+  server:
+    in-process-name: test
+    port: -1
+  client:
+    inProcess:
+      address: in-process:test
+      negotiationType: plaintext

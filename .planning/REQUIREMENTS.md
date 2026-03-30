@@ -66,8 +66,8 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 
 ### Redis Caching
 
-- [ ] **CACHE-01**: Read-heavy gRPC paths cached with configurable TTL
-- [ ] **CACHE-02**: Cache invalidated on data mutations (with cascading eviction)
+- [x] **CACHE-01**: Read-heavy gRPC paths cached with configurable TTL
+- [x] **CACHE-02**: Cache invalidated on data mutations (with cascading eviction)
 
 ### RabbitMQ Events
 
@@ -138,8 +138,8 @@ Requirements for Academic Service milestone. Each maps to roadmap phases.
 | GRPC-05 | Phase 7 | Complete |
 | GRPC-06 | Phase 7 | Complete |
 | GRPC-07 | Phase 7 | Complete |
-| CACHE-01 | Phase 8 | Pending |
-| CACHE-02 | Phase 8 | Pending |
+| CACHE-01 | Phase 8 | Complete |
+| CACHE-02 | Phase 8 | Complete |
 | EVENT-01 | Phase 9 | Pending |
 | EVENT-02 | Phase 9 | Pending |
 | EVENT-03 | Phase 9 | Pending |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
-status: executing
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-31T00:00:00.000Z"
-last_activity: 2026-03-31 -- Phase 08 Plan 01 completed
+status: verifying
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-30T23:03:15.739Z"
+last_activity: 2026-03-30
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 0
 ---
 
@@ -24,8 +24,8 @@ v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis
 
 Phase: 08 (redis-caching) — EXECUTING
 Plan: 2 of 2
-Status: Plan 01 complete — executing Plan 02
-Last activity: 2026-03-31 -- 08-01 completed (Redis cache infrastructure)
+Status: Phase complete — ready for verification
+Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -63,6 +63,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 08 Plan 01]: AcademicReadService is a separate @Service bean — avoids AOP self-invocation where @Cacheable proxy would be bypassed if methods were in AcademicGrpcServiceImpl
 - [Phase 08 Plan 01]: String literal keys used for zero-arg @Cacheable methods: key="'current'" and key="'global'" produce readable Redis keys instead of SimpleKey.EMPTY
 - [Phase 08 Plan 01]: Programmatic CacheManager eviction used in UserService for runtime-only keys (old group on transfer, groups+group_members on headman change per D-10)
+- [Phase 08-redis-caching]: ObjectProvider<RedisConnectionFactory> in CacheConfig avoids @ConditionalOnBean timing bug — user @Configuration beans evaluated before Redis autoconfiguration registers the factory
+- [Phase 08-redis-caching]: NON_FINAL default typing required for GenericJackson2JsonRedisSerializer — OBJECT_AND_NON_CONCRETE omits @class for concrete types causing deserialization failure
 
 ### Pending Todos
 
@@ -75,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T00:00:00.000Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-03-30T23:03:15.735Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None

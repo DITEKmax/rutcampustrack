@@ -90,7 +90,7 @@ Plans:
 **Plans:** 2 plans
 Plans:
 - [x] 08-01-PLAN.md — CacheConfig + AcademicReadService + @Cacheable on 5 gRPC reads + @CacheEvict on REST mutations + TTL config
-- [ ] 08-02-PLAN.md — AbstractAcademicCacheIntegrationTest + CacheIntegrationTest (9 tests for CACHE-01 and CACHE-02)
+- [x] 08-02-PLAN.md — AbstractAcademicCacheIntegrationTest + CacheIntegrationTest (9 tests for CACHE-01 and CACHE-02)
 
 ### Phase 9: RabbitMQ Events
 **Goal**: Qualifying mutations publish typed events to the fanout exchange after the database transaction commits — no events are published for rolled-back transactions.

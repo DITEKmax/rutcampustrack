@@ -40,7 +40,10 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
   2. V3 Flyway migration adds PostgreSQL login sequences; `student_login_seq` and `teacher_login_seq` exist and increment without concurrent conflicts
   3. Spring Data repositories return correct results for soft-deleted users (status = 'archived' excluded from default queries via @Where)
   4. Auth Service continues to start without schema validation errors (no breaking column changes)
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 05-01-PLAN.md — Infrastructure, V3 migration, simple entities (Group, Semester, Subject, CampusSetting) + repositories
+- [ ] 05-02-PLAN.md — Complex entities (User, HeadmanAssistant, AttendanceThreshold, etc.) + repositories + integration tests
 
 ### Phase 6: REST API + HATEOAS
 **Goal**: Every role can perform their authorized operations via REST with correct HATEOAS links, pagination, and RFC 7807 errors — no role can access another role's endpoints.
@@ -98,7 +101,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 1.2 OTP + Change Password | v1.0 | 1/1 | Complete | 2026-03-29 |
 | 1.3 Gateway JWT Filter | v1.0 | 1/1 | Complete | 2026-03-30 |
 | 1.4 Seed Data + Integration Tests | v1.0 | 1/1 | Complete | 2026-03-30 |
-| 5. Entity and Repository Foundation | v2.0 | 0/TBD | Not started | - |
+| 5. Entity and Repository Foundation | v2.0 | 0/2 | Not started | - |
 | 6. REST API + HATEOAS | v2.0 | 0/TBD | Not started | - |
 | 7. gRPC Server | v2.0 | 0/TBD | Not started | - |
 | 8. Redis Caching | v2.0 | 0/TBD | Not started | - |

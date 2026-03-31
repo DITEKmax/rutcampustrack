@@ -62,7 +62,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 ### Active
 - ✓ gRPC server implementing academic.proto (7 RPCs) — Phase 7
 - [ ] Redis caching with invalidation for read-heavy methods
-- [ ] RabbitMQ event publishing (group.updated, semester.archived, homework.*)
+- ✓ RabbitMQ event publishing (group.updated, semester.archived, homework.*) — Phase 9
 
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
@@ -77,7 +77,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 
 ## Current State
-Milestone 1 shipped. Phase 8 complete — Redis caching added to Academic Service with 5 @Cacheable gRPC read paths (groups, group_members, active_semester, campus_geofence, users), configurable per-cache TTLs, @CacheEvict on all mutation methods, 10 Testcontainers integration tests. Next: Phase 9 RabbitMQ Events.
+Milestone 1 shipped. Phase 9 complete — RabbitMQ event publishing added to Academic Service. Domain events (group.updated, semester.archived, homework.published, homework.updated) are published to `rut-uit.events` fanout exchange via @TransactionalEventListener(AFTER_COMMIT). 6 Testcontainers integration tests verify end-to-end pipeline. This is the last phase of v2.0 milestone.
 
 ## Key Decisions
 
@@ -114,4 +114,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-31 after Phase 7 completion*
+*Last updated: 2026-03-31 after Phase 9 completion*

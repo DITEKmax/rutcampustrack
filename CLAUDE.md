@@ -8,7 +8,8 @@ RutCampusTrack — микросервисная система учёта пос
 
 - **Фаза 0**: ЗАВЕРШЕНА (каркас, контракты, инфраструктура)
 - **Фаза 1**: ЗАВЕРШЕНА (Auth Service + API Gateway) — 26 тестов, отчёт: `docs/phase-1-report.md`
-- **Фаза 2**: В ОЧЕРЕДИ (Academic Service)
+- **Фаза 2**: ЗАВЕРШЕНА (Academic Service) — 50 тестов, отчёт: `docs/phase-2-report.md`
+- **Фаза 3**: В ОЧЕРЕДИ (Schedule Service + Attendance Service)
 - Полный план фаз: см. `docs/phases-plan.md`
 
 ## Архитектура (кратко)

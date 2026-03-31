@@ -43,9 +43,11 @@ public abstract class AbstractAcademicEventIntegrationTest {
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
 
-        // RabbitMQ -- point at Testcontainers broker
+        // RabbitMQ -- point at Testcontainers broker (credentials: guest/guest by default)
         registry.add("spring.rabbitmq.host", RABBITMQ::getHost);
         registry.add("spring.rabbitmq.port", () -> RABBITMQ.getMappedPort(5672));
+        registry.add("spring.rabbitmq.username", RABBITMQ::getAdminUsername);
+        registry.add("spring.rabbitmq.password", RABBITMQ::getAdminPassword);
 
         // Exclude Redis -- not needed for event tests (per D-12)
         registry.add("spring.autoconfigure.exclude",

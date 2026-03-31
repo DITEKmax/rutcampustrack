@@ -7,19 +7,10 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
 ## Core Value
-Working authentication and authorization perimeter — all downstream services receive validated user context (X-User-Id, X-User-Role, X-Group-Id, X-Is-Headman) through the Gateway.
+Complete Academic Service with REST API, gRPC server, Redis caching, and RabbitMQ events — the data backbone that Schedule, Attendance, and Notification services will consume.
 
-## Current Milestone: v2.0 Academic Service
-
-**Goal:** Full CRUD for university structure with gRPC server for internal calls and Redis caching.
-
-**Target features:**
-- REST API через контракт (UserApi, GroupApi, SemesterApi, SubjectApi, AssignmentApi, HomeworkApi, ThresholdApi) с HATEOAS + пагинацией
-- CRUD endpoints по ролям: ADMIN (users, groups, semesters, headman, transfers, dashboard), HEADMAN (subjects, teacher assignments, assistants, homeworks, thresholds), STUDENT (profile, group, homework completions), TEACHER (own subjects/groups)
-- gRPC-сервер (academic.proto): GetGroup, GetGroupMembers, GetTeacherSubjects, IsHeadman, GetActiveSemester, GetCampusGeofence, GetUserById
-- Redis-кэширование read-heavy методов с инвалидацией
-- RabbitMQ events: group.updated, semester.archived, homework.published/updated
-- Автогенерация логинов (student00001, teacher00001) с initial_password
+## Current State
+v2.0 shipped. Academic Service is fully operational: 37 requirements implemented across 5 phases, 50 integration tests, ~24K LOC Java. Next milestone (v3.0) targets Schedule Service.
 
 ## Target Users
 - **Students** (500-5000): geo-checkin, excuse tickets, homework tracker
@@ -46,38 +37,40 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ FR-1 through FR-10: User login, token refresh, logout, public key, OTP flow, change password, Gateway JWT filter, routing, public routes, seed data — v1.0
 - ✓ NFR-1: RSA key generation, BCrypt hashing — v1.0
 - ✓ NFR-4: RFC 7807 error responses, Java records for DTOs — v1.0
-- ✓ CRUD users with auto-generated logins/passwords (ADMIN) — Phase 6
-- ✓ CRUD groups, assign/revoke headman (ADMIN) — Phase 6
-- ✓ CRUD semesters with confirmation phrase for delete (ADMIN) — Phase 6
-- ✓ Student transfers between groups with history (ADMIN) — Phase 6
-- ✓ Admin dashboard with summary statistics — Phase 6
-- ✓ CRUD subjects with type (lecture/practice/lab) (HEADMAN) — Phase 6
-- ✓ Teacher-subject-group assignments (HEADMAN) — Phase 6
-- ✓ Headman assistants management with granular permissions (HEADMAN) — Phase 6
-- ✓ CRUD homeworks with homework_completions tracker (HEADMAN/STUDENT) — Phase 6
-- ✓ Red zone threshold configuration (global/group/subject) — Phase 6
-- ✓ Student profile and group composition view (STUDENT) — Phase 6
-- ✓ Teacher own subjects and groups view (TEACHER) — Phase 6
+- ✓ CRUD users with auto-generated logins/passwords (ADMIN) — v2.0
+- ✓ CRUD groups, assign/revoke headman (ADMIN) — v2.0
+- ✓ CRUD semesters with confirmation phrase for delete (ADMIN) — v2.0
+- ✓ Student transfers between groups with history (ADMIN) — v2.0
+- ✓ Admin dashboard with summary statistics — v2.0
+- ✓ CRUD subjects with type (lecture/practice/lab) (HEADMAN) — v2.0
+- ✓ Teacher-subject-group assignments (HEADMAN) — v2.0
+- ✓ Headman assistants management with granular permissions (HEADMAN) — v2.0
+- ✓ CRUD homeworks with homework_completions tracker (HEADMAN/STUDENT) — v2.0
+- ✓ Red zone threshold configuration (global/group/subject) — v2.0
+- ✓ Student profile and group composition view (STUDENT) — v2.0
+- ✓ Teacher own subjects and groups view (TEACHER) — v2.0
+- ✓ gRPC server implementing academic.proto (7 RPCs) — v2.0
+- ✓ Redis caching with invalidation for read-heavy methods — v2.0
+- ✓ RabbitMQ event publishing (group.updated, semester.archived, homework.*) — v2.0
 
 ### Active
-- ✓ gRPC server implementing academic.proto (7 RPCs) — Phase 7
-- [ ] Redis caching with invalidation for read-heavy methods
-- ✓ RabbitMQ event publishing (group.updated, semester.archived, homework.*) — Phase 9
+(Next milestone requirements to be defined via `/gsd:new-milestone`)
 
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
 - Key Management Service — RSA keys on filesystem for now
+- Bulk CSV user import — manual creation sufficient for now
 
 ## Milestones
+
+### v2.0: Academic Service — ✅ SHIPPED 2026-03-31
+5 phases, 12 plans, 37 requirements, 50 tests. Full CRUD + gRPC + Redis caching + RabbitMQ events. See `.planning/MILESTONES.md`.
 
 ### v1.0: Auth Service + API Gateway — ✅ SHIPPED 2026-03-30
 4 phases, 4 plans, 26 tests. Full auth flow: login → JWT → Gateway validation → header injection → downstream routing. See `docs/phase-1-report.md`.
 
 ### Previous: Phase 0 (completed)
 Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
-
-## Current State
-Milestone 1 shipped. Phase 9 complete — RabbitMQ event publishing added to Academic Service. Domain events (group.updated, semester.archived, homework.published, homework.updated) are published to `rut-uit.events` fanout exchange via @TransactionalEventListener(AFTER_COMMIT). 6 Testcontainers integration tests verify end-to-end pipeline. This is the last phase of v2.0 milestone.
 
 ## Key Decisions
 
@@ -89,12 +82,14 @@ Milestone 1 shipped. Phase 9 complete — RabbitMQ event publishing added to Aca
 | OTP Telegram delivery deferred | — Pending, notification-bot phase | v1.0 |
 | Null-safe header injection | ✓ TEACHER/ADMIN don't get "null" headers | v1.0 |
 | Testcontainers over H2 | ✓ Real PostgreSQL ENUMs, no false positives | v1.0 |
-| gRPC queries repositories directly, not REST services | ✓ Avoids RequestContext scope issues in gRPC threads | v2.0 Phase 7 |
 | No JPA associations (@ManyToOne etc.) | ✓ FK columns as Long IDs, prevents N+1 and cascade issues | v2.0 |
 | campus_settings.id SERIAL→BIGINT | ✓ V4 migration fixes V1 inconsistency with BIGSERIAL convention | v2.0 |
-| Contract-first REST (api-contract interfaces) | ✓ Controllers implement interfaces, Swagger in contract | v2.0 Phase 6 |
-| @RequireRole AOP over Spring Security | ✓ Simpler, Gateway already validates JWT — service checks role only | v2.0 Phase 6 |
-| V5 migration: implicit casts for PostgreSQL enums | ✓ JPA sends varchar, PostgreSQL needs CAST for custom enum columns | v2.0 Phase 6 |
+| Contract-first REST (api-contract interfaces) | ✓ Controllers implement interfaces, Swagger in contract | v2.0 |
+| @RequireRole AOP over Spring Security | ✓ Simpler, Gateway already validates JWT — service checks role only | v2.0 |
+| V5 migration: implicit casts for PostgreSQL enums | ✓ JPA sends varchar, PostgreSQL needs CAST for custom enum columns | v2.0 |
+| gRPC queries repositories directly, not REST services | ✓ Avoids RequestContext scope issues in gRPC threads | v2.0 |
+| @TransactionalEventListener(AFTER_COMMIT) for domain events | ✓ No events on rollback, services decoupled from AMQP | v2.0 |
+| @MockitoBean RabbitTemplate in non-event test bases | ✓ Prevents DomainEventListener from breaking tests without RabbitMQ | v2.0 |
 
 ## Evolution
 
@@ -114,4 +109,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-31 after Phase 9 completion*
+*Last updated: 2026-03-31 after v2.0 milestone*

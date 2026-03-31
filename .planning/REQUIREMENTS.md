@@ -81,13 +81,37 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated by roadmapper) | | |
+| LSSN-03 | Phase 10 | Pending |
+| CRON-04 | Phase 10 | Pending |
+| TMPL-01 | Phase 11 | Pending |
+| TMPL-02 | Phase 11 | Pending |
+| TMPL-03 | Phase 11 | Pending |
+| TMPL-04 | Phase 11 | Pending |
+| TMPL-05 | Phase 11 | Pending |
+| LSSN-04 | Phase 11 | Pending |
+| LSSN-05 | Phase 11 | Pending |
+| LSSN-06 | Phase 11 | Pending |
+| LSSN-07 | Phase 11 | Pending |
+| VIEW-01 | Phase 11 | Pending |
+| VIEW-02 | Phase 11 | Pending |
+| LSSN-01 | Phase 12 | Pending |
+| LSSN-02 | Phase 12 | Pending |
+| CRON-01 | Phase 13 | Pending |
+| CRON-02 | Phase 13 | Pending |
+| CRON-03 | Phase 13 | Pending |
+| EVNT-01 | Phase 13 | Pending |
+| EVNT-02 | Phase 13 | Pending |
+| EVNT-03 | Phase 13 | Pending |
+| EVNT-04 | Phase 13 | Pending |
+| GRPC-01 | Phase 14 | Pending |
+| GRPC-02 | Phase 14 | Pending |
+| GRPC-03 | Phase 14 | Pending |
 
 **Coverage:**
 - v3.0 requirements: 25 total
-- Mapped to phases: 0
-- Unmapped: 25
+- Mapped to phases: 25
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-31*
-*Last updated: 2026-03-31 after initial definition*
+*Last updated: 2026-03-31 — traceability filled by roadmapper*

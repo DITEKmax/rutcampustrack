@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Academic Service
-status: executing
-stopped_at: Completed 09-01-PLAN.md
-last_updated: "2026-03-30T23:58:33.581Z"
-last_activity: 2026-03-30
+status: verifying
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-03-31T00:20:14.947Z"
+last_activity: 2026-03-31
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
   percent: 0
 ---
 
@@ -24,8 +24,8 @@ v2.0 Academic Service — Full CRUD for university structure with gRPC and Redis
 
 Phase: 09 (rabbitmq-events) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-03-30
+Status: Phase complete — ready for verification
+Last activity: 2026-03-31
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -67,6 +67,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-30)
 - [Phase 08-redis-caching]: NON_FINAL default typing required for GenericJackson2JsonRedisSerializer — OBJECT_AND_NON_CONCRETE omits @class for concrete types causing deserialization failure
 - [Phase 09-rabbitmq-events]: SemesterRepository.findByIsActiveTrue() returns Optional<Semester> -- activateSemester uses ifPresent to publish SemesterArchivedEvent
 - [Phase 09-rabbitmq-events]: RabbitConfig injects Spring Boot autoconfigured ObjectMapper (no @class fields) -- CacheConfig ObjectMapper is only a local variable, not a Spring bean
+- [Phase 09-02]: RabbitMQ container credentials (guest/guest) must be explicitly overridden in @DynamicPropertySource when app.yml uses custom credentials
+- [Phase 09-02]: Named non-auto-delete queues required in event integration tests -- anonymous auto-delete queues (admin.declareQueue()) are deleted after first consumer disconnects, breaking subsequent rabbitTemplate.receive() calls
 
 ### Pending Todos
 
@@ -79,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T23:58:33.577Z
-Stopped at: Completed 09-01-PLAN.md
+Last session: 2026-03-31T00:20:14.943Z
+Stopped at: Completed 09-02-PLAN.md
 Resume file: None

@@ -1,40 +1,40 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Academic Service
-status: complete
-stopped_at: Milestone v2.0 complete
-last_updated: "2026-03-31T01:00:00.000Z"
+milestone: v3.0
+milestone_name: Schedule Service
+status: requirements
+stopped_at: Defining requirements
+last_updated: "2026-03-31T12:00:00.000Z"
 last_activity: 2026-03-31
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 12
-  completed_plans: 12
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Current Milestone
 
-v2.0 Academic Service — ✅ SHIPPED 2026-03-31
+v3.0 Schedule Service — 🚧 IN PROGRESS
 
 ## Current Position
 
-Phase: Complete
-Plan: All plans executed
-Status: Milestone shipped, ready for next milestone
-Last activity: 2026-03-31
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-31 — Milestone v3.0 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-03-31)
 
-**Core value:** Complete Academic Service with REST API, gRPC server, Redis caching, and RabbitMQ events.
-**Current focus:** Planning next milestone
+**Core value:** Schedule Service with full lesson lifecycle — the scheduling backbone for Attendance Service.
+**Current focus:** Requirements definition and roadmap creation
 
 ## Accumulated Context
 
@@ -48,10 +48,10 @@ None.
 
 ### Blockers/Concerns
 
-None — milestone complete.
+None.
 
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Milestone v2.0 complete
+Stopped at: Defining requirements for v3.0
 Resume file: None

@@ -7,10 +7,24 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
 ## Core Value
-Complete Academic Service with REST API, gRPC server, Redis caching, and RabbitMQ events — the data backbone that Schedule, Attendance, and Notification services will consume.
+Schedule Service with full lesson lifecycle: template CRUD → auto-generation → status transitions → RabbitMQ events → gRPC server — the scheduling backbone that Attendance Service will consume.
 
 ## Current State
-v2.0 shipped. Academic Service is fully operational: 37 requirements implemented across 5 phases, 50 integration tests, ~24K LOC Java. Next milestone (v3.0) targets Schedule Service.
+v2.0 shipped. Academic Service fully operational (37 requirements, 50 tests, ~24K LOC). Now building v3.0 Schedule Service.
+
+## Current Milestone: v3.0 Schedule Service
+
+**Goal:** Full scheduling cycle: schedule template created → lessons auto-generated for semester → statuses transition automatically (planned→active→closed) → events published to RabbitMQ → gRPC server answers Attendance Service queries.
+
+**Target features:**
+- CRUD schedule templates (headman) — create, cancel, restore lessons
+- Auto-generate lessons for all semester dates (respecting week parity)
+- Automatic status transitions via cron (planned→active→closed)
+- Geo-checkin blocking on specific lessons
+- GET group schedule for date range (all roles)
+- RabbitMQ events: lesson.started, lesson.closed, lesson.cancelled
+- gRPC server: GetActiveLesson, GetLessonById, GetLessonsByGroup
+- gRPC client to Academic Service for validation
 
 ## Target Users
 - **Students** (500-5000): geo-checkin, excuse tickets, homework tracker
@@ -54,7 +68,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ RabbitMQ event publishing (group.updated, semester.archived, homework.*) — v2.0
 
 ### Active
-(Next milestone requirements to be defined via `/gsd:new-milestone`)
+(Defined in `.planning/REQUIREMENTS.md` for v3.0)
 
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
@@ -62,6 +76,9 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - Bulk CSV user import — manual creation sufficient for now
 
 ## Milestones
+
+### v3.0: Schedule Service — 🚧 IN PROGRESS
+Schedule template CRUD, lesson auto-generation, status transitions, RabbitMQ events, gRPC server.
 
 ### v2.0: Academic Service — ✅ SHIPPED 2026-03-31
 5 phases, 12 plans, 37 requirements, 50 tests. Full CRUD + gRPC + Redis caching + RabbitMQ events. See `.planning/MILESTONES.md`.
@@ -109,4 +126,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-31 after v2.0 milestone*
+*Last updated: 2026-03-31 — v3.0 milestone started*

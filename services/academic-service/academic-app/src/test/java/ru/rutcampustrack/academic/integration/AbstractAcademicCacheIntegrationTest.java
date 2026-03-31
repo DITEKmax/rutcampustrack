@@ -1,9 +1,11 @@
 package ru.rutcampustrack.academic.integration;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -15,11 +17,14 @@ import org.testcontainers.containers.PostgreSQLContainer;
  * Key difference from AbstractAcademicIntegrationTest:
  * - Adds GenericContainer for Redis alongside PostgreSQLContainer
  * - Does NOT exclude RedisAutoConfiguration / RedisRepositoriesAutoConfiguration
- * - Only excludes RabbitMQ autoconfiguration
+ * - Only excludes RabbitMQ autoconfiguration (mock RabbitTemplate satisfies DomainEventListener)
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public abstract class AbstractAcademicCacheIntegrationTest {
+
+    @MockitoBean
+    RabbitTemplate rabbitTemplate;
 
     static final PostgreSQLContainer<?> POSTGRES;
     static final GenericContainer<?> REDIS;

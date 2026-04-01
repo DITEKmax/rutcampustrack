@@ -55,7 +55,11 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
   3. A Testcontainers integration test spins up a real PostgreSQL 16 container and the abstract base class is in place so all future phases inherit it without repetition
   4. The `TZ=Europe/Moscow` environment variable is set in docker-compose.yml for schedule-service and `spring.jpa.properties.hibernate.jdbc.time_zone=Europe/Moscow` is in application.yml; a Clock bean is wired so tests can inject `Clock.fixed(...)` for deterministic time assertions
   5. Security infrastructure (UserContextFilter, RequestContext, @RequireRole, RoleCheckAspect) is present and a smoke test confirms that a request without role headers receives 403
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — Build scaffold, config, entities, repositories
+- [ ] 10-02-PLAN.md — Security infrastructure, exception handling, Testcontainers, integration tests
 
 ### Phase 11: REST API + gRPC Client
 **Goal**: Headmen can fully manage schedule templates and individual lessons via REST, and any authenticated user can view the group schedule — with all inputs validated against Academic Service via gRPC before persisting.
@@ -119,7 +123,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 | 7. gRPC Server | v2.0 | 2/2 | Complete | 2026-03-30 |
 | 8. Redis Caching | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 9. RabbitMQ Events | v2.0 | 2/2 | Complete | 2026-03-31 |
-| 10. Foundation | v3.0 | 0/? | Not started | - |
+| 10. Foundation | v3.0 | 0/2 | Not started | - |
 | 11. REST API + gRPC Client | v3.0 | 0/? | Not started | - |
 | 12. Lesson Generation | v3.0 | 0/? | Not started | - |
 | 13. Events + Cron | v3.0 | 0/? | Not started | - |

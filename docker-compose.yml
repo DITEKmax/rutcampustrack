@@ -31,6 +31,7 @@ services:
       POSTGRES_DB: schedule_db
       POSTGRES_USER: rct_user
       POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD:-rct_dev_pass}
+      TZ: Europe/Moscow
     expose:
       - "5432"
     volumes:

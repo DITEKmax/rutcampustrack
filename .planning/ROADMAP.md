@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 Auth Service + API Gateway** — Phases 1.1-1.4 (shipped 2026-03-30)
 - ✅ **v2.0 Academic Service** — Phases 5-9 (shipped 2026-03-31)
+- **v3.0 Schedule Service** — Phases 10-14 (in progress)
 
 ## Phases
 
@@ -32,6 +33,47 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 </details>
 
+### Phase 11: REST API + gRPC Client
+
+**Goal:** Full REST API for schedule templates (CRUD), lesson operations (cancel/restore/mass-cancel/geo-block), and schedule viewing — with gRPC client to Academic Service for validation.
+
+**Requirements:** [TMPL-01, TMPL-02, TMPL-03, TMPL-04, TMPL-05, LSSN-04, LSSN-05, LSSN-06, LSSN-07, VIEW-01, VIEW-02]
+
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 11-01-PLAN.md — Infrastructure: gRPC client setup, contract DTOs/APIs, exceptions, repository extensions
+- [x] 11-02-PLAN.md — ScheduleItem CRUD: service, controller, assembler, integration tests (TMPL-01..05)
+- [x] 11-03-PLAN.md — Lesson operations + schedule view: service, controller, assembler, integration tests (LSSN-04..07, VIEW-01..02)
+
+### Phase 12: Lesson Auto-Generation
+
+**Goal:** Automatic lesson generation when schedule template is created — generates all lessons for semester dates respecting week parity (odd/even/all), idempotent via UNIQUE constraint.
+
+**Requirements:** [LSSN-01, LSSN-02]
+
+**Plans:** 2 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — Academic Service first_week_type (migration + proto + gRPC) + LessonGenerationService with parity algorithm + unit tests
+- [ ] 12-02-PLAN.md — Wire generation into ScheduleItemService (create + update) + integration tests
+
+### Phase 13: Status Transitions + RabbitMQ Events
+
+**Goal:** Cron-based lesson status transitions (planned→active→closed) with RabbitMQ event publishing (lesson.started, lesson.closed, lesson.cancelled).
+
+**Requirements:** [CRON-01, CRON-02, CRON-03, EVNT-01, EVNT-02, EVNT-03, EVNT-04]
+
+**Plans:** 0 plans
+
+### Phase 14: gRPC Server
+
+**Goal:** Implement schedule.proto gRPC server — GetActiveLesson, GetLessonById, GetLessonsByGroup for Attendance Service consumption.
+
+**Requirements:** [GRPC-01, GRPC-02, GRPC-03]
+
+**Plans:** 0 plans
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -45,3 +87,5 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 | 7. gRPC Server | v2.0 | 2/2 | Complete | 2026-03-30 |
 | 8. Redis Caching | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 9. RabbitMQ Events | v2.0 | 2/2 | Complete | 2026-03-31 |
+| 10. Foundation | v3.0 | 2/2 | Complete    | 2026-04-01 |
+| 11. REST API + gRPC Client | v3.0 | 3/3 | Complete    | 2026-04-01 |

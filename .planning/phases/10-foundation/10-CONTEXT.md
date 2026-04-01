@@ -28,7 +28,7 @@ No domain logic, no REST endpoints, no gRPC implementation, no cron jobs. This p
 - **D-06:** `ScheduleItem.startTime` and `ScheduleItem.endTime` mapped as `java.time.LocalTime` — native Hibernate mapping for PostgreSQL TIME columns.
 - **D-07:** Logical FK fields (`groupId`, `subjectId`, `teacherId`, `semesterId`) in ScheduleItem mapped as plain `Long` with `@Column`. No JPA relationships — validated via gRPC to Academic Service at application layer (Phase 11).
 - **D-08:** Keep existing inline enum converters in `EnumConverters.java` (WeekType, LessonStatus). No base class — only 2 enums, already committed and working.
-- **D-09:** `Lesson.scheduleItem` mapped as `@ManyToOne(fetch = LAZY)` — real JPA relationship since both entities are in the same database. Enables `Lesson.getScheduleItem()` for schedule viewing in Phase 11.
+- **D-09:** ~~`Lesson.scheduleItem` mapped as `@ManyToOne(fetch = LAZY)`~~ **OVERRIDDEN:** Plain `Long scheduleItemId` — follow CLAUDE.md general rule (FK as Long, no JPA associations). Consistent with all other FK fields project-wide.
 
 ### Build Dependencies
 - **D-10:** Minimal dependencies for Phase 10: add `spring-boot-starter-aop` (for @RequireRole aspect) and Testcontainers BOM + `testcontainers-postgresql` module. gRPC server starter and protobuf plugin deferred to Phase 14.

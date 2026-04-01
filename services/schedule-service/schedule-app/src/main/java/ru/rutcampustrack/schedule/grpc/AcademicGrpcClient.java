@@ -9,6 +9,7 @@ import ru.rutcampustrack.academic.grpc.GroupRequest;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 
@@ -66,6 +67,23 @@ public class AcademicGrpcClient {
             }
             throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
         }
+    }
+
+    /**
+     * Parses first_week_type from SemesterResponse to schedule-service's WeekType enum.
+     * Throws IllegalStateException if the field is blank (Academic Service may need restart after V6 migration).
+     *
+     * @param response SemesterResponse from Academic Service
+     * @return WeekType parsed from first_week_type field
+     * @throws IllegalStateException if first_week_type is null or blank
+     */
+    public WeekType parseSemesterFirstWeekType(SemesterResponse response) {
+        String raw = response.getFirstWeekType();
+        if (raw == null || raw.isBlank()) {
+            throw new IllegalStateException(
+                "SemesterResponse missing first_week_type — Academic Service may need restart after V6 migration");
+        }
+        return WeekType.valueOf(raw.toUpperCase());
     }
 
     /**

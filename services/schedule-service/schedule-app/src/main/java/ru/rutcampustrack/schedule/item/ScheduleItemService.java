@@ -8,14 +8,19 @@ import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
+import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
+import ru.rutcampustrack.schedule.lesson.LessonGenerationService;
 import ru.rutcampustrack.schedule.security.RequestContext;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 /**
  * Business logic for schedule template (ScheduleItem) CRUD.
@@ -28,13 +33,19 @@ public class ScheduleItemService {
     private final ScheduleItemRepository scheduleItemRepository;
     private final AcademicGrpcClient academicGrpcClient;
     private final RequestContext requestContext;
+    private final LessonGenerationService lessonGenerationService;
+    private final Clock clock;
 
     public ScheduleItemService(ScheduleItemRepository scheduleItemRepository,
                                AcademicGrpcClient academicGrpcClient,
-                               RequestContext requestContext) {
+                               RequestContext requestContext,
+                               LessonGenerationService lessonGenerationService,
+                               Clock clock) {
         this.scheduleItemRepository = scheduleItemRepository;
         this.academicGrpcClient = academicGrpcClient;
         this.requestContext = requestContext;
+        this.lessonGenerationService = lessonGenerationService;
+        this.clock = clock;
     }
 
     /**
@@ -80,7 +91,17 @@ public class ScheduleItemService {
         item.setActive(true);
         item.setCreatedAt(OffsetDateTime.now());
 
-        return scheduleItemRepository.save(item);
+        ScheduleItem saved = scheduleItemRepository.save(item);
+
+        // LSSN-01: Synchronous lesson generation in same transaction (D-01)
+        WeekType firstWeekType = academicGrpcClient.parseSemesterFirstWeekType(activeSemester);
+        lessonGenerationService.generateLessons(
+                saved,
+                LocalDate.parse(activeSemester.getDateFrom()),
+                LocalDate.parse(activeSemester.getDateTo()),
+                firstWeekType);
+
+        return saved;
     }
 
     /**
@@ -109,6 +130,14 @@ public class ScheduleItemService {
                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
         requireHeadmanForGroup(existing.getGroupId());
 
+        // Capture old values BEFORE applying updates (D-06, D-07)
+        boolean scheduleAffected =
+                !Objects.equals(existing.getDayOfWeek(), request.dayOfWeek())
+                || !Objects.equals(existing.getWeekType(), request.weekType())
+                || !Objects.equals(existing.getStartTime(), request.startTime())
+                || !Objects.equals(existing.getEndTime(), request.endTime())
+                || !Objects.equals(existing.getLessonNumber(), request.lessonNumber());
+
         existing.setSubjectId(request.subjectId());
         existing.setTeacherId(request.teacherId());
         existing.setDayOfWeek(request.dayOfWeek());
@@ -118,7 +147,22 @@ public class ScheduleItemService {
         existing.setWeekType(request.weekType());
         existing.setRoom(request.room());
 
-        return scheduleItemRepository.save(existing);
+        ScheduleItem saved = scheduleItemRepository.save(existing);
+
+        // LSSN-01/LSSN-02: Re-generate future planned lessons if schedule fields changed (D-06)
+        if (scheduleAffected) {
+            SemesterResponse activeSemester = academicGrpcClient.getActiveSemester();
+            WeekType firstWeekType = academicGrpcClient.parseSemesterFirstWeekType(activeSemester);
+            LocalDate today = LocalDate.now(clock);
+            lessonGenerationService.regenerateFromDate(
+                    saved,
+                    LocalDate.parse(activeSemester.getDateFrom()),
+                    LocalDate.parse(activeSemester.getDateTo()),
+                    firstWeekType,
+                    today);
+        }
+
+        return saved;
     }
 
     /**

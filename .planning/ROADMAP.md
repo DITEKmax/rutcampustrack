@@ -60,4 +60,4 @@ Plans:
 | 8. Redis Caching | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 9. RabbitMQ Events | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 10. Foundation | v3.0 | 2/2 | Complete    | 2026-04-01 |
-| 11. REST API + gRPC Client | v3.0 | 3/3 | Complete   | 2026-04-01 |
+| 11. REST API + gRPC Client | v3.0 | 3/3 | Complete    | 2026-04-01 |

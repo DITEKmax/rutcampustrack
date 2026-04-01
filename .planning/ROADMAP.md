@@ -46,4 +46,4 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 | 7. gRPC Server | v2.0 | 2/2 | Complete | 2026-03-30 |
 | 8. Redis Caching | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 9. RabbitMQ Events | v2.0 | 2/2 | Complete | 2026-03-31 |
-| 10. Foundation | v3.0 | 2/2 | Complete   | 2026-04-01 |
+| 10. Foundation | v3.0 | 2/2 | Complete    | 2026-04-01 |

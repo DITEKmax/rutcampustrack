@@ -122,7 +122,7 @@ public class LessonService {
             return 0;
         }
         List<Lesson> toCancel = lessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn(
-                itemIds, request.dateFrom(), request.dateTo(), List.of(LessonStatus.PLANNED));
+                itemIds, request.dateFrom(), request.dateTo(), List.of(LessonStatus.PLANNED.name().toLowerCase()));
         for (Lesson l : toCancel) {
             l.setStatus(LessonStatus.CANCELLED);
             l.setCancelReason(request.reason());
@@ -154,9 +154,11 @@ public class LessonService {
                                                     LocalDate to,
                                                     List<LessonStatus> statuses,
                                                     Pageable pageable) {
-        List<LessonStatus> effectiveStatuses = (statuses == null || statuses.isEmpty())
-                ? List.of(LessonStatus.PLANNED, LessonStatus.ACTIVE, LessonStatus.CLOSED)
-                : statuses;
+        List<String> effectiveStatuses = (statuses == null || statuses.isEmpty())
+                ? List.of(LessonStatus.PLANNED.name().toLowerCase(),
+                          LessonStatus.ACTIVE.name().toLowerCase(),
+                          LessonStatus.CLOSED.name().toLowerCase())
+                : statuses.stream().map(s -> s.name().toLowerCase()).toList();
 
         List<ScheduleItem> items = scheduleItemRepository.findByGroupId(groupId);
         List<Long> itemIds = items.stream().map(ScheduleItem::getId).toList();

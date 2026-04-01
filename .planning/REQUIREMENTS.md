@@ -9,10 +9,10 @@ Requirements for Schedule Service milestone. Each maps to roadmap phases.
 
 ### Schedule Templates
 
-- [ ] **TMPL-01**: Headman can create a schedule template (subject, teacher, room, day, time, week parity)
-- [ ] **TMPL-02**: Headman can update an existing schedule template
-- [ ] **TMPL-03**: Headman can delete (deactivate) a schedule template
-- [ ] **TMPL-04**: Headman can view all schedule templates for their group
+- [x] **TMPL-01**: Headman can create a schedule template (subject, teacher, room, day, time, week parity)
+- [x] **TMPL-02**: Headman can update an existing schedule template
+- [x] **TMPL-03**: Headman can delete (deactivate) a schedule template
+- [x] **TMPL-04**: Headman can view all schedule templates for their group
 - [x] **TMPL-05**: System validates subject/teacher via gRPC to Academic Service before creating template
 
 ### Lesson Management
@@ -83,10 +83,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | LSSN-03 | Phase 10 | Complete |
 | CRON-04 | Phase 10 | Complete |
-| TMPL-01 | Phase 11 | Pending |
-| TMPL-02 | Phase 11 | Pending |
-| TMPL-03 | Phase 11 | Pending |
-| TMPL-04 | Phase 11 | Pending |
+| TMPL-01 | Phase 11 | Complete |
+| TMPL-02 | Phase 11 | Complete |
+| TMPL-03 | Phase 11 | Complete |
+| TMPL-04 | Phase 11 | Complete |
 | TMPL-05 | Phase 11 | Complete |
 | LSSN-04 | Phase 11 | Pending |
 | LSSN-05 | Phase 11 | Pending |

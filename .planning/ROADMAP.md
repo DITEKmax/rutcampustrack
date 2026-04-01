@@ -46,6 +46,30 @@ Plans:
 - [x] 11-02-PLAN.md — ScheduleItem CRUD: service, controller, assembler, integration tests (TMPL-01..05)
 - [x] 11-03-PLAN.md — Lesson operations + schedule view: service, controller, assembler, integration tests (LSSN-04..07, VIEW-01..02)
 
+### Phase 12: Lesson Auto-Generation
+
+**Goal:** Automatic lesson generation when schedule template is created — generates all lessons for semester dates respecting week parity (odd/even/all), idempotent via UNIQUE constraint.
+
+**Requirements:** [LSSN-01, LSSN-02]
+
+**Plans:** 0 plans
+
+### Phase 13: Status Transitions + RabbitMQ Events
+
+**Goal:** Cron-based lesson status transitions (planned→active→closed) with RabbitMQ event publishing (lesson.started, lesson.closed, lesson.cancelled).
+
+**Requirements:** [CRON-01, CRON-02, CRON-03, EVNT-01, EVNT-02, EVNT-03, EVNT-04]
+
+**Plans:** 0 plans
+
+### Phase 14: gRPC Server
+
+**Goal:** Implement schedule.proto gRPC server — GetActiveLesson, GetLessonById, GetLessonsByGroup for Attendance Service consumption.
+
+**Requirements:** [GRPC-01, GRPC-02, GRPC-03]
+
+**Plans:** 0 plans
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |

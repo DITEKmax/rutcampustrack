@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 Auth Service + API Gateway** — Phases 1.1-1.4 (shipped 2026-03-30)
 - ✅ **v2.0 Academic Service** — Phases 5-9 (shipped 2026-03-31)
+- **v3.0 Schedule Service** — Phases 10-14 (in progress)
 
 ## Phases
 
@@ -45,3 +46,4 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 | 7. gRPC Server | v2.0 | 2/2 | Complete | 2026-03-30 |
 | 8. Redis Caching | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 9. RabbitMQ Events | v2.0 | 2/2 | Complete | 2026-03-31 |
+| 10. Foundation | v3.0 | 1/2 | In Progress | — |

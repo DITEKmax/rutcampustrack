@@ -10,7 +10,7 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 Schedule Service with full lesson lifecycle: template CRUD → auto-generation → status transitions → RabbitMQ events → gRPC server — the scheduling backbone that Attendance Service will consume.
 
 ## Current State
-v2.0 shipped. Academic Service fully operational (37 requirements, 50 tests, ~24K LOC). v3.0 Schedule Service Phase 10 (Foundation) and Phase 11 (REST API + gRPC Client) complete — full CRUD for schedule items, lesson operations (cancel/restore/mass-cancel/geo-block), schedule view, gRPC client to Academic Service, 20 integration tests.
+v2.0 shipped. Academic Service fully operational (37 requirements, 50 tests, ~24K LOC). v3.0 Schedule Service Phases 10-12 complete — full CRUD for schedule items, lesson operations, schedule view, gRPC client to Academic Service, automatic lesson generation with week-parity algorithm, 17 unit + integration tests for generation alone.
 
 ## Current Milestone: v3.0 Schedule Service
 
@@ -75,6 +75,10 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ LSSN-04..07: Lesson cancel/restore/mass-cancel/geo-block toggle — v3.0
 - ✓ VIEW-01..02: Schedule view for date range — v3.0
 
+### Validated in Phase 12
+- ✓ LSSN-01: Auto-generate lessons on template creation for all matching semester dates — v3.0
+- ✓ LSSN-02: Week parity (odd/even/all) respected via semester-anchored first_week_type — v3.0
+
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
 - Key Management Service — RSA keys on filesystem for now
@@ -135,4 +139,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-01 — Phase 11 REST API + gRPC Client complete*
+*Last updated: 2026-04-02 — Phase 12 Lesson Auto-Generation complete*

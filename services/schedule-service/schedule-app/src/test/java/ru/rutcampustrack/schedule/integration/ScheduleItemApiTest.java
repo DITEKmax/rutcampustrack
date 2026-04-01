@@ -18,6 +18,7 @@ import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
+import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
@@ -55,10 +56,22 @@ class ScheduleItemApiTest extends AbstractScheduleIntegrationTest {
     ScheduleItemRepository scheduleItemRepository;
 
     @Autowired
+    LessonRepository lessonRepository;
+
+    @Autowired
     ObjectMapper objectMapper;
+
+    private static final SemesterResponse MOCK_SEMESTER = SemesterResponse.newBuilder()
+            .setId(SEMESTER_ID)
+            .setName("Spring 2026")
+            .setDateFrom("2026-02-02")
+            .setDateTo("2026-06-30")
+            .setFirstWeekType("odd")
+            .build();
 
     @BeforeEach
     void setUp() {
+        lessonRepository.deleteAll();
         scheduleItemRepository.deleteAll();
         lessonNumberCounter = 1;
         // Configure mocks for happy path
@@ -69,13 +82,9 @@ class ScheduleItemApiTest extends AbstractScheduleIntegrationTest {
                         .setCode("TG-01")
                         .setIsActive(true)
                         .build());
-        when(academicGrpcClient.getActiveSemester())
-                .thenReturn(SemesterResponse.newBuilder()
-                        .setId(SEMESTER_ID)
-                        .setName("Spring 2026")
-                        .setDateFrom("2026-02-01")
-                        .setDateTo("2026-06-30")
-                        .build());
+        when(academicGrpcClient.getActiveSemester()).thenReturn(MOCK_SEMESTER);
+        when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER))
+                .thenReturn(WeekType.ODD);
         when(academicGrpcClient.isHeadman(USER_ID, GROUP_ID)).thenReturn(true);
     }
 

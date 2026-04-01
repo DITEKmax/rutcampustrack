@@ -19,7 +19,7 @@ Requirements for Schedule Service milestone. Each maps to roadmap phases.
 
 - [ ] **LSSN-01**: System auto-generates lessons for all semester dates when template is created
 - [ ] **LSSN-02**: Lesson generation respects week parity (odd/even/all) anchored to semester start
-- [ ] **LSSN-03**: Lesson generation is idempotent (retry-safe via UNIQUE constraint)
+- [x] **LSSN-03**: Lesson generation is idempotent (retry-safe via UNIQUE constraint)
 - [ ] **LSSN-04**: Headman can cancel a specific lesson with reason
 - [ ] **LSSN-05**: Headman can restore a cancelled lesson
 - [ ] **LSSN-06**: Headman can mass-cancel lessons for a date range
@@ -35,7 +35,7 @@ Requirements for Schedule Service milestone. Each maps to roadmap phases.
 - [ ] **CRON-01**: Cron transitions planned->active when current time >= lesson start_time (Moscow TZ)
 - [ ] **CRON-02**: Cron transitions active->closed when current time >= lesson end_time + 5 min (Moscow TZ)
 - [ ] **CRON-03**: Cron catches up missed transitions on service restart
-- [ ] **CRON-04**: Cron runs every minute with proper timezone handling
+- [x] **CRON-04**: Cron runs every minute with proper timezone handling
 
 ### Events
 
@@ -81,8 +81,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LSSN-03 | Phase 10 | Pending |
-| CRON-04 | Phase 10 | Pending |
+| LSSN-03 | Phase 10 | Complete |
+| CRON-04 | Phase 10 | Complete |
 | TMPL-01 | Phase 11 | Pending |
 | TMPL-02 | Phase 11 | Pending |
 | TMPL-03 | Phase 11 | Pending |

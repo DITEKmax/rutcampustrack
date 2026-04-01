@@ -33,6 +33,19 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 </details>
 
+### Phase 11: REST API + gRPC Client
+
+**Goal:** Full REST API for schedule templates (CRUD), lesson operations (cancel/restore/mass-cancel/geo-block), and schedule viewing — with gRPC client to Academic Service for validation.
+
+**Requirements:** [TMPL-01, TMPL-02, TMPL-03, TMPL-04, TMPL-05, LSSN-04, LSSN-05, LSSN-06, LSSN-07, VIEW-01, VIEW-02]
+
+**Plans:** 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Infrastructure: gRPC client setup, contract DTOs/APIs, exceptions, repository extensions
+- [ ] 11-02-PLAN.md — ScheduleItem CRUD: service, controller, assembler, integration tests (TMPL-01..05)
+- [ ] 11-03-PLAN.md — Lesson operations + schedule view: service, controller, assembler, integration tests (LSSN-04..07, VIEW-01..02)
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -47,3 +60,4 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 | 8. Redis Caching | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 9. RabbitMQ Events | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 10. Foundation | v3.0 | 2/2 | Complete    | 2026-04-01 |
+| 11. REST API + gRPC Client | v3.0 | 0/3 | In Progress | — |

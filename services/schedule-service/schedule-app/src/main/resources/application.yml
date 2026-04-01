@@ -5,6 +5,12 @@ spring:
   application:
     name: schedule-service
 
+  data:
+    web:
+      pageable:
+        default-page-size: 50
+        max-page-size: 200
+
   datasource:
     url: jdbc:postgresql://postgres-schedule:5432/schedule_db
     username: rct_user
@@ -40,6 +46,10 @@ springdoc:
 grpc:
   server:
     port: 19092
+  client:
+    academic-service:
+      address: static://academic-service:19091
+      negotiation-type: plaintext
 
 logging:
   level:

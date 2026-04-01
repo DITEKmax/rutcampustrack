@@ -52,7 +52,11 @@ Plans:
 
 **Requirements:** [LSSN-01, LSSN-02]
 
-**Plans:** 0 plans
+**Plans:** 2 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — Academic Service first_week_type (migration + proto + gRPC) + LessonGenerationService with parity algorithm + unit tests
+- [ ] 12-02-PLAN.md — Wire generation into ScheduleItemService (create + update) + integration tests
 
 ### Phase 13: Status Transitions + RabbitMQ Events
 

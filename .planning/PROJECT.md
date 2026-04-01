@@ -10,7 +10,7 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 Schedule Service with full lesson lifecycle: template CRUD → auto-generation → status transitions → RabbitMQ events → gRPC server — the scheduling backbone that Attendance Service will consume.
 
 ## Current State
-v2.0 shipped. Academic Service fully operational (37 requirements, 50 tests, ~24K LOC). Now building v3.0 Schedule Service.
+v2.0 shipped. Academic Service fully operational (37 requirements, 50 tests, ~24K LOC). v3.0 Schedule Service Phase 10 (Foundation) complete — entities, repositories, security, timezone config, Testcontainers base, 3 integration tests.
 
 ## Current Milestone: v3.0 Schedule Service
 
@@ -107,6 +107,10 @@ Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 | gRPC queries repositories directly, not REST services | ✓ Avoids RequestContext scope issues in gRPC threads | v2.0 |
 | @TransactionalEventListener(AFTER_COMMIT) for domain events | ✓ No events on rollback, services decoupled from AMQP | v2.0 |
 | @MockitoBean RabbitTemplate in non-event test bases | ✓ Prevents DomainEventListener from breaking tests without RabbitMQ | v2.0 |
+| Eager lesson generation (ON CONFLICT DO NOTHING) | ✓ Simpler than lazy, UNIQUE(schedule_item_id, date) idempotency | v3.0 |
+| @Profile("!test") on SchedulingConfig | ✓ Cron jobs disabled in test profile, matches @ActiveProfiles("test") | v3.0 |
+| grpc.server.port: 19092 placeholder | — gRPC starter deferred to Phase 14 per D-10 | v3.0 |
+| TZ=Europe/Moscow + hibernate.jdbc.time_zone | ✓ All TIME columns interpreted in Moscow timezone (CRON-04) | v3.0 |
 
 ## Evolution
 
@@ -126,4 +130,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-31 — v3.0 milestone started*
+*Last updated: 2026-04-01 — Phase 10 Foundation complete*

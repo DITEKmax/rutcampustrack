@@ -1,6 +1,7 @@
 package ru.rutcampustrack.schedule.lesson.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
@@ -35,4 +36,16 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
             @Param("from") LocalDate from,
             @Param("to") LocalDate to,
             @Param("statuses") List<String> statuses);
+
+    /**
+     * Deletes all PLANNED lessons for a given schedule item starting from a given date.
+     * Used by LessonGenerationService.regenerateFromDate() to clear stale planned lessons
+     * before re-generating them after a ScheduleItem update.
+     * Uses native query with status::text cast (same pattern as other queries in this repo).
+     */
+    @Modifying
+    @Query(value = "DELETE FROM lessons WHERE schedule_item_id = :itemId AND status::text = 'planned' AND date >= :fromDate",
+           nativeQuery = true)
+    void deletePlannedFromDate(@Param("itemId") Long scheduleItemId,
+                               @Param("fromDate") LocalDate fromDate);
 }

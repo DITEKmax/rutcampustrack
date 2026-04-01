@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: Schedule Service
-status: in_progress
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-04-01T22:22:37Z"
+milestone: v1.0
+milestone_name: milestone
+status: Plan 01 executed — lesson generation foundation built
+stopped_at: Completed 12-02-PLAN.md
+last_updated: "2026-04-01T22:34:50.985Z"
 last_activity: 2026-04-01
 progress:
-  total_phases: 5
-  completed_phases: 3
+  total_phases: 4
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
   percent: 40
 ---
 
@@ -63,6 +63,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 12-01]: firstWeekType stored as String (not enum) in Semester entity to avoid cross-service enum coupling
 - [Phase 12-01]: Java-level default "odd" on Semester.firstWeekType prevents null violations when tests create Semester without setting the field
 - [Phase 12-01]: V6 migration adds implicit varchar cast for week_type enum (same pattern as V5)
+- [Phase 12-lesson-auto-generation]: scheduleAffected boolean computed BEFORE applying setters to capture pre-update field state
+- [Phase 12-lesson-auto-generation]: Integration tests use dayOfWeek=1 (TUESDAY) matching existing test conventions — avoids @Min(1) validation rejection
 
 ### Pending Todos
 
@@ -74,7 +76,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-01T22:22:37Z
-Stopped at: Completed 12-01-PLAN.md
-Resume file: .planning/phases/12-lesson-auto-generation/12-01-SUMMARY.md
+Last session: 2026-04-01T22:34:50.981Z
+Stopped at: Completed 12-02-PLAN.md
+Resume file: None
 Next action: Execute 12-02-PLAN.md

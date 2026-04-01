@@ -17,7 +17,7 @@ Requirements for Schedule Service milestone. Each maps to roadmap phases.
 
 ### Lesson Management
 
-- [ ] **LSSN-01**: System auto-generates lessons for all semester dates when template is created
+- [x] **LSSN-01**: System auto-generates lessons for all semester dates when template is created
 - [x] **LSSN-02**: Lesson generation respects week parity (odd/even/all) anchored to semester start
 - [x] **LSSN-03**: Lesson generation is idempotent (retry-safe via UNIQUE constraint)
 - [x] **LSSN-04**: Headman can cancel a specific lesson with reason
@@ -94,7 +94,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LSSN-07 | Phase 11 | Complete |
 | VIEW-01 | Phase 11 | Complete |
 | VIEW-02 | Phase 11 | Complete |
-| LSSN-01 | Phase 12 | Pending |
+| LSSN-01 | Phase 12 | Complete |
 | LSSN-02 | Phase 12 | Complete |
 | CRON-01 | Phase 13 | Pending |
 | CRON-02 | Phase 13 | Pending |

@@ -52,11 +52,11 @@ Plans:
 
 **Requirements:** [LSSN-01, LSSN-02]
 
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 12-01-PLAN.md — Academic Service first_week_type (migration + proto + gRPC) + LessonGenerationService with parity algorithm + unit tests
-- [ ] 12-02-PLAN.md — Wire generation into ScheduleItemService (create + update) + integration tests
+- [x] 12-02-PLAN.md — Wire generation into ScheduleItemService (create + update) + integration tests
 
 ### Phase 13: Status Transitions + RabbitMQ Events
 
@@ -89,4 +89,4 @@ Plans:
 | 9. RabbitMQ Events | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 10. Foundation | v3.0 | 2/2 | Complete    | 2026-04-01 |
 | 11. REST API + gRPC Client | v3.0 | 3/3 | Complete    | 2026-04-01 |
-| 12. Lesson Auto-Generation | v3.0 | 1/2 | In Progress | 2026-04-01 |
+| 12. Lesson Auto-Generation | v3.0 | 2/2 | Complete   | 2026-04-01 |

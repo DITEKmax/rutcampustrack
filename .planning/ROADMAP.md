@@ -39,10 +39,10 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 **Requirements:** [TMPL-01, TMPL-02, TMPL-03, TMPL-04, TMPL-05, LSSN-04, LSSN-05, LSSN-06, LSSN-07, VIEW-01, VIEW-02]
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
-- [ ] 11-01-PLAN.md — Infrastructure: gRPC client setup, contract DTOs/APIs, exceptions, repository extensions
+- [x] 11-01-PLAN.md — Infrastructure: gRPC client setup, contract DTOs/APIs, exceptions, repository extensions
 - [ ] 11-02-PLAN.md — ScheduleItem CRUD: service, controller, assembler, integration tests (TMPL-01..05)
 - [ ] 11-03-PLAN.md — Lesson operations + schedule view: service, controller, assembler, integration tests (LSSN-04..07, VIEW-01..02)
 
@@ -60,4 +60,4 @@ Plans:
 | 8. Redis Caching | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 9. RabbitMQ Events | v2.0 | 2/2 | Complete | 2026-03-31 |
 | 10. Foundation | v3.0 | 2/2 | Complete    | 2026-04-01 |
-| 11. REST API + gRPC Client | v3.0 | 0/3 | In Progress | — |
+| 11. REST API + gRPC Client | v3.0 | 1/3 | In Progress|  |

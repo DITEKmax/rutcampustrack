@@ -155,6 +155,9 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 .setName(semester.getName())
                 .setDateFrom(semester.getDateFrom().toString())
                 .setDateTo(semester.getDateTo().toString())
+                .setFirstWeekType(semester.getFirstWeekType() != null
+                        ? semester.getFirstWeekType()
+                        : "odd")
                 .build();
 
         responseObserver.onNext(response);

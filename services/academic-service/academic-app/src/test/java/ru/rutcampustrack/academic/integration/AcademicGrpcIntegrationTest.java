@@ -280,6 +280,8 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         assertThat(response.getName()).isEqualTo("Spring 2026");
         assertThat(response.getDateFrom()).isNotEmpty();
         assertThat(response.getDateTo()).isNotEmpty();
+        // V6 migration adds first_week_type with DEFAULT 'odd'
+        assertThat(response.getFirstWeekType()).isEqualTo("odd");
     }
 
     @Test

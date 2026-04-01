@@ -91,6 +91,7 @@ message SemesterResponse {
   string name = 2;
   string date_from = 3;
   string date_to = 4;
+  string first_week_type = 5;
 }
 
 message GeofenceResponse {

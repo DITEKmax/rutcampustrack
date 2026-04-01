@@ -36,4 +36,8 @@ public class Semester {
     @Setter
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
+
+    @Setter
+    @Column(name = "first_week_type", nullable = false, length = 10)
+    private String firstWeekType = "odd";
 }

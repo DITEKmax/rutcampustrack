@@ -20,15 +20,15 @@ Requirements for Schedule Service milestone. Each maps to roadmap phases.
 - [ ] **LSSN-01**: System auto-generates lessons for all semester dates when template is created
 - [ ] **LSSN-02**: Lesson generation respects week parity (odd/even/all) anchored to semester start
 - [x] **LSSN-03**: Lesson generation is idempotent (retry-safe via UNIQUE constraint)
-- [ ] **LSSN-04**: Headman can cancel a specific lesson with reason
-- [ ] **LSSN-05**: Headman can restore a cancelled lesson
-- [ ] **LSSN-06**: Headman can mass-cancel lessons for a date range
-- [ ] **LSSN-07**: Headman can toggle geo-checkin blocking on a specific lesson
+- [x] **LSSN-04**: Headman can cancel a specific lesson with reason
+- [x] **LSSN-05**: Headman can restore a cancelled lesson
+- [x] **LSSN-06**: Headman can mass-cancel lessons for a date range
+- [x] **LSSN-07**: Headman can toggle geo-checkin blocking on a specific lesson
 
 ### Schedule Viewing
 
-- [ ] **VIEW-01**: Any authenticated user can view group schedule for a date range
-- [ ] **VIEW-02**: Schedule response includes lesson status, room, teacher, subject info
+- [x] **VIEW-01**: Any authenticated user can view group schedule for a date range
+- [x] **VIEW-02**: Schedule response includes lesson status, room, teacher, subject info
 
 ### Status Automation
 
@@ -88,12 +88,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TMPL-03 | Phase 11 | Complete |
 | TMPL-04 | Phase 11 | Complete |
 | TMPL-05 | Phase 11 | Complete |
-| LSSN-04 | Phase 11 | Pending |
-| LSSN-05 | Phase 11 | Pending |
-| LSSN-06 | Phase 11 | Pending |
-| LSSN-07 | Phase 11 | Pending |
-| VIEW-01 | Phase 11 | Pending |
-| VIEW-02 | Phase 11 | Pending |
+| LSSN-04 | Phase 11 | Complete |
+| LSSN-05 | Phase 11 | Complete |
+| LSSN-06 | Phase 11 | Complete |
+| LSSN-07 | Phase 11 | Complete |
+| VIEW-01 | Phase 11 | Complete |
+| VIEW-02 | Phase 11 | Complete |
 | LSSN-01 | Phase 12 | Pending |
 | LSSN-02 | Phase 12 | Pending |
 | CRON-01 | Phase 13 | Pending |

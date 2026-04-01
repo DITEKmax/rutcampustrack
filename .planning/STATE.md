@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 11-rest-api-grpc-client/11-02-PLAN.md
-last_updated: "2026-04-01T21:07:04.311Z"
+status: verifying
+stopped_at: Completed 11-03-PLAN.md (Lesson Operations + Schedule View)
+last_updated: "2026-04-01T21:11:50.739Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -24,7 +24,7 @@ v3.0 Schedule Service — 🚧 IN PROGRESS
 
 Phase: 11 (rest-api-grpc-client) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-01
 
 Progress: [░░░░░░░░░░] 0% (0/5 phases)
@@ -63,6 +63,7 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 10]: V2__implicit_casts.sql not needed for schedule-service -- custom enum types validate without explicit casts
 - [Phase 11-rest-api-grpc-client]: spring-data-commons added to schedule-api-contract — Pageable/PagedResourcesAssembler missing from original build.gradle.kts
 - [Phase 11-rest-api-grpc-client]: PagedResourcesAssembler passed as method param (from contract interface) not constructor field to avoid generic type mismatch
+- [Phase 11-03]: Native @Query with status::text cast preferred over derived query for PostgreSQL enum IN clause — implicit cast alone insufficient
 
 ### Pending Todos
 
@@ -75,7 +76,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-01T21:07:04.307Z
-Stopped at: Completed 11-rest-api-grpc-client/11-02-PLAN.md
+Last session: 2026-04-01T21:11:50.736Z
+Stopped at: Completed 11-03-PLAN.md (Lesson Operations + Schedule View)
 Resume file: None
 Next action: `/gsd:plan-phase 10`

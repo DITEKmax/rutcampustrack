@@ -7,24 +7,14 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
 ## Core Value
-Schedule Service with full lesson lifecycle: template CRUD → auto-generation → status transitions → RabbitMQ events → gRPC server — the scheduling backbone that Attendance Service will consume.
+Attendance tracking backbone: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) are shipped. Next priority: Attendance Service — geo-checkin, attendance marking, reporting — the core user-facing feature.
 
 ## Current State
 v3.0 shipped. Schedule Service fully operational — full CRUD for schedule items, lesson operations, schedule view, gRPC client to Academic Service, automatic lesson generation with week-parity algorithm, cron-based status transitions (planned→active→closed), RabbitMQ event publishing (lesson.started, lesson.closed, lesson.cancelled), gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) for Attendance Service consumption.
 
-## Current Milestone: v3.0 Schedule Service
+## Next Milestone: v4.0 Attendance Service
 
-**Goal:** Full scheduling cycle: schedule template created → lessons auto-generated for semester → statuses transition automatically (planned→active→closed) → events published to RabbitMQ → gRPC server answers Attendance Service queries.
-
-**Target features:**
-- CRUD schedule templates (headman) — create, cancel, restore lessons
-- Auto-generate lessons for all semester dates (respecting week parity)
-- Automatic status transitions via cron (planned→active→closed)
-- Geo-checkin blocking on specific lessons
-- GET group schedule for date range (all roles)
-- RabbitMQ events: lesson.started, lesson.closed, lesson.cancelled
-- gRPC server: GetActiveLesson, GetLessonById, GetLessonsByGroup
-- gRPC client to Academic Service for validation
+To be defined via `/gsd:new-milestone`. Expected scope: MongoDB-based attendance tracking, geo-checkin validation, RabbitMQ event consumption, gRPC client to Schedule Service, attendance reports and statistics.
 
 ## Target Users
 - **Students** (500-5000): geo-checkin, excuse tickets, homework tracker
@@ -67,28 +57,15 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ Redis caching with invalidation for read-heavy methods — v2.0
 - ✓ RabbitMQ event publishing (group.updated, semester.archived, homework.*) — v2.0
 
-### Active
-(Defined in `.planning/REQUIREMENTS.md` for v3.0)
-
-### Validated in Phase 11
-- ✓ TMPL-01..05: Schedule template CRUD (create/update/delete/list/get) with headman authorization — v3.0
-- ✓ LSSN-04..07: Lesson cancel/restore/mass-cancel/geo-block toggle — v3.0
+- ✓ TMPL-01..05: Schedule template CRUD with headman authorization — v3.0
+- ✓ LSSN-01..07: Lesson auto-generation, cancel/restore/mass-cancel/geo-block — v3.0
 - ✓ VIEW-01..02: Schedule view for date range — v3.0
+- ✓ CRON-01..04: Cron-based lesson status transitions with Moscow TZ — v3.0
+- ✓ EVNT-01..04: RabbitMQ events (lesson.started/closed/cancelled) — v3.0
+- ✓ GRPC-01..03: gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) — v3.0
 
-### Validated in Phase 12
-- ✓ LSSN-01: Auto-generate lessons on template creation for all matching semester dates — v3.0
-- ✓ LSSN-02: Week parity (odd/even/all) respected via semester-anchored first_week_type — v3.0
-
-### Validated in Phase 13
-- ✓ CRON-01..03: Cron-based lesson status transitions (planned→active→closed) with restart catch-up — v3.0
-- ✓ EVNT-01..02: RabbitMQ events for lesson.started and lesson.closed — v3.0
-- ✓ EVNT-03: LessonCancelledEvent published on cancel/mass-cancel — v3.0
-- ✓ EVNT-04: @TransactionalEventListener(AFTER_COMMIT) pattern in schedule-service — v3.0
-
-### Validated in Phase 14
-- ✓ GRPC-01: GetActiveLesson — active lesson for group by date, ordered by lesson_number ASC — v3.0
-- ✓ GRPC-02: GetLessonById — full lesson details enriched with ScheduleItem data — v3.0
-- ✓ GRPC-03: GetLessonsByGroup — all lessons for group in date range via ScheduleItem JOIN — v3.0
+### Active
+(To be defined in `/gsd:new-milestone` for v4.0)
 
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
@@ -127,7 +104,7 @@ Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 | gRPC queries repositories directly, not REST services | ✓ Avoids RequestContext scope issues in gRPC threads | v2.0 |
 | @TransactionalEventListener(AFTER_COMMIT) for domain events | ✓ No events on rollback, services decoupled from AMQP | v2.0 |
 | @MockitoBean RabbitTemplate in non-event test bases | ✓ Prevents DomainEventListener from breaking tests without RabbitMQ | v2.0 |
-| Eager lesson generation (ON CONFLICT DO NOTHING) | ✓ Simpler than lazy, UNIQUE(schedule_item_id, date) idempotency | v3.0 |
+| Eager lesson generation (UNIQUE constraint) | ⚠️ saveAll without ON CONFLICT DO NOTHING — retry throws 409, not silent dedup | v3.0 |
 | @Profile("!test") on SchedulingConfig | ✓ Cron jobs disabled in test profile, matches @ActiveProfiles("test") | v3.0 |
 | grpc.server.port: 19092 | ✓ gRPC server starter added, port configured | v3.0 |
 | TZ=Europe/Moscow + hibernate.jdbc.time_zone | ✓ All TIME columns interpreted in Moscow timezone (CRON-04) | v3.0 |
@@ -150,4 +127,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 — Phase 14 gRPC Server complete, v3.0 Schedule Service milestone shipped*
+*Last updated: 2026-04-04 after v3.0 milestone*

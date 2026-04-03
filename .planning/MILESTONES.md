@@ -1,5 +1,21 @@
 # Milestones
 
+## v3.0 Schedule Service (Shipped: 2026-04-03)
+
+**Phases completed:** 4 phases, 9 plans, 14 tasks
+
+**Key accomplishments:**
+
+- One-liner:
+- ScheduleItemService
+- LessonWithItem
+- ScheduleItemService fully wired: POST creates template and generates all semester lessons; PUT detects schedule-affecting field changes and re-generates future planned lessons; 7 integration tests prove end-to-end behavior with Testcontainers PostgreSQL.
+- LessonRepository.java
+- LessonStatusTransitionJobTest
+- One-liner:
+
+---
+
 ## v2.0 Academic Service (Shipped: 2026-03-31)
 
 **Phases completed:** 5 phases, 12 plans, 18 tasks

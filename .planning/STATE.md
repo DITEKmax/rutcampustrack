@@ -1,40 +1,40 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: verifying
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-04-03T21:51:05.080Z"
-last_activity: 2026-04-03
+milestone: v3.0
+milestone_name: Schedule Service
+status: completed
+stopped_at: v3.0 milestone archived
+last_updated: "2026-04-04T12:00:00.000Z"
+last_activity: 2026-04-04
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
-  percent: 40
+  total_phases: 5
+  completed_phases: 5
+  total_plans: 11
+  completed_plans: 11
+  percent: 100
 ---
 
 # Project State
 
 ## Current Milestone
 
-v3.0 Schedule Service — IN PROGRESS
+v3.0 Schedule Service — ✅ SHIPPED 2026-04-04
 
 ## Current Position
 
-Phase: 14
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-03
+Phase: All complete
+Plan: All complete
+Status: Milestone archived, ready for v4.0
+Last activity: 2026-04-04
 
-Progress: [████░░░░░░] 40% (4/10 plans)
+Progress: [██████████] 100% (11/11 plans)
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-03-31)
+See: `.planning/PROJECT.md` (updated 2026-04-04)
 
-**Core value:** Schedule Service with full lesson lifecycle — the scheduling backbone for Attendance Service.
-**Current focus:** Phase 13 — status-transitions-rabbitmq-events
+**Core value:** Attendance tracking backbone — Auth + Academic + Schedule shipped. Next: Attendance Service.
+**Current focus:** Planning next milestone (v4.0 Attendance Service)
 
 ## Phase Map
 
@@ -42,38 +42,22 @@ See: `.planning/PROJECT.md` (updated 2026-03-31)
 |-------|------|--------------|--------|
 | 10 | Foundation | LSSN-03, CRON-04 | Complete |
 | 11 | REST API + gRPC Client | TMPL-01..05, LSSN-04..07, VIEW-01..02 | Complete |
-| 12 | Lesson Generation | LSSN-01, LSSN-02 | Plan 01 done, Plan 02 pending |
-| 13 | Events + Cron | CRON-01..03, EVNT-01..04 | Not started |
-| 14 | gRPC Server | GRPC-01..03 | Not started |
+| 12 | Lesson Auto-Generation | LSSN-01, LSSN-02 | Complete |
+| 13 | Status Transitions + RabbitMQ Events | CRON-01..03, EVNT-01..04 | Complete |
+| 14 | gRPC Server | GRPC-01..03 | Complete |
 
 ## Accumulated Context
 
 ### Decisions
 
 See `.planning/PROJECT.md` Key Decisions table for full list.
+See `.planning/milestones/v3.0-ROADMAP.md` for archived v3.0 details.
 
-**v3.0 key pre-decisions (from research):**
+### Known Tech Debt (from v3.0 audit)
 
-- Eager lesson generation at template creation (not lazy per GET) — simpler, idempotent via ON CONFLICT DO NOTHING
-- `@Profile("!test")` guard on SchedulingConfig — matches existing `@ActiveProfiles("test")` in abstract test base
-- `grpc.server.port: 19092` — avoids Auth (9090) and Academic (19091) conflicts
-- `TZ=Europe/Moscow` in docker-compose.yml + `hibernate.jdbc.time_zone=Europe/Moscow` + injected Clock bean
-- Week parity relative to semester start: `weeksSinceStart = WEEKS.between(anchor, currentWeekMonday)` using previousOrSame(MONDAY) anchor
-- gRPC client deadline: always `.withDeadlineAfter(3s)` on AcademicGrpcClient calls
-- [Phase 12-01]: firstWeekType stored as String (not enum) in Semester entity to avoid cross-service enum coupling
-- [Phase 12-01]: Java-level default "odd" on Semester.firstWeekType prevents null violations when tests create Semester without setting the field
-- [Phase 12-01]: V6 migration adds implicit varchar cast for week_type enum (same pattern as V5)
-- [Phase 12-lesson-auto-generation]: scheduleAffected boolean computed BEFORE applying setters to capture pre-update field state
-- [Phase 12-lesson-auto-generation]: Integration tests use dayOfWeek=1 (TUESDAY) matching existing test conventions — avoids @Min(1) validation rejection
-- [Phase 13-status-transitions-rabbitmq-events]: scheduleEventsExchange bean name avoids Spring name clash with academicEventsExchange in shared test context
-- [Phase 13-status-transitions-rabbitmq-events]: fixedDelay=60000 over fixedRate prevents cron tick overlap when run exceeds 1 min
-- [Phase 13-status-transitions-rabbitmq-events]: Two-phase @Transactional cron: phase1 saveAll makes new ACTIVE lessons visible to phase2 query — no separate catch-up logic needed (CRON-03)
-- [Phase 14]: gRPC server queries repositories directly without caching — real-time sensitive, infrequent calls from Attendance Service
-- [Phase 14-grpc-server]: Test via direct method invocation with mock StreamObserver — no in-process gRPC channel needed per D-06
-
-### Pending Todos
-
-None.
+- IllegalArgumentException → HTTP 500 in REST layer (missing handler in GlobalExceptionHandler)
+- LSSN-03 idempotency: saveAll throws 409 on retry, not silent dedup (no ON CONFLICT DO NOTHING)
+- GetLessonsByGroup includes cancelled lessons (no caller filter control)
 
 ### Blockers/Concerns
 
@@ -81,7 +65,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T21:47:08.549Z
-Stopped at: Completed 14-02-PLAN.md
+Last session: 2026-04-04
+Stopped at: v3.0 milestone archived
 Resume file: None
-Next action: Execute 12-02-PLAN.md
+Next action: /gsd:new-milestone for v4.0

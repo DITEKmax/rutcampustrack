@@ -10,6 +10,7 @@ import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
@@ -49,6 +50,25 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
            nativeQuery = true)
     void deletePlannedFromDate(@Param("itemId") Long scheduleItemId,
                                @Param("fromDate") LocalDate fromDate);
+
+    /**
+     * Finds the active lesson for a group on a given date, ordered by lesson_number ASC.
+     * Returns at most one result (LIMIT 1). Used by gRPC GetActiveLesson (GRPC-01).
+     * When multiple active lessons exist for the same group (rare scheduling overlap),
+     * returns the first by lesson_number ASC per D-02.
+     */
+    @Query(value = """
+        SELECT l.* FROM lessons l
+        JOIN schedule_items si ON si.id = l.schedule_item_id
+        WHERE l.status::text = 'active'
+          AND si.group_id = :groupId
+          AND l.date = CAST(:date AS date)
+        ORDER BY si.lesson_number ASC
+        LIMIT 1
+        """, nativeQuery = true)
+    Optional<Lesson> findActiveLessonForGroup(
+            @Param("groupId") Long groupId,
+            @Param("date") LocalDate date);
 
     /**
      * Finds PLANNED lessons whose (date + start_time) <= nowMoscow (CRON-01).

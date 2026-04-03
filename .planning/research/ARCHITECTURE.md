@@ -1,640 +1,851 @@
 # Architecture Research
 
-**Domain:** Schedule Service — microservice integration into existing RutCampusTrack system
-**Researched:** 2026-03-31
-**Confidence:** HIGH — based entirely on verified codebase (proto files, migration SQL, event schemas, Academic Service implementation patterns, existing schedule-app scaffold)
+**Domain:** Attendance Service MVP — geo-checkin, manual marking, auto-absent, basic reports
+**Researched:** 2026-04-04
+**Confidence:** HIGH (based on full source inspection of existing codebase)
 
 ---
 
 ## System Overview
 
-Schedule Service sits between Academic Service (upstream data source) and Attendance Service (downstream consumer). It is the only service that owns the lesson lifecycle and the only publisher of lesson-related events.
+Attendance Service (v4.0) is the first service that consumes from the shared RabbitMQ fanout exchange. It calls both Schedule Service and Academic Service via gRPC. It owns MongoDB `attendance_db`.
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          DOCKER PRIVATE NETWORK                              │
-│                                                                              │
-│  Clients → [API Gateway :8080]                                               │
-│               │  JWT validated, X-User-* headers injected                   │
-│               │                                                              │
-│               └──► [Schedule Service :9092]   → PostgreSQL schedule_db      │
-│                         │                                                    │
-│                         │ gRPC client (sync)                                │
-│                         ├──► [Academic Service :9111] ← GetGroup            │
-│                         │                              ← GetTeacherSubjects  │
-│                         │                              ← GetActiveSemester   │
-│                         │                                                    │
-│                         │ gRPC server (sync)                                │
-│                         ├──◄ [Attendance Service :9093] GetActiveLesson     │
-│                         │                               GetLessonById        │
-│                         │                               GetLessonsByGroup    │
-│                         │                                                    │
-│                         │ RabbitMQ publish (async)                          │
-│                         └──► [rut-uit.events fanout exchange]               │
-│                                  │                                           │
-│                                  ├──► notification-web.events queue         │
-│                                  └──► notification-bot.events queue         │
-│                                                                              │
-│  [Spring @Scheduled cron]                                                    │
-│    → reads lessons from schedule_db                                          │
-│    → transitions PLANNED→ACTIVE→CLOSED                                       │
-│    → fires Spring ApplicationEvents → DomainEventListener → RabbitMQ        │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                     ATTENDANCE SERVICE (port 9093)                    │
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │  checkin/ domain                                                 │  │
+│  │  ┌──────────────────┐   ┌──────────────────────────────────┐   │  │
+│  │  │ CheckInController│   │ ManualMarkController              │   │  │
+│  │  │ POST /check-in   │   │ POST /manual                     │   │  │
+│  │  └────────┬─────────┘   └───────────────┬──────────────────┘   │  │
+│  │           │                             │                       │  │
+│  │  ┌────────▼─────────────────────────────▼──────────────────┐   │  │
+│  │  │ CheckInService                                           │   │  │
+│  │  │  - geo validation (Haversine)                           │   │  │
+│  │  │  - time window + geo-block check                        │   │  │
+│  │  │  - MongoDB upsert (idempotent on lesson_id+user_id)     │   │  │
+│  │  │  - publish attendance.marked event                      │   │  │
+│  │  └────────┬──────────────────────────────────────────────  ┘   │  │
+│  │           │                                                     │  │
+│  │  ┌────────▼─────────────────────────────────────────────────┐  │  │
+│  │  │ AttendanceRepository (Spring Data MongoDB)               │  │  │
+│  │  │ Collection: attendances                                  │  │  │
+│  │  └──────────────────────────────────────────────────────────┘  │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │  shared/port/                                                    │  │
+│  │  AttendanceReadPort  ◄──── report/ reads ONLY through this      │  │
+│  │  (interface)                                                     │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │  report/ domain (ISOLATED — no import from checkin.*)           │  │
+│  │  ┌──────────────────┐  ┌───────────────────────────────────┐   │  │
+│  │  │ JournalController│  │ StudentStatsController            │   │  │
+│  │  │ GET /reports/    │  │ GET /reports/student/{id}         │   │  │
+│  │  │  group/...       │  │                                   │   │  │
+│  │  └────────┬─────────┘  └────────────┬──────────────────── ┘   │  │
+│  │           │                         │                          │  │
+│  │  ┌────────▼─────────────────────────▼──────────────────────┐  │  │
+│  │  │ ReportService                                            │  │  │
+│  │  │  - calls AttendanceReadPort                             │  │  │
+│  │  │  - calls AcademicGrpcClient (GetGroupMembers)           │  │  │
+│  │  │  - calls AcademicGrpcClient (GetTeacherSubjects)        │  │  │
+│  │  └──────────────────────────────────────────────────────── ┘  │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │  event/ (consumer + publisher)                                  │  │
+│  │  ┌──────────────────────────────────────────────────────────┐  │  │
+│  │  │ LessonEventConsumer  @RabbitListener                    │  │  │
+│  │  │  - onLessonClosed → trigger auto-absent for lesson      │  │  │
+│  │  │  - onLessonCancelled → mark all attendances cancelled   │  │  │
+│  │  └──────────────────────────────────────────────────────── ┘  │  │
+│  │  ┌──────────────────────────────────────────────────────────┐  │  │
+│  │  │ DomainEventListener  @EventListener                      │  │  │
+│  │  │  - publishes attendance.marked to rut-uit.events         │  │  │
+│  │  └──────────────────────────────────────────────────────── ┘  │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │  grpc/ (client only — no gRPC server in v4.0)                   │  │
+│  │  ScheduleGrpcClient  (GetActiveLesson, GetLessonById)           │  │
+│  │  AcademicGrpcClient  (GetGroupMembers, GetCampusGeofence,       │  │
+│  │                       GetTeacherSubjects)                       │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────────┘
+         │                          │                 ▲
+  gRPC (sync)                 MongoDB write       RabbitMQ
+         │                     attendance_db       consume
+    ┌────┴──────┐         ┌──────────────────┐  lesson.closed
+    │ Schedule  │         │ MongoDB           │  lesson.cancelled
+    │ :19092    │         │ attendance_db     │
+    │           │         └──────────────────┘
+    │ Academic  │
+    │ :19091    │
+    └───────────┘
 ```
 
 ---
 
-## Component Boundaries
+## Component Responsibilities
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| `schedule-api-contract` | REST interface definitions, DTOs (records + HATEOAS classes), enums | Nothing (pure java-library) |
-| REST controllers | Route HTTP, read X-User-* headers via RequestContext, delegate to services | Service layer |
-| `@RequireRole` AOP | Role-based access control on controller methods | RequestContext (request-scoped bean) |
-| `ScheduleItemService` | CRUD schedule templates, validate via gRPC to Academic | JPA repositories, AcademicGrpcClient |
-| `LessonService` | Lazy lesson generation, cancel/uncancel, geo-block | JPA repositories |
-| `LessonStatusScheduler` | Cron jobs: PLANNED→ACTIVE and ACTIVE→CLOSED transitions, event publishing | LessonRepository, ApplicationEventPublisher |
-| `LessonGenerationService` | Generate concrete lesson rows from schedule_items for a date range | LessonRepository, ScheduleItemRepository |
-| `ScheduleGrpcServiceImpl` | Serve Attendance Service gRPC calls (3 RPCs) | LessonRepository, ScheduleItemRepository (direct, no service proxy — per existing Academic pattern) |
-| `DomainEventListener` | Bridge Spring ApplicationEvents to RabbitMQ after DB commit | RabbitTemplate |
-| JPA repositories | PostgreSQL schedule_db CRUD | PostgreSQL |
-| `AcademicGrpcClient` | Call Academic Service for validation (GetGroup, GetTeacherSubjects, GetActiveSemester) | Academic Service gRPC server :9111 |
+| Component | Responsibility | Implementation |
+|-----------|----------------|----------------|
+| `checkin/CheckInController` | REST endpoint for student geo-checkin | `implements CheckInApi` from contract |
+| `checkin/ManualMarkController` | REST endpoint for headman manual marking | `implements ManualMarkApi` from contract |
+| `checkin/CheckInService` | Geo validation, time window, upsert + event publish | `@Service`, uses `ApplicationEventPublisher` |
+| `checkin/AutoAbsentService` | Bulk-marks unmarked students absent when lesson closes | `@Service`, called by event consumer |
+| `checkin/AttendanceRepository` | MongoDB CRUD on `attendances` collection | `MongoRepository<AttendanceRecord, String>` |
+| `report/JournalController` | Group journal by subject | `implements JournalApi` from contract |
+| `report/StudentStatsController` | Student attendance stats | `implements StudentStatsApi` from contract |
+| `report/ReportService` | Aggregates attendance + enriches with member names | reads via `AttendanceReadPort` |
+| `shared/port/AttendanceReadPort` | Interface bridging checkin and report domains | Implemented by `AttendanceReadPortImpl` in `checkin/` |
+| `event/LessonEventConsumer` | RabbitMQ consumer for lesson lifecycle events | `@RabbitListener` — first consumer in the system |
+| `event/DomainEventListener` | Forwards Spring events to RabbitMQ | `@EventListener` (plain, not transactional — see Anti-Pattern 2) |
+| `event/RabbitConfig` | Queue + binding declarations, Jackson converter, RabbitTemplate | `@Configuration` |
+| `grpc/ScheduleGrpcClient` | gRPC client to Schedule Service | `@GrpcClient("schedule-service")` |
+| `grpc/AcademicGrpcClient` | gRPC client to Academic Service | `@GrpcClient("academic-service")` |
+| `config/MongoIndexConfig` | Programmatic index creation on startup | `@EventListener(ApplicationReadyEvent)` |
+| `security/` | UserContextFilter, RequestContext, RequireRole, RoleCheckAspect | Copy pattern from schedule-service exactly |
 
 ---
 
-## Recommended Package Structure
+## Recommended Project Structure
 
 ```
-services/schedule-service/
-├── schedule-api-contract/
-│   └── src/main/java/ru/rutcampustrack/schedule/contract/
-│       ├── enums/
-│       │   ├── LessonStatus.java          ← already exists (PLANNED, ACTIVE, CLOSED, CANCELLED)
-│       │   └── WeekType.java              ← already exists (ALL, ODD, EVEN)
+attendance-service/
+├── attendance-api-contract/       # java-library — NO Lombok
+│   └── src/main/java/ru/rutcampustrack/attendance/contract/
 │       ├── api/
-│       │   ├── ScheduleItemApi.java       ← NEW — interface with @RequestMapping, Swagger @Operation
-│       │   └── LessonApi.java             ← NEW
-│       └── dto/
-│           ├── item/
-│           │   ├── CreateScheduleItemRequest.java  ← record, @NotNull fields
-│           │   ├── UpdateScheduleItemRequest.java  ← record (PUT = full)
-│           │   └── ScheduleItemResponse.java       ← class extends RepresentationModel
-│           └── lesson/
-│               ├── LessonResponse.java             ← class extends RepresentationModel
-│               └── CancelLessonRequest.java        ← record with cancelReason
+│       │   ├── CheckInApi.java           # POST /attendance/check-in
+│       │   ├── ManualMarkApi.java        # POST /attendance/manual
+│       │   ├── JournalApi.java           # GET /reports/group/...
+│       │   └── StudentStatsApi.java      # GET /reports/student/...
+│       ├── dto/
+│       │   ├── checkin/
+│       │   │   ├── GeoCheckinRequest.java    # record {lat, lng}
+│       │   │   ├── ManualMarkRequest.java    # record {userId, lessonId, status}
+│       │   │   └── AttendanceResponse.java   # class extends RepresentationModel
+│       │   └── report/
+│       │       ├── JournalResponse.java      # class extends RepresentationModel
+│       │       └── StudentStatsResponse.java # class extends RepresentationModel
+│       └── enums/
+│           ├── AttendanceStatus.java    # already exists
+│           ├── AttendanceSource.java    # already exists
+│           ├── ExcuseType.java          # already exists
+│           └── ExcuseTicketStatus.java  # already exists
 │
-└── schedule-app/
-    └── src/main/java/ru/rutcampustrack/schedule/
-        ├── ScheduleApplication.java               ← already exists
-        ├── config/
-        │   ├── EnumConverters.java                ← already exists (WeekType, LessonStatus)
-        │   ├── RabbitConfig.java                  ← NEW — same pattern as Academic Service
-        │   └── GrpcClientConfig.java              ← NEW — Academic gRPC channel config
-        ├── security/
-        │   ├── RequestContext.java                ← NEW — copy pattern from academic-app
-        │   ├── RequireRole.java                   ← NEW — annotation
-        │   ├── RoleCheckAspect.java               ← NEW — AOP aspect
-        │   └── UserContextFilter.java             ← NEW — reads X-User-* headers into RequestContext
-        ├── item/
-        │   ├── entity/ScheduleItem.java           ← NEW — @Entity mapping to schedule_items
-        │   ├── repository/ScheduleItemRepository.java  ← NEW
-        │   ├── service/ScheduleItemService.java   ← NEW — CRUD + gRPC validation
-        │   ├── assembler/ScheduleItemAssembler.java  ← NEW
-        │   └── controller/ScheduleItemController.java ← NEW — implements ScheduleItemApi
-        ├── lesson/
-        │   ├── entity/Lesson.java                 ← NEW — @Entity mapping to lessons
-        │   ├── repository/LessonRepository.java   ← NEW
-        │   ├── service/LessonService.java         ← NEW — cancel/uncancel/geo-block
-        │   ├── service/LessonGenerationService.java  ← NEW — expand schedule_items into lesson rows
-        │   ├── assembler/LessonAssembler.java     ← NEW
-        │   └── controller/LessonController.java   ← NEW — implements LessonApi
-        ├── scheduler/
-        │   └── LessonStatusScheduler.java         ← NEW — @Scheduled cron jobs + event triggers
+└── attendance-app/                # Spring Boot app — Lombok allowed
+    └── src/main/java/ru/rutcampustrack/attendance/
+        ├── AttendanceApplication.java
+        ├── checkin/
+        │   ├── CheckInController.java
+        │   ├── ManualMarkController.java
+        │   ├── CheckInService.java
+        │   ├── AutoAbsentService.java
+        │   ├── AttendanceAssembler.java
+        │   ├── model/
+        │   │   └── AttendanceRecord.java     # @Document("attendances")
+        │   ├── repository/
+        │   │   └── AttendanceRepository.java
+        │   └── port/
+        │       └── AttendanceReadPortImpl.java  # implements shared/port/AttendanceReadPort
+        ├── report/
+        │   ├── JournalController.java
+        │   ├── StudentStatsController.java
+        │   └── ReportService.java
+        ├── shared/
+        │   └── port/
+        │       └── AttendanceReadPort.java    # interface only
+        ├── event/
+        │   ├── RabbitConfig.java             # Queue + binding + converter + template
+        │   ├── DomainEvent.java              # abstract, same as schedule-service
+        │   ├── AttendanceMarkedEvent.java    # extends DomainEvent
+        │   ├── DomainEventListener.java      # @EventListener (plain, not transactional)
+        │   ├── LessonEventConsumer.java      # @RabbitListener — NEW, first consumer
+        │   └── dto/
+        │       ├── LessonClosedPayload.java   # record — deserialize lesson.closed
+        │       └── LessonCancelledPayload.java
         ├── grpc/
-        │   ├── server/ScheduleGrpcServiceImpl.java  ← NEW — implements ScheduleGrpcServiceGrpc.ImplBase
-        │   └── client/AcademicGrpcClient.java     ← NEW — stub wrapper for Academic Service calls
-        └── event/
-            ├── DomainEvent.java                   ← NEW — copy from academic-app, same pattern
-            ├── DomainEventListener.java            ← NEW — @TransactionalEventListener(AFTER_COMMIT)
-            ├── LessonStartedEvent.java            ← NEW
-            ├── LessonClosedEvent.java             ← NEW
-            └── LessonCancelledEvent.java          ← NEW
+        │   ├── ScheduleGrpcClient.java
+        │   ├── AcademicGrpcClient.java
+        │   └── GrpcExceptionAdvice.java      # copy from schedule-service
+        ├── config/
+        │   └── MongoIndexConfig.java         # ensure indexes exist on startup
+        ├── exception/
+        │   ├── GlobalExceptionHandler.java
+        │   ├── ResourceNotFoundException.java
+        │   ├── CheckInNotAllowedException.java
+        │   ├── GeofenceViolationException.java
+        │   └── ScheduleServiceUnavailableException.java
+        └── security/
+            ├── UserContextFilter.java
+            ├── RequestContext.java
+            ├── RequireRole.java
+            └── RoleCheckAspect.java
 ```
 
----
+### Structure Rationale
 
-## Integration Points: New vs Existing
-
-### Existing Infrastructure (zero changes needed)
-
-| Component | Location | Notes |
-|-----------|----------|-------|
-| `schedule-api-contract` module scaffold | `schedule-api-contract/build.gradle.kts` | Has `LessonStatus`, `WeekType` enums already |
-| `schedule-app` Spring Boot scaffold | `schedule-app/build.gradle.kts`, `ScheduleApplication.java` | Spring Boot, JPA, RabbitMQ already declared |
-| `EnumConverters.java` | `schedule-app/config/` | WeekType + LessonStatus converters with autoApply=true |
-| Flyway V1 migration | `db/migration/V1__baseline.sql` | `schedule_items` + `lessons` tables already created |
-| `application.yml` | `schedule-app/resources/` | PostgreSQL + RabbitMQ connection configured |
-| `schedule.proto` | `proto/schedule.proto` | 3 RPCs + all messages defined: `GetActiveLesson`, `GetLessonById`, `GetLessonsByGroup` |
-| Event schemas | `event-schemas/lesson.started.json`, `lesson.closed.json`, `lesson.cancelled.json` | Payload structure defined |
-| RabbitMQ exchange | `rut-uit.events` (fanout) | Already declared by Academic Service — Schedule Service declares same bean, AMQP is idempotent |
-| API Gateway routing | `api-gateway/application.yml` | `/schedule/**` → `schedule-service:9092` already configured per docs/architecture.md |
-| Docker Compose | `docker-compose.yml` | `schedule-service` + `postgres-schedule` already defined |
-
-### New: Add to `build.gradle.kts`
-
-| Dependency | Purpose | Note |
-|------------|---------|------|
-| `net.devh:grpc-spring-boot-starter:3.1.0.RELEASE` | gRPC server (for Attendance) + client stubs | Same version as Academic Service |
-| `io.grpc:grpc-stub`, `io.grpc:grpc-protobuf` | Transitive via starter, but check root build |  |
-| Proto plugin configuration in root `build.gradle.kts` | Generate Java from `schedule.proto` + `academic.proto` | `academic.proto` needed for gRPC client stubs |
-
-### New: `application.yml` additions
-
-```yaml
-grpc:
-  server:
-    port: 19092          # internal only, not exposed via Gateway
-  client:
-    academic-service:
-      address: 'static://academic-service:19091'
-      negotiation-type: plaintext
-```
-
-The Academic Service gRPC port is 19091 (verified from `docs/architecture.md` which shows port 9091 is REST, gRPC runs on the internal port configured in `academic-app/application.yml` — check that file to confirm the exact internal gRPC port).
+- **checkin/ vs report/**: Domain isolation enforced by ArchUnit rules. `report/` queries data only through `shared/port/AttendanceReadPort`. This mirrors the design in `docs/architecture.md` and enables future extraction of Report as its own service by swapping the port implementation.
+- **event/dto/**: Payload records for incoming RabbitMQ events live in `event/dto/` not in `checkin/` because the consumer is infrastructure, not domain logic.
+- **grpc/**: Both clients in a flat `grpc/` package — same as schedule-service's `grpc/AcademicGrpcClient`.
+- **security/**: Verbatim copy of schedule-service security package. Same gateway headers, same AOP pattern.
 
 ---
 
 ## Data Flow
 
-### Flow 1: Headman Creates Schedule Template
+### Flow 1: Geo-Checkin (Student)
 
 ```
-HEADMAN → POST /schedule/items
-  → API Gateway → JWT validate → inject X-User-Id, X-Role, X-Group-Id, X-Is-Headman
-    → ScheduleItemController.create()
-      → @RequireRole(STUDENT) + isHeadman check via RoleCheckAspect
-      → ScheduleItemService.create(request, userId, groupId)
-        → gRPC → AcademicGrpcClient.getGroup(groupId) — validate group exists + active
-        → gRPC → AcademicGrpcClient.getTeacherSubjects(teacherId, semesterId) — validate teacher assigned
-        → gRPC → AcademicGrpcClient.getActiveSemester() — get semesterId if not provided
-        → INSERT schedule_items row
-        → return ScheduleItemResponse (HATEOAS EntityModel with _links)
-    ← 201 Created
+Student → POST /attendance/check-in + {lat, lng}
+    → API Gateway: JWT → X-User-Id, X-Group-Id, X-User-Role=STUDENT
+    → UserContextFilter populates RequestContext
+    → @RequireRole(STUDENT) check passes
+    → CheckInService:
+        1. gRPC → ScheduleGrpcClient.getActiveLesson(groupId, now)
+           ← LessonResponse {id, isGeoBlocked, startTime, endTime}
+        2. REJECT if isGeoBlocked=true → 409 CheckInNotAllowedException
+        3. gRPC → AcademicGrpcClient.getCampusGeofence()
+           ← GeofenceResponse {lat, lng, radius_m}
+        4. Haversine distance check: student coords vs campus center
+           ← REJECT if distance > radius_m → 422 GeofenceViolationException
+        5. MongoDB upsert: attendances {lesson_id, user_id, status=present, marked_by=student_geo}
+        6. ApplicationEventPublisher.publishEvent(AttendanceMarkedEvent)
+           → @EventListener in DomainEventListener
+           → RabbitTemplate → rut-uit.events fanout → all bound queues
+    ← 200 AttendanceResponse {status=present, distanceM=45}
 ```
 
-### Flow 2: Cron Transition PLANNED → ACTIVE (lesson.started event)
+### Flow 2: Manual Mark (Headman)
 
 ```
-[LessonStatusScheduler] @Scheduled(cron = "0 * * * * *")  — every minute
-  → LessonRepository.findAllByStatusAndStartTimeBefore(PLANNED, now())
-    -- joins lessons + schedule_items to get start_time
-  → for each lesson:
-      → lesson.setStatus(ACTIVE)
-      → lessonRepository.save(lesson)            -- within @Transactional
-      → applicationEventPublisher.publishEvent(
-            new LessonStartedEvent(this, lesson)  -- Spring ApplicationEvent
-        )
-  → [DomainEventListener] @TransactionalEventListener(AFTER_COMMIT)
-      → rabbitTemplate.convertAndSend("rut-uit.events", "", event)
-      -- fanout: both notification-web.events + notification-bot.events queues receive copy
+Headman → POST /attendance/manual + {userId, lessonId, status}
+    → UserContextFilter: X-User-Role=STUDENT, X-Is-Headman=true
+    → @RequireRole(STUDENT) passes, service checks requestContext.isHeadman()
+    → CheckInService:
+        1. gRPC → ScheduleGrpcClient.getLessonById(lessonId)
+           ← Verify lesson.groupId == headman.groupId (ownership)
+        2. MongoDB upsert: {lesson_id, userId, status, marked_by=headman}
+        3. Publish AttendanceMarkedEvent
+    ← 200 AttendanceResponse
 ```
 
-The AFTER_COMMIT guarantee is critical: if the DB update fails, no event is published. Pattern is identical to Academic Service's `DomainEventListener`.
+Note on HEADMAN role: `X-User-Role=STUDENT` always. Headman status is in `X-Is-Headman=true` header, same as schedule-service. `@RequireRole` checks STUDENT; service layer checks `requestContext.isHeadman()`.
 
-### Flow 3: Cron Transition ACTIVE → CLOSED (lesson.closed event)
-
-```
-[LessonStatusScheduler] @Scheduled(cron = "0 * * * * *")  — same cron, separate query
-  → LessonRepository.findAllByStatusAndEndTimeBefore(ACTIVE, now())
-  → for each lesson:
-      → lesson.setStatus(CLOSED)
-      → lesson.setClosedAt(now())
-      → lessonRepository.save(lesson)            -- within @Transactional
-      → applicationEventPublisher.publishEvent(new LessonClosedEvent(this, lesson))
-  → [DomainEventListener] → rabbitTemplate (after commit)
-```
-
-Note: PLANNED→ACTIVE and ACTIVE→CLOSED can be separate @Scheduled methods or combined. Recommend separate methods for clarity and independent failure handling.
-
-### Flow 4: Attendance Service calls GetActiveLesson
+### Flow 3: Auto-Absent (lesson.closed event)
 
 ```
-[Attendance Service] gRPC client
-  → ScheduleGrpcServiceImpl.getActiveLesson(group_id, timestamp)
-    → LessonRepository.findActiveByGroupIdAndTime(groupId, timestamp)
-       -- JOIN lessons l ON schedule_items si WHERE si.group_id = ? AND l.status = 'active'
-       -- AND si.start_time <= time AND si.end_time >= time
-    → if found: build LessonResponse proto message
-      (id, schedule_item_id, group_id, subject_id, teacher_id, date, lesson_number,
-       start_time, end_time, status, is_geo_blocked, room)
-    → if not found: return empty LessonResponse (all default/zero values)
-       OR throw gRPC NOT_FOUND status — decide convention
-  ← LessonResponse
+[Schedule Service cron] → LessonStatusTransitionJob
+    → lesson ACTIVE → CLOSED
+    → @TransactionalEventListener(AFTER_COMMIT) → RabbitMQ: lesson.closed
+        → rut-uit.events fanout → attendance-service.events queue
+            → LessonEventConsumer.onEvent():
+                event_type = "lesson.closed"
+                → AutoAbsentService.markAbsentForLesson(lessonId, groupId)
+                    1. gRPC → AcademicGrpcClient.getGroupMembers(groupId)
+                       ← List<StudentInfo> with all active students
+                    2. MongoDB findAll where lesson_id=lessonId
+                       ← List of already-marked user_ids
+                    3. Compute: not-marked = all members - already marked
+                    4. MongoDB bulk insert absent records (ordered=false)
+                    5. No event published for auto-absent
 ```
 
-The gRPC impl queries repositories directly (not through service layer) — same decision made in Academic Service (`AcademicGrpcServiceImpl` injects repositories directly). Reason: avoids Spring RequestContext scope issues in gRPC threads.
+Auto-absent does NOT use a Spring transaction because MongoDB in this service has no `MongoTransactionManager` configured. The bulk insert is fire-and-forget with duplicate-key tolerance.
 
-### Flow 5: Lazy Lesson Generation on Schedule Query
-
-```
-GET /schedule/groups/{id}/lessons?from=2026-09-01&to=2026-09-07
-  → LessonController → LessonService.getLessonsForGroup(groupId, dateFrom, dateTo)
-    → LessonGenerationService.ensureLessonsExist(groupId, semesterId, dateFrom, dateTo)
-      → ScheduleItemRepository.findActiveByGroupIdAndSemesterId(groupId, semesterId)
-      → for each schedule_item, for each date in [dateFrom, dateTo]:
-          → calculate if this date matches item's day_of_week + week_type
-          → if no lesson row exists for (schedule_item_id, date):
-              → INSERT lessons (schedule_item_id, date, status='planned', ...)
-              → use INSERT ... ON CONFLICT DO NOTHING for idempotency
-      → after generation: LessonRepository.findByGroupIdAndDateBetween(groupId, from, to)
-    → assemble into PagedModel<EntityModel<LessonResponse>>
-```
-
-This is the lazy generation pattern documented in `docs/architecture.md` section 3.4. Lessons are created on first query for a given week, not at schedule creation time.
-
-### Flow 6: Headman Cancels a Lesson
+### Flow 4: Report — Group Journal
 
 ```
-HEADMAN → PUT /schedule/lessons/{id}/cancel  body: {cancel_reason: "..."}
-  → LessonController → @RequireRole(STUDENT) + isHeadman check
-  → LessonService.cancel(lessonId, cancelReason, requesterId, groupId)
-    → load lesson, verify lesson.scheduleItem.groupId == requesterId's groupId
-    → lesson.setStatus(CANCELLED)
-    → lesson.setCancelReason(cancelReason)
-    → lessonRepository.save(lesson)                    -- @Transactional
-    → applicationEventPublisher.publishEvent(new LessonCancelledEvent(this, lesson))
-  → [DomainEventListener] → RabbitMQ after commit
-  ← 200 OK LessonResponse
+Teacher → GET /reports/group/{groupId}/subject/{subjectId}?semesterId=X
+    → API Gateway → X-User-Role=TEACHER
+    → ReportService:
+        1. gRPC → AcademicGrpcClient.getTeacherSubjects(teacherId, semesterId)
+           ← Verify subjectId is in teacher's subjects → 403 if not
+        2. gRPC → AcademicGrpcClient.getGroupMembers(groupId)
+           ← [{userId, displayName}]
+        3. AttendanceReadPort.findByGroupSubjectSemester(groupId, subjectId, semesterId)
+           ← List<AttendanceRecord>
+        4. In-memory join: userId → displayName + attendance rows
+    ← 200 JournalResponse (HATEOAS EntityModel)
 ```
 
 ---
 
-## Cron Job Architecture
+## MongoDB Document Schema
 
-### Scheduler Design
+### Collection: `attendances`
 
-Two responsibilities, one class (`LessonStatusScheduler`):
+```javascript
+{
+  // MongoDB generated
+  _id: ObjectId,
+
+  // Composite unique key — enforced by unique index
+  lesson_id:    NumberLong,   // lessons.id from schedule_db
+  user_id:      NumberLong,   // users.id from academic_db
+
+  // Denormalized for query performance — populated at write time
+  semester_id:  NumberLong,
+  group_id:     NumberLong,
+  subject_id:   NumberLong,
+  teacher_id:   NumberLong,
+  lesson_date:  ISODate,      // date of the lesson (for sorting)
+  lesson_number: NumberInt,   // 1-8 (for ordering within day)
+
+  // Core attendance data (stored as lowercase strings per project convention)
+  status:       String,       // "present" | "absent" | "excused" | "free_attendance"
+  marked_by:    String,       // "student_geo" | "headman" | "auto_scheduler"
+
+  // Geo data — populated only when marked_by = "student_geo"
+  checkin_location: {
+    lat:                    Double,
+    lng:                    Double,
+    accuracy_m:             Double,
+    distance_from_campus_m: Double
+  } | null,
+
+  // Excuse — scaffold as null in v4.0, populated in v4.1+
+  excuse: null,
+
+  created_at:  ISODate,
+  updated_at:  ISODate
+}
+```
+
+### Java Model
+
+```java
+// checkin/model/AttendanceRecord.java
+@Document(collection = "attendances")
+@Data
+public class AttendanceRecord {
+
+    @Id
+    private String id;
+
+    @Field("lesson_id")
+    private Long lessonId;
+
+    @Field("user_id")
+    private Long userId;
+
+    @Field("semester_id")
+    private Long semesterId;
+
+    @Field("group_id")
+    private Long groupId;
+
+    @Field("subject_id")
+    private Long subjectId;
+
+    @Field("teacher_id")
+    private Long teacherId;
+
+    @Field("lesson_date")
+    private LocalDate lessonDate;
+
+    @Field("lesson_number")
+    private Integer lessonNumber;
+
+    // Stored as lowercase string — NOT @Enumerated (JPA only)
+    // Set via: record.setStatus(AttendanceStatus.PRESENT.name().toLowerCase())
+    private String status;
+
+    @Field("marked_by")
+    private String markedBy;
+
+    @Field("checkin_location")
+    private CheckinLocation checkinLocation;  // null if not geo
+
+    @Field("created_at")
+    private Instant createdAt;
+
+    @Field("updated_at")
+    private Instant updatedAt;
+
+    @Data
+    public static class CheckinLocation {
+        private Double lat;
+        private Double lng;
+        @Field("accuracy_m")
+        private Double accuracyM;
+        @Field("distance_from_campus_m")
+        private Double distanceFromCampusM;
+    }
+}
+```
+
+### Index Configuration (MongoIndexConfig.java)
+
+```java
+@EventListener(ApplicationReadyEvent.class)
+public void ensureIndexes() {
+    mongoTemplate.indexOps("attendances").ensureIndex(
+        new Index().on("lesson_id", Sort.Direction.ASC)
+                   .on("user_id", Sort.Direction.ASC)
+                   .unique());
+
+    mongoTemplate.indexOps("attendances").ensureIndex(
+        new Index().on("user_id", Sort.Direction.ASC)
+                   .on("semester_id", Sort.Direction.ASC)
+                   .on("lesson_date", Sort.Direction.DESC));
+
+    mongoTemplate.indexOps("attendances").ensureIndex(
+        new Index().on("group_id", Sort.Direction.ASC)
+                   .on("semester_id", Sort.Direction.ASC)
+                   .on("subject_id", Sort.Direction.ASC));
+
+    mongoTemplate.indexOps("attendances").ensureIndex(
+        new Index().on("lesson_id", Sort.Direction.ASC));
+}
+```
+
+---
+
+## Architectural Patterns
+
+### Pattern 1: RabbitMQ Consumer Queue Binding (NEW — first consumer in system)
+
+**What:** Attendance Service is the first service that consumes from `rut-uit.events`. Each consumer needs its own durable queue bound to the exchange. Existing publishers only declare the exchange.
+
+**Critical:** Spring AMQP exchange declaration is idempotent — declaring the same `FanoutExchange("rut-uit.events", true, false)` in attendance-service is safe even though schedule-service already declared it.
+
+```java
+// event/RabbitConfig.java
+@Configuration
+public class RabbitConfig {
+
+    @Bean
+    public FanoutExchange attendanceEventsExchange() {
+        // Same exchange as schedule-service and academic-service — idempotent declare
+        return new FanoutExchange("rut-uit.events", true, false);
+    }
+
+    @Bean
+    public Queue attendanceServiceQueue() {
+        // durable=true, exclusive=false, autoDelete=false
+        return new Queue("attendance-service.events", true, false, false);
+    }
+
+    @Bean
+    public Binding attendanceQueueBinding(Queue attendanceServiceQueue,
+                                          FanoutExchange attendanceEventsExchange) {
+        return BindingBuilder.bind(attendanceServiceQueue).to(attendanceEventsExchange);
+    }
+
+    // Inject shared Spring Boot ObjectMapper — NOT a custom one (same pitfall as schedule-service)
+    @Bean
+    public Jackson2JsonMessageConverter jacksonMessageConverter(ObjectMapper objectMapper) {
+        return new Jackson2JsonMessageConverter(objectMapper);
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
+                                          Jackson2JsonMessageConverter converter) {
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        template.setMessageConverter(converter);
+        // Do NOT set channelTransacted=true — same rule as existing services
+        return template;
+    }
+
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            Jackson2JsonMessageConverter converter) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(converter);
+        return factory;
+    }
+}
+```
+
+### Pattern 2: Event Consumer with event_type Routing
+
+**What:** All events arrive on one queue as JSON with `event_type` discriminator. The consumer deserializes to `Map<String, Object>` and switches on type.
+
+**Why Map not typed class:** `DomainEvent` in existing services uses `@JsonTypeInfo(use = Id.NONE)` — no `@class` field in the JSON. Deserializing to a polymorphic hierarchy would require knowing all subtypes. `Map` is safe and forward-compatible.
+
+```java
+// event/LessonEventConsumer.java
+@Component
+@Slf4j
+public class LessonEventConsumer {
+
+    private final AutoAbsentService autoAbsentService;
+    private final CheckInService checkInService;
+
+    @RabbitListener(queues = "attendance-service.events")
+    public void onEvent(Map<String, Object> envelope) {
+        String eventType = (String) envelope.get("event_type");
+        if (eventType == null) {
+            log.warn("Received event without event_type, ignoring");
+            return;
+        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> payload = (Map<String, Object>) envelope.get("payload");
+
+        switch (eventType) {
+            case "lesson.closed" -> {
+                Long lessonId = ((Number) payload.get("lesson_id")).longValue();
+                Long groupId = ((Number) payload.get("group_id")).longValue();
+                autoAbsentService.markAbsentForLesson(lessonId, groupId);
+            }
+            case "lesson.cancelled" -> {
+                Long lessonId = ((Number) payload.get("lesson_id")).longValue();
+                checkInService.cancelLessonAttendances(lessonId);
+            }
+            // lesson.started, group.updated, homework.*, semester.archived — ignore
+            default -> log.debug("Ignoring event type: {}", eventType);
+        }
+    }
+}
+```
+
+### Pattern 3: gRPC Client Configuration
+
+Follows schedule-service's `AcademicGrpcClient` pattern exactly. Add to `application.yml`:
+
+```yaml
+grpc:
+  client:
+    schedule-service:
+      address: static://schedule-service:19092
+      negotiation-type: plaintext
+    academic-service:
+      address: static://academic-service:19091
+      negotiation-type: plaintext
+```
+
+Client implementation:
 
 ```java
 @Component
-public class LessonStatusScheduler {
+public class ScheduleGrpcClient {
 
-    // Runs every minute. Checks if any PLANNED lessons should now be ACTIVE.
-    // Wrap each lesson transition in its own @Transactional to allow partial success.
-    @Scheduled(cron = "0 * * * * *")
-    public void openLessons() { ... }
+    @GrpcClient("schedule-service")
+    private ScheduleGrpcServiceGrpc.ScheduleGrpcServiceBlockingStub stub;
 
-    // Runs every minute. Checks if any ACTIVE lessons should now be CLOSED.
-    @Scheduled(cron = "0 * * * * *")
-    public void closeLessons() { ... }
-}
-```
-
-The cron ticks every minute, which is sufficient since lesson boundaries are at fixed clock times (e.g. 08:30, 10:10). Resolution of 1 minute means at most 59 seconds of delay on transitions — acceptable.
-
-### @Transactional Boundary for Events
-
-The AFTER_COMMIT event listener pattern requires each lesson transition to be inside its own transaction. If a batch transition is done in one transaction, all events fire after the single commit — this is fine. However, if one lesson save fails, the entire batch rolls back and no events fire.
-
-Recommended approach: process each lesson in a separate transaction via a helper `@Transactional` method so one failure does not block others.
-
-```java
-// In LessonStatusScheduler (not @Transactional itself):
-public void openLessons() {
-    List<Long> lessonIds = lessonRepository.findPlannedLessonIdsToOpen(now());
-    for (Long id : lessonIds) {
-        lessonTransitionService.transitionToActive(id);  // inner @Transactional
+    public LessonResponse getActiveLesson(Long groupId, LocalDateTime now) {
+        try {
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getActiveLesson(ActiveLessonRequest.newBuilder()
+                            .setGroupId(groupId)
+                            .setTimestamp(now.toString())
+                            .build());
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                throw new ResourceNotFoundException("ActiveLesson", "group_id", groupId);
+            }
+            throw new ScheduleServiceUnavailableException(
+                "Schedule Service unavailable: " + e.getStatus());
+        }
     }
 }
+```
 
-// In LessonTransitionService:
-@Transactional
-public void transitionToActive(Long lessonId) {
-    Lesson lesson = lessonRepository.findById(lessonId).orElse(null);
-    if (lesson == null || lesson.getStatus() != LessonStatus.PLANNED) return;
-    lesson.setStatus(LessonStatus.ACTIVE);
-    lessonRepository.save(lesson);
-    eventPublisher.publishEvent(new LessonStartedEvent(this, lesson));
+Attendance Service is gRPC client-only in v4.0. Add `grpc-client-spring-boot-starter` but NOT `grpc-server-spring-boot-starter`. No `grpc.server.port` config needed.
+
+### Pattern 4: MongoDB Upsert for Idempotency
+
+Geo-checkin hitting the endpoint twice must not create a duplicate. Use `MongoTemplate.upsert()` on the `{lesson_id, user_id}` unique index:
+
+```java
+public void saveAttendance(AttendanceRecord record) {
+    Query query = Query.query(
+        Criteria.where("lesson_id").is(record.getLessonId())
+                .and("user_id").is(record.getUserId()));
+    Update update = new Update()
+        .set("status", record.getStatus())
+        .set("marked_by", record.getMarkedBy())
+        .set("checkin_location", record.getCheckinLocation())
+        .set("updated_at", Instant.now())
+        .setOnInsert("created_at", Instant.now())
+        .setOnInsert("semester_id", record.getSemesterId())
+        .setOnInsert("group_id", record.getGroupId())
+        .setOnInsert("subject_id", record.getSubjectId())
+        .setOnInsert("teacher_id", record.getTeacherId())
+        .setOnInsert("lesson_date", record.getLessonDate())
+        .setOnInsert("lesson_number", record.getLessonNumber());
+    mongoTemplate.upsert(query, update, AttendanceRecord.class);
 }
 ```
 
-This matches the `@TransactionalEventListener` requirement: the event must be published within a transaction context so AFTER_COMMIT fires correctly.
-
-### Avoiding Double Transitions
-
-The cron query must be precise: `WHERE status = 'planned' AND schedule_items.start_time <= :now AND lessons.date = CURRENT_DATE`. A lesson that already transitioned to ACTIVE will not appear in the PLANNED query.
-
-For time-zone safety: store `start_time` as `TIME` (no zone), combine with `lessons.date` to produce a `TIMESTAMP`, compare to `now() AT TIME ZONE 'Europe/Moscow'`. The university is in Moscow time — document this assumption.
-
----
-
-## gRPC Integration
-
-### Schedule Service as gRPC Server
-
-`ScheduleGrpcServiceImpl` extends the generated `ScheduleGrpcServiceGrpc.ScheduleGrpcServiceImplBase` and implements 3 RPCs:
-
-| RPC | Query | Returns |
-|-----|-------|---------|
-| `GetActiveLesson(group_id, timestamp)` | JOIN lessons+schedule_items WHERE status=active AND group_id=? AND date=date(timestamp) AND start_time <= time(timestamp) AND end_time >= time(timestamp) | Single `LessonResponse` or NOT_FOUND status |
-| `GetLessonById(lesson_id)` | SELECT lesson JOIN schedule_item WHERE lessons.id=? | Single `LessonResponse` or NOT_FOUND |
-| `GetLessonsByGroup(group_id, semester_id, date_from, date_to)` | SELECT lessons JOIN schedule_items WHERE group_id=? AND semester_id=? AND date BETWEEN ? AND ? | `LessonsResponse` with repeated field |
-
-No Redis cache for gRPC responses — lesson statuses change every minute. Caching would require aggressive invalidation and is not worth the complexity at this scale.
-
-### Schedule Service as gRPC Client
-
-`AcademicGrpcClient` wraps the generated `AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub`:
+For auto-absent bulk insert — skip existing records silently:
 
 ```java
+// AutoAbsentService
+public void markAbsentForLesson(Long lessonId, Long groupId) {
+    List<Long> allMemberIds = academicGrpcClient.getGroupMemberIds(groupId);
+    Set<Long> alreadyMarked = attendanceRepository
+        .findByLessonId(lessonId)
+        .stream().map(AttendanceRecord::getUserId)
+        .collect(Collectors.toSet());
+
+    List<AttendanceRecord> toInsert = allMemberIds.stream()
+        .filter(uid -> !alreadyMarked.contains(uid))
+        .map(uid -> buildAbsentRecord(lessonId, groupId, uid))
+        .toList();
+
+    if (!toInsert.isEmpty()) {
+        // ordered=false continues inserting even if some duplicates slip through
+        mongoTemplate.insertAll(toInsert);
+    }
+}
+```
+
+### Pattern 5: Domain Isolation via Port Interface
+
+`report/ReportService` injects `AttendanceReadPort` interface (from `shared/port/`) never `AttendanceRepository` (from `checkin/repository/`). The implementation `AttendanceReadPortImpl` lives in `checkin/port/`.
+
+```java
+// shared/port/AttendanceReadPort.java
+public interface AttendanceReadPort {
+    List<AttendanceRecord> findByLessonId(Long lessonId);
+    List<AttendanceRecord> findByGroupSubjectSemester(
+        Long groupId, Long subjectId, Long semesterId);
+    List<AttendanceRecord> findByUserIdAndSemester(Long userId, Long semesterId);
+}
+
+// checkin/port/AttendanceReadPortImpl.java
 @Component
-public class AcademicGrpcClient {
+public class AttendanceReadPortImpl implements AttendanceReadPort {
+    private final AttendanceRepository repo;
+    // delegates to repo
+}
 
-    private final AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
+// report/ReportService.java — only sees the interface
+@Service
+public class ReportService {
+    private final AttendanceReadPort attendanceReadPort;  // NOT AttendanceRepository
+    private final AcademicGrpcClient academicGrpcClient;
+}
+```
 
-    public AcademicGrpcClient(@GrpcClient("academic-service") Channel channel) {
-        this.stub = AcademicGrpcServiceGrpc.newBlockingStub(channel);
+Enforced by ArchUnit test in `config/ArchUnitRules.java`:
+
+```java
+@ArchTest
+static final ArchRule reportDoesNotAccessCheckinInternals =
+    noClasses().that().resideInAPackage("..report..")
+        .should().accessClassesThat()
+        .resideInAnyPackage(
+            "..checkin.repository..",
+            "..checkin.service..",
+            "..checkin.model..");
+```
+
+---
+
+## Integration Points
+
+### New Components in v4.0
+
+| Component | Type | Notes |
+|-----------|------|-------|
+| `event/LessonEventConsumer` | NEW | First RabbitMQ consumer in the system |
+| `event/RabbitConfig` (attendance) | NEW | Adds Queue + Binding on top of existing FanoutExchange pattern |
+| `grpc/ScheduleGrpcClient` | NEW | gRPC client to Schedule Service |
+| `grpc/AcademicGrpcClient` | NEW | Same pattern as schedule-service's `AcademicGrpcClient` |
+| `checkin/` domain (all classes) | NEW | |
+| `report/` domain (all classes) | NEW | |
+| `shared/port/AttendanceReadPort` | NEW | Isolation boundary |
+| MongoDB indexes | NEW | Created programmatically at startup |
+
+### Modified: attendance-app/build.gradle.kts
+
+Current scaffold has: `spring-boot-starter-web`, `spring-boot-starter-data-mongodb`, `spring-boot-starter-validation`, `spring-boot-starter-hateoas`, `spring-boot-starter-amqp`, `springdoc-openapi`.
+
+Add:
+
+```kotlin
+plugins {
+    // Add to existing plugins block:
+    id("com.google.protobuf") version "0.9.4"
+}
+
+dependencies {
+    // gRPC client only (NOT server — v4.0 has no gRPC server)
+    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
+    compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+
+    // AOP for @RequireRole
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+
+    // Testcontainers for MongoDB
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:mongodb")
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir(rootProject.file("proto"))
+        }
     }
+}
 
-    public GroupResponse getGroup(long groupId) { ... }
-    public TeacherSubjectsResponse getTeacherSubjects(long teacherId, long semesterId) { ... }
-    public SemesterResponse getActiveSemester() { ... }
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:3.25.3" }
+    plugins { create("grpc") { artifact = "io.grpc:protoc-gen-grpc-java:1.63.0" } }
+    generateProtoTasks { ofSourceSet("main").forEach { it.plugins { create("grpc") {} } } }
 }
 ```
 
-The `@GrpcClient("academic-service")` annotation resolves to the channel address defined in `application.yml` under `grpc.client.academic-service.address`.
+Attendance uses `academic.proto` + `schedule.proto` — no new `.proto` file needed in v4.0.
 
-### gRPC Port Configuration
+### Modified: application.yml
 
-Schedule Service gRPC server port: `19092` (convention: 1xxxx mirrors the REST port 9092).
-Academic Service gRPC server port: `19091` (per existing Academic Service config).
+Add to existing scaffold:
 
-These ports are internal to the Docker private network — not exposed in `docker-compose.yml`, not routed through API Gateway.
+```yaml
+grpc:
+  client:
+    schedule-service:
+      address: static://schedule-service:19092
+      negotiation-type: plaintext
+    academic-service:
+      address: static://academic-service:19091
+      negotiation-type: plaintext
+```
+
+No `grpc.server.port` — Attendance Service has no gRPC server in v4.0.
+
+### Unchanged: Existing Services
+
+| Service | Impact |
+|---------|--------|
+| Schedule Service | Zero — publishes `lesson.closed` / `lesson.cancelled` already (v3.0) |
+| Academic Service | Zero — all gRPC endpoints used (`GetGroupMembers`, `GetCampusGeofence`, `GetTeacherSubjects`) already exist (v2.0) |
+| API Gateway | Add routes: `/attendance/**` and `/reports/**` → `attendance-service:9093` |
+| `proto/attendance.proto` | Not needed in v4.0 (no gRPC server). Create when Attendance adds gRPC server |
 
 ---
 
-## RabbitMQ Event Publishing
+## Anti-Patterns
 
-### Event Classes
+### Anti-Pattern 1: Adding a Consumer Without a Dedicated Queue
 
-Three events, all extending `DomainEvent` (copied from Academic Service pattern):
+**What people do:** Assume the fanout exchange delivers to all connected services without queue binding.
 
-| Class | event_type | Payload fields |
-|-------|------------|---------------|
-| `LessonStartedEvent` | `lesson.started` | lesson_id, group_id, subject_id, teacher_id, lesson_number, start_time, end_time, room |
-| `LessonClosedEvent` | `lesson.closed` | lesson_id, group_id, subject_id |
-| `LessonCancelledEvent` | `lesson.cancelled` | lesson_id, group_id, subject_id, date, cancel_reason |
+**Why it's wrong:** Fanout delivers one copy per bound queue. No queue = messages dropped. Sharing a queue with another service = only one service receives each message.
 
-Payload fields match `event-schemas/lesson.*.json` exactly.
+**Do this instead:** Declare a unique `Queue("attendance-service.events", true, false, false)` and bind it with `BindingBuilder.bind(queue).to(exchange)` in `RabbitConfig`.
 
-### DomainEvent Base Class
+### Anti-Pattern 2: Using @TransactionalEventListener(AFTER_COMMIT) Without a Transaction Manager
 
-Copy `DomainEvent.java` from Academic Service. It extends `ApplicationEvent`, carries `event_type`, `event_id` (UUID), `occurred_at` (OffsetDateTime), and `payload` (Object). The `DomainEventListener` handles all subtypes via the single `onDomainEvent(DomainEvent event)` method.
+**What people do:** Copy `DomainEventListener` from schedule-service (which uses JPA + `@TransactionalEventListener(AFTER_COMMIT)`) into the attendance-service without configuring `MongoTransactionManager`.
 
-### RabbitConfig
+**Why it's wrong:** `@TransactionalEventListener(AFTER_COMMIT)` only fires if the current thread is inside an active Spring transaction. MongoDB does not participate in Spring transactions unless `MongoTransactionManager` is configured and `@Transactional` is applied. Without this, the event is published in `BEFORE_COMMIT` phase by default — or never, if no transaction context exists. The result: silent event loss.
 
-Same `FanoutExchange("rut-uit.events", true, false)` bean as Academic Service. AMQP exchange declaration is idempotent — declaring the same exchange in two services is safe.
+**Do this instead:** Use plain `@EventListener` for MongoDB-backed event publishing in v4.0. This fires synchronously on `publishEvent()` call, after the `mongoTemplate.upsert()` returns. The risk (event fires before mongo write actually persists) is negligible given MongoDB's default `w:1` write concern. Document this decision. If strict ordering is required in future, add `MongoTransactionManager` + `@Transactional` on service methods.
 
-**Critical**: do NOT set `channelTransacted=true` on `RabbitTemplate`. With `AFTER_COMMIT` listener, a transacted channel causes message loss (verified decision from Academic Service STATE.md).
+### Anti-Pattern 3: Calling GetGroupMembers gRPC on Every Geo-Checkin
 
----
+**What people do:** Call `GetGroupMembers` on every checkin to verify student membership.
 
-## Authorization Pattern
+**Why it's wrong:** Unnecessary gRPC on the hot checkin path. The JWT already proves identity; `group_id` is in `X-Group-Id` header; the lesson's `group_id` comes from `GetActiveLesson`.
 
-Schedule Service replicates the AOP authorization pattern from Academic Service exactly:
+**Do this instead:** Verify `requestContext.getGroupId().equals(lesson.getGroupId())`. No membership gRPC needed. Reserve `GetGroupMembers` for auto-absent and report generation only.
 
-| Component | How |
-|-----------|-----|
-| `UserContextFilter` | Servlet filter reads `X-User-Id`, `X-User-Role`, `X-Group-Id`, `X-Is-Headman` into `RequestContext` (request-scoped bean) |
-| `RequireRole` | Method annotation with `UserRole[] value()` |
-| `RoleCheckAspect` | `@Around` aspect reads `RequestContext`, checks role, throws `AccessDeniedException` if not allowed |
-| `RequestContext` | `@Scope("request", proxyMode = ScopedProxyMode.TARGET_CLASS)` — mandatory proxy mode for singleton aspect access |
+### Anti-Pattern 4: Importing checkin.repository in report/
 
-Additional check for headman operations: after role check passes for STUDENT, verify `RequestContext.isHeadman() == true`. This is done in the service layer, not in the aspect.
+**What people do:** Inject `AttendanceRepository` directly in `ReportService` for convenience.
 
-gRPC server methods have NO authorization check — they are only reachable within the Docker private network (Attendance Service is the only caller). Same convention as Academic Service gRPC.
+**Why it's wrong:** Violates domain isolation. Breaks the future extraction path. Caught by `ArchUnitRules` test at compile time.
 
----
+**Do this instead:** Use `AttendanceReadPort` in `report/` exclusively.
 
-## Patterns to Follow
+### Anti-Pattern 5: Storing Enum Values as Uppercase in MongoDB
 
-### Pattern 1: Contract-First with Interface Implementation
+**What people do:** Let Spring Data MongoDB's default `@Field` behavior serialize `AttendanceStatus.PRESENT` as `"PRESENT"`.
 
-```java
-// In schedule-api-contract:
-@RequestMapping("/schedule/items")
-public interface ScheduleItemApi {
-    @PostMapping
-    @Operation(summary = "Create schedule item")
-    ResponseEntity<EntityModel<ScheduleItemResponse>> create(
-        @RequestBody @Valid CreateScheduleItemRequest request
-    );
-}
+**Why it's wrong:** Project convention: all enum values stored as lowercase strings. Inconsistency with existing services, harder to query.
 
-// In schedule-app:
-@RestController
-public class ScheduleItemController implements ScheduleItemApi {
-    @Override
-    public ResponseEntity<EntityModel<ScheduleItemResponse>> create(
-        @RequestBody @Valid CreateScheduleItemRequest request
-    ) { ... }
-}
-```
-
-No `@RequestMapping` on the controller class — inherited from the interface.
-
-### Pattern 2: Cron + AFTER_COMMIT Events (do not couple directly)
-
-```java
-// WRONG — direct RabbitTemplate call inside @Transactional
-@Transactional
-public void transitionToActive(Long lessonId) {
-    // ...
-    rabbitTemplate.convertAndSend(EXCHANGE, "", event);  // fires before commit
-}
-
-// CORRECT — publish Spring event, let DomainEventListener forward after commit
-@Transactional
-public void transitionToActive(Long lessonId) {
-    // ...
-    eventPublisher.publishEvent(new LessonStartedEvent(this, lesson));
-    // DomainEventListener.onDomainEvent fires AFTER this transaction commits
-}
-```
-
-### Pattern 3: Lazy Lesson Generation with ON CONFLICT DO NOTHING
-
-```sql
-INSERT INTO lessons (schedule_item_id, date, status, is_geo_blocked, created_at)
-VALUES (?, ?, 'planned', false, NOW())
-ON CONFLICT (schedule_item_id, date) DO NOTHING
-```
-
-The `UNIQUE (schedule_item_id, date)` constraint in V1 migration makes this safe for concurrent requests. Multiple simultaneous GET requests for the same week will not create duplicate lessons.
-
-### Pattern 4: gRPC Impl Queries Repositories Directly
-
-```java
-@GrpcService
-public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrpcServiceImplBase {
-    private final LessonRepository lessonRepository;
-    private final ScheduleItemRepository scheduleItemRepository;
-
-    // NO service injection — gRPC runs in non-request threads,
-    // RequestContext (request-scoped bean) would throw ScopeNotActiveException
-}
-```
-
-This is the same decision documented in Academic Service's `AcademicGrpcServiceImpl`.
-
----
-
-## Anti-Patterns to Avoid
-
-### Anti-Pattern 1: Publishing RabbitMQ Events Directly in @Scheduled Method
-
-**What:** Calling `rabbitTemplate.convertAndSend(...)` inside `LessonStatusScheduler.openLessons()`.
-
-**Why bad:** `@Scheduled` methods have no transaction context. `@TransactionalEventListener(AFTER_COMMIT)` requires an active transaction to fire. The event will never be published, and no error is raised.
-
-**Instead:** Delegate to a `@Transactional` service method that publishes a Spring `ApplicationEvent`. The `DomainEventListener` picks it up after commit.
-
-### Anti-Pattern 2: One Transaction for All Lessons in Cron Batch
-
-**What:** Wrapping the entire `openLessons()` loop in a single `@Transactional`.
-
-**Why bad:** If one lesson update fails (e.g. optimistic lock conflict), all lesson transitions in the batch roll back and no events fire.
-
-**Instead:** Each lesson transition in its own `@Transactional` (inner service method). One failure is isolated.
-
-### Anti-Pattern 3: Caching gRPC Responses for Lesson Status
-
-**What:** Adding `@Cacheable` to `ScheduleGrpcServiceImpl.getActiveLesson(...)`.
-
-**Why bad:** Lesson status changes every minute via cron. A 5-minute TTL cache means Attendance Service could see a stale PLANNED status during the first 5 minutes of a lesson. Students cannot check in.
-
-**Instead:** No caching for gRPC methods that return lesson status. Direct DB query is fast enough (index on `status` and `date` already in V1 migration).
-
-### Anti-Pattern 4: Using RequestContext in gRPC Threads
-
-**What:** Injecting `RequestContext` into `ScheduleGrpcServiceImpl` to read user identity.
-
-**Why bad:** `RequestContext` is `@Scope("request")` — it is only active in Servlet request threads. gRPC runs in Netty threads. Accessing a request-scoped bean from a gRPC thread throws `ScopeNotActiveException`.
-
-**Instead:** gRPC methods on Schedule Service do not perform authorization. They run on the internal Docker network and are called only by trusted services (Attendance Service). If authorization is needed in future, pass user identity in gRPC metadata.
-
-### Anti-Pattern 5: Generating All Lessons at Schedule Item Creation
-
-**What:** When a headman creates a schedule_item for an entire semester, generate all lesson rows immediately (could be 20+ weeks × many items = hundreds of rows).
-
-**Why bad:** Slow response time, wasted rows if schedule changes. Also requires semester dates at creation time, adding coupling.
-
-**Instead:** Lazy generation on first GET request for a date range. Use `ON CONFLICT DO NOTHING` for idempotency. This is the documented pattern in `docs/architecture.md`.
-
-### Anti-Pattern 6: Bidirectional gRPC Dependencies
-
-**What:** Attendance Service calls Schedule Service (correct), and Schedule Service also calls Attendance Service for some validation.
-
-**Why bad:** Creates a circular dependency between services. Any deployment or restart of either service requires the other to be up.
-
-**Instead:** Schedule Service calls only Academic Service (upstream). Attendance Service calls Schedule Service (downstream). Data flows one direction. Events flow to notification services only.
+**Do this instead:** Store manually: `record.setStatus(status.name().toLowerCase())`. Read back: `AttendanceStatus.valueOf(record.getStatus().toUpperCase())`. Do NOT use `@Enumerated` — that is a JPA annotation, it has no effect with Spring Data MongoDB.
 
 ---
 
 ## Build Order
 
-Dependencies must be resolved before dependents can compile. Build phases in this order:
+Build phases in dependency order:
 
-### Step 1: Entities and Repositories
-No external dependencies. Foundation for everything else.
+**Phase 1 — Infrastructure wiring** (no business logic)
+- `build.gradle.kts`: add grpc-client, protobuf plugin, AOP, testcontainers-mongodb
+- `application.yml`: add `grpc.client` config for schedule-service and academic-service
+- `security/` package: copy from schedule-service, update package to `ru.rutcampustrack.attendance.security`
+- `exception/` package: GlobalExceptionHandler, base exceptions
+- `grpc/ScheduleGrpcClient` + `grpc/AcademicGrpcClient`: stubs with 3-second deadline
+- Verify: project compiles, proto stubs generated
 
-- `ScheduleItem` entity (`@Entity`, maps `schedule_items` table, uses `LessonStatus` and `WeekType` converters from existing `EnumConverters.java`)
-- `Lesson` entity (`@Entity`, FK to `schedule_items.id`)
-- `ScheduleItemRepository`, `LessonRepository`
-- Custom JPQL queries: `findActiveByGroupIdAndSemesterId`, `findByGroupIdAndDateBetween`, `findPlannedToOpen(LocalTime now, LocalDate today)`, `findActiveToClose(LocalTime now, LocalDate today)`, `findActiveByGroupAndTime`
+**Phase 2 — RabbitMQ consumer**
+- `event/RabbitConfig`: FanoutExchange + Queue + Binding + Jackson converter + RabbitTemplate + listener container factory
+- `event/DomainEvent` + `event/AttendanceMarkedEvent`: same envelope structure as schedule-service
+- `event/DomainEventListener`: plain `@EventListener` (not transactional)
+- `event/LessonEventConsumer`: `@RabbitListener("attendance-service.events")` with empty handlers
+- Verify: service starts, connects to RabbitMQ, queue is declared and bound, events received without crash
 
-### Step 2: Security Infrastructure
-Needed by all controllers. No DB dependency.
+**Phase 3 — MongoDB document + repository**
+- `checkin/model/AttendanceRecord`: `@Document("attendances")`, all fields, nested `CheckinLocation`
+- `checkin/repository/AttendanceRepository`: `findByLessonId`, `findByLessonIdAndUserIdIn`, etc.
+- `config/MongoIndexConfig`: all 4 indexes via `IndexOperations.ensureIndex`
+- `shared/port/AttendanceReadPort`: interface only
+- `checkin/port/AttendanceReadPortImpl`: implements port with repo delegates
+- Verify: Testcontainer MongoDB, index creation on startup, basic CRUD
 
-- Copy `RequireRole.java`, `RoleCheckAspect.java`, `RequestContext.java`, `UserContextFilter.java` from Academic Service (adjust package to `ru.rutcampustrack.schedule.security`)
-- These are identical in structure — the only change is the package and the enum reference
+**Phase 4 — Geo-checkin + manual mark**
+- `attendance-api-contract`: `GeoCheckinRequest`, `ManualMarkRequest`, `AttendanceResponse`, `CheckInApi`, `ManualMarkApi`
+- `checkin/CheckInService`: Haversine geo validation, time window check, upsert, event publish
+- `checkin/CheckInController` + `checkin/ManualMarkController` + `checkin/AttendanceAssembler`
+- Integration tests: Testcontainers MongoDB + `@MockitoBean` for gRPC clients
 
-### Step 3: gRPC Client to Academic Service
-Needed by ScheduleItemService for validation. Must work before REST layer.
+**Phase 5 — Auto-absent handler**
+- `checkin/AutoAbsentService`: bulk absent on lesson.closed
+- Wire into `LessonEventConsumer`
+- `checkInService.cancelLessonAttendances()` for lesson.cancelled
+- Integration tests: publish lesson.closed event via RabbitMQ, verify absent records in MongoDB
 
-- `AcademicGrpcClient` — wraps `AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub`
-- Add gRPC dependency to `build.gradle.kts`
-- Add `grpc.client.academic-service` config to `application.yml`
-- Add proto plugin to generate `AcademicGrpcServiceGrpc` from `proto/academic.proto`
-
-### Step 4: Domain Services
-Depend on entities, repositories, and gRPC client.
-
-- `LessonGenerationService` — expand schedule_items into lessons for a date range
-- `ScheduleItemService` — CRUD + calls `AcademicGrpcClient` for group/teacher validation
-- `LessonService` — cancel/uncancel/geo-block operations
-
-### Step 5: REST API
-Depends on services and security.
-
-- `schedule-api-contract`: `ScheduleItemApi`, `LessonApi`, DTOs, enums (request records + HATEOAS response classes)
-- `ScheduleItemController`, `LessonController`, assemblers
-
-### Step 6: gRPC Server
-Depends on repositories (direct). Independent from service layer per pattern.
-
-- Add gRPC server config to `application.yml` (`grpc.server.port: 19092`)
-- `ScheduleGrpcServiceImpl` — 3 RPCs, queries repositories directly
-- Proto plugin generates `ScheduleGrpcServiceGrpc` from `proto/schedule.proto`
-
-### Step 7: RabbitMQ Events
-Depends on entities (for event payload). Independent of REST layer.
-
-- `RabbitConfig` — same FanoutExchange bean as Academic Service
-- `DomainEvent` base class (copy from Academic Service, adjust package)
-- `LessonStartedEvent`, `LessonClosedEvent`, `LessonCancelledEvent`
-- `DomainEventListener` — `@TransactionalEventListener(AFTER_COMMIT)`
-
-### Step 8: Cron Scheduler
-Depends on repositories and events. Last because it integrates everything.
-
-- `LessonTransitionService` — `@Transactional` methods for individual transitions, publishes Spring events
-- `LessonStatusScheduler` — `@Scheduled` cron methods, calls `LessonTransitionService`
-- Enable scheduling: `@EnableScheduling` on `ScheduleApplication.java`
+**Phase 6 — Reports**
+- `attendance-api-contract`: `JournalResponse`, `StudentStatsResponse`, `JournalApi`, `StudentStatsApi`
+- `report/ReportService`: MongoDB queries via `AttendanceReadPort` + gRPC enrichment
+- `report/JournalController` + `report/StudentStatsController`
+- `config/ArchUnitRules`: domain isolation test
+- Integration tests: full journal and stats queries
 
 ---
 
-## Scalability Considerations
+## Scaling Considerations
 
-| Concern | Dev / <100 users | 1K students | 5K students |
-|---------|------------------|-------------|-------------|
-| Cron execution time | Negligible — few lessons per minute | < 1 second — tens of PLANNED lessons per minute | Consider parallel transitions per group |
-| GetActiveLesson gRPC latency | Direct DB query, < 5ms | Index on (status, date) handles it | No change needed |
-| Lesson generation on first GET | Hundreds of rows, < 100ms | Same — one generation per group per week | Batch insert, already fast |
-| RabbitMQ event volume | ~10 lesson.started per day per group | ~100/day for 10 groups | ~1000/day — fanout exchange handles it trivially |
-| schedule_db read load | Low — schedule rarely changes | Acceptable — no caching needed | Consider read replica if report queries added |
+| Scale | Architecture Notes |
+|-------|--------------------|
+| < 1k students | Single instance, current design is sufficient |
+| 1k-5k students | Auto-absent bulk-marks on lesson.closed are bounded by group size (30-40), not total students. MongoDB write throughput is fine. |
+| 5k+ students | Consider caching `GetGroupMembers` results locally (Redis) to avoid gRPC on every auto-absent burst. Reports may need aggregation pipelines instead of in-memory joins. |
+
+First bottleneck on hot path: geo-checkin makes two gRPC calls synchronously. `GetCampusGeofence` is cached in Academic's Redis (60 min TTL); `GetActiveLesson` is real-time. If Schedule Service is unavailable, checkins fail. Mitigation: 3-second gRPC deadline is already in place; circuit breaker is a future concern.
 
 ---
 
 ## Sources
 
-All findings are HIGH confidence — verified directly from codebase.
+All findings are HIGH confidence — verified directly from source code.
 
-- `proto/schedule.proto` — 3 RPCs, all message types
-- `proto/academic.proto` — 7 RPCs used for gRPC client (GetGroup, GetTeacherSubjects, GetActiveSemester)
-- `event-schemas/lesson.started.json`, `lesson.closed.json`, `lesson.cancelled.json` — event payload structure
-- `services/schedule-service/schedule-app/src/main/resources/db/migration/V1__baseline.sql` — schema confirmed: `schedule_items` + `lessons` with all columns and indexes
-- `services/schedule-service/schedule-app/build.gradle.kts` — Spring Boot, JPA, RabbitMQ already declared; gRPC dependency absent (needs adding)
-- `services/schedule-service/schedule-app/src/main/resources/application.yml` — PostgreSQL + RabbitMQ configured; gRPC config absent (needs adding)
-- `services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/EnumConverters.java` — WeekType + LessonStatus converters already present
-- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/DomainEventListener.java` — AFTER_COMMIT pattern to replicate
-- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/DomainEvent.java` — base event class structure
-- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/event/RabbitConfig.java` — RabbitTemplate without channelTransacted
-- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java` — repository-direct pattern for gRPC
-- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/security/` — RequestContext, RequireRole, RoleCheckAspect, UserContextFilter pattern
-- `docs/architecture.md` — section 3.4 confirms lazy generation, cron scheduler, event types, gRPC topology
+- `services/schedule-service/schedule-app/src/` — gRPC client pattern (`AcademicGrpcClient`), DomainEvent base class, DomainEventListener, RabbitConfig, security package (full source read)
+- `services/academic-service/academic-app/src/` — RabbitConfig pattern, event publishing pattern
+- `services/attendance-service/` — existing scaffold (build.gradle.kts, application.yml, contract enums)
+- `proto/academic.proto`, `proto/schedule.proto` — gRPC contracts: all RPCs and message types
+- `event-schemas/lesson.started.json`, `lesson.closed.json`, `lesson.cancelled.json`, `attendance.marked.json` — event envelope structure
+- `docs/architecture.md` — service topology, MongoDB collection design, package structure mandate
+- `docs/database-schema.md` — MongoDB document schema, index strategy, enum conventions
 
 ---
 
-*Architecture research for: Schedule Service integration — v3.0 milestone*
-*Researched: 2026-03-31*
+*Architecture research for: Attendance Service MVP (v4.0)*
+*Researched: 2026-04-04*

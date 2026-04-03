@@ -1,559 +1,363 @@
 # Pitfalls Research
 
-**Domain:** Schedule Service — lesson auto-generation, cron-based status transitions, gRPC server/client, RabbitMQ events added to existing microservice system
-**Researched:** 2026-03-31
-**Confidence:** HIGH (verified against actual codebase, schema V1__baseline.sql, academic service gRPC/event patterns, proto contracts)
+**Domain:** Attendance Service MVP — MongoDB-based attendance tracking, first RabbitMQ consumer, gRPC clients to Schedule + Academic, geo-validation, auto-absent on lesson.closed, domain isolation (checkin/ vs report/)
+**Researched:** 2026-04-04
+**Confidence:** HIGH (verified against actual codebase, existing service patterns, proto contracts, schedule service implementation, database schema)
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: @Scheduled Cron Fires Duplicate Transitions in Multi-Instance Deploy
+### Pitfall 1: MongoDB Indexes Not Created — Unique Constraint Missing at Runtime
 
 **What goes wrong:**
-Two Schedule Service instances run simultaneously (horizontal scaling or rolling restart). Both fire `@Scheduled` cron jobs at the same second. Both SELECT the same batch of `lessons WHERE status='planned' AND start_time <= NOW()`. Both UPDATE them to `status='active'`. Both publish `lesson.started` events. Notification services receive duplicate events and push duplicate "para started" messages to students for the same lesson.
+The `attendances` collection requires a unique index on `{lesson_id: 1, user_id: 1}` to guarantee idempotency (one record per student per lesson). Without this index, concurrent geo-checkin requests or RabbitMQ consumer retries insert duplicate documents silently. Auto-absent bulk inserts create duplicate `absent` records. Reports then show duplicated absence counts.
 
 **Why it happens:**
-Spring `@Scheduled` is per-JVM — it does not know about other JVM instances. With two containers, every scheduled task fires twice. The UPDATE itself is idempotent (setting `active` on an already-`active` row is harmless), but the RabbitMQ publication happens after the UPDATE regardless.
+Spring Data MongoDB disables `auto-index-creation` by default since version 3.0. The `@Indexed` / `@CompoundIndex` annotations on `@Document` classes are silently ignored unless `spring.data.mongodb.auto-index-creation=true` is set OR `autoIndexCreation()` is overridden in a `MongoConfig`. Developers familiar with Hibernate (`ddl-auto: validate`) expect the schema to be enforced; MongoDB has no equivalent enforcement at startup.
 
 **How to avoid:**
-Use `SELECT ... FOR UPDATE SKIP LOCKED` when fetching lessons for status transition. Only the first instance acquires the lock; the second skips all rows already locked. Combine with a `transition_locked_at` guard: set a timestamp column when the row is claimed, skip rows where `transition_locked_at` is not null and is recent (< 2 minutes):
-
-```sql
--- Claim planned lessons for ACTIVE transition atomically
-SELECT id FROM lessons
-WHERE status = 'planned'
-  AND scheduled_start <= NOW()
-FOR UPDATE SKIP LOCKED;
-```
-
-For a single-instance deploy (current Docker Compose setup), a simpler guard: add `WHERE status = 'planned'` to the UPDATE so already-transitioned rows are silently skipped, and only publish `lesson.started` for rows where the UPDATE actually changed rows (`getUpdateCount() > 0`). Use `@Modifying(clearAutomatically = true)` JPQL UPDATE and check return count.
-
-**Warning signs:**
-- Duplicate `lesson.started` events in RabbitMQ during rolling restart
-- Students receive two identical push notifications for the same lesson start
-- Log shows same `lesson_id` appearing in two separate cron execution log lines within same second
-
-**Phase to address:**
-Lesson status cron phase — implement `FOR UPDATE SKIP LOCKED` or row-count guard before writing the event publisher. Never publish without verifying the row was actually transitioned.
-
----
-
-### Pitfall 2: Cron Timezone Mismatch — Lessons Transition at Wrong Clock Time
-
-**What goes wrong:**
-Schedule items store `start_time` and `end_time` as `TIME` (no timezone). The database stores `TIMESTAMPTZ` for `created_at` but lesson time slots are bare `TIME`. The JVM runs in UTC (Docker default). The university operates in Moscow Time (UTC+3). A lesson scheduled at `08:30` Moscow time fires the ACTIVE transition at `08:30 UTC = 11:30 Moscow` — three hours late. Students cannot check in.
-
-**Why it happens:**
-`TIME` columns in PostgreSQL have no timezone context. When Java compares `LocalTime.now()` (UTC) against `08:30` (intended as Moscow time) the comparison is correct numerically but semantically wrong. The cron job fires on schedule in UTC, queries `WHERE start_time <= CURRENT_TIME`, and CURRENT_TIME in PostgreSQL is also UTC — so the same bias exists end-to-end. Appears to work in local dev (developer in UTC+3 on Windows, JVM in local timezone) but breaks in Docker where JVM is UTC.
-
-**How to avoid:**
-Fix the timezone at the infrastructure layer, not scattered across code:
-1. Set `TZ=Europe/Moscow` in `docker-compose.yml` for the `schedule-service` container (and PostgreSQL container).
-2. Set `spring.jpa.properties.hibernate.jdbc.time_zone=Europe/Moscow` in `application.yml`.
-3. Store `start_time` / `end_time` as `TIMETZ` instead of bare `TIME`, OR store them as `TIME` with a documented convention that "all TIME values are Moscow time" and enforce the timezone via JVM startup flag `-Duser.timezone=Europe/Moscow`.
-
-The simplest approach for this project: set `TZ=Europe/Moscow` in Docker Compose and `-Duser.timezone=Europe/Moscow` in the Gradle `bootRun` task. Then all `LocalTime.now()` calls are automatically Moscow time.
-
-**Warning signs:**
-- Lessons go ACTIVE 3 hours after their scheduled time in production
-- Local dev works correctly, Docker environment breaks time comparisons
-- `SELECT NOW()` in PostgreSQL container returns UTC while application logs show Moscow time (or vice versa)
-
-**Phase to address:**
-Before writing any cron scheduler code — establish timezone configuration in `application.yml` and `docker-compose.yml`. Write a test that constructs a lesson with `start_time = LocalTime.now()` and asserts the cron fires immediately.
-
----
-
-### Pitfall 3: Lesson Auto-Generation Produces Duplicate Rows on Retry
-
-**What goes wrong:**
-`generateLessonsForWeek(semesterId, groupId, weekStart)` is called. It generates 5 lessons and inserts them. A retry occurs (request timeout, user refreshes the page, or the headman calls the endpoint twice). The second call attempts to insert the same `(schedule_item_id, date)` pairs. PostgreSQL throws `duplicate key value violates unique constraint "lessons_schedule_item_id_date_key"`. The service returns a 500 error instead of a clean idempotent response.
-
-**Why it happens:**
-The UNIQUE constraint on `(schedule_item_id, date)` correctly prevents duplicates at the DB level, but the service does not handle the constraint violation as a no-op. It propagates as a `DataIntegrityViolationException` to the controller.
-
-**How to avoid:**
-Use `INSERT ... ON CONFLICT DO NOTHING` via a native query or Spring Data `@Modifying` + native SQL. For JPQL, check existence before insert:
+Create a `MongoIndexInitializer` component that runs on `ApplicationReadyEvent` and creates indexes programmatically using `MongoTemplate.indexOps()`:
 
 ```java
-// Option A: Native upsert (preferred)
-@Modifying
-@Query(value = """
-    INSERT INTO lessons (schedule_item_id, date, status)
-    VALUES (:scheduleItemId, :date, 'planned')
-    ON CONFLICT (schedule_item_id, date) DO NOTHING
-    """, nativeQuery = true)
-int insertLessonIfAbsent(Long scheduleItemId, LocalDate date);
-```
+@Component
+public class MongoIndexInitializer implements ApplicationListener<ApplicationReadyEvent> {
+    private final MongoTemplate mongoTemplate;
 
-```java
-// Option B: Check before insert
-if (!lessonRepository.existsByScheduleItemIdAndDate(scheduleItemId, date)) {
-    lessonRepository.save(new Lesson(...));
-}
-// Note: race condition possible in multi-instance; ON CONFLICT DO NOTHING is safer
-```
-
-Return HTTP 200 (not 201) on second call to indicate "generation completed, lessons already exist."
-
-**Warning signs:**
-- `DataIntegrityViolationException: unique constraint "lessons_schedule_item_id_date_key"` on repeated generation calls
-- Generation returns 500 when headman clicks the button twice
-- Integration test: call generate twice, assert no exception on second call
-
-**Phase to address:**
-Lesson generation phase — make idempotency the first test written before any generation logic. A test that calls generate twice should always pass.
-
----
-
-### Pitfall 4: Week Parity Calculation Off-by-One (ISO Week vs Academic Week)
-
-**What goes wrong:**
-The `week_type` column distinguishes `odd`/`even` weeks. The calculation uses Java `LocalDate.get(WeekFields.ISO.weekOfWeekBasedYear())`. ISO week 1 may be the last week of December (ISO weeks start Monday). The semester starts September 1 (which could be ISO week 35 or 36). "Week 1 of the semester" is not "ISO week 1." If the first semester week is ISO week 36 (even), then `schedule_items` created with `week_type=odd` never fire in the first week despite the headman configuring them as "first week."
-
-**Why it happens:**
-ISO week numbers are absolute (1-53 per year). Academic "odd/even" parity is relative to the semester start. A semester starting on an ISO-even week means ISO-even weeks are "odd" academically. Developers use `isoWeek % 2 == 0` for even, but the first semester week parity determines which direction parity goes.
-
-**How to avoid:**
-Calculate parity relative to the semester start date, not absolute ISO week number:
-
-```java
-public static boolean isOddWeek(LocalDate lessonDate, LocalDate semesterStart) {
-    // Week 1 of semester = odd, week 2 = even, etc.
-    long weeksSinceStart = ChronoUnit.WEEKS.between(
-        semesterStart.with(DayOfWeek.MONDAY),
-        lessonDate.with(DayOfWeek.MONDAY)
-    );
-    return (weeksSinceStart % 2) == 0; // 0-indexed: week 0 = odd
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        mongoTemplate.indexOps("attendances")
+            .ensureIndex(new CompoundIndexDefinition(
+                new Document("lesson_id", 1).append("user_id", 1))
+                .unique());
+        // create all other indexes here
+    }
 }
 ```
 
-Store in a utility class `LessonDateUtils` and test exhaustively:
-- Semester starts Monday Sept 1 → week 1 = odd
-- Semester starts Wednesday Sept 3 → week 1 (anchor Monday Aug 31) = odd
-- Sept 15 = week 3 = odd
-- Sept 22 = week 4 = even
+Do NOT rely on `@CompoundIndex` annotations alone without verifying `auto-index-creation` is enabled. Do NOT enable auto-index-creation in production without understanding that index creation blocks the collection on MongoDB 4.x.
 
 **Warning signs:**
-- Lessons for `week_type=odd` schedule items appear on even calendar weeks
-- Headman reports "половина пар не генерируется" (half of lessons not generating)
-- Unit test: generate lessons for a known 4-week period, count odd/even lessons, verify 2 each
+- Collection exists but `db.attendances.getIndexes()` only shows `_id` index
+- Duplicate attendance records for same `(lesson_id, user_id)` pair after retry
+- `MongoWriteException: duplicate key` never thrown even when sending identical check-in twice
 
 **Phase to address:**
-Lesson generation phase — implement and unit-test `LessonDateUtils.isOddWeek()` before any generation loop is written. This is a pure function that can be 100% unit-tested without a database.
+Infrastructure / MongoDB setup phase — write index initialization before any service logic. Add a test that verifies the unique index exists by attempting two identical inserts and expecting `DuplicateKeyException`.
 
 ---
 
-### Pitfall 5: gRPC Client to Academic Service — No Deadline Causes Hanging Threads
+### Pitfall 2: RabbitMQ Consumer Queue Not Bound — lesson.closed Events Silently Dropped
 
 **What goes wrong:**
-Schedule Service creates a schedule item. It calls `AcademicGrpcServiceBlockingStub.getGroup(request)` to validate the group exists. Academic Service is slow or temporarily down. The gRPC blocking stub waits indefinitely. The HTTP request thread is blocked. With 10 concurrent headman requests, 10 threads block. The Tomcat thread pool exhausts. All subsequent requests to Schedule Service queue or fail with "connection refused."
+The Attendance Service is the first RabbitMQ consumer in this system. The Schedule Service publishes to the `rut-uit.events` fanout exchange with no routing key. If the Attendance Service queue (`attendance-service.events`) is not declared and bound to the exchange before the first `lesson.closed` event arrives, that event is lost forever — fanout exchange drops messages with no bound queues. Auto-absent never fires for any lesson that closed during service startup.
 
 **Why it happens:**
-gRPC stubs created without `.withDeadlineAfter(...)` have no timeout. Unlike HTTP clients (which have connection timeout defaults), gRPC stubs are indefinitely patient by default. This is documented but overlooked when first using gRPC.
+The existing `RabbitConfig` in Schedule Service only declares the exchange (publisher side). Fanout exchanges do not store messages — they route to bound queues only. If no queue is bound when the event is published, the message is gone. Unlike topic exchanges with persistent queues, there is no "replay" mechanism. Developers who only look at the publisher config assume consumers will receive messages retroactively.
 
 **How to avoid:**
-Always attach a deadline to every outgoing gRPC call:
+The Attendance Service `RabbitConfig` must declare its own durable queue AND the binding to the fanout exchange:
 
 ```java
-// In ScheduleService validation method:
-GroupResponse group = academicGrpcStub
-    .withDeadlineAfter(3, TimeUnit.SECONDS)
-    .getGroup(GroupRequest.newBuilder().setGroupId(groupId).build());
-```
+@Bean
+public Queue attendanceEventsQueue() {
+    return QueueBuilder.durable("attendance-service.events").build();
+}
 
-Configure deadline as a constant or application property, not hardcoded per call site:
-
-```java
-@Value("${grpc.client.academic.deadline-seconds:3}")
-private int academicDeadlineSeconds;
-
-private GroupResponse callGetGroup(long groupId) {
-    return academicGrpcStub
-        .withDeadlineAfter(academicDeadlineSeconds, TimeUnit.SECONDS)
-        .getGroup(GroupRequest.newBuilder().setGroupId(groupId).build());
+@Bean
+public Binding attendanceEventsBinding(Queue attendanceEventsQueue,
+                                        FanoutExchange eventsExchange) {
+    return BindingBuilder.bind(attendanceEventsQueue).to(eventsExchange);
 }
 ```
 
-Map `StatusRuntimeException` with `Status.DEADLINE_EXCEEDED` to HTTP 504 or a service-specific exception that returns 503.
+The `FanoutExchange` bean for `rut-uit.events` must also be declared in the Attendance Service config (idempotent — RabbitMQ ignores re-declarations of existing exchanges with same parameters). Start Attendance Service before running any cron that transitions lessons to CLOSED in integration tests.
 
 **Warning signs:**
-- Schedule Service stops responding when Academic Service is restarted
-- Tomcat thread pool exhaustion log: `WARN o.a.t.util.net.NioEndpoint - Socket accept failed`
-- gRPC call hangs more than 5 seconds in tests
+- RabbitMQ Management UI shows `rut-uit.events` exchange with zero bindings after Attendance Service starts
+- Auto-absent never triggers even when `lesson.closed` events are published
+- No `@RabbitListener` method ever fires in logs
 
 **Phase to address:**
-gRPC client phase — configure deadlines before writing any gRPC validation call. Add a Testcontainers integration test that simulates Academic Service delay and asserts Schedule Service returns within deadline.
+RabbitMQ consumer infrastructure phase — declare queue + binding as first step before writing the consumer logic. Add a smoke test: publish a synthetic `lesson.closed` event and verify the listener method is invoked.
 
 ---
 
-### Pitfall 6: gRPC Client NOT_FOUND Treated as Internal Error
+### Pitfall 3: Auto-Absent Race Condition — Late Check-In After lesson.closed Event
 
 **What goes wrong:**
-Headman creates a schedule item with a non-existent `subject_id`. Schedule Service calls `GetGroup`, gets a valid response, then calls `GetTeacherSubjects` which returns an empty list (subject not assigned to teacher). Alternatively, Academic Service's `GetGroup` is called with a group that was recently deleted and returns `NOT_FOUND` status. The `StatusRuntimeException` is not caught, propagates to the controller, and the user receives HTTP 500 instead of 404 or 422.
+A student submits geo-checkin (POST `/attendance/check-in`) at `t=0`. The request is in-flight. The cron job fires at `t=1ms`, transitions the lesson to CLOSED, publishes `lesson.closed`. The Attendance Service consumer receives the event at `t=2ms` and runs auto-absent: queries all group members via gRPC, bulk-inserts `absent` records for everyone without an existing record. The unique index on `{lesson_id, user_id}` blocks the student's absent insert (good). But then the check-in request completes at `t=3ms` and upserts `present` — overwriting nothing because no record existed when the `absent` insert was blocked. Result: student gets `absent` even though they checked in before the lesson closed.
 
 **Why it happens:**
-gRPC exceptions are `StatusRuntimeException`, not standard Java exceptions. Developers catch `Exception` generically or let Spring's `@ControllerAdvice` handle it without a specific handler for `StatusRuntimeException`. The default Spring handler maps unexpected exceptions to 500.
+The `lesson.closed` event fires AFTER the Schedule Service transaction commits (`@TransactionalEventListener(AFTER_COMMIT)`). There is a window between the lesson status changing to CLOSED in PostgreSQL and the consumer processing the event. Geo-checkin validation calls `GetActiveLesson` gRPC which checks `status = 'ACTIVE'` — if the lesson transitioned to CLOSED before the check-in gRPC call returns, the checkin is rejected. But if the check-in's gRPC call ran before the CLOSED transition and the checkin request is still processing when the consumer fires, both operations race to insert the attendance record.
 
 **How to avoid:**
-Add a `@ControllerAdvice` handler for `StatusRuntimeException` that maps gRPC status codes to HTTP status codes:
+Use an atomic upsert in the auto-absent step that only sets absent if no record exists for the student:
 
 ```java
-@ExceptionHandler(StatusRuntimeException.class)
-public ResponseEntity<ErrorResponse> handleGrpcStatus(StatusRuntimeException ex) {
-    return switch (ex.getStatus().getCode()) {
-        case NOT_FOUND -> ResponseEntity.status(404)
-            .body(new ErrorResponse("Resource not found via gRPC: " + ex.getStatus().getDescription()));
-        case UNAVAILABLE, DEADLINE_EXCEEDED -> ResponseEntity.status(503)
-            .body(new ErrorResponse("Upstream service unavailable"));
-        case INVALID_ARGUMENT -> ResponseEntity.status(422)
-            .body(new ErrorResponse("Invalid argument: " + ex.getStatus().getDescription()));
-        default -> ResponseEntity.status(500)
-            .body(new ErrorResponse("Internal error"));
-    };
+// Only insert absent if no record exists — never overwrite present/excused
+mongoTemplate.upsert(
+    Query.query(Criteria.where("lesson_id").is(lessonId)
+                        .and("user_id").is(userId)
+                        .and("status").doesNotExist()),  // no status field means no record
+    new Update()
+        .setOnInsert("status", "absent")
+        .setOnInsert("marked_by", "auto_scheduler")
+        .setOnInsert("created_at", Instant.now()),
+    AttendanceRecord.class
+);
+```
+
+The `$setOnInsert` operator only writes fields when the operation results in an insert, not an update. This is atomic at the MongoDB document level. Additionally, validate that the lesson is still ACTIVE at the start of `CheckInService` (not just when the gRPC call returns) using the `lesson_id` from the response, and reject if status != `active`.
+
+**Warning signs:**
+- Students report being marked absent even though they checked in while lesson was ongoing
+- Attendance records show `marked_by: auto_scheduler` for students who have `checkin_location` data in the same record
+- Race window increases under load (gRPC call to Academic Service for geofence takes >100ms)
+
+**Phase to address:**
+Auto-absent consumer phase — use `$setOnInsert` from the start, never a plain insert. Write a concurrency test: submit check-in and lesson.closed event simultaneously and assert the result is `present`, not `absent`.
+
+---
+
+### Pitfall 4: @Enumerated Is JPA-Only — MongoDB Stores Wrong String Values
+
+**What goes wrong:**
+`AttendanceRecord` entity uses `AttendanceStatus` enum with `@Enumerated(EnumType.STRING)` (copied from the JPA pattern used in Schedule/Academic services). Spring Data MongoDB ignores `@Enumerated` entirely. Enums are serialized using Jackson's default behavior: `UPPER_CASE` name (e.g., `"PRESENT"`, `"AUTO_SCHEDULER"`). Documents in MongoDB contain `"PRESENT"` instead of `"present"`. Report queries filtering by `status = "present"` return nothing. The unique constraint and existing documents in other dev environments have lowercase strings.
+
+**Why it happens:**
+The codebase already uses `LowercaseEnumConverter` with `autoApply=true` for JPA — this is a `javax.persistence.AttributeConverter` and has zero effect on MongoDB. The MongoDB `MappingMongoConverter` uses Jackson by default for enum serialization. Developers copy the `@Enumerated` annotation out of habit and assume it works the same way.
+
+**How to avoid:**
+Register a global `MongoCustomConversions` bean that converts all enums to lowercase strings:
+
+```java
+@Bean
+public MongoCustomConversions mongoCustomConversions() {
+    return MongoCustomConversions.create(config -> {
+        config.registerConverter(new AttendanceStatusWriteConverter());
+        config.registerConverter(new AttendanceStatusReadConverter());
+        // repeat for each enum used in MongoDB documents
+    });
 }
 ```
 
-Follow the same `GrpcExceptionAdvice` pattern already established in Academic Service's `GrpcExceptionAdvice.java`, but for the **client** side (HTTP REST `@ControllerAdvice`).
+Alternatively, annotate enum fields with `@Field("status")` and use `@ValueConverter` (Spring Data MongoDB 3.3+):
+
+```java
+@Field("status")
+@ValueConverter(AttendanceStatusConverter.class)
+private AttendanceStatus status;
+```
+
+Store ALL enum values as lowercase in MongoDB to match the project convention. Never use `@Enumerated` on MongoDB `@Document` classes — remove it on sight.
 
 **Warning signs:**
-- Creating a schedule item with invalid IDs returns HTTP 500 instead of 404/422
-- Logs show unhandled `StatusRuntimeException` in controller layer
-- No `@ExceptionHandler(StatusRuntimeException.class)` in any `@ControllerAdvice`
+- `db.attendances.find({status: "present"})` returns zero documents when records exist
+- `db.attendances.find({status: "PRESENT"})` returns documents (wrong case in DB)
+- Report aggregate queries always return empty results
 
 **Phase to address:**
-gRPC client phase — write the `StatusRuntimeException` handler as the first step before any gRPC validation calls.
+MongoDB entity / document mapping phase — write a mapping test before any service logic. The test inserts a record with status `PRESENT` Java enum and asserts the stored MongoDB document contains `"present"` (lowercase string).
 
 ---
 
-### Pitfall 7: RabbitMQ lesson.started Published for Cancelled Lessons
+### Pitfall 5: GetLessonsByGroup Includes CANCELLED Lessons — Auto-Absent Marks Wrong Students
 
 **What goes wrong:**
-The cron job transitions `planned → active` for all lessons whose `start_time <= NOW()`. A lesson that was cancelled by the headman (status = `cancelled`) is accidentally included if the WHERE clause is:
-
-```sql
-WHERE status = 'planned' AND scheduled_start <= NOW()
-```
-
-But a lesson that was cancelled AFTER having been planned, then manually set back to `planned` by an "uncancel" operation, then cancelled again — its status is `cancelled`. The query correctly excludes it. However, if the cron fires during a concurrent cancel operation (rare race), the UPDATE might transition `cancelled → active`.
-
-The more common mistake: publishing `lesson.started` for a lesson that the headman just cancelled in the same second the cron fires. The DB transaction for cancel and the cron UPDATE run concurrently. One wins. If the cron wins, a `lesson.started` event fires for a cancelled lesson. Notification services send "Para started" for a lesson that doesn't exist.
+The auto-absent flow for historical lesson reports calls `GetLessonsByGroup` to find closed lessons for a group. The gRPC implementation (confirmed in `ScheduleGrpcServiceImpl`) returns ALL statuses including `cancelled`. The auto-absent consumer iterates over the response and attempts to create absent records for cancelled lessons. This pollutes the `attendances` collection with `absent` records for lessons that never happened. Reports show incorrect absent counts for cancelled lessons (which should have zero effect on statistics per business rules).
 
 **Why it happens:**
-The cron job's UPDATE is a bulk operation: `UPDATE lessons SET status='active' WHERE status='planned' AND ...`. If cancel runs `UPDATE lessons SET status='cancelled' WHERE id=? AND status='planned'` concurrently, one of the two UPDATEs wins. There is no explicit lock.
+Known tech debt: `GetLessonsByGroup` does not filter by status in the gRPC server code. The query passes all four statuses explicitly: `List.of("planned", "active", "closed", "cancelled")`. This was acceptable for the Schedule-side view (showing all lesson statuses in calendar), but the Attendance Service consumer must not auto-absent for cancelled lessons.
 
 **How to avoid:**
-Add explicit status guard in the cron UPDATE: only transition if `status = 'planned'` (already correct). The cancel operation also uses `WHERE status = 'planned'` guard. PostgreSQL's row-level locking ensures only one UPDATE wins. The losing UPDATE changes 0 rows.
-
-After the cron UPDATE, check `affected rows count > 0` before publishing `lesson.started`. This is the critical guard:
+The Attendance Service consumer MUST filter the gRPC response before processing:
 
 ```java
-int affected = lessonRepository.transitionToActive(cutoffTime); // returns update count
-if (affected > 0) {
-    // fetch the lesson IDs that were actually transitioned and publish events
+List<LessonResponse> closedLessons = response.getLessonsList().stream()
+    .filter(l -> "closed".equals(l.getStatus()))
+    .toList();
+```
+
+Never trust that a gRPC response filtered upstream — always apply business-rule filters on the consumer side. Document this as a known tech debt: the gRPC server should accept a `status_filter` field in the request, but until it does, client-side filtering is mandatory.
+
+**Warning signs:**
+- `attendances` collection contains records with `lesson_id` values that correspond to cancelled lessons
+- Report stats show absent counts for lessons flagged as `status: cancelled` in the schedule
+- `marked_by: auto_scheduler` records for lesson IDs that have zero `present`/`excused` records (indicator of mass ghost absents)
+
+**Phase to address:**
+RabbitMQ consumer / auto-absent phase — add explicit status filter as the first line of the lesson processing loop. Add integration test that verifies no attendance record is created for a cancelled lesson.
+
+---
+
+### Pitfall 6: IllegalArgumentException from Schedule gRPC Becomes HTTP 500 at Consumer
+
+**What goes wrong:**
+`ScheduleGrpcServiceImpl.getLessonsByGroup()` throws `IllegalArgumentException` when `date_from` is after `date_to`. This exception is not mapped to a gRPC status code in the Schedule Service `GrpcExceptionAdvice`. The gRPC call from Attendance Service receives a generic `UNKNOWN` status instead of `INVALID_ARGUMENT`. The Attendance Service catches this as a generic `StatusRuntimeException` with `UNKNOWN` status and rethrows as HTTP 500. The real cause is invisible in Attendance Service logs.
+
+**Why it happens:**
+Known tech debt in Schedule Service: `IllegalArgumentException` → `HTTP 500` in the REST layer. The same gap exists in the gRPC layer: without explicit `@GrpcExceptionHandler` for `IllegalArgumentException`, it propagates as `UNKNOWN`. The Attendance Service has no reason to send invalid date ranges in normal operation, but defensive programming requires handling this case gracefully.
+
+**How to avoid:**
+In Attendance Service gRPC clients, catch `StatusRuntimeException` and check `status.getCode()`:
+
+```java
+try {
+    return scheduleStub.getLessonsByGroup(request);
+} catch (StatusRuntimeException e) {
+    if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+        return LessonsResponse.getDefaultInstance();
+    }
+    log.error("Schedule gRPC call failed: status={}, description={}",
+              e.getStatus().getCode(), e.getStatus().getDescription());
+    throw new ScheduleServiceUnavailableException(e);
 }
 ```
 
-Never publish events based on "the lesson should be active by now" logic — only publish based on confirmed DB state change.
+Log gRPC status code and description — do not swallow or rethrow blindly. Separately, add `IllegalArgumentException` → `INVALID_ARGUMENT` mapping to Schedule Service `GrpcExceptionAdvice` (tech debt fix in a later phase).
 
 **Warning signs:**
-- `lesson.started` events arriving for lessons with `is_geo_blocked=true` or `status=cancelled`
-- Students receive push for a lesson the headman already cancelled
-- No row-count check before event publishing in cron handler
+- HTTP 500 responses from Attendance Service with no useful error message
+- gRPC call logs show `Status{code=UNKNOWN, description=null}` from Schedule Service
+- Auto-absent or report endpoints fail with generic 500 for date boundary conditions
 
 **Phase to address:**
-Lesson status cron phase — the row-count check must be in the cron handler before event publishing. Integration test: cancel a lesson, trigger cron manually, assert no `lesson.started` event published.
-
----
-
-### Pitfall 8: @Scheduled Cron Misses Transitions During Service Restart / Downtime
-
-**What goes wrong:**
-Schedule Service restarts at 09:05. A lesson was supposed to go `planned → active` at 08:30 and `active → closed` at 10:05. The 08:30 cron did not fire (service was down). After restart, the next cron at 09:10 runs `WHERE status='planned' AND start_time <= NOW()`. It correctly finds the 08:30 lesson (still `planned`, past its start time) and transitions it to `active`. But it also fires `lesson.started` at 09:10, which is 40 minutes late. Notification services send "Para started" when the class is nearly over. Students see a stale notification.
-
-**Why it happens:**
-Catch-up crons faithfully execute missed transitions without knowing they are late. The `lesson.started` event is published regardless of how long the lesson has been in a "should have been active" state.
-
-**How to avoid:**
-Add a staleness guard before publishing `lesson.started`. Only publish if the lesson start time is within the acceptable notification window (e.g., within the last 10 minutes):
-
-```java
-lessons.stream()
-    .filter(l -> l.getStartTime().isAfter(LocalTime.now().minusMinutes(10)))
-    .forEach(l -> eventPublisher.publishEvent(new LessonStartedEvent(l)));
-```
-
-For `lesson.closed` transitions: always publish — the close event is less time-sensitive and must fire to trigger auto-absent generation in Attendance Service.
-
-For `planned → active` that is already more than 10 minutes late: transition the status (so gRPC `GetActiveLesson` returns it correctly) but skip the `lesson.started` RabbitMQ event (notifications are useless 40 minutes late).
-
-**Warning signs:**
-- After a 5-minute restart, students receive "Para started" notifications for lessons that started before the restart
-- RabbitMQ gets a burst of `lesson.started` events all at once after service restart
-- No staleness check in cron transition logic
-
-**Phase to address:**
-Lesson status cron phase — define the notification staleness window as a config property. Distinguish "must always transition status" (correctness) from "should publish event" (timely notification).
-
----
-
-### Pitfall 9: gRPC Port Not Configured — Schedule Service gRPC Server Conflicts
-
-**What goes wrong:**
-`grpc-spring-boot-starter` (net.devh) defaults to port 9090. Schedule Service HTTP runs on 9092. When the gRPC server starts, it tries to bind port 9090, which is already used by Auth Service in the same Docker network. The service starts successfully (different containers don't share ports), but Attendance Service is hardcoded to call `schedule-service:9090` — it connects to Auth Service instead, getting bizarre errors.
-
-This is the same class of pitfall from Academic Service (Pitfall 3 in the existing PITFALLS.md) but must be repeated for Schedule Service with its own port number.
-
-**How to avoid:**
-Set the gRPC server port explicitly in `application.yml` before adding any `@GrpcService` bean:
-
-```yaml
-grpc:
-  server:
-    port: 19092   # convention: HTTP port + 10000
-```
-
-Set the gRPC client address for Academic Service in `application.yml`:
-
-```yaml
-grpc:
-  client:
-    academic-service:
-      address: static://academic-service:19091
-      negotiation-type: plaintext
-```
-
-Update `docker-compose.yml` to expose port `19092` for Schedule Service container.
-
-**Warning signs:**
-- Attendance Service `GetActiveLesson` calls return Auth Service responses
-- `grpcurl schedule-service:9090 list` returns Academic proto methods instead of Schedule proto methods
-- `application.yml` has no `grpc.server.port` property
-
-**Phase to address:**
-gRPC server setup phase — configure port as the very first step, before implementing any RPC handler.
-
----
-
-### Pitfall 10: Lesson Generation Crossing Semester Boundaries
-
-**What goes wrong:**
-Auto-generation is triggered for a date range that extends beyond `semester.date_to`. Lessons are created for dates after the semester ends (e.g., January exams, holidays). These "lessons" are technically generated but represent phantom classes. The Attendance Service receives `lesson.started` events for them, generates absence records for students who are not in active academic period.
-
-**Why it happens:**
-The generation loop iterates `date = semesterStart; date <= requestedDateTo; date = date.plusDays(7)`. If `requestedDateTo` is not bounded by `semesterDateTo`, the loop escapes the semester.
-
-**How to avoid:**
-Always cap the generation range: `actualDateTo = min(requestedDateTo, semesterDateTo)`. The generation service must fetch the semester's `date_to` via gRPC `GetActiveSemester` (or from the `semester_id` passed on the schedule item) and enforce the cap:
-
-```java
-LocalDate cap = semesterDateTo;
-LocalDate end = dateTo.isAfter(cap) ? cap : dateTo;
-for (LocalDate d = dateFrom; !d.isAfter(end); d = d.plusWeeks(1)) {
-    generateForDate(scheduleItem, d);
-}
-```
-
-Also validate on schedule item creation: the `semester_id` must match the currently active semester; `start_time` / `end_time` must be plausible (start < end, duration >= 30 min, duration <= 4 hours).
-
-**Warning signs:**
-- Lessons exist in `schedule_db.lessons` with `date > semester.date_to`
-- Attendance auto-absent records appear for dates in exam/holiday period
-- Schedule item creation endpoint accepts any `semester_id` without validating against active semester
-
-**Phase to address:**
-Lesson generation phase — add semester boundary assertion as a pre-condition check. Integration test: generate lessons for a date range exceeding semester end; assert no lesson is created beyond `date_to`.
-
----
-
-### Pitfall 11: @TransactionalEventListener AFTER_COMMIT Swallows lesson.started on Cron Thread
-
-**What goes wrong:**
-The existing Academic Service pattern uses `@TransactionalEventListener(phase = AFTER_COMMIT)` to publish RabbitMQ events safely after DB commit. When reused for the cron scheduler, this pattern breaks silently. The cron method runs with `@Scheduled` — which by default has no transaction. `ApplicationEventPublisher.publishEvent(new LessonStartedEvent(...))` fires, but `@TransactionalEventListener(AFTER_COMMIT)` only processes events when the current thread's transaction commits. Without a transaction, the event is silently dropped.
-
-**Why it happens:**
-`@TransactionalEventListener` with `phase = AFTER_COMMIT` requires an active transaction. If no transaction exists, Spring does not throw an error — it silently discards the event. This is documented behavior but easy to miss when the event publication code is copy-pasted from a service layer (which always runs in a transaction) to a cron handler (which doesn't).
-
-**How to avoid:**
-Wrap the cron body in `@Transactional`:
-
-```java
-@Scheduled(cron = "${schedule.cron.lesson-transitions}")
-@Transactional
-public void transitionLessonStatuses() {
-    // DB updates + event publication — all within a transaction
-    // AFTER_COMMIT listener fires when this method returns
-}
-```
-
-Or use a dedicated `@Transactional` service method called from the cron:
-
-```java
-@Scheduled(cron = "...")
-public void cronTick() {
-    lessonTransitionService.runTransitions(); // @Transactional on this method
-}
-```
-
-The key invariant: the transaction must exist on the thread when `publishEvent()` is called, so that `AFTER_COMMIT` fires. Test this by running the cron and verifying the event arrives in RabbitMQ.
-
-**Warning signs:**
-- Lesson statuses change correctly in DB but no `lesson.started` / `lesson.closed` events appear in RabbitMQ
-- `@TransactionalEventListener` handler log never fires despite events being published
-- Cron method has no `@Transactional` and calls `publishEvent()` directly
-
-**Phase to address:**
-Lesson status cron phase — add `@Transactional` to the cron method and add an integration test that verifies the event actually reaches RabbitMQ (not just that `publishEvent()` was called).
-
----
-
-### Pitfall 12: GetActiveLesson gRPC Returns Wrong Lesson When Group Has Multiple Simultaneous Slots
-
-**What goes wrong:**
-`GetActiveLesson(group_id, timestamp)` queries `WHERE status='active' AND group_id = ?`. A group has two active lessons in the same time slot (data corruption from a bug, or a legitimate "potok" scenario where a subject spans two lesson slots). The query returns a list but the proto contract defines a single `LessonResponse`. The service arbitrarily picks the first result. The Attendance Service uses this lesson_id for check-in. One of the two lessons gets no attendance records.
-
-**Why it happens:**
-The UNIQUE constraint on `schedule_items` is `(group_id, day_of_week, lesson_number, week_type, semester_id)`. It prevents duplicate templates but does not prevent two different `schedule_items` from having overlapping time ranges. Lessons from both can be `active` simultaneously.
-
-**How to avoid:**
-`GetActiveLesson` must search by time window, not just `status='active'`. Query:
-
-```sql
-SELECT l.* FROM lessons l
-JOIN schedule_items si ON l.schedule_item_id = si.id
-WHERE si.group_id = :groupId
-  AND l.status = 'active'
-  AND si.start_time <= :currentTime
-  AND si.end_time >= :currentTime
-ORDER BY si.lesson_number ASC
-LIMIT 1
-```
-
-The time window query makes it unambiguous which lesson is currently running, even if two happen to overlap (return the one with the earliest lesson_number). Return `NOT_FOUND` if no lesson matches (no active para right now).
-
-**Warning signs:**
-- Group with two back-to-back lessons (08:30-10:05 and 10:15-11:50) where second is active — `GetActiveLesson` at 10:30 returns wrong lesson if both are somehow `active`
-- Check-in failures with "lesson not found" when para is clearly in progress
-- `GetActiveLesson` not filtering by time window, only by `status='active'`
-
-**Phase to address:**
-gRPC server phase — use time-window query from the start. Add integration test: lesson is active, query at a time outside the window, assert NOT_FOUND.
+gRPC client wrappers phase — write a defensive gRPC client layer before writing any consumer that calls Schedule Service. Add a test with mocked gRPC stubs that verifies graceful handling of `UNKNOWN` status.
 
 ---
 
 ## Technical Debt Patterns
 
+Shortcuts that seem reasonable but create long-term problems.
+
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Skip `FOR UPDATE SKIP LOCKED` for cron transitions (assume single instance) | Simpler query | Duplicate events on rolling restart or multi-instance | Acceptable for single-instance Docker Compose deploy; document the assumption explicitly |
-| Hardcode lesson generation as "generate whole semester upfront" instead of lazy | Simpler code | Generates thousands of rows at semester start; large bulk inserts block the DB briefly | Acceptable if generation is done during off-hours (admin triggers it manually, not on schedule item create) |
-| Skip deadline on gRPC stubs for Academic Service calls | Simpler code | Thread exhaustion if Academic Service is slow | Never — always add deadline |
-| Publish events without checking affected row count | Simpler code | Duplicate/phantom events for already-transitioned lessons | Never — always gate publication on confirmed DB change |
-| Use `LocalTime.now()` without timezone config | Works in dev | Lessons transition 3 hours late in production (Docker UTC vs Moscow time) | Never — set timezone before writing any time comparison |
-| Skip idempotency on lesson generation (rely on UNIQUE constraint to raise exception) | Less code | 500 errors on retry, headman must know not to click twice | Never — use `ON CONFLICT DO NOTHING` |
+| `auto-index-creation=true` in dev profile | Zero-config index management | Startup time grows with data; index creation blocks collection on MongoDB 4.x | Dev/test only, never production |
+| Skip DLQ configuration for lesson.closed consumer | Simpler RabbitMQ config | Failed auto-absent silently drops, students permanently marked absent incorrectly | Never — DLQ is required even for MVP |
+| Blocking gRPC stub (`..BlockingStub`) for all calls | Simpler code, no async complexity | Blocks thread during gRPC call; under load pins request threads | Acceptable for MVP; plan non-blocking for v5+ |
+| Copying attendance data (semester_id, group_id, subject_id) from gRPC response into MongoDB document | Fast denormalized reads for reports | If academic data changes (group rename, semester activation), MongoDB documents have stale metadata | Acceptable — documents are write-once attendance facts, stale display metadata is acceptable |
+| No MongoDB transactions for checkin + event publish | Simpler, no replica set requirement in dev | checkin saved but event not published = silent uncounted attendance | Acceptable if event publish is fire-and-forget; NOT acceptable if audit trail required |
+| `@Profile("!test")` to disable cron — also blocks consumer | Cron-free tests | RabbitMQ listener container must still run in tests to verify consumer logic; cannot disable both with one profile | Separate profiles: `@Profile("!test")` for cron only, consumer always active |
 
 ---
 
 ## Integration Gotchas
 
+Common mistakes when connecting to external services.
+
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| net.devh gRPC server | Not setting `grpc.server.port` — defaults to 9090 which is Auth Service's port | Set `grpc.server.port: 19092` in `application.yml` before any `@GrpcService` bean |
-| net.devh gRPC client | No `withDeadlineAfter()` on blocking stubs | Always attach `.withDeadlineAfter(3, TimeUnit.SECONDS)` per call or on stub creation |
-| gRPC client `StatusRuntimeException` | Uncaught exception propagates as HTTP 500 | Add `@ExceptionHandler(StatusRuntimeException.class)` in `@ControllerAdvice` |
-| `@TransactionalEventListener(AFTER_COMMIT)` + `@Scheduled` | Event silently dropped if cron method has no transaction | Add `@Transactional` to the cron method or delegate to a `@Transactional` service |
-| RabbitMQ fanout exchange | Schedule Service declaring a new exchange instead of reusing `rut-uit.events` | Reuse same `rut-uit.events` fanout exchange — it already exists from Academic Service; `FanoutExchange` bean declaration is idempotent but must use identical `durable=true, autoDelete=false` |
-| RabbitMQ `channelTransacted=true` + `AFTER_COMMIT` | Setting `channelTransacted=true` on `RabbitTemplate` causes duplicate messages with `AFTER_COMMIT` | Do NOT set `channelTransacted=true` — follow same pattern as `academic-service/event/RabbitConfig.java` |
-| gRPC + JPA thread context | `@GrpcService` methods run on gRPC thread pool, not Tomcat threads — Spring `RequestContextHolder` is empty | Never call `RequestContextHolder.getRequestAttributes()` from inside a gRPC service handler — use method parameters only (already the pattern in `AcademicGrpcServiceImpl`) |
-| PostgreSQL `TIME` vs `TIMETZ` | `TIME` columns store no timezone info — JVM timezone assumption is invisible | Set `TZ=Europe/Moscow` at Docker container level and `spring.jpa.properties.hibernate.jdbc.time_zone=Europe/Moscow` |
+| Schedule Service gRPC (GetActiveLesson) | Assume `NOT_FOUND` means "no lesson today" — throw 400 to student | `NOT_FOUND` means lesson not in ACTIVE status for group; return `409 CONFLICT` with `no_active_lesson` error code so client knows to show "no active lesson" UI state |
+| Academic Service gRPC (GetCampusGeofence) | Call on every checkin request (gRPC round trip per checkin) | Geofence changes rarely — cache response in-memory or Redis with 60-minute TTL; serve from cache for checkin validation |
+| Academic Service gRPC (GetGroupMembers) | Call for every auto-absent event; no caching | Cache group members per `group_id` in-memory for the duration of auto-absent processing; one gRPC call per group per `lesson.closed` event |
+| RabbitMQ fanout exchange (rut-uit.events) | Declare the exchange bean in Attendance Service with `autoDelete=true` (copied from wrong examples) | Exchange must be `durable=false, autoDelete=false` — must match Schedule Service declaration exactly or RabbitMQ throws `inequivalent arg` error on second declaration |
+| MongoDB upsert (check-in idempotency) | Use `save()` with existing `_id` (overwrites status back to present on re-submit) | Use `upsert()` with `setOnInsert()` for the immutable fields; use `$set` only for fields that are safe to update (like `updated_at`) |
+| gRPC channel to Schedule Service | Hard-code `localhost:19092` (works on developer machine, fails in Docker) | Use `grpc.client.schedule-service.address=static://schedule-service:19092` in application.yml, resolved via Docker service name |
 
 ---
 
 ## Performance Traps
 
+Patterns that work at small scale but fail as usage grows.
+
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Bulk lesson generation without batching (one INSERT per lesson) | Semester generation for 20 groups × 5 days × 18 weeks = 1800 individual INSERTs takes 5+ seconds | Use `saveAll()` with a batch size (Hibernate `hibernate.jdbc.batch_size=50`) or single native INSERT with VALUES list | At generation time (observable immediately for large semesters) |
-| Cron fetches all lessons with status filter without date index | `SELECT * FROM lessons WHERE status IN ('planned','active')` full table scan after 10K+ rows | Partial index already defined: `idx_lessons_status WHERE status IN ('planned', 'active')` — use it; add `AND date = CURRENT_DATE` to further narrow | At 5000+ lessons (≈10 groups × 1 semester) |
-| `GetLessonsByGroup` gRPC returns entire semester of lessons as repeated proto messages | Attendance Service calls this for 180-day semester = potentially 900+ lesson proto messages | Add `date_from`/`date_to` range filter (already in proto contract) and enforce max range of 30 days in service layer | At call time for full-semester queries |
-| N+1: for each lesson fetched, load `schedule_item` separately | `SELECT schedule_item FROM schedule_items WHERE id=?` for each lesson in list endpoint | JOIN `lessons` with `schedule_items` in a single JPQL query for REST list endpoints | At 20+ lessons per page |
-| Cron runs every minute checking all lessons | CPU + DB load every 60 seconds even when no transitions needed | Run cron every minute but narrow the query to today's date only: `AND date = CURRENT_DATE` | Always — no "break point," just unnecessary load |
+| Report query loads all attendance records in memory then groups by student | Report endpoint takes 5+ seconds for group with 25 students over one semester (~500 records × N lessons) | Use MongoDB aggregation pipeline with `$group` on server side; never `.findAll()` for report data | ~100+ students or multi-semester reports |
+| Auto-absent calls `GetGroupMembers` inside `lesson.closed` consumer for every event, including rapid bursts | gRPC call storm to Academic Service when many lessons close at same time (end of day cron cycle) | Cache group members with short TTL; debounce or batch process if multiple lessons close for same group simultaneously | 5+ groups closing at same time |
+| Geo-checkin calls both `GetActiveLesson` AND `GetCampusGeofence` sequentially (two blocking gRPC calls per request) | Checkin latency = gRPC(Schedule) + gRPC(Academic) + MongoDB write; >200ms per checkin under load | Parallelize with `CompletableFuture` or cache geofence; geofence data changes < once per semester | 50+ concurrent student checkins at lesson start |
+| MongoDB unique index on `{lesson_id, user_id}` not declared — falls back to application-level duplicate check | Inconsistent duplicate prevention under concurrent load; two inserts race between check and insert | Unique index at MongoDB level is the only reliable guard; application-level check is complementary, not sufficient | Any concurrent load (even 2 users) |
+| `GetLessonsByGroup` returns entire semester worth of lessons for auto-absent check | Response size grows with semester length; at end of semester = 100+ lessons per group per gRPC call | Use `GetLessonById` for single-lesson auto-absent (pass `lesson_id` from `lesson.closed` event payload) | Second half of semester (50+ lessons) |
 
 ---
 
 ## Security Mistakes
 
+Domain-specific security issues beyond general web security.
+
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| Headman modifying schedule items of another group | Headman of group A creates schedule items for group B by passing a different `group_id` | In every HEADMAN endpoint, assert that `scheduleItem.groupId == X-Group-Id` header; return 403 if not |
-| Skipping Academic Service validation on schedule item create | Invalid `subject_id`, `teacher_id`, `group_id` — phantom foreign keys in `schedule_db` | Always call `GetGroup` and `GetTeacherSubjects` gRPC before inserting `schedule_items`; treat NOT_FOUND as 422 |
-| Cancel reason not sanitized | Very long strings stored in `cancel_reason VARCHAR(512)` — truncation silently corrupts | Validate `cancel_reason.length() <= 512` in contract DTO validation (`@Size(max = 512)`) |
-| gRPC server accessible outside Docker network | Schedule gRPC on port 19092 exposed in Docker Compose `ports:` instead of `expose:` | Use `expose:` (not `ports:`) for gRPC ports — only HTTP port 9092 should be accessible through Gateway |
+| Checkin accepts any `{lat, lng}` from request body without validating against known-good campus location | Student submits fake coordinates (0.0, 0.0 or any non-campus location); gets `present` status fraudulently | Validate distance using Haversine formula: `distance(studentLat, studentLng, campusLat, campusLng) <= campus.radius_m`; reject if outside geofence |
+| Checkin does not verify student belongs to the group the active lesson is for | Student in group A checks in to lesson for group B (by guessing `lesson_id`) | `GetActiveLesson(group_id, timestamp)` where `group_id` comes from `X-Group-Id` JWT header (injected by Gateway), not from request body; student cannot supply a different group |
+| Headman manual marking does not verify the student being marked is in the headman's group | Headman marks student from another group | Verify `student_group_id == headman_group_id` using `GetGroupMembers` gRPC before inserting record |
+| Attendance record contains raw GPS coordinates stored in MongoDB | Privacy risk — exact device location persisted indefinitely | Store `distance_from_campus_m` (integer) instead of raw lat/lng; or store with explicit data retention policy. At minimum, round coordinates to 3 decimal places (~111m resolution) |
+| RabbitMQ consumer processes `lesson.closed` without verifying the `lesson_id` belongs to a real lesson | Crafted AMQP message causes auto-absent for non-existent lesson_id | Verify via `GetLessonById` gRPC call before processing; discard if `NOT_FOUND` |
+
+---
+
+## UX Pitfalls
+
+Common user experience mistakes in this domain.
+
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|-----------------|
+| Checkin API returns generic "error" when student is outside geofence | Student doesn't know if they're in the wrong location or the lesson hasn't started | Return specific error code with distance: `{"error": "outside_geofence", "distance_m": 450, "allowed_m": 200}` |
+| Checkin API returns "no active lesson" when lesson is in 5-minute pre-start window | Student physically at campus 4 minutes early gets rejected; tries multiple times | Respect 5-minute pre-start window: `GetActiveLesson` should match lessons where `start_time - 5min <= now <= end_time + 5min` |
+| Manual marking by headman returns 200 but doesn't confirm the new status | Headman clicks multiple times per student thinking click didn't register | Response must include the resulting attendance record with status and `marked_by` so the UI can update immediately |
+| Auto-absent fires for ALL unmarked students including those on geo-blocked lessons | Students locked out of geo-marking by headman receive `absent` instead of `present` | Check `is_geo_blocked` flag from lesson; if geo-blocked, skip auto-absent for students who have NO record (manual marking is the only valid source) |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Cron timezone:** Lessons transition at correct Moscow time in Docker — verify by starting a lesson with `start_time = NOW() + 1 minute` and checking transition fires on time
-- [ ] **Week parity:** Generate lessons for a 4-week period starting on an even-ISO-week semester start — verify odd/even lessons are correct relative to semester start, not ISO week number
-- [ ] **Idempotent generation:** Call `generateLessons` twice for the same week — verify second call returns 200 with no exceptions and no duplicate rows in DB
-- [ ] **AFTER_COMMIT + @Scheduled:** Trigger cron manually in integration test — verify `lesson.started` event actually appears in RabbitMQ (not just that `publishEvent()` was called by checking `@TransactionalEventListener` fires)
-- [ ] **Deadline on gRPC stubs:** Verify `withDeadlineAfter()` is attached on every gRPC call — grep for `academicGrpcStub.get` without `withDeadlineAfter` in code
-- [ ] **StatusRuntimeException handling:** Call an endpoint with an invalid `group_id` that makes Academic Service return NOT_FOUND — verify HTTP 404, not 500
-- [ ] **gRPC server port:** `grpcurl schedule-service:19092 list` returns `rutcampustrack.schedule.ScheduleGrpcService` — not Auth Service methods
-- [ ] **Cancelled lesson not transitioned:** Set a lesson to `cancelled`, trigger cron — verify lesson remains `cancelled` and no `lesson.started` event published
-- [ ] **Semester boundary:** Generate lessons for a date range beyond `semester.date_to` — verify no lesson created after semester end
-- [ ] **GetActiveLesson time window:** Query `GetActiveLesson` at a time 1 minute before `start_time` — verify NOT_FOUND returned (lesson is `planned`, not yet `active`)
+Things that appear complete but are missing critical pieces.
+
+- [ ] **Geo-checkin:** Appears to work in dev (localhost gRPC stubs) — verify geofence comparison uses correct Earth radius (6371 km) and the right formula; test with coordinates exactly at radius boundary.
+- [ ] **Auto-absent:** Consumer fires and inserts `absent` records — verify it SKIPS students who already have ANY attendance record (not just `present`); verify it skips cancelled lessons; verify it uses `$setOnInsert` not plain insert.
+- [ ] **Domain isolation:** Package structure has `checkin/` and `report/` directories — verify ArchUnit test (`reportDoesNotAccessCheckinInternals`) is actually in the test classpath and fails when a direct import is added. The test must run, not just compile.
+- [ ] **MongoDB indexes:** Collection exists and writes succeed — verify unique index on `{lesson_id, user_id}` exists by running `db.attendances.getIndexes()` in integration test or Mongo shell; a missing index won't cause failures until concurrent requests arrive.
+- [ ] **RabbitMQ queue:** Consumer `@RabbitListener` receives events in unit test with mocked RabbitMQ — verify actual queue binding exists in Testcontainers integration test by publishing a real event and asserting the listener method was called.
+- [ ] **Enum serialization:** Records save and load without error — verify the stored MongoDB document (raw BSON) contains lowercase strings (`"present"`, `"auto_scheduler"`), not uppercase enum names.
+- [ ] **gRPC client wrappers:** Calls succeed in happy path — verify the client handles `NOT_FOUND` (no active lesson) and `UNAVAILABLE` (service down) without propagating `NullPointerException` or HTTP 500.
+- [ ] **Cancelled lesson filtering:** GetLessonsByGroup consumer filters work — verify by inserting a cancelled lesson in test data and asserting no `absent` record is created for it.
 
 ---
 
 ## Recovery Strategies
 
+When pitfalls occur despite prevention, how to recover.
+
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Timezone misconfiguration (lessons transitioning 3h late) | MEDIUM | 1. Set `TZ=Europe/Moscow` in Docker Compose. 2. Restart containers. 3. Manually re-trigger cron or run `UPDATE lessons SET status='active' WHERE ...` for missed transitions. |
-| Duplicate `lesson.started` events published | LOW | 1. Events are already consumed idempotently by notification services (WebSocket push to same user twice is tolerable). 2. Add row-count guard and deploy. 3. No data corruption. |
-| Ghost lessons beyond semester boundary | LOW | 1. `DELETE FROM lessons WHERE date > (SELECT date_to FROM ...)` in production. 2. Add boundary cap to generation code. |
-| Week parity inverted for entire semester | HIGH | 1. All generated lessons have wrong parity — requires re-generation. 2. Fix `LessonDateUtils.isOddWeek()`. 3. `DELETE FROM lessons WHERE schedule_item_id IN (SELECT id FROM schedule_items WHERE semester_id=?)`. 4. Re-trigger generation. |
-| gRPC stub deadlines missing — thread exhaustion | HIGH | 1. Restart Schedule Service (releases blocked threads). 2. Restore Academic Service. 3. Add deadlines and deploy. 4. Consider circuit breaker (Resilience4j) for future hardening. |
-| `@TransactionalEventListener` events silently dropped | LOW | 1. No data corruption — just missed notifications. 2. Add `@Transactional` to cron method. 3. Deploy. 4. Manually transition any lessons that missed their events. |
+| Missing unique index causes duplicate attendance records | MEDIUM | Run deduplication script: keep record with `present` status; delete duplicates with `absent`; re-create unique index with `db.attendances.createIndex({lesson_id:1, user_id:1}, {unique:true})` |
+| Wrong enum case stored (UPPERCASE in MongoDB) | MEDIUM | Run migration script: `db.attendances.updateMany({status:{$in:["PRESENT","ABSENT","EXCUSED"]}}, [{$set:{status:{$toLower:"$status"}}}])` |
+| Auto-absent created records for cancelled lessons | LOW | Delete records: `db.attendances.deleteMany({marked_by:"auto_scheduler", lesson_id:{$in:[<cancelled_lesson_ids>]}})` |
+| lesson.closed events lost during startup (queue not bound) | HIGH | No recovery — events are gone. Trigger manual re-run of auto-absent for affected lessons via admin endpoint or DB script. Add startup-time queue existence check. |
+| Race condition caused student to be marked absent despite geo-checkin | LOW | Manual correction via headman `PUT /attendance/{id}/status` endpoint (TEACHER_OVERRIDE source) |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
+How roadmap phases should address these pitfalls.
+
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Duplicate cron transitions (multi-instance) | Lesson status cron | Row-count guard tested; cron fires twice in test, assert one event published |
-| Timezone mismatch | Before any cron code | Docker container TZ=Europe/Moscow set; `SELECT NOW()` in test container matches Moscow time |
-| Duplicate lesson generation (no idempotency) | Lesson generation | Integration test: generate twice, assert no exception, no duplicate rows |
-| Week parity off-by-one | Lesson generation | Unit test `LessonDateUtils.isOddWeek()` with known dates |
-| gRPC deadline missing | gRPC client setup | `withDeadlineAfter()` present on all stub calls; grep check |
-| gRPC NOT_FOUND unhandled | gRPC client setup | `StatusRuntimeException` handler in `@ControllerAdvice`; test with invalid group_id |
-| lesson.started for cancelled lessons | Lesson status cron | Integration test: cancel lesson → trigger cron → assert no event |
-| Catch-up cron sends stale notifications | Lesson status cron | Staleness check (10-min window); test: lesson 20 min overdue → status transitions, event skipped |
-| gRPC server port conflict | gRPC server setup | `grpc.server.port: 19092` set before any `@GrpcService`; verified with grpcurl |
-| Lessons beyond semester boundary | Lesson generation | Boundary cap enforced; integration test with out-of-range date |
-| AFTER_COMMIT lost on cron thread | Lesson status cron | `@Transactional` on cron method; Testcontainers test verifies event in RabbitMQ |
-| GetActiveLesson wrong lesson (time-window) | gRPC server | Time-window query; test at boundary times (1 min before start = NOT_FOUND) |
+| MongoDB indexes not created | Phase 1: MongoDB infrastructure setup | Integration test asserts `{lesson_id,user_id}` unique index exists |
+| RabbitMQ queue not bound | Phase 1: RabbitMQ consumer infrastructure | Testcontainers test: publish event, assert listener fires |
+| Auto-absent race condition (late checkin) | Phase 2: Auto-absent consumer | Concurrent test: checkin + lesson.closed race, result must be `present` |
+| Enum stored as UPPERCASE | Phase 1: MongoDB entity mapping | Mapping test: insert enum, assert raw document has lowercase string |
+| Cancelled lessons included in auto-absent | Phase 2: Auto-absent consumer | Integration test with cancelled lesson fixture, assert no absent record |
+| IllegalArgumentException → HTTP 500 from Schedule gRPC | Phase 2: gRPC client wrappers | Unit test with mocked UNKNOWN status response |
+| Auto-index creation disabled | Phase 1: MongoDB setup | Verify with `mongoTemplate.indexOps().getIndexInfo()` in test |
+| Domain isolation broken (report imports checkin) | All phases: ArchUnit test runs in CI | ArchUnit test must fail when direct import added |
+| Geofence cache miss on every checkin | Phase 2: Geo-validation | Load test or simple timer assertion on geofence cache hit rate |
+| Geo-blocked lesson triggers auto-absent | Phase 2: Auto-absent consumer | Integration test with `is_geo_blocked=true` lesson |
 
 ---
 
 ## Sources
 
-- Direct codebase analysis: `services/schedule-service/schedule-app/src/main/resources/db/migration/V1__baseline.sql` — schema confirmed (TIME columns, UNIQUE constraints, partial index)
-- Direct codebase analysis: `services/academic-service/academic-app/src/main/java/.../event/DomainEventListener.java` — `@TransactionalEventListener(AFTER_COMMIT)` pattern confirmed
-- Direct codebase analysis: `services/academic-service/academic-app/src/main/java/.../event/RabbitConfig.java` — `channelTransacted=false` constraint documented in comments
-- Direct codebase analysis: `services/academic-service/academic-app/src/main/java/.../grpc/AcademicGrpcServiceImpl.java` — gRPC thread isolation pattern (no RequestContext)
-- Direct codebase analysis: `services/academic-service/academic-app/src/main/java/.../grpc/GrpcExceptionAdvice.java` — server-side gRPC exception handling pattern
-- Direct codebase analysis: `services/academic-service/academic-app/src/main/resources/application.yml` — `grpc.server.port: 19091` convention confirmed
-- Direct codebase analysis: `proto/schedule.proto` — `GetActiveLesson` single LessonResponse (not list) confirmed
-- Direct codebase analysis: `docs/database-schema.md` — `TIME` (not `TIMETZ`) column types for `start_time`/`end_time` confirmed
-- Spring Framework docs: `@TransactionalEventListener` behavior when no transaction is present (silently drops event)
-- net.devh grpc-spring-boot-starter docs: default port 9090, `withDeadlineAfter` usage
-- PostgreSQL docs: `SELECT FOR UPDATE SKIP LOCKED` for cron job mutual exclusion
+- Spring Data MongoDB issue tracker: enum serialization — [DATAMONGO-891](https://github.com/spring-projects/spring-data-mongodb/issues/1817), [DATAMONGO-2635](https://github.com/spring-projects/spring-data-mongodb/issues/3462)
+- Spring Boot auto-index-creation issue: [spring-projects/spring-boot#28478](https://github.com/spring-projects/spring-boot/issues/28478), [spring-projects/spring-data-mongodb#4548](https://github.com/spring-projects/spring-data-mongodb/issues/4548)
+- Testcontainers MongoDB replica set for transactions: [dev.to/carc](https://dev.to/carc/testcontainers-mongodb-replicaset-4koa), [java.testcontainers.org](https://java.testcontainers.org/modules/databases/mongodb/)
+- RabbitMQ DLQ and retry: [Spring AMQP resilience docs](https://docs.spring.io/spring-amqp/reference/amqp/resilience-recovering-from-errors-and-broker-failures.html), [dzone.com retry tutorial](https://dzone.com/articles/spring-boot-rabbitmq-tutorial-retry-and-error-hand)
+- Haversine accuracy: [movable-type.co.uk](https://www.movable-type.co.uk/scripts/latlong.html), [Baeldung distance calculation](https://www.baeldung.com/java-find-distance-between-points)
+- MongoDB findAndModify atomicity: [MongoDB community forums](https://www.mongodb.com/community/forums/t/race-condition-while-updating-single-document-multiple-times/134017), [kamranzafar.org atomic updates](https://kamranzafar.org/2016/10/25/atomic-updates-on-mongodb-with-spring-data/)
+- gRPC retry fix (1.63): [LogNet/grpc-spring-boot-starter#396](https://github.com/LogNet/grpc-spring-boot-starter/issues/396)
+- ArchUnit: [archunit.org user guide](https://www.archunit.org/userguide/html/000_Index.html)
+- Known tech debt from codebase: `ScheduleGrpcServiceImpl.getLessonsByGroup()` passes all 4 statuses; `GrpcExceptionAdvice` does not map `IllegalArgumentException` to `INVALID_ARGUMENT`
 
 ---
-*Pitfalls research for: Schedule Service (lesson auto-generation + cron transitions + gRPC server/client + RabbitMQ) added to existing RutCampusTrack microservice system*
-*Researched: 2026-03-31*
+*Pitfalls research for: Attendance Service MVP (MongoDB, RabbitMQ consumer, gRPC clients, geo-validation, auto-absent)*
+*Researched: 2026-04-04*

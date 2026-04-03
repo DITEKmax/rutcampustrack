@@ -1,216 +1,107 @@
 # Stack Research
 
-**Domain:** Schedule Service v3.0 — lesson scheduling, auto-generation, cron status transitions, gRPC server + client, RabbitMQ events
-**Researched:** 2026-03-31
-**Confidence:** HIGH (all additions verified against existing working patterns in the codebase)
+**Domain:** Attendance Service MVP — MongoDB geo-checkin, RabbitMQ consumer, gRPC clients
+**Researched:** 2026-04-04
+**Confidence:** HIGH (all versions verified against existing codebase + Spring Boot 3.4.1 BOM + official sources)
 
 ---
 
-## Context: What Already Works (Do NOT Re-add)
+## Context: What Already Exists
 
-The following are confirmed working in `academic-app/build.gradle.kts` and the base scaffold of `schedule-app/build.gradle.kts`. They carry over unchanged:
+This is a subsequent milestone on an existing Spring Boot 3.4 monorepo. The following are **already present in `attendance-app/build.gradle.kts`** and must not be re-added:
 
-| Already Present | Notes |
-|-----------------|-------|
-| `spring-boot-starter-web` | in `schedule-app/build.gradle.kts` |
-| `spring-boot-starter-data-jpa` | in `schedule-app/build.gradle.kts` |
-| `spring-boot-starter-validation` | in `schedule-app/build.gradle.kts` |
-| `spring-boot-starter-hateoas` | in `schedule-app/build.gradle.kts` |
-| `spring-boot-starter-amqp` | in `schedule-app/build.gradle.kts` — RabbitMQ publisher |
-| `springdoc-openapi-starter-webmvc-ui:2.7.0` | in `schedule-app/build.gradle.kts` |
-| `postgresql` (driver) | in `schedule-app/build.gradle.kts` |
-| `flyway-core` + `flyway-database-postgresql` | in `schedule-app/build.gradle.kts` |
-| `lombok` | in `schedule-app/build.gradle.kts` |
-| `spring-boot-starter-test` + `junit-platform-launcher` | in `schedule-app/build.gradle.kts` |
+| Already Present | Source |
+|-----------------|--------|
+| `spring-boot-starter-web` | attendance-app/build.gradle.kts (existing) |
+| `spring-boot-starter-data-mongodb` | attendance-app/build.gradle.kts (existing) |
+| `spring-boot-starter-validation` | attendance-app/build.gradle.kts (existing) |
+| `spring-boot-starter-hateoas` | attendance-app/build.gradle.kts (existing) |
+| `spring-boot-starter-amqp` | attendance-app/build.gradle.kts (existing) |
+| `springdoc-openapi-starter-webmvc-ui:2.7.0` | attendance-app/build.gradle.kts (existing) |
+| `lombok` (compileOnly + annotationProcessor) | attendance-app/build.gradle.kts (existing) |
+| `spring-boot-starter-test` | attendance-app/build.gradle.kts (existing) |
+| `junit-platform-launcher` | attendance-app/build.gradle.kts (existing) |
 
-The `@RequireRole` AOP pattern, `LowercaseEnumConverter`, `GlobalExceptionHandler`, HATEOAS assembler pattern, contract-first interface pattern — all carry over from Academic Service by copy, not new dependencies.
-
----
-
-## NEW Additions Required for Schedule Service
-
-### Core Technologies
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| `@Scheduled` (Spring built-in) | Spring Boot 3.4 (no dep) | Cron jobs: activate lessons, close lessons, mark absent | Zero extra dependency; single-instance VPS deployment makes Quartz overhead unjustified |
-| `grpc-server-spring-boot-starter` | `3.1.0.RELEASE` | Serve ScheduleGrpcService (GetActiveLesson, GetLessonById, GetLessonsByGroup) | Same version already proven in Academic Service gRPC server |
-| `grpc-client-spring-boot-starter` | `3.1.0.RELEASE` | Call AcademicGrpcService for validation (group/semester/subject/teacher existence) | Same library, same version; client and server starters must match |
-| `com.google.protobuf` plugin | `0.9.4` | Generate Java stubs from `proto/schedule.proto` | Same plugin version as Academic Service |
-| `protoc` | `3.25.3` | Proto compiler | Matches Academic Service exactly — do not diverge |
-| `protoc-gen-grpc-java` | `1.63.0` | gRPC Java code generator | Matches Academic Service exactly — do not diverge |
-
-### Supporting Libraries
-
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| `spring-boot-starter-aop` | 3.4 BOM | `@RequireRole` AOP aspect (same as Academic Service) | Required from phase 1 when role-checking starts |
-| `javax.annotation:javax.annotation-api` | `1.3.2` | `@Generated` annotation for proto-generated stubs | Required on Java 9+ — stubs won't compile without it |
-| `testcontainers-bom` | `1.20.4` | Version management for Testcontainers | Manages `postgresql`, `rabbitmq`, `junit-jupiter` without explicit versions |
-| `spring-boot-testcontainers` | 3.4 BOM | `@ServiceConnection` and `@Testcontainers` integration | Required for PostgreSQL and RabbitMQ containers in integration tests |
-| `testcontainers:junit-jupiter` | via BOM | JUnit 5 lifecycle for containers | Required for `@Testcontainers` annotation support |
-| `testcontainers:postgresql` | via BOM | Real PostgreSQL 16 with `week_type` and `lesson_status` ENUMs | H2 cannot emulate PostgreSQL custom ENUMs — same decision as Academic Service |
-| `testcontainers:rabbitmq` | via BOM | Real RabbitMQ container for event publish tests | Same pattern as `EventIntegrationTest` in Academic Service |
-| `awaitility` | Spring Boot BOM (no version needed since Boot 3.2) | Polling assertions for cron task tests | Replaces fragile `Thread.sleep` in tests that wait for scheduled methods to fire |
-
-### Development Tools
-
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| `@EnableScheduling` on main class or `SchedulingConfig` | Activates `@Scheduled` processing | Guard with `@Profile("!test")` or `@ConditionalOnProperty` to prevent test interference |
-| In-process gRPC test server | `grpc.server.in-process-name` property | Same pattern as `AcademicGrpcIntegrationTest` — zero port binding, no flaky port conflicts |
+**What the existing file is missing for the full MVP feature set:** Testcontainers, gRPC client stubs, Protobuf plugin, AOP, and `javax.annotation-api`.
 
 ---
 
-## Cron Scheduling — `@Scheduled` Decision
+## Core Technologies
 
-**Use `@Scheduled`, NOT Quartz.**
+### Spring Data MongoDB (already present, version context)
 
-The decision tree:
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| `spring-boot-starter-data-mongodb` | managed by Boot 3.4.1 BOM → Spring Data MongoDB 4.4.1 | MongoDB document repositories, `@Document`, queries | Already in build; Spring Boot auto-configures from `spring.data.mongodb.uri`. Do NOT add explicit version — BOM manages it. |
 
-- **Single VPS instance** (Docker Compose, solo developer): No clustering, no distributed lock needed. Quartz's primary value is HA clustering where two nodes would otherwise double-fire the same cron.
-- **Three cron jobs** (`activateLessons`, `closeLessons`, `markAbsent`): These are simple queries by time window + status. No dynamic scheduling, no per-job state, no retry logic beyond the next scheduled run.
-- **Quartz cost**: Requires a `quartz_*` schema (8 tables in PostgreSQL), a `SchedulerFactory` bean, a `JobStore` configuration, and dependency on `spring-boot-starter-quartz`. This is non-trivial overhead for three fire-and-forget cron methods.
-- **Future-proofing**: When/if multi-node deployment is needed, add ShedLock on top of `@Scheduled` — it requires one table and one annotation, and does not require rewriting the scheduling logic.
+Spring Boot 3.4.1 imports Spring Data BOM 2024.1.1, which sets Spring Data MongoDB to 4.4.1. This version is compatible with the `mongo:7` image already declared in `docker-compose.yml`.
 
-**`@EnableScheduling`** goes on a `SchedulingConfig` configuration class (not the main `@SpringBootApplication` class) so it can be excluded in tests with `@Profile("!test")`.
-
-**Test isolation**: Mock the `ScheduledAnnotationBeanPostProcessor` via `@MockitoBean` in the abstract test base, OR use the profile guard. The profile guard is simpler and consistent with the existing `@ActiveProfiles("test")` pattern already in `AbstractAcademicIntegrationTest`.
-
-**Cron expression for Moscow time (UTC+3):**
-```java
-@Scheduled(cron = "0 * * * * *", zone = "Europe/Moscow")  // every minute
-public void activateLessons() { ... }
-```
-The `zone` parameter on `@Scheduled` eliminates JVM timezone dependency.
-
----
-
-## gRPC Client Setup
-
-Schedule Service calls Academic Service for validation (does this group/semester/subject/teacher exist?). The client setup is a mirror of what Academic Service already does in its test scope.
-
-**`application.yml`:**
+**Required `application.yml` addition:**
 ```yaml
-grpc:
-  server:
-    port: 9095        # Schedule Service gRPC server port (internal only, not through Gateway)
-  client:
-    academic-service:
-      address: static://localhost:9096    # Academic Service gRPC port
-      negotiation-type: plaintext
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongo-attendance:27017/attendance_db
 ```
 
-**Injection:**
-```java
-@GrpcClient("academic-service")
-private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub academicStub;
-```
-
-**In tests** (in-process pattern — same as `AcademicGrpcIntegrationTest`):
-```java
-// In @SpringBootTest properties:
-"grpc.server.in-process-name=schedule-grpc-test",
-"grpc.server.port=-1",
-"grpc.client.inProcess.address=in-process:schedule-grpc-test",
-"grpc.client.inProcess.negotiationType=plaintext"
-```
-
-For the Academic Service gRPC client calls in integration tests, Academic Service will not be running — mock the `AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub` with `@MockitoBean`.
+No `ddl-auto`, no Flyway — MongoDB is schemaless. Index declarations go on `@Document` entity classes via `@Indexed` / `@CompoundIndex`.
 
 ---
 
-## Timezone Handling
+## Required Additions to `attendance-app/build.gradle.kts`
 
-**No new library needed. Use `java.time` types already on classpath.**
-
-The `schedule_db` schema in `docs/database-schema.md` uses `TIME` and `DATE` columns (not `TIMESTAMPTZ`) for schedule slot times:
-
-| Column | PostgreSQL Type | Java Type | Rationale |
-|--------|-----------------|-----------|-----------|
-| `schedule_items.start_time` | `TIME` | `LocalTime` | Time-of-day bell slot — no timezone |
-| `schedule_items.end_time` | `TIME` | `LocalTime` | Same |
-| `lessons.date` | `DATE` | `LocalDate` | Calendar date — no timezone |
-| `lessons.created_at` | `TIMESTAMPTZ` | `OffsetDateTime` | UTC audit timestamp |
-| `lessons.closed_at` | `TIMESTAMPTZ` | `OffsetDateTime` | UTC audit timestamp |
-
-For cron job comparisons (is this lesson's `start_time` within the next minute?), use `LocalTime.now(ZoneId.of("Europe/Moscow"))`. Pass the `ZoneId` explicitly — do NOT rely on `TimeZone.setDefault()` because it is a JVM-global mutation that breaks test isolation.
-
-**Inject a `Clock` for testability:**
-```java
-@Bean
-public Clock clock() {
-    return Clock.system(ZoneId.of("Europe/Moscow"));
-}
-// Inject Clock into the cron service; in tests, replace with Clock.fixed(...)
-```
-
-`Jackson` already handles `LocalDate`, `LocalTime`, and `OffsetDateTime` via `JavaTimeModule`, which Spring Boot auto-configures. No additional Jackson modules needed.
-
----
-
-## Complete `schedule-app/build.gradle.kts` (target state)
+### 1. Testcontainers for MongoDB Integration Tests
 
 ```kotlin
-plugins {
-    java
-    id("org.springframework.boot")
-    id("io.spring.dependency-management")
-    id("com.google.protobuf") version "0.9.4"      // NEW
-}
-
-group = "ru.rutcampustrack"
-version = "0.1.0"
-
 dependencyManagement {
     imports {
-        mavenBom("org.testcontainers:testcontainers-bom:1.20.4")   // NEW
+        mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
     }
 }
 
-dependencies {
-    implementation(project(":services:schedule-service:schedule-api-contract"))
+// in dependencies block:
+testImplementation("org.springframework.boot:spring-boot-testcontainers")
+testImplementation("org.testcontainers:junit-jupiter")
+testImplementation("org.testcontainers:mongodb")
+testImplementation("org.testcontainers:rabbitmq")
+```
 
-    // Spring Boot (existing)
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-hateoas")
-    implementation("org.springframework.boot:spring-boot-starter-amqp")
-    implementation("org.springframework.boot:spring-boot-starter-aop")                     // NEW — @RequireRole aspect
+**Why `1.20.4`:** This exact BOM version is already used by schedule-app and academic-app. Using the same version eliminates any risk of BOM conflicts across the monorepo.
 
-    // OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+**Why `org.testcontainers:mongodb`:** This is the correct artifact under the `org.testcontainers` group managed by testcontainers-bom. The artifact `testcontainers-mongodb` (version 2.0.x) is a completely different, unrelated namespace — do not use it.
 
-    // Database
-    runtimeOnly("org.postgresql:postgresql")
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-database-postgresql")
+**Why `spring-boot-testcontainers`:** Provides `@ServiceConnection` support. Annotating a `MongoDBContainer` bean with `@ServiceConnection` causes Spring Boot to auto-configure `spring.data.mongodb.uri` to point at the running container — no manual `@DynamicPropertySource` or property override needed. This is the idiomatic Spring Boot 3.1+ approach.
 
-    // gRPC server (serves ScheduleGrpcService)                                             NEW
-    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
+**Why `rabbitmq` container:** Attendance Service consumes from the fanout exchange. RabbitMQ consumer integration tests need a real broker to verify `@RabbitListener` wiring, deserialization, and business logic triggered by events.
 
-    // gRPC client (calls AcademicGrpcService for validation)                              NEW
-    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
+**Test base pattern:**
+```java
+@SpringBootTest
+@ActiveProfiles("test")
+@Testcontainers
+abstract class AttendanceIntegrationTestBase {
 
-    // Required for proto-generated stubs on Java 9+                                       NEW
-    compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+    @Container
+    @ServiceConnection
+    static MongoDBContainer mongo = new MongoDBContainer("mongo:7");  // matches docker-compose.yml
 
-    // Lombok
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-
-    // Test
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.boot:spring-boot-testcontainers")               // NEW
-    testImplementation("org.testcontainers:junit-jupiter")                                  // NEW
-    testImplementation("org.testcontainers:postgresql")                                     // NEW
-    testImplementation("org.testcontainers:rabbitmq")                                       // NEW
-    testImplementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")           // NEW — in-process gRPC tests
-    testImplementation("org.awaitility:awaitility")                                         // NEW — cron tests
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    @Container
+    @ServiceConnection
+    static RabbitMQContainer rabbit = new RabbitMQContainer("rabbitmq:3.13-management-alpine");
 }
+```
 
+### 2. gRPC Client Dependencies (+ Protobuf Plugin)
+
+```kotlin
+// in plugins block:
+id("com.google.protobuf") version "0.9.4"
+
+// in dependencies block:
+implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
+compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+
+// sourceSets and protobuf blocks (copy verbatim from schedule-app):
 sourceSets {
     main {
         proto {
@@ -238,18 +129,217 @@ protobuf {
 }
 ```
 
+**Why `grpc-client-spring-boot-starter` only (NOT server starter):** Attendance Service is a pure gRPC consumer in v4.0 — it calls Academic Service (GetCampusGeofence, GetGroupMembers) and Schedule Service (GetActiveLesson, GetLessonById). It exposes no gRPC server of its own. Adding the server starter would open an unnecessary port and load server beans.
+
+**Why `3.1.0.RELEASE`:** This is the proven working version in the monorepo. Both schedule-app (client to academic) and academic-app (server + test client) use this exact version. Changing it risks breaking gRPC runtime compatibility.
+
+**Why `javax.annotation-api:1.3.2`:** The `@javax.annotation.Generated` annotation used in proto-generated stubs was removed from the JDK in Java 9+. Without this dependency, the Gradle build fails to compile the generated stub classes. Same fix already applied in schedule-app and academic-app.
+
+**Why identical `protoc:3.25.3` and `protoc-gen-grpc-java:1.63.0`:** These must match exactly across all services that share the same `proto/` directory, otherwise generated stub classes are incompatible across service boundaries. Do not bump these independently.
+
+**gRPC client `application.yml` additions:**
+```yaml
+grpc:
+  client:
+    academic-service:
+      address: static://academic-service:19091
+      negotiation-type: plaintext
+    schedule-service:
+      address: static://schedule-service:19092
+      negotiation-type: plaintext
+```
+
+**gRPC client wrapper pattern (copy from `AcademicGrpcClient` in schedule-app):**
+```java
+@Component
+public class ScheduleGrpcClient {
+
+    @GrpcClient("schedule-service")
+    private ScheduleGrpcServiceGrpc.ScheduleGrpcServiceBlockingStub stub;
+
+    public LessonResponse getActiveLesson(Long groupId) {
+        try {
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getActiveLesson(ActiveLessonRequest.newBuilder()
+                            .setGroupId(groupId)
+                            .setTimestamp(OffsetDateTime.now().toString())
+                            .build());
+        } catch (StatusRuntimeException e) {
+            throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
+        }
+    }
+}
+```
+
+### 3. AOP Support
+
+```kotlin
+implementation("org.springframework.boot:spring-boot-starter-aop")
+```
+
+**Why:** The `@RequireRole` annotation + `RoleCheckAspect` pattern is used in academic-app and schedule-app for role authorization without loading Spring Security on the service layer. Attendance Service needs the same pattern — it has distinct authorization requirements per endpoint (STUDENT geo-checkin, HEADMAN manual marking, TEACHER/HEADMAN reports).
+
+---
+
+## Geo-Distance Calculation: No Library Needed
+
+**Decision: Implement Haversine as a single static utility method. Zero external dependencies.**
+
+Do NOT add any geo library (GeoTools, spatial4j, JTS, locationtech). The geofence check is:
+> "Is the student's submitted {lat, lng} within `radius_m` meters of campus center?"
+
+This is a single computation against one static reference point fetched from Academic Service via gRPC (`GetCampusGeofence`). It is not a spatial query across stored geo-indexed documents.
+
+MongoDB geospatial operations (`$geoWithin`, `$near`, `2dsphere` index) are for querying stored documents by proximity — the wrong tool for validating input against a fixed point.
+
+**Haversine utility:**
+```java
+public final class GeoUtils {
+
+    private static final double EARTH_RADIUS_M = 6_371_000.0;
+
+    private GeoUtils() {}
+
+    /**
+     * Returns distance in meters between two WGS-84 coordinates.
+     * Accuracy: ~0.5% — sufficient for campus-scale geofence validation (radii < 1 km).
+     */
+    public static double distanceMeters(double lat1, double lng1, double lat2, double lng2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return EARTH_RADIUS_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    public static boolean isWithinGeofence(double studentLat, double studentLng,
+                                            double centerLat, double centerLng, int radiusM) {
+        return distanceMeters(studentLat, studentLng, centerLat, centerLng) <= radiusM;
+    }
+}
+```
+
+This is the standard Haversine formula with Earth mean radius 6,371,000 m (IUGG recommendation). Error at campus distances (100–500 m radius) is negligible.
+
+---
+
+## RabbitMQ Consumer Setup
+
+**No new library** — `spring-boot-starter-amqp` is already present.
+
+What IS new: the consumer-side configuration. All prior services (academic, schedule) only **publish** to the fanout exchange `rut-uit.events`. Attendance Service is the **first consumer**.
+
+### Use a durable named queue, NOT AnonymousQueue
+
+Fanout exchange broadcasts every message to all bound queues. Each consumer service must declare its own queue bound to the exchange.
+
+| Option | Durability | Message retention during restart | Right for Attendance? |
+|--------|------------|----------------------------------|----------------------|
+| `AnonymousQueue` (auto-delete, exclusive) | No | Lost | NO — lesson.closed events arriving during restart are silently dropped |
+| Named durable queue | Yes | Held by broker | YES — events accumulate while service is restarting, processed on reconnect |
+
+A `lesson.closed` event that is lost means absent students are never auto-marked. That is a data integrity issue, not just a cosmetic miss.
+
+### RabbitMQ consumer config bean:
+
+```java
+@Configuration
+public class RabbitConsumerConfig {
+
+    public static final String ATTENDANCE_QUEUE = "rut-uit.attendance-service";
+    private static final String EXCHANGE = "rut-uit.events";
+
+    @Bean
+    public Queue attendanceServiceQueue() {
+        return new Queue(ATTENDANCE_QUEUE, true);  // durable=true
+    }
+
+    @Bean
+    public FanoutExchange eventsExchange() {
+        return new FanoutExchange(EXCHANGE, true, false);  // must match publisher declaration
+    }
+
+    @Bean
+    public Binding attendanceQueueBinding(Queue attendanceServiceQueue,
+                                           FanoutExchange eventsExchange) {
+        return BindingBuilder.bind(attendanceServiceQueue).to(eventsExchange);
+    }
+
+    @Bean
+    public Jackson2JsonMessageConverter messageConverter(ObjectMapper objectMapper) {
+        return new Jackson2JsonMessageConverter(objectMapper);
+    }
+}
+```
+
+### Listener:
+
+```java
+@Component
+public class LessonEventConsumer {
+
+    @RabbitListener(queues = RabbitConsumerConfig.ATTENDANCE_QUEUE)
+    public void onEvent(Map<String, Object> message) {
+        String eventType = (String) message.get("event_type");
+        // route by eventType: "lesson.started", "lesson.closed", "lesson.cancelled"
+    }
+}
+```
+
+### Critical: ObjectMapper injection
+
+**Inject the Spring Boot-managed `ObjectMapper`** — the same instance used by `RabbitTemplate` in the publisher services. Do NOT create a new `ObjectMapper`. A new one defaults to including `@class` type fields in JSON (if NON_FINAL typing was ever enabled elsewhere), and more importantly breaks Jackson module registration (JavaTimeModule, etc.).
+
+This is Pitfall 3 documented in `services/academic-service/academic-app/src/main/java/.../event/RabbitConfig.java`. The fix is the same: inject `ObjectMapper objectMapper` as a constructor/method parameter and pass to `Jackson2JsonMessageConverter`.
+
+### Event envelope structure
+
+Messages published by Schedule Service follow the schema in `event-schemas/`:
+```json
+{
+  "event_type": "lesson.closed",
+  "event_id": "uuid",
+  "occurred_at": "2026-04-04T10:15:00Z",
+  "payload": {
+    "lesson_id": 123,
+    "group_id": 42,
+    "subject_id": 7
+  }
+}
+```
+
+Deserialize to `Map<String, Object>` or a shared envelope record, then route by `event_type`. The payload per event type is defined in `event-schemas/*.json`.
+
+---
+
+## Version Compatibility Summary
+
+| Dependency | Version | Source | Confidence |
+|------------|---------|--------|------------|
+| `spring-boot-starter-data-mongodb` | Spring Data MongoDB 4.4.1 (managed) | Spring Boot 3.4.1 → Spring Data BOM 2024.1.1 | HIGH |
+| `testcontainers-bom` | 1.20.4 | explicit — matches schedule-app and academic-app | HIGH |
+| `org.testcontainers:mongodb` | 1.20.4 (via BOM) | testcontainers-bom | HIGH |
+| `org.testcontainers:rabbitmq` | 1.20.4 (via BOM) | testcontainers-bom — same as academic-app | HIGH |
+| `spring-boot-testcontainers` | managed by Boot BOM | Spring Boot 3.4.1 | HIGH |
+| `net.devh:grpc-client-spring-boot-starter` | 3.1.0.RELEASE | explicit — same as schedule-app | HIGH |
+| `com.google.protobuf:protoc` | 3.25.3 | explicit — same as schedule-app and academic-app | HIGH |
+| `io.grpc:protoc-gen-grpc-java` | 1.63.0 | explicit — same as schedule-app and academic-app | HIGH |
+| `javax.annotation:javax.annotation-api` | 1.3.2 | explicit — same as schedule-app | HIGH |
+| `spring-boot-starter-aop` | managed by Boot BOM | Spring Boot 3.4.1 | HIGH |
+| Haversine geo | no dependency | pure Java (`java.lang.Math`) | HIGH |
+
 ---
 
 ## Alternatives Considered
 
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| `@Scheduled` (built-in, no dep) | Quartz (`spring-boot-starter-quartz`) | Use Quartz only when: 2+ service instances run simultaneously AND jobs must not double-fire AND ShedLock is insufficient |
-| `@Scheduled` + ShedLock (future) | Quartz now | ShedLock is one table + one annotation; add it when multi-node is needed without rewriting cron logic |
-| `LocalTime` + `LocalDate` for schedule slots | `ZonedDateTime` everywhere | Use `ZonedDateTime` if a lesson can span a DST boundary or if lessons need to be stored in absolute UTC time; RUT MIIT bell schedule is local-time by nature |
-| Explicit `ZoneId` parameter in `now()` calls | `TimeZone.setDefault("Europe/Moscow")` | `setDefault` is a JVM-global mutation that makes tests non-reproducible on machines in other timezones |
-| Injected `Clock` bean | `LocalTime.now()` inline | Use inline `now()` only for throwaway scripts; inject `Clock` whenever testability matters |
-| `grpc-client-spring-boot-starter:3.1.0.RELEASE` | `spring-grpc` (Spring official) | Use `spring-grpc` only after upgrading to Spring Boot 4 — it requires Boot 4 and is incompatible with Boot 3.x |
+| Recommended | Alternative | Why Not |
+|-------------|-------------|---------|
+| Pure Java Haversine | MongoDB `$geoWithin` + `2dsphere` index | Geofence is a single static circle fetched from gRPC; `$geoWithin` queries stored documents — the wrong abstraction here |
+| Pure Java Haversine | `org.locationtech.jts` / GeoTools / spatial4j | External library with large transitive dependency tree for a 10-line computation |
+| Durable named queue | `AnonymousQueue` (auto-delete) | Auto-delete queues lose messages during service restart; `lesson.closed` loss means permanent absent-marking failure |
+| `grpc-client-spring-boot-starter` only | both client + server starters | No gRPC server in v4.0; adding server starter opens an unnecessary port (19093) and loads server lifecycle beans |
+| `@ServiceConnection` on `MongoDBContainer` | Manual `@DynamicPropertySource` | `@ServiceConnection` is the Spring Boot 3.1+ idiomatic approach — less boilerplate, proven in schedule-app and academic-app |
 
 ---
 
@@ -257,42 +347,104 @@ protobuf {
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| `spring-boot-starter-quartz` | Requires `quartz_*` DB schema (8 tables), `SchedulerFactory`, `JobStore` config — disproportionate overhead for 3 cron methods on single VPS | `@Scheduled` built-in |
-| `spring-grpc:spring-grpc-spring-boot-starter` | Requires Spring Boot 4 — breaks the project's Spring Boot 3.4.1 baseline | `net.devh:grpc-*-spring-boot-starter:3.1.0.RELEASE` |
-| `io.grpc:grpc-netty-shaded` (explicit) | Pulled transitively by `net.devh` starters; adding explicitly risks version conflict with the starter's transitive | Let the starter manage it |
-| `spring-boot-starter-data-redis` | Schedule Service has no caching requirement in v3.0 — it has no read-heavy reference data; lesson queries go directly to PostgreSQL | Not needed; Academic Service owns Redis cache |
-| H2 for tests | Cannot emulate PostgreSQL custom ENUMs `week_type` and `lesson_status` — same validated decision from Academic Service | Testcontainers PostgreSQL only |
-| `jackson-datatype-hibernate6` | Not needed — Schedule Service has no Redis serialization of Hibernate proxy objects; Academic Service needed this specifically for Redis cache of entity proxies | Not applicable |
+| `spring-boot-starter-data-jpa` / `flyway-*` / `postgresql` | Attendance Service has no relational DB | MongoDB only — already absent from attendance-app |
+| `grpc-server-spring-boot-starter` | No gRPC server in v4.0 Attendance Service | Add only in a future milestone if gRPC server endpoint is needed |
+| Any geo library (GeoTools, JTS, spatial4j) | Single-point geofence needs only Haversine | Pure Java utility class (`GeoUtils`) |
+| `spring-boot-starter-data-redis` | No caching requirement in v4.0 | Add only if caching requirements emerge in v4.1+ |
+| `new ObjectMapper()` in `RabbitConsumerConfig` | Bypasses Spring Boot's registered Jackson modules; risks `@class` type headers | Inject the Spring Boot-managed `ObjectMapper` bean |
+| `AnonymousQueue` for RabbitMQ consumer | Auto-deletes on disconnect; silently drops events during service restart | Durable named queue with explicit `BindingBuilder` |
+| `testcontainers-mongodb:2.0.4` (wrong artifact group) | Different namespace, not part of `testcontainers-bom` | `org.testcontainers:mongodb` (version from BOM) |
 
 ---
 
-## Version Compatibility
+## Complete `attendance-app/build.gradle.kts` (Target State)
 
-| Package A | Compatible With | Notes |
-|-----------|-----------------|-------|
-| `grpc-server-spring-boot-starter:3.1.0.RELEASE` | Spring Boot 3.4.1, Java 21 | Compiled against Spring Boot 3.2.4; confirmed working on 3.4.1 in Academic Service |
-| `grpc-client-spring-boot-starter:3.1.0.RELEASE` | Same as server starter | Must use identical version to server starter to share the same gRPC runtime |
-| `com.google.protobuf:protoc:3.25.3` | `protoc-gen-grpc-java:1.63.0` | Same pin as Academic Service — do not change one without the other |
-| `com.google.protobuf` plugin `0.9.4` | Gradle 8.x, Java 21 | Same version as Academic Service — confirmed working |
-| `testcontainers-bom:1.20.4` | Spring Boot Testcontainers 3.4 | Used successfully in Academic Service; 1.20.4 is latest stable at time of research |
-| `awaitility` (no version, BOM managed) | Spring Boot 3.4 BOM | Spring Boot manages Awaitility since 3.2; no explicit version required |
+```kotlin
+plugins {
+    java
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
+    id("com.google.protobuf") version "0.9.4"                         // ADD
+}
+
+group = "ru.rutcampustrack"
+version = "0.1.0"
+
+dependencyManagement {
+    imports {
+        mavenBom("org.testcontainers:testcontainers-bom:1.20.4")      // ADD
+    }
+}
+
+dependencies {
+    implementation(project(":services:attendance-service:attendance-api-contract"))
+
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-hateoas")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    implementation("org.springframework.boot:spring-boot-starter-aop")            // ADD — @RequireRole aspect
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
+    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")      // ADD
+    compileOnly("javax.annotation:javax.annotation-api:1.3.2")                     // ADD
+
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")      // ADD
+    testImplementation("org.testcontainers:junit-jupiter")                          // ADD
+    testImplementation("org.testcontainers:mongodb")                                // ADD
+    testImplementation("org.testcontainers:rabbitmq")                               // ADD
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+sourceSets {                                                                        // ADD BLOCK
+    main {
+        proto {
+            srcDir(rootProject.file("proto"))
+        }
+    }
+}
+
+protobuf {                                                                          // ADD BLOCK
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.3"
+    }
+    plugins {
+        create("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
+        }
+    }
+    generateProtoTasks {
+        ofSourceSet("main").forEach {
+            it.plugins {
+                create("grpc") { }
+            }
+        }
+    }
+}
+```
 
 ---
 
 ## Sources
 
-- `services/academic-service/academic-app/build.gradle.kts` — confirmed working versions for gRPC starters, Testcontainers BOM, protobuf plugin (HIGH confidence — source of truth in this repo)
-- `services/schedule-service/schedule-app/build.gradle.kts` — current state of schedule-app, confirms what's already present (HIGH confidence)
-- `services/academic-service/academic-app/src/test/java/.../AcademicGrpcIntegrationTest.java` — in-process gRPC test pattern with `grpc.server.in-process-name` (HIGH confidence)
-- `services/academic-service/academic-app/src/test/java/.../AbstractAcademicIntegrationTest.java` — `@ActiveProfiles("test")`, `@MockitoBean RabbitTemplate`, container lifecycle pattern (HIGH confidence)
-- `docs/database-schema.md` — `schedule_items` uses `TIME` + `DATE` types confirming `LocalTime` + `LocalDate` mapping (HIGH confidence)
-- [Spring Framework Scheduling reference](https://docs.spring.io/spring-framework/reference/integration/scheduling.html) — `@EnableScheduling`, `@Scheduled(cron, zone)` parameters (HIGH confidence)
-- [grpc-spring-boot-starter client configuration](https://yidongnan.github.io/grpc-spring-boot-starter/en/client/configuration.html) — `@GrpcClient`, `grpc.client.*` properties (MEDIUM confidence — third-party docs, consistent with working code in repo)
-- [Baeldung: Disable @EnableScheduling in Tests](https://www.baeldung.com/spring-test-disable-enablescheduling) — `@Profile` guard and `@MockitoBean ScheduledAnnotationBeanPostProcessor` patterns (MEDIUM confidence)
-- [Baeldung: Testing @Scheduled](https://www.baeldung.com/spring-testing-scheduled-annotation) — Awaitility + `@SpyBean` pattern for cron verification (MEDIUM confidence)
-- [Medium: Quartz vs @Scheduled vs Message Queues](https://medium.com/turkcell/managing-background-jobs-in-spring-boot-quartz-vs-scheduled-vs-message-queues-e2dc5d4cfc2b) — comparison confirming `@Scheduled` is correct for single-instance (MEDIUM confidence)
+- `services/attendance-service/attendance-app/build.gradle.kts` — current state (what already exists)
+- `services/schedule-service/schedule-app/build.gradle.kts` — gRPC client + Testcontainers + Protobuf plugin pattern (verified working)
+- `services/academic-service/academic-app/build.gradle.kts` — gRPC server + Testcontainers + RabbitMQ publisher pattern (verified working)
+- `services/academic-service/academic-app/src/main/java/.../event/RabbitConfig.java` — ObjectMapper injection warning (Pitfall 3, documented inline)
+- `services/schedule-service/schedule-app/src/main/java/.../grpc/AcademicGrpcClient.java` — `@GrpcClient` + `BlockingStub` + 3s deadline pattern
+- `proto/schedule.proto`, `proto/academic.proto` — gRPC service contracts consumed by Attendance Service
+- `docker-compose.yml` — confirms `mongo:7` image for `mongo-attendance` container
+- `event-schemas/lesson.closed.json`, `event-schemas/attendance.marked.json` — canonical event envelope structure
+- [Spring Data BOM 2024.1.1 release](https://github.com/spring-projects/spring-data-bom/releases/tag/2024.1.1) — confirms Spring Data MongoDB 4.4.1 (HIGH confidence)
+- [Spring Boot 3.4.1 build.gradle](https://raw.githubusercontent.com/spring-projects/spring-boot/v3.4.1/spring-boot-project/spring-boot-dependencies/build.gradle) — confirms Spring Data BOM 2024.1.1, Testcontainers BOM 1.20.4 (HIGH confidence)
+- [Testcontainers MongoDB module docs](https://java.testcontainers.org/modules/databases/mongodb/) — confirms `org.testcontainers:mongodb` artifact name (HIGH confidence)
+- [RabbitMQ Spring AMQP fanout tutorial](https://rabbitmq.com/tutorials/tutorial-three-spring-amqp.html) — confirms queue-per-service consumer binding pattern (MEDIUM confidence)
 
 ---
-
-*Stack research for: RutCampusTrack v3.0 Schedule Service — new capabilities only*
-*Researched: 2026-03-31*
+*Stack research for: RutCampusTrack v4.0 Attendance Service MVP — new capabilities only*
+*Researched: 2026-04-04*

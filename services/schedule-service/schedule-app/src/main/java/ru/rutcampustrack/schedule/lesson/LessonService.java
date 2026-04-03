@@ -1,10 +1,12 @@
 package ru.rutcampustrack.schedule.lesson;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.MassCancelRequest;
@@ -37,15 +39,18 @@ public class LessonService {
     private final ScheduleItemRepository scheduleItemRepository;
     private final AcademicGrpcClient academicGrpcClient;
     private final RequestContext requestContext;
+    private final ApplicationEventPublisher eventPublisher;
 
     public LessonService(LessonRepository lessonRepository,
                          ScheduleItemRepository scheduleItemRepository,
                          AcademicGrpcClient academicGrpcClient,
-                         RequestContext requestContext) {
+                         RequestContext requestContext,
+                         ApplicationEventPublisher eventPublisher) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.academicGrpcClient = academicGrpcClient;
         this.requestContext = requestContext;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -89,7 +94,11 @@ public class LessonService {
         }
         lesson.setStatus(LessonStatus.CANCELLED);
         lesson.setCancelReason(request.reason());
-        return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
+        Lesson saved = lessonRepository.save(lesson);
+        eventPublisher.publishEvent(new LessonCancelledEvent(this,
+                saved.getId(), lwi.scheduleItem().getGroupId(), lwi.scheduleItem().getSubjectId(),
+                saved.getDate(), saved.getCancelReason()));
+        return new LessonWithItem(saved, lwi.scheduleItem());
     }
 
     /**
@@ -128,6 +137,14 @@ public class LessonService {
             l.setCancelReason(request.reason());
         }
         lessonRepository.saveAll(toCancel);
+        Map<Long, ScheduleItem> itemMap = items.stream()
+                .collect(Collectors.toMap(ScheduleItem::getId, si -> si));
+        for (Lesson l : toCancel) {
+            ScheduleItem item = itemMap.get(l.getScheduleItemId());
+            eventPublisher.publishEvent(new LessonCancelledEvent(this,
+                    l.getId(), item.getGroupId(), item.getSubjectId(),
+                    l.getDate(), l.getCancelReason()));
+        }
         return toCancel.size();
     }
 

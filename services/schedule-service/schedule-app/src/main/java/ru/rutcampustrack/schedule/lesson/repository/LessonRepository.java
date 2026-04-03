@@ -8,6 +8,7 @@ import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
@@ -48,4 +49,31 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
            nativeQuery = true)
     void deletePlannedFromDate(@Param("itemId") Long scheduleItemId,
                                @Param("fromDate") LocalDate fromDate);
+
+    /**
+     * Finds PLANNED lessons whose (date + start_time) <= nowMoscow (CRON-01).
+     * JOIN schedule_items to compare start_time. Uses native query with status::text cast
+     * (same pattern as all other queries in this repo).
+     * The :now parameter is LocalDateTime in Moscow wall-clock time.
+     */
+    @Query(value = """
+        SELECT l.* FROM lessons l
+        JOIN schedule_items si ON si.id = l.schedule_item_id
+        WHERE l.status::text = 'planned'
+          AND (l.date + si.start_time) <= CAST(:now AS timestamp)
+        ORDER BY l.date, si.start_time
+        """, nativeQuery = true)
+    List<Lesson> findPlannedDueForActivation(@Param("now") LocalDateTime now);
+
+    /**
+     * Finds ACTIVE lessons whose (date + end_time + 5 minutes) <= nowMoscow (CRON-02).
+     */
+    @Query(value = """
+        SELECT l.* FROM lessons l
+        JOIN schedule_items si ON si.id = l.schedule_item_id
+        WHERE l.status::text = 'active'
+          AND (l.date + si.end_time + INTERVAL '5 minutes') <= CAST(:now AS timestamp)
+        ORDER BY l.date, si.end_time
+        """, nativeQuery = true)
+    List<Lesson> findActiveDueForClosure(@Param("now") LocalDateTime now);
 }

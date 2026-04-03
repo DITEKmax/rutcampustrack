@@ -32,15 +32,15 @@ Requirements for Schedule Service milestone. Each maps to roadmap phases.
 
 ### Status Automation
 
-- [ ] **CRON-01**: Cron transitions planned->active when current time >= lesson start_time (Moscow TZ)
-- [ ] **CRON-02**: Cron transitions active->closed when current time >= lesson end_time + 5 min (Moscow TZ)
-- [ ] **CRON-03**: Cron catches up missed transitions on service restart
+- [x] **CRON-01**: Cron transitions planned->active when current time >= lesson start_time (Moscow TZ)
+- [x] **CRON-02**: Cron transitions active->closed when current time >= lesson end_time + 5 min (Moscow TZ)
+- [x] **CRON-03**: Cron catches up missed transitions on service restart
 - [x] **CRON-04**: Cron runs every minute with proper timezone handling
 
 ### Events
 
-- [ ] **EVNT-01**: System publishes lesson.started event when lesson becomes active
-- [ ] **EVNT-02**: System publishes lesson.closed event when lesson becomes closed
+- [x] **EVNT-01**: System publishes lesson.started event when lesson becomes active
+- [x] **EVNT-02**: System publishes lesson.closed event when lesson becomes closed
 - [x] **EVNT-03**: System publishes lesson.cancelled event when lesson is cancelled
 - [x] **EVNT-04**: Events use @TransactionalEventListener(AFTER_COMMIT) pattern
 
@@ -96,11 +96,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VIEW-02 | Phase 11 | Complete |
 | LSSN-01 | Phase 12 | Complete |
 | LSSN-02 | Phase 12 | Complete |
-| CRON-01 | Phase 13 | Pending |
-| CRON-02 | Phase 13 | Pending |
-| CRON-03 | Phase 13 | Pending |
-| EVNT-01 | Phase 13 | Pending |
-| EVNT-02 | Phase 13 | Pending |
+| CRON-01 | Phase 13 | Complete |
+| CRON-02 | Phase 13 | Complete |
+| CRON-03 | Phase 13 | Complete |
+| EVNT-01 | Phase 13 | Complete |
+| EVNT-02 | Phase 13 | Complete |
 | EVNT-03 | Phase 13 | Complete |
 | EVNT-04 | Phase 13 | Complete |
 | GRPC-01 | Phase 14 | Pending |

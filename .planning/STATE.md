@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 13-status-transitions-rabbitmq-events-01-PLAN.md
-last_updated: "2026-04-03T20:54:50.283Z"
+status: verifying
+stopped_at: Completed 13-status-transitions-rabbitmq-events-02-PLAN.md
+last_updated: "2026-04-03T21:03:06.006Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 40
 ---
 
@@ -24,7 +24,7 @@ v3.0 Schedule Service — IN PROGRESS
 
 Phase: 13 (status-transitions-rabbitmq-events) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-03
 
 Progress: [████░░░░░░] 40% (4/10 plans)
@@ -66,6 +66,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 12-lesson-auto-generation]: scheduleAffected boolean computed BEFORE applying setters to capture pre-update field state
 - [Phase 12-lesson-auto-generation]: Integration tests use dayOfWeek=1 (TUESDAY) matching existing test conventions — avoids @Min(1) validation rejection
 - [Phase 13-status-transitions-rabbitmq-events]: scheduleEventsExchange bean name avoids Spring name clash with academicEventsExchange in shared test context
+- [Phase 13-status-transitions-rabbitmq-events]: fixedDelay=60000 over fixedRate prevents cron tick overlap when run exceeds 1 min
+- [Phase 13-status-transitions-rabbitmq-events]: Two-phase @Transactional cron: phase1 saveAll makes new ACTIVE lessons visible to phase2 query — no separate catch-up logic needed (CRON-03)
 
 ### Pending Todos
 
@@ -77,7 +79,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T20:54:50.279Z
-Stopped at: Completed 13-status-transitions-rabbitmq-events-01-PLAN.md
+Last session: 2026-04-03T21:03:06.002Z
+Stopped at: Completed 13-status-transitions-rabbitmq-events-02-PLAN.md
 Resume file: None
 Next action: Execute 12-02-PLAN.md

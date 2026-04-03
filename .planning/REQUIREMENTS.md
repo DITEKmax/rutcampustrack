@@ -91,35 +91,35 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| INFRA-04 | — | Pending |
-| INFRA-05 | — | Pending |
-| INFRA-06 | — | Pending |
-| CHKN-01 | — | Pending |
-| CHKN-02 | — | Pending |
-| CHKN-03 | — | Pending |
-| CHKN-04 | — | Pending |
-| CHKN-05 | — | Pending |
-| CHKN-06 | — | Pending |
-| CHKN-07 | — | Pending |
-| MARK-01 | — | Pending |
-| MARK-02 | — | Pending |
-| MARK-03 | — | Pending |
-| MARK-04 | — | Pending |
-| MARK-05 | — | Pending |
-| RPRT-01 | — | Pending |
-| RPRT-02 | — | Pending |
-| RPRT-03 | — | Pending |
-| RPRT-04 | — | Pending |
-| RPRT-05 | — | Pending |
+| INFRA-01 | Phase 15 | Pending |
+| INFRA-02 | Phase 15 | Pending |
+| INFRA-03 | Phase 15 | Pending |
+| INFRA-04 | Phase 15 | Pending |
+| INFRA-05 | Phase 15 | Pending |
+| INFRA-06 | Phase 17 | Pending |
+| CHKN-01 | Phase 17 | Pending |
+| CHKN-02 | Phase 17 | Pending |
+| CHKN-03 | Phase 17 | Pending |
+| CHKN-04 | Phase 17 | Pending |
+| CHKN-05 | Phase 17 | Pending |
+| CHKN-06 | Phase 17 | Pending |
+| CHKN-07 | Phase 17 | Pending |
+| MARK-01 | Phase 17 | Pending |
+| MARK-02 | Phase 17 | Pending |
+| MARK-03 | Phase 16 | Pending |
+| MARK-04 | Phase 16 | Pending |
+| MARK-05 | Phase 16 | Pending |
+| RPRT-01 | Phase 18 | Pending |
+| RPRT-02 | Phase 18 | Pending |
+| RPRT-03 | Phase 18 | Pending |
+| RPRT-04 | Phase 18 | Pending |
+| RPRT-05 | Phase 18 | Pending |
 
 **Coverage:**
 - v4.0 requirements: 23 total
-- Mapped to phases: 0
-- Unmapped: 23
+- Mapped to phases: 23
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-04*
-*Last updated: 2026-04-04 after initial definition*
+*Last updated: 2026-04-04 after roadmap creation (v4.0 phases 15-18)*

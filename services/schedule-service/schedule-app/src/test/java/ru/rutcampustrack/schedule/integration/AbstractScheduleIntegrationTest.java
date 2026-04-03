@@ -26,7 +26,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public abstract class AbstractScheduleIntegrationTest {
 
     @MockitoBean
-    RabbitTemplate rabbitTemplate;
+    protected RabbitTemplate rabbitTemplate;
 
     static final PostgreSQLContainer<?> POSTGRES;
 

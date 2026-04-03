@@ -10,7 +10,7 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 Schedule Service with full lesson lifecycle: template CRUD → auto-generation → status transitions → RabbitMQ events → gRPC server — the scheduling backbone that Attendance Service will consume.
 
 ## Current State
-v2.0 shipped. Academic Service fully operational (37 requirements, 50 tests, ~24K LOC). v3.0 Schedule Service Phases 10-13 complete — full CRUD for schedule items, lesson operations, schedule view, gRPC client to Academic Service, automatic lesson generation with week-parity algorithm, cron-based status transitions (planned→active→closed), RabbitMQ event publishing (lesson.started, lesson.closed, lesson.cancelled).
+v3.0 shipped. Schedule Service fully operational — full CRUD for schedule items, lesson operations, schedule view, gRPC client to Academic Service, automatic lesson generation with week-parity algorithm, cron-based status transitions (planned→active→closed), RabbitMQ event publishing (lesson.started, lesson.closed, lesson.cancelled), gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) for Attendance Service consumption.
 
 ## Current Milestone: v3.0 Schedule Service
 
@@ -85,6 +85,11 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ EVNT-03: LessonCancelledEvent published on cancel/mass-cancel — v3.0
 - ✓ EVNT-04: @TransactionalEventListener(AFTER_COMMIT) pattern in schedule-service — v3.0
 
+### Validated in Phase 14
+- ✓ GRPC-01: GetActiveLesson — active lesson for group by date, ordered by lesson_number ASC — v3.0
+- ✓ GRPC-02: GetLessonById — full lesson details enriched with ScheduleItem data — v3.0
+- ✓ GRPC-03: GetLessonsByGroup — all lessons for group in date range via ScheduleItem JOIN — v3.0
+
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
 - Key Management Service — RSA keys on filesystem for now
@@ -92,8 +97,8 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 
 ## Milestones
 
-### v3.0: Schedule Service — 🚧 IN PROGRESS
-Schedule template CRUD, lesson auto-generation, status transitions, RabbitMQ events, gRPC server.
+### v3.0: Schedule Service — ✅ SHIPPED 2026-04-04
+Schedule template CRUD, lesson auto-generation, status transitions, RabbitMQ events, gRPC server. 5 phases, 10 plans.
 
 ### v2.0: Academic Service — ✅ SHIPPED 2026-03-31
 5 phases, 12 plans, 37 requirements, 50 tests. Full CRUD + gRPC + Redis caching + RabbitMQ events. See `.planning/MILESTONES.md`.
@@ -124,7 +129,7 @@ Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 | @MockitoBean RabbitTemplate in non-event test bases | ✓ Prevents DomainEventListener from breaking tests without RabbitMQ | v2.0 |
 | Eager lesson generation (ON CONFLICT DO NOTHING) | ✓ Simpler than lazy, UNIQUE(schedule_item_id, date) idempotency | v3.0 |
 | @Profile("!test") on SchedulingConfig | ✓ Cron jobs disabled in test profile, matches @ActiveProfiles("test") | v3.0 |
-| grpc.server.port: 19092 placeholder | — gRPC starter deferred to Phase 14 per D-10 | v3.0 |
+| grpc.server.port: 19092 | ✓ gRPC server starter added, port configured | v3.0 |
 | TZ=Europe/Moscow + hibernate.jdbc.time_zone | ✓ All TIME columns interpreted in Moscow timezone (CRON-04) | v3.0 |
 
 ## Evolution
@@ -145,4 +150,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 — Phase 13 Status Transitions + RabbitMQ Events complete*
+*Last updated: 2026-04-04 — Phase 14 gRPC Server complete, v3.0 Schedule Service milestone shipped*

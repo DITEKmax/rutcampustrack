@@ -7,14 +7,22 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
 ## Core Value
-Attendance tracking backbone: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) are shipped. Next priority: Attendance Service — geo-checkin, attendance marking, reporting — the core user-facing feature.
+Attendance tracking backbone: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) are shipped. Now building the core user-facing feature: Attendance Service MVP — geo-checkin, manual marking, auto-absent, basic reports.
 
 ## Current State
-v3.0 shipped. Schedule Service fully operational — full CRUD for schedule items, lesson operations, schedule view, gRPC client to Academic Service, automatic lesson generation with week-parity algorithm, cron-based status transitions (planned→active→closed), RabbitMQ event publishing (lesson.started, lesson.closed, lesson.cancelled), gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) for Attendance Service consumption.
+v3.0 shipped. Schedule Service fully operational. Starting v4.0 Attendance Service MVP.
 
-## Next Milestone: v4.0 Attendance Service
+## Current Milestone: v4.0 Attendance Service MVP
 
-To be defined via `/gsd:new-milestone`. Expected scope: MongoDB-based attendance tracking, geo-checkin validation, RabbitMQ event consumption, gRPC client to Schedule Service, attendance reports and statistics.
+**Goal:** Core attendance tracking — students check in via geo, headman marks manually, system auto-absents on lesson close, basic reports for journal and stats.
+
+**Target features:**
+- Geo-checkin — student sends {lat, lng}, validated against campus geofence + active lesson + time window
+- Manual marking — headman sets attendance status per student (autosave per click)
+- Automatic absent — on lesson.closed event, unmarked students get status=absent
+- RabbitMQ consumers — listen to lesson.started/closed/cancelled from Schedule Service
+- gRPC clients — Schedule Service (GetActiveLesson, GetLessonById) + Academic Service (GetGroupMembers, GetCampusGeofence)
+- Basic reports — journal by group/subject, student attendance stats, lesson breakdown
 
 ## Target Users
 - **Students** (500-5000): geo-checkin, excuse tickets, homework tracker
@@ -65,12 +73,22 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ GRPC-01..03: gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) — v3.0
 
 ### Active
-(To be defined in `/gsd:new-milestone` for v4.0)
+- [ ] Geo-checkin with campus geofence validation (v4.0)
+- [ ] Manual attendance marking by headman (v4.0)
+- [ ] Automatic absent on lesson.closed event (v4.0)
+- [ ] RabbitMQ event consumers for lesson lifecycle (v4.0)
+- [ ] gRPC clients to Schedule and Academic services (v4.0)
+- [ ] Basic reports: journal, student stats, lesson breakdown (v4.0)
 
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
 - Key Management Service — RSA keys on filesystem for now
 - Bulk CSV user import — manual creation sufficient for now
+- Excuse tickets (create/submit/review) — deferred to v4.1+
+- File attachments + Telegram forwarding — deferred to v4.1+
+- Late checkin ("forgot to mark") flow — deferred to v4.1+
+- Advanced analytics (trends, top-skippers, red zone alerts) — deferred to v4.1+
+- PDF/Excel export — deferred to v4.1+
 
 ## Milestones
 
@@ -127,4 +145,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after v3.0 milestone*
+*Last updated: 2026-04-04 after v4.0 milestone start*

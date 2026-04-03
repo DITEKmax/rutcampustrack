@@ -2,6 +2,41 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v3.0 — Schedule Service
+
+**Shipped:** 2026-04-04
+**Phases:** 5 | **Plans:** 11
+
+### What Was Built
+- Schedule template CRUD with headman authorization, gRPC client to Academic Service for validation
+- Lesson auto-generation with week-parity algorithm (even/odd weeks)
+- Cron-based lesson status transitions (planned→active→closed) with Moscow TZ
+- RabbitMQ event publishing (lesson.started, lesson.closed, lesson.cancelled)
+- gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) for Attendance Service
+
+### What Worked
+- gRPC client reuse pattern from v2.0 — consistent inter-service communication
+- @Profile("!test") on SchedulingConfig — cleanly disables cron in tests
+- TZ=Europe/Moscow + hibernate.jdbc.time_zone — all TIME columns in Moscow timezone
+- Week-parity lesson generation algorithm — correct and efficient
+
+### What Was Inefficient
+- LSSN-03 eager generation without ON CONFLICT DO NOTHING — saveAll throws 409 on retry instead of silent dedup
+- IllegalArgumentException handler missing in REST GlobalExceptionHandler (works in gRPC but not REST)
+- GetLessonsByGroup hardcoded to include all statuses including cancelled — no caller filter control
+
+### Patterns Established
+- @Profile("!test") for cron configuration
+- TZ handling: explicit Moscow timezone in JVM + Hibernate + cron expressions
+- gRPC server implementation pattern with Spring Boot starter
+
+### Key Lessons
+1. When generating bulk data (lessons), consider idempotency from the start — ON CONFLICT DO NOTHING is cheaper to add upfront than to retrofit
+2. Exception handlers should be consistent across REST and gRPC layers — share the same exception types
+3. gRPC server queries should support filtering parameters rather than hardcoding included statuses
+
+---
+
 ## Milestone: v2.0 — Academic Service
 
 **Shipped:** 2026-03-31
@@ -52,6 +87,7 @@
 |-----------|--------|-------|------------|
 | v1.0 | 4 | 4 | Established contract-first, Testcontainers, RFC 7807 |
 | v2.0 | 5 | 12 | Added gRPC, Redis, RabbitMQ; parallel agent execution |
+| v3.0 | 5 | 11 | Cron scheduling, Moscow TZ, week-parity generation, gRPC server |
 
 ### Cumulative Quality
 
@@ -59,6 +95,7 @@
 |-----------|-------|-------------|
 | v1.0 | 26 | Integration tests with Testcontainers PostgreSQL + Redis |
 | v2.0 | 50 | Added gRPC in-process tests, Redis cache verification, RabbitMQ event tests |
+| v3.0 | — | Cron job tests with @Profile("!test"), lesson generation verification |
 
 ### Top Lessons (Verified Across Milestones)
 

@@ -7,10 +7,11 @@
 | 0 | Каркас, контракты, инфраструктура | ✅ ЗАВЕРШЕНА |
 | 1 | Auth Service + API Gateway | ✅ ЗАВЕРШЕНА |
 | 2 | Academic Service | ✅ ЗАВЕРШЕНА |
-| 3 | Schedule Service + Attendance Service | ⏳ СЛЕДУЮЩАЯ |
-| 4 | Notification Service (Web + Bot) | ⬜ |
-| 5 | Фронтенды (Mini App, Web Panel, Landing) | ⬜ |
-| 6 | CI/CD, мониторинг, документация | ⬜ |
+| 3 | Schedule Service | ✅ ЗАВЕРШЕНА |
+| 4 | Attendance Service | ⏳ СЛЕДУЮЩАЯ |
+| 5 | Notification Service (Web + Bot) | ⬜ |
+| 6 | Фронтенды (Mini App, Web Panel, Landing) | ⬜ |
+| 7 | CI/CD, мониторинг, документация | ⬜ |
 
 ---
 
@@ -239,35 +240,35 @@ services/api-gateway/src/main/java/ru/rutcampustrack/gateway/
 
 ---
 
-## Фаза 3: Schedule Service + Attendance Service
+## Фаза 3: Schedule Service ✅
+
+**Завершена:** 2026-04-04 | **Milestone:** v3.0
 
 ### Цель
 
-Полный цикл: пара создаётся → автогенерируется на семестр → начинается → студент отмечается → пара закрывается → absent автоматически проставляется → отчёт формируется.
+Полный цикл жизни расписания: шаблон → автогенерация пар на семестр → cron-переход статусов → RabbitMQ события → gRPC сервер для Attendance Service.
 
-### Schedule Service (порт 9092)
+### Что реализовано
 
-1. **REST API**
-   - HEADMAN: CRUD schedule_items (шаблон расписания), отмена/восстановление пар, массовая отмена
-   - ALL: GET расписание группы на период
-   - Блокировка геоотметки на конкретной паре
+1. **REST API** (HEADMAN: CRUD schedule_items, отмена/восстановление/массовая отмена пар; ALL: расписание группы на период; блокировка геоотметки)
+2. **Автогенерация lessons** — при создании schedule_item генерируются все lessons на даты семестра с учётом чётности недель, UNIQUE constraint защищает от дублей
+3. **Смена статусов (@Scheduled)** — cron каждую минуту: planned→active (lesson.started), active→closed (lesson.closed), отмена (lesson.cancelled)
+4. **gRPC-сервер** — `GetActiveLesson`, `GetLessonById`, `GetLessonsByGroup`
+5. **gRPC-клиент** — вызывает Academic Service: `GetGroup`, `GetTeacherSubjects` для валидации
 
-2. **Автогенерация lessons**
-   - При создании schedule_item → генерация всех `lessons` на даты семестра с учётом чётности недель
-   - Уникальный индекс (schedule_item_id, date) защищает от дублей
+### Статистика
 
-3. **Смена статусов (@Scheduled)**
-   - Cron: каждую минуту проверять `lessons` с `status='planned'` и `start_time ≤ now()` → ACTIVE
-   - Cron: `status='active'` и `end_time + 5 мин ≤ now()` → CLOSED
-   - При ACTIVE → RabbitMQ `lesson.started`
-   - При CLOSED → RabbitMQ `lesson.closed`
-   - При отмене → RabbitMQ `lesson.cancelled`
+- 5 фаз (10–14), 11 планов
+- 25 требований (TMPL, LSSN, VIEW, CRON, EVNT, GRPC)
+- Integration tests с Testcontainers PostgreSQL
 
-4. **gRPC-сервер** (реализация proto/schedule.proto)
-   - `GetActiveLesson`, `GetLessonById`, `GetLessonsByGroup`
+---
 
-5. **gRPC-клиент**
-   - Вызывает Academic Service: `GetGroup`, `GetTeacherSubjects` — для валидации при создании расписания
+## Фаза 4: Attendance Service
+
+### Цель
+
+Ядро системы: студент отмечается → пара закрывается → absent автоматически проставляется → отчёт формируется.
 
 ### Attendance Service (порт 9093)
 
@@ -315,7 +316,7 @@ services/api-gateway/src/main/java/ru/rutcampustrack/gateway/
 
 ---
 
-## Фаза 4: Notification Service (Web + Bot)
+## Фаза 5: Notification Service (Web + Bot)
 
 ### Цель
 
@@ -369,7 +370,7 @@ Push-уведомления в реальном времени: в Telegram че
 
 ---
 
-## Фаза 5: Фронтенды
+## Фаза 6: Фронтенды
 
 ### Цель
 
@@ -421,7 +422,7 @@ Push-уведомления в реальном времени: в Telegram че
 
 ---
 
-## Фаза 6: CI/CD, мониторинг, документация
+## Фаза 7: CI/CD, мониторинг, документация
 
 ### Цель
 

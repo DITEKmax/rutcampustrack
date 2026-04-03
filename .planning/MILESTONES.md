@@ -1,18 +1,22 @@
 # Milestones
 
-## v3.0 Schedule Service (Shipped: 2026-04-03)
+## v3.0 Schedule Service (Shipped: 2026-04-04)
 
-**Phases completed:** 4 phases, 9 plans, 14 tasks
+**Phases completed:** 5 phases (10–14), 11 plans
+**Requirements:** 25/25 complete (TMPL-01..05, LSSN-01..07, VIEW-01..02, CRON-01..04, EVNT-01..04, GRPC-01..03)
 
 **Key accomplishments:**
 
-- One-liner:
-- ScheduleItemService
-- LessonWithItem
-- ScheduleItemService fully wired: POST creates template and generates all semester lessons; PUT detects schedule-affecting field changes and re-generates future planned lessons; 7 integration tests prove end-to-end behavior with Testcontainers PostgreSQL.
-- LessonRepository.java
-- LessonStatusTransitionJobTest
-- One-liner:
+1. Schedule template CRUD with headman authorization and gRPC Academic Service validation
+2. Lesson auto-generation with week-parity algorithm — POST creates template and generates all semester lessons; PUT detects schedule-affecting changes and re-generates future planned lessons
+3. Cron-based status transitions: planned→active→closed with Moscow TZ, RabbitMQ events (lesson.started, lesson.closed, lesson.cancelled)
+4. gRPC server: GetActiveLesson, GetLessonById, GetLessonsByGroup for Attendance Service consumption
+5. Integration tests with Testcontainers PostgreSQL
+
+**Known tech debt:**
+- IllegalArgumentException → HTTP 500 in REST layer (missing handler)
+- LSSN-03 idempotency: saveAll throws 409 on retry (no ON CONFLICT DO NOTHING)
+- GRPC-03 GetLessonsByGroup includes cancelled lessons (no filter control)
 
 ---
 

@@ -52,6 +52,9 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 **Milestone Goal:** Core attendance tracking — students check in via geo, headman marks manually, system auto-absents on lesson close, basic reports for journal and stats.
 
 - [ ] **Phase 15: Infrastructure Foundation** - MongoDB indexes, enum converters, gRPC clients, RabbitMQ consumer queue
+  Plans:
+  - [ ] 15-01-PLAN.md — Build config, contract additions, MongoDB document + indexes + enum converters
+  - [ ] 15-02-PLAN.md — gRPC clients, RabbitMQ consumer + DLQ, security AOP, error handling, tests
 - [ ] **Phase 16: Event Consumers** - Auto-absent on lesson.closed, cancellation propagation, DLQ
 - [ ] **Phase 17: Write Path — Geo-Checkin + Manual Marking** - Haversine geofence, Redis dedup/rate-limit, manual marking, attendance.marked event
 - [ ] **Phase 18: Read Path — Reports** - Lesson attendance view, journal grid, student stats, domain isolation
@@ -68,7 +71,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   3. A gRPC call to Schedule Service (GetActiveLesson) and Academic Service (GetCampusGeofence) completes without error when both services are running
   4. A message published to the rut-uit.events fanout exchange is received by the Attendance Service consumer queue (durable, survives restart)
   5. @RequireRole(STUDENT) on a controller method rejects a request with X-User-Role: TEACHER with 403
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: no
 
 ### Phase 16: Event Consumers
@@ -126,7 +129,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 | 12. Lesson Auto-Generation | v3.0 | 2/2 | Complete | 2026-04-01 |
 | 13. Status Transitions + RabbitMQ Events | v3.0 | 2/2 | Complete | 2026-04-03 |
 | 14. gRPC Server | v3.0 | 2/2 | Complete | 2026-04-04 |
-| 15. Infrastructure Foundation | v4.0 | 0/? | Not started | - |
+| 15. Infrastructure Foundation | v4.0 | 0/2 | Not started | - |
 | 16. Event Consumers | v4.0 | 0/? | Not started | - |
 | 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 0/? | Not started | - |
 | 18. Read Path — Reports | v4.0 | 0/? | Not started | - |

@@ -41,8 +41,8 @@ Requirements for Schedule Service milestone. Each maps to roadmap phases.
 
 - [ ] **EVNT-01**: System publishes lesson.started event when lesson becomes active
 - [ ] **EVNT-02**: System publishes lesson.closed event when lesson becomes closed
-- [ ] **EVNT-03**: System publishes lesson.cancelled event when lesson is cancelled
-- [ ] **EVNT-04**: Events use @TransactionalEventListener(AFTER_COMMIT) pattern
+- [x] **EVNT-03**: System publishes lesson.cancelled event when lesson is cancelled
+- [x] **EVNT-04**: Events use @TransactionalEventListener(AFTER_COMMIT) pattern
 
 ### gRPC Server
 
@@ -101,8 +101,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CRON-03 | Phase 13 | Pending |
 | EVNT-01 | Phase 13 | Pending |
 | EVNT-02 | Phase 13 | Pending |
-| EVNT-03 | Phase 13 | Pending |
-| EVNT-04 | Phase 13 | Pending |
+| EVNT-03 | Phase 13 | Complete |
+| EVNT-04 | Phase 13 | Complete |
 | GRPC-01 | Phase 14 | Pending |
 | GRPC-02 | Phase 14 | Pending |
 | GRPC-03 | Phase 14 | Pending |

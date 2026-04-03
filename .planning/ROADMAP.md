@@ -64,10 +64,10 @@ Plans:
 
 **Requirements:** [CRON-01, CRON-02, CRON-03, EVNT-01, EVNT-02, EVNT-03, EVNT-04]
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 13-01-PLAN.md — Event infrastructure (port from academic-service) + event subclasses + cancel event wiring (EVNT-03, EVNT-04)
+- [x] 13-01-PLAN.md — Event infrastructure (port from academic-service) + event subclasses + cancel event wiring (EVNT-03, EVNT-04)
 - [ ] 13-02-PLAN.md — LessonStatusTransitionJob cron + integration tests (CRON-01..03, EVNT-01, EVNT-02)
 
 ### Phase 14: gRPC Server
@@ -94,4 +94,4 @@ Plans:
 | 10. Foundation | v3.0 | 2/2 | Complete    | 2026-04-01 |
 | 11. REST API + gRPC Client | v3.0 | 3/3 | Complete    | 2026-04-01 |
 | 12. Lesson Auto-Generation | v3.0 | 2/2 | Complete    | 2026-04-01 |
-| 13. Status Transitions + RabbitMQ Events | v3.0 | 0/2 | In Progress | — |
+| 13. Status Transitions + RabbitMQ Events | v3.0 | 1/2 | In Progress|  |

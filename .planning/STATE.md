@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Plan 01 executed — lesson generation foundation built
-stopped_at: Phase 13 context gathered
-last_updated: "2026-04-02T19:01:15.902Z"
-last_activity: 2026-04-01
+status: executing
+stopped_at: Completed 13-status-transitions-rabbitmq-events-01-PLAN.md
+last_updated: "2026-04-03T20:54:50.283Z"
+last_activity: 2026-04-03
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
   percent: 40
 ---
 
@@ -22,10 +22,10 @@ v3.0 Schedule Service — IN PROGRESS
 
 ## Current Position
 
-Phase: 13
-Plan: Not started
-Status: Plan 01 executed — lesson generation foundation built
-Last activity: 2026-04-01
+Phase: 13 (status-transitions-rabbitmq-events) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-03
 
 Progress: [████░░░░░░] 40% (4/10 plans)
 
@@ -34,7 +34,7 @@ Progress: [████░░░░░░] 40% (4/10 plans)
 See: `.planning/PROJECT.md` (updated 2026-03-31)
 
 **Core value:** Schedule Service with full lesson lifecycle — the scheduling backbone for Attendance Service.
-**Current focus:** Phase 12 — lesson-auto-generation
+**Current focus:** Phase 13 — status-transitions-rabbitmq-events
 
 ## Phase Map
 
@@ -65,6 +65,7 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 12-01]: V6 migration adds implicit varchar cast for week_type enum (same pattern as V5)
 - [Phase 12-lesson-auto-generation]: scheduleAffected boolean computed BEFORE applying setters to capture pre-update field state
 - [Phase 12-lesson-auto-generation]: Integration tests use dayOfWeek=1 (TUESDAY) matching existing test conventions — avoids @Min(1) validation rejection
+- [Phase 13-status-transitions-rabbitmq-events]: scheduleEventsExchange bean name avoids Spring name clash with academicEventsExchange in shared test context
 
 ### Pending Todos
 
@@ -76,7 +77,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T19:01:15.875Z
-Stopped at: Phase 13 context gathered
-Resume file: .planning/phases/13-status-transitions-rabbitmq-events/13-CONTEXT.md
+Last session: 2026-04-03T20:54:50.279Z
+Stopped at: Completed 13-status-transitions-rabbitmq-events-01-PLAN.md
+Resume file: None
 Next action: Execute 12-02-PLAN.md

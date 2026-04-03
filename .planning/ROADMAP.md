@@ -76,7 +76,7 @@ Plans:
 
 **Requirements:** [GRPC-01, GRPC-02, GRPC-03]
 
-**Plans:** 2 plans
+**Plans:** 0/2 plans executed
 
 Plans:
 - [ ] 14-01-PLAN.md — gRPC server impl: dependency, repository query, GrpcExceptionAdvice, ScheduleGrpcServiceImpl (GRPC-01..03)
@@ -99,4 +99,4 @@ Plans:
 | 11. REST API + gRPC Client | v3.0 | 3/3 | Complete    | 2026-04-01 |
 | 12. Lesson Auto-Generation | v3.0 | 2/2 | Complete    | 2026-04-01 |
 | 13. Status Transitions + RabbitMQ Events | v3.0 | 2/2 | Complete    | 2026-04-03 |
-| 14. gRPC Server | v3.0 | 0/2 | In Progress | — |
+| 14. gRPC Server | v3.0 | 0/2 | Planned    |  |

@@ -46,9 +46,9 @@ Requirements for Schedule Service milestone. Each maps to roadmap phases.
 
 ### gRPC Server
 
-- [ ] **GRPC-01**: GetActiveLesson returns the currently active lesson for a group
-- [ ] **GRPC-02**: GetLessonById returns lesson details by ID
-- [ ] **GRPC-03**: GetLessonsByGroup returns all lessons for a group in a date range
+- [x] **GRPC-01**: GetActiveLesson returns the currently active lesson for a group
+- [x] **GRPC-02**: GetLessonById returns lesson details by ID
+- [x] **GRPC-03**: GetLessonsByGroup returns all lessons for a group in a date range
 
 ## Future Requirements
 
@@ -103,9 +103,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EVNT-02 | Phase 13 | Complete |
 | EVNT-03 | Phase 13 | Complete |
 | EVNT-04 | Phase 13 | Complete |
-| GRPC-01 | Phase 14 | Pending |
-| GRPC-02 | Phase 14 | Pending |
-| GRPC-03 | Phase 14 | Pending |
+| GRPC-01 | Phase 14 | Complete |
+| GRPC-02 | Phase 14 | Complete |
+| GRPC-03 | Phase 14 | Complete |
 
 **Coverage:**
 - v3.0 requirements: 25 total

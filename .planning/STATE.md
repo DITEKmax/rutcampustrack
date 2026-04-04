@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
 status: verifying
-stopped_at: Phase 18 context gathered
-last_updated: "2026-04-04T11:52:47.713Z"
+stopped_at: "Completed 18-01-PLAN.md: GetSubjectsByIds RPC"
+last_updated: "2026-04-04T16:01:52.805Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 7
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -67,6 +67,7 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 17-03]: @MockitoSpyBean used for AttendanceEventPublisher in integration tests — wraps real bean for verify() without mocking behavior
 - [Phase 17-02]: @RequireRole is method-level only (ElementType.METHOD) — applied to checkin() method, not class level
 - [Phase 17-02]: Integration test queue for INFRA-06 declared in @BeforeEach with purge — prevents message contamination between tests
+- [Phase 18-01]: GetSubjectsByIds not cached — infrequent batch lookup for report generation, caching overhead not justified
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -84,7 +85,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T11:52:47.710Z
-Stopped at: Phase 18 context gathered
-Resume file: .planning/phases/18-read-path-reports/18-CONTEXT.md
+Last session: 2026-04-04T16:01:41.682Z
+Stopped at: Completed 18-01-PLAN.md: GetSubjectsByIds RPC
+Resume file: None
 Next action: `/gsd:plan-phase 15`

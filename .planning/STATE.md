@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
-status: verifying
-stopped_at: Phase 18 context gathered
-last_updated: "2026-04-04T11:52:47.713Z"
+status: executing
+stopped_at: Completed 18-02-PLAN.md
+last_updated: "2026-04-04T16:04:13.511Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 11
+  completed_plans: 8
   percent: 0
 ---
 
@@ -22,9 +22,9 @@ v4.0 Attendance Service MVP — Roadmap created, ready to plan Phase 15
 
 ## Current Position
 
-Phase: 18
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 18 (read-path-reports) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-04-04
 
 Progress: [░░░░░░░░░░] 0%
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
 **Core value:** Attendance tracking backbone — Auth + Academic + Schedule shipped. Now building core: Attendance Service MVP (geo-checkin, manual marking, auto-absent, reports).
-**Current focus:** Phase 17 — write-path-geo-checkin-manual-marking
+**Current focus:** Phase 18 — read-path-reports
 
 ## Phase Map
 
@@ -67,6 +67,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 17-03]: @MockitoSpyBean used for AttendanceEventPublisher in integration tests — wraps real bean for verify() without mocking behavior
 - [Phase 17-02]: @RequireRole is method-level only (ElementType.METHOD) — applied to checkin() method, not class level
 - [Phase 17-02]: Integration test queue for INFRA-06 declared in @BeforeEach with purge — prevents message contamination between tests
+- [Phase 18]: AttendanceReadPort in shared/port/ with zero checkin imports — domain isolation enforced
+- [Phase 18]: getSubjectsByIds returns Map<Long,String> for simple id->name lookup in ReportService
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -84,7 +86,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T11:52:47.710Z
-Stopped at: Phase 18 context gathered
-Resume file: .planning/phases/18-read-path-reports/18-CONTEXT.md
+Last session: 2026-04-04T16:04:13.507Z
+Stopped at: Completed 18-02-PLAN.md
+Resume file: None
 Next action: `/gsd:plan-phase 15`

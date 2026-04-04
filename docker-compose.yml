@@ -96,6 +96,65 @@ services:
       timeout: 5s
       retries: 5
 
+  # ============================================================
+  # NOTIFICATION SERVICES
+  # ============================================================
+
+  notification-web:
+    build:
+      context: ./services/notification-web
+      dockerfile: Dockerfile
+    container_name: rct-notification-web
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-rct_user}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-rct_dev_pass}
+    expose:
+      - "9094"
+    networks:
+      - private_net
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9094/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  notification-bot:
+    build:
+      context: ./services/notification-bot
+      dockerfile: Dockerfile
+    container_name: rct-notification-bot
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN:-placeholder}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-rct_user}:${RABBITMQ_PASSWORD:-rct_dev_pass}@rabbitmq:5672/
+      ACADEMIC_GRPC_HOST: academic-service
+      ACADEMIC_GRPC_PORT: "19091"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      HEALTH_PORT: "8081"
+    networks:
+      - private_net
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
 networks:
   private_net:
     driver: bridge

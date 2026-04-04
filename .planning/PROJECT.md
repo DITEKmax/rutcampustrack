@@ -10,7 +10,7 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 Attendance tracking backbone: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) are shipped. Now building the core user-facing feature: Attendance Service MVP — geo-checkin, manual marking, auto-absent, basic reports.
 
 ## Current State
-v4.0 in progress. Phase 15 (Infrastructure Foundation) complete — MongoDB indexes, enum converters, gRPC clients, RabbitMQ consumer, security AOP. Next: Phase 16 (Event Consumers).
+v4.0 in progress. Phase 16 (Event Consumers) complete — auto-absent on lesson.closed (bulkWrite $setOnInsert), cancellation propagation on lesson.cancelled, semester cache refresh. 39 tests passing. Next: Phase 17 (Write Path — Geo Checkin + Manual Marking).
 
 ## Current Milestone: v4.0 Attendance Service MVP
 

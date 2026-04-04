@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
 status: executing
-stopped_at: "Completed Wave 1 (18-01, 18-02)"
-last_updated: "2026-04-04T16:05:00.000Z"
+stopped_at: Completed 18-03 (ReportService + ReportController)
+last_updated: "2026-04-04T16:13:29.543Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 10
   percent: 0
 ---
 
@@ -23,7 +23,7 @@ v4.0 Attendance Service MVP — Roadmap created, ready to plan Phase 15
 ## Current Position
 
 Phase: 18 (read-path-reports) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -70,6 +70,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 18]: AttendanceReadPort in shared/port/ with zero checkin imports — domain isolation enforced
 - [Phase 18]: getSubjectsByIds returns Map<Long,String> for simple id->name lookup in ReportService
 - [Phase 18-01]: GetSubjectsByIds not cached — infrequent batch lookup for report generation, caching overhead not justified
+- [Phase 18-read-path-reports]: ReportService uses AttendanceReadPort exclusively — zero imports from checkin/ package (domain isolation)
+- [Phase 18-read-path-reports]: Left-join roster with ABSENT default: group members from gRPC, attendance from MongoDB, no record = ABSENT
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -87,7 +89,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T16:05:00.000Z
-Stopped at: Completed Wave 1 (18-01, 18-02)
+Last session: 2026-04-04T16:13:29.539Z
+Stopped at: Completed 18-03 (ReportService + ReportController)
 Resume file: None
 Next action: `/gsd:plan-phase 15`

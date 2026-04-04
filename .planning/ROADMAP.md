@@ -66,9 +66,9 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   - [x] 17-03-PLAN.md — Manual marking service + controller + integration tests
 - [ ] **Phase 18: Read Path — Reports** - Lesson attendance view, journal grid, student stats, domain isolation
   Plans:
-  - [ ] 18-01-PLAN.md — Proto GetSubjectsByIds RPC + Academic gRPC server implementation
+  - [x] 18-01-PLAN.md — Proto GetSubjectsByIds RPC + Academic gRPC server implementation
   - [x] 18-02-PLAN.md — Contracts, shared port, AttendanceReadPortImpl, gRPC client additions, ArchUnit dependency
-  - [ ] 18-03-PLAN.md — ReportService + ReportController (all 4 endpoints)
+  - [x] 18-03-PLAN.md — ReportService + ReportController (all 4 endpoints)
   - [ ] 18-04-PLAN.md — Unit tests, integration tests, ArchUnit domain isolation test
 
 ## Phase Details
@@ -144,4 +144,4 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 | 15. Infrastructure Foundation | v4.0 | 2/2 | Complete    | 2026-04-04 |
 | 16. Event Consumers | v4.0 | 2/2 | Complete    | 2026-04-04 |
 | 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 3/3 | Complete    | 2026-04-04 |
-| 18. Read Path — Reports | v4.0 | 2/4 | In Progress | 2026-04-04 |
+| 18. Read Path — Reports | v4.0 | 3/4 | In Progress|  |

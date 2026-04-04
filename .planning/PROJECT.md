@@ -10,7 +10,7 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 Attendance tracking backbone: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) are shipped. Now building the core user-facing feature: Attendance Service MVP — geo-checkin, manual marking, auto-absent, basic reports.
 
 ## Current State
-v4.0 in progress. Phase 16 (Event Consumers) complete — auto-absent on lesson.closed (bulkWrite $setOnInsert), cancellation propagation on lesson.cancelled, semester cache refresh. 39 tests passing. Next: Phase 17 (Write Path — Geo Checkin + Manual Marking).
+v4.0 in progress. Phase 17 (Write Path — Geo-Checkin + Manual Marking) complete — Haversine geofence, Redis dedup/rate-limit, CheckinService (7 validations), MarkingService (headman auth + MongoTemplate upsert), attendance.marked events. 30 new tests (15 unit + 15 integration). Next: Phase 18 (Read Path — Reports).
 
 ## Current Milestone: v4.0 Attendance Service MVP
 
@@ -73,12 +73,14 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ GRPC-01..03: gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) — v3.0
 
 ### Active
-- [ ] Geo-checkin with campus geofence validation (v4.0)
-- [ ] Manual attendance marking by headman (v4.0)
-- [ ] Automatic absent on lesson.closed event (v4.0)
-- [ ] RabbitMQ event consumers for lesson lifecycle (v4.0)
-- [ ] gRPC clients to Schedule and Academic services (v4.0)
 - [ ] Basic reports: journal, student stats, lesson breakdown (v4.0)
+
+### Recently Validated (v4.0 in progress)
+- ✓ Geo-checkin with campus geofence validation — Phase 17
+- ✓ Manual attendance marking by headman — Phase 17
+- ✓ Automatic absent on lesson.closed event — Phase 16
+- ✓ RabbitMQ event consumers for lesson lifecycle — Phase 16
+- ✓ gRPC clients to Schedule and Academic services — Phase 15
 
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
@@ -145,4 +147,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after v4.0 milestone start*
+*Last updated: 2026-04-04 after Phase 17 completion*

@@ -76,6 +76,8 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 (none — v4.0 complete)
 
 ### Recently Validated (v4.0)
+- ✓ @RequireRole on all report endpoints (consistent with checkin/marking) — Phase 19
+- ✓ Report URL path aligned to /api/attendance/reports/* convention — Phase 19
 - ✓ Basic reports: journal, student stats, lesson breakdown — Phase 18
 - ✓ Domain isolation: report/ never imports checkin/ (ArchUnit enforced) — Phase 18
 - ✓ GetSubjectsByIds gRPC batch lookup for subject name resolution — Phase 18
@@ -150,4 +152,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after Phase 17 completion*
+*Last updated: 2026-04-04 after Phase 19 completion*

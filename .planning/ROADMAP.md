@@ -65,7 +65,7 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
 
 **Milestone Goal:** Real-time push notifications via WebSocket (web panel), Web Push (PWA background) and Telegram bot — all three channels consuming RabbitMQ events from existing services. Students receive lesson start buttons and reminders in Telegram; web panel and PWA users receive live WebSocket pushes; PWA users receive Web Push when app is closed. Bot reminder messages are fully cleaned up on lesson close or student checkin.
 
-- [ ] **Phase 20: Shared Infrastructure** — Two durable RabbitMQ queues with DLQ bound to fanout exchange, docker-compose containers, Redis key namespace
+- [x] **Phase 20: Shared Infrastructure** — Two durable RabbitMQ queues with DLQ bound to fanout exchange, docker-compose containers, Redis key namespace (completed 2026-04-04)
 - [ ] **Phase 21: Notification Web — WebSocket Core** — STOMP endpoint with JWT auth, group session registry, and all 5 event types pushed to correct group topics
 - [ ] **Phase 22: Bot Infrastructure Layer** — aio-pika consumer with watchdog, gRPC client for Academic Service, Redis async client, throttled send queue
 - [ ] **Phase 23: Bot Telegram Commands** — /start account linking, /login OTP flow, /status attendance check
@@ -83,11 +83,11 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
   2. Stopping notification-web or notification-bot does not affect the other service's queue — messages accumulate in the offline service's queue and are delivered on reconnect
   3. A message that fails processing in either queue is routed to its DLQ rather than silently dropped or infinitely requeued
   4. docker-compose up starts notification-web and notification-bot containers with health checks, and both correctly declare depends_on redis and rabbitmq
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 20-01-PLAN.md — notification-web RabbitConfig + Actuator + EventConsumer + tests
 - [x] 20-02-PLAN.md — notification-bot Python skeleton + aio-pika consumer + health endpoint
-- [ ] 20-03-PLAN.md — docker-compose containers for both services
+- [x] 20-03-PLAN.md — docker-compose containers for both services
 
 ### Phase 21: Notification Web — WebSocket Core
 **Goal**: Web panel users can receive real-time event pushes over WebSocket — authenticated at handshake via JWT, routed exclusively to their group's topic, receiving structured messages for all 5 event types
@@ -168,7 +168,7 @@ Plans:
 | 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 3/3 | Complete | 2026-04-04 |
 | 18. Read Path — Reports | v4.0 | 4/4 | Complete | 2026-04-04 |
 | 19. Report Security & Routing Fix | v4.0 | 1/1 | Complete | 2026-04-04 |
-| 20. Shared Infrastructure | v5.0 | 2/3 | In Progress|  |
+| 20. Shared Infrastructure | v5.0 | 3/3 | Complete   | 2026-04-04 |
 | 21. Notification Web — WebSocket Core | v5.0 | 0/? | Not started | - |
 | 22. Bot Infrastructure Layer | v5.0 | 0/? | Not started | - |
 | 23. Bot Telegram Commands | v5.0 | 0/? | Not started | - |

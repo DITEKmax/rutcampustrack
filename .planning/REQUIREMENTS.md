@@ -19,10 +19,10 @@ Requirements for Attendance Service MVP. Each maps to roadmap phases.
 ### Checkin
 
 - [x] **CHKN-01**: Student can geo-checkin by sending {lat, lng}, validated against campus geofence (Haversine)
-- [ ] **CHKN-02**: Geo-checkin validates active lesson exists for student's group (gRPC to Schedule)
-- [ ] **CHKN-03**: Geo-checkin enforces 5-min time window (lesson start - 5 min to lesson end + 5 min)
-- [ ] **CHKN-04**: Geo-checkin respects is_geo_blocked flag from lesson
-- [ ] **CHKN-05**: Geo-checkin is idempotent via MongoDB unique index (duplicate returns 409)
+- [x] **CHKN-02**: Geo-checkin validates active lesson exists for student's group (gRPC to Schedule)
+- [x] **CHKN-03**: Geo-checkin enforces 5-min time window (lesson start - 5 min to lesson end + 5 min)
+- [x] **CHKN-04**: Geo-checkin respects is_geo_blocked flag from lesson
+- [x] **CHKN-05**: Geo-checkin is idempotent via MongoDB unique index (duplicate returns 409)
 - [x] **CHKN-06**: Redis dedup lock prevents double-submit (5-sec TTL per lesson+user)
 - [x] **CHKN-07**: Redis rate limiting prevents abuse (3 attempts/minute per user)
 
@@ -98,10 +98,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-05 | Phase 15 | Complete |
 | INFRA-06 | Phase 17 | Complete |
 | CHKN-01 | Phase 17 | Complete |
-| CHKN-02 | Phase 17 | Pending |
-| CHKN-03 | Phase 17 | Pending |
-| CHKN-04 | Phase 17 | Pending |
-| CHKN-05 | Phase 17 | Pending |
+| CHKN-02 | Phase 17 | Complete |
+| CHKN-03 | Phase 17 | Complete |
+| CHKN-04 | Phase 17 | Complete |
+| CHKN-05 | Phase 17 | Complete |
 | CHKN-06 | Phase 17 | Complete |
 | CHKN-07 | Phase 17 | Complete |
 | MARK-01 | Phase 17 | Complete |

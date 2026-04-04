@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
-status: executing
-stopped_at: Completed 17-03-PLAN.md
-last_updated: "2026-04-04T11:20:49.899Z"
+status: verifying
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-04-04T11:21:21.923Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
@@ -24,7 +24,7 @@ v4.0 Attendance Service MVP — Roadmap created, ready to plan Phase 15
 
 Phase: 17 (write-path-geo-checkin-manual-marking) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-04
 
 Progress: [░░░░░░░░░░] 0%
@@ -65,6 +65,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 17-01]: GeofenceService: volatile cache with 30m TTL, @PostConstruct try/catch, delegates to package-private GeoUtils Haversine
 - [Phase 17-03]: @RequireRole(STUDENT) on marking controller — headman is a student with is_headman=true, headman-specific check in MarkingService
 - [Phase 17-03]: @MockitoSpyBean used for AttendanceEventPublisher in integration tests — wraps real bean for verify() without mocking behavior
+- [Phase 17-02]: @RequireRole is method-level only (ElementType.METHOD) — applied to checkin() method, not class level
+- [Phase 17-02]: Integration test queue for INFRA-06 declared in @BeforeEach with purge — prevents message contamination between tests
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -82,7 +84,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T11:20:49.896Z
-Stopped at: Completed 17-03-PLAN.md
+Last session: 2026-04-04T11:21:21.920Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 15`

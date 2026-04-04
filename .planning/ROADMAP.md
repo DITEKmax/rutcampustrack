@@ -83,10 +83,10 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
   2. Stopping notification-web or notification-bot does not affect the other service's queue — messages accumulate in the offline service's queue and are delivered on reconnect
   3. A message that fails processing in either queue is routed to its DLQ rather than silently dropped or infinitely requeued
   4. docker-compose up starts notification-web and notification-bot containers with health checks, and both correctly declare depends_on redis and rabbitmq
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 Plans:
-- [ ] 20-01-PLAN.md — notification-web RabbitConfig + Actuator + EventConsumer + tests
-- [ ] 20-02-PLAN.md — notification-bot Python skeleton + aio-pika consumer + health endpoint
+- [x] 20-01-PLAN.md — notification-web RabbitConfig + Actuator + EventConsumer + tests
+- [x] 20-02-PLAN.md — notification-bot Python skeleton + aio-pika consumer + health endpoint
 - [ ] 20-03-PLAN.md — docker-compose containers for both services
 
 ### Phase 21: Notification Web — WebSocket Core
@@ -168,7 +168,7 @@ Plans:
 | 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 3/3 | Complete | 2026-04-04 |
 | 18. Read Path — Reports | v4.0 | 4/4 | Complete | 2026-04-04 |
 | 19. Report Security & Routing Fix | v4.0 | 1/1 | Complete | 2026-04-04 |
-| 20. Shared Infrastructure | v5.0 | 0/3 | Planning | - |
+| 20. Shared Infrastructure | v5.0 | 2/3 | In Progress|  |
 | 21. Notification Web — WebSocket Core | v5.0 | 0/? | Not started | - |
 | 22. Bot Infrastructure Layer | v5.0 | 0/? | Not started | - |
 | 23. Bot Telegram Commands | v5.0 | 0/? | Not started | - |

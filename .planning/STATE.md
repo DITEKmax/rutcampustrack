@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
-status: planning
-stopped_at: Phase 20 context gathered
-last_updated: "2026-04-04T21:36:24.690Z"
-last_activity: 2026-04-04 — Roadmap created for v5.0 (6 phases, 25 requirements)
+status: executing
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-04-04T22:01:14.651Z"
+last_activity: 2026-04-04
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 2
   percent: 0
 ---
 
@@ -22,10 +22,10 @@ v5.0 Notification Service (Web + Bot)
 
 ## Current Position
 
-Phase: 20 of 25 (Shared Infrastructure)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-04-04 — Roadmap created for v5.0 (6 phases, 25 requirements)
+Phase: 20 (shared-infrastructure) — EXECUTING
+Plan: 3 of 3
+Status: Ready to execute
+Last activity: 2026-04-04
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
 **Core value:** Full backend microservice backbone shipped. Now delivering real-time notifications via WebSocket (web panel) and Telegram bot.
-**Current focus:** Phase 20 — Shared Infrastructure
+**Current focus:** Phase 20 — shared-infrastructure
 
 ## Completed Milestones
 
@@ -56,6 +56,7 @@ Recent decisions affecting v5.0:
 - grpcio pinned at 1.73.0 (protobuf 5.x compatible — 1.80.x requires protobuf 6.x, breaking change)
 - aio-pika consumer watchdog required from day one (silent consumer death after RabbitMQ restart)
 - Redis RPUSH list (not SET string) for reminder message_ids — LRANGE retrieves all on lesson.closed
+- [Phase 20]: Unit tests over Spring context tests for RabbitConfig — faster, no RabbitMQ mock needed
 
 ### Research Flags (resolve before phase begins)
 
@@ -69,7 +70,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T21:36:24.676Z
-Stopped at: Phase 20 context gathered
-Resume file: .planning/phases/20-shared-infrastructure/20-CONTEXT.md
+Last session: 2026-04-04T22:01:05.879Z
+Stopped at: Completed 20-01-PLAN.md
+Resume file: None
 Next action: /gsd:plan-phase 20

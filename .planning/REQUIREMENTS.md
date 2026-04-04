@@ -9,7 +9,7 @@ Requirements for Notification Service milestone. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Both notification services have dedicated RabbitMQ queues with DLQ bound to fanout exchange
+- [x] **INFRA-01**: Both notification services have dedicated RabbitMQ queues with DLQ bound to fanout exchange
 - [ ] **INFRA-02**: Docker-compose includes notification-web and notification-bot containers with health checks
 - [ ] **INFRA-03**: Redis key namespace `reminder:msgs:{lesson_id}:{user_id}` documented and available for bot
 
@@ -83,7 +83,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 20 | Pending |
+| INFRA-01 | Phase 20 | Complete |
 | INFRA-02 | Phase 20 | Pending |
 | INFRA-03 | Phase 20 | Pending |
 | WS-01 | Phase 21 | Pending |

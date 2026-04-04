@@ -61,7 +61,7 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v5.0 Notification Service (Web + Bot) (In Progress)
+### v5.0 Notification Service (Web + Bot) (In Progress)
 
 **Milestone Goal:** Real-time push notifications via WebSocket (web panel), Web Push (PWA background) and Telegram bot — all three channels consuming RabbitMQ events from existing services. Students receive lesson start buttons and reminders in Telegram; web panel and PWA users receive live WebSocket pushes; PWA users receive Web Push when app is closed. Bot reminder messages are fully cleaned up on lesson close or student checkin.
 
@@ -99,7 +99,10 @@ Plans:
   3. A client whose JWT expires while connected continues to receive pushes — group_id and user_id were extracted from JWT claims into session attributes at handshake and are not re-validated
   4. When a lesson is cancelled for a group, all connected group members receive the cancellation push in real time
   5. When homework is published for a group, all connected group members receive the homework push; when an excuse is requested, only the headman's session receives the excuse push
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 21-01-PLAN.md — WebSocket infrastructure: jjwt deps, JwtHandshakeInterceptor, WebSocketConfig, unit tests
+- [ ] 21-02-PLAN.md — EventConsumer routing: RabbitMQ-to-WebSocket with headman topic filtering, unit tests
 **UI hint**: yes
 
 ### Phase 22: Bot Infrastructure Layer
@@ -169,7 +172,7 @@ Plans:
 | 18. Read Path — Reports | v4.0 | 4/4 | Complete | 2026-04-04 |
 | 19. Report Security & Routing Fix | v4.0 | 1/1 | Complete | 2026-04-04 |
 | 20. Shared Infrastructure | v5.0 | 3/3 | Complete    | 2026-04-04 |
-| 21. Notification Web — WebSocket Core | v5.0 | 0/? | Not started | - |
+| 21. Notification Web — WebSocket Core | v5.0 | 0/2 | Not started | - |
 | 22. Bot Infrastructure Layer | v5.0 | 0/? | Not started | - |
 | 23. Bot Telegram Commands | v5.0 | 0/? | Not started | - |
 | 24. Bot Event Notifications | v5.0 | 0/? | Not started | - |

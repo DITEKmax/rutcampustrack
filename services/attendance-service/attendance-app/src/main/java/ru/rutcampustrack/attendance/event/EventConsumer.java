@@ -1,21 +1,29 @@
 package ru.rutcampustrack.attendance.event;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 
 import java.util.Map;
 
 /**
  * Generic RabbitMQ event consumer for the Attendance Service.
  * Reads event_type from the envelope and routes to domain-specific handlers.
- * Stub implementations will be filled in Phase 16 (business logic).
+ * Delegates lesson lifecycle logic to LessonEventService.
+ * Semester cache refresh on semester.archived handled directly via SemesterCacheService.
+ * <p>
+ * CRITICAL: ((Number) value).longValue() is used for all numeric ID extractions.
+ * Jackson deserializes JSON integers as Integer when target is Object — direct Long cast would throw ClassCastException.
  */
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class EventConsumer {
 
-    private static final Logger log = LoggerFactory.getLogger(EventConsumer.class);
+    private final LessonEventService lessonEventService;
+    private final SemesterCacheService semesterCacheService;
 
     @RabbitListener(queues = "attendance-service.events")
     public void onEvent(Map<String, Object> envelope) {
@@ -35,22 +43,37 @@ public class EventConsumer {
     }
 
     private void handleLessonStarted(Map<String, Object> envelope) {
-        // Phase 16 implements this
-        log.debug("lesson.started stub -- no-op in Phase 15");
+        Map<String, Object> payload = extractPayload(envelope);
+        Long lessonId = extractLong(payload, "lesson_id");
+        log.debug("lesson.started: no-op (lesson_id={})", lessonId);
     }
 
     private void handleLessonClosed(Map<String, Object> envelope) {
-        // Phase 16 implements auto-absent logic
-        log.debug("lesson.closed stub -- no-op in Phase 15");
+        Map<String, Object> payload = extractPayload(envelope);
+        Long lessonId = extractLong(payload, "lesson_id");
+        Long groupId = extractLong(payload, "group_id");
+        lessonEventService.processLessonClosed(lessonId, groupId);
     }
 
     private void handleLessonCancelled(Map<String, Object> envelope) {
-        // Phase 16 implements cancellation propagation
-        log.debug("lesson.cancelled stub -- no-op in Phase 15");
+        Map<String, Object> payload = extractPayload(envelope);
+        Long lessonId = extractLong(payload, "lesson_id");
+        lessonEventService.processLessonCancelled(lessonId);
     }
 
     private void handleSemesterArchived(Map<String, Object> envelope) {
-        // Phase 16 wires SemesterCacheService.refresh() here
-        log.debug("semester.archived stub -- no-op in Phase 15");
+        semesterCacheService.refresh();
+        log.info("semester.archived: refreshed semester cache");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> extractPayload(Map<String, Object> envelope) {
+        return (Map<String, Object>) envelope.get("payload");
+    }
+
+    private Long extractLong(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        if (value == null) return null;
+        return ((Number) value).longValue();
     }
 }

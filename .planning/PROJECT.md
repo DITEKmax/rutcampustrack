@@ -10,7 +10,7 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 Attendance tracking backbone: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) are shipped. Now building the core user-facing feature: Attendance Service MVP — geo-checkin, manual marking, auto-absent, basic reports.
 
 ## Current State
-v4.0 in progress. Phase 17 (Write Path — Geo-Checkin + Manual Marking) complete — Haversine geofence, Redis dedup/rate-limit, CheckinService (7 validations), MarkingService (headman auth + MongoTemplate upsert), attendance.marked events. 30 new tests (15 unit + 15 integration). Next: Phase 18 (Read Path — Reports).
+v4.0 complete. All 4 phases shipped: Infrastructure Foundation (15), Event Consumers (16), Write Path (17), Read Path — Reports (18). Attendance Service MVP delivers geo-checkin, manual marking, auto-absent, and 4 report endpoints (lesson attendance, journal grid, student stats, attendance records) with domain isolation between report/ and checkin/ packages.
 
 ## Current Milestone: v4.0 Attendance Service MVP
 
@@ -73,9 +73,12 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ GRPC-01..03: gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) — v3.0
 
 ### Active
-- [ ] Basic reports: journal, student stats, lesson breakdown (v4.0)
+(none — v4.0 complete)
 
-### Recently Validated (v4.0 in progress)
+### Recently Validated (v4.0)
+- ✓ Basic reports: journal, student stats, lesson breakdown — Phase 18
+- ✓ Domain isolation: report/ never imports checkin/ (ArchUnit enforced) — Phase 18
+- ✓ GetSubjectsByIds gRPC batch lookup for subject name resolution — Phase 18
 - ✓ Geo-checkin with campus geofence validation — Phase 17
 - ✓ Manual attendance marking by headman — Phase 17
 - ✓ Automatic absent on lesson.closed event — Phase 16

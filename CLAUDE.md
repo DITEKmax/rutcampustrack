@@ -10,7 +10,12 @@ RutCampusTrack — микросервисная система учёта пос
 - **Фаза 1**: ЗАВЕРШЕНА (Auth Service + API Gateway) — 26 тестов, отчёт: `docs/phase-1-report.md`
 - **Фаза 2**: ЗАВЕРШЕНА (Academic Service) — 50 тестов, отчёт: `docs/phase-2-report.md`
 - **Фаза 3**: ЗАВЕРШЕНА (Schedule Service) — 55 тестов, 25 требований, отчёт: `docs/phase-3-report.md`
-- **Фаза 4**: В ОЧЕРЕДИ (Attendance Service)
+- **Фаза 4**: ЗАВЕРШЕНА (Attendance Service) — ~95 тестов, 23 требования, отчёт: `docs/phase-4-report.md`
+- **Фаза 5**: В ОЧЕРЕДИ (Web Push Backend)
+- **Фаза 6**: В ОЧЕРЕДИ (Notification Service — Web + Bot)
+- **Фаза 7**: В ОЧЕРЕДИ (PWA Mobile Client «RutTrack»)
+- **Фаза 8**: В ОЧЕРЕДИ (Фронтенды — Mini App, Web Panel, Landing)
+- **Фаза 9**: В ОЧЕРЕДИ (CI/CD, мониторинг, документация)
 - Полный план фаз: см. `docs/phases-plan.md`
 
 ## Архитектура (кратко)
@@ -24,8 +29,8 @@ RutCampusTrack — микросервисная система учёта пос
 | Academic Service | 9091 | Spring Boot | PostgreSQL (academic_db) + Redis cache |
 | Schedule Service | 9092 | Spring Boot | PostgreSQL (schedule_db) |
 | Attendance Service | 9093 | Spring Boot | MongoDB (attendance_db) |
-| Notification Web | 9094 | Spring Boot WebSocket | — |
-| Notification Bot | — | Python Aiogram 3 | — |
+| Notification Web | 9094 | Spring Boot WebSocket + Web Push | MongoDB (push_subscriptions) + Redis (VAPID) |
+| Notification Bot | — | Python Aiogram 3 | Redis (reminder msgs) |
 
 Между сервисами: gRPC. Асинхронные события: RabbitMQ (fanout exchange).
 
@@ -103,10 +108,11 @@ rutcampustrack/
 │   ├── attendance-service/
 │   │   ├── attendance-api-contract/
 │   │   └── attendance-app/
-│   ├── notification-web/              ← Java WebSocket push
+│   ├── notification-web/              ← Java WebSocket + Web Push
 │   └── notification-bot/              ← Python Aiogram
 └── frontends/
     ├── mini-app/                       ← React (Telegram Mini App)
+    ├── pwa/                            ← React PWA «RutTrack» (мобильный клиент)
     ├── web-panel/                      ← Angular (админка)
     └── landing/                        ← HTML + CSS
 ```
@@ -159,6 +165,8 @@ docker compose ps
 - Архитектура: `docs/architecture.md`
 - Job Stories: `docs/job-stories.md`
 - Схема БД: `docs/database-schema.md`
+- Дизайн-решения: `docs/design-decisions.md` — иконки, анимации, PWA, брендинг
+- Реестр skills: `docs/skills-inventory.md` — все установленные Claude Code skills
 - Отчёт Фазы 0: `docs/phase-0-report.md`
 
 ## Инструкция для Claude Code
@@ -167,5 +175,6 @@ docker compose ps
 1. Прочитай `docs/phases-plan.md` — там детальное описание что реализовать
 2. Прочитай `docs/job-stories.md` — бизнес-требования
 3. Прочитай `docs/database-schema.md` — структура БД
-4. Создавай код в соответствии с правилами из раздела "Правила кодирования" выше
-5. После завершения фазы — обнови `docs/phase-{N}-report.md` и статус в этом файле
+4. При работе с фронтендом — прочитай `docs/design-decisions.md` для соблюдения единого стиля
+5. Создавай код в соответствии с правилами из раздела "Правила кодирования" выше
+6. После завершения фазы — обнови `docs/phase-{N}-report.md` и статус в этом файле

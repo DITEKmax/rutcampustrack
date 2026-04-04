@@ -20,7 +20,17 @@
       "WebFetch(domain:spring.io)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:plugins.gradle.org)",
-      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs milestone complete v3.0 --name 'Schedule Service')"
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs milestone complete v3.0 --name 'Schedule Service')",
+      "WebFetch(domain:repo1.maven.org)",
+      "WebFetch(domain:rabbitmq.com)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs\\(17\\): capture phase context' --files .planning/phases/17-write-path-geo-checkin-manual-marking/17-CONTEXT.md .planning/phases/17-write-path-geo-checkin-manual-marking/17-DISCUSSION-LOG.md)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs state record-session --stopped-at 'Phase 17 context gathered' --resume-file .planning/phases/17-write-path-geo-checkin-manual-marking/17-CONTEXT.md)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs\\(state\\): record phase 17 context session' --files .planning/STATE.md)",
+      "Bash(touch:*)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs\\(roadmap\\): add gap closure phase 19 — report security & routing fix' --files .planning/ROADMAP.md .planning/phases/19-report-security-routing-fix/.gitkeep)",
+      "Bash(mkdir -p .planning/milestones/v4.0-phases)",
+      "Bash(mv .planning/phases/15-* .planning/phases/16-* .planning/phases/17-* .planning/phases/18-* .planning/phases/19-* .planning/milestones/v4.0-phases/)",
+      "Bash(node:*)"
     ]
   }
 }

@@ -27,6 +27,7 @@
 | Контейнеризация | Docker + Docker Compose | Latest |
 | CI/CD | GitHub Actions | — |
 | Фронтенд (Mini App) | React + Vite + TypeScript | — |
+| Фронтенд (PWA «RutTrack») | React + Vite + TypeScript + PWA | — |
 | Фронтенд (Веб-панель) | Angular + TypeScript | 18 |
 | Фронтенд (Лендинг) | HTML + CSS + минимум JS | — |
 
@@ -41,6 +42,7 @@
 │                        DOCKER PRIVATE NETWORK                        │
 │                                                                      │
 │  Клиенты ──► [API Gateway :8080]  Spring Cloud Gateway               │
+│  (Web Panel, PWA, Mini App)                                          │
 │               │  JWT-валидация (публичный ключ, локально)            │
 │               │  Маршрутизация по пути                               │
 │               │  Rate Limiting, Correlation ID                       │
@@ -53,11 +55,14 @@
 │                     ├── checkin/  (домен отметок)                    │
 │                     └── report/   (домен отчётов, изолирован)        │
 │                                                                      │
-│  [Notification Web :9094]  Java  — WebSocket push для фронтенда     │
+│  [Notification Web :9094]  Java                                      │
+│     ├── WebSocket push    → Web Panel, PWA (real-time)               │
+│     ├── Web Push adapter  → Service Worker → PWA (background push)   │
+│     └── REST: /push/subscribe, /vapid-public-key                     │
 │  [Notification Bot]        Python — Telegram уведомления             │
 │                                                                      │
 │  [RabbitMQ :5672]  ← события от Schedule, Attendance                │
-│  [Redis :6379]     ← OTP, кэш Academic, кэш геофенса               │
+│  [Redis :6379]     ← OTP, кэш Academic, reminder msgs, VAPID keys  │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -69,8 +74,8 @@
 | Academic Service | ✅ (academic_db) | ❌ | ✅ (кэш) | Publish: `group.updated`, `semester.archived` |
 | Schedule Service | ✅ (schedule_db) | ❌ | ❌ | Publish: `lesson.started`, `lesson.closed` |
 | Attendance Service | ❌ | ✅ (attendance_db) | ❌ | Publish: `attendance.marked`, `attendance.session.closed` |
-| Notification Web | ❌ | ❌ | ❌ | Consume: все события |
-| Notification Bot | ❌ | ❌ | ❌ | Consume: все события |
+| Notification Web | ❌ | ✅ (push_subscriptions) | ✅ (VAPID keys) | Consume: все события |
+| Notification Bot | ❌ | ❌ | ✅ (reminder msgs) | Consume: все события |
 
 ---
 
@@ -362,16 +367,39 @@ static final ArchRule reportDoesNotAccessCheckinInternals =
 
 #### Notification Web (Java)
 
-**Стек:** Java Spring Boot + Spring WebSocket  
+**Стек:** Java Spring Boot + Spring WebSocket + webpush-java  
 **Порт:** 9094
 
-**Роль:** push-уведомления в веб-интерфейс через WebSocket.
+**Роль:** push-уведомления через три канала доставки:
+
+**Канал 1 — WebSocket (real-time, вкладка открыта):**
+- STOMP endpoint `/ws` с JWT-аутентификацией
+- Доставка событий подключённым клиентам (Web Panel, PWA)
+
+**Канал 2 — Web Push (background, PWA свёрнута/закрыта):**
+- VAPID-ключи для подписи push-уведомлений
+- MongoDB-коллекция `push_subscriptions` для хранения подписок
+- REST API: `POST /api/ws/push/subscribe`, `DELETE /api/ws/push/subscribe`, `GET /api/ws/vapid-public-key`
+- Автоматическое удаление подписки при HTTP 410 Gone
+- Payload: JSON с `title`, `body`, `action_url`, `event_type`
+
+**Канал 3 — Telegram (через Notification Bot):**
+- Отдельный контейнер, см. ниже
 
 **Подписан на RabbitMQ-события:**
-- `lesson.started` → push студентам: «Пара началась, отметьтесь»
-- `lesson.closed` → push старосте: «Сессия отметки завершена»
-- `attendance.marked` → push студенту: подтверждение отметки
-- `attendance.session.closed` → push преподавателю: итоги посещаемости
+- `lesson.started` → WebSocket push + Web Push студентам: «Пара началась, отметьтесь»
+- `lesson.closed` → WebSocket push старосте: «Сессия отметки завершена»
+- `lesson.cancelled` → WebSocket push + Web Push студентам: «Пара отменена»
+- `attendance.marked` → WebSocket push студенту: подтверждение отметки
+- `attendance.session.closed` → WebSocket push преподавателю: итоги посещаемости
+- `homework.published` → WebSocket push + Web Push студентам: «Новое ДЗ»
+- `excuse.requested`, `late_checkin.requested` → WebSocket push + Web Push старосте
+
+**Redis-ключи:**
+```
+vapid:public_key    → "<base64>"     TTL: нет (постоянный)
+vapid:private_key   → "<base64>"     TTL: нет (постоянный)
+```
 
 **WebSocket endpoint:** `ws://notification-web:9094/ws`
 
@@ -410,6 +438,7 @@ static final ArchRule reportDoesNotAccessCheckinInternals =
 | RabbitMQ → Notification Web | AMQP | Асинхронный | JSON |
 | RabbitMQ → Notification Bot | AMQP | Асинхронный | JSON |
 | Notification Web → Клиенты | WebSocket | Двунаправленный | JSON |
+| Notification Web → Service Worker → PWA | Web Push (VAPID) | Односторонний | JSON |
 
 ### JWT и передача identity
 
@@ -456,7 +485,36 @@ Exchange: `rut-uit.events` (fanout) → Queues: `notification-web.events`, `noti
 - Просмотр расписания
 - Уведомления через Telegram Bot
 
-### 5.2 Веб-панель (Angular + TypeScript)
+### 5.2 PWA Mobile Client «RutTrack» (React + Vite + TypeScript)
+
+**Аудитория:** студенты, старосты, преподаватели (НЕ админы — они на веб-панели)  
+**Обоснование React:** общий стек с Mini App, переиспользование API-клиента и компонентов, PWA-ready из коробки через Vite PWA plugin.
+
+**Функции:**
+- Расписание (кэшируется для офлайн-доступа)
+- Геолокационная отметка (check-in, только онлайн)
+- Журнал посещаемости (староста: редактирование, преподаватель: read-only)
+- Статистика (кэшируется для офлайн-доступа)
+- ДЗ (кэшируется для офлайн-доступа)
+- Excuse и late_checkin (староста: подтверждение/отклонение)
+- Web Push уведомления (background push через Service Worker)
+
+**Service Worker:**
+- Cache strategy: stale-while-revalidate для API-ответов, cache-first для static assets
+- Offline fallback: расписание, статистика, ДЗ доступны для чтения
+- Push event handler: показ нативного уведомления с action-кнопкой «Отметиться»
+- При check-in офлайн: сообщение «Нет подключения к сети»
+
+**Install UX:**
+- Android/Chrome: перехват `beforeinstallprompt` → кастомный баннер «Установить RutTrack»
+- iOS Safari: инструкция «Поделиться → На экран Домой» при первом визите
+
+**Сосуществование с Mini App:**
+- Mini App — быстрые действия в Telegram (геоотметка, статус)
+- PWA — полноценный мобильный клиент (расписание, журнал, статистика, ДЗ, уведомления)
+- Оба канала активны, не заменяют друг друга
+
+### 5.3 Веб-панель (Angular + TypeScript)
 
 **Аудитория:** администраторы, преподаватели, старосты  
 **Обоснование Angular:** enterprise-фреймворк с встроенным DI, реактивными формами, HTTP-клиентом, роутингом — идеально для сложной админки с множеством форм, таблиц и дашбордов. Material Design 3 через Angular Material.
@@ -468,7 +526,7 @@ Exchange: `rut-uit.events` (fanout) → Queues: `notification-web.events`, `noti
 - Отчёты и аналитика (TEACHER, ADMIN)
 - WebSocket-уведомления в реальном времени
 
-### 5.3 Лендинг (HTML + CSS)
+### 5.4 Лендинг (HTML + CSS)
 
 **Аудитория:** внешние посетители  
 **Обоснование:** статическая страница не требует фреймворка, демонстрирует владение чистым HTML/CSS, SEO-friendly.
@@ -615,6 +673,7 @@ rut-uit/
 │   └── notification-bot/               (Python Aiogram)
 ├── frontends/
 │   ├── mini-app/                       (React + Vite)
+│   ├── pwa/                            (React + Vite + PWA «RutTrack»)
 │   ├── web-panel/                      (Angular)
 │   └── landing/                        (HTML + CSS)
 ├── docker-compose.yml
@@ -688,9 +747,11 @@ Teacher → [Web Panel] → GET /reports/group/45/subject/67 + JWT
 | **1** | Auth Service + API Gateway | 2–3 нед | Логин, JWT, OTP, Gateway маршрутизирует с валидацией |
 | **2** | Academic Service | 2 нед | CRUD структуры вуза, gRPC-сервер, Redis-кэш |
 | **3** | Schedule Service + Attendance Service | 3–4 нед | Полный цикл: пара → отметка → отчёт |
-| **4** | Notification Service (оба контейнера) | 1–2 нед | Push через WebSocket и Telegram |
-| **5** | Фронтенды (параллельно с фазами 2–4) | 4–6 нед | Mini App, Web Panel, Landing |
-| **6** | CI/CD, мониторинг, документация | 1–2 нед | GitHub Actions, health checks, Swagger |
+| **5** | Web Push Backend | 1 нед | VAPID, подписки, Web Push delivery adapter |
+| **6** | Notification Service (оба контейнера) | 1–2 нед | Push через WebSocket, Web Push и Telegram |
+| **7** | PWA Mobile Client «RutTrack» | 2–3 нед | PWA, Service Worker, offline, Web Push подписка |
+| **8** | Фронтенды (Mini App, Web Panel, Landing) | 4–6 нед | Mini App, Web Panel, Landing |
+| **9** | CI/CD, мониторинг, документация | 1–2 нед | GitHub Actions, health checks, Swagger |
 
 ---
 
@@ -704,5 +765,15 @@ Teacher → [Web Panel] → GET /reports/group/45/subject/67 + JWT
 | gRPC между сервисами | Типобезопасные контракты, кодогенерация, обнаружение несовместимости на этапе компиляции |
 | Angular для веб-панели | Enterprise-фреймворк для сложных форм и таблиц, встроенный DI, реактивные формы |
 | React для Mini App | Telegram SDK оптимизирован для React, лёгкий bundle через Vite |
+| React для PWA | Общий стек с Mini App, переиспользование API-клиента и компонентов |
+| PWA отдельно от Web Panel | Мобильный UX для студентов/старост/преподавателей vs enterprise-админка — разные задачи и целевые устройства |
+| Web Push как третий канал | Дублирует Telegram push для PWA-пользователей, работает когда приложение закрыто |
 | `is_headman` флаг вместо роли | Староста — это студент с расширенными правами, не отдельная роль. Упрощает авторизацию |
 | Long ID вместо UUID | PostgreSQL BIGSERIAL быстрее UUID в индексах, компактнее в MongoDB |
+| Phosphor Icons везде | Единая иконочная система для всех фронтендов, 6 весов для разных контекстов |
+
+---
+
+## 11. Дизайн-решения
+
+Подробные дизайн-решения (иконки, анимации, PWA, брендинг) вынесены в отдельный файл: **`docs/design-decisions.md`**.

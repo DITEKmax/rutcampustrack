@@ -8,10 +8,12 @@
 | 1 | Auth Service + API Gateway | ✅ ЗАВЕРШЕНА |
 | 2 | Academic Service | ✅ ЗАВЕРШЕНА |
 | 3 | Schedule Service | ✅ ЗАВЕРШЕНА |
-| 4 | Attendance Service | ⏳ СЛЕДУЮЩАЯ |
-| 5 | Notification Service (Web + Bot) | ⬜ |
-| 6 | Фронтенды (Mini App, Web Panel, Landing) | ⬜ |
-| 7 | CI/CD, мониторинг, документация | ⬜ |
+| 4 | Attendance Service | ✅ ЗАВЕРШЕНА |
+| 5 | Web Push Backend | ⬜ |
+| 6 | Notification Service (Web + Bot) | ⬜ |
+| 7 | PWA Mobile Client «RutTrack» | ⬜ |
+| 8 | Фронтенды (Mini App, Web Panel, Landing) | ⬜ |
+| 9 | CI/CD, мониторинг, документация | ⬜ |
 
 ---
 
@@ -264,7 +266,9 @@ services/api-gateway/src/main/java/ru/rutcampustrack/gateway/
 
 ---
 
-## Фаза 4: Attendance Service
+## Фаза 4: Attendance Service ✅
+
+**Завершена:** 2026-04-04 | **Отчёт:** `docs/phase-4-report.md`
 
 ### Цель
 
@@ -316,7 +320,47 @@ services/api-gateway/src/main/java/ru/rutcampustrack/gateway/
 
 ---
 
-## Фаза 5: Notification Service (Web + Bot)
+## Фаза 5: Web Push Backend
+
+### Цель
+
+Инфраструктура Web Push уведомлений: VAPID-ключи, хранение подписок, delivery adapter для отправки push-уведомлений через Web Push API. Интегрируется в notification-web service как третий канал доставки рядом с WebSocket и Telegram.
+
+### Что реализовать
+
+1. **VAPID-ключи**
+   - Генерация пары VAPID ключей (public/private) при первом старте
+   - Хранение в конфигурации notification-web service
+   - Public key доступен через REST endpoint `GET /api/ws/vapid-public-key` для подписки на клиенте
+
+2. **Хранение подписок** (MongoDB — коллекция `push_subscriptions` в attendance_db или отдельная)
+   - `user_id`, `endpoint`, `keys` (p256dh, auth), `created_at`, `user_agent`
+   - REST API:
+     - `POST /api/ws/push/subscribe` — сохранить подписку (JWT required)
+     - `DELETE /api/ws/push/subscribe` — удалить подписку (JWT required)
+   - Автоматическое удаление при HTTP 410 Gone от push-сервиса
+
+3. **Web Push Delivery Adapter**
+   - Третий адаптер в notification-web рядом с WebSocket
+   - При получении RabbitMQ-события: отправить push всем подпискам пользователей группы
+   - Библиотека: `web-push` (Java) или `webpush-java`
+   - Payload: JSON с `title`, `body`, `action_url`, `event_type`
+
+4. **Маппинг событий → Web Push**
+   - `lesson.started` → push студентам: «Пара началась» + action: открыть check-in в PWA
+   - `lesson.cancelled` → push студентам: «Пара отменена»
+   - `homework.published` → push студентам: «Новое ДЗ»
+   - `excuse.requested` → push старосте
+   - `late_checkin.requested` → push старосте
+
+### Зависимости
+
+- Notification Web (Фаза 6) — Web Push адаптер живёт внутри notification-web service
+- Порядок: Фаза 5 реализуется ДО или ПАРАЛЛЕЛЬНО с Фазой 6
+
+---
+
+## Фаза 6: Notification Service (Web + Bot)
 
 ### Цель
 
@@ -370,7 +414,56 @@ Push-уведомления в реальном времени: в Telegram че
 
 ---
 
-## Фаза 6: Фронтенды
+## Фаза 7: PWA Mobile Client «RutTrack»
+
+### Цель
+
+Полноценный мобильный PWA-клиент для студентов, старост и преподавателей. Отдельный проект в `frontends/pwa/`, не часть Angular веб-панели. Сосуществует с Telegram Mini App — оба канала активны.
+
+### Что реализовать
+
+1. **Проект и манифест**
+   - Каталог: `frontends/pwa/`
+   - Стек: React + Vite + TypeScript (общий стек с Mini App)
+   - `manifest.json`: name «RutTrack», standalone display, theme color, иконки 192/512px
+   - Favicon и splash screen для iOS/Android
+
+2. **Service Worker**
+   - Cache strategy: stale-while-revalidate для API-ответов, cache-first для static assets
+   - Offline fallback page: кэшированное расписание, статистика, ДЗ доступны для чтения
+   - При попытке check-in офлайн — сообщение «Нет подключения к сети»
+   - Push event handler: обработка Web Push → показ нативного уведомления с action-кнопкой
+
+3. **Install Prompt UX**
+   - Перехват `beforeinstallprompt` → кастомный баннер «Установить RutTrack»
+   - После установки: приложение открывается в standalone mode без адресной строки
+
+4. **iOS Onboarding Flow**
+   - Детекция iOS Safari без standalone mode
+   - Показ инструкции: «Откройте в Safari → Поделиться → На экран Домой»
+   - Сохранение флага `ios_onboarding_shown` в localStorage
+
+5. **Web Push подписка на клиенте**
+   - Запрос разрешения на уведомления (`Notification.requestPermission()`)
+   - Получение VAPID public key из `GET /api/ws/vapid-public-key`
+   - Регистрация push-подписки через `PushManager.subscribe()`
+   - Отправка подписки на бэкенд: `POST /api/ws/push/subscribe`
+
+6. **Адаптивный мобильный UI**
+   - Роли: STUDENT (расписание, check-in, статистика, ДЗ, excuse), HEADMAN (журнал, отметка, excuse/late_checkin), TEACHER (журнал read-only)
+   - Админы остаются на desktop веб-панели — PWA для них не предназначена
+   - Mobile-first дизайн, touch-friendly элементы
+   - Общие компоненты с Mini App где возможно (TanStack Query, API-клиент)
+
+### Зависимости
+
+- Web Push Backend (Фаза 5) — для push-подписки
+- Все бэкенд-сервисы (Фазы 1–4) — API для данных
+- Gateway маршрутизация уже настроена
+
+---
+
+## Фаза 8: Фронтенды (Mini App, Web Panel, Landing)
 
 ### Цель
 
@@ -422,7 +515,7 @@ Push-уведомления в реальном времени: в Telegram че
 
 ---
 
-## Фаза 7: CI/CD, мониторинг, документация
+## Фаза 9: CI/CD, мониторинг, документация
 
 ### Цель
 

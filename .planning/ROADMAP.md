@@ -63,7 +63,7 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
 
 ### 🚧 v5.0 Notification Service (Web + Bot) (In Progress)
 
-**Milestone Goal:** Real-time push notifications via WebSocket (web panel) and Telegram bot — both consuming RabbitMQ events from existing services. Students receive lesson start buttons and reminders in Telegram; web panel users receive live pushes. Bot reminder messages are fully cleaned up on lesson close or student checkin.
+**Milestone Goal:** Real-time push notifications via WebSocket (web panel), Web Push (PWA background) and Telegram bot — all three channels consuming RabbitMQ events from existing services. Students receive lesson start buttons and reminders in Telegram; web panel and PWA users receive live WebSocket pushes; PWA users receive Web Push when app is closed. Bot reminder messages are fully cleaned up on lesson close or student checkin.
 
 - [ ] **Phase 20: Shared Infrastructure** — Two durable RabbitMQ queues with DLQ bound to fanout exchange, docker-compose containers, Redis key namespace
 - [ ] **Phase 21: Notification Web — WebSocket Core** — STOMP endpoint with JWT auth, group session registry, and all 5 event types pushed to correct group topics

@@ -38,7 +38,7 @@ Requirements for Attendance Service MVP. Each maps to roadmap phases.
 
 - [ ] **RPRT-01**: Headman/teacher can view lesson attendance (all students + their status for a lesson)
 - [ ] **RPRT-02**: Headman/teacher can view journal (students x lesson dates grid for group+subject)
-- [ ] **RPRT-03**: Student can view own attendance stats (% per subject, excluding cancelled)
+- [x] **RPRT-03**: Student can view own attendance stats (% per subject, excluding cancelled)
 - [ ] **RPRT-04**: Student can view own attendance list (raw records, filterable by subject)
 - [x] **RPRT-05**: Report domain accesses checkin data only through AttendanceReadPort (domain isolation)
 
@@ -111,7 +111,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MARK-05 | Phase 16 | Complete |
 | RPRT-01 | Phase 18 | Pending |
 | RPRT-02 | Phase 18 | Pending |
-| RPRT-03 | Phase 18 | Pending |
+| RPRT-03 | Phase 18 | Complete |
 | RPRT-04 | Phase 18 | Pending |
 | RPRT-05 | Phase 18 | Complete |
 

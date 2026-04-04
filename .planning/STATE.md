@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
 status: executing
-stopped_at: Completed 18-02-PLAN.md
-last_updated: "2026-04-04T16:04:13.511Z"
+stopped_at: "Completed Wave 1 (18-01, 18-02)"
+last_updated: "2026-04-04T16:05:00.000Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
@@ -69,6 +69,7 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 17-02]: Integration test queue for INFRA-06 declared in @BeforeEach with purge — prevents message contamination between tests
 - [Phase 18]: AttendanceReadPort in shared/port/ with zero checkin imports — domain isolation enforced
 - [Phase 18]: getSubjectsByIds returns Map<Long,String> for simple id->name lookup in ReportService
+- [Phase 18-01]: GetSubjectsByIds not cached — infrequent batch lookup for report generation, caching overhead not justified
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -86,7 +87,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T16:04:13.507Z
-Stopped at: Completed 18-02-PLAN.md
+Last session: 2026-04-04T16:05:00.000Z
+Stopped at: Completed Wave 1 (18-01, 18-02)
 Resume file: None
 Next action: `/gsd:plan-phase 15`

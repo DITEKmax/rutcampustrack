@@ -144,4 +144,4 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 | 15. Infrastructure Foundation | v4.0 | 2/2 | Complete    | 2026-04-04 |
 | 16. Event Consumers | v4.0 | 2/2 | Complete    | 2026-04-04 |
 | 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 3/3 | Complete    | 2026-04-04 |
-| 18. Read Path — Reports | v4.0 | 1/4 | In Progress|  |
+| 18. Read Path — Reports | v4.0 | 2/4 | In Progress | 2026-04-04 |

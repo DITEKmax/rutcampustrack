@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
-status: defining_requirements
+status: ready_to_plan
 stopped_at: null
 last_updated: "2026-04-04T22:00:00Z"
 last_activity: 2026-04-04
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -22,17 +22,19 @@ v5.0 Notification Service (Web + Bot)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-04 — Milestone v5.0 started
+Phase: 20 of 25 (Shared Infrastructure)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-04-04 — Roadmap created for v5.0 (6 phases, 25 requirements)
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
-**Core value:** Full backend microservice backbone shipped. Now building real-time notification delivery via WebSocket and Telegram bot.
-**Current focus:** Defining v5.0 requirements
+**Core value:** Full backend microservice backbone shipped. Now delivering real-time notifications via WebSocket (web panel) and Telegram bot.
+**Current focus:** Phase 20 — Shared Infrastructure
 
 ## Completed Milestones
 
@@ -43,9 +45,30 @@ See: `.planning/PROJECT.md` (updated 2026-04-04)
 | v3.0 | Schedule Service | 10-14 | 10 | 2026-04-04 |
 | v4.0 | Attendance Service MVP | 15-19 | 12 | 2026-04-04 |
 
+## Accumulated Context
+
+### Decisions
+
+Recent decisions affecting v5.0:
+- STOMP in-memory broker (no external broker needed for single-instance VPS)
+- JWT claims extracted to WebSocket session attributes at handshake — not re-validated on expiry
+- grpcio pinned at 1.73.0 (protobuf 5.x compatible — 1.80.x requires protobuf 6.x, breaking change)
+- aio-pika consumer watchdog required from day one (silent consumer death after RabbitMQ restart)
+- Redis RPUSH list (not SET string) for reminder message_ids — LRANGE retrieves all on lesson.closed
+
+### Research Flags (resolve before phase begins)
+
+- Phase 21: Verify JwtAuthenticationFilter handles HTTP GET Upgrade: websocket — injects X-User-Id/X-Group-Id before WebSocket proxy forward
+- Phase 22/23: Verify POST /auth/otp/request returns OTP code in response body (bot must deliver code to user)
+- Phase 23: Decide how bot looks up user by telegram_id for /start — gRPC only has GetUserById(user_id), not by telegram_id
+
+### Blockers/Concerns
+
+None yet.
+
 ## Session Continuity
 
 Last session: 2026-04-04
-Stopped at: Starting v5.0 milestone
+Stopped at: Roadmap created — ready to plan Phase 20
 Resume file: None
-Next action: Define requirements → create roadmap
+Next action: /gsd:plan-phase 20

@@ -83,37 +83,37 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| WS-01 | — | Pending |
-| WS-02 | — | Pending |
-| WS-03 | — | Pending |
-| WS-04 | — | Pending |
-| WS-05 | — | Pending |
-| WS-06 | — | Pending |
-| WS-07 | — | Pending |
-| BOT-01 | — | Pending |
-| BOT-02 | — | Pending |
-| BOT-03 | — | Pending |
-| NOTIF-01 | — | Pending |
-| NOTIF-02 | — | Pending |
-| NOTIF-03 | — | Pending |
-| NOTIF-04 | — | Pending |
-| NOTIF-05 | — | Pending |
-| NOTIF-06 | — | Pending |
-| NOTIF-07 | — | Pending |
-| NOTIF-08 | — | Pending |
-| NOTIF-09 | — | Pending |
-| BINFRA-01 | — | Pending |
-| BINFRA-02 | — | Pending |
-| BINFRA-03 | — | Pending |
+| INFRA-01 | Phase 20 | Pending |
+| INFRA-02 | Phase 20 | Pending |
+| INFRA-03 | Phase 20 | Pending |
+| WS-01 | Phase 21 | Pending |
+| WS-02 | Phase 21 | Pending |
+| WS-03 | Phase 21 | Pending |
+| WS-04 | Phase 21 | Pending |
+| WS-05 | Phase 21 | Pending |
+| WS-06 | Phase 21 | Pending |
+| WS-07 | Phase 21 | Pending |
+| BINFRA-01 | Phase 22 | Pending |
+| BINFRA-02 | Phase 22 | Pending |
+| BINFRA-03 | Phase 22 | Pending |
+| BOT-01 | Phase 23 | Pending |
+| BOT-02 | Phase 23 | Pending |
+| BOT-03 | Phase 23 | Pending |
+| NOTIF-01 | Phase 24 | Pending |
+| NOTIF-06 | Phase 24 | Pending |
+| NOTIF-07 | Phase 24 | Pending |
+| NOTIF-08 | Phase 24 | Pending |
+| NOTIF-09 | Phase 24 | Pending |
+| NOTIF-02 | Phase 25 | Pending |
+| NOTIF-03 | Phase 25 | Pending |
+| NOTIF-04 | Phase 25 | Pending |
+| NOTIF-05 | Phase 25 | Pending |
 
 **Coverage:**
 - v5.0 requirements: 25 total
-- Mapped to phases: 0
-- Unmapped: 25
+- Mapped to phases: 25
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-04*
-*Last updated: 2026-04-04 after initial definition*
+*Last updated: 2026-04-04 after roadmap creation*

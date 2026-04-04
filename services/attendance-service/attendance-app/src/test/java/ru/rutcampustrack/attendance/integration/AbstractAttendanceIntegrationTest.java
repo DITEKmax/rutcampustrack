@@ -9,6 +9,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.RabbitMQContainer;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
@@ -50,12 +51,16 @@ public abstract class AbstractAttendanceIntegrationTest {
 
     static final MongoDBContainer MONGODB;
     static final RabbitMQContainer RABBITMQ;
+    @SuppressWarnings("resource")
+    static final GenericContainer<?> REDIS;
 
     static {
         MONGODB = new MongoDBContainer("mongo:7.0");
         MONGODB.start();
         RABBITMQ = new RabbitMQContainer("rabbitmq:3.13-management");
         RABBITMQ.start();
+        REDIS = new GenericContainer<>("redis:7.2").withExposedPorts(6379);
+        REDIS.start();
     }
 
     @DynamicPropertySource
@@ -65,6 +70,8 @@ public abstract class AbstractAttendanceIntegrationTest {
         registry.add("spring.rabbitmq.port", RABBITMQ::getAmqpPort);
         registry.add("spring.rabbitmq.username", RABBITMQ::getAdminUsername);
         registry.add("spring.rabbitmq.password", RABBITMQ::getAdminPassword);
+        registry.add("spring.data.redis.host", REDIS::getHost);
+        registry.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
         // Override autoconfigure exclude to re-enable RabbitMQ for integration tests
         registry.add("spring.autoconfigure.exclude", () -> "");
     }

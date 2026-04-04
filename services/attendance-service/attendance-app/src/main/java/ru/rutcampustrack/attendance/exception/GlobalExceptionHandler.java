@@ -100,6 +100,51 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
+    @ExceptionHandler(GeofenceViolationException.class)
+    public ResponseEntity<ErrorResponse> handleGeofenceViolation(GeofenceViolationException ex,
+                                                                   HttpServletRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                PROBLEM_BASE + "geofence-violation",
+                "Вне зоны геофенса",
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+    }
+
+    @ExceptionHandler(GeofenceBlockedException.class)
+    public ResponseEntity<ErrorResponse> handleGeofenceBlocked(GeofenceBlockedException ex,
+                                                                HttpServletRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                PROBLEM_BASE + "geo-blocked",
+                "Геоотметка заблокирована",
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimit(RateLimitException ex,
+                                                          HttpServletRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                PROBLEM_BASE + "rate-limit-exceeded",
+                "Превышен лимит запросов",
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(body);
+    }
+
     @ExceptionHandler({ScheduleServiceUnavailableException.class, AcademicServiceUnavailableException.class})
     public ResponseEntity<ErrorResponse> handleServiceUnavailable(RuntimeException ex,
                                                                     HttpServletRequest request) {

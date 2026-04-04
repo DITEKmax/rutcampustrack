@@ -56,6 +56,9 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   - [x] 15-01-PLAN.md — Build config, contract additions, MongoDB document + indexes + enum converters
   - [x] 15-02-PLAN.md — gRPC clients, RabbitMQ consumer + DLQ, security AOP, error handling, tests
 - [ ] **Phase 16: Event Consumers** - Auto-absent on lesson.closed, cancellation propagation, DLQ
+  Plans:
+  - [ ] 16-01-PLAN.md — LessonEventService business logic + EventConsumer wiring
+  - [ ] 16-02-PLAN.md — Integration tests + unit tests for event consumers
 - [ ] **Phase 17: Write Path — Geo-Checkin + Manual Marking** - Haversine geofence, Redis dedup/rate-limit, manual marking, attendance.marked event
 - [ ] **Phase 18: Read Path — Reports** - Lesson attendance view, journal grid, student stats, domain isolation
 
@@ -83,7 +86,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   2. A student who checked in before lesson.closed fires keeps their original status — auto-absent does not overwrite it ($setOnInsert semantics)
   3. When a lesson.cancelled event arrives, all existing attendance documents for that lesson are updated to status=cancelled
   4. A lesson.closed event that fails processing is routed to the DLQ instead of being silently dropped
-**Plans**: TBD
+**Plans**: 2 plans
 
 ### Phase 17: Write Path — Geo-Checkin + Manual Marking
 **Goal**: Students can geo-check in for active lessons and headmen can manually set attendance status per student, with all write-path protections (geofence, time window, geo-block, Redis dedup, Redis rate limit) enforced and attendance.marked events published
@@ -130,6 +133,6 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 | 13. Status Transitions + RabbitMQ Events | v3.0 | 2/2 | Complete | 2026-04-03 |
 | 14. gRPC Server | v3.0 | 2/2 | Complete | 2026-04-04 |
 | 15. Infrastructure Foundation | v4.0 | 2/2 | Complete    | 2026-04-04 |
-| 16. Event Consumers | v4.0 | 0/? | Not started | - |
+| 16. Event Consumers | v4.0 | 0/2 | Not started | - |
 | 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 0/? | Not started | - |
 | 18. Read Path — Reports | v4.0 | 0/? | Not started | - |

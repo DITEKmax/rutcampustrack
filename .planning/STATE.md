@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
 status: executing
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-04-04T22:01:14.651Z"
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-04-04T22:01:33.218Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 6
@@ -57,6 +57,10 @@ Recent decisions affecting v5.0:
 - aio-pika consumer watchdog required from day one (silent consumer death after RabbitMQ restart)
 - Redis RPUSH list (not SET string) for reminder message_ids — LRANGE retrieves all on lesson.closed
 - [Phase 20]: Unit tests over Spring context tests for RabbitConfig — faster, no RabbitMQ mock needed
+- [Phase 20]: grpcio pinned at 1.73.0 — protobuf 5.x compatible (1.80.x requires protobuf 6.x, breaking change)
+- [Phase 20]: aio-pika connect_robust used for auto-reconnect on RabbitMQ restart (watchdog from day one)
+- [Phase 20]: Health check validates both consumer task liveness and RabbitMQ connection state (Pitfall 4)
+- [Phase 20]: Redis RPUSH list for reminder message_ids with TTL=86400 documented in config.py (D-07, D-08)
 
 ### Research Flags (resolve before phase begins)
 
@@ -70,7 +74,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T22:01:05.879Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-04-04T22:01:33.215Z
+Stopped at: Completed 20-02-PLAN.md
 Resume file: None
 Next action: /gsd:plan-phase 20

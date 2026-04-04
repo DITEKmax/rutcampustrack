@@ -57,7 +57,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   - [x] 15-02-PLAN.md — gRPC clients, RabbitMQ consumer + DLQ, security AOP, error handling, tests
 - [ ] **Phase 16: Event Consumers** - Auto-absent on lesson.closed, cancellation propagation, DLQ
   Plans:
-  - [ ] 16-01-PLAN.md — LessonEventService business logic + EventConsumer wiring
+  - [x] 16-01-PLAN.md — LessonEventService business logic + EventConsumer wiring
   - [ ] 16-02-PLAN.md — Integration tests + unit tests for event consumers
 - [ ] **Phase 17: Write Path — Geo-Checkin + Manual Marking** - Haversine geofence, Redis dedup/rate-limit, manual marking, attendance.marked event
 - [ ] **Phase 18: Read Path — Reports** - Lesson attendance view, journal grid, student stats, domain isolation
@@ -133,6 +133,6 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 | 13. Status Transitions + RabbitMQ Events | v3.0 | 2/2 | Complete | 2026-04-03 |
 | 14. gRPC Server | v3.0 | 2/2 | Complete | 2026-04-04 |
 | 15. Infrastructure Foundation | v4.0 | 2/2 | Complete    | 2026-04-04 |
-| 16. Event Consumers | v4.0 | 0/2 | Not started | - |
+| 16. Event Consumers | v4.0 | 1/2 | In Progress|  |
 | 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 0/? | Not started | - |
 | 18. Read Path — Reports | v4.0 | 0/? | Not started | - |

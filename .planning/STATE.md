@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
-status: verifying
-stopped_at: Phase 16 context gathered
-last_updated: "2026-04-04T09:20:27.182Z"
+status: executing
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-04-04T09:45:54.334Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 0
 ---
 
@@ -22,9 +22,9 @@ v4.0 Attendance Service MVP — Roadmap created, ready to plan Phase 15
 
 ## Current Position
 
-Phase: 16
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 16 (event-consumers) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-04
 
 Progress: [░░░░░░░░░░] 0%
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
 **Core value:** Attendance tracking backbone — Auth + Academic + Schedule shipped. Now building core: Attendance Service MVP (geo-checkin, manual marking, auto-absent, reports).
-**Current focus:** Phase 15 — infrastructure-foundation
+**Current focus:** Phase 16 — event-consumers
 
 ## Phase Map
 
@@ -56,6 +56,9 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 15-infrastructure-foundation]: MongoDB indexes created via @PostConstruct + ensureIndex (not auto-index-creation=true) — idempotent and explicit
 - [Phase 15-infrastructure-foundation]: MongoCustomConversions in separate MongoConvertersConfig to avoid circular dependency in Spring 6.2
 - [Phase 15-infrastructure-foundation]: RabbitConsumerTest uses AmqpAdmin queue checks — @MockitoSpyBean doesn't intercept @RabbitListener container calls
+- [Phase 16-event-consumers]: BulkMode.UNORDERED for auto-absent — one student error must not block rest of group
+- [Phase 16-event-consumers]: No @Transactional on LessonEventService — MongoDB bulkOps and RabbitMQ have no shared transaction manager
+- [Phase 16-event-consumers]: No try/catch in LessonEventService — exceptions propagate so AMQP nacks to DLQ on gRPC failure
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -73,7 +76,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T09:20:27.177Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-event-consumers/16-CONTEXT.md
+Last session: 2026-04-04T09:45:54.328Z
+Stopped at: Completed 16-01-PLAN.md
+Resume file: None
 Next action: `/gsd:plan-phase 15`

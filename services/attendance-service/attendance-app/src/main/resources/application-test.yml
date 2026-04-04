@@ -1,0 +1,10 @@
+grpc:
+  server:
+    port: -1
+  client:
+    schedule-service:
+      address: static://localhost:19092
+      negotiation-type: plaintext
+    academic-service:
+      address: static://localhost:19091
+      negotiation-type: plaintext

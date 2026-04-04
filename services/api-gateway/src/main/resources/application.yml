@@ -32,7 +32,7 @@ spring:
         - id: attendance-service
           uri: http://attendance-service:9093
           predicates:
-            - Path=/api/attendance/**, /api/reports/**
+            - Path=/api/attendance/**
           filters:
             - StripPrefix=1
 

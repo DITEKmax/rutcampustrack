@@ -27,7 +27,7 @@ import java.time.LocalDate;
  * Mappings declared here — controller implements this interface.
  */
 @Tag(name = "Reports", description = "Attendance reports")
-@RequestMapping("/reports")
+@RequestMapping("/attendance/reports")
 public interface ReportApi {
 
     @Operation(summary = "Lesson attendance list")

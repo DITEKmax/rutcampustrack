@@ -95,7 +95,7 @@ class ReportIntegrationTest extends AbstractAttendanceIntegrationTest {
         insertAttendance(LESSON_ID, 101L, AttendanceStatus.EXCUSED);
         // userId 102 has no record — should default to ABSENT
 
-        mockMvc.perform(get("/reports/lesson/{lessonId}", LESSON_ID)
+        mockMvc.perform(get("/attendance/reports/lesson/{lessonId}", LESSON_ID)
                         .header("X-User-Id", HEADMAN_USER_ID.toString())
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
@@ -115,7 +115,7 @@ class ReportIntegrationTest extends AbstractAttendanceIntegrationTest {
 
     @Test
     void getLessonAttendance_regularStudentForbidden() throws Exception {
-        mockMvc.perform(get("/reports/lesson/{lessonId}", LESSON_ID)
+        mockMvc.perform(get("/attendance/reports/lesson/{lessonId}", LESSON_ID)
                         .header("X-User-Id", REGULAR_STUDENT_ID.toString())
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
@@ -135,7 +135,7 @@ class ReportIntegrationTest extends AbstractAttendanceIntegrationTest {
         insertAttendance(2L, 100L, SUBJECT_ID, AttendanceStatus.PRESENT, LocalDate.of(2026, 4, 2));
         insertAttendance(2L, 101L, SUBJECT_ID, AttendanceStatus.EXCUSED, LocalDate.of(2026, 4, 2));
 
-        mockMvc.perform(get("/reports/journal")
+        mockMvc.perform(get("/attendance/reports/journal")
                         .param("groupId", GROUP_ID.toString())
                         .param("subjectId", SUBJECT_ID.toString())
                         .param("dateFrom", "2026-04-01")
@@ -149,7 +149,7 @@ class ReportIntegrationTest extends AbstractAttendanceIntegrationTest {
                 .andExpect(jsonPath("$.dates.length()").value(2))
                 .andExpect(jsonPath("$.students").isArray())
                 .andExpect(jsonPath("$.students.length()").value(3))
-                .andExpect(jsonPath("$.students[0].cells[0].symbol").isString());
+                .andExpect(jsonPath("$.students[0].records[0].symbol").isString());
     }
 
     // -------------------------------------------------------------------------
@@ -166,7 +166,7 @@ class ReportIntegrationTest extends AbstractAttendanceIntegrationTest {
         when(academicGrpcClient.getSubjectsByIds(any()))
                 .thenReturn(Map.of(SUBJECT_ID, "Mathematics"));
 
-        mockMvc.perform(get("/reports/student/stats")
+        mockMvc.perform(get("/attendance/reports/student/stats")
                         .header("X-User-Id", STUDENT_USER_ID.toString())
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
@@ -189,7 +189,7 @@ class ReportIntegrationTest extends AbstractAttendanceIntegrationTest {
         insertAttendance(LESSON_ID, STUDENT_USER_ID, SUBJECT_ID, AttendanceStatus.PRESENT, LocalDate.of(2026, 4, 1));
         insertAttendance(2L, STUDENT_USER_ID, SUBJECT_ID_2, AttendanceStatus.ABSENT, LocalDate.of(2026, 4, 2));
 
-        mockMvc.perform(get("/reports/student/records")
+        mockMvc.perform(get("/attendance/reports/student/records")
                         .param("subjectId", SUBJECT_ID.toString())
                         .header("X-User-Id", STUDENT_USER_ID.toString())
                         .header("X-User-Role", "STUDENT")
@@ -209,7 +209,7 @@ class ReportIntegrationTest extends AbstractAttendanceIntegrationTest {
         insertAttendance(LESSON_ID, STUDENT_USER_ID, SUBJECT_ID, AttendanceStatus.PRESENT, LocalDate.of(2026, 4, 1));
         insertAttendance(2L, STUDENT_USER_ID, SUBJECT_ID_2, AttendanceStatus.ABSENT, LocalDate.of(2026, 4, 2));
 
-        mockMvc.perform(get("/reports/student/records")
+        mockMvc.perform(get("/attendance/reports/student/records")
                         .header("X-User-Id", STUDENT_USER_ID.toString())
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())

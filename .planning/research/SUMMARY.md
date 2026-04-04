@@ -1,17 +1,17 @@
 # Project Research Summary
 
-**Project:** RutCampusTrack v4.0 — Attendance Service MVP
-**Domain:** University attendance tracking — geo-checkin, manual marking, auto-absent, basic reports
+**Project:** RutCampusTrack v5.0 — Notification Service (Web + Bot)
+**Domain:** Real-time push delivery for university attendance system — WebSocket to Angular panel + Telegram bot
 **Researched:** 2026-04-04
 **Confidence:** HIGH
 
 ## Executive Summary
 
-The Attendance Service is the fourth and most integration-heavy service in the RutCampusTrack monorepo. Unlike Auth, Academic, and Schedule services which were mostly self-contained, Attendance Service is a pure consumer: it calls two gRPC upstreams (Academic Service for geofence and group members, Schedule Service for lesson state), consumes three RabbitMQ event types from the shared fanout exchange, and writes exclusively to MongoDB. The entire v4.0 scope is well-defined because contracts, schemas, and event envelopes were designed in earlier phases — the implementation risk is integration correctness, not requirements ambiguity.
+RutCampusTrack v5.0 adds two notification consumers to an already-operational microservice backbone. The infrastructure (RabbitMQ fanout exchange `rut-uit.events`, Redis, Academic Service gRPC `GetGroupMembers`, Auth Service OTP endpoints) is fully operational from phases 1-4. The two notification components — `notification-web` (Java Spring Boot WebSocket) and `notification-bot` (Python Aiogram 3) — are event-driven consumers only: they receive events from the fanout exchange and deliver them to clients. No existing service requires modification beyond minor docker-compose dependency changes and a possible small addition to the Auth Service OTP response (see Gaps section).
 
-The recommended build order is infrastructure-first: gRPC client wrappers and RabbitMQ consumer setup before any business logic, because every feature depends on both. The most critical business path is the auto-absent flow triggered by `lesson.closed` events: it must be idempotent (MongoDB unique index), use atomic upserts (`$setOnInsert`), and filter out cancelled lessons from the gRPC response. The geo-checkin path requires Haversine distance calculation (pure Java, no library) against a geofence fetched from Academic Service, with Redis deduplication and rate limiting layered on top.
+The recommended approach is STOMP over WebSocket for the Java service (in-memory broker, group-scoped topics via `SimpMessagingTemplate`, JWT validated at handshake via `JwtHandshakeInterceptor`) and Aiogram 3 with `aio-pika` for the Python bot (async consumer sharing the asyncio event loop, `connect_robust` for reconnection). Both services bind independent durable queues (`notification-web.events`, `notification-bot.events`) to the existing `rut-uit.events` fanout exchange. The bot additionally calls Academic Service gRPC for `GetGroupMembers` to resolve `telegram_id`s, uses Redis for reminder `message_id` tracking (key pattern `reminder:msgs:{lesson_id}:{user_id}` as a list), and calls Auth Service REST for the OTP `/login` flow. The web service routes purely by `group_id` extracted from the JWT at handshake — no gRPC needed at event-processing time.
 
-The primary risks are: (1) MongoDB indexes not created at startup causing silent duplicate records, (2) enum values stored as UPPERCASE strings because `@Enumerated` is JPA-only and ignored by Spring Data MongoDB, (3) a race condition between late geo-checkin and auto-absent that must be resolved by `$setOnInsert` semantics, and (4) the fanout exchange queue binding missing at startup which causes `lesson.closed` events to be dropped forever with no recovery. All four are avoidable if addressed in the infrastructure phase before any service logic is written. Domain isolation between `checkin/` and `report/` packages must be enforced with ArchUnit from the first line of code.
+The primary risks are Telegram rate limiting (30 msg/sec global, ~1 msg/sec per-chat soft limit) causing 429 errors during concurrent lesson fan-out, and an aio-pika known bug where `connect_robust` reconnects at the TCP level but fails to restore the channel consumer after RabbitMQ restart. Both require explicit countermeasures from day one: a throttled `asyncio.Queue`-based send queue for the bot and a consumer watchdog coroutine. A secondary risk is the reminder `message_id` structure — it must be a Redis list (`RPUSH`), not a string (`SET`), or the first two out of three reminders per student become un-deletable on `lesson.closed`.
 
 ---
 
@@ -19,134 +19,136 @@ The primary risks are: (1) MongoDB indexes not created at startup causing silent
 
 ### Recommended Stack
 
-The stack is almost entirely determined by the existing monorepo. All runtime dependencies are managed by Spring Boot 3.4.1 BOM. What must be added to `attendance-app/build.gradle.kts`: Testcontainers BOM `1.20.4` (matches academic-app and schedule-app), `org.testcontainers:mongodb` + `org.testcontainers:rabbitmq`, `grpc-client-spring-boot-starter:3.1.0.RELEASE`, Protobuf plugin `0.9.4`, `javax.annotation-api:1.3.2`, and `spring-boot-starter-aop`. No external geo library is needed — a 10-line Haversine utility replaces it cleanly. No JPA, no Flyway, no relational database.
+The notification-web `build.gradle.kts` requires three additions beyond its minimal scaffold: `spring-boot-starter-data-redis` (for any future session metadata lookups), `io.jsonwebtoken:jjwt-api/impl/jackson:0.12.6` (JWT parsing at WebSocket handshake, matching auth-service's exact version), and Testcontainers RabbitMQ for integration tests. The STOMP broker is in-memory (`enableSimpleBroker("/topic")`) — no external STOMP broker is needed for single-instance VPS deployment.
+
+The notification-bot `requirements.txt` has stale versions that must be updated. Aiogram upgrades from `3.15.0` to `3.27.0`. The grpcio/grpcio-tools versions must be pinned at `1.73.0`, not the latest `1.80.0` — the latest requires `protobuf>=6.x` which is a breaking change incompatible with the existing `protobuf==5.29.3` used by the Java services' `.proto` toolchain. A new `redis==5.2.1` dependency (the `aioredis` successor via `redis.asyncio`) must be added for reminder storage.
 
 **Core technologies:**
-- `spring-boot-starter-data-mongodb` (Spring Data MongoDB 4.4.1 via BOM) — document persistence for attendance records; schemaless, no Flyway; indexes must be created programmatically
-- `spring-boot-starter-amqp` (already present) — first RabbitMQ consumer in the system; must use durable named queue, not AnonymousQueue, or events are lost forever on restart
-- `grpc-client-spring-boot-starter:3.1.0.RELEASE` — calls to Academic Service (geofence, group members) and Schedule Service (active lesson, lesson details); client-only, no gRPC server in v4.0
-- `testcontainers-bom:1.20.4` with `org.testcontainers:mongodb` + `org.testcontainers:rabbitmq` — integration tests require real MongoDB and real RabbitMQ broker; `@ServiceConnection` on containers avoids manual property wiring
-- `spring-boot-starter-aop` — `@RequireRole` aspect for authorization, same pattern as schedule-app
-- Pure Java `GeoUtils` (Haversine) — single-point geofence validation against campus center; `GeoUtils.isWithinGeofence()` is 10 lines using `java.lang.Math`; MongoDB `$geoWithin` is the wrong tool here
-
-**Critical version constraints:** `protoc:3.25.3` and `protoc-gen-grpc-java:1.63.0` must match exactly across all services sharing `proto/`. Bumping one independently breaks generated stub compatibility.
+- `spring-boot-starter-websocket` (Boot BOM): STOMP endpoint with group-topic routing — already declared in build.gradle.kts
+- `spring-boot-starter-amqp` (Boot BOM): RabbitMQ consumer with DLQ support — already declared in build.gradle.kts
+- `jjwt-api:0.12.6`: JWT parsing at WebSocket handshake — same version as auth-service for consistency
+- `aiogram==3.27.0`: Telegram bot framework, async-native, inline keyboards for Mini App check-in button
+- `aio-pika==9.6.2`: RabbitMQ async consumer, `connect_robust` for transparent auto-reconnect
+- `grpcio==1.73.0` + `grpcio-tools==1.73.0`: gRPC async client (`grpc.aio`) for Academic Service; protobuf 5.x compatible
+- `redis==5.2.1`: Async Redis client (`redis.asyncio`) for reminder `message_id` list storage
 
 ### Expected Features
 
-The full feature set for v4.0 is defined with HIGH confidence because all contracts, gRPC interfaces, event schemas, and MongoDB document structure were designed in earlier phases.
+The notification layer consumes 8 event types from the fanout exchange. The core engagement loop is: `lesson.started` → bot sends "Отметиться" inline button to each student + stores returned `message_id` in Redis → `attendance.marked` (status=present) → bot immediately deletes that student's reminder → `lesson.closed` → bot deletes all remaining reminders via Redis LRANGE. This cleanup lifecycle is a first-class business requirement from CLAUDE.md ("После пары — удалить сообщения"). The web service is a simpler parallel path: every event that reaches the bot also pushes a structured JSON message to the relevant STOMP group topic for the Angular web panel.
 
-**Must have (table stakes) — v4.0 launch blockers:**
-- gRPC client infrastructure (Schedule + Academic channels and stubs) — everything else blocks on this
-- RabbitMQ consumer infrastructure (durable queue bound to `rut-uit.events` fanout exchange)
-- Geo-checkin endpoint: active lesson check, geo-block check, time window (±5 min), Haversine geofence, Redis dedup lock, Redis rate limit, MongoDB upsert, `attendance.marked` event publish
-- `lesson.closed` consumer + auto-absent bulk write — journal completeness without headman effort
-- `lesson.cancelled` consumer + status update — stats correctness (cancelled docs excluded from stats)
-- Manual attendance marking endpoint (headman/assistant only, single-student autosave)
-- Lesson attendance view (GET by lesson, merged with group members from gRPC)
-- Journal view (GET by group+subject+semester, merged with lesson list from gRPC)
-- Student attendance stats (MongoDB aggregation by subject, percentage attended)
-- Student attendance list (raw records by student+semester)
-- `attendance.marked` event publishing (checkin and manual mark sources only, NOT auto-absent bulk)
+**Must have (v5.0 — table stakes):**
+- RabbitMQ consumer infrastructure for both services — prerequisite for all notification features
+- WebSocket endpoint `/ws` with JWT auth via `JwtHandshakeInterceptor` (credentials via query param)
+- Group-based STOMP session routing with in-memory `GroupSessionRegistry` (`ConcurrentHashMap<Long, CopyOnWriteArraySet<WebSocketSession>>`)
+- `lesson.started` / `lesson.cancelled` / `homework.published` → WebSocket push to group sessions
+- `excuse.requested` / `late_checkin.requested` → WebSocket push to headman session (routed by `group_id`)
+- Bot `/start` (account linking, initial credential delivery) + `/login` (OTP flow) + `/status` commands
+- gRPC `GetGroupMembers` client in bot using `grpc.aio` channel (non-blocking async)
+- `lesson.started` → bot sends inline "Отметиться" button to each student; stores `message_id` via Redis `RPUSH`
+- `lesson.closed` → bot reads all `message_id`s via `LRANGE` and calls `bot.delete_message` for each
+- `attendance.marked` (present) → bot immediately deletes that student's reminder messages
+- `lesson.cancelled` + `homework.published` → bot broadcasts text notifications to group
 
-**Should have (reliability differentiators) — same phase:**
-- Redis deduplication lock (5-sec TTL per `{lesson_id, user_id}`)
-- Redis rate limiting (3 checkin attempts per minute per user)
-- Denormalized MongoDB document fields (`semester_id`, `group_id`, `subject_id` on every write) — enables read-path report queries without gRPC calls at read time
-- Idempotent auto-absent via `$setOnInsert` — handles RabbitMQ at-least-once redelivery correctly
-- Geofence response caching (60-min in-memory TTL) — avoids gRPC round-trip per checkin request
+**Should have (v5.1 differentiators):**
+- 3-stage reminder lifecycle: stage 2 at lesson midpoint + stage 3 near lesson end (asyncio scheduling)
+- `excuse.requested` → headman Telegram notification with approve/reject inline callback buttons (requires bot JWT auth + Attendance Service REST call)
+- `late_checkin.requested` → plain text notification to headman via Telegram
+- `homework.updated` → both channels (identical handler logic to `homework.published`)
 
-**Defer to v4.1+:**
-- Excuse ticket creation + headman approval flow (file attachments, Telegram forwarding)
-- Late checkin request ("byl no zabyl") + headman confirmation workflow
-- Teacher attendance override source (`TEACHER_OVERRIDE` enum exists, write flow deferred)
-- Red zone threshold alerts, attendance trend charts, PDF/Excel export
-
-**Anti-features — do not implement in v4.0:**
-- WebSocket in Attendance Service itself (stateful; notification-web handles push)
-- Eager group membership validation per geo-checkin (gRPC call storm under concurrent load)
-- Pagination on journal endpoint (bounded: ~20 lessons × 30 students per query)
-- Batch manual marking (single-student autosave is the UX requirement per job stories)
+**Defer (v5.2+):**
+- Notification history / inbox (requires new MongoDB collection + REST API)
+- Notification preferences / mute by event type (Redis hash per user)
+- Admin broadcast announcements via bot
+- WebSocket reconnect state recovery / event buffer per user
 
 ### Architecture Approach
 
-Attendance Service is structured as two isolated domains bridged by a port interface: `checkin/` owns the write path (geo-checkin, manual marking, auto-absent) and `report/` owns the read path (journal, stats). The `report/` domain must not import from `checkin/` directly — it reads only through `shared/port/AttendanceReadPort`. This is enforced by ArchUnit tests. An `event/` package handles both incoming RabbitMQ consumption (`LessonEventConsumer`) and outgoing Spring event forwarding (`DomainEventListener`). A `grpc/` package holds both client wrappers. A `security/` package is a verbatim copy of schedule-service's gateway header handling.
+Both notification services are pure event consumers with no REST API surface. Notification-web is a stateless WebSocket push relay: it binds a RabbitMQ queue, maps `event_type` to a `NotificationMessage` DTO, and delivers to the appropriate STOMP group topic via `SimpMessagingTemplate`. No database, no gRPC calls during event processing — all routing is by `group_id` already present in connected sessions. Notification-bot is more complex: it has three independent input channels (RabbitMQ events, Telegram long-polling, asyncio scheduled tasks) and calls three external services (Academic gRPC, Auth REST, Redis). The bot is the only component that bridges Telegram user identity to system identity.
 
 **Major components:**
-1. `checkin/CheckInService` — geo validation (Haversine), time window check, Redis dedup/rate limit, MongoDB upsert, Spring event publish
-2. `checkin/AutoAbsentService` — bulk absent marking on `lesson.closed`; uses `$setOnInsert` for atomic idempotency; must filter cancelled lessons from gRPC response before writing
-3. `event/LessonEventConsumer` — first RabbitMQ consumer in the system; durable queue `rut-uit.attendance-service` bound to `rut-uit.events` fanout exchange; routes by `event_type` field
-4. `report/ReportService` — journal and stats read path; reads via `AttendanceReadPort`; merges MongoDB records with group member names from Academic Service gRPC
-5. `grpc/ScheduleGrpcClient` + `grpc/AcademicGrpcClient` — blocking stubs with 3-second deadlines; explicit `StatusRuntimeException` handling with status code inspection
-6. `config/MongoIndexConfig` — programmatic index creation on `ApplicationReadyEvent`; unique compound index on `{lesson_id, user_id}` is the system's primary idempotency guarantee
-7. `shared/port/AttendanceReadPort` — interface only; implemented in `checkin/port/AttendanceReadPortImpl`; the only permitted bridge from report to checkin domain
+1. **notification-web** — `WebSocketConfig` (STOMP endpoint `/ws`, in-memory broker `/topic`); `JwtHandshakeInterceptor` (stores `user_id` + `group_id` in WebSocket session attributes at connect); `GroupSessionRegistry` (in-memory group-to-sessions map, thread-safe); `EventConsumer` (`@RabbitListener`); `EventToNotificationMapper` (event_type routing)
+2. **notification-bot** — Aiogram 3 dispatcher + aio-pika consumer on shared asyncio event loop; `event_router.py` dispatches to per-event-type handlers; `lesson_started.py` calls gRPC + throttled send queue + Redis; `lesson_closed.py` reads Redis + deletes Telegram messages; `auth_client.py` handles OTP REST calls; consumer watchdog coroutine monitors channel health
+3. **RabbitMQ queues (new)** — Two durable queues (`notification-web.events`, `notification-bot.events`) bound to existing `rut-uit.events` fanout exchange; DLQ configured for both
+4. **Redis (shared)** — New key namespace `reminder:msgs:{lesson_id}:{user_id}` (Redis list via RPUSH); TTL = `lesson_end_time + 10 min`; same Redis instance as Auth and Academic Services — key namespacing prevents collision
 
 ### Critical Pitfalls
 
-1. **MongoDB unique index not created at startup** — `auto-index-creation` is disabled by default in Spring Data MongoDB; `@CompoundIndex` annotations are silently ignored. Without the unique index on `{lesson_id, user_id}`, concurrent checkins and RabbitMQ retries silently create duplicate records. Prevention: `MongoIndexConfig` using `mongoTemplate.indexOps().ensureIndex()` on `ApplicationReadyEvent`, verified by an integration test that expects `DuplicateKeyException` on duplicate insert.
+1. **Telegram 429 rate limit during lesson fan-out** — Multiple groups starting simultaneously exceeds 30 msg/sec global limit and ~1 msg/sec per-chat soft limit. Prevention: implement a throttled send queue (`asyncio.Queue` + worker pool of max 5 coroutines, 50ms sleep between sends) before writing any fan-out logic. Never call `bot.send_message()` directly from the RabbitMQ consumer callback.
 
-2. **Enum values stored as UPPERCASE strings in MongoDB** — `@Enumerated(EnumType.STRING)` is JPA-only and is silently ignored by Spring Data MongoDB; enums serialize as `"PRESENT"` instead of `"present"`. All report queries filtering by lowercase status return zero results. Prevention: register `MongoCustomConversions` with explicit read/write converters for each enum. Write a mapping assertion test (insert enum, assert raw BSON document has lowercase string) before any service logic.
+2. **aio-pika silent consumer death after RabbitMQ restart** — `connect_robust` reconnects at TCP level but channel and queue consumer bindings are not reliably restored in certain aio-pika versions. The bot goes silent with no errors logged. Prevention: implement a consumer watchdog coroutine (`asyncio.sleep(30)` loop checking `channel.is_closed`) from day one. Test by restarting the RabbitMQ container and verifying consumer resumes within 60 seconds.
 
-3. **Auto-absent race condition with late geo-checkin** — geo-checkin request in-flight when `lesson.closed` consumer runs; auto-absent bulk-inserts `absent` for the student before the checkin write completes; student is marked absent despite being present. Prevention: use MongoDB `$setOnInsert` in auto-absent, never plain insert; `$setOnInsert` is atomic at document level and only writes when no document exists.
+3. **Reminder `message_id` stored as string, not list** — Using Redis `SET` overwrites previous `message_id`s; only the last reminder can be deleted. Prevention: use `RPUSH` (list) not `SET` (string); `LRANGE key 0 -1` retrieves all message_ids on `lesson.closed`. Design the key structure before writing the first reminder send.
 
-4. **RabbitMQ consumer queue not bound — lesson.closed events dropped forever** — fanout exchange discards messages when no queue is bound; events lost during startup are gone with no replay mechanism. Prevention: `RabbitConfig` in Attendance Service must declare a durable queue and `BindingBuilder` binding before any lessons close. Smoke test: publish a synthetic event, assert the listener was invoked.
+4. **WebSocket JWT token expiry invalidates session routing mid-connection** — Access tokens expire in 15 minutes but WebSocket sessions live for hours. Prevention: extract `user_id` and `group_id` from JWT claims into `WebSocketSession.getAttributes()` at handshake time; never re-read from `HttpSession` or re-validate JWT during message routing. The session attributes persist for the WebSocket lifetime regardless of JWT expiry.
 
-5. **GetLessonsByGroup returns cancelled lessons — auto-absent pollutes collection** — known tech debt: `ScheduleGrpcServiceImpl.getLessonsByGroup()` passes all four statuses including `cancelled`. Auto-absent must filter: `.filter(l -> "closed".equals(l.getStatus()))` as the first line of the processing loop. Never trust upstream gRPC responses to pre-filter for business-rule-critical operations.
+5. **Synchronous gRPC stub blocks asyncio event loop** — Using standard `grpcio` blocking stub from `async def` handler freezes the event loop for 50-200ms per call. Under concurrent lesson events, the bot appears unresponsive. Prevention: always use `grpc.aio.insecure_channel` and `await stub.GetGroupMembers(...)`. Cache `GetGroupMembers` responses in Redis with 5-minute TTL.
 
-6. **Inject the Spring Boot-managed ObjectMapper in RabbitConsumerConfig** — creating a `new ObjectMapper()` bypasses registered Jackson modules (JavaTimeModule, etc.) and risks `@class` type headers in messages. Prevention: inject `ObjectMapper objectMapper` as a parameter and pass it to `Jackson2JsonMessageConverter`. Same pitfall documented in academic-app's `RabbitConfig.java`.
+6. **RabbitMQ exchange redeclared with mismatched arguments** — Re-declaring `rut-uit.events` with `durable=false` causes `PRECONDITION_FAILED` on startup and breaks all other services. Prevention: copy the exact `FanoutExchange("rut-uit.events", true, false)` bean declaration from `schedule-app`'s `RabbitConfig` — do not write it from scratch.
+
+7. **No DLQ — failed events cause infinite requeue or silent drop** — Unknown `event_type`s (new events added to fanout before bot code is updated) cause constant requeue storms. Prevention: configure `x-dead-letter-exchange` on both notification queues at creation; filter unknown event types early and `nack` without requeue.
 
 ---
 
 ## Implications for Roadmap
 
-The feature dependency graph points clearly to a four-phase build. Infrastructure must precede all domain logic; event consumers must precede the write path so auto-absent semantics can be validated without concurrent geo-checkin interference.
+All dependencies flow from RabbitMQ infrastructure → WebSocket layer → event handlers. The two notification components can develop in parallel after shared infrastructure is established. The Java web service is architecturally simpler and should be completed first to validate the shared exchange/queue setup. The bot has three sequential sub-phases: infrastructure clients, Telegram command handlers, then event handlers.
 
-### Phase 1: Infrastructure Foundation
-**Rationale:** Every feature depends on working gRPC clients, a properly bound RabbitMQ queue, MongoDB index initialization, and security context. These are the four highest-risk pitfalls (MongoDB indexes, enum serialization, queue binding, ObjectMapper injection) — all must be solved here before any service logic is written. Retrofitting any of these into already-written code is expensive.
-**Delivers:** Service starts up and connects to all dependencies; MongoDB `attendances` collection with correct unique and query indexes; durable RabbitMQ queue bound to fanout exchange; `ScheduleGrpcClient` and `AcademicGrpcClient` with proper error handling; `@RequireRole` AOP; enum MongoDB converters; abstract Testcontainers integration test base.
-**Addresses:** gRPC client infrastructure (P1), RabbitMQ consumer setup (P1), MongoDB index config, security pattern
-**Avoids:** Pitfall 1 (missing unique index), Pitfall 2 (enum UPPERCASE), Pitfall 4 (queue not bound), Pitfall 6 (ObjectMapper injection)
-**Stack additions:** Protobuf plugin `0.9.4`, `grpc-client-spring-boot-starter:3.1.0.RELEASE`, `javax.annotation-api:1.3.2`, Testcontainers BOM `1.20.4`, `spring-boot-starter-aop`, `sourceSets`+`protobuf` blocks copied from schedule-app
-**Research flag:** Standard patterns — copy from schedule-app and academic-app verbatim with package adjustments
+### Phase 1: Shared Infrastructure Setup
+**Rationale:** Both services need queue declarations before any event processing can be tested. Without queue bindings to the fanout exchange, every event published is immediately discarded with no recovery. This is the lowest-risk, highest-leverage starting point.
+**Delivers:** Two durable queues (`notification-web.events`, `notification-bot.events`) bound to `rut-uit.events` fanout with DLQ configured for each; updated `docker-compose.yml` with notification-bot `depends_on: [redis, rabbitmq, academic-service]`
+**Addresses:** Prerequisite for all notification features in both services
+**Avoids:** Pitfall 6 (exchange argument mismatch — copy from schedule-app verbatim); Pitfall 7 (DLQ configured from day one, not retrofitted)
+**Research flag:** Standard patterns — copy exchange declaration from `schedule-app/RabbitConfig`; DLQ pattern from `attendance-service/RabbitConfig`
 
-### Phase 2: Event Consumers (Auto-Absent + Cancellation)
-**Rationale:** Auto-absent is the highest-risk feature (race condition, idempotency, cancelled lesson filtering). Implementing it before the checkin endpoint means no concurrent writes exist to interfere during testing. The Dead Letter Queue configuration for `lesson.closed` consumer must also be here — a silently dropped auto-absent creates a permanently incomplete journal.
-**Delivers:** `lesson.closed` consumer with `AutoAbsentService` using `$setOnInsert`; `lesson.cancelled` consumer updating all docs to `status=cancelled`; DLQ configuration for the queue; `lesson.started` consumer for optional context caching; integration tests verifying no absent records for cancelled lessons; concurrency test confirming `$setOnInsert` wins over checkin race.
-**Addresses:** lesson.closed + auto-absent (P1), lesson.cancelled (P1)
-**Avoids:** Pitfall 3 (race condition via `$setOnInsert`), Pitfall 5 (cancelled lesson filtering)
-**Research flag:** Standard patterns for `@RabbitListener`; `$setOnInsert` semantics are well-documented in MongoDB docs
+### Phase 2: Notification Web — WebSocket Core
+**Rationale:** The Java service has no external calls during event processing (pure in-memory routing) and validates the Gateway WebSocket proxy route. Completing it first establishes the STOMP pattern and confirms queue/exchange wiring before tackling the more complex bot.
+**Delivers:** `WebSocketConfig` (STOMP endpoint `/ws`, in-memory broker); `JwtHandshakeInterceptor` (JWT claims into session attributes); `GroupSessionRegistry` (`ConcurrentHashMap<Long, CopyOnWriteArraySet<WebSocketSession>>`); `EventConsumer` (`@RabbitListener`); `EventToNotificationMapper`; WebSocket push for all 5 event types (`lesson.started`, `lesson.cancelled`, `homework.published`, `excuse.requested`, `late_checkin.requested`)
+**Uses:** `spring-boot-starter-websocket`, `jjwt-api:0.12.6`, in-memory STOMP broker; Testcontainers RabbitMQ for integration tests
+**Avoids:** Pitfall 4 (store JWT claims in WebSocket attributes, not HttpSession); Pitfall 5 (GroupSessionRegistry keyed by `group_id`, not `user_id`; remove session in `afterConnectionClosed`)
+**Research flag:** Verify that Spring Cloud Gateway `JwtAuthenticationFilter` handles HTTP GET upgrade requests (WebSocket) and injects `X-User-Id`/`X-Group-Id` before forwarding — read `api-gateway/.../filter/JwtAuthenticationFilter.java` before writing `JwtHandshakeInterceptor`
 
-### Phase 3: Write Path — Geo-Checkin and Manual Marking
-**Rationale:** With infrastructure and event consumers working, the write path can be built against a collection that already has realistic auto-absent records. End-to-end checkin → auto-absent → journal is verifiable. Geofence caching must be implemented here to avoid a gRPC round-trip on every checkin request.
-**Delivers:** `CheckInService` with Haversine geofence validation, time window check (±5 min), geo-block enforcement, Redis dedup lock (5-sec TTL), Redis rate limit (3/min), MongoDB upsert, `attendance.marked` event publish via `ApplicationEventPublisher`; `ManualMarkController` for headman single-student marking; `DomainEventListener` + `RabbitConfig` for outbound event publishing; geofence in-memory cache with 60-min TTL.
-**Addresses:** Geo-checkin (P1), manual marking (P1), Redis dedup (P2), Redis rate limit (P2), `attendance.marked` event (P1)
-**Avoids:** GPS fraud (Haversine required), double-tap (Redis dedup lock), `@TransactionalEventListener` vs plain `@EventListener` choice (plain `@EventListener` is correct for outbound — no transaction boundary on checkin path)
-**Research flag:** Haversine and Redis patterns are standard; confirm `DomainEventListener` uses plain `@EventListener`, not `@TransactionalEventListener` — MongoDB has no transaction manager configured in v4.0
+### Phase 3: Notification Bot — Infrastructure Layer
+**Rationale:** The bot's three infrastructure clients (gRPC, Redis, aio-pika) and the throttled send queue must be built and tested before any event handler can be written correctly. The consumer watchdog is also here — adding it after the fact requires understanding the full consumer lifecycle.
+**Delivers:** Python project structure; aio-pika consumer with consumer watchdog coroutine; `grpc.aio` channel + Academic stub (generated from `proto/academic.proto`); `redis.asyncio` client + reminder RPUSH/LRANGE/DEL helpers; `auth_client.py` (aiohttp wrapper for OTP endpoints); throttled send queue (`asyncio.Queue` + worker pool); `config.py` (pydantic-settings)
+**Avoids:** Pitfall 2 (consumer watchdog from day one); Pitfall 5 (`grpc.aio` not synchronous stub); Pitfall 1 (throttled queue is the only send path — all handlers must use it)
+**Research flag:** Verify `POST /auth/otp/request` returns OTP code in response body before building auth_client.py — check Auth Service OTP response DTO (`auth-service/.../dto/OtpResponse.java` or equivalent)
 
-### Phase 4: Read Path — Reports, Journal, Stats
-**Rationale:** Reports depend on correctly populated denormalized fields from Phases 2 and 3. Building reports last means test data is realistic (written by actual write-path logic, not factories). The `report/` domain isolation enforced by ArchUnit is final validation that no direct `checkin/` imports crept in during earlier phases.
-**Delivers:** `JournalController` + `ReportService` (group journal grid merging MongoDB docs with `GetLessonsByGroup` gRPC response); `StudentStatsController` (MongoDB aggregation `$group` by `subject_id`, excluding `cancelled` status); `LessonAttendanceController` (lesson snapshot merged with `GetGroupMembers` gRPC); student attendance list endpoint; ArchUnit test `reportDoesNotAccessCheckinInternals`; HATEOAS responses on all read endpoints.
-**Addresses:** Journal view (P1), lesson attendance view (P1), student stats (P1), student attendance list (P1)
-**Avoids:** N+1 gRPC calls on read path (group members cached per `lesson.closed` event processing); report domain importing checkin internals (ArchUnit blocks it)
-**Research flag:** MongoDB aggregation `$group` pipeline is standard; in-memory merge for journal is explicitly acceptable at bounded scale (20 lessons × 30 students per query)
+### Phase 4: Notification Bot — Telegram Command Handlers
+**Rationale:** Telegram account linking (`/start`, `/login`) must work before event-driven notifications are meaningful — users with no `telegram_id` linked cannot receive any personalized messages. These handlers are also simpler (request/response) than event handlers and validate the `auth_client.py` integration.
+**Delivers:** `/start` handler (account linking, initial credential delivery); `/login` handler (OTP flow with Aiogram FSM conversation state); `/status` handler (current lesson + student attendance status)
+**Uses:** `auth_client.py` from Phase 3; Aiogram FSM for multi-step OTP conversation; `grpc.aio` channel for Academic Service lookup
+**Research flag:** How to look up user by `telegram_id` in `/start` — current gRPC proto has `GetUserById(user_id: Long)`, not `GetUserByTelegramId`. Resolve approach (Auth Service REST endpoint vs new gRPC RPC) before Phase 4 begins
+
+### Phase 5: Notification Bot — Event Handlers
+**Rationale:** With infrastructure clients and throttled send queue from Phase 3, event handlers become straightforward composition. Lesson events are highest priority (core engagement loop), then cancellation and homework.
+**Delivers:** `lesson_started.py` (gRPC GetGroupMembers + throttled fan-out + Redis RPUSH message_ids); `lesson_closed.py` (Redis LRANGE + `bot.delete_message` for all students + key DEL); `lesson_cancelled.py` (text fan-out); `homework_published.py` (text fan-out); `attendance_marked.py` (immediate Redis lookup + delete for that student)
+**Avoids:** Pitfall 1 (throttled queue mandatory — no direct sends); Pitfall 3 (RPUSH list not SET string)
+**Research flag:** No additional research needed — all patterns established in Phase 3
+
+### Phase 6: Integration Verification
+**Rationale:** End-to-end validation that events flow correctly through both channels with real infrastructure.
+**Delivers:** Testcontainers integration test for notification-web (publish event to RabbitMQ → assert WebSocket STOMP message received); manual E2E for bot (lesson.started event → Telegram message sent + message_id in Redis → lesson.closed → Redis empty + message deleted); Gateway WebSocket proxy confirmed working; `/login` OTP flow verified end-to-end
+**Research flag:** No additional research needed
 
 ### Phase Ordering Rationale
 
-- Infrastructure before all domain logic: all four critical pitfalls (MongoDB indexes, enum converters, RabbitMQ binding, ObjectMapper) must be resolved before any business logic is written; retrofitting is expensive
-- Event consumers before write path: auto-absent must be implemented and tested without concurrent geo-checkin writes to avoid test interference; also ensures the `$setOnInsert` pattern is locked in before the checkin write path is built
-- Write path before reports: reports are validated against data written by actual write-path logic; factories producing synthetic data mask denormalization bugs that would be caught by end-to-end flows
-- Domain isolation (ArchUnit) enforced from Phase 1: the ArchUnit test must be added in Phase 1 and run in CI on every phase; catching a domain boundary violation in Phase 4 requires refactoring already-working code
+- Infrastructure first (Phase 1): fanout exchange queues must be bound before any event can be consumed; DLQ must be configured before any business logic runs to avoid silent drops
+- Java web service before Python bot (Phase 2 before 3-5): web service is architecturally simpler (no external calls during event processing) and validates the shared exchange/queue wiring
+- Bot infrastructure before bot handlers (Phase 3 before 4-5): gRPC client, Redis client, aio-pika consumer, and throttled send queue are prerequisites for every handler; building them first enables each handler to be tested in isolation
+- Command handlers before event handlers (Phase 4 before 5): Telegram account linking must exist before personalized lesson notifications work; also validates auth_client.py before it is used in excuse callbacks (v5.1)
+- Integration verification last (Phase 6): depends on all components being complete
 
 ### Research Flags
 
-Needs resolution before implementation begins:
-- **All phases:** The `semester_id` field is required on every MongoDB document for report queries, but `LessonResponse` proto does not include `semester_id`. Must decide: (a) call `GetActiveSemester` gRPC on each write, or (b) cache on service startup. Resolve before Phase 2 begins.
-- **Phase 3:** The 5-minute pre-start checkin window has an edge case: `GetActiveLesson` only returns ACTIVE lessons, so a student checking in 4 minutes early gets a NOT_FOUND response. FEATURES.md documents this as explicitly deferred to v4.1. Must be stated in Phase 3 acceptance criteria to avoid confusion during review.
+Phases needing a targeted code review before implementation:
+- **Phase 2:** Read `api-gateway/.../filter/JwtAuthenticationFilter.java` — verify it handles HTTP upgrade requests (GET + `Upgrade: websocket`) and injects `X-User-Id`/`X-Group-Id` before the WebSocket proxy forward
+- **Phase 3/4:** Read Auth Service OTP controller + response DTO — verify `POST /auth/otp/request` returns the OTP code in its response body; if not, the bot cannot deliver the code to the user via Telegram
+- **Phase 4:** Decide how bot looks up user by `telegram_id` for `/start` — gRPC proto only has `GetUserById(user_id)`, not by telegram_id; this must be resolved (new endpoint or existing mechanism) before Phase 4
 
-Phases with standard patterns (no external research needed):
-- **Phase 1:** gRPC client setup, durable queue config, AOP security context — verbatim copies from schedule-app
-- **Phase 2:** `@RabbitListener` routing by `event_type`, `$setOnInsert` — well-documented MongoDB and Spring AMQP patterns
-- **Phase 3:** Haversine formula, Redis SETNX, rate counter with TTL — all standard implementations
-- **Phase 4:** MongoDB `$group` aggregation, HATEOAS `EntityModel` — established patterns in this codebase
+Phases with standard patterns (no additional research needed):
+- **Phase 1:** Exchange/queue/DLQ declarations — copy from `schedule-app` and `attendance-service` verbatim
+- **Phase 5:** All event handlers follow the same fan-out pattern; throttled queue and Redis list are pre-built in Phase 3
+- **Phase 6:** Testcontainers + RabbitMQ integration test pattern already established in existing services
 
 ---
 
@@ -154,48 +156,51 @@ Phases with standard patterns (no external research needed):
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All dependencies verified against existing `attendance-app/build.gradle.kts`, `schedule-app/build.gradle.kts`, and Spring Boot 3.4.1 BOM. Version numbers are exact matches from working services in the monorepo. |
-| Features | HIGH | All contracts (proto files, event schemas, MongoDB schema, Redis key patterns) were designed in prior phases. Feature scope is bounded by the project charter in `.planning/PROJECT.md`. No feature was inferred from external sources. |
-| Architecture | HIGH | Full source inspection of `schedule-service` and `academic-service` confirmed all patterns. Package structure, data flows, and component responsibilities are modeled on existing implementations that are verified working. |
-| Pitfalls | HIGH | Pitfalls verified against actual codebase — `@Enumerated` JPA-only behavior, `auto-index-creation` disabled by default, known tech debt in `ScheduleGrpcServiceImpl.getLessonsByGroup()`, and `GrpcExceptionAdvice` gap for `IllegalArgumentException` are all observable in current source code. |
+| Stack | HIGH | Java versions from Boot 3.4.1 BOM (authoritative); Python versions verified against PyPI 2026-04-04; grpcio 1.73.0 pinned for protobuf 5.x compatibility documented in grpc/grpc#39012 |
+| Features | HIGH | Derived from `event-schemas/*.json` (source code), `CLAUDE.md` business rules, `phases-plan.md` Phase 5 spec — all primary authoritative sources in this codebase |
+| Architecture | HIGH | Based on full source inspection of existing services; API Gateway WebSocket route confirmed in `application.yml`; Academic proto `telegram_id` field confirmed in `academic.proto`; RabbitMQ fanout exchange and Redis container confirmed in `docker-compose.yml` |
+| Pitfalls | HIGH | Telegram rate limits from official Telegram Bot FAQ; aio-pika reconnect bug from upstream GitHub issues; WebSocket session pitfalls from Spring docs; DLQ patterns from RabbitMQ official docs |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **`semester_id` on auto-absent records:** `LessonResponse` proto does not include `semester_id`. All attendance documents require it for report queries. Must pick an approach (call `GetActiveSemester` per write, or cache on startup) before Phase 2 implementation begins. This is the only unresolved design question.
-- **5-minute pre-start checkin window:** `GetActiveLesson` gRPC returns only ACTIVE lessons; the pre-start window (±5 min) requires PLANNED lesson lookup. This is documented as scope-deferred to v4.1 — explicitly call it out in Phase 3 acceptance criteria so reviewers do not flag it as a bug.
-- **`GetLessonsByGroup` tech debt:** The gRPC server returns all statuses including `cancelled`. Client-side filter `".filter(l -> "closed".equals(l.getStatus()))"` is mandatory in Phase 2. A future Schedule Service phase should fix `GrpcExceptionAdvice` to map `IllegalArgumentException` to `INVALID_ARGUMENT` (known gap in current codebase).
-- **Dead Letter Queue for `lesson.closed` consumer:** PITFALLS.md explicitly marks skipping DLQ as never acceptable even for MVP. DLQ configuration must be included in Phase 2. A failed auto-absent that is silently dropped creates a permanently incomplete journal with no automated recovery path.
+- **Auth Service OTP response DTO:** Does `POST /auth/otp/request` return the OTP code in its response body? If not, the bot cannot send the code to the user as a Telegram message — the entire `/login` flow breaks. Must verify in `auth-service` source before Phase 3/4. If the response does not include the code, the simplest fix is adding `"code"` to the response record in Auth Service.
+
+- **`telegram_id` user lookup for `/start`:** Current gRPC proto has `GetUserById(UserRequest{user_id: Long})` — no `telegram_id` parameter. The bot needs to look up a user by their Telegram chat ID when `/start` is issued. Options: (a) Auth Service adds a REST endpoint `GET /auth/user/by-telegram/{telegram_id}`, or (b) a new `GetUserByTelegramId` RPC is added to `academic.proto`. Resolve before Phase 4 begins.
+
+- **Gateway WebSocket filter:** Spring Cloud Gateway's `JwtAuthenticationFilter` must handle HTTP GET requests with `Upgrade: websocket` header and inject `X-User-Id`/`X-Group-Id` before the proxy forward. If the filter skips non-POST/PUT requests, WebSocket handshakes will pass through without user identity headers. Verify before Phase 2 coding begins.
+
+- **3-stage reminder scheduling (v5.1):** For v5.0, in-memory `asyncio.create_task` + `asyncio.sleep` scheduling is acceptable but tasks are lost on bot restart. If the bot restarts while a lesson is active, stages 2 and 3 will never fire for that lesson. Document this as a known limitation for v5.0; address in v5.1 with Redis-backed scheduled task tracking.
+
+- **aio-pika version and reconnect fix:** STACK.md recommends `aio-pika==9.6.2` as latest stable. PITFALLS.md notes `9.4.3` was mentioned as a known-safe version for reconnect behavior. Verify the `9.6.2` changelog confirms the consumer restoration bug is fixed before finalizing `requirements.txt`.
 
 ---
 
 ## Sources
 
 ### Primary (HIGH confidence — verified from this repo)
-- `services/attendance-service/attendance-app/build.gradle.kts` — current dependency baseline
-- `services/schedule-service/schedule-app/build.gradle.kts` — gRPC client + Testcontainers + Protobuf plugin pattern (proven working)
-- `services/academic-service/academic-app/build.gradle.kts` — gRPC + Testcontainers + RabbitMQ publisher pattern (proven working)
-- `proto/schedule.proto`, `proto/academic.proto` — gRPC service contracts (GetActiveLesson, GetLessonById, GetLessonsByGroup, GetGroupMembers, GetCampusGeofence, IsHeadman, GetActiveSemester)
-- `event-schemas/lesson.closed.json`, `event-schemas/lesson.cancelled.json`, `event-schemas/attendance.marked.json` — event envelope contracts
-- `docs/database-schema.md` — MongoDB document model, Redis key patterns, index definitions
-- `docs/job-stories.md` — JS-HEADMAN-01..07, JS-STUDENT-01..08, JS-SYSTEM-05..10
-- `.planning/PROJECT.md` — v4.0 milestone scope, Out of Scope list
-- `CLAUDE.md` — AttendanceStatus enum values, domain isolation rules (`checkin/` vs `report/`), `@RequireRole` AOP, `@TransactionalEventListener(AFTER_COMMIT)` pattern
-- `services/attendance-service/attendance-api-contract/` — existing enum definitions (AttendanceStatus, AttendanceSource, ExcuseType)
-- `services/academic-service/academic-app/src/main/java/.../event/RabbitConfig.java` — ObjectMapper injection pitfall documented inline
+- `.planning/PROJECT.md` — v5.0 active requirements, milestone context
+- `docs/phases-plan.md` — Phase 5 detailed feature specification
+- `event-schemas/*.json` — all 8 relevant event schemas with exact payload fields
+- `CLAUDE.md` — business rules (reminder lifecycle, role definitions, attendance status codes)
+- `proto/academic.proto` — confirmed `telegram_id` field in `StudentInfo`; `GetGroupMembers` RPC signature
+- `services/api-gateway/src/main/resources/application.yml` — confirmed `/api/ws/**` route to notification-web:9094
+- `services/notification-web/build.gradle.kts` — existing dependency baseline (starting point)
+- `services/notification-bot/requirements.txt` — existing (stale) version baseline
+- `services/attendance-service/attendance-app/src/main/java/.../config/RabbitConfig.java` — DLQ and ObjectMapper injection pattern to replicate
+- `docker-compose.yml` — confirmed `redis:7-alpine` and `rabbitmq:3.13-management-alpine`
+- `docs/phase-3-report.md` — Schedule Service RabbitMQ event timing (cron transitions)
+- `docs/phase-4-report.md` — Attendance Service events published (`attendance.marked`, `excuse.requested`, `late_checkin.requested`)
 
-### Secondary (MEDIUM confidence — external docs consistent with repo patterns)
-- Spring Boot 3.4.1 BOM confirms Spring Data MongoDB 4.4.1 and Testcontainers BOM 1.20.4
-- [Testcontainers MongoDB module docs](https://java.testcontainers.org/modules/databases/mongodb/) — confirms `org.testcontainers:mongodb` artifact name
-- [Spring AMQP fanout tutorial](https://rabbitmq.com/tutorials/tutorial-three-spring-amqp.html) — queue-per-service consumer binding pattern
-- Spring Data MongoDB issue tracker (DATAMONGO-891, DATAMONGO-2635) — confirms `@Enumerated` is ignored by MongoDB converter
-- Spring Boot auto-index-creation issue [#28478](https://github.com/spring-projects/spring-boot/issues/28478) — confirms default disabled behavior
-- [Movable Type Haversine formula](https://www.movable-type.co.uk/scripts/latlong.html) — Earth radius and formula accuracy at campus distances
+### Secondary (MEDIUM confidence)
+- Spring Cloud Gateway WebSocket proxy documentation — standard feature since Spring Cloud Gateway 2.x
+- Aiogram 3.x long-polling and FSM patterns — official Aiogram docs, well-known patterns
+- Spring Boot 3 WebSocket + JWT `HandshakeInterceptor` pattern — multiple consistent community sources
 
-### Tertiary (LOW confidence / inference-based)
-- Race condition behavior (`$setOnInsert` vs plain insert under concurrent load) — derived from MongoDB documentation and codebase analysis; not verified by load test on this specific system
-- Geofence cache effectiveness — 60-minute TTL recommendation is based on domain knowledge (campus geofence coordinates change at most once per semester); not measured
+### Tertiary (LOW confidence — verify during implementation)
+- Auth Service OTP response body includes code — assumed from flow design, not verified in source code
+- aio-pika==9.6.2 consumer restoration bug fix status — verify changelog before finalizing requirements.txt
 
 ---
 *Research completed: 2026-04-04*

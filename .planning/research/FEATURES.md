@@ -1,33 +1,33 @@
 # Feature Research
 
-**Domain:** University attendance tracking service — geo-checkin, manual marking, auto-absent, basic reports
+**Domain:** Real-time notification delivery for university attendance system — WebSocket push + Telegram bot
 **Researched:** 2026-04-04
-**Project:** RutCampusTrack v4.0 Attendance Service MVP
-**Confidence:** HIGH — based on existing system contracts, event schemas, proto files, job stories, and DB schema already designed for this milestone.
+**Project:** RutCampusTrack v5.0 Notification Service (Web + Bot)
+**Confidence:** HIGH — based on existing event schemas, RabbitMQ exchange contracts, proto files, phases-plan.md, and PROJECT.md active requirements.
 
 ---
 
 ## Context: What Already Exists (Must Not Re-Implement)
 
-These capabilities are fully operational in the existing system and are consumed by Attendance Service:
+The notification layer consumes from an already-operational event bus. These are the sources it reads from:
 
-| Feature | Where | Relevant to Attendance Service |
-|---------|-------|-------------------------------|
-| JWT auth, role + headman injection | API Gateway | X-User-Role, X-Is-Headman, X-User-Id headers arrive on every request |
-| Groups + students (GetGroupMembers) | Academic Service gRPC | Required for auto-absent (who was in the group) and journal (who to show) |
-| Campus geofence (GetCampusGeofence) | Academic Service gRPC | Required on every geo-checkin for radius validation |
-| IsHeadman check | Academic Service gRPC | Required for manual marking authorization |
-| GetActiveSemester | Academic Service gRPC | Required to populate `semester_id` on attendance docs |
-| Lesson lifecycle (PLANNED→ACTIVE→CLOSED) | Schedule Service + Cron | lesson.started/closed/cancelled events already published |
-| GetActiveLesson gRPC | Schedule Service | Called on every geo-checkin to verify group has active lesson |
-| GetLessonById gRPC | Schedule Service | Called to populate denormalized fields on write path |
-| GetLessonsByGroup gRPC | Schedule Service | Called by journal/report to get full lesson list |
-| lesson.started / lesson.closed / lesson.cancelled events | RabbitMQ | Attendance Service must consume all three |
-| attendance.marked event schema | event-schemas/ | Already defined; Attendance Service must publish it |
-| MongoDB attendance collection + indexes | database-schema.md | Full document structure, unique index, query indexes already designed |
-| Redis keys for checkin rate limit and dedup lock | database-schema.md | rate:checkin:{user_id} and checkin:lock:{lesson_id}:{user_id} already specified |
-| AttendanceStatus, AttendanceSource, ExcuseType enums | attendance-api-contract | Already defined in contract module |
-| @RequireRole AOP, contract-first conventions | Platform | Must follow same conventions as Auth + Academic + Schedule |
+| Event | Publisher | Payload Fields | Notification Audience |
+|-------|-----------|---------------|----------------------|
+| `lesson.started` | Schedule Service | lesson_id, group_id, subject_id, teacher_id, lesson_number, start_time, end_time, room | Students of that group |
+| `lesson.closed` | Schedule Service | lesson_id, group_id, subject_id | Students of that group |
+| `lesson.cancelled` | Schedule Service | lesson_id, group_id, subject_id, date, cancel_reason | Students of that group |
+| `attendance.marked` | Attendance Service | lesson_id, user_id, group_id, status, marked_by | That specific student |
+| `homework.published` | Academic Service | homework_id, group_id, subject_id, lesson_id, title, has_link | Students of that group |
+| `homework.updated` | Academic Service | same as published | Students of that group |
+| `excuse.requested` | Attendance Service | user_id, group_id, excuse_type, ticket_id, lesson_ids, has_attachments | Headman of that group |
+| `late_checkin.requested` | Attendance Service | user_id, group_id, lesson_id, student_name, lesson_date | Headman of that group |
+
+**Already operational infrastructure:**
+- RabbitMQ fanout exchange `rut-uit.events` — all events land here
+- Academic Service gRPC `GetGroupMembers(group_id)` — returns list of students with telegram_id
+- Auth Service OTP flow — `/auth/otp/request` and `/auth/otp/verify` — JWT generation from Telegram
+- Redis — available for reminder message_id storage
+- API Gateway WebSocket routing: `/api/ws/**` → notification-web:9094
 
 ---
 
@@ -35,37 +35,39 @@ These capabilities are fully operational in the existing system and are consumed
 
 ### Table Stakes (Users Expect These)
 
-Features the system cannot ship v4.0 without. Missing = attendance system does not function at all.
+Features the notification system cannot ship without. Missing = core notification pipeline is broken.
 
-| Feature | Why Expected | Complexity | Dependencies |
-|---------|--------------|------------|--------------|
-| **Geo-checkin endpoint (POST /checkin)** | Students check in via Telegram Mini App. This is the primary student-facing action — without it, the whole user value of the service is missing (JS-STUDENT-01). | MEDIUM | Validates: lesson is `active` (GetActiveLesson gRPC), `is_geo_blocked=false`, student belongs to group (GetGroupMembers or header), within 5-min window before/after lesson, within campus radius (GetCampusGeofence + Haversine). Writes MongoDB doc with `marked_by=student_geo`. Rate-limited via Redis (3/min). Dedup lock via Redis 5-sec TTL. Idempotent via `{lesson_id, user_id}` unique index (return 409 on duplicate). Publishes `attendance.marked` event after successful write. |
-| **lesson.closed consumer + auto-absent** | Journal must always be complete. Headman should not manually mark every absent student — the system does it automatically (JS-HEADMAN-03, JS-SYSTEM-07). | MEDIUM | Consumes `lesson.closed` from RabbitMQ. Calls GetGroupMembers gRPC to find all students in the group. Calls GetLessonById gRPC to populate denormalized fields. Bulk-inserts absent docs for every student without an existing attendance doc for that lesson. Source = `auto_scheduler`. Must be idempotent (MongoDB unique index will reject duplicate inserts naturally). Does NOT publish `attendance.marked` per individual absent — would flood; headman notification comes via separate lesson.closed handling. |
-| **lesson.cancelled consumer** | Cancelled lessons must not count in stats. Any attendance docs already created for the lesson (e.g., some students checked in before cancellation) must be updated to `cancelled` status so stats queries skip them (business rule from CLAUDE.md). | LOW | Consumes `lesson.cancelled` from RabbitMQ. Updates all attendance docs WHERE `lesson_id = ?` to set `status = cancelled`. The `AttendanceStatus.CANCELLED` enum already exists in the contract. Queries already have `cancelled` lesson filtering responsibility. |
-| **lesson.started consumer** | Stores lesson context for the checkin window duration; warm-up of denormalized lesson data for the write path during the active lesson period. | LOW | Consumes `lesson.started`. Can cache lesson context (subject_id, teacher_id, group_id, lesson_number, date) keyed by group_id in Redis for the duration of the lesson. Optional for MVP but reduces gRPC calls during the hot checkin window. Payload already contains all needed denormalized fields. |
-| **Manual attendance marking (PUT /lessons/{lessonId}/attendance/{userId})** | Headman must be able to mark any student present, absent, excused, or free_attendance directly (JS-HEADMAN-01). Autosave per click — one endpoint per student, not batch. | MEDIUM | Validates: caller is headman or assistant with `mark_attendance` permission (IsHeadman gRPC or header X-Is-Headman). Student belongs to the group. Lesson exists and is not cancelled. Sets or replaces the attendance doc with `marked_by=headman`. Does not require lesson to be `active` — headman can mark retroactively for current or same-day lessons. Publishes `attendance.marked` event. |
-| **Lesson attendance view (GET /lessons/{lessonId}/attendance)** | Headman needs a live view of who is marked and who is not during the lesson (JS-HEADMAN-01). | LOW | Returns all group members from GetGroupMembers gRPC merged with existing attendance docs for the lesson. Students without a doc appear as `null` status (not yet marked). Headman and teacher can both see this. |
-| **Journal view (GET /groups/{groupId}/subjects/{subjectId}/journal)** | Headman and teacher need the grid: rows = students, columns = lesson dates, cells = status (б/н/у/сп) (JS-TEACHER-03, JS-HEADMAN-18). | MEDIUM | Queries MongoDB `{group_id, semester_id, subject_id}` index for all attendance docs. Calls GetLessonsByGroup gRPC for the full lesson list (including lessons with no attendance docs yet). Merges both: every student × every lesson = one cell. Absent/null cells become gaps. Query filtered by semesterId (required). Excludes cancelled-status docs from display (shows as cancelled, not counted). |
-| **Student attendance stats (GET /students/{userId}/attendance/stats)** | Students expect to see their percentage per subject, not just raw data (JS-STUDENT-07). | LOW | MongoDB aggregation on `{user_id, semester_id}` index. Groups by `subject_id`. For each subject: total counted lessons (excluding `cancelled` status), lessons with present/excused/free_attendance status. Returns percentage per subject. No trend charts in v4.0. |
-| **Student attendance list (GET /students/{userId}/attendance)** | Student must see their own raw record — what lessons they attended, missed, or were excused from (JS-STUDENT-07). | LOW | Simple query on `{user_id, semester_id}` index with optional `subject_id` filter. Returns list of attendance docs ordered by lesson_date DESC. |
-| **gRPC client infrastructure (Schedule + Academic)** | Every feature above requires gRPC calls. Without working gRPC client beans, nothing functions. | MEDIUM | Two gRPC channels: schedule-service:19092 and academic-service:19091 (or configured ports). Stubs for ScheduleGrpcService and AcademicGrpcService. Error mapping: GRPC NOT_FOUND → 404, UNAVAILABLE → 503. Must be separate from gRPC server if Attendance Service exposes one later. |
-| **RabbitMQ consumer infrastructure** | The auto-absent and cancelled-lesson flows are event-driven. Without consumer setup, these critical paths do not run. | LOW | Spring AMQP `@RabbitListener` on `rut-uit.events` fanout exchange. Each listener filters by `event_type` field. Three consumers: lesson.started, lesson.closed, lesson.cancelled. Same pattern as Academic Service event consumers. |
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| **RabbitMQ consumer setup (both services)** | Without consuming events, neither service does anything. Two independent durable queues: `notification-web.events` and `notification-bot.events` must bind to the fanout exchange. | LOW | Same pattern as Attendance Service's `attendance-service.events`. Durable queue, DLQ. Each service receives a full copy of every event. Route by `event_type` field. |
+| **WebSocket endpoint with JWT auth** | Web panel needs real-time push without polling. Gateway already routes `/api/ws/**`. Without the WebSocket endpoint, the Angular panel has no live feed. | MEDIUM | STOMP over SockJS is the Spring standard pattern. On handshake: extract JWT from query param or first message frame, parse user_id and group_id from claims. Maintain a session registry keyed by group_id for broadcast. |
+| **Group-based WebSocket session registry** | Without routing by group_id, every connected client receives every notification — a privacy and noise violation. | MEDIUM | In-memory ConcurrentHashMap: group_id → Set of WebSocket sessions. On lesson.started → push only to sessions whose group_id matches. On connect/disconnect: add/remove from registry. |
+| **lesson.started → WebSocket push to group** | Web panel users (headmen, teachers with the panel open) expect to see "class started" update live. | LOW | Map event → message object {type: "lesson.started", lesson_id, subject_id, lesson_number}. Push to all sessions in group_id. |
+| **lesson.cancelled → WebSocket push to group** | Cancelled lessons must appear immediately in the schedule view without page refresh. | LOW | Same as lesson.started mapping but type = "lesson.cancelled". Include cancel_reason if present. |
+| **homework.published → WebSocket push to group** | Students on the web panel should see new assignments immediately. | LOW | Push {type: "homework.published", homework_id, title, subject_id}. Route to group_id sessions. |
+| **Telegram bot /start command** | Required for account linking. Without /start the bot has no user context. Sends the user's initial login + password if `initial_password` is set (one-time credential delivery). | MEDIUM | On /start: store telegram_id from update. Call Auth Service (or query Academic Service gRPC GetUserByTelegramId if available). If user found and `initial_password` not null → reply with credentials. If not linked → prompt to use /login. |
+| **Telegram bot /login command (OTP flow)** | Students need to authenticate with the bot to receive personalized notifications. /login triggers OTP flow via Auth Service. | MEDIUM | /login → POST /auth/otp/request with {telegram_id}. Auth Service sends 6-digit code to bot via... wait: OTP delivery TO Telegram is the bot's job (not Auth Service pushing). Bot sends the OTP code itself after receiving it from Auth Service response or stores a pending state. Check: Auth Service OTP request returns the code for the bot to deliver, or fires a Telegram message independently. This is a v1.0 deferred decision — verify with Auth Service implementation. |
+| **lesson.started → Telegram message with check-in button to group students** | Primary student-facing notification. Students see "Pair started, tap to check in" with inline button opening Mini App. Without this, students miss check-in window entirely. | MEDIUM | For each telegram_id in group (via GetGroupMembers gRPC, filtered to has telegram_id): send message with InlineKeyboardMarkup containing one button: "Отметиться" with URL = Mini App URL + ?lesson_id=X. Store returned message_id in Redis key `reminder:msgs:{lesson_id}:{user_id}` for later cleanup. |
+| **lesson.closed → delete all reminder messages for that lesson** | Leaving stale reminder messages in Telegram chats is bad UX and was explicitly called out in CLAUDE.md. After lesson closes, all "Отметиться" messages must be deleted. | MEDIUM | On lesson.closed: for each student in group, retrieve message_id from Redis `reminder:msgs:{lesson_id}:{user_id}`. Call bot.delete_message(chat_id=telegram_id, message_id=...). Delete the Redis key. Handle "message not found" gracefully (student may have deleted manually). |
+| **lesson.cancelled → Telegram notification to group** | Students need to know class is cancelled so they don't show up. | LOW | Send plain text message to each student in group: "Пара {subject} {date} отменена." Include cancel_reason if present. No inline buttons. |
+| **homework.published → Telegram notification to group** | Students get homework assignments via Telegram; the bot is the primary notification channel for most students. | LOW | Send message with homework title and subject name. Include "Есть ссылка" indicator if has_link=true. No inline button needed (link is in the web panel). |
+| **gRPC client for GetGroupMembers in bot** | Bot needs the list of telegram_ids for a group to broadcast messages. Without this, the bot cannot send lesson.started or homework notifications. | MEDIUM | Python grpcio client for Academic Service. Single RPC: `GetGroupMembers(group_id)` → list of users with telegram_id field. Filter out users where telegram_id is null (not linked). Cache result per group_id with short TTL (5 minutes) to avoid gRPC call on every lesson event. |
 
 ---
 
 ### Differentiators (Competitive Advantage)
 
-Features that make this attendance system more reliable and trustworthy than basic CRUD attendance.
+Features that make this notification system substantially more useful than basic event forwarding.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **Geo-blocked lesson enforcement** | Headman can disable geo-checkin for a specific lesson when fraud is suspected (JS-HEADMAN-02). System respects the `is_geo_blocked` flag returned by GetActiveLesson gRPC. | LOW | No extra storage needed. Checkin endpoint reads `is_geo_blocked` from LessonResponse and returns 403 with `reason: geo_checkin_disabled` if true. Headman still marks manually. |
-| **Redis deduplication lock for geo-checkin** | Prevents double-submission from network retry or impatient double-tap in the Mini App. | LOW | Redis key `checkin:lock:{lesson_id}:{user_id}` with 5-second TTL. On checkin: SET NX. If key already exists, return 409 `duplicate_checkin`. Already specified in database-schema.md. |
-| **Redis rate limiting for geo-checkin** | Prevents abuse (student scripting rapid fake checkin attempts). | LOW | Redis key `rate:checkin:{user_id}` with 60-second TTL, incremented on each attempt. Reject with 429 after 3 attempts/minute. Already specified in database-schema.md. |
-| **Denormalized MongoDB documents** | Journal and stats queries run entirely against MongoDB without needing gRPC calls at read time. Fast, independent reports. | MEDIUM | On every write (checkin, manual mark, auto-absent), populate: `semester_id`, `group_id`, `subject_id`, `teacher_id`, `lesson_date`, `lesson_number` from the lesson context obtained via gRPC. This is the critical write-path discipline that enables read-path simplicity. Errors here are expensive to fix later (noted in database-schema.md "expensive to change"). |
-| **attendance.marked event publishing** | Notification pipeline (notification-web WebSocket + notification-bot Telegram) receives real-time signal that a student was marked. Student gets confirmation push (JS-SYSTEM-10). | LOW | Publish after successful MongoDB write. Only for `student_geo` and `headman` sources — skip for `auto_scheduler` bulk inserts to avoid flooding. Event schema already in `event-schemas/attendance.marked.json`. Use @TransactionalEventListener(AFTER_COMMIT) pattern from Academic Service. |
-| **Idempotent auto-absent** | If `lesson.closed` event is delivered twice (RabbitMQ at-least-once), no duplicate absent records are created. | LOW | MongoDB unique index `{lesson_id, user_id}` rejects the duplicate insert. Catch DuplicateKeyException and log, do not rethrow — this is expected behavior on retry. |
-| **Checkin window computed from lesson times** | The 5-minute before/after window is derived from lesson start/end, not stored as a separate field. Clean, no schema drift. | LOW | `checkinWindowStart = start_time - 5 minutes`, `checkinWindowEnd = end_time + 5 minutes`. Computed at request time from LessonResponse. Reject checkin outside this window with 403 `outside_checkin_window`. |
+| **3-stage reminder lifecycle for lesson attendance** | Students who haven't checked in get reminded at lesson start, lesson midpoint, and lesson end — then messages are cleaned up. This is the core engagement loop: student doesn't miss the window because of a single notification. | HIGH | Stage 1 (lesson.started): send initial "Отметиться" message with button. Stage 2 (lesson mid-point): send second reminder only to users who are NOT yet marked present (requires querying Attendance Service or listening for attendance.marked events to track who has checked in). Stage 3 (lesson end): final reminder. lesson.closed: delete all. Redis stores all 3 message_ids per user per lesson. The mid-point trigger requires a scheduled task in the bot at the time = (start_time + end_time) / 2. |
+| **attendance.marked → remove reminder for that specific student** | Once a student checks in, their reminder messages become noise. Removing them immediately after check-in is excellent UX and avoids "I already checked in, why am I still being reminded?" confusion. | MEDIUM | Consume `attendance.marked` events in the bot. When status=present and marked_by=student_geo or headman: delete all reminder message_ids for that user+lesson from Redis and call delete_message. This eliminates stage 2 and 3 reminders for already-marked students. |
+| **excuse.requested → headman Telegram notification with approve/reject buttons** | Headman needs to action excuse tickets from within Telegram without opening the web panel. The event schema already includes ticket_id, lesson_ids, has_attachments. | MEDIUM | Send message to headman's telegram_id: "Студент X запросил у.п. [excuse_type]. [Прикреплены файлы]". InlineKeyboardMarkup with "Одобрить" and "Отклонить" buttons with callback_data containing ticket_id. Bot must handle callback_query: POST to Attendance Service REST API to approve/reject. Requires bot to maintain a JWT token (use OTP flow at startup or service account). |
+| **late_checkin.requested → headman Telegram notification** | Headman is notified immediately when a student requests retroactive presence confirmation. | LOW | Send message to headman: "Студент {student_name} просит подтвердить присутствие на паре {lesson_date}." Include lesson_id for context. No approve/reject buttons in v5.0 (headman opens web panel to confirm — that workflow is Attendance Service v4.1). |
+| **excuse.requested → WebSocket push to headman** | Headman with web panel open sees excuse requests immediately without page refresh. | LOW | In notification-web: when excuse.requested event arrives, look up headman's session by group_id (headman is connected with their group_id). Push {type: "excuse.requested", user_id, excuse_type, ticket_id}. |
+| **late_checkin.requested → WebSocket push to headman** | Same as above but for late checkin requests. | LOW | Push {type: "late_checkin.requested", user_id, student_name, lesson_id, lesson_date} to headman session for that group. |
+| **homework.updated → WebSocket push** | If headman edits an existing homework, students on web panel see the change live. | LOW | Same as homework.published mapping but type = "homework.updated". |
 
 ---
 
@@ -73,112 +75,135 @@ Features that make this attendance system more reliable and trustworthy than bas
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| **Real-time WebSocket in Attendance Service** | Headman wants live marking board during class | Attendance Service should be stateless. WebSocket connections are stateful. notification-web already exists for this. | Publish `attendance.marked` events; notification-web consumes them and pushes to connected headman clients. |
-| **Eager group member validation on every checkin** | Verify student belongs to group before marking | 30 students checking in simultaneously = 30 parallel gRPC calls to Academic Service just for group membership. | Trust X-User-Id and X-User-Role headers from Gateway. Read `group_id` from lesson context. Academic Service already caches `group:{group_id}:members` with 5-min TTL for the actual auto-absent path. |
-| **Teacher attendance correction (teacher_override source)** | Teachers want to fix errors they notice | Teacher role is read-only by design (JS-TEACHER-04). Adding write access blurs role boundaries and creates authorization complexity. `AttendanceSource.TEACHER_OVERRIDE` exists in the enum but the flow is not in scope. | Deferred to v4.1+. Headman can correct via manual marking as the authorized attendance manager. |
-| **Pagination on journal endpoint** | Seems necessary for large datasets | Journal is bounded: one semester × one subject × one group = at most ~20 lessons × 30 students = 600 MongoDB docs per query. Pagination adds complexity without measurable benefit at this scale. | Return full journal in one response. Revisit if groups exceed 60 students or semester exceeds 30 lessons per subject. |
-| **Batch manual marking (all students at once)** | Seems efficient for headman marking whole class | Single-student autosave (one endpoint per click) is the stated UX requirement. Batch endpoint has different transactional semantics and partial-failure handling. | One endpoint per student, as per JS-HEADMAN-01 "autosave per click". If partial batch is needed, implement as loop of single-mark calls on the client side. |
-| **Configurable checkin time window** | Seems flexible to allow different windows per subject | Premature generalization. The 5-minute window is a business rule, not a per-lesson configuration. Storing it per-lesson or per-subject adds schema complexity. | Hardcode as a service constant or application.yml property (`attendance.checkin.window-minutes=5`). Can be made configurable via a single property later without schema changes. |
-| **Excuse management in v4.0** | Students need to submit excuses immediately | Excuse flow requires file attachments, Telegram forwarding to headman, approval workflow, headman confirmation — too much scope. The `excuse` subdocument is already modeled in MongoDB schema. | Deferred to v4.1 explicitly. The schema already supports it; only the API write path is deferred. Reading `excuse` data is not blocked. |
-| **Late checkin ("forgot to mark") in v4.0** | Students who were present but forgot need a way out | Late checkin requires headman approval notification, a pending state, and status update on confirmation. Non-trivial workflow. | Deferred to v4.1. `late_checkin_request` subdocument already in MongoDB schema. `AttendanceSource.LATE_CHECKIN` already in enum. |
+| **Notification persistence / history API** | "Show all my notifications" — users expect an inbox | Requires a new database, schema, write path on every event. The notification services are stateless event forwarders by design; adding persistence turns them into a CRUD service with a new data store. | If needed, add a dedicated notification_log collection to MongoDB in a future milestone. For v5.0: WebSocket messages are fire-and-forget, Telegram messages are the persistence (Telegram keeps chat history). |
+| **Notification preferences (mute / channel select)** | Users want to mute specific notification types | Requires a preferences store (new table or Redis hash), a REST API to set preferences, and filter logic in both services before every send. Significant scope for a system with 500-5000 users who will mostly want all notifications. | Defer to v5.1+. Document the future preference key pattern: `notif_prefs:{user_id}` in Redis as a hash of event_type → muted boolean. |
+| **Delivery guarantees / read receipts** | "Did the user see the notification?" | Telegram does not provide programmatic read receipt data. WebSocket delivery is best-effort (client must be connected). True delivery guarantees require a persistent outbox pattern with retry queue. This is significant infrastructure for a university attendance system at 500-5000 users. | Accept best-effort delivery. RabbitMQ DLQ captures failed processing. Telegram's own "sent" checkmarks are sufficient user-visible confirmation. |
+| **Mid-lesson check-in query to Attendance Service from bot** | Stage 2 reminder should only go to students who haven't checked in | Requires the bot to call Attendance Service REST API per student per lesson at the mid-point to filter already-marked students. High coupling between Bot and Attendance Service; introduces a new synchronous dependency from Python to Java. | Track attendance.marked events in Redis within the bot: when attendance.marked event arrives, delete that user's reminder message_ids immediately (the differentiator above). This achieves the same result without a polling query. |
+| **Broadcast to ALL students (admin announcements)** | Admin wants to send arbitrary messages via the bot | Expands bot scope from reactive event consumer to proactive messaging platform. Requires a new API, admin auth in the bot, and rate limiting against Telegram's broadcast limits (30 msg/sec). | Out of scope for v5.0. If needed: add a dedicated admin announcement event type and handler in a future milestone. |
+| **WebSocket reconnect state recovery** | "I was disconnected, what did I miss?" | Requires event log/buffer per user. The web panel can poll the relevant REST APIs (schedule, homework, attendance reports) on reconnect to get current state. That is the correct pattern for REST + WebSocket hybrid. | On reconnect: Angular panel re-fetches current schedule + attendance state via REST. WebSocket is only for incremental updates while connected. |
+| **Inline message editing for reminders** | Edit the reminder message in place instead of sending new ones | Using editMessageText instead of sendMessage + deleteMessage seems cleaner. However: mid-lesson reminders are distinct messages (not edits) because Telegram suppresses notifications for edited messages — users would not see the second and third reminders. | Always send new messages for reminders. Delete old ones via deleteMessage on attendance.marked or lesson.closed. |
+| **OTP delivery from Auth Service directly to Telegram** | Simpler if Auth Service calls Telegram API directly for OTP | Auth Service is a pure Java REST+Redis service with no Telegram dependency. Adding Telegram API calls to Auth Service violates service boundary (Auth should not know about Telegram). | Bot calls Auth Service's /auth/otp/request endpoint. Auth Service returns the OTP code (or a success status that the code was stored in Redis). Bot then sends the code as a Telegram message itself. This keeps Auth Service Telegram-free. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[gRPC client infrastructure]
-    └──required-by──> ALL features (checkin, manual mark, auto-absent, journal)
+[RabbitMQ consumer setup]
+    └──required-by──> ALL notification features in both services
 
-[RabbitMQ consumer infrastructure]
-    └──required-by──> [lesson.closed → auto-absent]
-    └──required-by──> [lesson.cancelled → cancel existing docs]
-    └──optional-for──> [lesson.started → cache warmup]
+[WebSocket endpoint + JWT auth]
+    └──required-by──> [Group-based session registry]
+                          └──required-by──> ALL WebSocket push features
 
-[lesson.started consumer]
-    └──enables──> [checkin window is open for the group]
-    └──caches──> lesson context for denormalization on writes
-
-[geo-checkin endpoint]
-    └──requires──> [GetActiveLesson gRPC] (lesson is active, not geo-blocked, group_id)
-    └──requires──> [GetCampusGeofence gRPC] (lat, lng, radius_m)
-    └──requires──> [Redis dedup lock] (idempotency)
-    └──requires──> [Redis rate limiter] (abuse prevention)
-    └──writes──> [MongoDB attendance doc] with full denormalized fields
-    └──publishes──> [attendance.marked event]
-
-[lesson.closed consumer → auto-absent]
-    └──requires──> [GetGroupMembers gRPC] (who was in the group)
-    └──requires──> [GetLessonById gRPC] (subject_id, teacher_id, lesson_number for denormalization)
-    └──writes──> [MongoDB absent docs] for all unmarked students
-    └──does-not-publish──> attendance.marked (bulk, would flood)
-
-[lesson.cancelled consumer]
-    └──updates──> [MongoDB attendance docs] status = cancelled WHERE lesson_id = ?
-
-[manual marking endpoint]
-    └──requires──> [IsHeadman check] (X-Is-Headman header OR gRPC fallback)
-    └──requires──> [GetLessonById gRPC] (validates lesson exists, gets denormalized fields)
-    └──writes──> [MongoDB attendance doc] with marked_by=headman
-    └──publishes──> [attendance.marked event]
-
-[lesson attendance view]
-    └──requires──> [GetGroupMembers gRPC] (full student list)
-    └──reads──> [MongoDB: lesson_id index]
-
-[journal view]
-    └──requires──> [GetLessonsByGroup gRPC] (full lesson list including lessons with no docs)
-    └──reads──> [MongoDB: {group_id, semester_id, subject_id} index]
-
-[student attendance stats]
-    └──reads──> [MongoDB: {user_id, semester_id} index]
-    └──aggregates──> per subject_id, excluding cancelled status
+[lesson.started event]
+    └──triggers──> [WebSocket push to group] (notification-web)
+    └──triggers──> [Telegram message with check-in button] (notification-bot)
+                       └──stores──> message_id in Redis per student
+                       └──schedules──> stage 2 reminder at lesson midpoint
+                       └──schedules──> stage 3 reminder at lesson end
 
 [attendance.marked event]
-    └──consumed-by──> notification-web (WebSocket push to headman/student)
-    └──consumed-by──> notification-bot (Telegram confirmation to student)
+    └──triggers──> [Delete reminder for that student] (notification-bot)
+                       └──reads──> Redis message_ids
+                       └──calls──> bot.delete_message
+
+[lesson.closed event]
+    └──triggers──> [Delete ALL reminders for that lesson] (notification-bot)
+                       └──reads──> all Redis message_ids for lesson
+                       └──calls──> bot.delete_message for each
+
+[lesson.cancelled event]
+    └──triggers──> [WebSocket push to group] (notification-web)
+    └──triggers──> [Telegram message to group students] (notification-bot)
+
+[homework.published event]
+    └──triggers──> [WebSocket push to group] (notification-web)
+    └──triggers──> [Telegram message to group students] (notification-bot)
+
+[excuse.requested event]
+    └──triggers──> [WebSocket push to headman session] (notification-web)
+    └──triggers──> [Telegram message to headman with approve/reject buttons] (notification-bot)
+
+[late_checkin.requested event]
+    └──triggers──> [WebSocket push to headman session] (notification-web)
+    └──triggers──> [Telegram plain text message to headman] (notification-bot)
+
+[gRPC GetGroupMembers client] (Python bot only)
+    └──required-by──> [lesson.started → Telegram broadcast]
+    └──required-by──> [lesson.cancelled → Telegram broadcast]
+    └──required-by──> [homework.published → Telegram broadcast]
+
+[Telegram bot /start command]
+    └──enables──> [telegram_id linked to user_id]
+    └──required-for──> ALL bot message delivery (no telegram_id = no messages)
+
+[Telegram bot /login command]
+    └──enables──> [JWT for bot to call REST APIs]
+    └──required-for──> [excuse approve/reject callback handler]
+
+[Redis reminder storage]
+    └──required-by──> [lesson.started → store message_ids]
+    └──required-by──> [attendance.marked → delete reminder]
+    └──required-by──> [lesson.closed → delete all reminders]
+    └──required-by──> [stage 2 + stage 3 scheduled reminders]
 ```
 
 ### Dependency Notes
 
-- **Denormalized fields are a write-path discipline, not a schema luxury.** Every MongoDB insert must populate `semester_id`, `group_id`, `subject_id`, `teacher_id`, `lesson_date`, `lesson_number` — even the bulk auto-absent path. Failure to populate these fields at creation time is expensive to fix later (cannot be backfilled without a full replay of Schedule Service data). This is the highest-risk implementation detail.
-- **Auto-absent requires both gRPC calls.** The `lesson.closed` event only provides `lesson_id` and `group_id`. GetGroupMembers gives the student list; GetLessonById gives the lesson details for denormalization. Both must succeed before any absent docs are written.
-- **lesson.cancelled does not delete docs — it marks them cancelled.** This preserves the historical record. Stats queries must filter `WHERE status != 'cancelled'`. Journal queries show cancelled cells distinctly.
-- **Checkin does not validate group membership via gRPC.** Group membership is implicit: the student calls GetActiveLesson for their group (derived from X-User-Id + Academic Service's group assignment). If no active lesson exists for the group, 404. The lesson's `group_id` is used for all downstream writes.
-- **journal view is the most complex read path** because it must merge two data sources: MongoDB docs (what was recorded) and GetLessonsByGroup response (what lessons existed, including those with no attendance). This merge is done in application memory for MVP; no special indexing is needed beyond what already exists.
+- **GetGroupMembers gRPC is only needed in the bot, not in notification-web.** Notification-web routes WebSocket messages by group_id already present in the JWT claims of connected sessions — no gRPC needed for the web service.
+- **lesson.closed cleanup requires the message_ids stored by lesson.started.** If the Redis key expires or was never set (bot was down when lesson started), the cleanup step must handle missing keys gracefully — log and skip, do not crash.
+- **The 3-stage reminder requires asyncio scheduling in Python.** When lesson.started fires, schedule a coroutine at (start_time + end_time) / 2 for stage 2, and at end_time - 5 minutes for stage 3. Use `asyncio.get_event_loop().call_later()` or equivalent. These tasks must be stored in memory per lesson_id so they can be cancelled if lesson.cancelled fires mid-lesson.
+- **excuse approve/reject callback requires the bot to hold a JWT.** The bot must authenticate against Auth Service at startup (or use a service account). This is the only place the bot makes authenticated REST calls to another service. This dependency chain (bot → Auth Service → Academic DB) must be accounted for in startup order.
+- **homework.updated is lower priority than homework.published** because the event schema fields are identical and the notification text differs only slightly. Both can be handled in the same consumer handler.
 
 ---
 
 ## MVP Definition
 
-### Launch With (v4.0)
+### Launch With (v5.0)
 
-The absolute minimum for the attendance system to be functional end-to-end.
+Minimum viable notification system — both channels delivering the core attendance events.
 
-- [ ] gRPC client setup (Schedule + Academic channels and stubs) — everything else blocks on this
-- [ ] RabbitMQ consumer setup (lesson.started, lesson.closed, lesson.cancelled listeners)
-- [ ] lesson.closed consumer + auto-absent bulk write — journal completeness
-- [ ] lesson.cancelled consumer + status update — stats correctness
-- [ ] Geo-checkin endpoint with all validation layers (active lesson, geo-blocked, time window, Haversine, dedup, rate limit)
-- [ ] Manual attendance marking endpoint (headman/assistant only)
-- [ ] Lesson attendance view (GET by lesson, merged with group members)
-- [ ] Journal view (GET by group+subject+semester, merged with lesson list)
-- [ ] Student stats endpoint (aggregation by subject, % attended)
-- [ ] Student attendance list (GET by student+semester)
-- [ ] attendance.marked event publishing (for checkin and manual mark sources only)
+**Notification Web (Java):**
+- [ ] RabbitMQ consumer on `notification-web.events` queue — without this, service is inert
+- [ ] WebSocket endpoint `/ws` with JWT auth via query param on handshake
+- [ ] Group-based session registry (ConcurrentHashMap: group_id → sessions)
+- [ ] lesson.started → WebSocket push to group sessions
+- [ ] lesson.cancelled → WebSocket push to group sessions
+- [ ] homework.published → WebSocket push to group sessions
+- [ ] excuse.requested → WebSocket push to headman session (headman has group_id matching group)
+- [ ] late_checkin.requested → WebSocket push to headman session
 
-### Add After Validation (v4.1)
+**Notification Bot (Python):**
+- [ ] RabbitMQ consumer on `notification-bot.events` queue (aio-pika)
+- [ ] /start command — account linking, send initial credentials if initial_password set
+- [ ] /login command — OTP flow triggering via Auth Service
+- [ ] /status command — current lesson + student's own attendance status (calls APIs)
+- [ ] gRPC client for GetGroupMembers (grpcio, Academic Service)
+- [ ] lesson.started → send Telegram message with inline "Отметиться" button to group students; store message_ids in Redis
+- [ ] lesson.closed → delete all reminder message_ids for that lesson from Redis + Telegram
+- [ ] lesson.cancelled → send cancellation text to group students
+- [ ] homework.published → send homework notification to group students
+- [ ] attendance.marked (status=present) → delete reminder messages for that student immediately
 
-- [ ] Excuse ticket creation + headman approval flow — requires file attachment pipeline and Telegram forwarding
-- [ ] Late checkin request ("byl no zabyl") + headman confirmation
-- [ ] Teacher attendance override (teacher_override source) — requires explicit role expansion decision
+**Shared infrastructure:**
+- [ ] Redis key pattern `reminder:msgs:{lesson_id}:{user_id}` for message_id storage
 
-### Future Consideration (v4.2+)
+### Add After Validation (v5.1)
 
-- [ ] Red zone alerts pushed to admin/headman — depends on threshold config in Academic Service
-- [ ] Attendance trend chart (by week) for student view
-- [ ] PDF/Excel export — depends on web panel consuming journal API first
-- [ ] Bulk attendance correction API for admin
+- [ ] 3-stage reminder lifecycle (stage 2 at midpoint, stage 3 near end) — requires asyncio scheduling, adds significant complexity
+- [ ] excuse.requested → headman Telegram notification with approve/reject callback buttons — requires bot JWT auth + REST call to Attendance Service
+- [ ] late_checkin.requested → headman Telegram notification — low complexity, but deferred until excuse workflow is established
+- [ ] homework.updated → both channels (identical to published, trivial once published works)
+- [ ] Notification preferences (mute by event type) — Redis hash per user
+
+### Future Consideration (v5.2+)
+
+- [ ] Notification history / inbox — requires MongoDB collection, REST API
+- [ ] Admin broadcast announcements via bot
+- [ ] WebSocket reconnect state recovery (event buffer)
+- [ ] Delivery confirmation tracking
 
 ---
 
@@ -186,84 +211,78 @@ The absolute minimum for the attendance system to be functional end-to-end.
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| gRPC client infrastructure | HIGH | MEDIUM | P1 — everything blocks on this |
-| RabbitMQ consumer infrastructure | HIGH | LOW | P1 — auto-absent and cancellation depend on it |
-| lesson.closed + auto-absent | HIGH | MEDIUM | P1 — journal completeness without headman effort |
-| lesson.cancelled → mark docs | MEDIUM | LOW | P1 — stats correctness |
-| Geo-checkin endpoint | HIGH | MEDIUM | P1 — primary student action |
-| Manual marking endpoint | HIGH | LOW | P1 — headman core workflow |
-| Lesson attendance view (per lesson) | MEDIUM | LOW | P1 — headman live view |
-| Journal view (per group+subject) | HIGH | MEDIUM | P1 — teacher + headman reports |
-| Student stats endpoint | MEDIUM | LOW | P1 — student self-service |
-| Student attendance list | MEDIUM | LOW | P1 — student self-service |
-| attendance.marked event publishing | MEDIUM | LOW | P1 — notification pipeline |
-| Redis dedup lock | MEDIUM | LOW | P2 — correctness under rapid taps |
-| Redis rate limiter | LOW | LOW | P2 — abuse prevention |
-| lesson.started consumer (warmup) | LOW | LOW | P2 — reduces gRPC calls during checkin window |
-| Excuse management API | HIGH | HIGH | P3 — deferred to v4.1 |
-| Late checkin request API | MEDIUM | MEDIUM | P3 — deferred to v4.1 |
+| RabbitMQ consumer infrastructure (both) | HIGH | LOW | P1 — everything else blocks on this |
+| WebSocket endpoint + JWT auth | HIGH | MEDIUM | P1 — web panel real-time requires this |
+| Group session registry | HIGH | MEDIUM | P1 — prerequisite for any WebSocket routing |
+| lesson.started WebSocket push | HIGH | LOW | P1 — primary schedule event |
+| lesson.cancelled WebSocket push | HIGH | LOW | P1 — schedule correctness |
+| Bot /start + account linking | HIGH | MEDIUM | P1 — without linking, no personalized messages |
+| Bot gRPC GetGroupMembers client | HIGH | MEDIUM | P1 — required for all group broadcasts |
+| lesson.started → Telegram with check-in button | HIGH | MEDIUM | P1 — primary student engagement |
+| lesson.started → store message_ids in Redis | HIGH | LOW | P1 — required for cleanup to work |
+| lesson.closed → delete all Telegram reminders | HIGH | MEDIUM | P1 — UX requirement stated in CLAUDE.md |
+| attendance.marked → delete student's reminder | HIGH | LOW | P1 — prevents "already checked in" reminder spam |
+| lesson.cancelled → Telegram message | HIGH | LOW | P1 — students need to know |
+| homework.published → Telegram message | MEDIUM | LOW | P1 — standard student expectation |
+| Bot /login OTP flow | MEDIUM | MEDIUM | P1 — required for /status and excuse callbacks |
+| Bot /status command | MEDIUM | MEDIUM | P1 — useful for student self-service |
+| homework.published WebSocket push | MEDIUM | LOW | P1 — once lesson events work, same pattern |
+| excuse.requested WebSocket push | MEDIUM | LOW | P2 — headman workflow enhancement |
+| late_checkin.requested WebSocket push | MEDIUM | LOW | P2 — headman workflow enhancement |
+| late_checkin.requested Telegram message to headman | MEDIUM | LOW | P2 — low complexity add-on |
+| 3-stage reminder lifecycle | HIGH | HIGH | P2 — valuable but complex asyncio scheduling |
+| excuse.requested → headman Telegram with buttons | HIGH | HIGH | P2 — requires bot auth + REST integration |
+| Notification preferences / mute | MEDIUM | MEDIUM | P3 — defer until user feedback |
+| Notification history / inbox | LOW | HIGH | P3 — Telegram IS the history |
 
 **Priority key:**
-- P1: Must have for v4.0 launch — no partial attendance service is acceptable
-- P2: Correctness and reliability features, add in same or next phase
-- P3: Deferred milestone, schema already supports it but API is not needed now
+- P1: Must have for v5.0 — notification system is not functional without these
+- P2: High value but can ship in v5.1 iteration
+- P3: Nice to have, defer to v5.2+ or later milestone
 
 ---
 
-## Edge Case Inventory
+## Event × Service Mapping
 
-| Edge Case | Description | Handling Strategy |
-|-----------|-------------|-------------------|
-| **Checkin before lesson is ACTIVE** | Student checks in 3 minutes before lesson (within 5-min window), but lesson is still PLANNED status. GetActiveLesson returns null (only returns ACTIVE). | Attendance Service must also check if a PLANNED lesson for the group starts within 5 minutes. Either call GetLessonsByGroup with current date + time range, or Schedule Service adds `GetUpcomingLesson` RPC in future. For MVP: only allow checkin when lesson is ACTIVE. Document the 5-min pre-start window as deferred behavior. |
-| **Geo-checkin double-tap (rapid retry)** | Student taps checkin button twice within 5 seconds due to slow response. Second request arrives before first completes. | Redis dedup lock `checkin:lock:{lesson_id}:{user_id}` with 5-sec TTL. First request sets the lock. Second request finds lock present, returns 409. MongoDB unique index is the final guarantee. |
-| **auto-absent fired twice** | lesson.closed event is redelivered by RabbitMQ (at-least-once delivery). Auto-absent consumer runs again for same lesson. | MongoDB unique index `{lesson_id, user_id}` rejects duplicate inserts. Catch DuplicateKeyException (Spring Data wraps as DuplicateKeyException), log at DEBUG, continue. Do not rethrow. |
-| **Student checked in, then lesson.cancelled fires** | Student was geo-present, then headman cancels the lesson mid-class. | lesson.cancelled consumer updates all attendance docs for that lesson to `status = cancelled`. Student's PRESENT record becomes CANCELLED. This is correct behavior — cancelled lessons do not count in stats. Student's PRESENT was valid at the time but the lesson itself was voided. |
-| **manual mark on closed lesson** | Headman tries to mark a student after lesson.closed auto-absent already ran. | Allow it. Headman can always override. UPSERT semantics: if doc exists (auto_scheduler absent), update it to headman's value. If doc does not exist (somehow), insert it. Source changes to `headman`. |
-| **Student not in group at checkin time** | Student was transferred to another group but still tries to check in. GetActiveLesson returns the active lesson for their current group_id. If they transferred mid-semester, their old lessons may not match. | Lesson's `group_id` determines authorization. If student's current `group_id` (from Academic Service) matches the lesson's `group_id`, checkin is valid. If not, return 403. Student transfer history is Academic Service's concern. |
-| **No active semester during auto-absent** | lesson.closed fires but GetActiveSemester returns error. Cannot populate `semester_id` on absent docs. | For auto-absent, `semester_id` must come from either the lesson details (GetLessonById should include semester_id — but current schedule.proto LessonResponse does not include it). Need to call GetActiveSemester separately as fallback, or cache it on lesson.started. |
-| **Partial group fetch failure during auto-absent** | GetGroupMembers gRPC fails mid-auto-absent. Some absent docs written, some not. | Do not write partial results. GetGroupMembers must succeed fully before any writes. If it fails, log error and do not process. The absent docs will not be created for that lesson — this is an incomplete journal entry. Monitoring/alert should surface this. |
-| **GetActiveSemester not in schedule.proto LessonResponse** | Current `LessonResponse` proto does not include `semester_id`. Denormalization on write requires it. | Must call `GetActiveSemester` (Academic Service gRPC) during write path OR cache the active semester on service startup. The `semester_id` is available from Academic Service. This is a known gap to address in implementation. |
+Complete picture of which events each service processes and what action it takes:
+
+| Event | notification-web action | notification-bot action |
+|-------|------------------------|------------------------|
+| `lesson.started` | Push to group sessions: {type, lesson_id, subject_id, lesson_number, start_time, end_time, room} | Send message with inline button to each student in group; store message_id in Redis |
+| `lesson.closed` | Push to group sessions: {type, lesson_id} (optional — web panel already knows from schedule state) | Delete all reminder message_ids for lesson from Redis + Telegram |
+| `lesson.cancelled` | Push to group sessions: {type, lesson_id, date, cancel_reason} | Send cancellation text to each student in group |
+| `attendance.marked` | No action (web panel reads from Attendance Service REST on its own) | If status=present: delete reminder message_ids for that user+lesson |
+| `homework.published` | Push to group sessions: {type, homework_id, title, subject_id} | Send homework text to each student in group |
+| `homework.updated` | Push to group sessions: {type, homework_id, title, subject_id} | Send update text to each student in group (v5.1) |
+| `excuse.requested` | Push to headman session: {type, user_id, excuse_type, ticket_id} | Send message to headman with Approve/Reject buttons (v5.1) |
+| `late_checkin.requested` | Push to headman session: {type, user_id, student_name, lesson_id} | Send plain text to headman (v5.1) |
+| `semester.archived` | No action (no WebSocket notification needed) | No action |
+| `group.updated` | Invalidate session routing if group membership changed (optional) | Refresh GetGroupMembers cache (optional) |
 
 ---
 
-## Endpoint Inventory by Role
+## Offline Handling Decisions
 
-### STUDENT endpoints (Attendance)
-
-| Method | Path | Description | Complexity |
-|--------|------|-------------|------------|
-| POST | /api/attendance/checkin | Geo-checkin with {lat, lng, lessonId} | MEDIUM |
-| GET | /api/attendance/my | Own attendance list (?semesterId=&subjectId=) | LOW |
-| GET | /api/attendance/my/stats | Own stats by subject (% attended) | LOW |
-
-### HEADMAN / ASSISTANT endpoints (Attendance)
-
-| Method | Path | Description | Complexity |
-|--------|------|-------------|------------|
-| PUT | /api/attendance/lessons/{lessonId}/students/{userId} | Mark single student (body: status) | MEDIUM |
-| GET | /api/attendance/lessons/{lessonId} | Lesson attendance state (all students) | LOW |
-
-### HEADMAN / TEACHER endpoints (Reports)
-
-| Method | Path | Description | Complexity |
-|--------|------|-------------|------------|
-| GET | /api/attendance/journal | Journal view (?groupId=&subjectId=&semesterId=) | MEDIUM |
-| GET | /api/attendance/students/{userId}/stats | Student stats for headman/teacher view | LOW |
+| Scenario | WebSocket behavior | Telegram bot behavior |
+|----------|-------------------|----------------------|
+| Student not connected to web panel | Message is lost — best-effort only. REST APIs are canonical. | Telegram delivers when online (Telegram handles delivery) |
+| Bot was down when lesson.started fired | lesson.started consumed when bot restarts (durable queue). But lesson may already be active or closed. | Must check: if lesson is already CLOSED when consuming lesson.started, skip sending reminder messages. Compare occurred_at with current time. |
+| Student hasn't done /start (no telegram_id) | N/A | Skip silently. Log at DEBUG. |
+| lesson.closed message_id missing from Redis | N/A | Log "no reminder found for user X lesson Y", skip deleteMessage call — do not crash |
+| RabbitMQ message unprocessable | AMQP nack → DLQ | Same: nack → DLQ |
 
 ---
 
 ## Sources
 
-- `docs/database-schema.md` — MongoDB attendance document model, Redis key patterns, indices, denormalized fields (HIGH confidence — primary source)
-- `docs/job-stories.md` — JS-HEADMAN-01..07, JS-STUDENT-01..08, JS-SYSTEM-05..10 — all attendance business rules (HIGH confidence — authoritative spec)
-- `event-schemas/lesson.started.json`, `lesson.closed.json`, `lesson.cancelled.json`, `attendance.marked.json` — RabbitMQ event payload contracts (HIGH confidence — contract files)
-- `proto/schedule.proto` — GetActiveLesson, GetLessonById, GetLessonsByGroup RPC signatures and LessonResponse shape (HIGH confidence — contract file)
-- `proto/academic.proto` — GetGroupMembers, GetCampusGeofence, IsHeadman, GetActiveSemester RPC signatures (HIGH confidence — contract file)
-- `.planning/PROJECT.md` — v4.0 milestone scope definition, deferred features list, Out of Scope list (HIGH confidence — project charter)
-- `CLAUDE.md` — AttendanceStatus enum values, domain package isolation rules (checkin/ vs report/ vs shared/port/), @RequireRole AOP, @TransactionalEventListener(AFTER_COMMIT) pattern (HIGH confidence — project standards)
-- `services/attendance-service/attendance-api-contract/` — existing enum definitions (AttendanceStatus, AttendanceSource, ExcuseType) (HIGH confidence — already in codebase)
+- `.planning/PROJECT.md` — v5.0 active requirements list, target features, milestone context (HIGH confidence — primary source)
+- `docs/phases-plan.md` Phase 5 section — detailed feature list for both services (HIGH confidence)
+- `event-schemas/*.json` — all 10 event schemas with exact payload fields (HIGH confidence — contract files in codebase)
+- `CLAUDE.md` — reminder lifecycle requirement ("3 напоминания об отметке: начало, середина, конец пары. После пары — удалить сообщения"), business rules (HIGH confidence)
+- `docs/phase-4-report.md` — what Attendance Service publishes (attendance.marked) and when (HIGH confidence)
+- `docs/phase-3-report.md` (referenced via phases-plan) — Schedule Service RabbitMQ event timing (CRON transitions) (HIGH confidence)
 
 ---
 
-*Feature research for: Attendance Service MVP (geo-checkin, manual marking, auto-absent, basic reports)*
+*Feature research for: Real-time notification delivery — WebSocket (Java) + Telegram bot (Python/Aiogram 3)*
 *Researched: 2026-04-04*

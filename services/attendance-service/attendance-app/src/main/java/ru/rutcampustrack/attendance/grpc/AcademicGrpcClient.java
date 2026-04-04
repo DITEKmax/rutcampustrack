@@ -11,10 +11,18 @@ import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.SubjectInfo;
+import ru.rutcampustrack.academic.grpc.SubjectsByIdsRequest;
+import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectsRequest;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * gRPC client wrapper for Academic Service.
@@ -70,6 +78,37 @@ public class AcademicGrpcClient {
                             .setUserId(userId)
                             .setGroupId(groupId)
                             .build());
+        } catch (StatusRuntimeException e) {
+            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+        }
+    }
+
+    public TeacherSubjectsResponse getTeacherSubjects(Long teacherId, Long semesterId) {
+        try {
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getTeacherSubjects(TeacherSubjectsRequest.newBuilder()
+                            .setTeacherId(teacherId)
+                            .setSemesterId(semesterId)
+                            .build());
+        } catch (StatusRuntimeException e) {
+            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+        }
+    }
+
+    public Map<Long, String> getSubjectsByIds(List<Long> subjectIds) {
+        if (subjectIds == null || subjectIds.isEmpty()) {
+            return Map.of();
+        }
+        try {
+            SubjectsByIdsResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getSubjectsByIds(SubjectsByIdsRequest.newBuilder()
+                            .addAllSubjectIds(subjectIds)
+                            .build());
+            return response.getSubjectsList().stream()
+                    .collect(Collectors.toMap(
+                            SubjectInfo::getSubjectId,
+                            SubjectInfo::getSubjectName,
+                            (a, b) -> a));
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
         }

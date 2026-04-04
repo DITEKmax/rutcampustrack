@@ -30,6 +30,9 @@ service AcademicGrpcService {
 
   // Получить пользователя по ID
   rpc GetUserById (UserRequest) returns (UserResponse);
+
+  // Получить предметы по списку ID (для отчётов посещаемости)
+  rpc GetSubjectsByIds (SubjectsByIdsRequest) returns (SubjectsByIdsResponse);
 }
 
 message Empty {}
@@ -113,4 +116,17 @@ message UserResponse {
   int64 group_id = 6;
   bool is_headman = 7;
   int64 telegram_id = 8;
+}
+
+message SubjectsByIdsRequest {
+  repeated int64 subject_ids = 1;
+}
+
+message SubjectsByIdsResponse {
+  repeated SubjectInfo subjects = 1;
+}
+
+message SubjectInfo {
+  int64 subject_id = 1;
+  string subject_name = 2;
 }

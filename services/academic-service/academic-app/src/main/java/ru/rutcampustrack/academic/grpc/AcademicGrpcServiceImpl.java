@@ -182,6 +182,31 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     }
 
     /**
+     * GRPC-08: Get subjects by a list of IDs.
+     * Used by Attendance Service to resolve subject names for stats reports.
+     * Not cached — infrequent batch lookup.
+     */
+    @Override
+    public void getSubjectsByIds(SubjectsByIdsRequest request, StreamObserver<SubjectsByIdsResponse> responseObserver) {
+        List<Long> ids = request.getSubjectIdsList();
+        List<Subject> subjects = subjectRepository.findAllById(ids);
+
+        List<SubjectInfo> subjectInfos = subjects.stream()
+                .map(s -> SubjectInfo.newBuilder()
+                        .setSubjectId(s.getId())
+                        .setSubjectName(s.getName())
+                        .build())
+                .toList();
+
+        SubjectsByIdsResponse response = SubjectsByIdsResponse.newBuilder()
+                .addAllSubjects(subjectInfos)
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    /**
      * GRPC-07: Get user by ID including archived users.
      * Uses cached lookup that bypasses @SQLRestriction so downstream services
      * can access historical data for archived users.

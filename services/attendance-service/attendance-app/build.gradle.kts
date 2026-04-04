@@ -39,6 +39,7 @@ dependencies {
     testImplementation("org.testcontainers:mongodb")
     testImplementation("org.testcontainers:rabbitmq")
     testImplementation("org.awaitility:awaitility:4.2.2")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

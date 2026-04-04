@@ -11,6 +11,9 @@ import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentStatsResponse;
 
+import ru.rutcampustrack.attendance.contract.enums.UserRole;
+import ru.rutcampustrack.attendance.security.RequireRole;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,6 +33,7 @@ public class ReportController implements ReportApi {
 
     private final ReportService reportService;
 
+    @RequireRole({UserRole.STUDENT, UserRole.TEACHER})
     @Override
     public ResponseEntity<EntityModel<LessonAttendanceResponse>> getLessonAttendance(Long lessonId) {
         LessonAttendanceResponse response = reportService.getLessonAttendance(lessonId);
@@ -38,6 +42,7 @@ public class ReportController implements ReportApi {
         return ResponseEntity.ok(model);
     }
 
+    @RequireRole({UserRole.STUDENT, UserRole.TEACHER})
     @Override
     public ResponseEntity<EntityModel<JournalResponse>> getJournal(
             Long groupId, Long subjectId, LocalDate dateFrom, LocalDate dateTo) {
@@ -48,6 +53,7 @@ public class ReportController implements ReportApi {
         return ResponseEntity.ok(model);
     }
 
+    @RequireRole(UserRole.STUDENT)
     @Override
     public ResponseEntity<EntityModel<StudentStatsResponse>> getStudentStats() {
         StudentStatsResponse response = reportService.getStudentStats();
@@ -56,6 +62,7 @@ public class ReportController implements ReportApi {
         return ResponseEntity.ok(model);
     }
 
+    @RequireRole(UserRole.STUDENT)
     @Override
     public ResponseEntity<CollectionModel<EntityModel<AttendanceRecordEntry>>> getStudentRecords(Long subjectId) {
         List<AttendanceRecordEntry> entries = reportService.getStudentRecords(subjectId);

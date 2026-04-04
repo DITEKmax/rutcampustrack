@@ -168,7 +168,7 @@ Plans:
 | 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 3/3 | Complete | 2026-04-04 |
 | 18. Read Path — Reports | v4.0 | 4/4 | Complete | 2026-04-04 |
 | 19. Report Security & Routing Fix | v4.0 | 1/1 | Complete | 2026-04-04 |
-| 20. Shared Infrastructure | v5.0 | 3/3 | Complete   | 2026-04-04 |
+| 20. Shared Infrastructure | v5.0 | 3/3 | Complete    | 2026-04-04 |
 | 21. Notification Web — WebSocket Core | v5.0 | 0/? | Not started | - |
 | 22. Bot Infrastructure Layer | v5.0 | 0/? | Not started | - |
 | 23. Bot Telegram Commands | v5.0 | 0/? | Not started | - |

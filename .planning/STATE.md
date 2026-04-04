@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
 status: executing
-stopped_at: Completed 20-02-PLAN.md
-last_updated: "2026-04-04T22:32:12.823Z"
+stopped_at: Phase 21 context gathered
+last_updated: "2026-04-04T22:41:34.658Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 6
@@ -74,7 +74,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T22:01:33.215Z
-Stopped at: Completed 20-02-PLAN.md
-Resume file: None
+Last session: 2026-04-04T22:41:34.654Z
+Stopped at: Phase 21 context gathered
+Resume file: .planning/phases/21-notification-web-websocket-core/21-CONTEXT.md
 Next action: /gsd:plan-phase 20

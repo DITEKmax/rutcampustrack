@@ -70,9 +70,9 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   - [x] 18-02-PLAN.md — Contracts, shared port, AttendanceReadPortImpl, gRPC client additions, ArchUnit dependency
   - [x] 18-03-PLAN.md — ReportService + ReportController (all 4 endpoints)
   - [x] 18-04-PLAN.md — Unit tests, integration tests, ArchUnit domain isolation test
-- [ ] **Phase 19: Report Security & Routing Fix** - Add @RequireRole to ReportController, align report URL path convention (gap closure)
+- [x] **Phase 19: Report Security & Routing Fix** - Add @RequireRole to ReportController, align report URL path convention (gap closure) (completed 2026-04-04)
   Plans:
-  - [ ] 19-01-PLAN.md — Add @RequireRole, fix URL path, update tests
+  - [x] 19-01-PLAN.md — Add @RequireRole, fix URL path, update tests
 
 ## Phase Details
 
@@ -159,4 +159,4 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 | 16. Event Consumers | v4.0 | 2/2 | Complete    | 2026-04-04 |
 | 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 3/3 | Complete    | 2026-04-04 |
 | 18. Read Path — Reports | v4.0 | 4/4 | Complete    | 2026-04-04 |
-| 19. Report Security & Routing Fix | v4.0 | 0/1 | Not started | - |
+| 19. Report Security & Routing Fix | v4.0 | 1/1 | Complete   | 2026-04-04 |

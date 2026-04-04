@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
-status: executing
-stopped_at: Completed 18-04 (Report Tests)
-last_updated: "2026-04-04T16:26:19.215Z"
+status: verifying
+stopped_at: Completed 19-01 (Report Security and Routing Fix)
+last_updated: "2026-04-04T17:13:05.821Z"
 last_activity: 2026-04-04
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 11
-  completed_plans: 11
+  total_phases: 5
+  completed_phases: 5
+  total_plans: 12
+  completed_plans: 12
   percent: 0
 ---
 
@@ -22,9 +22,9 @@ v4.0 Attendance Service MVP — Roadmap created, ready to plan Phase 15
 
 ## Current Position
 
-Phase: 18
-Plan: Not started
-Status: Ready to execute
+Phase: 19 (report-security-routing-fix) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
 Last activity: 2026-04-04
 
 Progress: [░░░░░░░░░░] 0%
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
 **Core value:** Attendance tracking backbone — Auth + Academic + Schedule shipped. Now building core: Attendance Service MVP (geo-checkin, manual marking, auto-absent, reports).
-**Current focus:** Phase 18 — read-path-reports
+**Current focus:** Phase 19 — report-security-routing-fix
 
 ## Phase Map
 
@@ -74,6 +74,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 18-read-path-reports]: Left-join roster with ABSENT default: group members from gRPC, attendance from MongoDB, no record = ABSENT
 - [Phase 18-read-path-reports]: AttendanceSource.STUDENT_GEO (not GEO_CHECKIN) — plan context had incorrect enum value
 - [Phase 18-read-path-reports]: HATEOAS CollectionModel wraps under _embedded.attendanceRecordEntryList — confirmed from Spring HATEOAS serialization
+- [Phase 19-report-security-routing-fix]: @RequireRole({STUDENT, TEACHER}) on getLessonAttendance/getJournal — headman is STUDENT+is_headman; teacher needs journal access; AOP gate blocks unauthenticated callers
+- [Phase 19-report-security-routing-fix]: ReportApi @RequestMapping changed to /attendance/reports; gateway /api/reports/** predicate removed; single /api/attendance/** predicate covers all attendance endpoints
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -91,7 +93,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T16:22:20.657Z
-Stopped at: Completed 18-04 (Report Tests)
+Last session: 2026-04-04T17:13:05.817Z
+Stopped at: Completed 19-01 (Report Security and Routing Fix)
 Resume file: None
 Next action: `/gsd:plan-phase 15`

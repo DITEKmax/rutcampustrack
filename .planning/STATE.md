@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
-status: verifying
-stopped_at: Phase 17 context gathered
-last_updated: "2026-04-04T10:33:02.612Z"
+status: executing
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-04-04T11:10:41.585Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 7
+  completed_plans: 5
   percent: 0
 ---
 
@@ -22,9 +22,9 @@ v4.0 Attendance Service MVP — Roadmap created, ready to plan Phase 15
 
 ## Current Position
 
-Phase: 17
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 17 (write-path-geo-checkin-manual-marking) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-04
 
 Progress: [░░░░░░░░░░] 0%
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
 **Core value:** Attendance tracking backbone — Auth + Academic + Schedule shipped. Now building core: Attendance Service MVP (geo-checkin, manual marking, auto-absent, reports).
-**Current focus:** Phase 16 — event-consumers
+**Current focus:** Phase 17 — write-path-geo-checkin-manual-marking
 
 ## Phase Map
 
@@ -61,6 +61,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 16-event-consumers]: No try/catch in LessonEventService — exceptions propagate so AMQP nacks to DLQ on gRPC failure
 - [Phase 16]: mongoTemplate.remove(new Query()) over dropCollection() — preserves MongoDB indexes between tests
 - [Phase 16]: lenient() stubs in @BeforeEach for unit tests — avoids UnnecessaryStubbingException with Mockito strict mode
+- [Phase 17-01]: testcontainers:redis BOM module does not exist — Redis Testcontainer uses GenericContainer from core testcontainers
+- [Phase 17-01]: GeofenceService: volatile cache with 30m TTL, @PostConstruct try/catch, delegates to package-private GeoUtils Haversine
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -78,7 +80,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T10:33:02.605Z
-Stopped at: Phase 17 context gathered
-Resume file: .planning/phases/17-write-path-geo-checkin-manual-marking/17-CONTEXT.md
+Last session: 2026-04-04T11:10:41.581Z
+Stopped at: Completed 17-01-PLAN.md
+Resume file: None
 Next action: `/gsd:plan-phase 15`

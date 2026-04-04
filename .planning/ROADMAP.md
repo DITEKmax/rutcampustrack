@@ -61,7 +61,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   - [x] 16-02-PLAN.md — Integration tests + unit tests for event consumers
 - [ ] **Phase 17: Write Path — Geo-Checkin + Manual Marking** - Haversine geofence, Redis dedup/rate-limit, manual marking, attendance.marked event
   Plans:
-  - [ ] 17-01-PLAN.md — Contracts, infrastructure (Redis, exceptions, geofence, rate limiter, event publisher)
+  - [x] 17-01-PLAN.md — Contracts, infrastructure (Redis, exceptions, geofence, rate limiter, event publisher)
   - [ ] 17-02-PLAN.md — Geo-checkin service + controller + integration tests
   - [ ] 17-03-PLAN.md — Manual marking service + controller + integration tests
 - [ ] **Phase 18: Read Path — Reports** - Lesson attendance view, journal grid, student stats, domain isolation
@@ -138,5 +138,5 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 | 14. gRPC Server | v3.0 | 2/2 | Complete | 2026-04-04 |
 | 15. Infrastructure Foundation | v4.0 | 2/2 | Complete    | 2026-04-04 |
 | 16. Event Consumers | v4.0 | 2/2 | Complete    | 2026-04-04 |
-| 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 0/3 | Not started | - |
+| 17. Write Path — Geo-Checkin + Manual Marking | v4.0 | 1/3 | In Progress|  |
 | 18. Read Path — Reports | v4.0 | 0/? | Not started | - |

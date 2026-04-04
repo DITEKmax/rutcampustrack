@@ -14,17 +14,17 @@ Requirements for Attendance Service MVP. Each maps to roadmap phases.
 - [x] **INFRA-03**: gRPC client connects to Schedule Service (GetActiveLesson, GetLessonById, GetLessonsByGroup)
 - [x] **INFRA-04**: gRPC client connects to Academic Service (GetGroupMembers, GetCampusGeofence, GetActiveSemester)
 - [x] **INFRA-05**: RabbitMQ consumer declares durable queue bound to rut-uit.events fanout exchange
-- [ ] **INFRA-06**: System publishes attendance.marked event after successful checkin/manual mark
+- [x] **INFRA-06**: System publishes attendance.marked event after successful checkin/manual mark
 
 ### Checkin
 
-- [ ] **CHKN-01**: Student can geo-checkin by sending {lat, lng}, validated against campus geofence (Haversine)
+- [x] **CHKN-01**: Student can geo-checkin by sending {lat, lng}, validated against campus geofence (Haversine)
 - [ ] **CHKN-02**: Geo-checkin validates active lesson exists for student's group (gRPC to Schedule)
 - [ ] **CHKN-03**: Geo-checkin enforces 5-min time window (lesson start - 5 min to lesson end + 5 min)
 - [ ] **CHKN-04**: Geo-checkin respects is_geo_blocked flag from lesson
 - [ ] **CHKN-05**: Geo-checkin is idempotent via MongoDB unique index (duplicate returns 409)
-- [ ] **CHKN-06**: Redis dedup lock prevents double-submit (5-sec TTL per lesson+user)
-- [ ] **CHKN-07**: Redis rate limiting prevents abuse (3 attempts/minute per user)
+- [x] **CHKN-06**: Redis dedup lock prevents double-submit (5-sec TTL per lesson+user)
+- [x] **CHKN-07**: Redis rate limiting prevents abuse (3 attempts/minute per user)
 
 ### Marking
 
@@ -96,14 +96,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-03 | Phase 15 | Complete |
 | INFRA-04 | Phase 15 | Complete |
 | INFRA-05 | Phase 15 | Complete |
-| INFRA-06 | Phase 17 | Pending |
-| CHKN-01 | Phase 17 | Pending |
+| INFRA-06 | Phase 17 | Complete |
+| CHKN-01 | Phase 17 | Complete |
 | CHKN-02 | Phase 17 | Pending |
 | CHKN-03 | Phase 17 | Pending |
 | CHKN-04 | Phase 17 | Pending |
 | CHKN-05 | Phase 17 | Pending |
-| CHKN-06 | Phase 17 | Pending |
-| CHKN-07 | Phase 17 | Pending |
+| CHKN-06 | Phase 17 | Complete |
+| CHKN-07 | Phase 17 | Complete |
 | MARK-01 | Phase 17 | Pending |
 | MARK-02 | Phase 17 | Pending |
 | MARK-03 | Phase 16 | Complete |

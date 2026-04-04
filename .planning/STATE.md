@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-04-04T22:00:00Z"
-last_activity: 2026-04-04
+status: planning
+stopped_at: Phase 20 context gathered
+last_updated: "2026-04-04T21:36:24.690Z"
+last_activity: 2026-04-04 — Roadmap created for v5.0 (6 phases, 25 requirements)
 progress:
   total_phases: 6
   completed_phases: 0
@@ -50,6 +50,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-04)
 ### Decisions
 
 Recent decisions affecting v5.0:
+
 - STOMP in-memory broker (no external broker needed for single-instance VPS)
 - JWT claims extracted to WebSocket session attributes at handshake — not re-validated on expiry
 - grpcio pinned at 1.73.0 (protobuf 5.x compatible — 1.80.x requires protobuf 6.x, breaking change)
@@ -68,7 +69,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04
-Stopped at: Roadmap created — ready to plan Phase 20
-Resume file: None
+Last session: 2026-04-04T21:36:24.676Z
+Stopped at: Phase 20 context gathered
+Resume file: .planning/phases/20-shared-infrastructure/20-CONTEXT.md
 Next action: /gsd:plan-phase 20

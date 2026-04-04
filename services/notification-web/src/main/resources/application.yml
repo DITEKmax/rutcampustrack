@@ -11,6 +11,15 @@ spring:
     username: ${RABBITMQ_USER:rct_user}
     password: ${RABBITMQ_PASSWORD:rct_dev_pass}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 logging:
   level:
     ru.rutcampustrack: DEBUG

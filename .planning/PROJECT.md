@@ -7,22 +7,36 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
 ## Core Value
-Attendance tracking backbone: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) are shipped. Now building the core user-facing feature: Attendance Service MVP — geo-checkin, manual marking, auto-absent, basic reports.
+Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) + Attendance MVP (v4.0). All 4 services operational with complete inter-service communication (gRPC + RabbitMQ). Next focus: frontends (Telegram Mini App, Angular panel) and notification system.
 
 ## Current State
-v4.0 complete. All 4 phases shipped: Infrastructure Foundation (15), Event Consumers (16), Write Path (17), Read Path — Reports (18). Attendance Service MVP delivers geo-checkin, manual marking, auto-absent, and 4 report endpoints (lesson attendance, journal grid, student stats, attendance records) with domain isolation between report/ and checkin/ packages.
+v4.0 shipped 2026-04-04. All 5 phases complete (15-19): Infrastructure Foundation, Event Consumers, Write Path (geo-checkin + manual marking), Read Path (reports), and Report Security Fix. 23 requirements satisfied, 12 plans executed. Attendance Service delivers geo-checkin, manual marking, auto-absent, 4 report endpoints, full @RequireRole security, and domain isolation between report/ and checkin/ packages.
 
-## Current Milestone: v4.0 Attendance Service MVP
+## Next Milestone
+Planning next milestone. Candidate areas:
+- Telegram Mini App (React frontend for students)
+- Angular web panel (admin/headman dashboard)
+- Notification Service (WebSocket push + Telegram bot)
+- Excuse tickets flow (create/submit/review)
 
-**Goal:** Core attendance tracking — students check in via geo, headman marks manually, system auto-absents on lesson close, basic reports for journal and stats.
+## Shipped Milestones
 
-**Target features:**
-- Geo-checkin — student sends {lat, lng}, validated against campus geofence + active lesson + time window
-- Manual marking — headman sets attendance status per student (autosave per click)
-- Automatic absent — on lesson.closed event, unmarked students get status=absent
-- RabbitMQ consumers — listen to lesson.started/closed/cancelled from Schedule Service
-- gRPC clients — Schedule Service (GetActiveLesson, GetLessonById) + Academic Service (GetGroupMembers, GetCampusGeofence)
-- Basic reports — journal by group/subject, student attendance stats, lesson breakdown
+<details>
+<summary>v4.0 Attendance Service MVP — SHIPPED 2026-04-04</summary>
+
+**Goal:** Core attendance tracking — geo-checkin, manual marking, auto-absent, basic reports.
+**Phases:** 15-19 (5 phases, 12 plans)
+**Requirements:** 23/23 satisfied (INFRA-01..06, CHKN-01..07, MARK-01..05, RPRT-01..05)
+
+Key deliverables:
+- Geo-checkin with Haversine geofence, Redis dedup/rate-limit, 5-min time window
+- Headman manual marking with group authorization and upsert semantics
+- Auto-absent on lesson.closed via RabbitMQ ($setOnInsert race-safe)
+- Journal grid, student stats, lesson attendance, attendance records
+- @RequireRole AOP security on all 9 controller methods
+- Domain isolation: report/ accesses checkin/ data only through AttendanceReadPort
+
+</details>
 
 ## Target Users
 - **Students** (500-5000): geo-checkin, excuse tickets, homework tracker
@@ -73,19 +87,14 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ GRPC-01..03: gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) — v3.0
 
 ### Active
-(none — v4.0 complete)
+(none — planning next milestone)
 
 ### Recently Validated (v4.0)
-- ✓ @RequireRole on all report endpoints (consistent with checkin/marking) — Phase 19
-- ✓ Report URL path aligned to /api/attendance/reports/* convention — Phase 19
-- ✓ Basic reports: journal, student stats, lesson breakdown — Phase 18
-- ✓ Domain isolation: report/ never imports checkin/ (ArchUnit enforced) — Phase 18
-- ✓ GetSubjectsByIds gRPC batch lookup for subject name resolution — Phase 18
-- ✓ Geo-checkin with campus geofence validation — Phase 17
-- ✓ Manual attendance marking by headman — Phase 17
-- ✓ Automatic absent on lesson.closed event — Phase 16
-- ✓ RabbitMQ event consumers for lesson lifecycle — Phase 16
-- ✓ gRPC clients to Schedule and Academic services — Phase 15
+- ✓ INFRA-01..06: MongoDB indexes, enum converters, gRPC clients, RabbitMQ queue, event publishing — v4.0
+- ✓ CHKN-01..07: Geo-checkin with geofence, time window, geo-block, dedup, rate limit — v4.0
+- ✓ MARK-01..05: Manual marking, auto-absent ($setOnInsert), cancellation propagation — v4.0
+- ✓ RPRT-01..05: Lesson attendance, journal grid, student stats, records, domain isolation — v4.0
+- ✓ @RequireRole on all 9 controller methods, URL path alignment — v4.0 Phase 19
 
 ### Out of Scope
 - Mobile native apps — web-first (Telegram Mini App + Angular panel)
@@ -98,6 +107,9 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - PDF/Excel export — deferred to v4.1+
 
 ## Milestones
+
+### v4.0: Attendance Service MVP — ✅ SHIPPED 2026-04-04
+Geo-checkin, manual marking, auto-absent, 4 report endpoints. 5 phases, 12 plans, 23 requirements. See `.planning/milestones/v4.0-ROADMAP.md`.
 
 ### v3.0: Schedule Service — ✅ SHIPPED 2026-04-04
 Schedule template CRUD, lesson auto-generation, status transitions, RabbitMQ events, gRPC server. 5 phases, 10 plans.
@@ -125,6 +137,11 @@ Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 | campus_settings.id SERIAL→BIGINT | ✓ V4 migration fixes V1 inconsistency with BIGSERIAL convention | v2.0 |
 | Contract-first REST (api-contract interfaces) | ✓ Controllers implement interfaces, Swagger in contract | v2.0 |
 | @RequireRole AOP over Spring Security | ✓ Simpler, Gateway already validates JWT — service checks role only | v2.0 |
+| MongoDB with Spring Data (not JPA) | ✓ Flexible document model for attendance records, bulkOps for auto-absent | v4.0 |
+| AttendanceReadPort for domain isolation | ✓ report/ never imports checkin/ — ArchUnit enforced | v4.0 |
+| $setOnInsert for auto-absent race safety | ✓ Existing checkins never overwritten by auto-absent | v4.0 |
+| Volatile geofence cache with 30min TTL | ✓ Simple, avoids Redis overhead for infrequent geofence changes | v4.0 |
+| GenericContainer for Redis Testcontainer | ✓ testcontainers:redis BOM module doesn't exist — GenericContainer works | v4.0 |
 | V5 migration: implicit casts for PostgreSQL enums | ✓ JPA sends varchar, PostgreSQL needs CAST for custom enum columns | v2.0 |
 | gRPC queries repositories directly, not REST services | ✓ Avoids RequestContext scope issues in gRPC threads | v2.0 |
 | @TransactionalEventListener(AFTER_COMMIT) for domain events | ✓ No events on rollback, services decoupled from AMQP | v2.0 |
@@ -152,4 +169,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after Phase 19 completion*
+*Last updated: 2026-04-04 after v4.0 milestone*

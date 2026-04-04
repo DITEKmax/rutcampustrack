@@ -1,5 +1,25 @@
 # Milestones
 
+## v4.0 Attendance Service MVP (Shipped: 2026-04-04)
+
+**Phases completed:** 5 phases, 12 plans, 21 tasks
+
+**Key accomplishments:**
+
+- attendance-app compiles with protobuf+gRPC+Testcontainers dependencies; MongoDB AttendanceDocument entity with 4 programmatic indexes and lowercase enum converters registered via MongoCustomConversions
+- gRPC client wrappers for Schedule/Academic services, RabbitMQ DLQ consumer infrastructure, AOP role enforcement, and RFC 7807 error handling — 27 tests all green
+- RabbitMQ event consumers fully wired: bulk upsert $setOnInsert auto-absent on lesson.closed and updateMulti cancellation on lesson.cancelled, with safe Integer-to-Long extraction
+- 12 new tests prove MARK-03/MARK-04/MARK-05: integration tests via real RabbitMQ + MongoDB Testcontainers and unit tests isolating LessonEventService business logic
+- One-liner:
+- Geo-checkin write path with 7-step orchestration (rate-limit -> lesson -> time-window -> geo-block -> geofence -> Redis dedup -> MongoDB save -> RabbitMQ publish), CheckinController returning 201 with HATEOAS EntityModel, 7 unit tests, and 8 integration tests covering all CHKN-01..07 + INFRA-06.
+- Headman manual attendance marking via MongoTemplate $set/$setOnInsert upsert with group membership authorization and RabbitMQ event publishing
+- One-liner:
+- ReportService with 4-endpoint read-path logic (left-join roster, journal grid, CANCELLED-excluded stats with gRPC subject name resolution, filterable records) plus thin ReportController implementing ReportApi with HATEOAS wrapping
+- 8 unit tests for ReportService stats math + ArchUnit domain isolation rule + 6 MockMvc integration tests covering all 4 report endpoints with correct auth and data shapes
+- One-liner:
+
+---
+
 ## v3.0 Schedule Service (Shipped: 2026-04-04)
 
 **Phases completed:** 5 phases (10–14), 11 plans
@@ -14,6 +34,7 @@
 5. Integration tests with Testcontainers PostgreSQL
 
 **Known tech debt:**
+
 - IllegalArgumentException → HTTP 500 in REST layer (missing handler)
 - LSSN-03 idempotency: saveAll throws 409 on retry (no ON CONFLICT DO NOTHING)
 - GRPC-03 GetLessonsByGroup includes cancelled lessons (no filter control)

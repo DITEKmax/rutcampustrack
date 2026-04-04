@@ -11,9 +11,9 @@ Requirements for Attendance Service MVP. Each maps to roadmap phases.
 
 - [x] **INFRA-01**: System initializes MongoDB indexes programmatically (unique on {lesson_id, user_id}, query indexes for reports)
 - [x] **INFRA-02**: System serializes enums as lowercase strings in MongoDB via MongoCustomConversions
-- [ ] **INFRA-03**: gRPC client connects to Schedule Service (GetActiveLesson, GetLessonById, GetLessonsByGroup)
-- [ ] **INFRA-04**: gRPC client connects to Academic Service (GetGroupMembers, GetCampusGeofence, GetActiveSemester)
-- [ ] **INFRA-05**: RabbitMQ consumer declares durable queue bound to rut-uit.events fanout exchange
+- [x] **INFRA-03**: gRPC client connects to Schedule Service (GetActiveLesson, GetLessonById, GetLessonsByGroup)
+- [x] **INFRA-04**: gRPC client connects to Academic Service (GetGroupMembers, GetCampusGeofence, GetActiveSemester)
+- [x] **INFRA-05**: RabbitMQ consumer declares durable queue bound to rut-uit.events fanout exchange
 - [ ] **INFRA-06**: System publishes attendance.marked event after successful checkin/manual mark
 
 ### Checkin
@@ -93,9 +93,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | INFRA-01 | Phase 15 | Complete |
 | INFRA-02 | Phase 15 | Complete |
-| INFRA-03 | Phase 15 | Pending |
-| INFRA-04 | Phase 15 | Pending |
-| INFRA-05 | Phase 15 | Pending |
+| INFRA-03 | Phase 15 | Complete |
+| INFRA-04 | Phase 15 | Complete |
+| INFRA-05 | Phase 15 | Complete |
 | INFRA-06 | Phase 17 | Pending |
 | CHKN-01 | Phase 17 | Pending |
 | CHKN-02 | Phase 17 | Pending |

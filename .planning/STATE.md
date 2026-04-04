@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
-status: executing
-stopped_at: Completed 15-infrastructure-foundation 15-01-PLAN.md
-last_updated: "2026-04-04T08:40:21.540Z"
+status: verifying
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-04-04T09:01:52.799Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -24,7 +24,7 @@ v4.0 Attendance Service MVP — Roadmap created, ready to plan Phase 15
 
 Phase: 15 (infrastructure-foundation) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-04
 
 Progress: [░░░░░░░░░░] 0%
@@ -54,6 +54,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 15-infrastructure-foundation]: @WritingConverter/@ReadingConverter must import from org.springframework.data.convert (not .mongodb.core.convert) in Spring Data MongoDB 4.x
 - [Phase 15-infrastructure-foundation]: grpc.server.port=-1 for attendance-service — pure gRPC consumer, no exposed gRPC server (D-08)
 - [Phase 15-infrastructure-foundation]: MongoDB indexes created via @PostConstruct + ensureIndex (not auto-index-creation=true) — idempotent and explicit
+- [Phase 15-infrastructure-foundation]: MongoCustomConversions in separate MongoConvertersConfig to avoid circular dependency in Spring 6.2
+- [Phase 15-infrastructure-foundation]: RabbitConsumerTest uses AmqpAdmin queue checks — @MockitoSpyBean doesn't intercept @RabbitListener container calls
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -71,7 +73,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T08:40:21.534Z
-Stopped at: Completed 15-infrastructure-foundation 15-01-PLAN.md
+Last session: 2026-04-04T09:01:46.481Z
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 15`

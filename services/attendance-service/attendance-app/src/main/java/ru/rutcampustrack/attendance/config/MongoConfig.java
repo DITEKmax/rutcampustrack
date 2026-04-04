@@ -1,29 +1,26 @@
 package ru.rutcampustrack.attendance.config;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.convert.ReadingConverter;
-import org.springframework.data.convert.WritingConverter;
-import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexOperations;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
-import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 
-import java.util.List;
-
+/**
+ * MongoDB index configuration for the Attendance Service.
+ * Separated from MongoConvertersConfig to avoid circular dependency:
+ * MongoCustomConversions is needed to create MongoTemplate, so it must be
+ * declared in a configuration class that does NOT depend on MongoTemplate.
+ */
 @Configuration
 public class MongoConfig {
 
-    private final MongoTemplate mongoTemplate;
-
-    public MongoConfig(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
-    }
+    @Lazy
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @PostConstruct
     public void initIndexes() {
@@ -54,48 +51,5 @@ public class MongoConfig {
         ops.ensureIndex(new Index()
                 .on("lesson_id", Sort.Direction.ASC)
                 .named("idx_lesson_id"));
-    }
-
-    // INFRA-02: Enum serialization as lowercase strings
-    @Bean
-    public MongoCustomConversions mongoCustomConversions() {
-        return new MongoCustomConversions(List.of(
-                new AttendanceStatusWriter(),
-                new AttendanceStatusReader(),
-                new AttendanceSourceWriter(),
-                new AttendanceSourceReader()
-        ));
-    }
-
-    @WritingConverter
-    static class AttendanceStatusWriter implements Converter<AttendanceStatus, String> {
-        @Override
-        public String convert(AttendanceStatus source) {
-            return source.name().toLowerCase();
-        }
-    }
-
-    @ReadingConverter
-    static class AttendanceStatusReader implements Converter<String, AttendanceStatus> {
-        @Override
-        public AttendanceStatus convert(String source) {
-            return AttendanceStatus.valueOf(source.toUpperCase());
-        }
-    }
-
-    @WritingConverter
-    static class AttendanceSourceWriter implements Converter<AttendanceSource, String> {
-        @Override
-        public String convert(AttendanceSource source) {
-            return source.name().toLowerCase();
-        }
-    }
-
-    @ReadingConverter
-    static class AttendanceSourceReader implements Converter<String, AttendanceSource> {
-        @Override
-        public AttendanceSource convert(String source) {
-            return AttendanceSource.valueOf(source.toUpperCase());
-        }
     }
 }

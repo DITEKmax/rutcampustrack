@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: idle
-stopped_at: Completed v4.0 Attendance Service MVP
-last_updated: "2026-04-04T21:30:00Z"
+milestone: v5.0
+milestone_name: Notification Service (Web + Bot)
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-04T22:00:00Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 0
@@ -18,21 +18,21 @@ progress:
 
 ## Current Milestone
 
-None — v4.0 shipped, planning next milestone.
+v5.0 Notification Service (Web + Bot)
 
 ## Current Position
 
-Phase: —
+Phase: Not started (defining requirements)
 Plan: —
-Status: Between milestones
-Last activity: 2026-04-04
+Status: Defining requirements
+Last activity: 2026-04-04 — Milestone v5.0 started
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
-**Core value:** Full backend microservice backbone shipped (Auth + Academic + Schedule + Attendance). Next: frontends and notification system.
-**Current focus:** Planning next milestone
+**Core value:** Full backend microservice backbone shipped. Now building real-time notification delivery via WebSocket and Telegram bot.
+**Current focus:** Defining v5.0 requirements
 
 ## Completed Milestones
 
@@ -46,6 +46,6 @@ See: `.planning/PROJECT.md` (updated 2026-04-04)
 ## Session Continuity
 
 Last session: 2026-04-04
-Stopped at: Completed v4.0 milestone
+Stopped at: Starting v5.0 milestone
 Resume file: None
-Next action: `/gsd:new-milestone`
+Next action: Define requirements → create roadmap

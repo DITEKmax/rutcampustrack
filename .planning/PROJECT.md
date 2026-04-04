@@ -7,17 +7,20 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
 ## Core Value
-Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) + Attendance MVP (v4.0). All 4 services operational with complete inter-service communication (gRPC + RabbitMQ). Next focus: frontends (Telegram Mini App, Angular panel) and notification system.
+Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) + Attendance MVP (v4.0). All 4 services operational with complete inter-service communication (gRPC + RabbitMQ). Current focus: real-time notification delivery via WebSocket and Telegram bot.
+
+## Current Milestone: v5.0 Notification Service (Web + Bot)
+
+**Goal:** Real-time push notifications via WebSocket (web panel) and Telegram bot — both consuming RabbitMQ events from existing services.
+
+**Target features:**
+- Notification Web (Java, port 9094): WebSocket endpoint with JWT auth, RabbitMQ consumer, event→push mapping
+- Notification Bot (Python/Aiogram 3): Telegram bot with /start, /login, /status; RabbitMQ consumer; inline check-in buttons; 3-stage reminders with message cleanup
+- Bot gRPC client (grpcio): Academic Service calls for group-based message routing
+- Infrastructure: Two independent RabbitMQ queues on existing fanout exchange; Redis for reminder message_id storage
 
 ## Current State
-v4.0 shipped 2026-04-04. All 5 phases complete (15-19): Infrastructure Foundation, Event Consumers, Write Path (geo-checkin + manual marking), Read Path (reports), and Report Security Fix. 23 requirements satisfied, 12 plans executed. Attendance Service delivers geo-checkin, manual marking, auto-absent, 4 report endpoints, full @RequireRole security, and domain isolation between report/ and checkin/ packages.
-
-## Next Milestone
-Planning next milestone. Candidate areas:
-- Telegram Mini App (React frontend for students)
-- Angular web panel (admin/headman dashboard)
-- Notification Service (WebSocket push + Telegram bot)
-- Excuse tickets flow (create/submit/review)
+v5.0 started 2026-04-04. Backend backbone complete (v1.0-v4.0): Auth, Academic, Schedule, Attendance services all operational. Now building the notification layer that delivers real-time events to end users via two independent channels (WebSocket + Telegram).
 
 ## Shipped Milestones
 
@@ -87,7 +90,14 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ GRPC-01..03: gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) — v3.0
 
 ### Active
-(none — planning next milestone)
+- [ ] Notification Web: WebSocket endpoint with JWT auth and group-based push delivery
+- [ ] Notification Web: RabbitMQ consumer mapping events to WebSocket messages
+- [ ] Notification Bot: Telegram bot commands (/start, /login, /status)
+- [ ] Notification Bot: RabbitMQ consumer with Telegram message delivery
+- [ ] Notification Bot: 3-stage lesson reminders with message cleanup
+- [ ] Notification Bot: Inline check-in button opening Mini App
+- [ ] Bot gRPC client for Academic Service (group members)
+- [ ] Infrastructure: Two RabbitMQ queues on fanout exchange, Redis for reminder message_ids
 
 ### Recently Validated (v4.0)
 - ✓ INFRA-01..06: MongoDB indexes, enum converters, gRPC clients, RabbitMQ queue, event publishing — v4.0
@@ -169,4 +179,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after v4.0 milestone*
+*Last updated: 2026-04-04 after v5.0 milestone start*

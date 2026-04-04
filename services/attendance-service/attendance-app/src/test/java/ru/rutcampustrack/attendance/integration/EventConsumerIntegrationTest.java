@@ -38,7 +38,8 @@ class EventConsumerIntegrationTest extends AbstractAttendanceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mongoTemplate.dropCollection(AttendanceDocument.class);
+        // Use remove (not dropCollection) to preserve indexes between tests
+        mongoTemplate.remove(new org.springframework.data.mongodb.core.query.Query(), AttendanceDocument.class);
         Mockito.reset(scheduleGrpcClient, academicGrpcClient, semesterCacheService);
     }
 

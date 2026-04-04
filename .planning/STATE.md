@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
 status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-04-04T11:10:41.585Z"
+stopped_at: Completed 17-03-PLAN.md
+last_updated: "2026-04-04T11:20:49.899Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 7
   percent: 0
 ---
 
@@ -23,7 +23,7 @@ v4.0 Attendance Service MVP — Roadmap created, ready to plan Phase 15
 ## Current Position
 
 Phase: 17 (write-path-geo-checkin-manual-marking) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -63,6 +63,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 16]: lenient() stubs in @BeforeEach for unit tests — avoids UnnecessaryStubbingException with Mockito strict mode
 - [Phase 17-01]: testcontainers:redis BOM module does not exist — Redis Testcontainer uses GenericContainer from core testcontainers
 - [Phase 17-01]: GeofenceService: volatile cache with 30m TTL, @PostConstruct try/catch, delegates to package-private GeoUtils Haversine
+- [Phase 17-03]: @RequireRole(STUDENT) on marking controller — headman is a student with is_headman=true, headman-specific check in MarkingService
+- [Phase 17-03]: @MockitoSpyBean used for AttendanceEventPublisher in integration tests — wraps real bean for verify() without mocking behavior
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -80,7 +82,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T11:10:41.581Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-04-04T11:20:49.896Z
+Stopped at: Completed 17-03-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 15`

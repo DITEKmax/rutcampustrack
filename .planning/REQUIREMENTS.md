@@ -28,8 +28,8 @@ Requirements for Attendance Service MVP. Each maps to roadmap phases.
 
 ### Marking
 
-- [ ] **MARK-01**: Headman can manually set attendance status for any student in their group
-- [ ] **MARK-02**: Manual marking works per student (autosave per click, not batch)
+- [x] **MARK-01**: Headman can manually set attendance status for any student in their group
+- [x] **MARK-02**: Manual marking works per student (autosave per click, not batch)
 - [x] **MARK-03**: Auto-absent assigns status=absent to all unmarked students on lesson.closed event
 - [x] **MARK-04**: Auto-absent uses $setOnInsert to prevent overwriting existing checkins (race-safe)
 - [x] **MARK-05**: lesson.cancelled consumer updates existing attendance docs to status=cancelled
@@ -104,8 +104,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHKN-05 | Phase 17 | Pending |
 | CHKN-06 | Phase 17 | Complete |
 | CHKN-07 | Phase 17 | Complete |
-| MARK-01 | Phase 17 | Pending |
-| MARK-02 | Phase 17 | Pending |
+| MARK-01 | Phase 17 | Complete |
+| MARK-02 | Phase 17 | Complete |
 | MARK-03 | Phase 16 | Complete |
 | MARK-04 | Phase 16 | Complete |
 | MARK-05 | Phase 16 | Complete |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Attendance Service MVP
-status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-04-04T09:45:54.334Z"
+status: verifying
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-04-04T10:02:40.184Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -24,7 +24,7 @@ v4.0 Attendance Service MVP — Roadmap created, ready to plan Phase 15
 
 Phase: 16 (event-consumers) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-04
 
 Progress: [░░░░░░░░░░] 0%
@@ -59,6 +59,8 @@ See `.planning/PROJECT.md` Key Decisions table for full list.
 - [Phase 16-event-consumers]: BulkMode.UNORDERED for auto-absent — one student error must not block rest of group
 - [Phase 16-event-consumers]: No @Transactional on LessonEventService — MongoDB bulkOps and RabbitMQ have no shared transaction manager
 - [Phase 16-event-consumers]: No try/catch in LessonEventService — exceptions propagate so AMQP nacks to DLQ on gRPC failure
+- [Phase 16]: mongoTemplate.remove(new Query()) over dropCollection() — preserves MongoDB indexes between tests
+- [Phase 16]: lenient() stubs in @BeforeEach for unit tests — avoids UnnecessaryStubbingException with Mockito strict mode
 
 ### Known Tech Debt (from v3.0 audit)
 
@@ -76,7 +78,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-04T09:45:54.328Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-04-04T10:02:40.178Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 15`

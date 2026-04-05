@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: PWA + Web Push
 status: executing
-stopped_at: Completed 28-02-PLAN.md
-last_updated: "2026-04-06T00:00:00.000Z"
-last_activity: 2026-04-06 -- Phase 28 Wave 1 complete
+stopped_at: Phase 29 UI-SPEC approved
+last_updated: "2026-04-05T22:15:43.143Z"
+last_activity: 2026-04-05 -- Phase 29 planning complete
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 5
+  completed_phases: 2
+  total_plans: 8
   completed_plans: 5
-  percent: 80
+  percent: 63
 ---
 
 # Project State
@@ -24,8 +24,8 @@ v6.0 PWA + Web Push — Roadmap created, ready to plan Phase 27
 
 Phase: 28 (api-gateway-cors-nginx) — EXECUTING
 Plan: 2 of 2
-Status: Wave 1 complete, verifying
-Last activity: 2026-04-06 -- Phase 28 Wave 1 complete
+Status: Ready to execute
+Last activity: 2026-04-05 -- Phase 29 planning complete
 
 Progress: [████████░░] 80%
 
@@ -74,7 +74,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-06T00:00:00.000Z
-Stopped at: Completed 28-02-PLAN.md
-Resume file: None
+Last session: 2026-04-05T21:41:43.001Z
+Stopped at: Phase 29 UI-SPEC approved
+Resume file: .planning/phases/29-pwa-scaffold-auth/29-UI-SPEC.md
 Next action: Verify phase 28

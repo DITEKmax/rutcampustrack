@@ -81,7 +81,7 @@ Full details: `.planning/milestones/v5.0-ROADMAP.md`
 
 **Milestone Goal:** Student mobile client «RutTrack» (React PWA) with native Web Push notifications — installable on Android/iOS, offline-capable app shell, geo check-in, schedule view, attendance stats, homework tracker.
 
-- [ ] **Phase 27: Web Push Backend** — VAPID infrastructure and push subscription endpoints in notification-web
+- [x] **Phase 27: Web Push Backend** — VAPID infrastructure and push subscription endpoints in notification-web (completed 2026-04-05)
 - [ ] **Phase 28: API Gateway CORS + nginx** — Gateway CORS config for PWA origin, push route, nginx serving container
 - [ ] **Phase 29: PWA Scaffold + Auth** — React PWA project, login, JWT auth, manifest, A2HS, Service Worker shell
 - [ ] **Phase 30: Schedule + Check-in UI** — Today/week schedule view with offline cache, geo check-in button and feedback
@@ -100,11 +100,11 @@ Full details: `.planning/milestones/v5.0-ROADMAP.md`
   3. `DELETE /api/ws/push/subscribe` removes the stored subscription; subsequent push attempts to that endpoint do not occur
   4. Sending a test push via curl to a subscribed endpoint delivers a browser notification within 5 seconds
   5. A push delivery that receives HTTP 410 from the push service causes the subscription to be deleted from MongoDB automatically
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 Plans:
-- [ ] 27-01-PLAN.md — Module restructure + API contract + VAPID config + Gateway route
-- [ ] 27-02-PLAN.md — Push subscription CRUD + @RequireRole security
-- [ ] 27-03-PLAN.md — Async push delivery + EventConsumer hook + 410 cleanup
+- [x] 27-01-PLAN.md — Module restructure + API contract + VAPID config + Gateway route
+- [x] 27-02-PLAN.md — Push subscription CRUD + @RequireRole security
+- [x] 27-03-PLAN.md — Async push delivery + EventConsumer hook + 410 cleanup
 **UI hint**: no
 
 ### Phase 28: API Gateway CORS + nginx
@@ -115,7 +115,10 @@ Plans:
   1. A preflight OPTIONS request from `http://localhost:5173` to the Gateway returns `Access-Control-Allow-Origin: http://localhost:5173` without duplicate headers
   2. `GET /api/push/vapid-public-key` is routable through the Gateway (StripPrefix removes `/api/push` leaving `/vapid-public-key` reaching notification-web)
   3. `docker compose up` starts an nginx container serving a static HTML file at `http://localhost:80`; `sw.js` and `index.html` are served with `Cache-Control: no-cache`
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
+- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
 **UI hint**: no
 
 ### Phase 29: PWA Scaffold + Auth
@@ -129,7 +132,10 @@ Plans:
   4. Android Chrome displays an A2HS install prompt after the student's first successful check-in
   5. iOS Safari users who open the PWA in a browser (not standalone) see an instruction screen explaining how to add to home screen
   6. After installing and going fully offline, the app shell (login page) loads from the Service Worker cache without a network request
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
+- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
 **UI hint**: yes
 
 ### Phase 30: Schedule + Check-in UI
@@ -143,7 +149,10 @@ Plans:
   4. Student taps "Отметиться" on an active lesson card; the app captures GPS coordinates and submits them; a success toast appears within 3 seconds on a good connection
   5. When check-in fails (not in zone, already marked, or no active lesson), the student sees the specific failure reason rather than a generic error
   6. When another student in the same group checks in, the current student's lesson card updates its attendance count in real time via the STOMP WebSocket
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
+- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
 **UI hint**: yes
 
 ### Phase 31: Push Frontend + End-to-End Integration
@@ -155,7 +164,10 @@ Plans:
   2. A `lesson.started` RabbitMQ event triggers a Web Push notification on a subscribed device within 10 seconds; tapping it opens the PWA on the check-in screen for that lesson
   3. A `lesson.cancelled` RabbitMQ event triggers a Web Push notification; tapping it opens the schedule screen
   4. When the PWA is open in the foreground, the push notification is suppressed (the STOMP WebSocket already delivered the same event as an in-app update)
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
+- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
 **UI hint**: yes
 
 ### Phase 32: Stats + Homework
@@ -168,7 +180,10 @@ Plans:
   3. Student can view a scrollable list of individual attendance records showing date, lesson name, and status with color coding (б/н/у/сп)
   4. Student opens the homework screen and sees all homework items for their group with title, subject, deadline, and completion status
   5. Student taps a checkbox on a homework item; the item toggles to done/undone and the state persists after closing and reopening the app
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
+- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
 **UI hint**: yes
 
 ## Progress
@@ -201,8 +216,8 @@ Plans:
 | 24. Bot Event Notifications | v5.0 | 2/2 | Complete | 2026-04-05 |
 | 25. Bot Reminder Lifecycle | v5.0 | 2/2 | Complete | 2026-04-05 |
 | 26. Notification Deployment Hardening | v5.0 | 1/1 | Complete | 2026-04-05 |
-| 27. Web Push Backend | v6.0 | 0/3 | Planning | - |
-| 28. API Gateway CORS + nginx | v6.0 | 0/? | Not started | - |
+| 27. Web Push Backend | v6.0 | 3/3 | Complete   | 2026-04-05 |
+| 28. API Gateway CORS + nginx | v6.0 | 0/2 | Planned | - |
 | 29. PWA Scaffold + Auth | v6.0 | 0/? | Not started | - |
 | 30. Schedule + Check-in UI | v6.0 | 0/? | Not started | - |
 | 31. Push Frontend + End-to-End Integration | v6.0 | 0/? | Not started | - |

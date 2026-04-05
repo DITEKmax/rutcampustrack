@@ -33,5 +33,19 @@ class AcademicGrpcClient:
     def invalidate(self, group_id: int) -> None:
         self._cache.pop(group_id, None)
 
+    async def get_user_by_telegram_id(self, telegram_id: int):
+        """Look up user by Telegram ID. Returns UserByTelegramIdResponse proto.
+
+        Response has .found bool — if False, user doesn't exist.
+        Does NOT raise on not-found (uses found flag instead of gRPC error).
+        """
+        request = academic_pb2.UserByTelegramIdRequest(telegram_id=telegram_id)
+        return await self._stub.GetUserByTelegramId(request)
+
+    async def get_subjects_by_ids(self, subject_ids: list[int]):
+        """Resolve subject IDs to names. Returns SubjectsByIdsResponse proto."""
+        request = academic_pb2.SubjectsByIdsRequest(subject_ids=subject_ids)
+        return await self._stub.GetSubjectsByIds(request)
+
     async def close(self) -> None:
         await self._channel.close()

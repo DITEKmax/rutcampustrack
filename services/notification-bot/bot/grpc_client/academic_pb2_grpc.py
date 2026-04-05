@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from . import academic_pb2 as academic__pb2
+from bot.grpc_client import academic_pb2 as academic__pb2
 
 GRPC_GENERATED_VERSION = '1.73.0'
 GRPC_VERSION = grpc.__version__
@@ -77,6 +77,11 @@ class AcademicGrpcServiceStub(object):
                 request_serializer=academic__pb2.SubjectsByIdsRequest.SerializeToString,
                 response_deserializer=academic__pb2.SubjectsByIdsResponse.FromString,
                 _registered_method=True)
+        self.GetUserByTelegramId = channel.unary_unary(
+                '/rutcampustrack.academic.AcademicGrpcService/GetUserByTelegramId',
+                request_serializer=academic__pb2.UserByTelegramIdRequest.SerializeToString,
+                response_deserializer=academic__pb2.UserByTelegramIdResponse.FromString,
+                _registered_method=True)
 
 
 class AcademicGrpcServiceServicer(object):
@@ -141,6 +146,13 @@ class AcademicGrpcServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetUserByTelegramId(self, request, context):
+        """Получить пользователя по Telegram ID (для бота)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AcademicGrpcServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -183,6 +195,11 @@ def add_AcademicGrpcServiceServicer_to_server(servicer, server):
                     servicer.GetSubjectsByIds,
                     request_deserializer=academic__pb2.SubjectsByIdsRequest.FromString,
                     response_serializer=academic__pb2.SubjectsByIdsResponse.SerializeToString,
+            ),
+            'GetUserByTelegramId': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetUserByTelegramId,
+                    request_deserializer=academic__pb2.UserByTelegramIdRequest.FromString,
+                    response_serializer=academic__pb2.UserByTelegramIdResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -404,6 +421,33 @@ class AcademicGrpcService(object):
             '/rutcampustrack.academic.AcademicGrpcService/GetSubjectsByIds',
             academic__pb2.SubjectsByIdsRequest.SerializeToString,
             academic__pb2.SubjectsByIdsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetUserByTelegramId(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.academic.AcademicGrpcService/GetUserByTelegramId',
+            academic__pb2.UserByTelegramIdRequest.SerializeToString,
+            academic__pb2.UserByTelegramIdResponse.FromString,
             options,
             channel_credentials,
             insecure,

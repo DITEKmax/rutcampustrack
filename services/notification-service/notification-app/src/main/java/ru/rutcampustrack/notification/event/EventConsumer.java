@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 
 import java.util.Map;
 import java.util.Set;
@@ -18,9 +19,12 @@ public class EventConsumer {
     );
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final WebPushDeliveryService webPushDeliveryService;
 
-    public EventConsumer(SimpMessagingTemplate messagingTemplate) {
+    public EventConsumer(SimpMessagingTemplate messagingTemplate,
+                         WebPushDeliveryService webPushDeliveryService) {
         this.messagingTemplate = messagingTemplate;
+        this.webPushDeliveryService = webPushDeliveryService;
     }
 
     @RabbitListener(queues = "notification-web.events")
@@ -55,5 +59,12 @@ public class EventConsumer {
         Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
         messagingTemplate.convertAndSend(destination, wsMessage);
         log.debug("Routed {} to {}", eventType, destination);
+
+        // D-07, D-08: After STOMP delivery — trigger async Web Push for push-eligible events.
+        // sendToGroup is @Async so it returns immediately and does NOT block this RabbitMQ listener thread.
+        if (webPushDeliveryService.shouldPush(eventType)) {
+            webPushDeliveryService.sendToGroup(groupId, eventType, payload);
+            log.debug("Triggered async push for {} to group {}", eventType, groupId);
+        }
     }
 }

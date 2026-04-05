@@ -43,6 +43,13 @@ spring:
           filters:
             - StripPrefix=1
 
+        - id: notification-push
+          uri: http://notification-web:9094
+          predicates:
+            - Path=/api/push/**
+          filters:
+            - StripPrefix=1
+
 gateway:
   auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
 

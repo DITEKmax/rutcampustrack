@@ -143,6 +143,12 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
       HEALTH_PORT: "8081"
+      SCHEDULE_GRPC_HOST: schedule-service
+      SCHEDULE_GRPC_PORT: "19092"
+      AUTH_SERVICE_HOST: auth-service
+      AUTH_SERVICE_PORT: "9090"
+      API_GATEWAY_URL: http://api-gateway:8080
+      MINI_APP_URL: ${MINI_APP_URL:-https://t.me/RutTrackBot/checkin}
     networks:
       - private_net
     depends_on:

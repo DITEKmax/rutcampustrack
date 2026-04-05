@@ -30,7 +30,10 @@
       "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs\\(roadmap\\): add gap closure phase 19 — report security & routing fix' --files .planning/ROADMAP.md .planning/phases/19-report-security-routing-fix/.gitkeep)",
       "Bash(mkdir -p .planning/milestones/v4.0-phases)",
       "Bash(mv .planning/phases/15-* .planning/phases/16-* .planning/phases/17-* .planning/phases/18-* .planning/phases/19-* .planning/milestones/v4.0-phases/)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(docker compose:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)"
     ]
   }
 }

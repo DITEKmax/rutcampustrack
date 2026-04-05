@@ -1,5 +1,29 @@
 # Milestones
 
+## v5.0 Notification Service (Web + Bot) (Shipped: 2026-04-05)
+
+**Phases completed:** 7 phases, 16 plans
+**Timeline:** 2 days (2026-04-04 → 2026-04-05)
+**Git:** 101 commits, 463 files, ~84K insertions
+**Requirements:** 19/25 satisfied (6 partial — 4 await future event publishers, 2 need live testing)
+
+**Key accomplishments:**
+
+1. STOMP WebSocket with JWT handshake auth and group-based event routing for all 5 event types (20 tests)
+2. Python Telegram bot with /start account linking, /login OTP flow, /status attendance check
+3. Bot infrastructure: aio-pika watchdog reconnect, async gRPC client with 5-min cache, Redis async client, throttled send queue (30 msg/s token bucket)
+4. Event notifications: inline check-in button (Mini App WebAppInfo), lesson cancellation, homework published/updated, headman excuse/late-checkin alerts
+5. Full reminder lifecycle: midpoint + near-end reminders via asyncio timers, cleanup on lesson.closed and attendance.marked
+6. Deployment hardening: JWT key volume mount, docker-compose env vars, defensive None guards
+
+**Known gaps:**
+
+- WS-05, WS-06, NOTIF-08, NOTIF-09: Handlers wired for excuse.requested/late_checkin.requested but no publisher exists yet (future scope)
+- WS-07: Group isolation needs live broker-level verification
+- NOTIF-02, NOTIF-03: TZ fix applied; live timer testing still needed
+
+---
+
 ## v4.0 Attendance Service MVP (Shipped: 2026-04-04)
 
 **Phases completed:** 5 phases, 12 plans, 21 tasks

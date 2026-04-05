@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
-status: verifying
-stopped_at: Completed 26-01-PLAN.md
-last_updated: "2026-04-05T16:13:16.725Z"
+status: complete
+stopped_at: Milestone shipped
+last_updated: "2026-04-05T20:00:00Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 7
@@ -18,23 +18,22 @@ progress:
 
 ## Current Milestone
 
-v5.0 Notification Service (Web + Bot)
+v5.0 Notification Service (Web + Bot) — SHIPPED 2026-04-05
 
 ## Current Position
 
-Phase: 26 (notification-deployment-hardening) — EXECUTING
-Plan: 1 of 1
-Status: Phase complete — ready for verification
+Phase: All complete
+Status: Milestone shipped — ready for next milestone
 Last activity: 2026-04-05
 
-Progress: [████████░░] 87%
+Progress: [██████████] 100%
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-04)
+See: `.planning/PROJECT.md` (updated 2026-04-05)
 
-**Core value:** Full backend microservice backbone shipped. Now delivering real-time notifications via WebSocket (web panel) and Telegram bot.
-**Current focus:** Phase 26 — notification-deployment-hardening
+**Core value:** Full backend microservice backbone + real-time notifications shipped. All 5 services + 2 notification containers operational.
+**Current focus:** Planning next milestone
 
 ## Completed Milestones
 
@@ -44,40 +43,25 @@ See: `.planning/PROJECT.md` (updated 2026-04-04)
 | v2.0 | Academic Service | 5-9 | 12 | 2026-03-31 |
 | v3.0 | Schedule Service | 10-14 | 10 | 2026-04-04 |
 | v4.0 | Attendance Service MVP | 15-19 | 12 | 2026-04-04 |
+| v5.0 | Notification Service (Web + Bot) | 20-26 | 16 | 2026-04-05 |
 
 ## Accumulated Context
 
 ### Decisions
 
-Recent decisions affecting v5.0:
+See PROJECT.md Key Decisions table for full history.
 
-- STOMP in-memory broker (no external broker needed for single-instance VPS)
-- JWT claims extracted to WebSocket session attributes at handshake — not re-validated on expiry
-- grpcio pinned at 1.73.0 (protobuf 5.x compatible — 1.80.x requires protobuf 6.x, breaking change)
-- aio-pika consumer watchdog required from day one (silent consumer death after RabbitMQ restart)
-- Redis RPUSH list (not SET string) for reminder message_ids — LRANGE retrieves all on lesson.closed
-- [Phase 22]: asyncio.Queue + single worker with token bucket (30/s, 30 burst), retry [1,2,4]s backoff, duck-typed retry_after
-- [Phase 22]: Bumped protobuf to 6.31.0 to match grpcio-tools 1.73.0 bundled gencode version
-- [Phase 22]: ReminderRedisClient uses RPUSH/LRANGE list pattern with TTL for per-lesson-per-user reminder message tracking
-- [Phase 24-bot-event-notifications]: Handler exceptions caught inside EventDispatcher.dispatch() for RabbitMQ ack safety
-- [Phase 24-bot-event-notifications]: Lambda default-arg binding (s=student) used in lesson_started closures to avoid Python late-binding bug
-- [Phase 24-bot-event-notifications]: homework.updated shares handle_homework with homework.published via event_type branch
-- [Phase 24-bot-event-notifications]: student_name resolved: payload field > member lookup by user_id > fallback string
-- [Phase 26]: jwt-keys named volume mounted :ro in notification-web for key sharing
+### Research Flags
 
-### Research Flags (resolve before phase begins)
-
-- Phase 21: Verify JwtAuthenticationFilter handles HTTP GET Upgrade: websocket — injects X-User-Id/X-Group-Id before WebSocket proxy forward
-- ~~Phase 22/23: Verify POST /auth/otp/request returns OTP code in response body~~ — RESOLVED in Phase 23-01: returns `{"code":"123456"}`
-- ~~Phase 23: Decide how bot looks up user by telegram_id for /start~~ — RESOLVED in Phase 23-01: added GetUserByTelegramId gRPC RPC
+None — all v5.0 flags resolved.
 
 ### Blockers/Concerns
 
-None yet.
+None.
 
 ## Session Continuity
 
-Last session: 2026-04-05T16:13:16.721Z
-Stopped at: Completed 26-01-PLAN.md
+Last session: 2026-04-05
+Stopped at: Milestone v5.0 shipped
 Resume file: None
-Next action: Discuss/plan Phase 25 (bot-reminder-lifecycle)
+Next action: /gsd-new-milestone

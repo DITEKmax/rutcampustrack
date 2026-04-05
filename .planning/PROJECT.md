@@ -7,22 +7,29 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
 ## Core Value
-Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) + Attendance MVP (v4.0). All 4 services operational with complete inter-service communication (gRPC + RabbitMQ). Current focus: real-time notification delivery via WebSocket and Telegram bot.
-
-## Current Milestone: v5.0 Notification Service (Web + Bot)
-
-**Goal:** Real-time push notifications via WebSocket (web panel) and Telegram bot — both consuming RabbitMQ events from existing services.
-
-**Target features:**
-- Notification Web (Java, port 9094): WebSocket endpoint with JWT auth, RabbitMQ consumer, event→push mapping
-- Notification Bot (Python/Aiogram 3): Telegram bot with /start, /login, /status; RabbitMQ consumer; inline check-in buttons; 3-stage reminders with message cleanup
-- Bot gRPC client (grpcio): Academic Service calls for group-based message routing
-- Infrastructure: Two independent RabbitMQ queues on existing fanout exchange; Redis for reminder message_id storage
+Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) + Attendance MVP (v4.0) + Real-time notifications (v5.0). All 5 services + 2 notification containers operational with complete inter-service communication (gRPC + RabbitMQ + WebSocket + Telegram).
 
 ## Current State
-v5.0 started 2026-04-04. Backend backbone complete (v1.0-v4.0): Auth, Academic, Schedule, Attendance services all operational. Phase 21 complete — notification-web has STOMP WebSocket with JWT auth and RabbitMQ-to-WebSocket routing for all 5 event types (20 tests). Now building Telegram bot infrastructure.
+v5.0 shipped 2026-04-05. All backend services operational: 5 Java microservices + API Gateway + notification-web (Java WebSocket) + notification-bot (Python Aiogram). 7 containers in docker-compose. ~108K lines of code across Java and Python. Next: frontends (PWA, Mini App, Web Panel, Landing) or additional backend features (excuse tickets, late check-in, notification preferences).
 
 ## Shipped Milestones
+
+<details>
+<summary>v5.0 Notification Service (Web + Bot) — SHIPPED 2026-04-05</summary>
+
+**Goal:** Real-time push notifications via WebSocket (web panel) and Telegram bot.
+**Phases:** 20-26 (7 phases, 16 plans)
+**Requirements:** 19/25 satisfied (6 partial — 4 await future event publishers, 2 need live testing)
+
+Key deliverables:
+- STOMP WebSocket with JWT handshake auth and group-based event routing (5 event types)
+- Telegram bot: /start account linking, /login OTP, /status attendance check
+- Bot infrastructure: aio-pika watchdog, async gRPC client, Redis client, throttled send queue (30 msg/s)
+- Event notifications: inline check-in button, cancellation, homework, headman alerts
+- Reminder lifecycle: midpoint + near-end reminders, cleanup on close/checkin
+- Deployment hardening: JWT volume mount, docker-compose env vars, defensive guards
+
+</details>
 
 <details>
 <summary>v4.0 Attendance Service MVP — SHIPPED 2026-04-04</summary>
@@ -89,15 +96,20 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ EVNT-01..04: RabbitMQ events (lesson.started/closed/cancelled) — v3.0
 - ✓ GRPC-01..03: gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) — v3.0
 
+### Recently Validated (v5.0)
+- ✓ INFRA-01..03: Two RabbitMQ queues with DLQ, docker-compose containers, Redis key namespace — v5.0
+- ✓ WS-01..04: STOMP WebSocket with JWT auth, lesson/cancel/homework push to group topics — v5.0
+- ✓ BINFRA-01..03: gRPC group members client, throttled send queue, aio-pika watchdog — v5.0
+- ✓ BOT-01..03: /start account linking, /login OTP flow, /status attendance check — v5.0
+- ✓ NOTIF-01, NOTIF-04..07: Inline check-in button, cleanup on close/checkin, cancellation, homework notifications — v5.0
+- ✓ NOTIF-08..09: Headman excuse/late-checkin alert handlers (wired, awaiting publisher) — v5.0 (partial)
+- ✓ WS-05..06: Headman WebSocket push handlers (wired, awaiting publisher) — v5.0 (partial)
+
 ### Active
-- [x] Notification Web: WebSocket endpoint with JWT auth and group-based push delivery — v5.0 Phase 21
-- [x] Notification Web: RabbitMQ consumer mapping events to WebSocket messages — v5.0 Phase 21
-- [ ] Notification Bot: Telegram bot commands (/start, /login, /status)
-- [ ] Notification Bot: RabbitMQ consumer with Telegram message delivery
-- [ ] Notification Bot: 3-stage lesson reminders with message cleanup
-- [ ] Notification Bot: Inline check-in button opening Mini App
-- [ ] Bot gRPC client for Academic Service (group members)
-- [ ] Infrastructure: Two RabbitMQ queues on fanout exchange, Redis for reminder message_ids
+- [ ] Excuse tickets: create/submit/review flow with event publishing (excuse.requested)
+- [ ] Late check-in ("forgot to mark") flow with event publishing (late_checkin.requested)
+- [ ] NOTIF-02, NOTIF-03: Live timer testing for midpoint/near-end reminders (TZ fix applied)
+- [ ] WS-07: Live broker-level group isolation verification
 
 ### Recently Validated (v4.0)
 - ✓ INFRA-01..06: MongoDB indexes, enum converters, gRPC clients, RabbitMQ queue, event publishing — v4.0
@@ -117,6 +129,9 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - PDF/Excel export — deferred to v4.1+
 
 ## Milestones
+
+### v5.0: Notification Service (Web + Bot) — ✅ SHIPPED 2026-04-05
+WebSocket push + Telegram bot with 3 commands, 8 event handlers, reminder lifecycle. 7 phases, 16 plans, 25 requirements (19 satisfied, 6 partial). See `.planning/milestones/v5.0-ROADMAP.md`.
 
 ### v4.0: Attendance Service MVP — ✅ SHIPPED 2026-04-04
 Geo-checkin, manual marking, auto-absent, 4 report endpoints. 5 phases, 12 plans, 23 requirements. See `.planning/milestones/v4.0-ROADMAP.md`.
@@ -160,6 +175,15 @@ Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 | @Profile("!test") on SchedulingConfig | ✓ Cron jobs disabled in test profile, matches @ActiveProfiles("test") | v3.0 |
 | grpc.server.port: 19092 | ✓ gRPC server starter added, port configured | v3.0 |
 | TZ=Europe/Moscow + hibernate.jdbc.time_zone | ✓ All TIME columns interpreted in Moscow timezone (CRON-04) | v3.0 |
+| STOMP in-memory broker (no external broker) | ✓ Sufficient for single-instance VPS deployment | v5.0 |
+| JWT claims at handshake only (no re-validation) | ✓ Simplifies WebSocket lifecycle; expired JWT clients keep receiving | v5.0 |
+| Separate /headman topic over ChannelInterceptor ACL | ✓ Simpler architecture; client-side subscription honor system acceptable for MVP | v5.0 |
+| aio-pika watchdog with 5s retry loop | ✓ Handles RabbitMQ restart gracefully; consumer auto-restarts | v5.0 |
+| Token bucket 30 msg/s for Telegram send queue | ✓ No 429 errors; retry backoff [1,2,4]s with duck-typed retry_after | v5.0 |
+| Redis RPUSH list for reminder message_ids | ✓ LRANGE retrieves all IDs in order for bulk delete on lesson.closed | v5.0 |
+| TZ=Europe/Moscow env var on notification-bot | ✓ datetime.now() aligns with Moscow lesson times from Schedule Service | v5.0 |
+| OTP code returned in HTTP response body | ✓ Bot delivers OTP to student via Telegram instead of separate channel | v5.0 |
+| grpcio 1.73.0 + protobuf 6.31.0 | ✓ Compatible pair; 1.80.x requires protobuf 6.x breaking change | v5.0 |
 
 ## Evolution
 
@@ -179,4 +203,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after v5.0 milestone start*
+*Last updated: 2026-04-05 after v5.0 milestone completion*

@@ -2,6 +2,56 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v5.0 — Notification Service (Web + Bot)
+
+**Shipped:** 2026-04-05
+**Phases:** 7 | **Plans:** 16
+
+### What Was Built
+- Notification Web (Java): STOMP WebSocket with JWT handshake auth, SimpMessagingTemplate routing to group topics, headman-only topic for excuse/late-checkin events, RabbitMQ consumer
+- Notification Bot (Python/Aiogram 3): /start account linking, /login OTP flow with FSM, /status attendance check with multi-service data aggregation
+- Bot infrastructure: aio-pika consumer with watchdog reconnect, async gRPC client with 5-min cache, Redis async client for reminder message_ids, throttled send queue (30 msg/s token bucket)
+- Event notifications: lesson.started with inline Mini App check-in button, lesson.cancelled, homework published/updated, headman alerts for excuse/late-checkin requests
+- Reminder lifecycle: midpoint + near-end reminders via asyncio timers, cleanup on lesson.closed (bulk delete), immediate cleanup on attendance.marked (per-student delete)
+- Deployment hardening: JWT key volume mount, 6 docker-compose env vars, None guard in lesson_closed handler, TZ=Europe/Moscow
+
+### What Worked
+- Contract-first gRPC approach carried over smoothly to Python — proto stubs generated and imported cleanly
+- EventDispatcher pattern with lambda handler registry — clean separation of routing from business logic
+- TDD in Python (RED-GREEN per task) — caught late-binding closure bug in lesson_started early
+- Default-arg lambda binding (s=student) — documented Python pattern for async closure correctness
+- Token bucket rate limiter with duck-typed retry_after — handles Telegram 429 elegantly
+- Phase 26 gap closure pattern (from v4.0) — single hardening phase fixed 3 deployment issues cleanly
+- Integration checker agent caught TZ env var gap and missing event publishers — high-value cross-phase verification
+
+### What Was Inefficient
+- SUMMARY.md `one_liner` fields mostly empty — milestone extraction returned placeholders for 14/16 plans
+- `requirements_completed` frontmatter field unused in most SUMMARYs — 3-source cross-reference fell back to VERIFICATION + REQUIREMENTS only
+- excuse.requested and late_checkin.requested handlers built but no publisher exists — 4 requirements (WS-05, WS-06, NOTIF-08, NOTIF-09) are technically partial until future phases add the workflow
+- Phase 24 VERIFICATION.md was named `VERIFICATION.md` instead of `24-VERIFICATION.md` — inconsistent with other phases, caused initial "missing" detection in audit
+
+### Patterns Established
+- Python bot: Pydantic BaseSettings for env-var-driven config with explicit defaults
+- aiogram 3 DI via dp[] dictionary injection — all handlers receive clients as keyword args
+- asyncio.create_task for background timers with in-memory dict registry for cancellation
+- Redis RPUSH/LRANGE list pattern for ordered message_id tracking with TTL
+- `try/except TelegramBadRequest: pass` for safe delete_message (message may already be deleted)
+- Health endpoint pattern: check consumer task + connection liveness, return JSON status
+
+### Key Lessons
+1. Always add TZ env var to docker-compose when container code uses naive datetime — timezone mismatch causes systematic timer errors
+2. When building event handlers for future event types, document that the publisher doesn't exist yet — prevents confusion during milestone audit
+3. SUMMARY.md one_liner field should be filled at plan completion — empty fields cascade to poor milestone documentation
+4. Python async closures in loops need default-arg binding — `lambda s=student:` not `lambda: student`
+5. Watchdog pattern (while True + sleep + restart) is essential for aio-pika consumers — RabbitMQ restart silently kills consumers
+
+### Cost Observations
+- Model mix: ~20% opus (orchestration/audit), ~80% sonnet (execution/verification)
+- Sessions: ~6 sessions across 2 days
+- Notable: 7 phases in 2 days — fastest milestone by phase count; Python phases executed faster than Java due to less boilerplate
+
+---
+
 ## Milestone: v4.0 — Attendance Service MVP
 
 **Shipped:** 2026-04-04
@@ -136,6 +186,7 @@
 | v2.0 | 5 | 12 | Added gRPC, Redis, RabbitMQ; parallel agent execution |
 | v3.0 | 5 | 11 | Cron scheduling, Moscow TZ, week-parity generation, gRPC server |
 | v4.0 | 5 | 12 | MongoDB + Testcontainers, domain isolation, gap-closure pattern |
+| v5.0 | 7 | 16 | Python Aiogram bot, WebSocket, asyncio timers, cross-language gRPC |
 
 ### Cumulative Quality
 
@@ -145,6 +196,7 @@
 | v2.0 | 50 | Added gRPC in-process tests, Redis cache verification, RabbitMQ event tests |
 | v3.0 | — | Cron job tests with @Profile("!test"), lesson generation verification |
 | v4.0 | ~80 | MongoDB Testcontainers, ArchUnit domain isolation, Redis dedup/rate-limit tests |
+| v5.0 | ~128 | Java: 20 WebSocket/RabbitMQ tests. Python: 108 pytest-asyncio tests (fakeredis, mock gRPC/Telegram) |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -153,3 +205,5 @@
 3. Always verify how new infrastructure beans affect existing test configurations (v2.0-v4.0)
 4. Security annotations should be applied during initial controller creation, not retrofitted (v4.0)
 5. Domain isolation boundaries should be designed upfront with port interfaces (v4.0)
+6. Always set TZ env var in docker-compose when code uses naive datetime — systematic timer errors otherwise (v5.0)
+7. Gap-closure hardening phase after milestone audit is a reliable pattern — catches deployment blockers before ship (v4.0-v5.0)

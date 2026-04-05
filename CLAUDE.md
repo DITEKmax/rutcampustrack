@@ -7,12 +7,12 @@ RutCampusTrack — микросервисная система учёта пос
 ## Текущий статус
 
 - **Фаза 0**: ЗАВЕРШЕНА (каркас, контракты, инфраструктура)
-- **Фаза 1**: ЗАВЕРШЕНА (Auth Service + API Gateway) — 26 тестов, отчёт: `docs/phase-1-report.md`
-- **Фаза 2**: ЗАВЕРШЕНА (Academic Service) — 50 тестов, отчёт: `docs/phase-2-report.md`
-- **Фаза 3**: ЗАВЕРШЕНА (Schedule Service) — 55 тестов, 25 требований, отчёт: `docs/phase-3-report.md`
-- **Фаза 4**: ЗАВЕРШЕНА (Attendance Service) — ~95 тестов, 23 требования, отчёт: `docs/phase-4-report.md`
-- **Фаза 5**: В ОЧЕРЕДИ (Web Push Backend)
-- **Фаза 6**: В ОЧЕРЕДИ (Notification Service — Web + Bot)
+- **Фаза 1**: ЗАВЕРШЕНА (Auth Service + API Gateway) — v1.0, 26 тестов, отчёт: `docs/phase-1-report.md`
+- **Фаза 2**: ЗАВЕРШЕНА (Academic Service) — v2.0, 50 тестов, отчёт: `docs/phase-2-report.md`
+- **Фаза 3**: ЗАВЕРШЕНА (Schedule Service) — v3.0, 55 тестов, отчёт: `docs/phase-3-report.md`
+- **Фаза 4**: ЗАВЕРШЕНА (Attendance Service) — v4.0, ~95 тестов, отчёт: `docs/phase-4-report.md`
+- **Фаза 5**: ОТЛОЖЕНА (Web Push Backend — включить в PWA milestone)
+- **Фаза 6**: ЗАВЕРШЕНА (Notification Service — Web + Bot) — v5.0, ~128 тестов (20 Java + 108 Python)
 - **Фаза 7**: В ОЧЕРЕДИ (PWA Mobile Client «RutTrack»)
 - **Фаза 8**: В ОЧЕРЕДИ (Фронтенды — Mini App, Web Panel, Landing)
 - **Фаза 9**: В ОЧЕРЕДИ (CI/CD, мониторинг, документация)
@@ -29,7 +29,7 @@ RutCampusTrack — микросервисная система учёта пос
 | Academic Service | 9091 | Spring Boot | PostgreSQL (academic_db) + Redis cache |
 | Schedule Service | 9092 | Spring Boot | PostgreSQL (schedule_db) |
 | Attendance Service | 9093 | Spring Boot | MongoDB (attendance_db) |
-| Notification Web | 9094 | Spring Boot WebSocket + Web Push | MongoDB (push_subscriptions) + Redis (VAPID) |
+| Notification Web | 9094 | Spring Boot WebSocket (STOMP) | — (stateless event forwarder) |
 | Notification Bot | — | Python Aiogram 3 | Redis (reminder msgs) |
 
 Между сервисами: gRPC. Асинхронные события: RabbitMQ (fanout exchange).

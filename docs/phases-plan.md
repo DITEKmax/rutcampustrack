@@ -9,8 +9,8 @@
 | 2 | Academic Service | ✅ ЗАВЕРШЕНА |
 | 3 | Schedule Service | ✅ ЗАВЕРШЕНА |
 | 4 | Attendance Service | ✅ ЗАВЕРШЕНА |
-| 5 | Web Push Backend | ⬜ |
-| 6 | Notification Service (Web + Bot) | ⬜ |
+| 5 | Web Push Backend | ⏸ ОТЛОЖЕНА (включить в PWA milestone) |
+| 6 | Notification Service (Web + Bot) | ✅ ЗАВЕРШЕНА (v5.0, 2026-04-05) |
 | 7 | PWA Mobile Client «RutTrack» | ⬜ |
 | 8 | Фронтенды (Mini App, Web Panel, Landing) | ⬜ |
 | 9 | CI/CD, мониторинг, документация | ⬜ |

@@ -9,6 +9,7 @@ import org.springframework.http.*;
 import org.springframework.test.context.jdbc.Sql;
 import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
+import ru.rutcampustrack.auth.dto.OtpCodeResponse;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
@@ -38,25 +39,29 @@ class OtpIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void otpRequest_withValidTelegramId_returns200() {
+    void otpRequest_withValidTelegramId_returns200WithCode() {
         OtpRequest request = new OtpRequest(123456789L);
 
-        ResponseEntity<Void> response = restTemplate.postForEntity(
-                "/auth/otp/request", request, Void.class);
+        ResponseEntity<OtpCodeResponse> response = restTemplate.postForEntity(
+                "/auth/otp/request", request, OtpCodeResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isNotBlank();
+        assertThat(response.getBody().code()).hasSize(6);
     }
 
     @Test
     void otpVerify_withCorrectCode_returnsTokenPair() {
-        // Request OTP
+        // Request OTP — now returns code in response body
         OtpRequest otpRequest = new OtpRequest(123456789L);
-        ResponseEntity<Void> requestResponse = restTemplate.postForEntity(
-                "/auth/otp/request", otpRequest, Void.class);
+        ResponseEntity<OtpCodeResponse> requestResponse = restTemplate.postForEntity(
+                "/auth/otp/request", otpRequest, OtpCodeResponse.class);
         assertThat(requestResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(requestResponse.getBody()).isNotNull();
 
-        // Read OTP code from Redis
-        String code = redisTemplate.opsForValue().get("otp:123456789");
+        // Use code from response body (also verify it matches Redis)
+        String code = requestResponse.getBody().code();
         assertThat(code).isNotBlank();
 
         // Verify OTP
@@ -74,7 +79,7 @@ class OtpIntegrationTest extends AbstractIntegrationTest {
     void otpVerify_withWrongCode_returns401() {
         // Request OTP first to ensure there is a valid OTP in Redis
         OtpRequest otpRequest = new OtpRequest(123456789L);
-        restTemplate.postForEntity("/auth/otp/request", otpRequest, Void.class);
+        restTemplate.postForEntity("/auth/otp/request", otpRequest, OtpCodeResponse.class);
 
         // Verify with wrong code
         OtpVerifyRequest verifyRequest = new OtpVerifyRequest(123456789L, "000000");

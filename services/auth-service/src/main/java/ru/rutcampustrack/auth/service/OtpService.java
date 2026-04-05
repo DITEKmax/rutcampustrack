@@ -40,7 +40,7 @@ public class OtpService {
         this.jwtProperties = jwtProperties;
     }
 
-    public void requestOtp(OtpRequest request) {
+    public String requestOtp(OtpRequest request) {
         Long telegramId = request.telegramId();
 
         User user = userRepository.findByTelegramId(telegramId)
@@ -78,6 +78,8 @@ public class OtpService {
             redisTemplate.expire("otp_attempts:" + telegramId,
                     otpProperties.attemptsWindowSeconds(), TimeUnit.SECONDS);
         }
+
+        return code;
     }
 
     public TokenResponse verifyOtp(OtpVerifyRequest request) {

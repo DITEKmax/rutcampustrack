@@ -71,7 +71,7 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
 - [x] **Phase 23: Bot Telegram Commands** — /start account linking, /login OTP flow, /status attendance check (completed 2026-04-05)
 - [x] **Phase 24: Bot Event Notifications** — lesson.started fan-out with inline button, lesson.cancelled, homework published/updated, headman excuse and late-checkin alerts (completed 2026-04-05)
 - [x] **Phase 25: Bot Reminder Lifecycle** — midpoint and end-of-lesson reminders, full message cleanup on lesson.closed, immediate cleanup on attendance.marked (completed 2026-04-05)
-- [ ] **Phase 26: Notification Deployment Hardening** — Fix audit gaps: lesson_closed None guard, JWT key volume mount, docker-compose env vars
+- [x] **Phase 26: Notification Deployment Hardening** — Fix audit gaps: lesson_closed None guard, JWT key volume mount, docker-compose env vars (completed 2026-04-05)
 
 ## Phase Details
 
@@ -173,7 +173,7 @@ Plans:
   2. lesson_closed.py handles reminder_scheduler=None gracefully without AttributeError — logs warning and continues with message deletion
   3. All 6 notification-bot config fields (SCHEDULE_GRPC_HOST/PORT, AUTH_SERVICE_HOST/PORT, API_GATEWAY_URL, MINI_APP_URL) are explicitly listed in docker-compose.yml environment block
 Plans:
-- [ ] 26-01-PLAN.md — None guard + docker-compose fixes
+- [x] 26-01-PLAN.md — None guard + docker-compose fixes
 
 ## Progress
 
@@ -204,4 +204,4 @@ Plans:
 | 23. Bot Telegram Commands | v5.0 | 3/3 | Complete   | 2026-04-05 |
 | 24. Bot Event Notifications | v5.0 | 2/2 | Complete   | 2026-04-05 |
 | 25. Bot Reminder Lifecycle | v5.0 | 2/2 | Complete   | 2026-04-05 |
-| 26. Notification Deployment Hardening | v5.0 | 0/1 | Not started | - |
+| 26. Notification Deployment Hardening | v5.0 | 1/1 | Complete   | 2026-04-05 |

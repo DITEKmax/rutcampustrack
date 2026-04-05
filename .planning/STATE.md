@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
-status: executing
-stopped_at: Phase 24 verified
-last_updated: "2026-04-05T15:00:59.581Z"
-last_activity: 2026-04-05 -- Phase 25 execution started
+status: verifying
+stopped_at: Completed 26-01-PLAN.md
+last_updated: "2026-04-05T16:13:16.725Z"
+last_activity: 2026-04-05
 progress:
-  total_phases: 6
-  completed_phases: 5
-  total_plans: 15
-  completed_plans: 13
-  percent: 87
+  total_phases: 7
+  completed_phases: 7
+  total_plans: 16
+  completed_plans: 16
+  percent: 100
 ---
 
 # Project State
@@ -22,10 +22,10 @@ v5.0 Notification Service (Web + Bot)
 
 ## Current Position
 
-Phase: 25 (bot-reminder-lifecycle) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 25
-Last activity: 2026-04-05 -- Phase 25 execution started
+Phase: 26 (notification-deployment-hardening) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-04-05
 
 Progress: [████████░░] 87%
 
@@ -34,7 +34,7 @@ Progress: [████████░░] 87%
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
 **Core value:** Full backend microservice backbone shipped. Now delivering real-time notifications via WebSocket (web panel) and Telegram bot.
-**Current focus:** Phase 25 — bot-reminder-lifecycle
+**Current focus:** Phase 26 — notification-deployment-hardening
 
 ## Completed Milestones
 
@@ -63,6 +63,7 @@ Recent decisions affecting v5.0:
 - [Phase 24-bot-event-notifications]: Lambda default-arg binding (s=student) used in lesson_started closures to avoid Python late-binding bug
 - [Phase 24-bot-event-notifications]: homework.updated shares handle_homework with homework.published via event_type branch
 - [Phase 24-bot-event-notifications]: student_name resolved: payload field > member lookup by user_id > fallback string
+- [Phase 26]: jwt-keys named volume mounted :ro in notification-web for key sharing
 
 ### Research Flags (resolve before phase begins)
 
@@ -76,7 +77,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T15:00:00.000Z
-Stopped at: Phase 24 verified
+Last session: 2026-04-05T16:13:16.721Z
+Stopped at: Completed 26-01-PLAN.md
 Resume file: None
 Next action: Discuss/plan Phase 25 (bot-reminder-lifecycle)

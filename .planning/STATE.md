@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: PWA + Web Push
 status: executing
-stopped_at: Phase 27 context gathered
-last_updated: "2026-04-05T21:05:48.181Z"
-last_activity: 2026-04-05 -- Phase 28 planning complete
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-04-06T00:00:00.000Z"
+last_activity: 2026-04-06 -- Phase 28 Wave 1 executing
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 67
 ---
 
 # Project State
@@ -52,11 +52,15 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 See PROJECT.md Key Decisions table for full history.
 
+<<<<<<< HEAD
 Recent decisions relevant to v6.0:
 
 - v5.0: STOMP in-memory broker (no external broker) — sufficient for single-instance VPS
 - v6.0 planning: VAPID keys persist in Redis (no TTL) — never regenerated on restart to avoid invalidating subscriptions
 - v6.0 planning: `injectManifest` strategy for vite-plugin-pwa — required for custom `push` event handler in Service Worker
+=======
+- [Phase 28]: OPTIONS bypass before isPublicRoute; explicit CORS origins (not wildcard) with allow-credentials
+>>>>>>> worktree-agent-a9702686
 
 ### Research Flags
 
@@ -72,7 +76,14 @@ None.
 
 ## Session Continuity
 
+<<<<<<< HEAD
 Last session: 2026-04-05T19:30:09.971Z
 Stopped at: Phase 27 context gathered
 Resume file: .planning/phases/27-web-push-backend/27-CONTEXT.md
 Next action: `/gsd-plan-phase 27`
+=======
+Last session: 2026-04-05T21:11:24.472Z
+Stopped at: Completed 28-01-PLAN.md
+Resume file: None
+Next action: /gsd-new-milestone
+>>>>>>> worktree-agent-a9702686

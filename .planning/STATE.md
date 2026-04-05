@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.0
-milestone_name: Notification Service (Web + Bot)
-status: complete
-stopped_at: Milestone shipped
-last_updated: "2026-04-05T20:00:00Z"
+milestone: v1.0
+milestone_name: milestone
+status: Milestone shipped — ready for next milestone
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-04-05T21:11:24.477Z"
 last_activity: 2026-04-05
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 16
-  completed_plans: 16
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 1
   percent: 100
 ---
 
@@ -51,6 +51,8 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 See PROJECT.md Key Decisions table for full history.
 
+- [Phase 28]: OPTIONS bypass before isPublicRoute; explicit CORS origins (not wildcard) with allow-credentials
+
 ### Research Flags
 
 None — all v5.0 flags resolved.
@@ -61,7 +63,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-05
-Stopped at: Milestone v5.0 shipped
+Last session: 2026-04-05T21:11:24.472Z
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None
 Next action: /gsd-new-milestone

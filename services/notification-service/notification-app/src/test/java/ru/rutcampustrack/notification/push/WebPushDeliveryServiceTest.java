@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class WebPushDeliveryServiceTest {
 
     @Mock
@@ -29,11 +32,16 @@ class WebPushDeliveryServiceTest {
     @Mock
     private PushService webPushService;
 
+    @Mock
+    private Notification mockNotification;
+
     private WebPushDeliveryService service;
 
     @BeforeEach
-    void setUp() {
-        service = new WebPushDeliveryService(repository, webPushService, new ObjectMapper());
+    void setUp() throws Exception {
+        service = spy(new WebPushDeliveryService(repository, webPushService, new ObjectMapper()));
+        // Stub createNotification to avoid real EC key parsing in all tests
+        doReturn(mockNotification).when(service).createNotification(any(PushSubscriptionDocument.class), any(byte[].class));
     }
 
     private PushSubscriptionDocument sub(long userId, String endpoint) {
@@ -74,21 +82,21 @@ class WebPushDeliveryServiceTest {
     void sendToGroup_on410_deletesSubscription() throws Exception {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/gone");
         when(repository.findAllByGroupId(5L)).thenReturn(List.of(sub));
-        HttpResponseException gone = new HttpResponseException(410, "Gone");
-        doThrow(gone).when(webPushService).send(any(Notification.class));
+        doThrow(new HttpResponseException(410, "Gone"))
+                .when(webPushService).send(any(Notification.class));
 
         service.sendToGroup(5L, "lesson.started", Map.of("subject_name", "Химия", "group_id", 5));
 
         verify(repository).deleteByEndpoint("https://push.example.com/gone");
     }
 
-    // Test 4: Non-410 exception does NOT trigger deletion
+    // Test 4: Non-410 exception does NOT trigger deletion, processing continues
     @Test
     void sendToGroup_onNon410Error_doesNotDeleteSubscription() throws Exception {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/err");
         when(repository.findAllByGroupId(5L)).thenReturn(List.of(sub));
-        HttpResponseException serverError = new HttpResponseException(500, "Internal Server Error");
-        doThrow(serverError).when(webPushService).send(any(Notification.class));
+        doThrow(new HttpResponseException(500, "Internal Server Error"))
+                .when(webPushService).send(any(Notification.class));
 
         service.sendToGroup(5L, "lesson.started", Map.of("subject_name", "Биология", "group_id", 5));
 
@@ -101,14 +109,14 @@ class WebPushDeliveryServiceTest {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/s1");
         when(repository.findAllByGroupId(7L)).thenReturn(List.of(sub));
 
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
+
         CompletableFuture<Void> result = service.sendToGroup(7L, "lesson.started",
                 Map.of("subject_name", "Математика", "group_id", 7));
-
         result.join();
-        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
-        verify(webPushService).send(captor.capture());
-        Notification notification = captor.getValue();
-        String payloadStr = new String(notification.getPayload());
+
+        String payloadStr = new String(payloadCaptor.getValue());
         assertThat(payloadStr).contains("Пара началась");
         assertThat(payloadStr).contains("Математика");
     }
@@ -119,13 +127,14 @@ class WebPushDeliveryServiceTest {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/s2");
         when(repository.findAllByGroupId(7L)).thenReturn(List.of(sub));
 
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
+
         CompletableFuture<Void> result = service.sendToGroup(7L, "lesson.cancelled",
                 Map.of("subject_name", "Физика", "group_id", 7));
-
         result.join();
-        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
-        verify(webPushService).send(captor.capture());
-        String payloadStr = new String(captor.getValue().getPayload());
+
+        String payloadStr = new String(payloadCaptor.getValue());
         assertThat(payloadStr).contains("Пара отменена");
         assertThat(payloadStr).contains("Физика");
     }
@@ -136,13 +145,14 @@ class WebPushDeliveryServiceTest {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/s3");
         when(repository.findAllByGroupId(7L)).thenReturn(List.of(sub));
 
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
+
         CompletableFuture<Void> result = service.sendToGroup(7L, "homework.published",
                 Map.of("subject_name", "История", "title", "Лабораторная 4", "group_id", 7));
-
         result.join();
-        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
-        verify(webPushService).send(captor.capture());
-        String payloadStr = new String(captor.getValue().getPayload());
+
+        String payloadStr = new String(payloadCaptor.getValue());
         assertThat(payloadStr).contains("Новое ДЗ");
         assertThat(payloadStr).contains("История");
         assertThat(payloadStr).contains("Лабораторная 4");

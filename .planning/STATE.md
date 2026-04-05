@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
-status: executing
-stopped_at: Phase 23 context gathered
-last_updated: "2026-04-05T14:16:12.041Z"
-last_activity: 2026-04-05 -- Phase 24 planning complete
+status: verifying
+stopped_at: Completed 24-bot-event-notifications-01-PLAN.md
+last_updated: "2026-04-05T14:25:00.934Z"
+last_activity: 2026-04-05
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 13
-  completed_plans: 11
-  percent: 85
+  completed_plans: 12
+  percent: 92
 ---
 
 # Project State
@@ -24,8 +24,8 @@ v5.0 Notification Service (Web + Bot)
 
 Phase: 23 (bot-telegram-commands) — COMPLETE ✓
 Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-04-05 -- Phase 24 planning complete
+Status: Phase complete — ready for verification
+Last activity: 2026-04-05
 
 Progress: [████████░░] 79%
 
@@ -59,6 +59,8 @@ Recent decisions affecting v5.0:
 - [Phase 22]: asyncio.Queue + single worker with token bucket (30/s, 30 burst), retry [1,2,4]s backoff, duck-typed retry_after
 - [Phase 22]: Bumped protobuf to 6.31.0 to match grpcio-tools 1.73.0 bundled gencode version
 - [Phase 22]: ReminderRedisClient uses RPUSH/LRANGE list pattern with TTL for per-lesson-per-user reminder message tracking
+- [Phase 24-bot-event-notifications]: Handler exceptions caught inside EventDispatcher.dispatch() for RabbitMQ ack safety
+- [Phase 24-bot-event-notifications]: Lambda default-arg binding (s=student) used in lesson_started closures to avoid Python late-binding bug
 
 ### Research Flags (resolve before phase begins)
 
@@ -72,7 +74,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T11:40:53.229Z
-Stopped at: Phase 23 context gathered
-Resume file: .planning/phases/23-bot-telegram-commands/23-CONTEXT.md
+Last session: 2026-04-05T14:25:00.929Z
+Stopped at: Completed 24-bot-event-notifications-01-PLAN.md
+Resume file: None
 Next action: Execute 22-02 (Redis reminder client)

@@ -143,9 +143,9 @@ Plans:
   2. When a lesson.cancelled event arrives, every student in the group receives a plain text cancellation notification via the throttled send queue
   3. When a homework.published or homework.updated event arrives, every student in the group receives a Telegram notification about the new or changed assignment
   4. When an excuse.requested event arrives, the headman of the affected group receives a Telegram notification; same for late_checkin.requested
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 24-01-PLAN.md — EventDispatcher + lesson.started (inline button + Redis) + lesson.cancelled handlers
+- [x] 24-01-PLAN.md — EventDispatcher + lesson.started (inline button + Redis) + lesson.cancelled handlers
 - [ ] 24-02-PLAN.md — homework + headman alert handlers + wiring into consumer and __main__.py
 
 ### Phase 25: Bot Reminder Lifecycle
@@ -186,5 +186,5 @@ Plans:
 | 21. Notification Web — WebSocket Core | v5.0 | 2/2 | Complete    | 2026-04-05 |
 | 22. Bot Infrastructure Layer | v5.0 | 3/3 | Complete   | 2026-04-05 |
 | 23. Bot Telegram Commands | v5.0 | 3/3 | Complete   | 2026-04-05 |
-| 24. Bot Event Notifications | v5.0 | 0/2 | Not started | - |
+| 24. Bot Event Notifications | v5.0 | 1/2 | In Progress|  |
 | 25. Bot Reminder Lifecycle | v5.0 | 0/? | Not started | - |

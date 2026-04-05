@@ -202,4 +202,32 @@ class JwtAuthenticationFilterTest {
         assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         verify(chain, never()).filter(any());
     }
+
+    // Test 10 (INFRA-01): OPTIONS preflight to /api/academic/groups passes through without JWT
+    @Test
+    void optionsRequest_passesThroughWithoutJwt() {
+        var request = MockServerHttpRequest.options("/api/academic/groups").build();
+        var exchange = MockServerWebExchange.from(request);
+        var chain = mock(GatewayFilterChain.class);
+        when(chain.filter(any())).thenReturn(Mono.empty());
+
+        filter.filter(exchange, chain).block();
+
+        verify(chain).filter(any());
+        assertThat(exchange.getResponse().getStatusCode()).isNotEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    // Test 11 (INFRA-01): OPTIONS preflight to /api/push/subscribe passes through without JWT
+    @Test
+    void optionsRequest_pushRoute_passesThroughWithoutJwt() {
+        var request = MockServerHttpRequest.options("/api/push/subscribe").build();
+        var exchange = MockServerWebExchange.from(request);
+        var chain = mock(GatewayFilterChain.class);
+        when(chain.filter(any())).thenReturn(Mono.empty());
+
+        filter.filter(exchange, chain).block();
+
+        verify(chain).filter(any());
+        assertThat(exchange.getResponse().getStatusCode()).isNotEqualTo(HttpStatus.UNAUTHORIZED);
+    }
 }

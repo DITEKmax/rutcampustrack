@@ -1,39 +1,40 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.0
-milestone_name: Notification Service (Web + Bot)
-status: complete
-stopped_at: Milestone shipped
-last_updated: "2026-04-05T20:00:00Z"
+milestone: v6.0
+milestone_name: PWA + Web Push
+status: defining_requirements
+stopped_at: Defining requirements
+last_updated: "2026-04-05T21:00:00Z"
 last_activity: 2026-04-05
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Current Milestone
 
-v5.0 Notification Service (Web + Bot) — SHIPPED 2026-04-05
+v6.0 PWA + Web Push — Defining requirements
 
 ## Current Position
 
-Phase: All complete
-Status: Milestone shipped — ready for next milestone
-Last activity: 2026-04-05
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-05 — Milestone v6.0 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Full backend microservice backbone + real-time notifications shipped. All 5 services + 2 notification containers operational.
-**Current focus:** Planning next milestone
+**Current focus:** v6.0 PWA + Web Push — student mobile client with native push notifications
 
 ## Completed Milestones
 
@@ -53,7 +54,7 @@ See PROJECT.md Key Decisions table for full history.
 
 ### Research Flags
 
-None — all v5.0 flags resolved.
+None.
 
 ### Blockers/Concerns
 
@@ -62,6 +63,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-05
-Stopped at: Milestone v5.0 shipped
+Stopped at: Defining requirements for v6.0
 Resume file: None
-Next action: /gsd-new-milestone
+Next action: Define requirements → create roadmap

@@ -9,8 +9,19 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 ## Core Value
 Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) + Attendance MVP (v4.0) + Real-time notifications (v5.0). All 5 services + 2 notification containers operational with complete inter-service communication (gRPC + RabbitMQ + WebSocket + Telegram).
 
+## Current Milestone: v6.0 PWA + Web Push
+
+**Goal:** Студенческий мобильный клиент «RutTrack» (React PWA) с нативными push-уведомлениями (Web Push API + VAPID). Объединяет оригинальные Фазы 5 (Web Push Backend) и 7 (PWA Mobile Client).
+
+**Target features:**
+- React PWA с установкой на домашний экран (A2HS), offline-режимом (Service Worker)
+- Web Push уведомления (VAPID, Push API, Service Worker push handler)
+- Студенческий интерфейс: расписание, геоотметка, статистика посещаемости
+- Push-нотификации о начале пары, напоминания об отметке, отмена занятий, ДЗ
+- Интеграция с существующими бэкенд-сервисами через API Gateway
+
 ## Current State
-v5.0 shipped 2026-04-05. All backend services operational: 5 Java microservices + API Gateway + notification-web (Java WebSocket) + notification-bot (Python Aiogram). 7 containers in docker-compose. ~108K lines of code across Java and Python. Next: frontends (PWA, Mini App, Web Panel, Landing) or additional backend features (excuse tickets, late check-in, notification preferences).
+v5.0 shipped 2026-04-05. All backend services operational: 5 Java microservices + API Gateway + notification-web (Java WebSocket) + notification-bot (Python Aiogram). 7 containers in docker-compose. ~108K lines of code across Java and Python. Starting v6.0: PWA mobile client with Web Push notifications.
 
 ## Shipped Milestones
 
@@ -106,6 +117,13 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ WS-05..06: Headman WebSocket push handlers (wired, awaiting publisher) — v5.0 (partial)
 
 ### Active
+- [ ] React PWA «RutTrack» с A2HS, Service Worker, offline shell
+- [ ] Web Push Backend: VAPID ключи, подписка, push endpoint в notification-web
+- [ ] Студенческий UI: расписание на день/неделю, геоотметка, статистика
+- [ ] Push-нотификации: начало пары, напоминание об отметке, отмена, ДЗ
+- [ ] Интеграция PWA с API Gateway (JWT auth, REST endpoints)
+
+### Deferred (from previous milestones)
 - [ ] Excuse tickets: create/submit/review flow with event publishing (excuse.requested)
 - [ ] Late check-in ("forgot to mark") flow with event publishing (late_checkin.requested)
 - [ ] NOTIF-02, NOTIF-03: Live timer testing for midpoint/near-end reminders (TZ fix applied)
@@ -203,4 +221,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after v5.0 milestone completion*
+*Last updated: 2026-04-05 after v6.0 milestone started*

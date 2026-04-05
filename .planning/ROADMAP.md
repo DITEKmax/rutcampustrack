@@ -67,7 +67,7 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
 
 - [x] **Phase 20: Shared Infrastructure** — Two durable RabbitMQ queues with DLQ bound to fanout exchange, docker-compose containers, Redis key namespace (completed 2026-04-04)
 - [x] **Phase 21: Notification Web — WebSocket Core** — STOMP endpoint with JWT auth, group session registry, and all 5 event types pushed to correct group topics (completed 2026-04-05)
-- [ ] **Phase 22: Bot Infrastructure Layer** — aio-pika consumer with watchdog, gRPC client for Academic Service, Redis async client, throttled send queue
+- [x] **Phase 22: Bot Infrastructure Layer** — aio-pika consumer with watchdog, gRPC client for Academic Service, Redis async client, throttled send queue (completed 2026-04-05)
 - [ ] **Phase 23: Bot Telegram Commands** — /start account linking, /login OTP flow, /status attendance check
 - [ ] **Phase 24: Bot Event Notifications** — lesson.started fan-out with inline button, lesson.cancelled, homework published/updated, headman excuse and late-checkin alerts
 - [ ] **Phase 25: Bot Reminder Lifecycle** — midpoint and end-of-lesson reminders, full message cleanup on lesson.closed, immediate cleanup on attendance.marked
@@ -114,10 +114,10 @@ Plans:
   2. A call to GetGroupMembers via the gRPC async client returns telegram_ids for all students in a group without blocking the asyncio event loop
   3. Reminder message_ids are stored in Redis as a list (RPUSH) — retrieving all ids for a lesson+user returns every id in insertion order (LRANGE key 0 -1)
   4. When 50 messages are submitted to the throttled send queue simultaneously, they are delivered sequentially at a rate that does not exceed Telegram's 30 msg/sec global limit — no 429 errors are raised
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 22-01-PLAN.md — Test scaffold (Wave 0) + watchdog wrapper + prefetch_count
-- [ ] 22-02-PLAN.md — gRPC async client with cache + Redis async client for reminders
+- [x] 22-02-PLAN.md — gRPC async client with cache + Redis async client for reminders
 - [x] 22-03-PLAN.md — Throttled Telegram send queue with token bucket
 
 ### Phase 23: Bot Telegram Commands
@@ -177,7 +177,7 @@ Plans:
 | 19. Report Security & Routing Fix | v4.0 | 1/1 | Complete | 2026-04-04 |
 | 20. Shared Infrastructure | v5.0 | 3/3 | Complete    | 2026-04-04 |
 | 21. Notification Web — WebSocket Core | v5.0 | 2/2 | Complete    | 2026-04-05 |
-| 22. Bot Infrastructure Layer | v5.0 | 2/3 | In Progress|  |
+| 22. Bot Infrastructure Layer | v5.0 | 3/3 | Complete   | 2026-04-05 |
 | 23. Bot Telegram Commands | v5.0 | 0/? | Not started | - |
 | 24. Bot Event Notifications | v5.0 | 0/? | Not started | - |
 | 25. Bot Reminder Lifecycle | v5.0 | 0/? | Not started | - |

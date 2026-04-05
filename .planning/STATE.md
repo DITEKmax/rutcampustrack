@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
-status: executing
-stopped_at: Completed 22-03-PLAN.md
-last_updated: "2026-04-05T11:09:02.117Z"
+status: verifying
+stopped_at: Completed 22-02-PLAN.md
+last_updated: "2026-04-05T11:13:31.958Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 8
-  completed_plans: 7
-  percent: 88
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -24,7 +24,7 @@ v5.0 Notification Service (Web + Bot)
 
 Phase: 22 (bot-infrastructure-layer)
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-05
 
 Progress: [░░░░░░░░░░] 0%
@@ -57,6 +57,8 @@ Recent decisions affecting v5.0:
 - aio-pika consumer watchdog required from day one (silent consumer death after RabbitMQ restart)
 - Redis RPUSH list (not SET string) for reminder message_ids — LRANGE retrieves all on lesson.closed
 - [Phase 22]: asyncio.Queue + single worker with token bucket (30/s, 30 burst), retry [1,2,4]s backoff, duck-typed retry_after
+- [Phase 22]: Bumped protobuf to 6.31.0 to match grpcio-tools 1.73.0 bundled gencode version
+- [Phase 22]: ReminderRedisClient uses RPUSH/LRANGE list pattern with TTL for per-lesson-per-user reminder message tracking
 
 ### Research Flags (resolve before phase begins)
 
@@ -70,7 +72,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T11:09:02.113Z
-Stopped at: Completed 22-03-PLAN.md
+Last session: 2026-04-05T11:13:31.954Z
+Stopped at: Completed 22-02-PLAN.md
 Resume file: None
 Next action: Execute 22-02 (Redis reminder client)

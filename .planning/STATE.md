@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
 status: verifying
-stopped_at: Completed 22-02-PLAN.md
-last_updated: "2026-04-05T11:13:31.958Z"
+stopped_at: Phase 23 context gathered
+last_updated: "2026-04-05T11:40:53.265Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 6
@@ -72,7 +72,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T11:13:31.954Z
-Stopped at: Completed 22-02-PLAN.md
-Resume file: None
+Last session: 2026-04-05T11:40:53.229Z
+Stopped at: Phase 23 context gathered
+Resume file: .planning/phases/23-bot-telegram-commands/23-CONTEXT.md
 Next action: Execute 22-02 (Redis reminder client)

@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: PWA + Web Push
-status: ready_to_plan
-stopped_at: Roadmap created — ready to plan Phase 27
-last_updated: "2026-04-05T00:00:00Z"
-last_activity: 2026-04-05
+status: planning
+stopped_at: Phase 27 context gathered
+last_updated: "2026-04-05T19:30:09.986Z"
+last_activity: 2026-04-05 — Roadmap created for v6.0 (6 phases, 32 requirements)
 progress:
   total_phases: 6
   completed_phases: 0
@@ -53,6 +53,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 See PROJECT.md Key Decisions table for full history.
 
 Recent decisions relevant to v6.0:
+
 - v5.0: STOMP in-memory broker (no external broker) — sufficient for single-instance VPS
 - v6.0 planning: VAPID keys persist in Redis (no TTL) — never regenerated on restart to avoid invalidating subscriptions
 - v6.0 planning: `injectManifest` strategy for vite-plugin-pwa — required for custom `push` event handler in Service Worker
@@ -71,7 +72,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-05
-Stopped at: Roadmap created for v6.0 (Phases 27-32)
-Resume file: None
+Last session: 2026-04-05T19:30:09.971Z
+Stopped at: Phase 27 context gathered
+Resume file: .planning/phases/27-web-push-backend/27-CONTEXT.md
 Next action: `/gsd-plan-phase 27`

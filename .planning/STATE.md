@@ -9,9 +9,9 @@ last_activity: 2026-04-05 -- Phase 24 verified
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 13
+  total_plans: 15
   completed_plans: 13
-  percent: 100
+  percent: 87
 ---
 
 # Project State
@@ -27,7 +27,7 @@ Plan: 2 of 2
 Status: Verified — 11/11 must-haves, 81 tests passing
 Last activity: 2026-04-05 -- Phase 24 verified
 
-Progress: [██████████] 100%
+Progress: [████████░░] 87%
 
 ## Project Reference
 
@@ -77,6 +77,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-05T15:00:00.000Z
-Stopped at: Phase 24 verified — milestone v5.0 complete
+Stopped at: Phase 24 verified
 Resume file: None
-Next action: Complete milestone v5.0
+Next action: Discuss/plan Phase 25 (bot-reminder-lifecycle)

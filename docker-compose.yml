@@ -110,6 +110,9 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-rct_user}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-rct_dev_pass}
+      JWT_PUBLIC_KEY_PATH: /keys/public.key
+    volumes:
+      - jwt-keys:/keys:ro
     expose:
       - "9094"
     networks:
@@ -165,3 +168,4 @@ volumes:
   mongo-data:
   redis-data:
   rabbitmq-data:
+  jwt-keys:

@@ -12,7 +12,7 @@ DLQ_QUEUE_NAME = "notification-bot.events.dlq"
 DLQ_ROUTING_KEY = "notification-bot.events.dlq"
 
 
-async def start_consumer(rabbitmq_url: str) -> aio_pika.abc.AbstractRobustConnection:
+async def start_consumer(rabbitmq_url: str, dispatcher=None) -> aio_pika.abc.AbstractRobustConnection:
     """
     Connect to RabbitMQ via connect_robust (auto-reconnect),
     declare fanout exchange + queue with DLQ, consume and log events.
@@ -61,8 +61,11 @@ async def start_consumer(rabbitmq_url: str) -> aio_pika.abc.AbstractRobustConnec
                     body = json.loads(message.body)
                     event_type = body.get("event_type", "unknown")
                     logger.info("[notification-bot] Received event: %s", event_type)
-                    # Phase 22+ will add actual event dispatching
+                    if dispatcher:
+                        await dispatcher.dispatch(body)
                 except json.JSONDecodeError:
                     logger.error("Failed to decode message body: %s", message.body[:200])
+                except Exception:
+                    logger.exception("Handler failed for event, acking anyway")
 
     return connection

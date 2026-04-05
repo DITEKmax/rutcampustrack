@@ -36,6 +36,8 @@ class EventDispatcher:
         # Import handlers here to avoid circular imports at module level
         from bot.notifications.lesson_started import handle_lesson_started
         from bot.notifications.lesson_cancelled import handle_lesson_cancelled
+        from bot.notifications.homework import handle_homework
+        from bot.notifications.headman_alerts import handle_headman_alert
 
         # Handler registry: event_type -> async callable(event: dict)
         self._handlers: dict[str, Callable[[dict], Awaitable[None]]] = {
@@ -53,11 +55,30 @@ class EventDispatcher:
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
             ),
-            # Placeholders for Plan 02 handlers (registered in next wave)
-            # "homework.published": ...,
-            # "homework.updated": ...,
-            # "excuse.requested": ...,
-            # "late_checkin.requested": ...,
+            "homework.published": lambda event: handle_homework(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
+            "homework.updated": lambda event: handle_homework(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
+            "excuse.requested": lambda event: handle_headman_alert(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
+            "late_checkin.requested": lambda event: handle_headman_alert(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
         }
 
     async def dispatch(self, event: dict) -> None:

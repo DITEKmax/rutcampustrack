@@ -7,12 +7,15 @@ from aiohttp import web
 
 from bot.config import config
 from bot.consumers.event_consumer import start_consumer
+from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
 from bot.handlers import start_router, login_router, status_router
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.jwt_redis_client import JwtRedisClient
+from bot.services.redis_client import ReminderRedisClient
+from bot.services.send_queue import TelegramSendQueue
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,14 +47,14 @@ async def run_health_server() -> None:
     logger.info("Health server started on port %d", config.health_port)
 
 
-async def run_with_watchdog(rabbitmq_url: str) -> None:
+async def run_with_watchdog(rabbitmq_url: str, dispatcher=None) -> None:
     """
     Watchdog loop — restarts start_consumer on failure or silent exit.
     Propagates CancelledError to allow clean shutdown.
     """
     while True:
         try:
-            await start_consumer(rabbitmq_url)
+            await start_consumer(rabbitmq_url, dispatcher=dispatcher)
             # start_consumer returned normally — silent consumer death, restart
             logger.warning("Consumer exited normally (silent death) — restarting in 5s")
         except asyncio.CancelledError:
@@ -110,8 +113,27 @@ async def main() -> None:
     dp.include_router(login_router)
     dp.include_router(status_router)
 
-    # Start watchdog (existing)
-    _consumer_task = asyncio.create_task(run_with_watchdog(config.rabbitmq_url))
+    # Create send queue and reminder redis client
+    send_queue = TelegramSendQueue()
+    send_queue.start()
+    redis_client = ReminderRedisClient(
+        key_template=config.reminder_key_template,
+        ttl=config.reminder_key_ttl,
+        host=config.redis_host,
+        port=config.redis_port,
+    )
+
+    # Create event dispatcher with all dependencies
+    dispatcher = EventDispatcher(
+        bot=bot,
+        academic_client=academic_client,
+        send_queue=send_queue,
+        redis_client=redis_client,
+        config=config,
+    )
+
+    # Start watchdog with dispatcher
+    _consumer_task = asyncio.create_task(run_with_watchdog(config.rabbitmq_url, dispatcher=dispatcher))
 
     # Start bot polling (handle_signals=False — Pitfall 5: signals managed by main loop)
     _bot_task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
@@ -134,6 +156,8 @@ async def main() -> None:
         for task in [_consumer_task, _bot_task]:
             if task and not task.done():
                 task.cancel()
+        await send_queue.shutdown()
+        await redis_client.close()
         await auth_client.close()
         await attendance_client.close()
         await jwt_redis.close()

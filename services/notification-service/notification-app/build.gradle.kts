@@ -43,6 +43,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

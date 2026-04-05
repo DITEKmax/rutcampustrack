@@ -235,3 +235,25 @@ async def test_lesson_closed_returns_early_on_missing_payload_fields():
     bot.delete_message.assert_not_called()
     redis_client.delete_key.assert_not_called()
     reminder_scheduler.cancel_lesson.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_lesson_closed_handles_none_reminder_scheduler():
+    """When reminder_scheduler=None, handler logs warning and continues with message deletion."""
+    students = [_make_student(user_id=1, telegram_id=111)]
+    bot, academic_client, redis_client, _ = _make_handler_deps(
+        students=students, message_ids_per_student=[[42]]
+    )
+
+    # Must not raise AttributeError
+    await handle_lesson_closed(
+        _make_event(lesson_id=101, group_id=5),
+        bot=bot,
+        academic_client=academic_client,
+        redis_client=redis_client,
+        reminder_scheduler=None,
+    )
+
+    # Message deletion still proceeds despite None scheduler
+    bot.delete_message.assert_called_once_with(chat_id=111, message_id=42)
+    redis_client.delete_key.assert_called_once_with(101, 1)

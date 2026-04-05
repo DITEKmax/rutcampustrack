@@ -34,7 +34,10 @@ async def handle_lesson_closed(
         return
 
     # Cancel any pending timer tasks before they fire
-    reminder_scheduler.cancel_lesson(lesson_id)
+    if reminder_scheduler is not None:
+        reminder_scheduler.cancel_lesson(lesson_id)
+    else:
+        logger.warning("reminder_scheduler is None — skipping cancel_lesson(%s)", lesson_id)
 
     # Resolve group members (cached in academic_client, 5-min TTL)
     members = await academic_client.get_group_members(group_id)

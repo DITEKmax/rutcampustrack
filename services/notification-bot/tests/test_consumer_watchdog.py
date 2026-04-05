@@ -86,12 +86,15 @@ async def test_health_up_during_reconnect():
         started.set()
         await asyncio.sleep(9999)
 
-    original_task = main_module._consumer_task
+    original_consumer_task = main_module._consumer_task
+    original_bot_task = main_module._bot_task
     try:
         with patch("bot.__main__.start_consumer", side_effect=mock_start_consumer):
             main_module._consumer_task = asyncio.create_task(
                 run_with_watchdog("amqp://test/")
             )
+            # Mock _bot_task as a live task so health_handler sees both tasks alive
+            main_module._bot_task = asyncio.create_task(asyncio.sleep(9999))
             await asyncio.wait_for(started.wait(), timeout=5)
 
             request = MagicMock()
@@ -100,13 +103,15 @@ async def test_health_up_during_reconnect():
         assert response.status == 200
         assert b"UP" in response.body
     finally:
-        if main_module._consumer_task and not main_module._consumer_task.done():
-            main_module._consumer_task.cancel()
-            try:
-                await main_module._consumer_task
-            except (asyncio.CancelledError, Exception):
-                pass
-        main_module._consumer_task = original_task
+        for task in [main_module._consumer_task, main_module._bot_task]:
+            if task and not task.done():
+                task.cancel()
+                try:
+                    await task
+                except (asyncio.CancelledError, Exception):
+                    pass
+        main_module._consumer_task = original_consumer_task
+        main_module._bot_task = original_bot_task
 
 
 async def test_health_down_when_watchdog_dead():

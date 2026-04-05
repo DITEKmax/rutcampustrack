@@ -37,6 +37,7 @@ venv/
 # === Node.js (frontends) ===
 node_modules/
 dist/
+!frontends/pwa/dist/
 .next/
 .angular/
 

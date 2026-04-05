@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-04-04T22:00:00Z"
-last_activity: 2026-04-04
+status: executing
+stopped_at: "Completed 22-01-PLAN.md"
+last_updated: "2026-04-05T13:54:00.000Z"
+last_activity: 2026-04-05 — Phase 22 Plan 01 complete (test infra + consumer watchdog)
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 8
+  completed_plans: 6
+  percent: 13
 ---
 
 # Project State
@@ -22,10 +22,10 @@ v5.0 Notification Service (Web + Bot)
 
 ## Current Position
 
-Phase: 20 of 25 (Shared Infrastructure)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-04-04 — Roadmap created for v5.0 (6 phases, 25 requirements)
+Phase: 22 (bot-infrastructure-layer)
+Plan: 2 of 3
+Status: Executing Phase 22
+Last activity: 2026-04-05 — Phase 22 Plan 01 complete (test infra + consumer watchdog)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -50,6 +50,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-04)
 ### Decisions
 
 Recent decisions affecting v5.0:
+
 - STOMP in-memory broker (no external broker needed for single-instance VPS)
 - JWT claims extracted to WebSocket session attributes at handshake — not re-validated on expiry
 - grpcio pinned at 1.73.0 (protobuf 5.x compatible — 1.80.x requires protobuf 6.x, breaking change)
@@ -68,7 +69,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04
-Stopped at: Roadmap created — ready to plan Phase 20
-Resume file: None
-Next action: /gsd:plan-phase 20
+Last session: 2026-04-05T13:54:00.000Z
+Stopped at: Completed 22-01-PLAN.md
+Resume file: .planning/phases/22-bot-infrastructure-layer/22-01-SUMMARY.md
+Next action: Execute 22-02 (Redis reminder client)

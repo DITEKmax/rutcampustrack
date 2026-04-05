@@ -20,7 +20,7 @@ Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) +
 - Infrastructure: Two independent RabbitMQ queues on existing fanout exchange; Redis for reminder message_id storage
 
 ## Current State
-v5.0 started 2026-04-04. Backend backbone complete (v1.0-v4.0): Auth, Academic, Schedule, Attendance services all operational. Now building the notification layer that delivers real-time events to end users via two independent channels (WebSocket + Telegram).
+v5.0 started 2026-04-04. Backend backbone complete (v1.0-v4.0): Auth, Academic, Schedule, Attendance services all operational. Phase 21 complete — notification-web has STOMP WebSocket with JWT auth and RabbitMQ-to-WebSocket routing for all 5 event types (20 tests). Now building Telegram bot infrastructure.
 
 ## Shipped Milestones
 
@@ -90,8 +90,8 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ GRPC-01..03: gRPC server (GetActiveLesson, GetLessonById, GetLessonsByGroup) — v3.0
 
 ### Active
-- [ ] Notification Web: WebSocket endpoint with JWT auth and group-based push delivery
-- [ ] Notification Web: RabbitMQ consumer mapping events to WebSocket messages
+- [x] Notification Web: WebSocket endpoint with JWT auth and group-based push delivery — v5.0 Phase 21
+- [x] Notification Web: RabbitMQ consumer mapping events to WebSocket messages — v5.0 Phase 21
 - [ ] Notification Bot: Telegram bot commands (/start, /login, /status)
 - [ ] Notification Bot: RabbitMQ consumer with Telegram message delivery
 - [ ] Notification Bot: 3-stage lesson reminders with message cleanup

@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: PWA + Web Push
-status: defining_requirements
-stopped_at: Defining requirements
-last_updated: "2026-04-05T21:00:00Z"
+status: ready_to_plan
+stopped_at: Roadmap created — ready to plan Phase 27
+last_updated: "2026-04-05T00:00:00Z"
 last_activity: 2026-04-05
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -18,14 +18,14 @@ progress:
 
 ## Current Milestone
 
-v6.0 PWA + Web Push — Defining requirements
+v6.0 PWA + Web Push — Roadmap created, ready to plan Phase 27
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-05 — Milestone v6.0 started
+Phase: 27 of 32 (Web Push Backend)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-04-05 — Roadmap created for v6.0 (6 phases, 32 requirements)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -33,8 +33,8 @@ Progress: [░░░░░░░░░░] 0%
 
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
-**Core value:** Full backend microservice backbone + real-time notifications shipped. All 5 services + 2 notification containers operational.
-**Current focus:** v6.0 PWA + Web Push — student mobile client with native push notifications
+**Core value:** Student mobile client «RutTrack» (React PWA) with native push notifications — independent from Telegram, installable, offline-capable
+**Current focus:** Phase 27 — Web Push Backend (VAPID infrastructure in notification-web)
 
 ## Completed Milestones
 
@@ -52,9 +52,18 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 See PROJECT.md Key Decisions table for full history.
 
+Recent decisions relevant to v6.0:
+- v5.0: STOMP in-memory broker (no external broker) — sufficient for single-instance VPS
+- v6.0 planning: VAPID keys persist in Redis (no TTL) — never regenerated on restart to avoid invalidating subscriptions
+- v6.0 planning: `injectManifest` strategy for vite-plugin-pwa — required for custom `push` event handler in Service Worker
+
 ### Research Flags
 
-None.
+- Phase 27: Verify BouncyCastle `bcprov-jdk18on` in Spring Boot executable JAR (signed JAR edge case)
+- Phase 27: Add `MONGODB_URI` env var to notification-web in docker-compose (currently missing)
+- Phase 29: vite-plugin-pwa 1.2.0 + Vite 8 peer dep — may need `--legacy-peer-deps`; fallback is Vite 7
+- Phase 31: iOS push only works in standalone mode (A2HS installed) — guard before subscription attempt
+- Phase 32: Physical iOS device required for geo check-in QA
 
 ### Blockers/Concerns
 
@@ -63,6 +72,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-05
-Stopped at: Defining requirements for v6.0
+Stopped at: Roadmap created for v6.0 (Phases 27-32)
 Resume file: None
-Next action: Define requirements → create roadmap
+Next action: `/gsd-plan-phase 27`

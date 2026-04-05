@@ -96,44 +96,44 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PWA-01 | — | Pending |
-| PWA-02 | — | Pending |
-| PWA-03 | — | Pending |
-| PWA-04 | — | Pending |
-| PWA-05 | — | Pending |
-| PWA-06 | — | Pending |
-| PWA-07 | — | Pending |
-| SCHED-01 | — | Pending |
-| SCHED-02 | — | Pending |
-| SCHED-03 | — | Pending |
-| CHKIN-01 | — | Pending |
-| CHKIN-02 | — | Pending |
-| CHKIN-03 | — | Pending |
-| PUSH-01 | — | Pending |
-| PUSH-02 | — | Pending |
-| PUSH-03 | — | Pending |
-| PUSH-04 | — | Pending |
-| PUSH-05 | — | Pending |
-| PUSH-06 | — | Pending |
-| PUSH-07 | — | Pending |
-| PUSHUI-01 | — | Pending |
-| PUSHUI-02 | — | Pending |
-| PUSHUI-03 | — | Pending |
-| PUSHUI-04 | — | Pending |
-| ATT-01 | — | Pending |
-| ATT-02 | — | Pending |
-| ATT-03 | — | Pending |
-| HW-01 | — | Pending |
-| HW-02 | — | Pending |
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
+| PUSH-01 | Phase 27 | Pending |
+| PUSH-02 | Phase 27 | Pending |
+| PUSH-03 | Phase 27 | Pending |
+| PUSH-04 | Phase 27 | Pending |
+| PUSH-05 | Phase 27 | Pending |
+| PUSH-06 | Phase 27 | Pending |
+| PUSH-07 | Phase 27 | Pending |
+| INFRA-02 | Phase 27 | Pending |
+| INFRA-01 | Phase 28 | Pending |
+| INFRA-03 | Phase 28 | Pending |
+| PWA-01 | Phase 29 | Pending |
+| PWA-02 | Phase 29 | Pending |
+| PWA-03 | Phase 29 | Pending |
+| PWA-04 | Phase 29 | Pending |
+| PWA-05 | Phase 29 | Pending |
+| PWA-06 | Phase 29 | Pending |
+| PWA-07 | Phase 29 | Pending |
+| SCHED-01 | Phase 30 | Pending |
+| SCHED-02 | Phase 30 | Pending |
+| SCHED-03 | Phase 30 | Pending |
+| CHKIN-01 | Phase 30 | Pending |
+| CHKIN-02 | Phase 30 | Pending |
+| CHKIN-03 | Phase 30 | Pending |
+| PUSHUI-01 | Phase 31 | Pending |
+| PUSHUI-02 | Phase 31 | Pending |
+| PUSHUI-03 | Phase 31 | Pending |
+| PUSHUI-04 | Phase 31 | Pending |
+| ATT-01 | Phase 32 | Pending |
+| ATT-02 | Phase 32 | Pending |
+| ATT-03 | Phase 32 | Pending |
+| HW-01 | Phase 32 | Pending |
+| HW-02 | Phase 32 | Pending |
 
 **Coverage:**
 - v6.0 requirements: 32 total
-- Mapped to phases: 0
-- Unmapped: 32 ⚠️
+- Mapped to phases: 32
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after initial definition*
+*Last updated: 2026-04-05 after roadmap creation (v6.0 Phases 27-32)*

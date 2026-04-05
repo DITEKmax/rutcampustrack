@@ -4,8 +4,8 @@ milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
 status: executing
 stopped_at: Phase 23 context gathered
-last_updated: "2026-04-05T12:06:24.001Z"
-last_activity: 2026-04-05 -- Phase 23 planning complete
+last_updated: "2026-04-05T12:09:15.789Z"
+last_activity: 2026-04-05 -- Phase 23 execution started
 progress:
   total_phases: 6
   completed_phases: 3
@@ -22,10 +22,10 @@ v5.0 Notification Service (Web + Bot)
 
 ## Current Position
 
-Phase: 22 (bot-infrastructure-layer)
-Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-04-05 -- Phase 23 planning complete
+Phase: 23 (bot-telegram-commands) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 23
+Last activity: 2026-04-05 -- Phase 23 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
 **Core value:** Full backend microservice backbone shipped. Now delivering real-time notifications via WebSocket (web panel) and Telegram bot.
-**Current focus:** Phase 20 — Shared Infrastructure
+**Current focus:** Phase 23 — bot-telegram-commands
 
 ## Completed Milestones
 

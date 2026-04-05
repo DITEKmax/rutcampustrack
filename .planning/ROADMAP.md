@@ -128,10 +128,10 @@ Plans:
   1. A student who sends /start to the bot and has an existing account linked to their telegram_id receives a greeting with their credentials; a new user receives instructions to contact their headman
   2. A student can authenticate via /login by completing the OTP flow — the bot requests an OTP from Auth Service, the student enters the code, and the bot confirms successful login
   3. A student who sends /status receives their current lesson information and attendance status for that lesson
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 Plans:
-- [ ] 23-01-PLAN.md — Java: GetUserByTelegramId gRPC RPC + Auth Service OTP return code
-- [ ] 23-02-PLAN.md — Python: config, JWT Redis client, Schedule gRPC client, HTTP clients
+- [x] 23-01-PLAN.md — Java: GetUserByTelegramId gRPC RPC + Auth Service OTP return code
+- [x] 23-02-PLAN.md — Python: config, JWT Redis client, Schedule gRPC client, HTTP clients
 - [ ] 23-03-PLAN.md — Command handlers (/start, /login, /status) + Bot Dispatcher integration
 
 ### Phase 24: Bot Event Notifications
@@ -182,6 +182,6 @@ Plans:
 | 20. Shared Infrastructure | v5.0 | 3/3 | Complete    | 2026-04-04 |
 | 21. Notification Web — WebSocket Core | v5.0 | 2/2 | Complete    | 2026-04-05 |
 | 22. Bot Infrastructure Layer | v5.0 | 3/3 | Complete   | 2026-04-05 |
-| 23. Bot Telegram Commands | v5.0 | 0/3 | Not started | - |
+| 23. Bot Telegram Commands | v5.0 | 2/3 | In Progress|  |
 | 24. Bot Event Notifications | v5.0 | 0/? | Not started | - |
 | 25. Bot Reminder Lifecycle | v5.0 | 0/? | Not started | - |

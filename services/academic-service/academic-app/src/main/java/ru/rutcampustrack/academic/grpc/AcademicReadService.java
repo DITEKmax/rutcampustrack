@@ -13,6 +13,7 @@ import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Separate Spring bean for cached gRPC read operations.
@@ -64,5 +65,13 @@ public class AcademicReadService {
     public User fetchUserById(Long userId) {
         return userRepository.findByIdIncludingArchived(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+    }
+
+    /**
+     * Lookup user by Telegram ID — not cached, fresh data needed for bot /start command.
+     * Returns Optional.empty() if no user has the given telegram_id.
+     */
+    public Optional<User> fetchUserByTelegramId(Long telegramId) {
+        return userRepository.findByTelegramId(telegramId);
     }
 }

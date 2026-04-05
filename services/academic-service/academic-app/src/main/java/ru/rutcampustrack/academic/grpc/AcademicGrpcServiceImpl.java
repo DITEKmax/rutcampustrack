@@ -207,6 +207,51 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     }
 
     /**
+     * GRPC-09: Get user by Telegram ID (for bot /start command).
+     * Returns found=false when no user has the given telegram_id.
+     * Not cached — fresh data needed for bot lookups (D-01 context).
+     */
+    @Override
+    public void getUserByTelegramId(UserByTelegramIdRequest request,
+            StreamObserver<UserByTelegramIdResponse> responseObserver) {
+        Optional<User> userOpt = academicReadService.fetchUserByTelegramId(request.getTelegramId());
+
+        if (userOpt.isEmpty()) {
+            UserByTelegramIdResponse response = UserByTelegramIdResponse.newBuilder()
+                    .setFound(false)
+                    .build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+            return;
+        }
+
+        User user = userOpt.get();
+        String groupName = "";
+        if (user.getGroupId() != null) {
+            groupName = groupRepository.findById(user.getGroupId())
+                    .map(Group::getName)
+                    .orElse("");
+        }
+
+        UserByTelegramIdResponse response = UserByTelegramIdResponse.newBuilder()
+                .setFound(true)
+                .setUserId(user.getId())
+                .setLogin(user.getLogin())
+                .setDisplayName(user.getDisplayName())
+                .setRole(user.getRole().name().toLowerCase())
+                .setGroupId(user.getGroupId() != null ? user.getGroupId() : 0L)
+                .setGroupName(groupName)
+                .setIsHeadman(user.isHeadman())
+                .setTelegramId(user.getTelegramId() != null ? user.getTelegramId() : 0L)
+                .setInitialPassword(user.getInitialPassword() != null ? user.getInitialPassword() : "")
+                .setPasswordChanged(user.isPasswordChanged())
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    /**
      * GRPC-07: Get user by ID including archived users.
      * Uses cached lookup that bypasses @SQLRestriction so downstream services
      * can access historical data for archived users.

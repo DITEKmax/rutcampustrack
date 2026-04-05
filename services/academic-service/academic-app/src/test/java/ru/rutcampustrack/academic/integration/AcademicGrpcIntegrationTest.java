@@ -25,6 +25,8 @@ import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsRequest;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
+import ru.rutcampustrack.academic.grpc.UserByTelegramIdRequest;
+import ru.rutcampustrack.academic.grpc.UserByTelegramIdResponse;
 import ru.rutcampustrack.academic.grpc.UserRequest;
 import ru.rutcampustrack.academic.grpc.UserResponse;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
@@ -362,5 +364,53 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         StatusRuntimeException ex = assertThrows(StatusRuntimeException.class,
                 () -> stub.getUserById(request));
         assertThat(ex.getStatus().getCode()).isEqualTo(Status.Code.NOT_FOUND);
+    }
+
+    // =====================================================================
+    // GRPC-09: GetUserByTelegramId
+    // =====================================================================
+
+    @Test
+    void getUserByTelegramId_found_returnsUserWithAllFields() {
+        // Insert a student with telegram_id, initial_password, and group_id
+        jdbcTemplate.update("DELETE FROM users WHERE login = 'bot_test_student'");
+        jdbcTemplate.update(
+                "INSERT INTO users (login, password_hash, display_name, role, status, is_headman, group_id, " +
+                "telegram_id, initial_password, password_changed, created_at, updated_at) " +
+                "VALUES ('bot_test_student', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
+                "'Bot Test Student', 'student', 'active', false, 1, 987654321, 'initpass123', false, NOW(), NOW())");
+
+        UserByTelegramIdRequest request = UserByTelegramIdRequest.newBuilder()
+                .setTelegramId(987654321L)
+                .build();
+
+        UserByTelegramIdResponse response = stub.getUserByTelegramId(request);
+
+        assertThat(response.getFound()).isTrue();
+        assertThat(response.getLogin()).isEqualTo("bot_test_student");
+        assertThat(response.getDisplayName()).isEqualTo("Bot Test Student");
+        assertThat(response.getRole()).isEqualTo("student");
+        assertThat(response.getGroupId()).isEqualTo(GROUP_ID);
+        assertThat(response.getGroupName()).isEqualTo("IVT-21-1");
+        assertThat(response.getIsHeadman()).isFalse();
+        assertThat(response.getTelegramId()).isEqualTo(987654321L);
+        assertThat(response.getInitialPassword()).isEqualTo("initpass123");
+        assertThat(response.getPasswordChanged()).isFalse();
+
+        // Cleanup
+        jdbcTemplate.update("DELETE FROM users WHERE login = 'bot_test_student'");
+    }
+
+    @Test
+    void getUserByTelegramId_notFound_returnsFoundFalse() {
+        UserByTelegramIdRequest request = UserByTelegramIdRequest.newBuilder()
+                .setTelegramId(NONEXISTENT_ID)
+                .build();
+
+        UserByTelegramIdResponse response = stub.getUserByTelegramId(request);
+
+        assertThat(response.getFound()).isFalse();
+        assertThat(response.getLogin()).isEmpty();
+        assertThat(response.getUserId()).isZero();
     }
 }

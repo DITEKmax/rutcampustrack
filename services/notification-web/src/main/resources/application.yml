@@ -11,6 +11,10 @@ spring:
     username: ${RABBITMQ_USER:rct_user}
     password: ${RABBITMQ_PASSWORD:rct_dev_pass}
 
+notification:
+  jwt:
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:/keys/public.key}
+
 management:
   endpoints:
     web:

@@ -102,7 +102,7 @@ services:
 
   notification-web:
     build:
-      context: ./services/notification-web
+      context: ./services/notification-service/notification-app
       dockerfile: Dockerfile
     container_name: rct-notification-web
     environment:
@@ -111,6 +111,10 @@ services:
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER:-rct_user}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-rct_dev_pass}
       JWT_PUBLIC_KEY_PATH: /keys/public.key
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:noreply@rut.ru}
+      SPRING_DATA_MONGODB_URI: mongodb://mongo-attendance:27017/attendance_db
     volumes:
       - jwt-keys:/keys:ro
     expose:
@@ -121,6 +125,8 @@ services:
       redis:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      mongo-attendance:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:

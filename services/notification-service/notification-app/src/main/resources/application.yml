@@ -11,9 +11,18 @@ spring:
     username: ${RABBITMQ_USER:rct_user}
     password: ${RABBITMQ_PASSWORD:rct_dev_pass}
 
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/attendance_db}
+
 notification:
   jwt:
     public-key-path: ${JWT_PUBLIC_KEY_PATH:/keys/public.key}
+
+vapid:
+  public-key: ${VAPID_PUBLIC_KEY:}
+  private-key: ${VAPID_PRIVATE_KEY:}
+  subject: ${VAPID_SUBJECT:mailto:noreply@rut.ru}
 
 management:
   endpoints:

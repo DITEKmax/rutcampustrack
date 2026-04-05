@@ -313,17 +313,17 @@ Import: `org.springframework.http.HttpMethod`
 | A2 | `frontends/pwa/dist/` does not exist yet (Phase 29 creates it) | Pitfall 4 | If already exists, no action needed |
 | A3 | nginx bind-mount approach is acceptable for dev; Phase 29 may switch to multi-stage Docker build | Pattern 3 | If prod-ready Docker required now, add Dockerfile |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **allowed-origins scope for production**
    - What we know: Phase 28 uses `localhost:5173` and `localhost:80` for dev
    - What's unclear: Whether a production domain (e.g., `https://rut.ru`) should be added now
-   - Recommendation: Dev-only origins for this phase; add production origin in Phase 9 (CI/CD)
+   - RESOLVED: Dev-only origins for this phase; add production origin in Phase 9 (CI/CD)
 
 2. **`allow-credentials: true` with wildcard origins**
    - What we know: `allow-credentials: true` is incompatible with `allowedOrigins: "*"`
    - What's unclear: Whether credentials (cookies for refresh token) will be sent from the PWA
-   - Recommendation: Use explicit origins (as shown), not wildcard, when `allow-credentials: true` [VERIFIED: CORS spec — credentials + wildcard is rejected by browser]
+   - RESOLVED: Use explicit origins (as shown), not wildcard, when `allow-credentials: true` [VERIFIED: CORS spec — credentials + wildcard is rejected by browser]
 
 ## Environment Availability
 

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
 status: executing
-stopped_at: Phase 23 context gathered
-last_updated: "2026-04-05T12:09:15.789Z"
-last_activity: 2026-04-05 -- Phase 23 execution started
+stopped_at: Phase 23 complete
+last_updated: "2026-04-05T12:20:00.000Z"
+last_activity: 2026-04-05 -- Phase 23 complete (3/3 plans)
 progress:
   total_phases: 6
-  completed_phases: 3
-  total_plans: 11
-  completed_plans: 8
-  percent: 73
+  completed_phases: 4
+  total_plans: 14
+  completed_plans: 11
+  percent: 79
 ---
 
 # Project State
@@ -22,12 +22,12 @@ v5.0 Notification Service (Web + Bot)
 
 ## Current Position
 
-Phase: 23 (bot-telegram-commands) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 23
-Last activity: 2026-04-05 -- Phase 23 execution started
+Phase: 23 (bot-telegram-commands) — COMPLETE ✓
+Plan: 3 of 3
+Status: Phase 23 complete
+Last activity: 2026-04-05 -- Phase 23 complete (3/3 plans)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [████████░░] 79%
 
 ## Project Reference
 
@@ -63,8 +63,8 @@ Recent decisions affecting v5.0:
 ### Research Flags (resolve before phase begins)
 
 - Phase 21: Verify JwtAuthenticationFilter handles HTTP GET Upgrade: websocket — injects X-User-Id/X-Group-Id before WebSocket proxy forward
-- Phase 22/23: Verify POST /auth/otp/request returns OTP code in response body (bot must deliver code to user)
-- Phase 23: Decide how bot looks up user by telegram_id for /start — gRPC only has GetUserById(user_id), not by telegram_id
+- ~~Phase 22/23: Verify POST /auth/otp/request returns OTP code in response body~~ — RESOLVED in Phase 23-01: returns `{"code":"123456"}`
+- ~~Phase 23: Decide how bot looks up user by telegram_id for /start~~ — RESOLVED in Phase 23-01: added GetUserByTelegramId gRPC RPC
 
 ### Blockers/Concerns
 

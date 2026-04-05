@@ -4,14 +4,14 @@ milestone: v6.0
 milestone_name: PWA + Web Push
 status: executing
 stopped_at: Phase 27 context gathered
-last_updated: "2026-04-05T19:53:32.473Z"
-last_activity: 2026-04-05 -- Phase 27 planning complete
+last_updated: "2026-04-05T21:05:48.181Z"
+last_activity: 2026-04-05 -- Phase 28 planning complete
 progress:
   total_phases: 6
-  completed_phases: 0
-  total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 5
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -22,10 +22,10 @@ v6.0 PWA + Web Push — Roadmap created, ready to plan Phase 27
 
 ## Current Position
 
-Phase: 27 of 32 (Web Push Backend)
-Plan: — (not yet planned)
+Phase: 27 (web-push-backend) — EXECUTING
+Plan: 1 of 3
 Status: Ready to execute
-Last activity: 2026-04-05 -- Phase 27 planning complete
+Last activity: 2026-04-05 -- Phase 28 planning complete
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Student mobile client «RutTrack» (React PWA) with native push notifications — independent from Telegram, installable, offline-capable
-**Current focus:** Phase 27 — Web Push Backend (VAPID infrastructure in notification-web)
+**Current focus:** Phase 27 — web-push-backend
 
 ## Completed Milestones
 

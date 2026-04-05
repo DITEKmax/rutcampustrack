@@ -33,7 +33,13 @@
       "Bash(node:*)",
       "Bash(docker compose:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m ':*)"
+      "Bash(git commit -m ':*)",
+      "Bash(/c/Users/maksd/AppData/Local/Programs/Python/Python313/python.exe -m pytest tests/ -v)",
+      "Bash(mkdir:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)",
+      "Bash(git tag:*)",
+      "Bash(git push:*)"
     ]
   }
 }

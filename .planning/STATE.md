@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
 status: verifying
-stopped_at: Completed 24-bot-event-notifications-01-PLAN.md
-last_updated: "2026-04-05T14:25:00.934Z"
+stopped_at: Completed 24-bot-event-notifications-02-PLAN.md
+last_updated: "2026-04-05T14:35:55.577Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 13
-  completed_plans: 12
-  percent: 92
+  completed_plans: 13
+  percent: 100
 ---
 
 # Project State
@@ -61,6 +61,8 @@ Recent decisions affecting v5.0:
 - [Phase 22]: ReminderRedisClient uses RPUSH/LRANGE list pattern with TTL for per-lesson-per-user reminder message tracking
 - [Phase 24-bot-event-notifications]: Handler exceptions caught inside EventDispatcher.dispatch() for RabbitMQ ack safety
 - [Phase 24-bot-event-notifications]: Lambda default-arg binding (s=student) used in lesson_started closures to avoid Python late-binding bug
+- [Phase 24-bot-event-notifications]: homework.updated shares handle_homework with homework.published via event_type branch
+- [Phase 24-bot-event-notifications]: student_name resolved: payload field > member lookup by user_id > fallback string
 
 ### Research Flags (resolve before phase begins)
 
@@ -74,7 +76,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T14:25:00.929Z
-Stopped at: Completed 24-bot-event-notifications-01-PLAN.md
+Last session: 2026-04-05T14:35:55.573Z
+Stopped at: Completed 24-bot-event-notifications-02-PLAN.md
 Resume file: None
 Next action: Execute 22-02 (Redis reminder client)

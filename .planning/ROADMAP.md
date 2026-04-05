@@ -69,7 +69,7 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
 - [x] **Phase 21: Notification Web — WebSocket Core** — STOMP endpoint with JWT auth, group session registry, and all 5 event types pushed to correct group topics (completed 2026-04-05)
 - [x] **Phase 22: Bot Infrastructure Layer** — aio-pika consumer with watchdog, gRPC client for Academic Service, Redis async client, throttled send queue (completed 2026-04-05)
 - [x] **Phase 23: Bot Telegram Commands** — /start account linking, /login OTP flow, /status attendance check (completed 2026-04-05)
-- [ ] **Phase 24: Bot Event Notifications** — lesson.started fan-out with inline button, lesson.cancelled, homework published/updated, headman excuse and late-checkin alerts
+- [x] **Phase 24: Bot Event Notifications** — lesson.started fan-out with inline button, lesson.cancelled, homework published/updated, headman excuse and late-checkin alerts (completed 2026-04-05)
 - [ ] **Phase 25: Bot Reminder Lifecycle** — midpoint and end-of-lesson reminders, full message cleanup on lesson.closed, immediate cleanup on attendance.marked
 
 ## Phase Details
@@ -143,10 +143,10 @@ Plans:
   2. When a lesson.cancelled event arrives, every student in the group receives a plain text cancellation notification via the throttled send queue
   3. When a homework.published or homework.updated event arrives, every student in the group receives a Telegram notification about the new or changed assignment
   4. When an excuse.requested event arrives, the headman of the affected group receives a Telegram notification; same for late_checkin.requested
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 24-01-PLAN.md — EventDispatcher + lesson.started (inline button + Redis) + lesson.cancelled handlers
-- [ ] 24-02-PLAN.md — homework + headman alert handlers + wiring into consumer and __main__.py
+- [x] 24-02-PLAN.md — homework + headman alert handlers + wiring into consumer and __main__.py
 
 ### Phase 25: Bot Reminder Lifecycle
 **Goal**: Students who have not checked in receive two follow-up reminder messages (at lesson midpoint and near lesson end), all reminder messages are deleted from Telegram when the lesson closes, and a student's reminders are immediately deleted the moment they check in — implementing the full reminder lifecycle from CLAUDE.md
@@ -186,5 +186,5 @@ Plans:
 | 21. Notification Web — WebSocket Core | v5.0 | 2/2 | Complete    | 2026-04-05 |
 | 22. Bot Infrastructure Layer | v5.0 | 3/3 | Complete   | 2026-04-05 |
 | 23. Bot Telegram Commands | v5.0 | 3/3 | Complete   | 2026-04-05 |
-| 24. Bot Event Notifications | v5.0 | 1/2 | In Progress|  |
+| 24. Bot Event Notifications | v5.0 | 2/2 | Complete   | 2026-04-05 |
 | 25. Bot Reminder Lifecycle | v5.0 | 0/? | Not started | - |

@@ -37,9 +37,9 @@ Requirements for Notification Service milestone. Each maps to roadmap phases.
 - [ ] **NOTIF-04**: All reminder messages are deleted from Telegram when lesson closes
 - [ ] **NOTIF-05**: Reminder messages are deleted immediately when student checks in (via attendance.marked)
 - [x] **NOTIF-06**: Student receives Telegram notification when lesson is cancelled
-- [ ] **NOTIF-07**: Student receives Telegram notification when homework is published or updated
-- [ ] **NOTIF-08**: Headman receives Telegram notification when student requests excuse
-- [ ] **NOTIF-09**: Headman receives Telegram notification when student requests late check-in
+- [x] **NOTIF-07**: Student receives Telegram notification when homework is published or updated
+- [x] **NOTIF-08**: Headman receives Telegram notification when student requests excuse
+- [x] **NOTIF-09**: Headman receives Telegram notification when student requests late check-in
 
 ### Bot Infrastructure
 
@@ -101,9 +101,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BOT-03 | Phase 23 | Pending |
 | NOTIF-01 | Phase 24 | Complete |
 | NOTIF-06 | Phase 24 | Complete |
-| NOTIF-07 | Phase 24 | Pending |
-| NOTIF-08 | Phase 24 | Pending |
-| NOTIF-09 | Phase 24 | Pending |
+| NOTIF-07 | Phase 24 | Complete |
+| NOTIF-08 | Phase 24 | Complete |
+| NOTIF-09 | Phase 24 | Complete |
 | NOTIF-02 | Phase 25 | Pending |
 | NOTIF-03 | Phase 25 | Pending |
 | NOTIF-04 | Phase 25 | Pending |

@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     jwt_key_prefix: str = "bot:jwt:"
     jwt_ttl: int = 604800
 
+    # Mini App URL for inline check-in button
+    mini_app_url: str = "https://t.me/RutTrackBot/checkin"
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 

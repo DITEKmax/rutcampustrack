@@ -1,33 +1,51 @@
 # Feature Research
 
-**Domain:** Real-time notification delivery for university attendance system — WebSocket push + Telegram bot
-**Researched:** 2026-04-04
-**Project:** RutCampusTrack v5.0 Notification Service (Web + Bot)
-**Confidence:** HIGH — based on existing event schemas, RabbitMQ exchange contracts, proto files, phases-plan.md, and PROJECT.md active requirements.
+**Domain:** PWA Mobile Client «RutTrack» — Student attendance app with Web Push notifications
+**Researched:** 2026-04-05
+**Project:** RutCampusTrack v6.0 PWA + Web Push
+**Confidence:** HIGH — based on PROJECT.md, job-stories.md, design-decisions.md, phases-plan.md, Web Push API docs, and comparable PWA attendance system research.
 
 ---
 
 ## Context: What Already Exists (Must Not Re-Implement)
 
-The notification layer consumes from an already-operational event bus. These are the sources it reads from:
+All backend APIs are operational. The PWA consumes them. No new backend services are created in v6.0 (only VAPID push subscription management is added to notification-web).
 
-| Event | Publisher | Payload Fields | Notification Audience |
-|-------|-----------|---------------|----------------------|
-| `lesson.started` | Schedule Service | lesson_id, group_id, subject_id, teacher_id, lesson_number, start_time, end_time, room | Students of that group |
-| `lesson.closed` | Schedule Service | lesson_id, group_id, subject_id | Students of that group |
-| `lesson.cancelled` | Schedule Service | lesson_id, group_id, subject_id, date, cancel_reason | Students of that group |
-| `attendance.marked` | Attendance Service | lesson_id, user_id, group_id, status, marked_by | That specific student |
-| `homework.published` | Academic Service | homework_id, group_id, subject_id, lesson_id, title, has_link | Students of that group |
-| `homework.updated` | Academic Service | same as published | Students of that group |
-| `excuse.requested` | Attendance Service | user_id, group_id, excuse_type, ticket_id, lesson_ids, has_attachments | Headman of that group |
-| `late_checkin.requested` | Attendance Service | user_id, group_id, lesson_id, student_name, lesson_date | Headman of that group |
+### Available Backend Endpoints (via API Gateway :8080)
 
-**Already operational infrastructure:**
-- RabbitMQ fanout exchange `rut-uit.events` — all events land here
-- Academic Service gRPC `GetGroupMembers(group_id)` — returns list of students with telegram_id
-- Auth Service OTP flow — `/auth/otp/request` and `/auth/otp/verify` — JWT generation from Telegram
-- Redis — available for reminder message_id storage
-- API Gateway WebSocket routing: `/api/ws/**` → notification-web:9094
+| Endpoint | Service | What PWA Uses It For |
+|----------|---------|---------------------|
+| `POST /api/auth/login` | auth-service:9090 | Student login (username + password) |
+| `POST /api/auth/refresh` | auth-service:9090 | Token refresh (auto-refresh before expiry) |
+| `POST /api/auth/logout` | auth-service:9090 | Logout (invalidates refresh token) |
+| `POST /api/auth/otp/request` | auth-service:9090 | OTP request via Telegram |
+| `POST /api/auth/otp/verify` | auth-service:9090 | OTP verify → JWT pair |
+| `GET /api/academic/students/{id}/profile` | academic-service:9091 | Student profile |
+| `GET /api/academic/groups/{id}/members` | academic-service:9091 | Group composition |
+| `GET /api/academic/homeworks` | academic-service:9091 | Homework list for group |
+| `POST/DELETE /api/academic/homework-completions` | academic-service:9091 | Personal homework tracker |
+| `GET /api/schedule/lessons` | schedule-service:9092 | Schedule (by date range + group) |
+| `GET /api/schedule/lessons/{id}` | schedule-service:9092 | Single lesson detail |
+| `POST /api/attendance/check-in` | attendance-service:9093 | Geo check-in submission |
+| `GET /api/reports/student-stats` | attendance-service:9093 | Student attendance stats |
+| `GET /api/reports/student-records` | attendance-service:9093 | Attendance records list |
+| `POST /api/attendance/excuse-tickets` | attendance-service:9093 | Create excuse ticket (deferred) |
+| `POST /api/attendance/late-checkin` | attendance-service:9093 | Late check-in request (deferred) |
+| `WS /api/ws` (STOMP) | notification-web:9094 | Real-time push events via WebSocket |
+
+### Existing Notification Infrastructure
+
+- STOMP WebSocket at `/api/ws` with JWT handshake (query param `token`)
+- 5 push event types already delivered: `lesson.started`, `lesson.cancelled`, `homework.published`, `excuse.requested`, `late_checkin.requested`
+- Telegram bot already covers same events — Web Push duplicates the channel
+
+### New Backend Needed for Web Push
+
+notification-web needs 2 new endpoints (VAPID subscription management):
+- `POST /api/ws/push/subscribe` — store PushSubscription object per user
+- `DELETE /api/ws/push/subscribe` — unsubscribe
+
+These are lightweight additions to the existing Java WebSocket service, not a new service.
 
 ---
 
@@ -35,39 +53,40 @@ The notification layer consumes from an already-operational event bus. These are
 
 ### Table Stakes (Users Expect These)
 
-Features the notification system cannot ship without. Missing = core notification pipeline is broken.
+Features the PWA cannot ship without. Missing = product feels incomplete or broken.
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **RabbitMQ consumer setup (both services)** | Without consuming events, neither service does anything. Two independent durable queues: `notification-web.events` and `notification-bot.events` must bind to the fanout exchange. | LOW | Same pattern as Attendance Service's `attendance-service.events`. Durable queue, DLQ. Each service receives a full copy of every event. Route by `event_type` field. |
-| **WebSocket endpoint with JWT auth** | Web panel needs real-time push without polling. Gateway already routes `/api/ws/**`. Without the WebSocket endpoint, the Angular panel has no live feed. | MEDIUM | STOMP over SockJS is the Spring standard pattern. On handshake: extract JWT from query param or first message frame, parse user_id and group_id from claims. Maintain a session registry keyed by group_id for broadcast. |
-| **Group-based WebSocket session registry** | Without routing by group_id, every connected client receives every notification — a privacy and noise violation. | MEDIUM | In-memory ConcurrentHashMap: group_id → Set of WebSocket sessions. On lesson.started → push only to sessions whose group_id matches. On connect/disconnect: add/remove from registry. |
-| **lesson.started → WebSocket push to group** | Web panel users (headmen, teachers with the panel open) expect to see "class started" update live. | LOW | Map event → message object {type: "lesson.started", lesson_id, subject_id, lesson_number}. Push to all sessions in group_id. |
-| **lesson.cancelled → WebSocket push to group** | Cancelled lessons must appear immediately in the schedule view without page refresh. | LOW | Same as lesson.started mapping but type = "lesson.cancelled". Include cancel_reason if present. |
-| **homework.published → WebSocket push to group** | Students on the web panel should see new assignments immediately. | LOW | Push {type: "homework.published", homework_id, title, subject_id}. Route to group_id sessions. |
-| **Telegram bot /start command** | Required for account linking. Without /start the bot has no user context. Sends the user's initial login + password if `initial_password` is set (one-time credential delivery). | MEDIUM | On /start: store telegram_id from update. Call Auth Service (or query Academic Service gRPC GetUserByTelegramId if available). If user found and `initial_password` not null → reply with credentials. If not linked → prompt to use /login. |
-| **Telegram bot /login command (OTP flow)** | Students need to authenticate with the bot to receive personalized notifications. /login triggers OTP flow via Auth Service. | MEDIUM | /login → POST /auth/otp/request with {telegram_id}. Auth Service sends 6-digit code to bot via... wait: OTP delivery TO Telegram is the bot's job (not Auth Service pushing). Bot sends the OTP code itself after receiving it from Auth Service response or stores a pending state. Check: Auth Service OTP request returns the code for the bot to deliver, or fires a Telegram message independently. This is a v1.0 deferred decision — verify with Auth Service implementation. |
-| **lesson.started → Telegram message with check-in button to group students** | Primary student-facing notification. Students see "Pair started, tap to check in" with inline button opening Mini App. Without this, students miss check-in window entirely. | MEDIUM | For each telegram_id in group (via GetGroupMembers gRPC, filtered to has telegram_id): send message with InlineKeyboardMarkup containing one button: "Отметиться" with URL = Mini App URL + ?lesson_id=X. Store returned message_id in Redis key `reminder:msgs:{lesson_id}:{user_id}` for later cleanup. |
-| **lesson.closed → delete all reminder messages for that lesson** | Leaving stale reminder messages in Telegram chats is bad UX and was explicitly called out in CLAUDE.md. After lesson closes, all "Отметиться" messages must be deleted. | MEDIUM | On lesson.closed: for each student in group, retrieve message_id from Redis `reminder:msgs:{lesson_id}:{user_id}`. Call bot.delete_message(chat_id=telegram_id, message_id=...). Delete the Redis key. Handle "message not found" gracefully (student may have deleted manually). |
-| **lesson.cancelled → Telegram notification to group** | Students need to know class is cancelled so they don't show up. | LOW | Send plain text message to each student in group: "Пара {subject} {date} отменена." Include cancel_reason if present. No inline buttons. |
-| **homework.published → Telegram notification to group** | Students get homework assignments via Telegram; the bot is the primary notification channel for most students. | LOW | Send message with homework title and subject name. Include "Есть ссылка" indicator if has_link=true. No inline button needed (link is in the web panel). |
-| **gRPC client for GetGroupMembers in bot** | Bot needs the list of telegram_ids for a group to broadcast messages. Without this, the bot cannot send lesson.started or homework notifications. | MEDIUM | Python grpcio client for Academic Service. Single RPC: `GetGroupMembers(group_id)` → list of users with telegram_id field. Filter out users where telegram_id is null (not linked). Cache result per group_id with short TTL (5 minutes) to avoid gRPC call on every lesson event. |
+| Feature | Why Expected | Complexity | Dependency on Backend |
+|---------|--------------|------------|----------------------|
+| **Login screen** | Entry point to all features. Students need username/password login. | LOW | `POST /api/auth/login`, `POST /api/auth/refresh` |
+| **Today's schedule view** | The primary daily-use screen. Students check what pairs they have today before going to campus. Missing = app is useless. | LOW | `GET /api/schedule/lessons?from=today&to=today&groupId=X` |
+| **Geo check-in button** | Core product function. Student taps "Отметиться", PWA requests GPS coords, sends to backend. Visible only during active pair window (5 min before start → 5 min after end). | MEDIUM | `POST /api/attendance/check-in`, Geolocation API (browser) |
+| **Check-in result feedback** | Immediate visual confirmation: "Отмечено" (green) or "Не в зоне кампуса" (red) after submission. | LOW | Same as check-in |
+| **Weekly schedule view** | Students plan their week. Missing = they go back to paper schedule or old Telegram bot. | LOW | `GET /api/schedule/lessons?from=weekStart&to=weekEnd&groupId=X` |
+| **Attendance stats screen** | Students track their own attendance percentage per subject. Core student concern (red zone threshold awareness). | MEDIUM | `GET /api/reports/student-stats` |
+| **JWT auto-refresh** | Access tokens expire in 15 min. Without silent refresh, student is logged out mid-session. | MEDIUM | `POST /api/auth/refresh` |
+| **"Add to Home Screen" prompt** | PWA identity feature. Students expect the app install prompt. Without it, it's just a website. Per design-decisions.md: show iOS Safari instruction for iOS users. | LOW | browser `beforeinstallprompt` API + manifest.json |
+| **Offline shell (app loads without network)** | Students check schedule before entering a building with bad signal. At minimum the cached schedule and stats must be readable. | MEDIUM | Service Worker + Cache API (no backend call needed offline) |
+| **Logout** | Security expectation. Essential on shared devices. | LOW | `POST /api/auth/logout` |
 
 ---
 
 ### Differentiators (Competitive Advantage)
 
-Features that make this notification system substantially more useful than basic event forwarding.
+Features that make RutTrack meaningfully better than the Telegram bot alone.
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| **3-stage reminder lifecycle for lesson attendance** | Students who haven't checked in get reminded at lesson start, lesson midpoint, and lesson end — then messages are cleaned up. This is the core engagement loop: student doesn't miss the window because of a single notification. | HIGH | Stage 1 (lesson.started): send initial "Отметиться" message with button. Stage 2 (lesson mid-point): send second reminder only to users who are NOT yet marked present (requires querying Attendance Service or listening for attendance.marked events to track who has checked in). Stage 3 (lesson end): final reminder. lesson.closed: delete all. Redis stores all 3 message_ids per user per lesson. The mid-point trigger requires a scheduled task in the bot at the time = (start_time + end_time) / 2. |
-| **attendance.marked → remove reminder for that specific student** | Once a student checks in, their reminder messages become noise. Removing them immediately after check-in is excellent UX and avoids "I already checked in, why am I still being reminded?" confusion. | MEDIUM | Consume `attendance.marked` events in the bot. When status=present and marked_by=student_geo or headman: delete all reminder message_ids for that user+lesson from Redis and call delete_message. This eliminates stage 2 and 3 reminders for already-marked students. |
-| **excuse.requested → headman Telegram notification with approve/reject buttons** | Headman needs to action excuse tickets from within Telegram without opening the web panel. The event schema already includes ticket_id, lesson_ids, has_attachments. | MEDIUM | Send message to headman's telegram_id: "Студент X запросил у.п. [excuse_type]. [Прикреплены файлы]". InlineKeyboardMarkup with "Одобрить" and "Отклонить" buttons with callback_data containing ticket_id. Bot must handle callback_query: POST to Attendance Service REST API to approve/reject. Requires bot to maintain a JWT token (use OTP flow at startup or service account). |
-| **late_checkin.requested → headman Telegram notification** | Headman is notified immediately when a student requests retroactive presence confirmation. | LOW | Send message to headman: "Студент {student_name} просит подтвердить присутствие на паре {lesson_date}." Include lesson_id for context. No approve/reject buttons in v5.0 (headman opens web panel to confirm — that workflow is Attendance Service v4.1). |
-| **excuse.requested → WebSocket push to headman** | Headman with web panel open sees excuse requests immediately without page refresh. | LOW | In notification-web: when excuse.requested event arrives, look up headman's session by group_id (headman is connected with their group_id). Push {type: "excuse.requested", user_id, excuse_type, ticket_id}. |
-| **late_checkin.requested → WebSocket push to headman** | Same as above but for late checkin requests. | LOW | Push {type: "late_checkin.requested", user_id, student_name, lesson_id, lesson_date} to headman session for that group. |
-| **homework.updated → WebSocket push** | If headman edits an existing homework, students on web panel see the change live. | LOW | Same as homework.published mapping but type = "homework.updated". |
+| Feature | Value Proposition | Complexity | Dependency on Backend |
+|---------|-------------------|------------|----------------------|
+| **Web Push notifications (lesson.started with check-in action button)** | Notifications arrive even with PWA closed. Tap "Отметиться" action button → PWA opens directly on check-in screen. This is the v6.0 headline feature — the reason for the milestone. | HIGH | VAPID: `POST /api/ws/push/subscribe`. Event delivery: notification-web pushes via Web Push API. Service Worker handles push event and `notificationclick`. |
+| **Web Push: lesson cancelled** | Student gets notified about cancellation without opening Telegram. PWA becomes an independent parallel channel as stated in design-decisions.md. | MEDIUM | notification-web pushes `lesson.cancelled` event via Web Push. Service Worker shows notification with "Посмотреть расписание" action. |
+| **Web Push: homework published** | Students get homework assignments outside Telegram. Reduces dependency on bot being linked. | MEDIUM | notification-web pushes `homework.published`. Service Worker shows notification. |
+| **Notification permission onboarding flow** | Ask for push permission after value has been demonstrated (not on first visit). Show a clear value proposition: "Получайте уведомления о начале пар прямо на телефон". | LOW | `PushManager.subscribe()` with VAPID public key |
+| **iOS onboarding screen** | iOS users need to install via Safari → Share → Add to Home Screen before Web Push works (iOS 16.4+ requirement). Show step-by-step illustrated guide on first visit from iOS Safari. | MEDIUM | None — pure frontend |
+| **Homework tracker (personal completions)** | Student marks homework as done. Visual progress. Differentiates from Telegram bot which only shows homework text. | MEDIUM | `POST/DELETE /api/academic/homework-completions` |
+| **Attendance records list with status indicators** | See each pair with its status (б/н/у/сп) with color coding. Students understand why their percentage is what it is. | MEDIUM | `GET /api/reports/student-records` |
+| **Red zone warning indicator** | Show a visual warning when student's attendance drops below the threshold for a subject. Proactive — student knows before it becomes a problem. | LOW | `GET /api/reports/student-stats` (threshold is in the response) |
+| **Real-time check-in state via WebSocket** | When STOMP WebSocket receives `attendance.marked` for the current user, update the UI to "Отмечено" without page refresh or polling. Feels native. | MEDIUM | STOMP WebSocket `/api/ws` — `attendance.marked` event |
+| **Headman view: manual marking** | Headman can mark attendance for their group from the PWA. Useful on-the-go — no need to open the desktop web panel. Per JS-HEADMAN-20. | HIGH | `POST /api/attendance/manual` — requires group member list + status grid UI |
+| **Offline cached schedule (stale-while-revalidate)** | Schedule is cached in IndexedDB/Cache API. Student can see today's schedule even with no network. Per JS-STUDENT-10 and design-decisions.md: "кэшировать расписание, статистику, ДЗ для чтения". | MEDIUM | Service Worker intercepts `/api/schedule/lessons` and serves from cache on failure |
 
 ---
 
@@ -75,135 +94,138 @@ Features that make this notification system substantially more useful than basic
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| **Notification persistence / history API** | "Show all my notifications" — users expect an inbox | Requires a new database, schema, write path on every event. The notification services are stateless event forwarders by design; adding persistence turns them into a CRUD service with a new data store. | If needed, add a dedicated notification_log collection to MongoDB in a future milestone. For v5.0: WebSocket messages are fire-and-forget, Telegram messages are the persistence (Telegram keeps chat history). |
-| **Notification preferences (mute / channel select)** | Users want to mute specific notification types | Requires a preferences store (new table or Redis hash), a REST API to set preferences, and filter logic in both services before every send. Significant scope for a system with 500-5000 users who will mostly want all notifications. | Defer to v5.1+. Document the future preference key pattern: `notif_prefs:{user_id}` in Redis as a hash of event_type → muted boolean. |
-| **Delivery guarantees / read receipts** | "Did the user see the notification?" | Telegram does not provide programmatic read receipt data. WebSocket delivery is best-effort (client must be connected). True delivery guarantees require a persistent outbox pattern with retry queue. This is significant infrastructure for a university attendance system at 500-5000 users. | Accept best-effort delivery. RabbitMQ DLQ captures failed processing. Telegram's own "sent" checkmarks are sufficient user-visible confirmation. |
-| **Mid-lesson check-in query to Attendance Service from bot** | Stage 2 reminder should only go to students who haven't checked in | Requires the bot to call Attendance Service REST API per student per lesson at the mid-point to filter already-marked students. High coupling between Bot and Attendance Service; introduces a new synchronous dependency from Python to Java. | Track attendance.marked events in Redis within the bot: when attendance.marked event arrives, delete that user's reminder message_ids immediately (the differentiator above). This achieves the same result without a polling query. |
-| **Broadcast to ALL students (admin announcements)** | Admin wants to send arbitrary messages via the bot | Expands bot scope from reactive event consumer to proactive messaging platform. Requires a new API, admin auth in the bot, and rate limiting against Telegram's broadcast limits (30 msg/sec). | Out of scope for v5.0. If needed: add a dedicated admin announcement event type and handler in a future milestone. |
-| **WebSocket reconnect state recovery** | "I was disconnected, what did I miss?" | Requires event log/buffer per user. The web panel can poll the relevant REST APIs (schedule, homework, attendance reports) on reconnect to get current state. That is the correct pattern for REST + WebSocket hybrid. | On reconnect: Angular panel re-fetches current schedule + attendance state via REST. WebSocket is only for incremental updates while connected. |
-| **Inline message editing for reminders** | Edit the reminder message in place instead of sending new ones | Using editMessageText instead of sendMessage + deleteMessage seems cleaner. However: mid-lesson reminders are distinct messages (not edits) because Telegram suppresses notifications for edited messages — users would not see the second and third reminders. | Always send new messages for reminders. Delete old ones via deleteMessage on attendance.marked or lesson.closed. |
-| **OTP delivery from Auth Service directly to Telegram** | Simpler if Auth Service calls Telegram API directly for OTP | Auth Service is a pure Java REST+Redis service with no Telegram dependency. Adding Telegram API calls to Auth Service violates service boundary (Auth should not know about Telegram). | Bot calls Auth Service's /auth/otp/request endpoint. Auth Service returns the OTP code (or a success status that the code was stored in Redis). Bot then sends the code as a Telegram message itself. This keeps Auth Service Telegram-free. |
+| **In-app Telegram bot commands** | "Replace the bot" — students want one app | The Telegram bot serves students who never install the PWA. Killing the bot removes the primary channel for non-PWA users. Per design-decisions.md: "PWA coexists with Mini App — both channels active". | Keep both. Web Push duplicates Telegram push; students use whichever channel they prefer. |
+| **Excuse ticket file upload from PWA** | Students want to submit medical certificates from their phone camera | File storage architecture is deferred (see PROJECT.md Out of Scope). The excuse ticket flow (create/submit/review) itself is deferred. Building file upload in PWA before the ticket flow is designed would be wasted work. | Defer to v6.1+ when excuse ticket backend flow is unblocked. |
+| **PWA push for ALL roles (teachers, headmen, admins)** | Teachers want schedule updates too | Web Push subscription management and notification routing by role adds significant complexity to notification-web. Teachers and admins have the Angular web panel (v8.0). Students are the priority audience for PWA. | Ship Web Push for STUDENT role first. Add TEACHER support in v8.0 when the web panel is built. |
+| **Background sync for check-in (offline queue)** | "What if the check-in request fails? Queue it and retry when online" | Attendance check-in has a strict 5-min time window. A background sync retry firing 10 minutes later would fail validation on the backend anyway. Storing a pending geo check-in offline creates a false sense of "it'll work". | Show clear "No network connection" message (per JS-STUDENT-10). Do not queue geo check-in. |
+| **Real-time attendance dashboard (who's present in my group)** | Headmen want to see live presence | This is the journal grid feature for headmen. Building a live group dashboard in PWA is high complexity (WebSocket updates + student list) and duplicates the web panel functionality. | Headman can mark attendance from PWA (the differentiator above) but the full journal belongs in the desktop web panel (v8.0). |
+| **PWA app update notification ("New version available")** | Users expect to know when the app updates | vite-plugin-pwa handles SW updates via `registerSW` with `onNeedRefresh` callback. Showing a modal "Update available" is standard but blocks users. | Use `autoUpdate` strategy for transparent updates on next navigation. No user-blocking modal. |
+| **Push notifications when PWA is in foreground** | "Show a popup even when I'm using the app" | Foreground push notifications duplicate the real-time WebSocket events already handled by the STOMP connection. The SW push fires when the app is closed/background. When in foreground, the app already receives the event via WebSocket. | In `push` Service Worker event handler: check `clients.matchAll()` — if any window is focused, skip `showNotification()`. The app handles it in-UI via WebSocket. |
+| **OTP login via PWA (password-less)** | Students who forget passwords want Telegram OTP | OTP flow works but requires the student to have the Telegram bot linked already. If they're on PWA first, they may not have done /start. This creates a confusing chicken-and-egg setup flow. | Primary login = username + password. Offer OTP as secondary option only for users who know their telegram_id is linked. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[RabbitMQ consumer setup]
-    └──required-by──> ALL notification features in both services
+[Login + JWT storage]
+    └──required-by──> ALL authenticated features
 
-[WebSocket endpoint + JWT auth]
-    └──required-by──> [Group-based session registry]
-                          └──required-by──> ALL WebSocket push features
+[manifest.json + HTTPS]
+    └──required-by──> [Add to Home Screen prompt]
+    └──required-by──> [Service Worker registration]
+    └──required-by──> [Web Push subscription]
 
-[lesson.started event]
-    └──triggers──> [WebSocket push to group] (notification-web)
-    └──triggers──> [Telegram message with check-in button] (notification-bot)
-                       └──stores──> message_id in Redis per student
-                       └──schedules──> stage 2 reminder at lesson midpoint
-                       └──schedules──> stage 3 reminder at lesson end
+[Service Worker registration]
+    └──required-by──> [Offline shell (app shell caching)]
+    └──required-by──> [Offline schedule cache]
+    └──required-by──> [Web Push push event handler]
+    └──required-by──> [notificationclick handler]
 
-[attendance.marked event]
-    └──triggers──> [Delete reminder for that student] (notification-bot)
-                       └──reads──> Redis message_ids
-                       └──calls──> bot.delete_message
+[Web Push subscription (VAPID)]
+    └──requires──> [Notification permission granted by user]
+    └──requires──> [PWA installed to Home Screen (iOS only)]
+    └──requires──> [VAPID backend endpoint in notification-web]
+    └──required-by──> [lesson.started push notification]
+    └──required-by──> [lesson.cancelled push notification]
+    └──required-by──> [homework.published push notification]
 
-[lesson.closed event]
-    └──triggers──> [Delete ALL reminders for that lesson] (notification-bot)
-                       └──reads──> all Redis message_ids for lesson
-                       └──calls──> bot.delete_message for each
+[Today's schedule view]
+    └──requires──> [Login + JWT]
+    └──enhances──> [Geo check-in button] (check-in shown on active lesson card)
 
-[lesson.cancelled event]
-    └──triggers──> [WebSocket push to group] (notification-web)
-    └──triggers──> [Telegram message to group students] (notification-bot)
+[Geo check-in button]
+    └──requires──> [Today's schedule view] (lesson_id must be known)
+    └──requires──> [Browser Geolocation API permission]
+    └──requires──> [Active lesson exists (schedule service state)]
 
-[homework.published event]
-    └──triggers──> [WebSocket push to group] (notification-web)
-    └──triggers──> [Telegram message to group students] (notification-bot)
+[Attendance stats screen]
+    └──requires──> [Login + JWT]
+    └──enhances──> [Red zone warning indicator] (same API response)
 
-[excuse.requested event]
-    └──triggers──> [WebSocket push to headman session] (notification-web)
-    └──triggers──> [Telegram message to headman with approve/reject buttons] (notification-bot)
+[Real-time check-in via WebSocket]
+    └──requires──> [STOMP WebSocket connection]
+    └──enhances──> [Geo check-in button] (updates UI on attendance.marked event)
 
-[late_checkin.requested event]
-    └──triggers──> [WebSocket push to headman session] (notification-web)
-    └──triggers──> [Telegram plain text message to headman] (notification-bot)
+[Headman manual marking]
+    └──requires──> [Login + JWT with is_headman=true]
+    └──requires──> [Group member list] (GET /api/academic/groups/{id}/members)
+    └──requires──> [Active lesson selection] (GET /api/schedule/lessons)
 
-[gRPC GetGroupMembers client] (Python bot only)
-    └──required-by──> [lesson.started → Telegram broadcast]
-    └──required-by──> [lesson.cancelled → Telegram broadcast]
-    └──required-by──> [homework.published → Telegram broadcast]
+[iOS onboarding screen]
+    └──must-appear-before──> [Web Push subscription request] (iOS requires A2HS install first)
 
-[Telegram bot /start command]
-    └──enables──> [telegram_id linked to user_id]
-    └──required-for──> ALL bot message delivery (no telegram_id = no messages)
-
-[Telegram bot /login command]
-    └──enables──> [JWT for bot to call REST APIs]
-    └──required-for──> [excuse approve/reject callback handler]
-
-[Redis reminder storage]
-    └──required-by──> [lesson.started → store message_ids]
-    └──required-by──> [attendance.marked → delete reminder]
-    └──required-by──> [lesson.closed → delete all reminders]
-    └──required-by──> [stage 2 + stage 3 scheduled reminders]
+[Homework tracker]
+    └──requires──> [Homework list from Academic Service]
+    └──independent-of──> [Schedule] (can be navigated to separately)
 ```
 
 ### Dependency Notes
 
-- **GetGroupMembers gRPC is only needed in the bot, not in notification-web.** Notification-web routes WebSocket messages by group_id already present in the JWT claims of connected sessions — no gRPC needed for the web service.
-- **lesson.closed cleanup requires the message_ids stored by lesson.started.** If the Redis key expires or was never set (bot was down when lesson started), the cleanup step must handle missing keys gracefully — log and skip, do not crash.
-- **The 3-stage reminder requires asyncio scheduling in Python.** When lesson.started fires, schedule a coroutine at (start_time + end_time) / 2 for stage 2, and at end_time - 5 minutes for stage 3. Use `asyncio.get_event_loop().call_later()` or equivalent. These tasks must be stored in memory per lesson_id so they can be cancelled if lesson.cancelled fires mid-lesson.
-- **excuse approve/reject callback requires the bot to hold a JWT.** The bot must authenticate against Auth Service at startup (or use a service account). This is the only place the bot makes authenticated REST calls to another service. This dependency chain (bot → Auth Service → Academic DB) must be accounted for in startup order.
-- **homework.updated is lower priority than homework.published** because the event schema fields are identical and the notification text differs only slightly. Both can be handled in the same consumer handler.
+- **Web Push on iOS requires PWA installed to Home Screen first.** iOS 16.4+ supports Web Push only for installed PWAs. The iOS onboarding screen (Safari → Share → Add to Home Screen) must be shown and completed before requesting notification permission. Never call `Notification.requestPermission()` on non-installed iOS Safari — it silently fails.
+- **Geo check-in requires an active lesson.** The check-in button should only be shown when a lesson is in `active` status for the student's group. The schedule view must reflect this — poll or use the WebSocket `lesson.started` event to activate the button.
+- **VAPID keys must be generated once and stored server-side.** The VAPID public key is embedded in the PWA at build time (or fetched once from a public endpoint). The private key never leaves notification-web. Generate once, store in Docker env var.
+- **Offline check-in is not supported.** The check-in path is deliberately network-only. The Service Worker must not cache `POST /api/attendance/check-in` requests.
+- **Push subscription must be re-stored on re-registration.** When the Service Worker updates, the push subscription may change. The PWA must re-POST the subscription to the backend after each SW update.
 
 ---
 
 ## MVP Definition
 
-### Launch With (v5.0)
+### Launch With (v6.0 — PWA Core)
 
-Minimum viable notification system — both channels delivering the core attendance events.
+Minimum viable mobile client validating that students can use RutTrack as a daily tool.
 
-**Notification Web (Java):**
-- [ ] RabbitMQ consumer on `notification-web.events` queue — without this, service is inert
-- [ ] WebSocket endpoint `/ws` with JWT auth via query param on handshake
-- [ ] Group-based session registry (ConcurrentHashMap: group_id → sessions)
-- [ ] lesson.started → WebSocket push to group sessions
-- [ ] lesson.cancelled → WebSocket push to group sessions
-- [ ] homework.published → WebSocket push to group sessions
-- [ ] excuse.requested → WebSocket push to headman session (headman has group_id matching group)
-- [ ] late_checkin.requested → WebSocket push to headman session
+**Authentication:**
+- [ ] Login screen (username + password) with JWT storage in localStorage/sessionStorage
+- [ ] Auto-refresh of access token (15-min expiry) using refresh token
+- [ ] Logout
 
-**Notification Bot (Python):**
-- [ ] RabbitMQ consumer on `notification-bot.events` queue (aio-pika)
-- [ ] /start command — account linking, send initial credentials if initial_password set
-- [ ] /login command — OTP flow triggering via Auth Service
-- [ ] /status command — current lesson + student's own attendance status (calls APIs)
-- [ ] gRPC client for GetGroupMembers (grpcio, Academic Service)
-- [ ] lesson.started → send Telegram message with inline "Отметиться" button to group students; store message_ids in Redis
-- [ ] lesson.closed → delete all reminder message_ids for that lesson from Redis + Telegram
-- [ ] lesson.cancelled → send cancellation text to group students
-- [ ] homework.published → send homework notification to group students
-- [ ] attendance.marked (status=present) → delete reminder messages for that student immediately
+**Schedule:**
+- [ ] Today's schedule view — list of lessons with time, subject name, room, status
+- [ ] Weekly schedule navigation (swipe/tab between days)
+- [ ] Offline cached schedule (Service Worker stale-while-revalidate for schedule endpoints)
 
-**Shared infrastructure:**
-- [ ] Redis key pattern `reminder:msgs:{lesson_id}:{user_id}` for message_id storage
+**Check-in:**
+- [ ] Geo check-in button visible on active lesson card
+- [ ] GPS coordinate capture via browser Geolocation API
+- [ ] Submit to `POST /api/attendance/check-in`
+- [ ] Show success/failure feedback with reason (not in zone / no active lesson / already marked)
+- [ ] Offline: show "Нет подключения" message instead of attempting
 
-### Add After Validation (v5.1)
+**PWA basics:**
+- [ ] manifest.json: name "RutTrack", display: standalone, icons 192x192 + 512x512
+- [ ] Service Worker registration via vite-plugin-pwa
+- [ ] App shell cached on install (HTML, CSS, JS — loads without network)
+- [ ] A2HS prompt handling (`beforeinstallprompt` → deferred prompt shown after first successful check-in)
+- [ ] iOS onboarding screen (detect iOS + not installed → show Safari install instructions)
 
-- [ ] 3-stage reminder lifecycle (stage 2 at midpoint, stage 3 near end) — requires asyncio scheduling, adds significant complexity
-- [ ] excuse.requested → headman Telegram notification with approve/reject callback buttons — requires bot JWT auth + REST call to Attendance Service
-- [ ] late_checkin.requested → headman Telegram notification — low complexity, but deferred until excuse workflow is established
-- [ ] homework.updated → both channels (identical to published, trivial once published works)
-- [ ] Notification preferences (mute by event type) — Redis hash per user
+**Web Push:**
+- [ ] VAPID key pair generation and storage in notification-web
+- [ ] `POST /api/ws/push/subscribe` endpoint in notification-web
+- [ ] Service Worker push event handler → `showNotification()`
+- [ ] Service Worker `notificationclick` handler → open PWA on check-in screen
+- [ ] Permission request flow (triggered by user action, not on first load)
+- [ ] `lesson.started` Web Push notification with "Отметиться" action button
+- [ ] `lesson.cancelled` Web Push notification
 
-### Future Consideration (v5.2+)
+### Add After Validation (v6.1)
 
-- [ ] Notification history / inbox — requires MongoDB collection, REST API
-- [ ] Admin broadcast announcements via bot
-- [ ] WebSocket reconnect state recovery (event buffer)
-- [ ] Delivery confirmation tracking
+- [ ] Attendance stats screen (subject percentage, red zone indicator) — backend ready, high value
+- [ ] Attendance records list with status color coding — backend ready
+- [ ] Homework list + personal completion tracker — backend ready
+- [ ] `homework.published` Web Push notification
+- [ ] Real-time check-in state via STOMP WebSocket (`attendance.marked` → update UI)
+- [ ] Headman manual marking screen — requires complex group marking grid UI
+- [ ] Weekly schedule view improvements (current week highlighting, status badges)
+
+### Future Consideration (v6.2+)
+
+- [ ] Excuse ticket creation flow — blocked on backend (deferred in PROJECT.md)
+- [ ] Late check-in request flow — blocked on backend (deferred in PROJECT.md)
+- [ ] Push notification preferences (mute by type) — needs preferences storage backend
+- [ ] Web Push for TEACHER role — defer to v8.0 web panel milestone
+- [ ] PDF/Excel export — deferred project-wide
 
 ---
 
@@ -211,78 +233,86 @@ Minimum viable notification system — both channels delivering the core attenda
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| RabbitMQ consumer infrastructure (both) | HIGH | LOW | P1 — everything else blocks on this |
-| WebSocket endpoint + JWT auth | HIGH | MEDIUM | P1 — web panel real-time requires this |
-| Group session registry | HIGH | MEDIUM | P1 — prerequisite for any WebSocket routing |
-| lesson.started WebSocket push | HIGH | LOW | P1 — primary schedule event |
-| lesson.cancelled WebSocket push | HIGH | LOW | P1 — schedule correctness |
-| Bot /start + account linking | HIGH | MEDIUM | P1 — without linking, no personalized messages |
-| Bot gRPC GetGroupMembers client | HIGH | MEDIUM | P1 — required for all group broadcasts |
-| lesson.started → Telegram with check-in button | HIGH | MEDIUM | P1 — primary student engagement |
-| lesson.started → store message_ids in Redis | HIGH | LOW | P1 — required for cleanup to work |
-| lesson.closed → delete all Telegram reminders | HIGH | MEDIUM | P1 — UX requirement stated in CLAUDE.md |
-| attendance.marked → delete student's reminder | HIGH | LOW | P1 — prevents "already checked in" reminder spam |
-| lesson.cancelled → Telegram message | HIGH | LOW | P1 — students need to know |
-| homework.published → Telegram message | MEDIUM | LOW | P1 — standard student expectation |
-| Bot /login OTP flow | MEDIUM | MEDIUM | P1 — required for /status and excuse callbacks |
-| Bot /status command | MEDIUM | MEDIUM | P1 — useful for student self-service |
-| homework.published WebSocket push | MEDIUM | LOW | P1 — once lesson events work, same pattern |
-| excuse.requested WebSocket push | MEDIUM | LOW | P2 — headman workflow enhancement |
-| late_checkin.requested WebSocket push | MEDIUM | LOW | P2 — headman workflow enhancement |
-| late_checkin.requested Telegram message to headman | MEDIUM | LOW | P2 — low complexity add-on |
-| 3-stage reminder lifecycle | HIGH | HIGH | P2 — valuable but complex asyncio scheduling |
-| excuse.requested → headman Telegram with buttons | HIGH | HIGH | P2 — requires bot auth + REST integration |
-| Notification preferences / mute | MEDIUM | MEDIUM | P3 — defer until user feedback |
-| Notification history / inbox | LOW | HIGH | P3 — Telegram IS the history |
+| Login + JWT storage + auto-refresh | HIGH | LOW | P1 — gates everything |
+| Today's schedule view | HIGH | LOW | P1 — primary daily use |
+| Geo check-in button + GPS submit | HIGH | MEDIUM | P1 — core product function |
+| Check-in feedback (success/fail reason) | HIGH | LOW | P1 — without it, student doesn't know if it worked |
+| manifest.json + A2HS prompt | HIGH | LOW | P1 — PWA identity |
+| Service Worker + app shell cache | HIGH | MEDIUM | P1 — "offline" requirement in job stories |
+| iOS onboarding instructions | HIGH | LOW | P1 — ~50% of students likely on iOS |
+| VAPID setup + push/subscribe endpoint | HIGH | MEDIUM | P1 — Web Push headline feature |
+| lesson.started push notification | HIGH | MEDIUM | P1 — primary student engagement |
+| lesson.cancelled push notification | HIGH | LOW | P1 — students must know about cancellations |
+| Weekly schedule navigation | MEDIUM | LOW | P1 — users expect week view |
+| Offline schedule cache | MEDIUM | MEDIUM | P1 — stated in design-decisions.md |
+| Attendance stats screen | HIGH | MEDIUM | P2 — high value but schedule + checkin first |
+| Attendance records list | MEDIUM | LOW | P2 — supports understanding of stats |
+| Homework list + completions | MEDIUM | MEDIUM | P2 — valuable but not day-1 critical |
+| homework.published push notification | MEDIUM | LOW | P2 — once lesson push works, same pattern |
+| Real-time WebSocket check-in state | MEDIUM | MEDIUM | P2 — nice UX but polling works too |
+| Headman manual marking | HIGH | HIGH | P2 — high value for headmen, complex UI |
+| Red zone warning indicator | MEDIUM | LOW | P2 — trivial add-on to stats screen |
+| Excuse ticket flow | HIGH | HIGH | P3 — backend deferred |
+| Late check-in request | MEDIUM | MEDIUM | P3 — backend deferred |
 
 **Priority key:**
-- P1: Must have for v5.0 — notification system is not functional without these
-- P2: High value but can ship in v5.1 iteration
-- P3: Nice to have, defer to v5.2+ or later milestone
+- P1: Must have for v6.0 launch
+- P2: Ship in v6.1 iteration once core is validated
+- P3: Future milestone / blocked on backend
 
 ---
 
-## Event × Service Mapping
+## Competitor Feature Analysis
 
-Complete picture of which events each service processes and what action it takes:
-
-| Event | notification-web action | notification-bot action |
-|-------|------------------------|------------------------|
-| `lesson.started` | Push to group sessions: {type, lesson_id, subject_id, lesson_number, start_time, end_time, room} | Send message with inline button to each student in group; store message_id in Redis |
-| `lesson.closed` | Push to group sessions: {type, lesson_id} (optional — web panel already knows from schedule state) | Delete all reminder message_ids for lesson from Redis + Telegram |
-| `lesson.cancelled` | Push to group sessions: {type, lesson_id, date, cancel_reason} | Send cancellation text to each student in group |
-| `attendance.marked` | No action (web panel reads from Attendance Service REST on its own) | If status=present: delete reminder message_ids for that user+lesson |
-| `homework.published` | Push to group sessions: {type, homework_id, title, subject_id} | Send homework text to each student in group |
-| `homework.updated` | Push to group sessions: {type, homework_id, title, subject_id} | Send update text to each student in group (v5.1) |
-| `excuse.requested` | Push to headman session: {type, user_id, excuse_type, ticket_id} | Send message to headman with Approve/Reject buttons (v5.1) |
-| `late_checkin.requested` | Push to headman session: {type, user_id, student_name, lesson_id} | Send plain text to headman (v5.1) |
-| `semester.archived` | No action (no WebSocket notification needed) | No action |
-| `group.updated` | Invalidate session routing if group membership changed (optional) | Refresh GetGroupMembers cache (optional) |
+| Feature | Telegram Mini App (existing) | Telegram Bot (existing) | RutTrack PWA (target) |
+|---------|------------------------------|------------------------|----------------------|
+| Check-in | Via bot inline button from lesson.started message | Inline "Отметиться" button | Geo check-in screen in PWA, also via push notification action |
+| Schedule view | Limited — bot text replies | Text list via /status | Full schedule UI with weekly view, status badges |
+| Push notifications | Telegram messages | Telegram messages | Web Push to phone even with app closed |
+| Offline access | No | No | Yes — cached schedule and stats |
+| Installable | No | No | Yes — A2HS, standalone mode, home screen icon |
+| Attendance stats | No dedicated view | /status shows current lesson | Full stats screen with per-subject percentages |
+| Homework tracker | No | Notifications only | List + personal completion checkboxes |
+| iOS support | Via Telegram app | Via Telegram app | Safari PWA + Web Push (iOS 16.4+) |
+| No Telegram required | No | No | Yes — PWA is independent channel |
 
 ---
 
-## Offline Handling Decisions
+## Platform-Specific Considerations
 
-| Scenario | WebSocket behavior | Telegram bot behavior |
-|----------|-------------------|----------------------|
-| Student not connected to web panel | Message is lost — best-effort only. REST APIs are canonical. | Telegram delivers when online (Telegram handles delivery) |
-| Bot was down when lesson.started fired | lesson.started consumed when bot restarts (durable queue). But lesson may already be active or closed. | Must check: if lesson is already CLOSED when consuming lesson.started, skip sending reminder messages. Compare occurred_at with current time. |
-| Student hasn't done /start (no telegram_id) | N/A | Skip silently. Log at DEBUG. |
-| lesson.closed message_id missing from Redis | N/A | Log "no reminder found for user X lesson Y", skip deleteMessage call — do not crash |
-| RabbitMQ message unprocessable | AMQP nack → DLQ | Same: nack → DLQ |
+### iOS (Safari)
+
+- Web Push requires PWA installed to Home Screen (iOS 16.4+). Chrome/Firefox on iOS use WebKit — same restriction.
+- Storage quota: ~50MB cache. Aggressive eviction if app not used for 7 days. Solution: prioritize caching current week schedule (small) over historical records.
+- `beforeinstallprompt` does NOT fire on iOS. Detect iOS (`navigator.userAgent`) + not in standalone mode → show manual instruction banner.
+- `Notification.requestPermission()` must be called from a user gesture within the installed PWA. Never on page load.
+
+### Android (Chrome)
+
+- Full Web Push support. `beforeinstallprompt` fires after meeting PWA installability criteria.
+- A2HS prompt can be shown automatically or deferred and triggered on user action. Prefer deferred — show after first successful check-in for maximum relevance.
+- Background sync available but deliberately NOT used for check-in (time window constraint).
+
+### Network Conditions
+
+- University buildings often have poor mobile signal. PWA must handle network timeout on check-in gracefully (show retry button, not silent failure).
+- Schedule endpoint should be cached with stale-while-revalidate — serve cached data immediately, update in background. Max stale age: 1 hour (schedule changes are announced in advance via lesson.cancelled events).
 
 ---
 
 ## Sources
 
-- `.planning/PROJECT.md` — v5.0 active requirements list, target features, milestone context (HIGH confidence — primary source)
-- `docs/phases-plan.md` Phase 5 section — detailed feature list for both services (HIGH confidence)
-- `event-schemas/*.json` — all 10 event schemas with exact payload fields (HIGH confidence — contract files in codebase)
-- `CLAUDE.md` — reminder lifecycle requirement ("3 напоминания об отметке: начало, середина, конец пары. После пары — удалить сообщения"), business rules (HIGH confidence)
-- `docs/phase-4-report.md` — what Attendance Service publishes (attendance.marked) and when (HIGH confidence)
-- `docs/phase-3-report.md` (referenced via phases-plan) — Schedule Service RabbitMQ event timing (CRON transitions) (HIGH confidence)
+- `.planning/PROJECT.md` — v6.0 active requirements, target features, deferred items (HIGH confidence)
+- `docs/job-stories.md` — JS-STUDENT-01 through JS-STUDENT-11, JS-HEADMAN-20, JS-TEACHER-08, JS-SYSTEM-11..12 (HIGH confidence)
+- `docs/design-decisions.md` — PWA design decisions section 3, branding, offline caching strategy, iOS onboarding (HIGH confidence)
+- `CLAUDE.md` — existing endpoint architecture, business rules (check-in window, roles), notification rules (HIGH confidence)
+- [MDN Web Push / Push API docs](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Tutorials/js13kGames/Re-engageable_Notifications_Push) — Web Push implementation guidance (HIGH confidence)
+- [vite-plugin-pwa documentation](https://vite-pwa-org.netlify.app/) — Workbox integration, generateSW strategy, service worker registration (HIGH confidence — actively maintained 2025)
+- [iOS PWA limitations 2026 guide](https://www.mobiloud.com/blog/progressive-web-apps-ios) — iOS 16.4+ push requirements, storage limits (MEDIUM confidence — verify iOS version at implementation time)
+- [Offline-First PWA caching strategies](https://www.magicbell.com/blog/offline-first-pwas-service-worker-caching-strategies) — cache-first for shell, stale-while-revalidate for schedule, network-first for check-in (HIGH confidence — matches MDN guidance)
+- [PWA UX tips 2025](https://lollypop.design/blog/2025/september/progressive-web-app-ux-tips-2025/) — A2HS timing, notification permission UX patterns (MEDIUM confidence)
 
 ---
 
-*Feature research for: Real-time notification delivery — WebSocket (Java) + Telegram bot (Python/Aiogram 3)*
-*Researched: 2026-04-04*
+*Feature research for: PWA Mobile Client «RutTrack» — student attendance + Web Push*
+*Researched: 2026-04-05*

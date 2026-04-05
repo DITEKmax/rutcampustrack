@@ -1,17 +1,17 @@
 # Project Research Summary
 
-**Project:** RutCampusTrack v5.0 — Notification Service (Web + Bot)
-**Domain:** Real-time push delivery for university attendance system — WebSocket to Angular panel + Telegram bot
-**Researched:** 2026-04-04
+**Project:** RutCampusTrack v6.0 — PWA Mobile Client «RutTrack» + Web Push
+**Domain:** React PWA (installable mobile client) + Web Push VAPID extension to existing Spring Boot microservice
+**Researched:** 2026-04-05
 **Confidence:** HIGH
 
 ## Executive Summary
 
-RutCampusTrack v5.0 adds two notification consumers to an already-operational microservice backbone. The infrastructure (RabbitMQ fanout exchange `rut-uit.events`, Redis, Academic Service gRPC `GetGroupMembers`, Auth Service OTP endpoints) is fully operational from phases 1-4. The two notification components — `notification-web` (Java Spring Boot WebSocket) and `notification-bot` (Python Aiogram 3) — are event-driven consumers only: they receive events from the fanout exchange and deliver them to clients. No existing service requires modification beyond minor docker-compose dependency changes and a possible small addition to the Auth Service OTP response (see Gaps section).
+RutTrack v6.0 is a mobile-first PWA for university students built on top of a fully operational microservice backend (5 Spring Boot services + API Gateway). The new work is exclusively in two areas: (1) a React + Vite + Tailwind PWA frontend at `frontends/pwa/` for student schedule viewing, geo check-in, attendance stats, and homework tracking; and (2) a lightweight Web Push (VAPID) extension inside the existing `notification-web` Spring Boot container. No new backend services are introduced. The entire stack matches the project's existing conventions — Java 21 + Spring Boot 3.4 on the backend, React + TypeScript on the frontend — and shares Phosphor Icons and Motion with the existing Telegram Mini App.
 
-The recommended approach is STOMP over WebSocket for the Java service (in-memory broker, group-scoped topics via `SimpMessagingTemplate`, JWT validated at handshake via `JwtHandshakeInterceptor`) and Aiogram 3 with `aio-pika` for the Python bot (async consumer sharing the asyncio event loop, `connect_robust` for reconnection). Both services bind independent durable queues (`notification-web.events`, `notification-bot.events`) to the existing `rut-uit.events` fanout exchange. The bot additionally calls Academic Service gRPC for `GetGroupMembers` to resolve `telegram_id`s, uses Redis for reminder `message_id` tracking (key pattern `reminder:msgs:{lesson_id}:{user_id}` as a list), and calls Auth Service REST for the OTP `/login` flow. The web service routes purely by `group_id` extracted from the JWT at handshake — no gRPC needed at event-processing time.
+The recommended approach follows a strict layered build order: backend push infrastructure first (testable with curl), then Gateway CORS configuration, then PWA auth and schedule scaffold, then Service Worker and push subscription wiring, then EventConsumer fanout wiring for end-to-end push, and finally the remaining student UI features (check-in, stats, homework, offline). This sequence ensures each layer is independently testable before the next depends on it. The PWA uses the `injectManifest` strategy with vite-plugin-pwa to support custom push event handlers alongside Workbox caching — the default `generateSW` strategy cannot accommodate `push` event listener hooks.
 
-The primary risks are Telegram rate limiting (30 msg/sec global, ~1 msg/sec per-chat soft limit) causing 429 errors during concurrent lesson fan-out, and an aio-pika known bug where `connect_robust` reconnects at the TCP level but fails to restore the channel consumer after RabbitMQ restart. Both require explicit countermeasures from day one: a throttled `asyncio.Queue`-based send queue for the bot and a consumer watchdog coroutine. A secondary risk is the reminder `message_id` structure — it must be a Redis list (`RPUSH`), not a string (`SET`), or the first two out of three reminders per student become un-deletable on `lesson.closed`.
+The primary risks are iOS-specific: Web Push requires Add-to-Home-Screen installation before push subscriptions work on iOS, and the Geolocation Permissions API reports `denied` as `prompt` on iOS Safari. A critical threading risk exists in notification-web: Web Push HTTP delivery must be dispatched asynchronously (dedicated thread pool) to avoid blocking the RabbitMQ consumer during lesson-start fan-out to 30+ students. JWT storage must use React memory + httpOnly cookie (never localStorage) both for security and because the Service Worker has no localStorage access. All risks have clear prevention strategies tied to specific implementation phases.
 
 ---
 
@@ -19,136 +19,138 @@ The primary risks are Telegram rate limiting (30 msg/sec global, ~1 msg/sec per-
 
 ### Recommended Stack
 
-The notification-web `build.gradle.kts` requires three additions beyond its minimal scaffold: `spring-boot-starter-data-redis` (for any future session metadata lookups), `io.jsonwebtoken:jjwt-api/impl/jackson:0.12.6` (JWT parsing at WebSocket handshake, matching auth-service's exact version), and Testcontainers RabbitMQ for integration tests. The STOMP broker is in-memory (`enableSimpleBroker("/topic")`) — no external STOMP broker is needed for single-instance VPS deployment.
+The frontend is React 19 + TypeScript 5 + Vite 8 + Tailwind CSS v4, consistent with the existing Telegram Mini App (shared component extraction possible). vite-plugin-pwa 1.2.0 (Workbox 7 bundled) handles Service Worker generation, precaching, and manifest injection. TanStack Query v5 manages server state; Zustand 5 manages client-only state (auth tokens, push subscription status, install prompt). STOMP via `@stomp/stompjs` + `sockjs-client` connects to the existing notification-web WebSocket endpoint — `sockjs-client` is mandatory because the server uses `.withSockJS()`. The backend addition is `nl.martijndwars:web-push:5.1.2` + `org.bouncycastle:bcprov-jdk18on:1.78.1` added to notification-web's Gradle build, plus `spring-boot-starter-data-mongodb` for push subscription storage in the existing MongoDB instance.
 
-The notification-bot `requirements.txt` has stale versions that must be updated. Aiogram upgrades from `3.15.0` to `3.27.0`. The grpcio/grpcio-tools versions must be pinned at `1.73.0`, not the latest `1.80.0` — the latest requires `protobuf>=6.x` which is a breaking change incompatible with the existing `protobuf==5.29.3` used by the Java services' `.proto` toolchain. A new `redis==5.2.1` dependency (the `aioredis` successor via `redis.asyncio`) must be added for reminder storage.
+One version compatibility caveat: vite-plugin-pwa 1.2.0 does not formally declare Vite 8 peer dependency support. Community reports confirm it works (GitHub issue #918), but `--legacy-peer-deps` may be needed at install time. VAPID keys must be persisted in Redis (not regenerated on restart) to avoid invalidating all existing push subscriptions — this is a non-negotiable constraint.
 
 **Core technologies:**
-- `spring-boot-starter-websocket` (Boot BOM): STOMP endpoint with group-topic routing — already declared in build.gradle.kts
-- `spring-boot-starter-amqp` (Boot BOM): RabbitMQ consumer with DLQ support — already declared in build.gradle.kts
-- `jjwt-api:0.12.6`: JWT parsing at WebSocket handshake — same version as auth-service for consistency
-- `aiogram==3.27.0`: Telegram bot framework, async-native, inline keyboards for Mini App check-in button
-- `aio-pika==9.6.2`: RabbitMQ async consumer, `connect_robust` for transparent auto-reconnect
-- `grpcio==1.73.0` + `grpcio-tools==1.73.0`: gRPC async client (`grpc.aio`) for Academic Service; protobuf 5.x compatible
-- `redis==5.2.1`: Async Redis client (`redis.asyncio`) for reminder `message_id` list storage
+- React 19 + TypeScript 5 + Vite 8: SPA PWA framework — consistent with Mini App, concurrent rendering for mobile UX
+- Tailwind CSS v4 + `@tailwindcss/vite`: utility CSS — zero PostCSS config, no tailwind.config.js, shared class vocabulary with Mini App
+- vite-plugin-pwa 1.2.0 (`injectManifest` strategy): Service Worker + precache — required for custom push event handler hooks
+- TanStack Query v5: server state — caching, background refetch, stale-while-revalidate for offline reads
+- Zustand 5: client state — auth tokens, push subscription status, A2HS install prompt state
+- `@stomp/stompjs` + `sockjs-client`: real-time events — existing notification-web uses SockJS transport (raw WebSocket would fail)
+- `nl.martijndwars:web-push:5.1.2` + `bcprov-jdk18on:1.78.1`: Java VAPID push — canonical web-push-libs library, Java 21 confirmed
+- `spring-boot-starter-data-mongodb`: push subscription persistence — reuses existing MongoDB container
 
 ### Expected Features
 
-The notification layer consumes 8 event types from the fanout exchange. The core engagement loop is: `lesson.started` → bot sends "Отметиться" inline button to each student + stores returned `message_id` in Redis → `attendance.marked` (status=present) → bot immediately deletes that student's reminder → `lesson.closed` → bot deletes all remaining reminders via Redis LRANGE. This cleanup lifecycle is a first-class business requirement from CLAUDE.md ("После пары — удалить сообщения"). The web service is a simpler parallel path: every event that reaches the bot also pushes a structured JSON message to the relevant STOMP group topic for the Angular web panel.
+All backend API endpoints are operational. The PWA consumes them directly via API Gateway. The only new backend code is VAPID subscription management (2 REST endpoints + MongoDB `push_subscriptions` collection) inside notification-web.
 
-**Must have (v5.0 — table stakes):**
-- RabbitMQ consumer infrastructure for both services — prerequisite for all notification features
-- WebSocket endpoint `/ws` with JWT auth via `JwtHandshakeInterceptor` (credentials via query param)
-- Group-based STOMP session routing with in-memory `GroupSessionRegistry` (`ConcurrentHashMap<Long, CopyOnWriteArraySet<WebSocketSession>>`)
-- `lesson.started` / `lesson.cancelled` / `homework.published` → WebSocket push to group sessions
-- `excuse.requested` / `late_checkin.requested` → WebSocket push to headman session (routed by `group_id`)
-- Bot `/start` (account linking, initial credential delivery) + `/login` (OTP flow) + `/status` commands
-- gRPC `GetGroupMembers` client in bot using `grpc.aio` channel (non-blocking async)
-- `lesson.started` → bot sends inline "Отметиться" button to each student; stores `message_id` via Redis `RPUSH`
-- `lesson.closed` → bot reads all `message_id`s via `LRANGE` and calls `bot.delete_message` for each
-- `attendance.marked` (present) → bot immediately deletes that student's reminder messages
-- `lesson.cancelled` + `homework.published` → bot broadcasts text notifications to group
+**Must have (v6.0 launch — table stakes):**
+- Login screen + JWT auto-refresh (15-min access token; httpOnly cookie for refresh token)
+- Today's schedule view — primary daily-use screen, gates all other features
+- Geo check-in button on active lesson card — core product function, visible only in check-in window
+- Check-in result feedback (success / not-in-zone / already-marked)
+- Weekly schedule navigation
+- Offline app shell (app loads without network via Service Worker precache)
+- Add-to-Home-Screen prompt with iOS Safari instruction screen (iOS does not fire `beforeinstallprompt`)
+- VAPID key pair setup in notification-web + push subscription endpoint
+- `lesson.started` Web Push notification with "Отметиться" action button — headline feature of the milestone
+- `lesson.cancelled` Web Push notification
 
-**Should have (v5.1 differentiators):**
-- 3-stage reminder lifecycle: stage 2 at lesson midpoint + stage 3 near lesson end (asyncio scheduling)
-- `excuse.requested` → headman Telegram notification with approve/reject inline callback buttons (requires bot JWT auth + Attendance Service REST call)
-- `late_checkin.requested` → plain text notification to headman via Telegram
-- `homework.updated` → both channels (identical handler logic to `homework.published`)
+**Should have (v6.1 iteration — differentiators):**
+- Attendance stats screen with red zone warning indicator
+- Attendance records list with status color coding (б/н/у/сп)
+- Homework list + personal completion tracker
+- `homework.published` Web Push notification
+- Real-time check-in state update via STOMP WebSocket (`attendance.marked` event)
+- Headman manual marking screen (complex group marking grid UI)
 
-**Defer (v5.2+):**
-- Notification history / inbox (requires new MongoDB collection + REST API)
-- Notification preferences / mute by event type (Redis hash per user)
-- Admin broadcast announcements via bot
-- WebSocket reconnect state recovery / event buffer per user
+**Defer (v6.2+, blocked on backend or out-of-scope):**
+- Excuse ticket creation flow (backend deferred project-wide)
+- Late check-in request flow (backend deferred)
+- Web Push for TEACHER role (defer to v8.0 web panel milestone)
+- Push notification preferences per type (needs preferences storage backend)
+- Background sync for check-in (not viable — 5-min time window makes offline queue useless)
 
 ### Architecture Approach
 
-Both notification services are pure event consumers with no REST API surface. Notification-web is a stateless WebSocket push relay: it binds a RabbitMQ queue, maps `event_type` to a `NotificationMessage` DTO, and delivers to the appropriate STOMP group topic via `SimpMessagingTemplate`. No database, no gRPC calls during event processing — all routing is by `group_id` already present in connected sessions. Notification-bot is more complex: it has three independent input channels (RabbitMQ events, Telegram long-polling, asyncio scheduled tasks) and calls three external services (Academic gRPC, Auth REST, Redis). The bot is the only component that bridges Telegram user identity to system identity.
+The architecture extends the existing system minimally. notification-web gains a new `push/` Java package (PushController, PushSubscriptionService, PushSubscriptionRepository, VapidConfig) and a MongoDB dependency. The API Gateway gains a new `/api/push/**` route (StripPrefix=1) alongside the existing `/api/ws/**` STOMP route, plus `globalcors` configuration for the PWA origin. The PWA is served from a new nginx Docker container (multi-stage Vite build). VAPID keys are generated once on first startup, persisted in Redis without TTL, and never regenerated. Push delivery in EventConsumer is dispatched via `@Async` with a dedicated ThreadPoolTaskExecutor — the consumer method returns immediately; actual HTTPS delivery to FCM/APNs/Mozilla happens off the consumer thread.
 
 **Major components:**
-1. **notification-web** — `WebSocketConfig` (STOMP endpoint `/ws`, in-memory broker `/topic`); `JwtHandshakeInterceptor` (stores `user_id` + `group_id` in WebSocket session attributes at connect); `GroupSessionRegistry` (in-memory group-to-sessions map, thread-safe); `EventConsumer` (`@RabbitListener`); `EventToNotificationMapper` (event_type routing)
-2. **notification-bot** — Aiogram 3 dispatcher + aio-pika consumer on shared asyncio event loop; `event_router.py` dispatches to per-event-type handlers; `lesson_started.py` calls gRPC + throttled send queue + Redis; `lesson_closed.py` reads Redis + deletes Telegram messages; `auth_client.py` handles OTP REST calls; consumer watchdog coroutine monitors channel health
-3. **RabbitMQ queues (new)** — Two durable queues (`notification-web.events`, `notification-bot.events`) bound to existing `rut-uit.events` fanout exchange; DLQ configured for both
-4. **Redis (shared)** — New key namespace `reminder:msgs:{lesson_id}:{user_id}` (Redis list via RPUSH); TTL = `lesson_end_time + 10 min`; same Redis instance as Auth and Academic Services — key namespacing prevents collision
+1. `notification-web` (extended) — new `push/` package for VAPID subscription management and outbound push delivery; `EventConsumer` extended to fan-out Web Push alongside existing STOMP delivery using async dispatch
+2. `api-gateway` (config-only change) — `globalcors` with `allowedOriginPatterns` for PWA origins; new `/api/push/**` route (StripPrefix=1); existing `/api/ws/**` STOMP route preserved unchanged
+3. `frontends/pwa/` (new container) — React PWA with custom Service Worker (`injectManifest`), nginx serving with correct `Cache-Control` headers per resource type, multi-stage Dockerfile
+4. `push_subscriptions` MongoDB collection (new in existing container) — stores `endpoint + p256dh + auth + user_id + group_id`; indexed by `endpoint` (unique, for 410 cleanup) and `group_id` (fan-out query)
 
 ### Critical Pitfalls
 
-1. **Telegram 429 rate limit during lesson fan-out** — Multiple groups starting simultaneously exceeds 30 msg/sec global limit and ~1 msg/sec per-chat soft limit. Prevention: implement a throttled send queue (`asyncio.Queue` + worker pool of max 5 coroutines, 50ms sleep between sends) before writing any fan-out logic. Never call `bot.send_message()` directly from the RabbitMQ consumer callback.
+1. **Service Worker `skipWaiting()` called unconditionally** — causes ChunkLoadError on open tabs during deployment (old tab tries to load chunks from new cache); use `registerType: 'prompt'` in vite-plugin-pwa and only call `skipWaiting()` after explicit user confirmation.
 
-2. **aio-pika silent consumer death after RabbitMQ restart** — `connect_robust` reconnects at TCP level but channel and queue consumer bindings are not reliably restored in certain aio-pika versions. The bot goes silent with no errors logged. Prevention: implement a consumer watchdog coroutine (`asyncio.sleep(30)` loop checking `channel.is_closed`) from day one. Test by restarting the RabbitMQ container and verifying consumer resumes within 60 seconds.
+2. **iOS push subscription outside installed PWA** — `PushManager.subscribe()` silently fails in Safari browser tab (iOS requires Add-to-Home-Screen); detect with `window.matchMedia('(display-mode: standalone)').matches` and show install instructions before attempting any push subscription; EU iOS 17.4+ may not support PWA standalone at all.
 
-3. **Reminder `message_id` stored as string, not list** — Using Redis `SET` overwrites previous `message_id`s; only the last reminder can be deleted. Prevention: use `RPUSH` (list) not `SET` (string); `LRANGE key 0 -1` retrieves all message_ids on `lesson.closed`. Design the key structure before writing the first reminder send.
+3. **Duplicate CORS headers from Gateway + downstream service** — browser rejects responses with two `Access-Control-Allow-Origin` values; configure CORS only at Gateway level, never add `@CrossOrigin` in downstream services; add `DedupeResponseHeader` Gateway filter as safety net.
 
-4. **WebSocket JWT token expiry invalidates session routing mid-connection** — Access tokens expire in 15 minutes but WebSocket sessions live for hours. Prevention: extract `user_id` and `group_id` from JWT claims into `WebSocketSession.getAttributes()` at handshake time; never re-read from `HttpSession` or re-validate JWT during message routing. The session attributes persist for the WebSocket lifetime regardless of JWT expiry.
+4. **JWT stored in localStorage** — exposed to XSS; Service Worker cannot access localStorage; use React memory for access token + httpOnly Secure cookie for refresh token.
 
-5. **Synchronous gRPC stub blocks asyncio event loop** — Using standard `grpcio` blocking stub from `async def` handler freezes the event loop for 50-200ms per call. Under concurrent lesson events, the bot appears unresponsive. Prevention: always use `grpc.aio.insecure_channel` and `await stub.GetGroupMembers(...)`. Cache `GetGroupMembers` responses in Redis with 5-minute TTL.
+5. **Synchronous Web Push delivery blocking RabbitMQ consumer** — lesson.started fan-out to 30 students × 200-2000ms per HTTP call = consumer stall, STOMP messages delayed; dispatch push sends via `@Async` ThreadPoolTaskExecutor before writing any push code.
 
-6. **RabbitMQ exchange redeclared with mismatched arguments** — Re-declaring `rut-uit.events` with `durable=false` causes `PRECONDITION_FAILED` on startup and breaks all other services. Prevention: copy the exact `FanoutExchange("rut-uit.events", true, false)` bean declaration from `schedule-app`'s `RabbitConfig` — do not write it from scratch.
+6. **Web Push endpoint expiry (HTTP 410 Gone) not handled** — dead subscriptions accumulate silently, delivery degrades over weeks; delete subscription from MongoDB immediately on 410 or 404 response from push service.
 
-7. **No DLQ — failed events cause infinite requeue or silent drop** — Unknown `event_type`s (new events added to fanout before bot code is updated) cause constant requeue storms. Prevention: configure `x-dead-letter-exchange` on both notification queues at creation; filter unknown event types early and `nack` without requeue.
+7. **Notification permission requested on app load or first visit** — one-shot browser prompt wasted before user sees value; use soft-ask modal ("Get notified when class starts") before calling `Notification.requestPermission()` from an explicit user gesture.
 
 ---
 
 ## Implications for Roadmap
 
-All dependencies flow from RabbitMQ infrastructure → WebSocket layer → event handlers. The two notification components can develop in parallel after shared infrastructure is established. The Java web service is architecturally simpler and should be completed first to validate the shared exchange/queue setup. The bot has three sequential sub-phases: infrastructure clients, Telegram command handlers, then event handlers.
+Based on combined research, the architecture's build order dependency graph directly maps to a 6-phase delivery sequence. Each phase is independently testable before the next one depends on it.
 
-### Phase 1: Shared Infrastructure Setup
-**Rationale:** Both services need queue declarations before any event processing can be tested. Without queue bindings to the fanout exchange, every event published is immediately discarded with no recovery. This is the lowest-risk, highest-leverage starting point.
-**Delivers:** Two durable queues (`notification-web.events`, `notification-bot.events`) bound to `rut-uit.events` fanout with DLQ configured for each; updated `docker-compose.yml` with notification-bot `depends_on: [redis, rabbitmq, academic-service]`
-**Addresses:** Prerequisite for all notification features in both services
-**Avoids:** Pitfall 6 (exchange argument mismatch — copy from schedule-app verbatim); Pitfall 7 (DLQ configured from day one, not retrofitted)
-**Research flag:** Standard patterns — copy exchange declaration from `schedule-app/RabbitConfig`; DLQ pattern from `attendance-service/RabbitConfig`
+### Phase 1: Web Push Backend (notification-web extension)
+**Rationale:** All subsequent phases depend on push endpoints existing. Backend is testable with curl before any frontend exists. Zero dependency on PWA progress — can run in parallel with Phase 2.
+**Delivers:** `push/` package (PushController, PushSubscriptionService, PushSubscriptionRepository, VapidConfig); `GET /push/vapid-public-key`, `POST /push/subscribe`, `DELETE /push/subscribe` endpoints; MongoDB `push_subscriptions` collection with indexes; VAPID key generation persisted in Redis; async `ThreadPoolTaskExecutor` for push dispatch; 410 Gone cleanup logic.
+**Addresses:** VAPID setup (FEATURES.md P1); push subscription storage (ARCHITECTURE.md Layer 1)
+**Avoids:** Pitfall 5 (synchronous consumer blocking — async dispatch established here); Pitfall 6 (410 cleanup from day one); Anti-Pattern 3 (VAPID keys in Redis, not env-only)
 
-### Phase 2: Notification Web — WebSocket Core
-**Rationale:** The Java service has no external calls during event processing (pure in-memory routing) and validates the Gateway WebSocket proxy route. Completing it first establishes the STOMP pattern and confirms queue/exchange wiring before tackling the more complex bot.
-**Delivers:** `WebSocketConfig` (STOMP endpoint `/ws`, in-memory broker); `JwtHandshakeInterceptor` (JWT claims into session attributes); `GroupSessionRegistry` (`ConcurrentHashMap<Long, CopyOnWriteArraySet<WebSocketSession>>`); `EventConsumer` (`@RabbitListener`); `EventToNotificationMapper`; WebSocket push for all 5 event types (`lesson.started`, `lesson.cancelled`, `homework.published`, `excuse.requested`, `late_checkin.requested`)
-**Uses:** `spring-boot-starter-websocket`, `jjwt-api:0.12.6`, in-memory STOMP broker; Testcontainers RabbitMQ for integration tests
-**Avoids:** Pitfall 4 (store JWT claims in WebSocket attributes, not HttpSession); Pitfall 5 (GroupSessionRegistry keyed by `group_id`, not `user_id`; remove session in `afterConnectionClosed`)
-**Research flag:** Verify that Spring Cloud Gateway `JwtAuthenticationFilter` handles HTTP GET upgrade requests (WebSocket) and injects `X-User-Id`/`X-Group-Id` before forwarding — read `api-gateway/.../filter/JwtAuthenticationFilter.java` before writing `JwtHandshakeInterceptor`
+### Phase 2: API Gateway CORS + Push Route
+**Rationale:** Config-only change. Must be done before any PWA development can call the API from `localhost:5173`. Fast phase; can proceed in parallel with Phase 1.
+**Delivers:** `globalcors` with `allowedOriginPatterns` for `localhost:5173` and production PWA domain; `/api/push/**` route with StripPrefix=1; existing `/api/ws/**` STOMP route preserved; `DedupeResponseHeader` filter.
+**Addresses:** CORS for PWA origin (ARCHITECTURE.md Pattern 4)
+**Avoids:** Pitfall 3 (CORS configured only at Gateway, never in downstream services); StripPrefix conflict between STOMP and push routes (ARCHITECTURE.md Open Question 3)
 
-### Phase 3: Notification Bot — Infrastructure Layer
-**Rationale:** The bot's three infrastructure clients (gRPC, Redis, aio-pika) and the throttled send queue must be built and tested before any event handler can be written correctly. The consumer watchdog is also here — adding it after the fact requires understanding the full consumer lifecycle.
-**Delivers:** Python project structure; aio-pika consumer with consumer watchdog coroutine; `grpc.aio` channel + Academic stub (generated from `proto/academic.proto`); `redis.asyncio` client + reminder RPUSH/LRANGE/DEL helpers; `auth_client.py` (aiohttp wrapper for OTP endpoints); throttled send queue (`asyncio.Queue` + worker pool); `config.py` (pydantic-settings)
-**Avoids:** Pitfall 2 (consumer watchdog from day one); Pitfall 5 (`grpc.aio` not synchronous stub); Pitfall 1 (throttled queue is the only send path — all handlers must use it)
-**Research flag:** Verify `POST /auth/otp/request` returns OTP code in response body before building auth_client.py — check Auth Service OTP response DTO (`auth-service/.../dto/OtpResponse.java` or equivalent)
+### Phase 3: PWA Scaffold — Auth + Schedule View
+**Rationale:** Proves API integration works end-to-end with real auth. Establishes core PWA identity (manifest, A2HS, nginx serving) and the JWT storage pattern before any subsequent feature is built on it. This phase blocks all subsequent UI phases.
+**Delivers:** Vite + React + TypeScript project at `frontends/pwa/`; axios client with JWT interceptor + 401 refresh; `authStore` (Zustand); `LoginPage`; `SchedulePage` (today + weekly view); `manifest.webmanifest` (name: RutTrack, display: standalone); A2HS prompt handling via `beforeinstallprompt`; iOS Safari onboarding screen; nginx container (no-cache for `sw.js`/`index.html`, 1-year for `/assets/*`); multi-stage Dockerfile; httpOnly cookie for refresh token.
+**Uses:** React 19, Vite 8, Tailwind v4, TanStack Query v5, Zustand 5, Phosphor Icons, Motion (STACK.md)
+**Avoids:** Pitfall 4 (JWT in React memory + httpOnly cookie, never localStorage); iOS A2HS detection (prerequisite for Pitfall 2 prevention)
 
-### Phase 4: Notification Bot — Telegram Command Handlers
-**Rationale:** Telegram account linking (`/start`, `/login`) must work before event-driven notifications are meaningful — users with no `telegram_id` linked cannot receive any personalized messages. These handlers are also simpler (request/response) than event handlers and validate the `auth_client.py` integration.
-**Delivers:** `/start` handler (account linking, initial credential delivery); `/login` handler (OTP flow with Aiogram FSM conversation state); `/status` handler (current lesson + student attendance status)
-**Uses:** `auth_client.py` from Phase 3; Aiogram FSM for multi-step OTP conversation; `grpc.aio` channel for Academic Service lookup
-**Research flag:** How to look up user by `telegram_id` in `/start` — current gRPC proto has `GetUserById(user_id: Long)`, not `GetUserByTelegramId`. Resolve approach (Auth Service REST endpoint vs new gRPC RPC) before Phase 4 begins
+### Phase 4: Service Worker + Push Subscription Opt-in
+**Rationale:** Depends on Phase 1 (push endpoints) and Phase 3 (app shell must exist for SW registration). Once SW is in place, push subscription flow can be tested end-to-end (subscribe → POST lands in MongoDB → manual curl push to endpoint) before real RabbitMQ events are wired.
+**Delivers:** `src/sw.ts` with `precacheAndRoute` + `push` event handler + `notificationclick` handler; `api/push.ts` + `useWebPush` hook; `SettingsPage` with "Enable Notifications" toggle; soft-ask permission modal; offline schedule cache (stale-while-revalidate via Workbox); `pushsubscriptionchange` SW event handler; iOS standalone guard before push subscription attempt.
+**Uses:** vite-plugin-pwa `injectManifest` strategy, Workbox 7 (STACK.md)
+**Avoids:** Pitfall 1 (`registerType: 'prompt'`, no unconditional `skipWaiting()`); Pitfall 7 (soft-ask before native prompt); Pitfall 2 (iOS standalone guard)
 
-### Phase 5: Notification Bot — Event Handlers
-**Rationale:** With infrastructure clients and throttled send queue from Phase 3, event handlers become straightforward composition. Lesson events are highest priority (core engagement loop), then cancellation and homework.
-**Delivers:** `lesson_started.py` (gRPC GetGroupMembers + throttled fan-out + Redis RPUSH message_ids); `lesson_closed.py` (Redis LRANGE + `bot.delete_message` for all students + key DEL); `lesson_cancelled.py` (text fan-out); `homework_published.py` (text fan-out); `attendance_marked.py` (immediate Redis lookup + delete for that student)
-**Avoids:** Pitfall 1 (throttled queue mandatory — no direct sends); Pitfall 3 (RPUSH list not SET string)
-**Research flag:** No additional research needed — all patterns established in Phase 3
+### Phase 5: EventConsumer Web Push Wiring (End-to-End Push)
+**Rationale:** Depends on Phase 4 (subscriptions must exist in DB). Extends existing `EventConsumer.onEvent()` to call `PushSubscriptionService.sendToGroup()` alongside the existing STOMP delivery. This is the v6.0 headline feature delivered end-to-end.
+**Delivers:** `lesson.started` → Web Push to group students with "Отметиться" action button and `action_url` pointing to check-in page; `lesson.cancelled` → Web Push to group; full end-to-end smoke test (RabbitMQ event → phone notification → tap → PWA opens at check-in screen).
+**Implements:** ARCHITECTURE.md Layer 5 and full Web Push data flow diagram
+**Avoids:** Pitfall 5 (async dispatch already established in Phase 1); Pitfall 6 (410 cleanup already implemented)
 
-### Phase 6: Integration Verification
-**Rationale:** End-to-end validation that events flow correctly through both channels with real infrastructure.
-**Delivers:** Testcontainers integration test for notification-web (publish event to RabbitMQ → assert WebSocket STOMP message received); manual E2E for bot (lesson.started event → Telegram message sent + message_id in Redis → lesson.closed → Redis empty + message deleted); Gateway WebSocket proxy confirmed working; `/login` OTP flow verified end-to-end
-**Research flag:** No additional research needed
+### Phase 6: Student UI Features (Check-in, Stats, Homework, Offline)
+**Rationale:** Auth, schedule, and push are proven in Phases 3-5. This phase completes the v6.0 student feature set using the established patterns. Geo check-in iOS error handling requires platform-specific code established here.
+**Delivers:** `CheckInPage` with geo check-in button (navigator.geolocation), 15-second timeout, iOS geolocation error handling (all three error codes), offline "Нет подключения" message; `AttendancePage` (stats + records with status color coding); `HomeworkPage` + personal completion tracker; real-time check-in state update via `useWebSocket` hook (STOMP `attendance.marked`); `homework.published` push handler in EventConsumer.
+**Addresses:** All P1 table stakes and selected P2 differentiators from FEATURES.md MVP definition
+**Avoids:** Pitfall (Geolocation) — never rely on `navigator.permissions.query` on iOS, always handle error codes explicitly; Performance Trap — `getCurrentPosition()` once per check-in, never `watchPosition`
 
 ### Phase Ordering Rationale
 
-- Infrastructure first (Phase 1): fanout exchange queues must be bound before any event can be consumed; DLQ must be configured before any business logic runs to avoid silent drops
-- Java web service before Python bot (Phase 2 before 3-5): web service is architecturally simpler (no external calls during event processing) and validates the shared exchange/queue wiring
-- Bot infrastructure before bot handlers (Phase 3 before 4-5): gRPC client, Redis client, aio-pika consumer, and throttled send queue are prerequisites for every handler; building them first enables each handler to be tested in isolation
-- Command handlers before event handlers (Phase 4 before 5): Telegram account linking must exist before personalized lesson notifications work; also validates auth_client.py before it is used in excuse callbacks (v5.1)
-- Integration verification last (Phase 6): depends on all components being complete
+- Backend before frontend: Push endpoints must exist before SW subscription flow can be end-to-end tested. Parallel development risks integration bugs that are hard to isolate without working endpoints.
+- CORS gateway config is fast and independent — it runs in parallel with Phase 1 and unblocks all PWA development.
+- PWA scaffold (auth + schedule) before push subscription wiring: The Service Worker requires a deployed app shell. The JWT storage pattern (httpOnly cookie) established in Phase 3 prevents the localStorage pitfall from propagating into later code.
+- Push subscription before EventConsumer wiring: The MongoDB collection must have real subscription documents before the fan-out logic can be validated end-to-end.
+- Student UI last: All platform plumbing (auth, SW, push, STOMP) is proven before building feature screens. The geo check-in iOS error handling is complex enough to warrant its own focused phase.
 
 ### Research Flags
 
-Phases needing a targeted code review before implementation:
-- **Phase 2:** Read `api-gateway/.../filter/JwtAuthenticationFilter.java` — verify it handles HTTP upgrade requests (GET + `Upgrade: websocket`) and injects `X-User-Id`/`X-Group-Id` before the WebSocket proxy forward
-- **Phase 3/4:** Read Auth Service OTP controller + response DTO — verify `POST /auth/otp/request` returns the OTP code in its response body; if not, the bot cannot deliver the code to the user via Telegram
-- **Phase 4:** Decide how bot looks up user by `telegram_id` for `/start` — gRPC proto only has `GetUserById(user_id)`, not by telegram_id; this must be resolved (new endpoint or existing mechanism) before Phase 4
+Phases likely needing deeper research or verification during planning:
+- **Phase 1 (notification-web extension):** Verify BouncyCastle `bcprov-jdk18on` loads correctly in Spring Boot's executable JAR — known edge case with signed JAR packaging. Read existing `notification-web/build.gradle.kts` before adding dependencies to avoid duplicates.
+- **Phase 4 (Service Worker + vite-plugin-pwa):** vite-plugin-pwa 1.2.0 + Vite 8 peer dependency — may require `--legacy-peer-deps` flag; verify at `npm create vite@latest` step, not mid-phase. If blocked, Vite 7 is fully supported with no architectural change.
+- **Phase 6 (Geo check-in):** Physical iOS device QA required. iOS Geolocation Permissions API bug (reports `denied` as `prompt`) is invisible in simulator. Must test on real hardware before shipping.
 
-Phases with standard patterns (no additional research needed):
-- **Phase 1:** Exchange/queue/DLQ declarations — copy from `schedule-app` and `attendance-service` verbatim
-- **Phase 5:** All event handlers follow the same fan-out pattern; throttled queue and Redis list are pre-built in Phase 3
-- **Phase 6:** Testcontainers + RabbitMQ integration test pattern already established in existing services
+Phases with standard patterns (skip additional research):
+- **Phase 2 (Gateway CORS):** Exact YAML specified in ARCHITECTURE.md Pattern 4. Standard Spring Cloud Gateway config. No research needed.
+- **Phase 3 (PWA scaffold):** Well-documented Vite + React patterns. STACK.md provides exact dependency list and version compatibility table.
+- **Phase 5 (EventConsumer wiring):** Extends existing EventConsumer with method calls to an in-JVM service. ARCHITECTURE.md data flow section specifies the code structure.
 
 ---
 
@@ -156,52 +158,53 @@ Phases with standard patterns (no additional research needed):
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Java versions from Boot 3.4.1 BOM (authoritative); Python versions verified against PyPI 2026-04-04; grpcio 1.73.0 pinned for protobuf 5.x compatibility documented in grpc/grpc#39012 |
-| Features | HIGH | Derived from `event-schemas/*.json` (source code), `CLAUDE.md` business rules, `phases-plan.md` Phase 5 spec — all primary authoritative sources in this codebase |
-| Architecture | HIGH | Based on full source inspection of existing services; API Gateway WebSocket route confirmed in `application.yml`; Academic proto `telegram_id` field confirmed in `academic.proto`; RabbitMQ fanout exchange and Redis container confirmed in `docker-compose.yml` |
-| Pitfalls | HIGH | Telegram rate limits from official Telegram Bot FAQ; aio-pika reconnect bug from upstream GitHub issues; WebSocket session pitfalls from Spring docs; DLQ patterns from RabbitMQ official docs |
+| Stack | HIGH | npm versions verified via npm registry; Maven Central version confirmed for webpush-java; existing codebase inspected as authoritative source for notification-web baseline dependencies |
+| Features | HIGH | Sourced directly from PROJECT.md, job-stories.md, and design-decisions.md — project's own canonical requirements, not inferred |
+| Architecture | HIGH | Based on full source inspection of existing codebase + official Spring Cloud Gateway docs + official MDN Push API docs; build order derived from dependency analysis |
+| Pitfalls | HIGH | iOS limitations verified against Apple Developer Forums and MDN; CORS duplicate headers verified against Spring Cloud Gateway docs; SW lifecycle and JWT storage pitfalls verified against multiple independent authoritative sources |
 
-**Overall confidence:** HIGH
+**Overall confidence: HIGH**
 
 ### Gaps to Address
 
-- **Auth Service OTP response DTO:** Does `POST /auth/otp/request` return the OTP code in its response body? If not, the bot cannot send the code to the user as a Telegram message — the entire `/login` flow breaks. Must verify in `auth-service` source before Phase 3/4. If the response does not include the code, the simplest fix is adding `"code"` to the response record in Auth Service.
-
-- **`telegram_id` user lookup for `/start`:** Current gRPC proto has `GetUserById(UserRequest{user_id: Long})` — no `telegram_id` parameter. The bot needs to look up a user by their Telegram chat ID when `/start` is issued. Options: (a) Auth Service adds a REST endpoint `GET /auth/user/by-telegram/{telegram_id}`, or (b) a new `GetUserByTelegramId` RPC is added to `academic.proto`. Resolve before Phase 4 begins.
-
-- **Gateway WebSocket filter:** Spring Cloud Gateway's `JwtAuthenticationFilter` must handle HTTP GET requests with `Upgrade: websocket` header and inject `X-User-Id`/`X-Group-Id` before the proxy forward. If the filter skips non-POST/PUT requests, WebSocket handshakes will pass through without user identity headers. Verify before Phase 2 coding begins.
-
-- **3-stage reminder scheduling (v5.1):** For v5.0, in-memory `asyncio.create_task` + `asyncio.sleep` scheduling is acceptable but tasks are lost on bot restart. If the bot restarts while a lesson is active, stages 2 and 3 will never fire for that lesson. Document this as a known limitation for v5.0; address in v5.1 with Redis-backed scheduled task tracking.
-
-- **aio-pika version and reconnect fix:** STACK.md recommends `aio-pika==9.6.2` as latest stable. PITFALLS.md notes `9.4.3` was mentioned as a known-safe version for reconnect behavior. Verify the `9.6.2` changelog confirms the consumer restoration bug is fixed before finalizing `requirements.txt`.
+- **vite-plugin-pwa 1.2.0 + Vite 8 compatibility:** No official peer dep declaration. Community confirms it works (GitHub issue #918). Verify at project init in Phase 3 with `npm install vite-plugin-pwa`. If blocked, use Vite 7 — no architectural impact.
+- **iOS Web Push on iOS 17.4+ EU (Digital Markets Act):** iOS 17.4+ in EU regions may disable PWA standalone mode entirely, making Web Push permanently unavailable for EU students on iOS. Treat as known platform limitation; ensure graceful fallback to STOMP WebSocket for in-app alerts when push is unavailable.
+- **Gateway CORS + cookie domain alignment:** If PWA is served from a subdomain (e.g., `app.ruttrack.ru`) and Gateway is on `api.ruttrack.ru`, the `Set-Cookie` for the refresh token requires `SameSite=None; Secure`. Verify deployment domain topology before Phase 2 to configure correctly from the start.
+- **notification-web MongoDB URI in docker-compose:** The existing notification-web service entry in docker-compose does not currently declare a `MONGODB_URI` environment variable. Add `MONGODB_URI=mongodb://mongo-attendance:27017/attendance_db` in Phase 1 docker-compose update.
+- **Push payload size:** Browser push services impose a 4KB payload limit. Homework descriptions can be user-generated text. Truncate `body` text at 200 characters before sending push payload in EventConsumer wiring (Phase 5).
 
 ---
 
 ## Sources
 
-### Primary (HIGH confidence — verified from this repo)
-- `.planning/PROJECT.md` — v5.0 active requirements, milestone context
-- `docs/phases-plan.md` — Phase 5 detailed feature specification
-- `event-schemas/*.json` — all 8 relevant event schemas with exact payload fields
-- `CLAUDE.md` — business rules (reminder lifecycle, role definitions, attendance status codes)
-- `proto/academic.proto` — confirmed `telegram_id` field in `StudentInfo`; `GetGroupMembers` RPC signature
-- `services/api-gateway/src/main/resources/application.yml` — confirmed `/api/ws/**` route to notification-web:9094
-- `services/notification-web/build.gradle.kts` — existing dependency baseline (starting point)
-- `services/notification-bot/requirements.txt` — existing (stale) version baseline
-- `services/attendance-service/attendance-app/src/main/java/.../config/RabbitConfig.java` — DLQ and ObjectMapper injection pattern to replicate
-- `docker-compose.yml` — confirmed `redis:7-alpine` and `rabbitmq:3.13-management-alpine`
-- `docs/phase-3-report.md` — Schedule Service RabbitMQ event timing (cron transitions)
-- `docs/phase-4-report.md` — Attendance Service events published (`attendance.marked`, `excuse.requested`, `late_checkin.requested`)
+### Primary (HIGH confidence)
+- `docs/job-stories.md` — all student/headman job stories (JS-STUDENT-01..11, JS-HEADMAN-20)
+- `docs/design-decisions.md` — PWA design decisions, offline strategy, iOS onboarding, Phosphor Icons + Motion mandate
+- `docs/phases-plan.md` — v6.0 milestone definition and deferred items
+- `CLAUDE.md` — existing architecture, business rules, check-in window, notification rules
+- `services/notification-web/` — existing codebase (authoritative for what must be extended)
+- `services/api-gateway/src/main/resources/application.yml` — confirmed `/api/ws/**` routing; StripPrefix=1 behavior
+- [Spring Cloud Gateway CORS docs](https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway-server-webflux/cors-configuration.html)
+- [vite-plugin-pwa official docs](https://vite-pwa-org.netlify.app/guide/)
+- [MDN PushSubscription API](https://developer.mozilla.org/en-US/docs/Web/API/PushSubscription)
+- [MDN Service Workers Caching](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Caching)
+- [stomp-js: Using STOMP with SockJS](https://stomp-js.github.io/guide/stompjs/rx-stomp/using-stomp-with-sockjs.html)
 
 ### Secondary (MEDIUM confidence)
-- Spring Cloud Gateway WebSocket proxy documentation — standard feature since Spring Cloud Gateway 2.x
-- Aiogram 3.x long-polling and FSM patterns — official Aiogram docs, well-known patterns
-- Spring Boot 3 WebSocket + JWT `HandshakeInterceptor` pattern — multiple consistent community sources
+- [nl.martijndwars/web-push Maven Central](https://central.sonatype.com/artifact/nl.martijndwars/web-push) — v5.1.2 confirmed Feb 2025
+- [webpush-java GitHub](https://github.com/web-push-libs/webpush-java) — BouncyCastle dependency, PushAsyncService API
+- [Vaadin: Web Push with Spring Boot](https://vaadin.com/blog/send-web-push-notifications-java) — Spring Boot + webpush-java integration pattern
+- [vite-plugin-pwa GitHub issue #918](https://github.com/vite-pwa/vite-plugin-pwa) — Vite 8 compatibility community reports
+- [Handling Geolocation for PWA Safari](https://blog.poespas.me/posts/2025/03/01/handling-geolocation-for-pwa-safari-challenges/)
+- [Web Push errors HTTP status codes — Pushpad](https://pushpad.xyz/blog/web-push-errors-explained-with-http-status-codes)
+- [Service Worker Lifecycle — Felix Gerschau](https://felixgerschau.com/service-worker-lifecycle-update/)
+- [Handling Service Worker updates — Chrome Developers](https://developer.chrome.com/docs/workbox/handling-service-worker-updates)
+- [Permission UX — web.dev](https://web.dev/articles/push-notifications-permissions-ux)
 
-### Tertiary (LOW confidence — verify during implementation)
-- Auth Service OTP response body includes code — assumed from flow design, not verified in source code
-- aio-pika==9.6.2 consumer restoration bug fix status — verify changelog before finalizing requirements.txt
+### Tertiary (MEDIUM-LOW confidence — verify at implementation time)
+- [PWA iOS Limitations 2026 — MagicBell](https://www.magicbell.com/blog/pwa-ios-limitations-safari-support-complete-guide) — iOS 17.4+ EU restriction
+- [PWA Push Notifications on iOS 2026](https://webscraft.org/blog/pwa-pushspovischennya-na-ios-u-2026-scho-realno-pratsyuye?lang=en) — iOS standalone requirement confirmation
 
 ---
-*Research completed: 2026-04-04*
+*Research completed: 2026-04-05*
 *Ready for roadmap: yes*

@@ -1,457 +1,276 @@
 # Stack Research
 
-**Domain:** Notification Service (Web + Bot) — real-time push via WebSocket and Telegram
-**Researched:** 2026-04-04
-**Confidence:** HIGH (versions verified against PyPI, official docs, existing monorepo)
+**Domain:** React PWA mobile client (RutTrack) + Web Push backend extension for university attendance tracking
+**Researched:** 2026-04-05
+**Confidence:** MEDIUM-HIGH overall. Frontend versions HIGH (npm verified). Java Web Push library MEDIUM (Maven Central verified, BouncyCastle integration has known complexity — see Pitfall note).
 
 ---
 
-## Context: What Already Exists
+## Context: What Is Already in Place (Do Not Re-research)
 
-This is the v5.0 milestone on an existing Java 21 + Spring Boot 3.4.1 monorepo. The infrastructure is already running:
+| Component | Details |
+|-----------|---------|
+| Java 21 + Spring Boot 3.4 + Gradle Kotlin DSL | All 5 services + notification-web |
+| notification-web (port 9094) | STOMP WebSocket on `/ws` with SockJS, JWT handshake interceptor (`?token=`), RabbitMQ fanout consumer, in-memory broker on `/topic/group/{groupId}` |
+| API Gateway routing | `/api/ws/**` → notification-web (StripPrefix=1). No gateway changes needed for new endpoints. |
+| Auth Service | JWT RSA. `/api/auth/login`, `/api/auth/refresh`. Access token carries `sub` (user_id), `role`, `group_id`, `is_headman`. |
+| MongoDB | `attendance_db` on existing docker-compose MongoDB container. Push subscriptions can reuse this. |
+| RabbitMQ | `rut-uit.events` fanout exchange. `notification-web.events` queue already bound. |
+| Design decisions | Phosphor Icons + Motion (framer-motion) mandated for all React frontends. Standalone display. Name: RutTrack. |
 
-| Infrastructure | Details |
-|----------------|---------|
-| RabbitMQ fanout exchange | `rut-uit.events` (fanout, durable) — all 4 services already publish to it |
-| Redis | `redis:7-alpine` — shared container, already used by Auth Service (OTP/JWT) and Attendance Service (dedup/rate-limit) |
-| `spring-boot-starter-amqp` | Already declared in `notification-web/build.gradle.kts` |
-| `spring-boot-starter-websocket` | Already declared in `notification-web/build.gradle.kts` |
-| Python `requirements.txt` | Already has `aiogram==3.15.0`, `aio-pika==9.5.3`, `grpcio==1.69.0`, `grpcio-tools==1.69.0`, `protobuf==5.29.3` |
-
-**Existing `notification-web/build.gradle.kts` is minimal** — missing Redis, JWT parsing, SpringDoc, and Lombok are needed additions.
-
-**Existing `notification-bot/requirements.txt` has stale versions** — verified against PyPI April 2026.
+**New additions below are ONLY for:**
+1. React PWA frontend at `frontends/pwa/`
+2. Web Push backend extension inside the existing `notification-web` service
 
 ---
 
-## Notification Web (Java) — Required Stack
+## Recommended Stack
 
-### Core Technologies
+### Core Technologies — Frontend (frontends/pwa/)
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| `spring-boot-starter-websocket` | Managed by Boot 3.4.1 BOM (Spring WebSocket 6.2.x) | WebSocket endpoint + STOMP broker | Already in build.gradle.kts; Spring Boot 3.4 auto-configures with `@EnableWebSocketMessageBroker`; STOMP adds topic routing needed for group-based fan-out |
-| `spring-boot-starter-amqp` | Managed by Boot 3.4.1 BOM (Spring AMQP 3.2.x) | RabbitMQ consumer for event ingestion | Already in build.gradle.kts; `@RabbitListener` on durable named queue bound to fanout exchange |
-| `spring-boot-starter-data-redis` | Managed by Boot 3.4.1 BOM | Read `telegram_id` → `user_id` mapping (if persisted by bot) | Redis is the shared auth-layer store; notification-web may need to look up WebSocket session by group membership |
+| React | 19.0.x | UI framework | Latest stable (19.0.4, Jan 2026). Consistent with Telegram Mini App (shared component extraction possible). Concurrent rendering for snappy mobile UX. |
+| TypeScript | 5.x | Type safety | Required by TanStack Query v5 and Zustand 5. Standard in all monorepo frontends. |
+| Vite | 8.x | Build tool, dev server | Current stable (8.0.3). Rolldown-based, 10-30x faster than Vite 6. One caveat: vite-plugin-pwa 1.2.0 peer deps do not formally declare Vite 8 — see Version Compatibility section. |
+| Tailwind CSS | 4.1.x | Utility-first CSS | Stable since Jan 2025. First-party `@tailwindcss/vite` plugin — no PostCSS config. Incremental builds 100x faster than v3. Mobile-first defaults match the PWA use case. |
 
-### Supporting Libraries
+### PWA Layer — Frontend
 
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
-| `spring-boot-starter-web` | Managed by Boot 3.4.1 BOM | Needed for REST health endpoint (`/actuator/health`) and error handling | Always needed alongside websocket starter |
-| `io.jsonwebtoken:jjwt-api` | `0.12.6` | Parse JWT from WebSocket handshake query param to extract `user_id`, `group_id`, `role` | Auth Service already uses jjwt in this monorepo — use same version to stay consistent |
-| `io.jsonwebtoken:jjwt-impl` | `0.12.6` | jjwt runtime (runtimeOnly) | Runtime companion to jjwt-api |
-| `io.jsonwebtoken:jjwt-jackson` | `0.12.6` | Jackson-based JWT serialization (runtimeOnly) | Required when using Jackson (default in Spring Boot) |
-| `org.springframework.boot:spring-boot-starter-aop` | Managed by Boot 3.4.1 BOM | `@RequireRole` pattern if any REST endpoints need role protection | Optional — only if REST endpoints beyond WebSocket are added |
-| `org.springdoc:springdoc-openapi-starter-webmvc-ui` | `2.7.0` | Swagger UI | Only if REST endpoints documented; match version used in other services |
-| Lombok | Managed by Boot 3.4.1 BOM | Entity/config classes | `compileOnly` + `annotationProcessor`; already in build.gradle.kts |
+| vite-plugin-pwa | 1.2.0 | Service Worker generation (via Workbox 7), manifest injection, A2HS support | Always. Automates SW registration, asset precaching, cache strategies, and SW update lifecycle. Zero custom Workbox code for standard use cases. |
+| workbox | 7.x (bundled inside vite-plugin-pwa) | Caching: stale-while-revalidate for API, cache-first for static assets, networkOnly for check-in | Do NOT install workbox separately. Configure via the `workbox:` key in VitePWAOptions. |
+| virtual:pwa-register/react | (provided by vite-plugin-pwa) | `useRegisterSW` React hook for "New version available" prompt | Use on app mount. Stores update callback; trigger reload when user confirms. |
 
-### Development Tools
+### State Management & Data Fetching — Frontend
 
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| `spring-boot-starter-test` | Unit + integration tests | Already in build.gradle.kts |
-| `org.testcontainers:rabbitmq` | RabbitMQ integration test | BOM 1.20.4 — same as other services; test consumer wiring |
-| `org.springframework.boot:spring-boot-testcontainers` | `@ServiceConnection` wiring | Boot 3.4.1 BOM — idiomatic approach |
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| TanStack Query (React Query) | 5.96.x | Server state: all REST API calls (schedule, attendance stats, homework, user profile) | All data fetched from API Gateway. Handles caching, background refetch, stale-while-revalidate for offline reads. Explicitly chosen in design-decisions.md for sharing with Mini App. |
+| Zustand | 5.0.12 | Client state: auth tokens, user role/claims, push subscription status, install prompt state | Auth state (JWT access token, refresh token, decoded claims), UI flags (push permission granted, A2HS prompt shown, iOS onboarding shown). Do NOT put server data here — that is TanStack Query. |
+| axios | 1.x | HTTP client | JWT Bearer injection + transparent token refresh on 401 using axios interceptors. Cleaner than native fetch for centralized auth across 20+ API endpoint calls. |
 
----
+### Real-Time — Frontend
 
-## STOMP vs Raw WebSocket — Decision
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| @stomp/stompjs | 7.x | STOMP protocol client: receive real-time lesson/homework events from notification-web | Connect to existing notification-web `/ws` endpoint. Subscribe to `/topic/group/{groupId}` and optionally `/topic/group/{groupId}/headman` for headmen. |
+| sockjs-client | 1.6.x | SockJS transport | REQUIRED because notification-web registers the STOMP endpoint with `.withSockJS()`. The server expects the SockJS handshake; raw WebSocket will fail. |
 
-**Use STOMP over WebSocket.**
+### UI Components — Frontend
 
-Rationale:
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| @phosphor-icons/react | 2.x | Icons | Mandated by design-decisions.md for all React frontends. Use `bold`/`fill` weight for mobile touch targets. 24px navigation, 20px inline. |
+| motion (framer-motion) | 11.x | Screen transitions, gesture feedback, list animations | Mandated by design-decisions.md for React frontends. `AnimatePresence` for route changes. `layout` prop for attendance list reorders. |
 
-1. **Group fan-out requires topic routing.** The Angular web panel needs to subscribe to notifications for a specific group. With STOMP, each client subscribes to `/topic/group/{groupId}` and the server sends to `SimpMessagingTemplate.convertAndSend("/topic/group/42", event)`. Raw WebSocket requires building this routing layer manually.
+### Testing — Frontend
 
-2. **Already provided by the starter.** `spring-boot-starter-websocket` includes both the raw handler API and the STOMP broker relay/in-memory broker. Using STOMP does not require any additional dependency.
-
-3. **Java 21 virtual threads make scalability concerns irrelevant.** With `spring.threads.virtual.enabled=true`, each WebSocket connection costs a few KB rather than 1 MB from a platform thread. The Angular admin panel serves tens to hundreds of simultaneous connections — far below any threshold where raw WebSocket gains performance advantage.
-
-4. **JWT auth on handshake is a solved pattern with STOMP.** A `HandshakeInterceptor` extracts the JWT from the query string (`?token=...`) and populates `HttpSession` attributes before the STOMP CONNECT frame. This prevents unauthenticated clients from consuming connection resources.
-
-**Do NOT use SockJS.** SockJS provides fallback for environments without WebSocket (Flash, XHR-streaming). The Angular web panel targets modern browsers where WebSocket is universally available. SockJS adds unnecessary complexity.
-
-### Key STOMP Configuration
-
-```java
-@Configuration
-@EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");     // in-memory broker
-        registry.setApplicationDestinationPrefixes("/app");
-    }
-
-    @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")                // no SockJS
-                .addInterceptors(jwtHandshakeInterceptor())
-                .setAllowedOriginPatterns("*");    // tighten in production
-    }
-}
-```
-
-### JWT Auth on WebSocket Handshake
-
-```java
-@Component
-public class JwtHandshakeInterceptor implements HandshakeInterceptor {
-
-    @Override
-    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                                   WebSocketHandler wsHandler, Map<String, Object> attributes) {
-        String query = ((ServletServerHttpRequest) request).getServletRequest().getQueryString();
-        // parse ?token=<jwt>, validate signature with public key from Auth Service
-        // populate attributes: userId, groupId, role
-        // return false → 401, connection refused before any resource is allocated
-        return true;
-    }
-}
-```
-
-### Sending to Group Topics
-
-```java
-@Component
-public class NotificationPushService {
-
-    private final SimpMessagingTemplate messagingTemplate;
-
-    public void pushToGroup(Long groupId, Object payload) {
-        messagingTemplate.convertAndSend("/topic/group/" + groupId, payload);
-    }
-}
-```
-
-### RabbitMQ Consumer → Push Bridge
-
-```java
-@Component
-public class EventConsumer {
-
-    @RabbitListener(queues = "notification-web.events")
-    public void onEvent(Map<String, Object> envelope) {
-        String eventType = (String) envelope.get("event_type");
-        // extract groupId from payload, map to WebSocket topic
-        // delegate to NotificationPushService
-    }
-}
-```
-
-### RabbitMQ Queue Configuration
-
-Queue naming pattern follows the established convention from Attendance Service:
-
-```java
-@Bean
-public Queue notificationWebQueue() {
-    return QueueBuilder.durable("notification-web.events")
-            .withArgument("x-dead-letter-exchange", "rut-uit.events.dlq")
-            .withArgument("x-dead-letter-routing-key", "notification-web.events.dlq")
-            .build();
-}
-
-@Bean
-public Binding notificationWebQueueBinding(FanoutExchange eventsExchange, Queue notificationWebQueue) {
-    return BindingBuilder.bind(notificationWebQueue).to(eventsExchange);
-}
-```
-
-The fanout exchange `rut-uit.events` is already declared by every other service with identical parameters (`durable=true, autoDelete=false`). Declaring it again in notification-web is safe — Spring AMQP declares idempotently.
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| Vitest | 4.1.x | Unit test runner (Jest-compatible) | Shares vite.config.ts — no separate Jest config. Runs in-process with Vite for fast feedback. |
+| @testing-library/react | 16.x | Component interaction testing | Test user-visible behavior (click check-in button, see confirmation), not implementation details. |
+| @testing-library/jest-dom | 6.x | Custom DOM matchers | `toBeInDocument`, `toHaveClass`, etc. Import in vitest setup file. |
+| jsdom | 25.x | Browser environment simulation | Set `environment: 'jsdom'` in vitest.config.ts. |
+| msw (Mock Service Worker) | 2.x | Intercept API calls in tests | Mock API Gateway REST endpoints without real network. Critical for testing offline behavior and error states. |
 
 ---
 
-## Notification Bot (Python) — Required Stack
-
-### Current vs Verified Versions
-
-The existing `requirements.txt` uses stale pinned versions. Verified against PyPI on 2026-04-04:
-
-| Package | Current Pin | Latest Stable | Recommended Pin | Reason |
-|---------|-------------|---------------|-----------------|--------|
-| `aiogram` | `3.15.0` | `3.27.0` | `==3.27.0` | Latest stable; Telegram Bot API 9.5 support; no breaking changes within 3.x |
-| `aio-pika` | `9.5.3` | `9.6.2` | `==9.6.2` | Latest stable; `connect_robust` for auto-reconnect required for production |
-| `aiohttp` | `3.11.11` | `3.11.x` | `==3.11.11` | Aiogram's transport; keep pinned, aiogram pulls it as transitive dependency |
-| `pydantic` | `2.10.4` | `2.x` | `==2.10.4` | Stable; used for settings validation only; no need to upgrade |
-| `pydantic-settings` | `2.7.1` | `2.x` | `==2.7.1` | Stable; upgrade is optional |
-| `grpcio` | `1.69.0` | `1.80.0` | `==1.73.0` | See explanation below |
-| `grpcio-tools` | `1.69.0` | `1.80.0` | `==1.73.0` | Must match grpcio exactly |
-| `protobuf` | `5.29.3` | `6.x` | `==5.29.3` | See explanation below — do NOT upgrade to 6.x yet |
-
-### grpcio Version Decision: Pin at 1.73.0
-
-The latest grpcio/grpcio-tools is 1.80.0, but:
-
-- `grpcio-tools` 1.73.0+ requires `protobuf >=6.30.0, <7.0.0` — a major version jump from the current `protobuf==5.29.3`.
-- `protobuf` 6.x is a significant breaking change for generated Python stubs (new `protoc` output format).
-- The Java services use `protoc:3.25.3` (protobuf 3.25.x). The Python-generated stubs from `grpcio-tools` 1.73.0+ with `protobuf` 6.x would generate code incompatible with what the Java server expects at the wire level in edge cases.
-- **Safe upgrade path:** Pin `grpcio==1.73.0` and `grpcio-tools==1.73.0` which still support `protobuf>=5.26.1,<6.0.0` — compatible with the current `protobuf==5.29.3` pin.
-
-This avoids the dependency hell reported in grpc/grpc issue #39012 (protobuf 6 + grpcio-tools conflict).
-
-**Recommended `requirements.txt`:**
-
-```
-aiogram==3.27.0
-aio-pika==9.6.2
-aiohttp==3.11.11
-pydantic==2.10.4
-pydantic-settings==2.7.1
-grpcio==1.73.0
-grpcio-tools==1.73.0
-protobuf==5.29.3
-redis==5.2.1
-```
-
-**Add `redis==5.2.1`:** Not in current requirements.txt but needed for `reminder:msgs:{lesson_id}:{user_id}` storage. The `redis` package (aioredis successor) provides async `asyncio`-compatible client compatible with the existing `redis:7-alpine` container. Use `redis.asyncio` submodule.
-
-### Core Technologies (Python Bot)
+### Backend Additions — notification-web (Java / Spring Boot 3.4)
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| `aiogram` | `3.27.0` | Telegram Bot framework | Async-native, FSM support, `InlineKeyboardMarkup` for Mini App buttons, `Bot.delete_message()` for reminder cleanup; the established choice for this monorepo |
-| `aio-pika` | `9.6.2` | RabbitMQ async consumer | Built on `aiormq` for asyncio; `connect_robust` provides transparent reconnect with state recovery — critical because the bot must survive broker restarts without losing queue bindings |
-| `grpcio` | `1.73.0` | gRPC runtime for Academic Service calls | Already scaffolded in existing requirements.txt; `grpc.aio` channel for non-blocking calls from asyncio event loop |
-| `grpcio-tools` | `1.73.0` | Code generation from `.proto` files | Generates Python stubs from `proto/academic.proto`; run once at build time, not at runtime |
-| `redis` | `5.2.1` | Reminder `message_id` storage | Async client (`redis.asyncio`) for storing/retrieving `message_id` per `{lesson_id}:{user_id}` for cleanup on lesson close |
-| `pydantic-settings` | `2.7.1` | Configuration from `.env` / environment variables | Type-safe config model for `BOT_TOKEN`, `RABBITMQ_URL`, gRPC host/port, Redis URL |
+| nl.martijndwars:web-push | 5.1.2 | VAPID key management, Web Push payload encryption, HTTP push delivery | Canonical Java Web Push library from web-push-libs org. Last release Feb 2025. Java 8+ compatible (Java 21 confirmed). Provides both `PushService` (sync) and `PushAsyncService` (async) — use async for non-blocking delivery. |
+| org.bouncycastle:bcprov-jdk18on | 1.78.x | JCE provider required by web-push for EC key operations | web-push depends on BouncyCastle. Use `jdk18on` variant (correct for Java 8+ environments — `jdk15on` is the deprecated artifact). Register in a `@Configuration` class via `Security.addProvider(new BouncyCastleProvider())`. |
+| spring-boot-starter-data-mongodb | (managed by Spring Boot 3.4 BOM) | Store push subscriptions (`endpoint`, `p256dh`, `auth`, `user_id`) | Already available in the BOM. Reuse the `attendance_db` MongoDB instance from docker-compose. Add collection `push_subscriptions`. |
+| spring-boot-starter-web | (managed by Spring Boot 3.4 BOM) | Expose REST endpoints: GET /vapid-public-key, POST /push/subscribe, DELETE /push/subscribe | notification-web already has spring-boot-starter-websocket which pulls this transitively, but declare it explicitly for clarity. |
 
-### Proto Code Generation (Python Bot)
+---
 
-The `proto/academic.proto` file lives at the monorepo root. Generate Python stubs with:
+## Installation
+
+### Frontend (frontends/pwa/)
 
 ```bash
-python -m grpc_tools.protoc \
-  -I /path/to/rutcampustrack/proto \
-  --python_out=./generated \
-  --grpc_python_out=./generated \
-  academic.proto
+# Bootstrap with Vite + React + TypeScript template
+npm create vite@latest pwa -- --template react-ts
+cd pwa
+
+# PWA
+npm install vite-plugin-pwa
+
+# Tailwind CSS v4 (first-party Vite plugin, replaces PostCSS)
+npm install tailwindcss @tailwindcss/vite
+
+# Icons + Animation (design-decisions.md mandated)
+npm install @phosphor-icons/react motion
+
+# Server state + client state + HTTP
+npm install @tanstack/react-query zustand axios
+
+# WebSocket / STOMP (for notification-web integration)
+npm install @stomp/stompjs sockjs-client
+npm install -D @types/sockjs-client
+
+# Dev dependencies (test)
+npm install -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom msw
 ```
 
-This produces `academic_pb2.py` and `academic_pb2_grpc.py`. Commit these generated files into the bot's source tree — they are stable artifacts that only change when `academic.proto` changes.
+### Backend additions — notification-web/build.gradle.kts
 
-**Use `grpc.aio` (async) channel, NOT the synchronous blocking stub:**
+Add to the existing `dependencies {}` block:
 
-```python
-import grpc
-from generated import academic_pb2, academic_pb2_grpc
+```kotlin
+// Web Push
+implementation("nl.martijndwars:web-push:5.1.2")
+implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
 
-async def get_group_members(channel: grpc.aio.Channel, group_id: int):
-    stub = academic_pb2_grpc.AcademicGrpcServiceStub(channel)
-    response = await stub.GetGroupMembers(
-        academic_pb2.GroupMembersRequest(group_id=group_id)
-    )
-    return response.students
-```
-
-Creating the channel at startup and reusing it avoids connection overhead per call:
-
-```python
-channel = grpc.aio.insecure_channel("academic-service:19091")
-```
-
-### aio-pika Consumer Pattern (Bot + asyncio event loop)
-
-The bot runs a single `asyncio` event loop (Dispatcher + polling). The RabbitMQ consumer runs in the same loop using `aio-pika`:
-
-```python
-async def main():
-    bot = Bot(token=settings.bot_token)
-    dp = Dispatcher()
-
-    # Start consuming in background — same event loop as bot
-    connection = await aio_pika.connect_robust(settings.rabbitmq_url)
-    channel = await connection.channel()
-    exchange = await channel.declare_exchange(
-        "rut-uit.events", aio_pika.ExchangeType.FANOUT, durable=True
-    )
-    queue = await channel.declare_queue(
-        "notification-bot.events", durable=True
-    )
-    await queue.bind(exchange)
-
-    async def on_message(message: aio_pika.IncomingMessage):
-        async with message.process():     # auto-ack on success, nack on exception
-            body = json.loads(message.body)
-            await handle_event(body, bot)
-
-    await queue.consume(on_message)
-
-    # Start bot polling (blocks until stopped)
-    await dp.start_polling(bot)
-```
-
-**Why `connect_robust`:** The bot is a long-running process. RabbitMQ may restart during broker maintenance. `connect_robust` transparently re-establishes the connection, re-declares the queue, and re-binds to the exchange — no manual reconnection logic required.
-
-**Why `message.process()` context manager:** Delivers at-least-once semantics. If `handle_event` raises an exception, the message is nacked and requeued. Without this, a crash during Telegram delivery would silently lose the notification.
-
-### Redis Pattern for Reminder message_ids
-
-```python
-import redis.asyncio as aioredis
-
-redis_client = aioredis.from_url(settings.redis_url)
-
-async def store_reminder(lesson_id: int, user_id: int, message_id: int):
-    key = f"reminder:msgs:{lesson_id}:{user_id}"
-    await redis_client.lpush(key, message_id)
-    await redis_client.expire(key, 3600 * 6)   # TTL: 6 hours (lesson won't exceed this)
-
-async def pop_reminders(lesson_id: int, user_id: int) -> list[int]:
-    key = f"reminder:msgs:{lesson_id}:{user_id}"
-    ids = await redis_client.lrange(key, 0, -1)
-    await redis_client.delete(key)
-    return [int(i) for i in ids]
-```
-
-This pattern stores up to 3 reminder `message_id` values per student per lesson. On `lesson.closed`, `pop_reminders` retrieves them all for deletion via `bot.delete_message()`.
-
----
-
-## Dependency Management: pip (requirements.txt) over Poetry
-
-**Decision: Keep `requirements.txt`.** Do not introduce Poetry.
-
-Rationale:
-- The bot already has a `requirements.txt` with explicit pins — this is the established pattern.
-- The service is a single-container microservice with a fixed, small dependency set (8 packages). Poetry's value is dependency conflict resolution for complex trees — this does not apply here.
-- Docker build simplicity: `pip install -r requirements.txt` is one line in a Dockerfile; Poetry in Docker requires either multi-stage build complexity or installing Poetry in the image.
-- Solo developer context: Poetry adds cognitive overhead without commensurate benefit at this scale.
-
-Add a `requirements-dev.txt` for development tools only (linters, test runners):
-
-```
-pytest==8.3.4
-pytest-asyncio==0.24.0
-mypy==1.13.0
-ruff==0.8.6
+// Push subscription storage
+implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 ```
 
 ---
 
-## Version Compatibility Summary
+## Integration Points with Existing notification-web
 
-| Dependency | Version | Source | Confidence |
-|------------|---------|--------|------------|
-| `spring-boot-starter-websocket` | Spring WebSocket 6.2.x (Boot BOM) | Spring Boot 3.4.1 BOM | HIGH |
-| `spring-boot-starter-amqp` | Spring AMQP 3.2.x (Boot BOM) | Spring Boot 3.4.1 BOM | HIGH |
-| `spring-boot-starter-data-redis` | Spring Data Redis 3.4.x (Boot BOM) | Spring Boot 3.4.1 BOM | HIGH |
-| `jjwt-api/impl/jackson` | `0.12.6` | Match existing auth-service version | HIGH |
-| `aiogram` | `3.27.0` | PyPI verified 2026-04-04 | HIGH |
-| `aio-pika` | `9.6.2` | PyPI verified 2026-04-04 | HIGH |
-| `grpcio` | `1.73.0` | PyPI verified; protobuf 5.x compatible | HIGH |
-| `grpcio-tools` | `1.73.0` | PyPI verified; must match grpcio | HIGH |
-| `protobuf` | `5.29.3` | Keep current; 6.x incompatible with 1.73.0 | HIGH |
-| `redis` (Python) | `5.2.1` | PyPI; asyncio submodule for non-blocking ops | MEDIUM |
-| STOMP broker | In-memory (`enableSimpleBroker`) | No external broker needed for single-instance | HIGH |
+### New REST endpoints (served at /api/ws/* via Gateway)
+
+| Endpoint | Purpose | Auth |
+|----------|---------|------|
+| `GET /vapid-public-key` | Return base64url-encoded VAPID public key for browser `PushManager.subscribe()` | Public |
+| `POST /push/subscribe` | Save PushSubscription JSON (endpoint + p256dh + auth keys) for authenticated user | JWT required |
+| `DELETE /push/subscribe` | Remove push subscription for authenticated user | JWT required |
+
+API Gateway already routes `/api/ws/**` → notification-web with `StripPrefix=1`. No gateway changes needed. Endpoints are reachable at `/api/ws/vapid-public-key`, `/api/ws/push/subscribe`.
+
+### Web Push in EventConsumer.java
+
+The existing `EventConsumer.onEvent()` already handles STOMP delivery. Add a parallel web push delivery call in the same method: when an event arrives via RabbitMQ, fire both STOMP (existing) AND enqueue Web Push to all subscriptions for the group's members. This keeps event fan-out centralized in one consumer.
+
+### VAPID key storage
+
+Store VAPID public/private keys and subject (mailto: or URL) in `application.yml` environment variables:
+- `VAPID_PUBLIC_KEY` (base64url)
+- `VAPID_PRIVATE_KEY` (base64url)
+- `VAPID_SUBJECT` (e.g., `mailto:admin@rutmiit.ru`)
+
+Generate once using the webpush-java CLI or a `@PostConstruct` bean that generates and persists on first run. Do NOT regenerate on every restart — browsers cache subscriptions against the VAPID public key.
+
+### Push subscription MongoDB document
+
+```json
+{
+  "user_id": 12345,
+  "endpoint": "https://fcm.googleapis.com/fcm/send/...",
+  "p256dh": "BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlTieli...",
+  "auth": "tBHItJI5svbpez7KI4CCXg",
+  "created_at": "2026-04-05T12:00:00Z",
+  "user_agent": "Mozilla/5.0..."
+}
+```
+
+On HTTP 410 Gone response from the push service, delete the subscription from MongoDB (browser has unsubscribed).
+
+### Service Worker push handler (client side)
+
+The PWA service worker receives push events from the browser's push service and calls `self.registration.showNotification()`. Configure via vite-plugin-pwa's `strategies: 'injectManifest'` mode to inject custom push handler code. The payload from the server is JSON with `title`, `body`, `action_url`, `event_type`.
 
 ---
 
 ## Alternatives Considered
 
-| Recommended | Alternative | Why Not |
-|-------------|-------------|---------|
-| STOMP over WebSocket | Raw WebSocket handler | Group fan-out via `/topic/group/{id}` requires topic routing layer; STOMP provides it for free; raw WebSocket requires building routing manually |
-| In-memory STOMP broker | External STOMP broker (ActiveMQ, RabbitMQ STOMP plugin) | Single instance (VPS deploy); no horizontal scaling requirement in v5.0; external broker adds operational complexity without benefit |
-| No SockJS | SockJS enabled | Angular web panel targets modern browsers where native WebSocket is universal; SockJS adds a JavaScript library dependency and fallback complexity for no benefit |
-| `grpcio==1.73.0` | Latest `grpcio==1.80.0` | 1.80.0 requires protobuf 6.x; protobuf 6.x is a breaking change requiring regeneration and risks wire-level incompatibility with Java server; 1.73.0 works with existing `protobuf==5.29.3` |
-| `grpc.aio` async channel | Blocking stub in thread | Bot runs in a single asyncio event loop; blocking stub would block the loop during gRPC calls, preventing Telegram message delivery during Academic Service queries |
-| `connect_robust` | `connect` | `connect` does not reconnect on broker restart; `connect_robust` is production requirement for a long-running daemon |
-| `redis` Python package | `aioredis` (deprecated) | `aioredis` merged into `redis>=4.2.0` as `redis.asyncio`; `aioredis` is unmaintained since 2022 |
-| `requirements.txt` | Poetry | Bot has 8 stable dependencies; Poetry's value (dependency conflict resolution, lock file generation) is not worth the Docker complexity for this scope |
+| Category | Recommended | Alternative | Why Not |
+|----------|-------------|-------------|---------|
+| Build tool | Vite 8 | Next.js 15 | Next.js adds SSR/SSG complexity not needed for a PWA SPA. downstream_consumer explicitly ruled out "full SSR framework." |
+| Build tool | Vite 8 | Create React App | Unmaintained since 2023. Webpack-based, dramatically slower than Vite. |
+| CSS | Tailwind CSS v4 | styled-components / CSS Modules | Tailwind is faster to iterate for mobile-first. Mini App also uses Tailwind — shared class vocabulary. v4 eliminates PostCSS configuration step. |
+| State management | Zustand 5 | Redux Toolkit | Redux is over-engineered for this scale (500-5000 users, solo developer). Zustand has identical API surface to `useState`, zero boilerplate. |
+| HTTP client | axios | native fetch | Axios interceptors cleanly handle JWT injection + token refresh retry in one place. Native fetch requires more boilerplate for the same result at 20+ endpoint calls. |
+| HTTP client | axios | ky | ky is valid and smaller, but axios has larger ecosystem, more examples, and better TypeScript types for interceptors. |
+| Web Push (Java) | nl.martijndwars:web-push | Firebase Cloud Messaging | FCM requires Google dependency, server-to-server key, and separate service setup. VAPID-based Web Push is self-contained. downstream_consumer says "no separate push service — extend notification-web." |
+| Web Push (Java) | nl.martijndwars:web-push | com.interaso:webpush (Kotlin) | interaso/webpush is zero-dependency and cleaner API, but it is Kotlin. This project is pure Java. webpush-java 5.1.2 is the established Java standard with more community examples. |
+| SW approach | vite-plugin-pwa (Workbox) | Manual service worker | Custom SW requires hand-coding cache invalidation, update lifecycle, precache manifest generation. vite-plugin-pwa handles this correctly and integrates with Vite's content-hashed asset manifest. |
+| Real-time | @stomp/stompjs + sockjs-client | Native WebSocket | Server uses `.withSockJS()` — cannot use raw WebSocket. Must use SockJS transport. |
 
 ---
 
-## What NOT to Add
+## What NOT to Use
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| SockJS (`withSockJS()`) | Targets modern browsers only; SockJS fallback unused and adds client-side library | Plain WebSocket endpoint without SockJS |
-| External STOMP broker (RabbitMQ STOMP plugin) | Single-instance VPS; in-memory broker sufficient; external broker is needed only for horizontal scaling | `enableSimpleBroker("/topic")` |
-| `grpcio==1.80.0` + `protobuf==6.x` | Breaks generated stub compatibility with `protobuf==5.29.3`; requires proto regeneration and Java `protoc` version alignment | `grpcio==1.73.0` + `protobuf==5.29.3` |
-| `aioredis` | Unmaintained since 2022; merged into `redis` package | `redis==5.2.1` with `redis.asyncio` submodule |
-| `grpc-server-spring-boot-starter` in notification-web | Notification Web exposes no gRPC server; adding it opens port 19094 unnecessarily | Only `grpc-client-spring-boot-starter` if gRPC client ever needed |
-| `new ObjectMapper()` in notification-web `RabbitConfig` | Bypasses Spring Boot's registered Jackson modules (JavaTimeModule etc.), risks deserialization failures | Inject the Spring Boot-managed `ObjectMapper` bean (same pattern as Attendance Service `RabbitConfig.java`) |
-| Spring Security (`spring-boot-starter-security`) | Other services use `@RequireRole` AOP instead of Spring Security; WebSocket JWT validation is done at handshake via `HandshakeInterceptor` | `HandshakeInterceptor` with manual JWT parse using jjwt |
+| Next.js | Full SSR framework. PWA is a SPA. downstream_consumer explicitly excluded it. | Vite + React |
+| Create React App | Unmaintained since 2023. Webpack slow. | Vite |
+| workbox (standalone npm install) | vite-plugin-pwa bundles Workbox 7. Separate install causes version drift. | Configure via `workbox:` key in VitePWAOptions |
+| react-stomp / react-stomp-hooks | Thin wrappers adding a dependency layer. Not needed for a single STOMP connection. | @stomp/stompjs directly |
+| Firebase Cloud Messaging | External Google dependency, vendor lock-in, separate service. | nl.martijndwars:web-push + VAPID |
+| org.bouncycastle:bcprov-jdk15on | Deprecated artifact since BouncyCastle 1.71. Causes ClassNotFoundException on Java 11+. | org.bouncycastle:bcprov-jdk18on |
+| Tailwind CSS v3 | Starting with v3 when v4 is stable is technical debt on day one. v4 eliminates tailwind.config.js and PostCSS. | Tailwind CSS v4 + @tailwindcss/vite |
+| Redux / React Context for server state | TanStack Query already handles server state with caching and offline stale data. Doubling up creates inconsistency. | TanStack Query v5 for server data, Zustand for client-only state |
 
 ---
 
-## Complete Target `notification-web/build.gradle.kts`
+## Stack Patterns by Variant
 
-```kotlin
-plugins {
-    java
-    id("org.springframework.boot")
-    id("io.spring.dependency-management")
-}
+**Offline shell caching strategy:**
+- `cache-first` for JS/CSS/image bundles (via vite-plugin-pwa precache manifest — content-hashed, never stale)
+- `stale-while-revalidate` for API responses (`/api/schedule/**`, `/api/academic/**`, `/api/attendance/**`) — stale data shows instantly while fresh data loads in background
+- `networkOnly` for check-in POST (`POST /api/attendance/checkin`) — fail immediately offline with "No connection" message per design-decisions.md
 
-group = "ru.rutcampustrack"
-version = "0.1.0"
+**STOMP connection lifecycle:**
+1. Connect after JWT is available in Zustand store (post-login)
+2. Subscribe to `/topic/group/{groupId}` (from JWT claims)
+3. If `is_headman=true`, also subscribe to `/topic/group/{groupId}/headman`
+4. On JWT refresh, reconnect STOMP client with new token in query string
+5. Disconnect on logout
 
-dependencyManagement {
-    imports {
-        mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
-    }
-}
+**Web Push subscription flow (client):**
+1. After login, check `Notification.permission`
+2. If 'default', prompt user (show modal, not immediate browser prompt)
+3. On user consent: `Notification.requestPermission()` → `PushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey })`
+4. Send subscription JSON to `POST /api/ws/push/subscribe` with JWT header
+5. Service worker push handler: parse JSON payload, call `self.registration.showNotification(title, { body, data: { action_url } })`
+6. `notificationclick` handler: `clients.openWindow(event.notification.data.action_url)`
 
-dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-websocket")
-    implementation("org.springframework.boot:spring-boot-starter-amqp")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("org.springframework.boot:spring-boot-starter-web")
+**iOS onboarding (no native push on iOS PWA):**
+- Detect iOS Safari without standalone mode: `navigator.userAgent.includes('iPhone') && !window.navigator.standalone`
+- Show one-time instruction modal: "Safari → Share → Add to Home Screen"
+- Store `ios_onboarding_shown` in `localStorage` to show only once
 
-    // JWT parsing at WebSocket handshake
-    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+---
 
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+## Version Compatibility
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation("org.testcontainers:junit-jupiter")
-    testImplementation("org.testcontainers:rabbitmq")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-```
-
-## Complete Target `notification-bot/requirements.txt`
-
-```
-aiogram==3.27.0
-aio-pika==9.6.2
-aiohttp==3.11.11
-pydantic==2.10.4
-pydantic-settings==2.7.1
-grpcio==1.73.0
-grpcio-tools==1.73.0
-protobuf==5.29.3
-redis==5.2.1
-```
+| Package A | Compatible With | Notes |
+|-----------|-----------------|-------|
+| vite-plugin-pwa@1.2.0 | Vite 7.x (official), Vite 8.x (works, peer dep warning) | GitHub issue #918 confirmed Vite 8 migration works in practice. Use `--legacy-peer-deps` or `overrides` in package.json if npm blocks install. Verify at project initialization. LOW confidence on official support. |
+| nl.martijndwars:web-push@5.1.2 | Java 8+, Java 21 | Requires BouncyCastle on classpath. Use `bcprov-jdk18on` (not `jdk15on`). Register in Spring `@Configuration`: `Security.addProvider(new BouncyCastleProvider())`. Known issue: fat-JAR packaging may strip signed BouncyCastle JAR; Spring Boot's executable JAR handles this correctly. |
+| @stomp/stompjs@7.x | sockjs-client@1.6.x | Required pair for notification-web's SockJS endpoint. |
+| TanStack Query@5.96.x | React@18.x, React@19.x | v5 uses `useSyncExternalStore` internally. React 19 fully supported. |
+| Tailwind CSS@4.1.x | Vite@8.x | `@tailwindcss/vite` is the recommended integration. No `tailwind.config.js` or PostCSS config needed. |
+| Zustand@5.x | React@19.x | Zustand 5 dropped React 16 support. React 19 fully supported. |
+| motion (framer-motion)@11.x | React@19.x | framer-motion 11 supports React 18+. React 19 compatibility confirmed via community reports. |
 
 ---
 
 ## Sources
 
-- `services/notification-web/build.gradle.kts` — existing state (starting point)
-- `services/notification-bot/requirements.txt` — existing state (stale versions corrected above)
-- `services/attendance-service/attendance-app/src/main/java/.../config/RabbitConfig.java` — DLQ pattern, ObjectMapper injection pattern to replicate
-- `services/attendance-service/attendance-app/build.gradle.kts` — jjwt and testcontainers BOM version already validated in monorepo
-- `proto/academic.proto` — gRPC contract for Python stub generation (`GetGroupMembers`, `GetUserById`)
-- `docker-compose.yml` — confirms `redis:7-alpine` container; confirms `rabbitmq:3.13-management-alpine`
-- [aiogram PyPI](https://pypi.org/project/aiogram/) — `3.27.0` verified 2026-04-04 (HIGH)
-- [aio-pika PyPI](https://pypi.org/project/aio-pika/) — `9.6.2` verified 2026-04-04 (HIGH)
-- [grpcio PyPI](https://pypi.org/project/grpcio/) — `1.80.0` latest; `1.73.0` chosen for protobuf 5.x compat (HIGH)
-- [grpcio-tools PyPI](https://pypi.org/project/grpcio-tools/) — `1.80.0` latest; `1.73.0` pinned to match grpcio (HIGH)
-- [grpc/grpc issue #39012](https://github.com/grpc/grpc/issues/39012) — protobuf 6 + grpcio-tools conflict documented (HIGH)
-- [WebSocket.org Spring Boot guide](https://websocket.org/guides/frameworks/spring-boot/) — STOMP vs raw WebSocket decision matrix (MEDIUM)
-- [Spring Boot 3 WebSocket JWT auth](https://medium.com/@poojithairosha/spring-boot-3-authenticate-websocket-connections-with-jwt-tokens-2b4ff60532b6) — HandshakeInterceptor JWT pattern (MEDIUM)
-- [aio-pika docs: connect_robust](https://docs.aio-pika.com/quick-start.html) — auto-reconnect semantics (HIGH)
+- [vite-plugin-pwa GitHub](https://github.com/vite-pwa/vite-plugin-pwa) — versions, Vite 8 issue #918 (MEDIUM confidence on Vite 8 peer dep)
+- [vite-plugin-pwa npm](https://www.npmjs.com/package/vite-plugin-pwa) — v1.2.0 confirmed (HIGH)
+- [Zustand npm](https://www.npmjs.com/package/zustand) — v5.0.12 confirmed (HIGH)
+- [TanStack Query v5 docs](https://tanstack.com/query/v5/docs/framework/react/overview) — v5.96.x confirmed (HIGH)
+- [Tailwind CSS v4.0 announcement](https://tailwindcss.com/blog/tailwindcss-v4) — stable Jan 2025, @tailwindcss/vite plugin (HIGH)
+- [nl.martijndwars/web-push Maven Central](https://central.sonatype.com/artifact/nl.martijndwars/web-push) — v5.1.2 Feb 2025 (MEDIUM)
+- [webpush-java GitHub](https://github.com/web-push-libs/webpush-java) — BouncyCastle dependency, PushAsyncService API (HIGH)
+- [Vaadin: Sending web push from Spring Boot](https://vaadin.com/blog/send-web-push-notifications-java) — Spring Boot + webpush-java integration pattern (MEDIUM)
+- [stomp-js: Using STOMP with SockJS](https://stomp-js.github.io/guide/stompjs/rx-stomp/using-stomp-with-sockjs.html) — @stomp/stompjs + sockjs-client pairing (HIGH)
+- [Vite releases](https://vite.dev/releases) — Vite 8.0.3 current (HIGH)
+- [React versions](https://react.dev/versions) — React 19.0.4 current (HIGH)
+- [Vitest npm](https://www.npmjs.com/package/vitest) — v4.1.2 current (HIGH)
+- existing `services/notification-web/build.gradle.kts` — confirmed existing dependencies (jjwt 0.12.6, Spring Boot websocket/amqp/actuator)
+- existing `services/api-gateway/src/main/resources/application.yml` — confirmed `/api/ws/**` routing, no gateway changes needed
+- `docs/design-decisions.md` — Phosphor Icons + Motion mandated for React frontends
 
 ---
-*Stack research for: RutCampusTrack v5.0 Notification Service (Web + Bot) — new capabilities only*
-*Researched: 2026-04-04*
+*Stack research for: RutTrack PWA (React + Vite + Tailwind) + Web Push extension in notification-web*
+*Researched: 2026-04-05*

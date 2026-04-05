@@ -70,7 +70,7 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
 - [x] **Phase 22: Bot Infrastructure Layer** — aio-pika consumer with watchdog, gRPC client for Academic Service, Redis async client, throttled send queue (completed 2026-04-05)
 - [x] **Phase 23: Bot Telegram Commands** — /start account linking, /login OTP flow, /status attendance check (completed 2026-04-05)
 - [x] **Phase 24: Bot Event Notifications** — lesson.started fan-out with inline button, lesson.cancelled, homework published/updated, headman excuse and late-checkin alerts (completed 2026-04-05)
-- [ ] **Phase 25: Bot Reminder Lifecycle** — midpoint and end-of-lesson reminders, full message cleanup on lesson.closed, immediate cleanup on attendance.marked
+- [x] **Phase 25: Bot Reminder Lifecycle** — midpoint and end-of-lesson reminders, full message cleanup on lesson.closed, immediate cleanup on attendance.marked (completed 2026-04-05)
 
 ## Phase Details
 
@@ -157,10 +157,10 @@ Plans:
   2. A student who has not checked in receives a third and final reminder near lesson end — the third message_id is appended to their Redis list
   3. When a lesson.closed event arrives, every reminder message stored in Redis for that lesson is deleted from Telegram (bot.delete_message) and the Redis keys are removed — students see no lingering reminder messages in their chat
   4. When an attendance.marked event arrives with status=present for a student, all reminder messages for that student and that lesson are immediately deleted from Telegram and the Redis key is cleared — students do not receive further reminders after checking in
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 25-01-PLAN.md — ReminderScheduler: timed asyncio tasks for midpoint and near-end reminders
-- [ ] 25-02-PLAN.md — Cleanup handlers (lesson_closed, attendance_marked) + EventDispatcher wiring + __main__.py integration
+- [x] 25-01-PLAN.md — ReminderScheduler: timed asyncio tasks for midpoint and near-end reminders
+- [x] 25-02-PLAN.md — Cleanup handlers (lesson_closed, attendance_marked) + EventDispatcher wiring + __main__.py integration
 
 ## Progress
 
@@ -190,4 +190,4 @@ Plans:
 | 22. Bot Infrastructure Layer | v5.0 | 3/3 | Complete   | 2026-04-05 |
 | 23. Bot Telegram Commands | v5.0 | 3/3 | Complete   | 2026-04-05 |
 | 24. Bot Event Notifications | v5.0 | 2/2 | Complete   | 2026-04-05 |
-| 25. Bot Reminder Lifecycle | v5.0 | 0/2 | Not started | - |
+| 25. Bot Reminder Lifecycle | v5.0 | 2/2 | Complete   | 2026-04-05 |

@@ -66,7 +66,7 @@ Full details: `.planning/milestones/v4.0-ROADMAP.md`
 **Milestone Goal:** Real-time push notifications via WebSocket (web panel), Web Push (PWA background) and Telegram bot — all three channels consuming RabbitMQ events from existing services. Students receive lesson start buttons and reminders in Telegram; web panel and PWA users receive live WebSocket pushes; PWA users receive Web Push when app is closed. Bot reminder messages are fully cleaned up on lesson close or student checkin.
 
 - [x] **Phase 20: Shared Infrastructure** — Two durable RabbitMQ queues with DLQ bound to fanout exchange, docker-compose containers, Redis key namespace (completed 2026-04-04)
-- [ ] **Phase 21: Notification Web — WebSocket Core** — STOMP endpoint with JWT auth, group session registry, and all 5 event types pushed to correct group topics
+- [x] **Phase 21: Notification Web — WebSocket Core** — STOMP endpoint with JWT auth, group session registry, and all 5 event types pushed to correct group topics (completed 2026-04-05)
 - [ ] **Phase 22: Bot Infrastructure Layer** — aio-pika consumer with watchdog, gRPC client for Academic Service, Redis async client, throttled send queue
 - [ ] **Phase 23: Bot Telegram Commands** — /start account linking, /login OTP flow, /status attendance check
 - [ ] **Phase 24: Bot Event Notifications** — lesson.started fan-out with inline button, lesson.cancelled, homework published/updated, headman excuse and late-checkin alerts
@@ -99,10 +99,10 @@ Plans:
   3. A client whose JWT expires while connected continues to receive pushes — group_id and user_id were extracted from JWT claims into session attributes at handshake and are not re-validated
   4. When a lesson is cancelled for a group, all connected group members receive the cancellation push in real time
   5. When homework is published for a group, all connected group members receive the homework push; when an excuse is requested, only the headman's session receives the excuse push
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 21-01-PLAN.md — WebSocket infrastructure: jjwt deps, JwtHandshakeInterceptor, WebSocketConfig, unit tests
-- [ ] 21-02-PLAN.md — EventConsumer routing: RabbitMQ-to-WebSocket with headman topic filtering, unit tests
+- [x] 21-01-PLAN.md — WebSocket infrastructure: jjwt deps, JwtHandshakeInterceptor, WebSocketConfig, unit tests
+- [x] 21-02-PLAN.md — EventConsumer routing: RabbitMQ-to-WebSocket with headman topic filtering, unit tests
 **UI hint**: yes
 
 ### Phase 22: Bot Infrastructure Layer
@@ -172,7 +172,7 @@ Plans:
 | 18. Read Path — Reports | v4.0 | 4/4 | Complete | 2026-04-04 |
 | 19. Report Security & Routing Fix | v4.0 | 1/1 | Complete | 2026-04-04 |
 | 20. Shared Infrastructure | v5.0 | 3/3 | Complete    | 2026-04-04 |
-| 21. Notification Web — WebSocket Core | v5.0 | 0/2 | Not started | - |
+| 21. Notification Web — WebSocket Core | v5.0 | 2/2 | Complete    | 2026-04-05 |
 | 22. Bot Infrastructure Layer | v5.0 | 0/? | Not started | - |
 | 23. Bot Telegram Commands | v5.0 | 0/? | Not started | - |
 | 24. Bot Event Notifications | v5.0 | 0/? | Not started | - |

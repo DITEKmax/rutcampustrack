@@ -149,6 +149,7 @@ services:
       AUTH_SERVICE_PORT: "9090"
       API_GATEWAY_URL: http://api-gateway:8080
       MINI_APP_URL: ${MINI_APP_URL:-https://t.me/RutTrackBot/checkin}
+      TZ: Europe/Moscow
     networks:
       - private_net
     depends_on:

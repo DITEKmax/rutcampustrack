@@ -100,7 +100,11 @@ Full details: `.planning/milestones/v5.0-ROADMAP.md`
   3. `DELETE /api/ws/push/subscribe` removes the stored subscription; subsequent push attempts to that endpoint do not occur
   4. Sending a test push via curl to a subscribed endpoint delivers a browser notification within 5 seconds
   5. A push delivery that receives HTTP 410 from the push service causes the subscription to be deleted from MongoDB automatically
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 27-01-PLAN.md — Module restructure + API contract + VAPID config + Gateway route
+- [ ] 27-02-PLAN.md — Push subscription CRUD + @RequireRole security
+- [ ] 27-03-PLAN.md — Async push delivery + EventConsumer hook + 410 cleanup
 **UI hint**: no
 
 ### Phase 28: API Gateway CORS + nginx
@@ -197,7 +201,7 @@ Full details: `.planning/milestones/v5.0-ROADMAP.md`
 | 24. Bot Event Notifications | v5.0 | 2/2 | Complete | 2026-04-05 |
 | 25. Bot Reminder Lifecycle | v5.0 | 2/2 | Complete | 2026-04-05 |
 | 26. Notification Deployment Hardening | v5.0 | 1/1 | Complete | 2026-04-05 |
-| 27. Web Push Backend | v6.0 | 0/? | Not started | - |
+| 27. Web Push Backend | v6.0 | 0/3 | Planning | - |
 | 28. API Gateway CORS + nginx | v6.0 | 0/? | Not started | - |
 | 29. PWA Scaffold + Auth | v6.0 | 0/? | Not started | - |
 | 30. Schedule + Check-in UI | v6.0 | 0/? | Not started | - |

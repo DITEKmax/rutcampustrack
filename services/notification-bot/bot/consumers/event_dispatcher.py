@@ -26,29 +26,25 @@ class EventDispatcher:
         send_queue: TelegramSendQueue,
         redis_client: ReminderRedisClient,
         config: Settings,
+        reminder_scheduler=None,  # Optional — injected by __main__.py (Plan 25-02)
     ) -> None:
         self._bot = bot
         self._academic_client = academic_client
         self._send_queue = send_queue
         self._redis_client = redis_client
         self._config = config
+        self._reminder_scheduler = reminder_scheduler
 
         # Import handlers here to avoid circular imports at module level
-        from bot.notifications.lesson_started import handle_lesson_started
         from bot.notifications.lesson_cancelled import handle_lesson_cancelled
         from bot.notifications.homework import handle_homework
         from bot.notifications.headman_alerts import handle_headman_alert
+        from bot.notifications.lesson_closed import handle_lesson_closed
+        from bot.notifications.attendance_marked import handle_attendance_marked
 
         # Handler registry: event_type -> async callable(event: dict)
         self._handlers: dict[str, Callable[[dict], Awaitable[None]]] = {
-            "lesson.started": lambda event: handle_lesson_started(
-                event,
-                bot=self._bot,
-                academic_client=self._academic_client,
-                send_queue=self._send_queue,
-                redis_client=self._redis_client,
-                config=self._config,
-            ),
+            "lesson.started": lambda event: self._handle_lesson_started_with_scheduling(event),
             "lesson.cancelled": lambda event: handle_lesson_cancelled(
                 event,
                 bot=self._bot,
@@ -79,7 +75,47 @@ class EventDispatcher:
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
             ),
+            "lesson.closed": lambda event: handle_lesson_closed(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                redis_client=self._redis_client,
+                reminder_scheduler=self._reminder_scheduler,
+            ),
+            "attendance.marked": lambda event: handle_attendance_marked(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                redis_client=self._redis_client,
+            ),
         }
+
+    async def _handle_lesson_started_with_scheduling(self, event: dict) -> None:
+        """Handle lesson.started: send initial messages then schedule reminders.
+
+        This wrapper calls handle_lesson_started (NOTIF-01) and then, if a
+        ReminderScheduler is available, schedules midpoint and near-end reminders
+        (NOTIF-02 and NOTIF-03).
+        """
+        from bot.notifications.lesson_started import handle_lesson_started
+        await handle_lesson_started(
+            event,
+            bot=self._bot,
+            academic_client=self._academic_client,
+            send_queue=self._send_queue,
+            redis_client=self._redis_client,
+            config=self._config,
+        )
+        if self._reminder_scheduler is not None:
+            payload = event.get("payload", {})
+            lesson_id = payload.get("lesson_id")
+            group_id = payload.get("group_id")
+            start_time = payload.get("start_time")
+            end_time = payload.get("end_time")
+            if all(v is not None for v in [lesson_id, group_id, start_time, end_time]):
+                self._reminder_scheduler.schedule_reminders(
+                    lesson_id, group_id, start_time, end_time
+                )
 
     async def dispatch(self, event: dict) -> None:
         """Dispatch an event dict to the appropriate handler.

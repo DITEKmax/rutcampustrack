@@ -15,6 +15,7 @@ from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.jwt_redis_client import JwtRedisClient
 from bot.services.redis_client import ReminderRedisClient
+from bot.services.reminder_scheduler import ReminderScheduler
 from bot.services.send_queue import TelegramSendQueue
 
 logging.basicConfig(
@@ -123,6 +124,14 @@ async def main() -> None:
         port=config.redis_port,
     )
 
+    # Create reminder scheduler (NOTIF-02, NOTIF-03 — Plan 25-01/25-02)
+    reminder_scheduler = ReminderScheduler(
+        bot=bot,
+        academic_client=academic_client,
+        send_queue=send_queue,
+        redis_client=redis_client,
+    )
+
     # Create event dispatcher with all dependencies
     dispatcher = EventDispatcher(
         bot=bot,
@@ -130,6 +139,7 @@ async def main() -> None:
         send_queue=send_queue,
         redis_client=redis_client,
         config=config,
+        reminder_scheduler=reminder_scheduler,
     )
 
     # Start watchdog with dispatcher

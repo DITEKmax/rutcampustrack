@@ -14,15 +14,12 @@ logger = logging.getLogger(__name__)
 
 # Global references for health check
 _consumer_task: asyncio.Task | None = None
-_connection = None
 
 
 async def health_handler(request: web.Request) -> web.Response:
-    """Health check endpoint — verifies consumer task alive and RabbitMQ connection open."""
+    """Health check endpoint — verifies watchdog task is alive."""
     if _consumer_task is None or _consumer_task.done():
-        raise web.HTTPServiceUnavailable(text='{"status":"DOWN","reason":"consumer_dead"}')
-    if _connection is not None and _connection.is_closed:
-        raise web.HTTPServiceUnavailable(text='{"status":"DOWN","reason":"rabbitmq_disconnected"}')
+        raise web.HTTPServiceUnavailable(text='{"status":"DOWN","reason":"watchdog_dead"}')
     return web.Response(text='{"status":"UP"}', content_type="application/json")
 
 
@@ -36,9 +33,23 @@ async def run_health_server() -> None:
     logger.info("Health server started on port %d", config.health_port)
 
 
-async def run_consumer() -> None:
-    global _connection
-    _connection = await start_consumer(config.rabbitmq_url)
+async def run_with_watchdog(rabbitmq_url: str) -> None:
+    """
+    Watchdog loop — restarts start_consumer on failure or silent exit.
+    Propagates CancelledError to allow clean shutdown.
+    """
+    while True:
+        try:
+            await start_consumer(rabbitmq_url)
+            # start_consumer returned normally — silent consumer death, restart
+            logger.warning("Consumer exited normally (silent death) — restarting in 5s")
+        except asyncio.CancelledError:
+            logger.info("Watchdog cancelled, shutting down")
+            raise
+        except Exception:
+            logger.warning("Consumer failed with exception — restarting in 5s", exc_info=True)
+
+        await asyncio.sleep(5)
 
 
 async def main() -> None:
@@ -46,7 +57,7 @@ async def main() -> None:
 
     await run_health_server()
 
-    _consumer_task = asyncio.create_task(run_consumer())
+    _consumer_task = asyncio.create_task(run_with_watchdog(config.rabbitmq_url))
     logger.info("notification-bot started")
 
     try:

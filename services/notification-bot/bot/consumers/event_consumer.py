@@ -21,6 +21,7 @@ async def start_consumer(rabbitmq_url: str) -> aio_pika.abc.AbstractRobustConnec
     """
     connection = await aio_pika.connect_robust(rabbitmq_url)
     channel = await connection.channel()
+    await channel.set_qos(prefetch_count=10)
 
     # Declare fanout exchange (idempotent — same exchange used by all consumers)
     exchange = await channel.declare_exchange(

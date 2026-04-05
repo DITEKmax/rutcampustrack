@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Notification Service (Web + Bot)
 status: executing
-stopped_at: Phase 22 context gathered
-last_updated: "2026-04-05T10:04:31.926Z"
-last_activity: 2026-04-05
+stopped_at: "Completed 22-01-PLAN.md"
+last_updated: "2026-04-05T13:54:00.000Z"
+last_activity: 2026-04-05 — Phase 22 Plan 01 complete (test infra + consumer watchdog)
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
-  percent: 100
+  completed_phases: 0
+  total_plans: 8
+  completed_plans: 6
+  percent: 13
 ---
 
 # Project State
@@ -22,10 +22,10 @@ v5.0 Notification Service (Web + Bot)
 
 ## Current Position
 
-Phase: 22
-Plan: Not started
-Status: Executing Phase 21
-Last activity: 2026-04-05
+Phase: 22 (bot-infrastructure-layer)
+Plan: 2 of 3
+Status: Executing Phase 22
+Last activity: 2026-04-05 — Phase 22 Plan 01 complete (test infra + consumer watchdog)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -34,7 +34,7 @@ Progress: [░░░░░░░░░░] 0%
 See: `.planning/PROJECT.md` (updated 2026-04-04)
 
 **Core value:** Full backend microservice backbone shipped. Now delivering real-time notifications via WebSocket (web panel) and Telegram bot.
-**Current focus:** Phase 21 — notification-web-websocket-core
+**Current focus:** Phase 20 — Shared Infrastructure
 
 ## Completed Milestones
 
@@ -56,11 +56,6 @@ Recent decisions affecting v5.0:
 - grpcio pinned at 1.73.0 (protobuf 5.x compatible — 1.80.x requires protobuf 6.x, breaking change)
 - aio-pika consumer watchdog required from day one (silent consumer death after RabbitMQ restart)
 - Redis RPUSH list (not SET string) for reminder message_ids — LRANGE retrieves all on lesson.closed
-- [Phase 20]: Unit tests over Spring context tests for RabbitConfig — faster, no RabbitMQ mock needed
-- [Phase 20]: grpcio pinned at 1.73.0 — protobuf 5.x compatible (1.80.x requires protobuf 6.x, breaking change)
-- [Phase 20]: aio-pika connect_robust used for auto-reconnect on RabbitMQ restart (watchdog from day one)
-- [Phase 20]: Health check validates both consumer task liveness and RabbitMQ connection state (Pitfall 4)
-- [Phase 20]: Redis RPUSH list for reminder message_ids with TTL=86400 documented in config.py (D-07, D-08)
 
 ### Research Flags (resolve before phase begins)
 
@@ -74,7 +69,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T10:04:31.920Z
-Stopped at: Phase 22 context gathered
-Resume file: .planning/phases/22-bot-infrastructure-layer/22-CONTEXT.md
-Next action: /gsd:plan-phase 20
+Last session: 2026-04-05T13:54:00.000Z
+Stopped at: Completed 22-01-PLAN.md
+Resume file: .planning/phases/22-bot-infrastructure-layer/22-01-SUMMARY.md
+Next action: Execute 22-02 (Redis reminder client)

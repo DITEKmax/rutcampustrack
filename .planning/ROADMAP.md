@@ -84,7 +84,7 @@ Full details: `.planning/milestones/v5.0-ROADMAP.md`
 - [x] **Phase 27: Web Push Backend** — VAPID infrastructure and push subscription endpoints in notification-web (completed 2026-04-05)
 - [ ] **Phase 28: API Gateway CORS + nginx** — Gateway CORS config for PWA origin, push route, nginx serving container
 - [x] **Phase 29: PWA Scaffold + Auth** — React PWA project, login, JWT auth, manifest, A2HS, Service Worker shell (completed 2026-04-06)
-- [ ] **Phase 30: Schedule + Check-in UI** — Today/week schedule view with offline cache, geo check-in button and feedback
+- [x] **Phase 30: Schedule + Check-in UI** — Today/week schedule view with offline cache, geo check-in button and feedback (completed 2026-04-06)
 - [ ] **Phase 31: Push Frontend + End-to-End Integration** — Service Worker push handler, subscription opt-in, end-to-end smoke test
 - [ ] **Phase 32: Stats + Homework** — Attendance stats/records with red zone indicator, homework list with completion tracker
 
@@ -150,10 +150,10 @@ Plans:
   4. Student taps "Отметиться" on an active lesson card; the app captures GPS coordinates and submits them; a success toast appears within 3 seconds on a good connection
   5. When check-in fails (not in zone, already marked, or no active lesson), the student sees the specific failure reason rather than a generic error
   6. When another student in the same group checks in, the current student's lesson card updates its attendance count in real time via the STOMP WebSocket
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 30-01-PLAN.md — Types, API hooks, schedule UI (SchedulePage, WeekDayTabs, LessonCard, StatusBadge, OfflineStaleNotice)
-- [ ] 30-02-PLAN.md — Check-in flow (CheckInButton, CheckInToast, useStompCheckin, CheckInScreen) + STOMP real-time integration
+- [x] 30-02-PLAN.md — Check-in flow (CheckInButton, CheckInToast, useStompCheckin, CheckInScreen) + STOMP real-time integration
 **UI hint**: yes
 
 ### Phase 31: Push Frontend + End-to-End Integration
@@ -220,6 +220,6 @@ Plans:
 | 27. Web Push Backend | v6.0 | 3/3 | Complete   | 2026-04-05 |
 | 28. API Gateway CORS + nginx | v6.0 | 0/2 | Planned | - |
 | 29. PWA Scaffold + Auth | v6.0 | 3/3 | Complete   | 2026-04-06 |
-| 30. Schedule + Check-in UI | v6.0 | 1/2 | In Progress|  |
+| 30. Schedule + Check-in UI | v6.0 | 2/2 | Complete    | 2026-04-06 |
 | 31. Push Frontend + End-to-End Integration | v6.0 | 0/? | Not started | - |
 | 32. Stats + Homework | v6.0 | 0/? | Not started | - |

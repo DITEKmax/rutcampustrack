@@ -15,8 +15,10 @@ import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.PublicKeyResponse;
 import ru.rutcampustrack.auth.dto.RefreshRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
+import ru.rutcampustrack.auth.dto.TmaAuthRequest;
 import ru.rutcampustrack.auth.service.AuthService;
 import ru.rutcampustrack.auth.service.OtpService;
+import ru.rutcampustrack.auth.service.TmaService;
 
 @RestController
 @RequestMapping("/auth")
@@ -25,10 +27,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final OtpService otpService;
+    private final TmaService tmaService;
 
-    public AuthController(AuthService authService, OtpService otpService) {
+    public AuthController(AuthService authService, OtpService otpService, TmaService tmaService) {
         this.authService = authService;
         this.otpService = otpService;
+        this.tmaService = tmaService;
     }
 
     @Operation(summary = "Login with credentials", description = "Authenticate with login and password, returns JWT token pair")
@@ -77,6 +81,24 @@ public class AuthController {
     @PostMapping("/otp/verify")
     public ResponseEntity<TokenResponse> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
         return ResponseEntity.ok(otpService.verifyOtp(request));
+    }
+
+    @Operation(summary = "Authenticate via Telegram Mini App",
+               description = "Validate Telegram initData (HMAC-SHA256) and return JWT token pair")
+    @ApiResponse(responseCode = "200", description = "Successfully authenticated via TMA")
+    @ApiResponse(responseCode = "401", description = "Invalid or tampered initData, or user not linked")
+    @PostMapping("/tma")
+    public ResponseEntity<TokenResponse> tmaAuth(@Valid @RequestBody TmaAuthRequest request) {
+        return ResponseEntity.ok(tmaService.authenticateWithInitData(request));
+    }
+
+    @Operation(summary = "Refresh tokens (body-based)",
+               description = "Exchange refresh token in request body for new token pair. For Mini App clients that cannot use httpOnly cookies.")
+    @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully")
+    @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
+    @PostMapping("/refresh-body")
+    public ResponseEntity<TokenResponse> refreshBody(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.refresh(request));
     }
 
     @Operation(summary = "Change password", description = "Change password for authenticated user")

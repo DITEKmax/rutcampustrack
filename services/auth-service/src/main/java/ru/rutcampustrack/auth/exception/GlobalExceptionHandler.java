@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -93,6 +94,21 @@ public class GlobalExceptionHandler {
                         "Rate Limited",
                         HttpStatus.TOO_MANY_REQUESTS.value(),
                         ex.getMessage(),
+                        request.getRequestURI(),
+                        Instant.now()
+                ));
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ErrorResponse> handleMissingCookie(
+            MissingRequestCookieException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(PROBLEM_JSON)
+                .body(new ErrorResponse(
+                        "about:blank",
+                        "Missing Required Cookie",
+                        HttpStatus.BAD_REQUEST.value(),
+                        "Required cookie '" + ex.getCookieName() + "' is not present",
                         request.getRequestURI(),
                         Instant.now()
                 ));

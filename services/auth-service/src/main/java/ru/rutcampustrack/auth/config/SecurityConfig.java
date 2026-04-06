@@ -29,6 +29,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/login",
                                 "/auth/refresh",
+                                "/auth/logout",
                                 "/auth/public-key",
                                 "/auth/otp/**",
                                 "/api-docs/**",

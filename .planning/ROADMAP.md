@@ -141,10 +141,12 @@ Plans:
 **Depends on**: Phase 33 (nginx container and URL layout)
 **Requirements**: LAND-01, LAND-02, LAND-03
 **Success Criteria** (what must be TRUE):
-  1. `http://localhost:8880` serves a responsive landing page with hero section, feature highlights, and role overview
+  1. `http://localhost:8081` serves a responsive landing page with hero section, feature highlights, and role overview
   2. Page is fully static (no JS framework, no API calls)
   3. Mobile-responsive layout works on 360px-1440px viewports
-**Plans:** TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 35-01-PLAN.md — Complete landing page HTML with hero, features, roles, GSAP animations, dark mode
 **UI hint**: yes
 
 ### Phase 36: Mini App Scaffold + Auth
@@ -247,7 +249,7 @@ Plans:
 | 32. Stats + Homework | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 33. Infrastructure | v7.0 | 2/2 | Complete | 2026-04-06 |
 | 34. Auth Service TMA | v7.0 | 1/1 | Complete   | 2026-04-06 |
-| 35. Landing Page | v7.0 | 0/? | Planned | - |
+| 35. Landing Page | v7.0 | 0/1 | Planned | - |
 | 36. Mini App Scaffold + Auth | v7.0 | 0/? | Planned | - |
 | 37. Mini App Features | v7.0 | 0/? | Planned | - |
 | 38. Web Panel Scaffold + Auth | v7.0 | 0/? | Planned | - |

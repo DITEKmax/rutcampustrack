@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
@@ -37,6 +37,8 @@ vi.mock('@/shared/hooks/useNetworkStatus', () => ({
 }))
 
 import { apiClient } from '@/shared/lib/axios'
+import { SchedulePage } from '../SchedulePage'
+
 const mockedGet = vi.mocked(apiClient.get)
 
 function createWrapper() {
@@ -54,6 +56,13 @@ function createWrapper() {
       </QueryClientProvider>
     )
   }
+}
+
+/** Get backend dayOfWeek for today: 1=Mon..6=Sat, Sunday maps to 6 (Saturday) */
+function getTodayBackendDow(): number {
+  const jsDay = new Date().getDay() // 0=Sun, 1=Mon..6=Sat
+  if (jsDay === 0) return 6 // Sunday -> treat as Saturday
+  return jsDay // Mon=1..Sat=6
 }
 
 const makeLessons = (dayOfWeek: number, count: number) =>
@@ -82,11 +91,7 @@ describe('SchedulePage', () => {
   })
 
   it('renders lesson cards when data is returned', async () => {
-    // Today's day of week (1-based, Mon=1)
-    const today = new Date()
-    const dow = today.getDay() === 0 ? 6 : today.getDay() // Sun=6(Sat index)
-    const backendDow = today.getDay() === 0 ? 6 : today.getDay() // 1-based
-
+    const backendDow = getTodayBackendDow()
     const lessons = makeLessons(backendDow, 2)
 
     mockedGet.mockImplementation(async (url: string) => {
@@ -100,27 +105,27 @@ describe('SchedulePage', () => {
       return { data: {} }
     })
 
-    const { SchedulePage } = await import('../SchedulePage')
     render(<SchedulePage />, { wrapper: createWrapper() })
 
-    // Wait for lessons to render - look for room numbers
-    const room = await screen.findByText(/Ауд\. 301/, {}, { timeout: 3000 })
-    expect(room).toBeInTheDocument()
+    // Wait for room text to appear
+    await waitFor(() => {
+      expect(screen.getByText(/Ауд\. 301/)).toBeInTheDocument()
+    }, { timeout: 3000 })
   })
 
   it('shows empty state when no lessons for selected day', async () => {
     mockedGet.mockImplementation(async (url: string) => {
       if (url.includes('/schedule/groups/')) {
-        return { data: { _embedded: { lessonResponseList: [] } } }
+        return { data: {} } // No _embedded means empty
       }
       return { data: {} }
     })
 
-    const { SchedulePage } = await import('../SchedulePage')
     render(<SchedulePage />, { wrapper: createWrapper() })
 
-    const emptyText = await screen.findByText('Занятий нет', {}, { timeout: 3000 })
-    expect(emptyText).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Занятий нет')).toBeInTheDocument()
+    }, { timeout: 3000 })
   })
 
   it('day tab click changes displayed lessons', async () => {
@@ -137,16 +142,17 @@ describe('SchedulePage', () => {
       return { data: {} }
     })
 
-    const { SchedulePage } = await import('../SchedulePage')
     render(<SchedulePage />, { wrapper: createWrapper() })
 
-    // Click on Monday tab
     const user = userEvent.setup()
+
+    // Click on Monday tab
     const monTab = await screen.findByRole('tab', { name: /Пн/i })
     await user.click(monTab)
 
     // Should show the Monday lesson room
-    const room = await screen.findByText(/Ауд\. 301/, {}, { timeout: 3000 })
-    expect(room).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/Ауд\. 301/)).toBeInTheDocument()
+    }, { timeout: 3000 })
   })
 })

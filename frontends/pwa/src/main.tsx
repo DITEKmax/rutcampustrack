@@ -15,6 +15,7 @@ import './index.css'
 // Auto-update SW when new version available
 registerSW({ immediate: true })
 
+const SchedulePage = lazy(() => import('./features/schedule/SchedulePage').then(m => ({ default: m.SchedulePage })))
 const HomePlaceholder = lazy(() => import('./features/home/HomePlaceholder'))
 const ProfilePlaceholder = lazy(() => import('./features/profile/ProfilePlaceholder'))
 
@@ -36,7 +37,7 @@ const router = createBrowserRouter([
         path: 'home',
         element: (
           <Suspense fallback={<LoadingSpinner />}>
-            <HomePlaceholder />
+            <SchedulePage />
           </Suspense>
         ),
       },
@@ -44,7 +45,7 @@ const router = createBrowserRouter([
         path: 'schedule',
         element: (
           <Suspense fallback={<LoadingSpinner />}>
-            <HomePlaceholder />
+            <SchedulePage />
           </Suspense>
         ),
       },

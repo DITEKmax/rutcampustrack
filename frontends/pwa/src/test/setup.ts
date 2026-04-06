@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 
 Object.defineProperty(global.navigator, 'geolocation', {
   value: {
@@ -14,3 +15,6 @@ Object.defineProperty(global.navigator, 'onLine', {
   writable: true,
   configurable: true,
 })
+
+// Mock scrollIntoView for jsdom
+Element.prototype.scrollIntoView = vi.fn()

@@ -1,5 +1,28 @@
 # Milestones
 
+## v6.0 PWA + Web Push (Shipped: 2026-04-06)
+
+**Phases completed:** 6 phases, 14 plans
+**Timeline:** 2 days (2026-04-05 → 2026-04-06)
+**Requirements:** 32/32 satisfied
+**Tests:** 63 vitest tests, 4,733 LOC TypeScript
+
+**Key accomplishments:**
+
+1. Web Push backend: VAPID key generation (Redis-persisted), push subscription CRUD in MongoDB, async push delivery for lesson.started/cancelled/homework events, HTTP 410 auto-cleanup
+2. API Gateway CORS expansion for PWA origin + OPTIONS bypass in JwtAuthenticationFilter, nginx container for PWA static serving
+3. React PWA scaffold: Vite + TanStack Query + Tailwind + Framer Motion, JWT auth with httpOnly cookie refresh, manifest + Service Worker, A2HS install prompt, iOS onboarding
+4. Schedule view with week navigation + geo check-in with GPS capture + STOMP WebSocket real-time updates
+5. Service Worker push handlers with notificationclick deep links (check-in for lesson.started, schedule for cancelled), soft-ask permission pattern, foreground push dedup
+6. Attendance stats per subject with red zone indicators + homework list with optimistic completion toggle
+
+**Archives:**
+
+- `.planning/milestones/v6.0-ROADMAP.md`
+- `.planning/milestones/v6.0-REQUIREMENTS.md`
+
+---
+
 ## v5.0 Notification Service (Web + Bot) (Shipped: 2026-04-05)
 
 **Phases completed:** 7 phases, 16 plans

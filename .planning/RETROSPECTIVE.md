@@ -2,6 +2,54 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v6.0 — PWA + Web Push
+
+**Shipped:** 2026-04-06
+**Phases:** 6 | **Plans:** 14
+
+### What Was Built
+- Web Push backend in notification-web: VAPID key generation (Redis-persisted), push subscription CRUD in MongoDB, async push delivery for lesson.started/cancelled/homework events, HTTP 410 auto-cleanup
+- API Gateway CORS expansion for PWA origin + OPTIONS bypass in JwtAuthenticationFilter, nginx container for PWA static serving
+- React PWA scaffold: Vite + TanStack Query + Tailwind + Framer Motion, JWT auth with httpOnly cookie refresh, manifest + Service Worker, A2HS install prompt, iOS onboarding
+- Schedule view with week navigation + geo check-in with GPS capture + STOMP WebSocket real-time updates
+- Service Worker push handlers with notificationclick deep links (check-in for lesson.started, schedule for cancelled), soft-ask permission pattern, foreground push dedup
+- Attendance stats per subject with red zone indicators + homework list with optimistic completion toggle
+
+### What Worked
+- httpOnly cookie for refresh token — secure pattern, prevents XSS token theft
+- injectManifest for vite-plugin-pwa — required for custom push event handler in Service Worker
+- OPTIONS bypass before isPublicRoute in Gateway — CORS preflight works without JWT
+- Optimistic mutations with TanStack Query — homework checkbox toggle feels instant; reverts on error
+- useThreshold returns null on 404 — no red zone indicators shown when no threshold configured
+- soft-ask permission pattern — no intrusive permission prompt on first load
+- STOMP WebSocket for real-time check-in count updates — live feedback during active lesson
+
+### What Was Inefficient
+- Agent confusion during milestone transition — agents overwrote v7.0 planning files with stale v6.0 content, requiring manual repair
+- Phase 32 was initially shown as Planned in committed ROADMAP.md even after completion — milestone closing procedure missed updating it
+- v6.0 milestone archives (v6.0-ROADMAP.md, v6.0-REQUIREMENTS.md) were not created during milestone completion
+
+### Patterns Established
+- PWA: Vite + React + TanStack Query + Tailwind + Framer Motion stack
+- Auth: httpOnly cookie for refresh token, access token in React memory (useState)
+- Push: soft-ask permission → PushSubscription → SW push handler → notificationclick deep link
+- Offline: stale-while-revalidate with TanStack Query gcTime/staleTime
+- A2HS: BeforeInstallPromptEvent in declare global block for TypeScript
+- STOMP integration from PWA: SockJS + @stomp/stompjs with JWT handshake
+
+### Key Lessons
+1. Milestone completion procedure MUST create archive files (v{X}.0-ROADMAP.md, v{X}.0-REQUIREMENTS.md) and update all planning files atomically — agents doing partial updates cause inconsistency
+2. httpOnly cookies don't work in Telegram WebView — Mini App (v7.0) must use localStorage + body-based refresh instead
+3. OPTIONS bypass must come before public route check in Gateway JWT filter — otherwise CORS preflight gets 401
+4. VAPID keys must persist across service restarts (Redis, no TTL) — regeneration invalidates all existing subscriptions
+
+### Cost Observations
+- Model mix: ~20% opus (orchestration), ~80% sonnet (execution/verification)
+- Sessions: ~4 sessions across 2 days
+- Notable: First frontend milestone — TypeScript/React phases executed differently from Java backend phases; UI-heavy work needed more iterative adjustments
+
+---
+
 ## Milestone: v5.0 — Notification Service (Web + Bot)
 
 **Shipped:** 2026-04-05
@@ -187,6 +235,7 @@
 | v3.0 | 5 | 11 | Cron scheduling, Moscow TZ, week-parity generation, gRPC server |
 | v4.0 | 5 | 12 | MongoDB + Testcontainers, domain isolation, gap-closure pattern |
 | v5.0 | 7 | 16 | Python Aiogram bot, WebSocket, asyncio timers, cross-language gRPC |
+| v6.0 | 6 | 14 | First frontend: React PWA, Web Push, Service Worker, STOMP from browser |
 
 ### Cumulative Quality
 
@@ -197,6 +246,7 @@
 | v3.0 | — | Cron job tests with @Profile("!test"), lesson generation verification |
 | v4.0 | ~80 | MongoDB Testcontainers, ArchUnit domain isolation, Redis dedup/rate-limit tests |
 | v5.0 | ~128 | Java: 20 WebSocket/RabbitMQ tests. Python: 108 pytest-asyncio tests (fakeredis, mock gRPC/Telegram) |
+| v6.0 | 63 | Vitest for React components + hooks, TanStack Query test utils, SW push handler mocks |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -207,3 +257,4 @@
 5. Domain isolation boundaries should be designed upfront with port interfaces (v4.0)
 6. Always set TZ env var in docker-compose when code uses naive datetime — systematic timer errors otherwise (v5.0)
 7. Gap-closure hardening phase after milestone audit is a reliable pattern — catches deployment blockers before ship (v4.0-v5.0)
+8. Milestone completion must atomically update ALL planning files and create archives — partial updates by agents cause state drift requiring manual repair (v6.0)

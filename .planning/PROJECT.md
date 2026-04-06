@@ -11,15 +11,15 @@ Full-stack attendance tracking system: 5 backend microservices (Auth, Academic, 
 
 ## Current State
 
-v6.0 shipped 2026-04-06. All 5 backend services + React PWA «RutTrack» operational.
+v7.0 in progress (Phase 33 complete). All 5 backend services + React PWA «RutTrack» operational (v6.0 shipped 2026-04-06).
 
 **Backend:** Auth (JWT/OTP) + Academic (CRUD/gRPC/Redis/RabbitMQ) + Schedule (auto-generation/status transitions/cron) + Attendance (geo-checkin/manual marking/reports/MongoDB) + Notification (STOMP WebSocket + Telegram bot + Web Push). All inter-service communication working: gRPC, RabbitMQ fanout, STOMP, Web Push API.
 
 **Frontend PWA:** React + Vite + TanStack Query + Tailwind + Framer Motion. Features: login with httpOnly cookie JWT, schedule view with week navigation, geo check-in with GPS, attendance stats with red zone indicators, homework list with optimistic toggle, Web Push notifications (lesson start/cancel/homework), A2HS install prompt, offline Service Worker shell. 63 vitest tests, 4,733 LOC TypeScript.
 
-**Infrastructure:** API Gateway with CORS + JWT filter, nginx container serving PWA, docker-compose with PostgreSQL×2 + MongoDB + Redis + RabbitMQ.
+**Infrastructure:** API Gateway with CORS + JWT filter, nginx containers for PWA + Mini App + Web Panel + Landing, docker-compose with PostgreSQL×2 + MongoDB + Redis + RabbitMQ.
 
-**Next milestone:** v7.0 Frontends — Mini App, Web Panel, Landing.
+**Current milestone:** v7.0 Frontends — Mini App, Web Panel, Landing (Phase 33 infrastructure complete, 7 phases remaining).
 
 ## Shipped Milestones
 

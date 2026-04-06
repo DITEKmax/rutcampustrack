@@ -78,114 +78,133 @@ Full details: `.planning/milestones/v5.0-ROADMAP.md`
 
 </details>
 
-### v6.0 PWA + Web Push (In Progress)
+<details>
+<summary>✅ v6.0 PWA + Web Push (Phases 27-32) — SHIPPED 2026-04-06</summary>
 
-**Milestone Goal:** Student mobile client «RutTrack» (React PWA) with native Web Push notifications — installable on Android/iOS, offline-capable app shell, geo check-in, schedule view, attendance stats, homework tracker.
+- [x] Phase 27: Web Push Backend (3/3 plans) — completed 2026-04-05
+- [x] Phase 28: API Gateway CORS + nginx (2/2 plans) — completed 2026-04-06
+- [x] Phase 29: PWA Scaffold + Auth (3/3 plans) — completed 2026-04-06
+- [x] Phase 30: Schedule + Check-in UI (2/2 plans) — completed 2026-04-06
+- [x] Phase 31: Push Frontend + End-to-End Integration (2/2 plans) — completed 2026-04-06
+- [x] Phase 32: Stats + Homework (2/2 plans) — completed 2026-04-06
 
-- [x] **Phase 27: Web Push Backend** — VAPID infrastructure and push subscription endpoints in notification-web (completed 2026-04-05)
-- [x] **Phase 28: API Gateway CORS + nginx** — Gateway CORS config for PWA origin, push route, nginx serving container (completed 2026-04-06)
-- [x] **Phase 29: PWA Scaffold + Auth** — React PWA project, login, JWT auth, manifest, A2HS, Service Worker shell (completed 2026-04-06)
-- [x] **Phase 30: Schedule + Check-in UI** — Today/week schedule view with offline cache, geo check-in button and feedback (completed 2026-04-06)
-- [x] **Phase 31: Push Frontend + End-to-End Integration** — Service Worker push handler, subscription opt-in, end-to-end smoke test (completed 2026-04-06)
-- [ ] **Phase 32: Stats + Homework** — Attendance stats/records with red zone indicator, homework list with completion tracker
+Full details: `.planning/milestones/v6.0-ROADMAP.md`
+
+</details>
+
+### v7.0 Frontends — Mini App, Web Panel, Landing (In Progress)
+
+**Milestone Goal:** Build three remaining frontend clients: Telegram Mini App (React) for student attendance inside Telegram, Angular Web Panel for teacher/admin management, and a static Landing page.
+
+- [x] **Phase 33: Infrastructure** — URL layout, Gateway CORS expansion, nginx configs, docker-compose (completed 2026-04-06)
+- [ ] **Phase 34: Auth Service TMA** — `POST /api/auth/tma` initData endpoint + `POST /api/auth/refresh-body`
+- [ ] **Phase 35: Landing Page** — Static HTML/CSS marketing page with nginx container
+- [ ] **Phase 36: Mini App Scaffold + Auth** — Vite scaffold, Telegram SDK init, initData auth flow, dev mock env
+- [ ] **Phase 37: Mini App Features** — Schedule, geo check-in, attendance stats, homework, Telegram UX
+- [ ] **Phase 38: Web Panel Scaffold + Auth** — Angular 21 standalone, Tailwind, interceptors, role guards, login/logout
+- [ ] **Phase 39: Web Panel Teacher** — Attendance journal grid (CdkTable), stats charts (ng2-charts)
+- [ ] **Phase 40: Web Panel Admin** — User/group/semester CRUD, headman assign/revoke, dashboard summary
 
 ## Phase Details
 
-### Phase 27: Web Push Backend
-**Goal**: notification-web can generate VAPID keys, store push subscriptions, and deliver Web Push notifications for lesson and homework events
-**Depends on**: Phase 26 (notification-web container running)
-**Requirements**: PUSH-01, PUSH-02, PUSH-03, PUSH-04, PUSH-05, PUSH-06, PUSH-07, INFRA-02
+### Phase 33: Infrastructure
+**Goal**: URL layout decision, Gateway CORS expansion for all frontend origins, nginx configs for Mini App / Web Panel / Landing containers, docker-compose updates
+**Depends on**: Phase 32 (v6.0 shipped)
+**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04
 **Success Criteria** (what must be TRUE):
-  1. `GET /api/ws/push/vapid-public-key` returns a Base64-encoded VAPID public key; the same key is returned after service restart (persisted in Redis)
-  2. `POST /api/ws/push/subscribe` with a valid PushSubscription JSON stores the subscription in MongoDB `push_subscriptions` collection
-  3. `DELETE /api/ws/push/subscribe` removes the stored subscription; subsequent push attempts to that endpoint do not occur
-  4. Sending a test push via curl to a subscribed endpoint delivers a browser notification within 5 seconds
-  5. A push delivery that receives HTTP 410 from the push service causes the subscription to be deleted from MongoDB automatically
-**Plans:** 3/3 plans complete
+  1. URL layout document exists with clear port/path mapping for all 4 frontends (PWA, Mini App, Web Panel, Landing)
+  2. Gateway CORS config includes dev origins for Mini App and Web Panel
+  3. docker-compose.yml has nginx service entries for mini-app, web-panel, and landing containers
+  4. Each nginx config has correct `try_files` for SPA routing
+**Plans:** 2/2 plans complete
 Plans:
-- [x] 27-01-PLAN.md — Module restructure + API contract + VAPID config + Gateway route
-- [x] 27-02-PLAN.md — Push subscription CRUD + @RequireRole security
-- [x] 27-03-PLAN.md — Async push delivery + EventConsumer hook + 410 cleanup
+- [x] 33-01-PLAN.md — URL layout doc + nginx configs + docker-compose services
+- [x] 33-02-PLAN.md — Gateway CORS + PUBLIC_PATHS expansion
 **UI hint**: no
 
-### Phase 28: API Gateway CORS + nginx
-**Goal**: API Gateway accepts cross-origin requests from the PWA origin, and the nginx container serves the PWA static build
-**Depends on**: Phase 27 (push route target exists)
-**Requirements**: INFRA-01, INFRA-03
+### Phase 34: Auth Service TMA
+**Goal**: Auth Service can exchange Telegram initData for a JWT (HMAC-SHA256 validation), and provides a body-based refresh endpoint for Mini App (WebView drops httpOnly cookies)
+**Depends on**: Phase 33 (Gateway CORS for Mini App origin)
+**Requirements**: AUTH-01, AUTH-02
 **Success Criteria** (what must be TRUE):
-  1. A preflight OPTIONS request from `http://localhost:5173` to the Gateway returns `Access-Control-Allow-Origin: http://localhost:5173` without duplicate headers
-  2. `GET /api/push/vapid-public-key` is routable through the Gateway (StripPrefix removes `/api/push` leaving `/vapid-public-key` reaching notification-web)
-  3. `docker compose up` starts an nginx container serving a static HTML file at `http://localhost:80`; `sw.js` and `index.html` are served with `Cache-Control: no-cache`
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
-- [x] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
+  1. `POST /api/auth/tma` with valid Telegram initData returns a JWT access token + refresh token in response body
+  2. `POST /api/auth/tma` with tampered initData returns 401 with clear error
+  3. `POST /api/auth/refresh-body` with valid refresh token returns new access + refresh tokens in response body
+  4. User lookup by `telegram_id` (stored from v5.0 bot /start linking) works correctly
+**Plans:** TBD
 **UI hint**: no
 
-### Phase 29: PWA Scaffold + Auth
-**Goal**: Students can install RutTrack on their home screen, log in with username/password, and see a working app shell that loads offline
-**Depends on**: Phase 28 (Gateway CORS unblocks API calls from localhost:5173)
-**Requirements**: PWA-01, PWA-02, PWA-03, PWA-04, PWA-05, PWA-06, PWA-07
+### Phase 35: Landing Page
+**Goal**: Static HTML/CSS marketing page served by its own nginx container — hero, features, role overview, screenshots
+**Depends on**: Phase 33 (nginx container and URL layout)
+**Requirements**: LAND-01, LAND-02, LAND-03
 **Success Criteria** (what must be TRUE):
-  1. Student enters username and password, taps login, and lands on the app home screen; the access token is stored in React memory (never in localStorage)
-  2. After 14 minutes of inactivity, the next API call silently refreshes the access token without showing a login screen
-  3. Student taps logout and is returned to the login screen; a subsequent attempt to call a protected API endpoint returns 401
-  4. Android Chrome displays an A2HS install prompt after the student's first successful check-in
-  5. iOS Safari users who open the PWA in a browser (not standalone) see an instruction screen explaining how to add to home screen
-  6. After installing and going fully offline, the app shell (login page) loads from the Service Worker cache without a network request
-**Plans:** 3/3 plans complete
-Plans:
-- [x] 29-01-PLAN.md — Auth-service httpOnly cookie refactor (backend)
-- [x] 29-02-PLAN.md — React PWA scaffold + Vite + Tailwind + shadcn + SW + manifest
-- [x] 29-03-PLAN.md — Auth flow UI + app shell + bottom nav + iOS onboarding + A2HS
+  1. `http://localhost:8880` serves a responsive landing page with hero section, feature highlights, and role overview
+  2. Page is fully static (no JS framework, no API calls)
+  3. Mobile-responsive layout works on 360px-1440px viewports
+**Plans:** TBD
 **UI hint**: yes
 
-### Phase 30: Schedule + Check-in UI
-**Goal**: Students can view their daily and weekly schedule and submit a geo check-in from an active lesson card
-**Depends on**: Phase 29 (auth and app shell established)
-**Requirements**: SCHED-01, SCHED-02, SCHED-03, CHKIN-01, CHKIN-02, CHKIN-03
+### Phase 36: Mini App Scaffold + Auth
+**Goal**: Vite React scaffold with Telegram SDK, viewport setup, initData auth flow, localStorage refresh pattern, dev mock environment
+**Depends on**: Phase 33 (Gateway CORS), Phase 34 (Auth TMA endpoint)
+**Requirements**: TMA-01, TMA-02, TMA-03, TMA-04, TMA-05
 **Success Criteria** (what must be TRUE):
-  1. Student opens the app and sees today's lessons listed with time, subject name, room, and status badge
-  2. Student swipes or taps tabs to navigate to any day of the current week without a full page reload
-  3. When offline, the schedule screen shows the last-fetched data (up to 1 hour stale) rather than an error
-  4. Student taps "Отметиться" on an active lesson card; the app captures GPS coordinates and submits them; a success toast appears within 3 seconds on a good connection
-  5. When check-in fails (not in zone, already marked, or no active lesson), the student sees the specific failure reason rather than a generic error
-  6. When another student in the same group checks in, the current student's lesson card updates its attendance count in real time via the STOMP WebSocket
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 30-01-PLAN.md — Types, API hooks, schedule UI (SchedulePage, WeekDayTabs, LessonCard, StatusBadge, OfflineStaleNotice)
-- [x] 30-02-PLAN.md — Check-in flow (CheckInButton, CheckInToast, useStompCheckin, CheckInScreen) + STOMP real-time integration
+  1. Mini App opens inside Telegram WebView and renders without blank screen
+  2. initData is extracted and exchanged for JWT via `POST /api/auth/tma`
+  3. Access token stored in React state, refresh token in localStorage
+  4. Token refresh works via body-based endpoint (not httpOnly cookie)
+  5. Dev mock environment allows local development outside Telegram
+**Plans:** TBD
 **UI hint**: yes
 
-### Phase 31: Push Frontend + End-to-End Integration
-**Goal**: Students receive Web Push notifications on their device for lesson start and lesson cancellation events, and tapping a notification opens the correct screen
-**Depends on**: Phase 27 (push backend), Phase 29 (Service Worker and app shell), Phase 30 (check-in and schedule screens exist as deep-link targets)
-**Requirements**: PUSHUI-01, PUSHUI-02, PUSHUI-03, PUSHUI-04
+### Phase 37: Mini App Features
+**Goal**: Schedule view, geo check-in with MainButton + haptic feedback, attendance stats with red zone, homework list, Telegram native UX (BackButton, theme colors)
+**Depends on**: Phase 36 (scaffold and auth established)
+**Requirements**: TMA-06, TMA-07, TMA-08, TMA-09, TMA-10, TMA-11
 **Success Criteria** (what must be TRUE):
-  1. Student taps "Enable notifications" in settings; the browser shows a permission prompt only after this explicit gesture (not on first app load)
-  2. A `lesson.started` RabbitMQ event triggers a Web Push notification on a subscribed device within 10 seconds; tapping it opens the PWA on the check-in screen for that lesson
-  3. A `lesson.cancelled` RabbitMQ event triggers a Web Push notification; tapping it opens the schedule screen
-  4. When the PWA is open in the foreground, the push notification is suppressed (the STOMP WebSocket already delivered the same event as an in-app update)
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 31-01-PLAN.md — SW push + notificationclick handlers, push utilities + tests
-- [x] 31-02-PLAN.md — Push subscription hook, PushPermissionCard, ProfilePage upgrade
+  1. Student sees today's schedule with lessons, times, rooms, and status badges
+  2. Student can check in via MainButton with GPS capture and haptic feedback on success
+  3. Attendance stats show per-subject percentages with red zone indicators
+  4. Homework list with completion toggle works
+  5. UI respects Telegram theme (dark/light mode) and uses BackButton for navigation
+**Plans:** TBD
 **UI hint**: yes
 
-### Phase 32: Stats + Homework
-**Goal**: Students can review their attendance statistics per subject with red zone warnings, and view and track homework completion
-**Depends on**: Phase 29 (auth), Phase 30 (schedule and check-in patterns established)
-**Requirements**: ATT-01, ATT-02, ATT-03, HW-01, HW-02
+### Phase 38: Web Panel Scaffold + Auth
+**Goal**: Angular 21 standalone scaffold with Tailwind, HTTP interceptors, role-based route guards, login/logout for TEACHER and ADMIN roles
+**Depends on**: Phase 33 (Gateway CORS for Web Panel origin)
+**Requirements**: WPAN-01, WPAN-02, WPAN-03, WPAN-04, WPAN-05
 **Success Criteria** (what must be TRUE):
-  1. Student opens the attendance screen and sees a list of subjects with attendance percentage and present/absent/excused counts for each
-  2. A subject where the student is below the configured red zone threshold is visually distinguished (red indicator) from subjects above threshold
-  3. Student can view a scrollable list of individual attendance records showing date, lesson name, and status with color coding (б/н/у/сп)
-  4. Student opens the homework screen and sees all homework items for their group with title, subject, deadline, and completion status
-  5. Student taps a checkbox on a homework item; the item toggles to done/undone and the state persists after closing and reopening the app
-**Plans:** 2 plans
-Plans:
-- [ ] 32-01-PLAN.md — Attendance stats + records pages, BottomNav restructure, routing
-- [ ] 32-02-PLAN.md — Homework list page with server-side completion toggle
+  1. Teacher/admin can log in with username/password and see role-appropriate dashboard
+  2. JWT access token in Angular signal (memory), refresh token in httpOnly cookie
+  3. Unauthorized route access redirects to login
+  4. Token auto-refresh works via HTTP interceptor
+  5. Logout clears tokens and redirects to login
+**Plans:** TBD
+**UI hint**: yes
+
+### Phase 39: Web Panel Teacher
+**Goal**: Attendance journal grid (CdkTable with virtual scroll for 500+ rows), attendance stats charts (ng2-charts/Chart.js)
+**Depends on**: Phase 38 (scaffold and auth)
+**Requirements**: WPAN-06, WPAN-07, WPAN-08
+**Success Criteria** (what must be TRUE):
+  1. Teacher sees attendance journal as a students-x-lessons grid with status cells
+  2. Grid handles 500+ students without performance degradation (virtual scroll)
+  3. Teacher can view attendance stats chart per subject/group
+**Plans:** TBD
+**UI hint**: yes
+
+### Phase 40: Web Panel Admin
+**Goal**: Admin CRUD for users/groups/semesters, headman assign/revoke, dashboard with summary statistics
+**Depends on**: Phase 38 (scaffold and auth)
+**Requirements**: WPAN-09, WPAN-10, WPAN-11, WPAN-12, WPAN-13
+**Success Criteria** (what must be TRUE):
+  1. Admin can create/edit/archive users with auto-generated logins
+  2. Admin can manage groups and assign/revoke headmen
+  3. Admin can manage semesters with confirmation phrase for delete
+  4. Dashboard shows summary stats (total students, groups, attendance rates)
+**Plans:** TBD
 **UI hint**: yes
 
 ## Progress
@@ -222,6 +241,13 @@ Plans:
 | 28. API Gateway CORS + nginx | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 29. PWA Scaffold + Auth | v6.0 | 3/3 | Complete | 2026-04-06 |
 | 30. Schedule + Check-in UI | v6.0 | 2/2 | Complete | 2026-04-06 |
-| 31. Push Frontend + End-to-End Integration | v6.0 | 2/2 | Complete   | 2026-04-06 |
-| 32. Stats + Homework | v6.0 | 0/2 | Planned | - |
+| 31. Push Frontend + E2E Integration | v6.0 | 2/2 | Complete | 2026-04-06 |
+| 32. Stats + Homework | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 33. Infrastructure | v7.0 | 2/2 | Complete | 2026-04-06 |
+| 34. Auth Service TMA | v7.0 | 0/? | Planned | - |
+| 35. Landing Page | v7.0 | 0/? | Planned | - |
+| 36. Mini App Scaffold + Auth | v7.0 | 0/? | Planned | - |
+| 37. Mini App Features | v7.0 | 0/? | Planned | - |
+| 38. Web Panel Scaffold + Auth | v7.0 | 0/? | Planned | - |
+| 39. Web Panel Teacher | v7.0 | 0/? | Planned | - |
+| 40. Web Panel Admin | v7.0 | 0/? | Planned | - |

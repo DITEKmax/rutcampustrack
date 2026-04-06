@@ -48,9 +48,9 @@ Requirements for PWA + Web Push milestone. Each maps to roadmap phases.
 
 ### Attendance
 
-- [ ] **ATT-01**: User can view attendance stats per subject (percentage, count)
-- [ ] **ATT-02**: User sees red zone warning when below threshold for a subject
-- [ ] **ATT-03**: User can view attendance records list with status indicators (б/н/у/сп with colors)
+- [x] **ATT-01**: User can view attendance stats per subject (percentage, count)
+- [x] **ATT-02**: User sees red zone warning when below threshold for a subject
+- [x] **ATT-03**: User can view attendance records list with status indicators (б/н/у/сп with colors)
 
 ### Homework
 
@@ -123,9 +123,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PUSHUI-02 | Phase 31 | Pending |
 | PUSHUI-03 | Phase 31 | Pending |
 | PUSHUI-04 | Phase 31 | Pending |
-| ATT-01 | Phase 32 | Pending |
-| ATT-02 | Phase 32 | Pending |
-| ATT-03 | Phase 32 | Pending |
+| ATT-01 | Phase 32 | Complete |
+| ATT-02 | Phase 32 | Complete |
+| ATT-03 | Phase 32 | Complete |
 | HW-01 | Phase 32 | Pending |
 | HW-02 | Phase 32 | Pending |
 

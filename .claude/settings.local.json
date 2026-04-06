@@ -39,7 +39,15 @@
       "Bash(git rm:*)",
       "Bash(git commit:*)",
       "Bash(git tag:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(mkdir -p frontends/pwa/src/features/auth/__tests__)",
+      "Bash(mkdir -p frontends/pwa/src/features/auth)",
+      "Bash(mkdir -p frontends/pwa/src/shared/components)",
+      "Bash(npx vitest:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(ls .planning/phases/29-pwa-scaffold-auth/*-SECURITY.md)"
     ]
   }
 }

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: PWA + Web Push
 status: executing
-stopped_at: Phase 29 UI-SPEC approved
-last_updated: "2026-04-05T22:15:43.143Z"
-last_activity: 2026-04-05 -- Phase 29 planning complete
+stopped_at: Phase 30 context gathered
+last_updated: "2026-04-06T09:14:56.736Z"
+last_activity: 2026-04-06 -- Phase 30 execution started
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 5
-  percent: 63
+  completed_phases: 3
+  total_plans: 10
+  completed_plans: 8
+  percent: 80
 ---
 
 # Project State
@@ -22,10 +22,10 @@ v6.0 PWA + Web Push — Roadmap created, ready to plan Phase 27
 
 ## Current Position
 
-Phase: 28 (api-gateway-cors-nginx) — EXECUTING
-Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-04-05 -- Phase 29 planning complete
+Phase: 30 (schedule-check-in-ui) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 30
+Last activity: 2026-04-06 -- Phase 30 execution started
 
 Progress: [████████░░] 80%
 
@@ -34,7 +34,7 @@ Progress: [████████░░] 80%
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Student mobile client «RutTrack» (React PWA) with native push notifications — independent from Telegram, installable, offline-capable
-**Current focus:** Phase 28 — api-gateway-cors-nginx
+**Current focus:** Phase 30 — schedule-check-in-ui
 
 ## Completed Milestones
 
@@ -59,6 +59,7 @@ Recent decisions relevant to v6.0:
 - v6.0 planning: `injectManifest` strategy for vite-plugin-pwa — required for custom `push` event handler in Service Worker
 - [Phase 28]: OPTIONS bypass before isPublicRoute; explicit CORS origins (not wildcard) with allow-credentials
 - [Phase 28]: Added .gitignore exception for frontends/pwa/dist/ — placeholder files must be tracked
+- [Phase 29]: BeforeInstallPromptEvent must be inside declare global block for TypeScript module visibility
 
 ### Research Flags
 
@@ -74,7 +75,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-05T21:41:43.001Z
-Stopped at: Phase 29 UI-SPEC approved
-Resume file: .planning/phases/29-pwa-scaffold-auth/29-UI-SPEC.md
+Last session: 2026-04-06T08:28:34.841Z
+Stopped at: Phase 30 context gathered
+Resume file: .planning/phases/30-schedule-check-in-ui/30-CONTEXT.md
 Next action: Verify phase 28

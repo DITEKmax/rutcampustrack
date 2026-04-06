@@ -150,16 +150,19 @@ Plans:
 **UI hint**: yes
 
 ### Phase 36: Mini App Scaffold + Auth
-**Goal**: Vite React scaffold with Telegram SDK, viewport setup, initData auth flow, localStorage refresh pattern, dev mock environment
+**Goal**: Vite React scaffold with Telegram SDK, viewport setup, initData auth flow, memory-only token management, dev mock environment
 **Depends on**: Phase 33 (Gateway CORS), Phase 34 (Auth TMA endpoint)
 **Requirements**: TMA-01, TMA-02, TMA-03, TMA-04, TMA-05
 **Success Criteria** (what must be TRUE):
   1. Mini App opens inside Telegram WebView and renders without blank screen
   2. initData is extracted and exchanged for JWT via `POST /api/auth/tma`
-  3. Access token stored in React state, refresh token in localStorage
-  4. Token refresh works via body-based endpoint (not httpOnly cookie)
+  3. Access token stored in React state, refresh token in memory (not localStorage per D-05)
+  4. On 401, re-authenticate via initData (not refresh-body per D-06)
   5. Dev mock environment allows local development outside Telegram
-**Plans:** TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 36-01-PLAN.md — Vite scaffold + dependencies + SDK init + mock env + test infra
+- [ ] 36-02-PLAN.md — Auth flow + Axios interceptor + theme provider + UI screens + App wiring
 **UI hint**: yes
 
 ### Phase 37: Mini App Features
@@ -250,7 +253,7 @@ Plans:
 | 33. Infrastructure | v7.0 | 2/2 | Complete | 2026-04-06 |
 | 34. Auth Service TMA | v7.0 | 1/1 | Complete   | 2026-04-06 |
 | 35. Landing Page | v7.0 | 1/1 | Complete   | 2026-04-06 |
-| 36. Mini App Scaffold + Auth | v7.0 | 0/? | Planned | - |
+| 36. Mini App Scaffold + Auth | v7.0 | 0/2 | Planned | - |
 | 37. Mini App Features | v7.0 | 0/? | Planned | - |
 | 38. Web Panel Scaffold + Auth | v7.0 | 0/? | Planned | - |
 | 39. Web Panel Teacher | v7.0 | 0/? | Planned | - |

@@ -17,7 +17,7 @@ import './index.css'
 registerSW({ immediate: true })
 
 const SchedulePage = lazy(() => import('./features/schedule/SchedulePage').then(m => ({ default: m.SchedulePage })))
-const HomePlaceholder = lazy(() => import('./features/home/HomePlaceholder'))
+const CheckInScreen = lazy(() => import('./features/checkin/CheckInScreen').then(m => ({ default: m.CheckInScreen })))
 const ProfilePlaceholder = lazy(() => import('./features/profile/ProfilePlaceholder'))
 
 const router = createBrowserRouter([
@@ -56,7 +56,7 @@ const router = createBrowserRouter([
         path: 'checkin',
         element: (
           <Suspense fallback={<LoadingSpinner />}>
-            <HomePlaceholder />
+            <CheckInScreen />
           </Suspense>
         ),
       },

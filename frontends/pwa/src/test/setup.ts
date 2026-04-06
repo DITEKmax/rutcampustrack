@@ -18,3 +18,21 @@ Object.defineProperty(global.navigator, 'onLine', {
 
 // Mock scrollIntoView for jsdom
 Element.prototype.scrollIntoView = vi.fn()
+
+Object.defineProperty(global, 'Notification', {
+  value: { permission: 'default', requestPermission: vi.fn().mockResolvedValue('granted') },
+  configurable: true,
+  writable: true,
+})
+
+Object.defineProperty(global.navigator, 'serviceWorker', {
+  value: {
+    ready: Promise.resolve({
+      pushManager: {
+        subscribe: vi.fn(),
+        getSubscription: vi.fn().mockResolvedValue(null),
+      },
+    }),
+  },
+  configurable: true,
+})

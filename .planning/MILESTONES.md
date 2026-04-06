@@ -1,24 +1,5 @@
 # Milestones
 
-## v6.0 PWA + Web Push (Shipped: 2026-04-06)
-
-**Phases completed:** 6 phases, 14 plans, 25 tasks
-**Timeline:** 2 days (2026-04-05 → 2026-04-06)
-**Git:** 63 commits, 124 files, ~18K insertions
-**Code:** 4,733 LOC TypeScript (PWA) + 1,888 LOC Java (notification-service) + 488 LOC Java (gateway)
-**Requirements:** 32/32 satisfied
-
-**Key accomplishments:**
-
-1. Web Push backend: VAPID key generation + Redis persistence, MongoDB push subscription CRUD, @Async push delivery for lesson/cancel/homework events with HTTP 410 auto-cleanup
-2. API Gateway CORS configuration for PWA origin, push route to notification-service, nginx container for PWA static serving
-3. React PWA scaffold: JWT auth with httpOnly cookie refactor, silent token refresh, A2HS install prompt, iOS Safari onboarding, offline Service Worker shell
-4. Schedule + geo check-in UI: SchedulePage with WeekDayTabs, LessonCard, CheckInButton with GPS, real-time STOMP WebSocket updates
-5. Service Worker push handlers: notificationclick deep links to check-in/schedule screens, PushPermissionCard with soft-ask pattern, foreground dedup with WebSocket
-6. Attendance stats per subject with red zone threshold indicators + homework list with optimistic completion toggle and pull-to-refresh
-
----
-
 ## v5.0 Notification Service (Web + Bot) (Shipped: 2026-04-05)
 
 **Phases completed:** 7 phases, 16 plans

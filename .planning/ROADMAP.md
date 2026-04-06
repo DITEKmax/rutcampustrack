@@ -77,13 +77,13 @@ Full details: `.planning/milestones/v5.0-ROADMAP.md`
 
 </details>
 
-### v6.0 PWA + Web Push (In Progress)
+### 🚧 v6.0 PWA + Web Push (In Progress)
 
 **Milestone Goal:** Student mobile client «RutTrack» (React PWA) with native Web Push notifications — installable on Android/iOS, offline-capable app shell, geo check-in, schedule view, attendance stats, homework tracker.
 
 - [x] **Phase 27: Web Push Backend** — VAPID infrastructure and push subscription endpoints in notification-web (completed 2026-04-05)
 - [ ] **Phase 28: API Gateway CORS + nginx** — Gateway CORS config for PWA origin, push route, nginx serving container
-- [x] **Phase 29: PWA Scaffold + Auth** — React PWA project, login, JWT auth, manifest, A2HS, Service Worker shell (completed 2026-04-06)
+- [ ] **Phase 29: PWA Scaffold + Auth** — React PWA project, login, JWT auth, manifest, A2HS, Service Worker shell
 - [ ] **Phase 30: Schedule + Check-in UI** — Today/week schedule view with offline cache, geo check-in button and feedback
 - [ ] **Phase 31: Push Frontend + End-to-End Integration** — Service Worker push handler, subscription opt-in, end-to-end smoke test
 - [ ] **Phase 32: Stats + Homework** — Attendance stats/records with red zone indicator, homework list with completion tracker
@@ -132,11 +132,11 @@ Plans:
   4. Android Chrome displays an A2HS install prompt after the student's first successful check-in
   5. iOS Safari users who open the PWA in a browser (not standalone) see an instruction screen explaining how to add to home screen
   6. After installing and going fully offline, the app shell (login page) loads from the Service Worker cache without a network request
-**Plans:** 3/3 plans complete
+**Plans:** 3 plans
 Plans:
-- [x] 29-01-PLAN.md — Auth-service httpOnly cookie refactor (backend)
-- [x] 29-02-PLAN.md — React PWA scaffold + Vite + Tailwind + shadcn + SW + manifest
-- [x] 29-03-PLAN.md — Auth flow UI + app shell + bottom nav + iOS onboarding + A2HS
+- [ ] 29-01-PLAN.md — Auth-service httpOnly cookie refactor (backend)
+- [ ] 29-02-PLAN.md — React PWA scaffold + Vite + Tailwind + shadcn + SW + manifest
+- [ ] 29-03-PLAN.md — Auth flow UI + app shell + bottom nav + iOS onboarding + A2HS
 **UI hint**: yes
 
 ### Phase 30: Schedule + Check-in UI
@@ -152,8 +152,8 @@ Plans:
   6. When another student in the same group checks in, the current student's lesson card updates its attendance count in real time via the STOMP WebSocket
 **Plans:** 2 plans
 Plans:
-- [ ] 30-01-PLAN.md — Types, API hooks, schedule UI (SchedulePage, WeekDayTabs, LessonCard, StatusBadge, OfflineStaleNotice)
-- [ ] 30-02-PLAN.md — Check-in flow (CheckInButton, CheckInToast, useStompCheckin, CheckInScreen) + STOMP real-time integration
+- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
+- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
 **UI hint**: yes
 
 ### Phase 31: Push Frontend + End-to-End Integration
@@ -219,7 +219,7 @@ Plans:
 | 26. Notification Deployment Hardening | v5.0 | 1/1 | Complete | 2026-04-05 |
 | 27. Web Push Backend | v6.0 | 3/3 | Complete   | 2026-04-05 |
 | 28. API Gateway CORS + nginx | v6.0 | 0/2 | Planned | - |
-| 29. PWA Scaffold + Auth | v6.0 | 3/3 | Complete   | 2026-04-06 |
-| 30. Schedule + Check-in UI | v6.0 | 0/2 | Planned | - |
+| 29. PWA Scaffold + Auth | v6.0 | 0/3 | Planned | - |
+| 30. Schedule + Check-in UI | v6.0 | 0/? | Not started | - |
 | 31. Push Frontend + End-to-End Integration | v6.0 | 0/? | Not started | - |
 | 32. Stats + Homework | v6.0 | 0/? | Not started | - |

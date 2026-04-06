@@ -9,13 +9,13 @@ Requirements for PWA + Web Push milestone. Each maps to roadmap phases.
 
 ### PWA Foundation
 
-- [x] **PWA-01**: User can log in with username and password (JWT stored in memory, refresh in httpOnly cookie)
-- [x] **PWA-02**: Access token auto-refreshes silently before 15-min expiry
-- [x] **PWA-03**: User can log out (clears tokens, invalidates refresh on server)
+- [ ] **PWA-01**: User can log in with username and password (JWT stored in memory, refresh in httpOnly cookie)
+- [ ] **PWA-02**: Access token auto-refreshes silently before 15-min expiry
+- [ ] **PWA-03**: User can log out (clears tokens, invalidates refresh on server)
 - [ ] **PWA-04**: PWA has manifest.json with name "RutTrack", standalone display, 192/512 icons
 - [ ] **PWA-05**: Service Worker registers and caches app shell for offline loading
-- [x] **PWA-06**: Android users see A2HS prompt after first successful check-in
-- [x] **PWA-07**: iOS users see Safari install instructions when not in standalone mode
+- [ ] **PWA-06**: Android users see A2HS prompt after first successful check-in
+- [ ] **PWA-07**: iOS users see Safari install instructions when not in standalone mode
 
 ### Schedule
 
@@ -106,13 +106,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-02 | Phase 27 | Pending |
 | INFRA-01 | Phase 28 | Pending |
 | INFRA-03 | Phase 28 | Pending |
-| PWA-01 | Phase 29 | Complete |
-| PWA-02 | Phase 29 | Complete |
-| PWA-03 | Phase 29 | Complete |
+| PWA-01 | Phase 29 | Pending |
+| PWA-02 | Phase 29 | Pending |
+| PWA-03 | Phase 29 | Pending |
 | PWA-04 | Phase 29 | Pending |
 | PWA-05 | Phase 29 | Pending |
-| PWA-06 | Phase 29 | Complete |
-| PWA-07 | Phase 29 | Complete |
+| PWA-06 | Phase 29 | Pending |
+| PWA-07 | Phase 29 | Pending |
 | SCHED-01 | Phase 30 | Pending |
 | SCHED-02 | Phase 30 | Pending |
 | SCHED-03 | Phase 30 | Pending |

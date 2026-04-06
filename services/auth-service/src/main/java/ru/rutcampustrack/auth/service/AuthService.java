@@ -6,7 +6,8 @@ import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.PublicKeyResponse;
-import ru.rutcampustrack.auth.dto.TokenPair;
+import ru.rutcampustrack.auth.dto.RefreshRequest;
+import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.entity.enums.AccountStatus;
 import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
@@ -37,7 +38,7 @@ public class AuthService {
         this.jwtProperties = jwtProperties;
     }
 
-    public TokenPair login(LoginRequest request) {
+    public TokenResponse login(LoginRequest request) {
         User user = userRepository.findByLogin(request.login())
                 .orElseThrow(InvalidCredentialsException::new);
 
@@ -61,16 +62,16 @@ public class AuthService {
         redisTemplate.opsForValue().set(redisKey, "valid",
                 Duration.ofSeconds(jwtProperties.refreshTokenExpiration()));
 
-        return new TokenPair(accessToken, refreshToken, jwtProperties.accessTokenExpiration());
+        return new TokenResponse(accessToken, refreshToken, jwtProperties.accessTokenExpiration());
     }
 
-    public TokenPair refresh(String refreshToken) {
+    public TokenResponse refresh(RefreshRequest request) {
         Long userId;
         String jti;
 
         try {
-            userId = jwtService.extractUserId(refreshToken);
-            jti = jwtService.extractJti(refreshToken);
+            userId = jwtService.extractUserId(request.refreshToken());
+            jti = jwtService.extractJti(request.refreshToken());
         } catch (Exception e) {
             throw new TokenRefreshException("Invalid or expired refresh token");
         }
@@ -95,7 +96,7 @@ public class AuthService {
         redisTemplate.opsForValue().set(newRedisKey, "valid",
                 Duration.ofSeconds(jwtProperties.refreshTokenExpiration()));
 
-        return new TokenPair(newAccessToken, newRefreshToken, jwtProperties.accessTokenExpiration());
+        return new TokenResponse(newAccessToken, newRefreshToken, jwtProperties.accessTokenExpiration());
     }
 
     public void logout(String refreshToken) {

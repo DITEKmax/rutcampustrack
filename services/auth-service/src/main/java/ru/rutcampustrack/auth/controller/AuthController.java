@@ -3,27 +3,20 @@ package ru.rutcampustrack.auth.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import ru.rutcampustrack.auth.config.JwtProperties;
-import ru.rutcampustrack.auth.dto.AccessTokenResponse;
 import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.OtpCodeResponse;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.PublicKeyResponse;
-import ru.rutcampustrack.auth.dto.TokenPair;
+import ru.rutcampustrack.auth.dto.RefreshRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.service.AuthService;
 import ru.rutcampustrack.auth.service.OtpService;
-
-import java.time.Duration;
 
 @RestController
 @RequestMapping("/auth")
@@ -32,47 +25,33 @@ public class AuthController {
 
     private final AuthService authService;
     private final OtpService otpService;
-    private final JwtProperties jwtProperties;
 
-    public AuthController(AuthService authService, OtpService otpService, JwtProperties jwtProperties) {
+    public AuthController(AuthService authService, OtpService otpService) {
         this.authService = authService;
         this.otpService = otpService;
-        this.jwtProperties = jwtProperties;
     }
 
-    @Operation(summary = "Login with credentials", description = "Authenticate with login and password, returns access token in body and refresh token as httpOnly cookie")
+    @Operation(summary = "Login with credentials", description = "Authenticate with login and password, returns JWT token pair")
     @ApiResponse(responseCode = "200", description = "Successfully authenticated")
     @ApiResponse(responseCode = "401", description = "Invalid credentials")
     @PostMapping("/login")
-    public ResponseEntity<AccessTokenResponse> login(@Valid @RequestBody LoginRequest request,
-                                                     HttpServletResponse response) {
-        TokenPair tokens = authService.login(request);
-        addRefreshCookie(response, tokens.refreshToken());
-        return ResponseEntity.ok(new AccessTokenResponse(tokens.accessToken(), tokens.expiresIn()));
+    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
-    @Operation(summary = "Refresh access token", description = "Exchange refresh token cookie for new access token and rotated refresh cookie")
+    @Operation(summary = "Refresh access token", description = "Exchange refresh token for new token pair (rotation)")
     @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully")
     @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
     @PostMapping("/refresh")
-    public ResponseEntity<AccessTokenResponse> refresh(
-            @CookieValue(name = "refresh_token") String refreshToken,
-            HttpServletResponse response) {
-        TokenPair tokens = authService.refresh(refreshToken);
-        addRefreshCookie(response, tokens.refreshToken());
-        return ResponseEntity.ok(new AccessTokenResponse(tokens.accessToken(), tokens.expiresIn()));
+    public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.refresh(request));
     }
 
-    @Operation(summary = "Logout", description = "Invalidate refresh token and clear cookie")
+    @Operation(summary = "Logout", description = "Invalidate refresh token")
     @ApiResponse(responseCode = "204", description = "Successfully logged out")
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            @CookieValue(name = "refresh_token", required = false) String refreshToken,
-            HttpServletResponse response) {
-        if (refreshToken != null) {
-            authService.logout(refreshToken);
-        }
-        clearRefreshCookie(response);
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequest request) {
+        authService.logout(request.refreshToken());
         return ResponseEntity.noContent().build();
     }
 
@@ -92,7 +71,7 @@ public class AuthController {
         return ResponseEntity.ok(new OtpCodeResponse(code));
     }
 
-    @Operation(summary = "Verify OTP code", description = "Verify OTP code and receive JWT token pair (refresh token in body for bot clients)")
+    @Operation(summary = "Verify OTP code", description = "Verify OTP code and receive JWT token pair")
     @ApiResponse(responseCode = "200", description = "OTP verified, JWT pair returned")
     @ApiResponse(responseCode = "401", description = "Invalid or expired OTP code")
     @PostMapping("/otp/verify")
@@ -109,27 +88,5 @@ public class AuthController {
         Long userId = Long.parseLong(authentication.getName());
         authService.changePassword(userId, request);
         return ResponseEntity.ok().build();
-    }
-
-    private void addRefreshCookie(HttpServletResponse response, String refreshToken) {
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/api/auth")
-                .maxAge(Duration.ofSeconds(jwtProperties.refreshTokenExpiration()))
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-    }
-
-    private void clearRefreshCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/api/auth")
-                .maxAge(0)
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

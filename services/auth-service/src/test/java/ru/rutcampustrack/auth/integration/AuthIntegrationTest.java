@@ -4,9 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
+import ru.rutcampustrack.auth.dto.AccessTokenResponse;
 import ru.rutcampustrack.auth.dto.LoginRequest;
-import ru.rutcampustrack.auth.dto.RefreshRequest;
-import ru.rutcampustrack.auth.dto.TokenResponse;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,42 +16,57 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    // --- Login tests ---
+
     @Test
-    void login_withSeedStudent_returnsTokenPair() {
+    void login_withSeedStudent_returnsAccessTokenAndCookie() {
         LoginRequest request = new LoginRequest("student", "password");
 
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                "/auth/login", request, TokenResponse.class);
+        ResponseEntity<AccessTokenResponse> response = restTemplate.postForEntity(
+                "/auth/login", request, AccessTokenResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().accessToken()).isNotBlank();
-        assertThat(response.getBody().refreshToken()).isNotBlank();
         assertThat(response.getBody().expiresIn()).isEqualTo(900L);
+
+        // Must have Set-Cookie header with refresh_token
+        String cookieHeader = extractSetCookieHeader(response);
+        assertThat(cookieHeader).contains("refresh_token=");
+        assertThat(cookieHeader).containsIgnoringCase("HttpOnly");
+        assertThat(cookieHeader).containsIgnoringCase("Secure");
+        assertThat(cookieHeader).contains("SameSite=Strict");
+        assertThat(cookieHeader).contains("Path=/api/auth");
     }
 
     @Test
-    void login_withSeedAdmin_returnsTokenPair() {
+    void login_withSeedAdmin_returnsAccessTokenAndCookie() {
         LoginRequest request = new LoginRequest("admin", "password");
 
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                "/auth/login", request, TokenResponse.class);
+        ResponseEntity<AccessTokenResponse> response = restTemplate.postForEntity(
+                "/auth/login", request, AccessTokenResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().accessToken()).isNotBlank();
+
+        String cookieHeader = extractSetCookieHeader(response);
+        assertThat(cookieHeader).contains("refresh_token=");
     }
 
     @Test
-    void login_withSeedTeacher_returnsTokenPair() {
+    void login_withSeedTeacher_returnsAccessTokenAndCookie() {
         LoginRequest request = new LoginRequest("teacher", "password");
 
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                "/auth/login", request, TokenResponse.class);
+        ResponseEntity<AccessTokenResponse> response = restTemplate.postForEntity(
+                "/auth/login", request, AccessTokenResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().accessToken()).isNotBlank();
+
+        String cookieHeader = extractSetCookieHeader(response);
+        assertThat(cookieHeader).contains("refresh_token=");
     }
 
     @Test
@@ -64,6 +80,10 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         assertThat(response.getHeaders().getContentType()).isNotNull();
         assertThat(response.getHeaders().getContentType().toString())
                 .contains("application/problem+json");
+
+        // No Set-Cookie on failure
+        List<String> cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
+        assertThat(cookies == null || cookies.stream().noneMatch(c -> c.startsWith("refresh_token="))).isTrue();
     }
 
     @Test
@@ -76,77 +96,121 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test
-    void refresh_withValidToken_returnsNewTokenPair() {
-        // First login to get tokens
-        LoginRequest loginRequest = new LoginRequest("student", "password");
-        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
-                "/auth/login", loginRequest, TokenResponse.class);
-        assertThat(loginResponse.getBody()).isNotNull();
-        String originalAccessToken = loginResponse.getBody().accessToken();
-        String originalRefreshToken = loginResponse.getBody().refreshToken();
+    // --- Refresh tests ---
 
-        // Refresh
-        RefreshRequest refreshRequest = new RefreshRequest(originalRefreshToken);
-        ResponseEntity<TokenResponse> refreshResponse = restTemplate.postForEntity(
-                "/auth/refresh", refreshRequest, TokenResponse.class);
+    @Test
+    void refresh_withValidCookie_returnsNewAccessTokenAndCookie() {
+        // Login to get cookie
+        LoginRequest loginRequest = new LoginRequest("student", "password");
+        ResponseEntity<AccessTokenResponse> loginResponse = restTemplate.postForEntity(
+                "/auth/login", loginRequest, AccessTokenResponse.class);
+
+        String cookieValue = extractRefreshCookieValue(loginResponse);
+
+        // Refresh with cookie
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.COOKIE, "refresh_token=" + cookieValue);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<AccessTokenResponse> refreshResponse = restTemplate.exchange(
+                "/auth/refresh", HttpMethod.POST, entity, AccessTokenResponse.class);
 
         assertThat(refreshResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(refreshResponse.getBody()).isNotNull();
         assertThat(refreshResponse.getBody().accessToken()).isNotBlank();
-        assertThat(refreshResponse.getBody().refreshToken()).isNotBlank();
-        // Refresh token must be different (has unique jti UUID)
-        assertThat(refreshResponse.getBody().refreshToken()).isNotEqualTo(originalRefreshToken);
+
+        // New cookie must be set (token rotation)
+        String newCookieValue = extractRefreshCookieValue(refreshResponse);
+        assertThat(newCookieValue).isNotEqualTo(cookieValue);
     }
 
     @Test
-    void refresh_withUsedToken_returns401() {
+    void refresh_withUsedCookie_returns401() {
         // Login
         LoginRequest loginRequest = new LoginRequest("student", "password");
-        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
-                "/auth/login", loginRequest, TokenResponse.class);
-        assertThat(loginResponse.getBody()).isNotNull();
-        String originalRefreshToken = loginResponse.getBody().refreshToken();
+        ResponseEntity<AccessTokenResponse> loginResponse = restTemplate.postForEntity(
+                "/auth/login", loginRequest, AccessTokenResponse.class);
 
-        // Refresh once — consumes the token
-        RefreshRequest refreshRequest = new RefreshRequest(originalRefreshToken);
-        restTemplate.postForEntity("/auth/refresh", refreshRequest, TokenResponse.class);
+        String cookieValue = extractRefreshCookieValue(loginResponse);
 
-        // Attempt refresh again with the same original token — should fail
-        ResponseEntity<String> secondRefreshResponse = restTemplate.postForEntity(
-                "/auth/refresh", refreshRequest, String.class);
-
-        assertThat(secondRefreshResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    void logout_withValidToken_returns204() {
-        // Login
-        LoginRequest loginRequest = new LoginRequest("student", "password");
-        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
-                "/auth/login", loginRequest, TokenResponse.class);
-        assertThat(loginResponse.getBody()).isNotNull();
-        String accessToken = loginResponse.getBody().accessToken();
-        String refreshToken = loginResponse.getBody().refreshToken();
-
-        // Logout with Authorization header
+        // First refresh (consumes the token)
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        RefreshRequest logoutRequest = new RefreshRequest(refreshToken);
-        HttpEntity<RefreshRequest> entity = new HttpEntity<>(logoutRequest, headers);
+        headers.add(HttpHeaders.COOKIE, "refresh_token=" + cookieValue);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        restTemplate.exchange("/auth/refresh", HttpMethod.POST, entity, AccessTokenResponse.class);
 
-        ResponseEntity<Void> logoutResponse = restTemplate.postForEntity(
-                "/auth/logout", entity, Void.class);
+        // Second refresh with same cookie — should fail (token rotation)
+        ResponseEntity<String> secondRefresh = restTemplate.exchange(
+                "/auth/refresh", HttpMethod.POST, entity, String.class);
+
+        assertThat(secondRefresh.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void refresh_withoutCookie_returns400() {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/auth/refresh", HttpMethod.POST, entity, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    // --- Logout tests ---
+
+    @Test
+    void logout_withValidCookie_returns204AndClearsCookie() {
+        // Login
+        LoginRequest loginRequest = new LoginRequest("student", "password");
+        ResponseEntity<AccessTokenResponse> loginResponse = restTemplate.postForEntity(
+                "/auth/login", loginRequest, AccessTokenResponse.class);
+
+        String cookieValue = extractRefreshCookieValue(loginResponse);
+
+        // Logout with cookie
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.COOKIE, "refresh_token=" + cookieValue);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<Void> logoutResponse = restTemplate.exchange(
+                "/auth/logout", HttpMethod.POST, entity, Void.class);
 
         assertThat(logoutResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
-        // Verify that refreshToken is now invalid
-        RefreshRequest refreshRequest = new RefreshRequest(refreshToken);
-        ResponseEntity<String> refreshResponse = restTemplate.postForEntity(
-                "/auth/refresh", refreshRequest, String.class);
+        // Verify cookie is cleared (Max-Age=0)
+        String clearCookie = extractSetCookieHeader(logoutResponse);
+        assertThat(clearCookie).contains("refresh_token=");
+        assertThat(clearCookie).contains("Max-Age=0");
+    }
+
+    @Test
+    void logout_thenRefresh_returns401() {
+        // Login
+        LoginRequest loginRequest = new LoginRequest("student", "password");
+        ResponseEntity<AccessTokenResponse> loginResponse = restTemplate.postForEntity(
+                "/auth/login", loginRequest, AccessTokenResponse.class);
+
+        String cookieValue = extractRefreshCookieValue(loginResponse);
+
+        // Logout
+        HttpHeaders logoutHeaders = new HttpHeaders();
+        logoutHeaders.add(HttpHeaders.COOKIE, "refresh_token=" + cookieValue);
+        HttpEntity<Void> logoutEntity = new HttpEntity<>(logoutHeaders);
+        restTemplate.exchange("/auth/logout", HttpMethod.POST, logoutEntity, Void.class);
+
+        // Try refresh with old cookie — should fail
+        HttpHeaders refreshHeaders = new HttpHeaders();
+        refreshHeaders.add(HttpHeaders.COOKIE, "refresh_token=" + cookieValue);
+        HttpEntity<Void> refreshEntity = new HttpEntity<>(refreshHeaders);
+
+        ResponseEntity<String> refreshResponse = restTemplate.exchange(
+                "/auth/refresh", HttpMethod.POST, refreshEntity, String.class);
+
         assertThat(refreshResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
+
+    // --- Public key (unchanged) ---
 
     @Test
     void publicKey_returnsRsaPem() {
@@ -155,7 +219,24 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        // Response is a JSON object with publicKey field containing PEM
         assertThat(response.getBody()).contains("BEGIN PUBLIC KEY");
+    }
+
+    // --- Helper methods ---
+
+    private String extractSetCookieHeader(ResponseEntity<?> response) {
+        List<String> cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
+        assertThat(cookies).isNotNull().isNotEmpty();
+        return cookies.stream()
+                .filter(c -> c.startsWith("refresh_token="))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No refresh_token cookie found in Set-Cookie headers"));
+    }
+
+    private String extractRefreshCookieValue(ResponseEntity<?> response) {
+        String cookieHeader = extractSetCookieHeader(response);
+        // Format: "refresh_token=<value>; Path=/api/auth; HttpOnly; Secure; SameSite=Strict"
+        String nameValue = cookieHeader.split(";")[0]; // "refresh_token=<value>"
+        return nameValue.substring("refresh_token=".length());
     }
 }

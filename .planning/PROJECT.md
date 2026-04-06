@@ -21,7 +21,7 @@ Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) +
 - Интеграция с существующими бэкенд-сервисами через API Gateway
 
 ## Current State
-v5.0 shipped 2026-04-05. All backend services operational: 5 Java microservices + API Gateway + notification-web (Java WebSocket) + notification-bot (Python Aiogram). 7 containers in docker-compose. ~108K lines of code across Java and Python. Starting v6.0: PWA mobile client with Web Push notifications.
+v5.0 shipped 2026-04-05. All backend services operational. v6.0 in progress: Phase 30 complete — schedule view + geo check-in UI built (SchedulePage, WeekDayTabs, LessonCard, CheckInButton with GPS, StompProvider for real-time STOMP, CheckInScreen). 31 PWA tests pass. Next: Phase 31 (push frontend + E2E integration).
 
 ## Shipped Milestones
 

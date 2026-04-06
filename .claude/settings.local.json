@@ -48,7 +48,11 @@
       "Bash(npm install:*)",
       "Bash(npm run:*)",
       "Bash(ls .planning/phases/29-pwa-scaffold-auth/*-SECURITY.md)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(cat .planning/phases/31-push-frontend-end-to-end-integration/*-VERIFICATION.md)",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }

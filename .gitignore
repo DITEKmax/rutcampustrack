@@ -38,6 +38,9 @@ venv/
 node_modules/
 dist/
 !frontends/pwa/dist/
+!frontends/mini-app/dist/
+!frontends/web-panel/dist/
+!frontends/landing/dist/
 .next/
 .angular/
 

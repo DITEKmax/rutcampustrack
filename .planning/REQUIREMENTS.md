@@ -1,12 +1,3 @@
-# Requirements Archive: v6.0 PWA + Web Push
-
-**Archived:** 2026-04-06
-**Status:** SHIPPED
-
-For current requirements, see `.planning/REQUIREMENTS.md`.
-
----
-
 # Requirements: RutCampusTrack
 
 **Defined:** 2026-04-05
@@ -57,14 +48,14 @@ Requirements for PWA + Web Push milestone. Each maps to roadmap phases.
 
 ### Attendance
 
-- [x] **ATT-01**: User can view attendance stats per subject (percentage, count)
-- [x] **ATT-02**: User sees red zone warning when below threshold for a subject
-- [x] **ATT-03**: User can view attendance records list with status indicators (б/н/у/сп with colors)
+- [ ] **ATT-01**: User can view attendance stats per subject (percentage, count)
+- [ ] **ATT-02**: User sees red zone warning when below threshold for a subject
+- [ ] **ATT-03**: User can view attendance records list with status indicators (б/н/у/сп with colors)
 
 ### Homework
 
-- [x] **HW-01**: User can view homework list for their group
-- [x] **HW-02**: User can mark homework as done/undone (personal completion tracker)
+- [ ] **HW-01**: User can view homework list for their group
+- [ ] **HW-02**: User can mark homework as done/undone (personal completion tracker)
 
 ### Infrastructure
 
@@ -132,11 +123,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PUSHUI-02 | Phase 31 | Pending |
 | PUSHUI-03 | Phase 31 | Pending |
 | PUSHUI-04 | Phase 31 | Pending |
-| ATT-01 | Phase 32 | Complete |
-| ATT-02 | Phase 32 | Complete |
-| ATT-03 | Phase 32 | Complete |
-| HW-01 | Phase 32 | Complete |
-| HW-02 | Phase 32 | Complete |
+| ATT-01 | Phase 32 | Pending |
+| ATT-02 | Phase 32 | Pending |
+| ATT-03 | Phase 32 | Pending |
+| HW-01 | Phase 32 | Pending |
+| HW-02 | Phase 32 | Pending |
 
 **Coverage:**
 - v6.0 requirements: 32 total

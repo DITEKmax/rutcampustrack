@@ -131,7 +131,9 @@ Plans:
   2. `POST /api/auth/tma` with tampered initData returns 401 with clear error
   3. `POST /api/auth/refresh-body` with valid refresh token returns new access + refresh tokens in response body
   4. User lookup by `telegram_id` (stored from v5.0 bot /start linking) works correctly
-**Plans:** TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 34-01-PLAN.md — TmaService HMAC validation + controller endpoints + integration tests
 **UI hint**: no
 
 ### Phase 35: Landing Page
@@ -244,7 +246,7 @@ Plans:
 | 31. Push Frontend + E2E Integration | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 32. Stats + Homework | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 33. Infrastructure | v7.0 | 2/2 | Complete | 2026-04-06 |
-| 34. Auth Service TMA | v7.0 | 0/? | Planned | - |
+| 34. Auth Service TMA | v7.0 | 0/1 | Planned | - |
 | 35. Landing Page | v7.0 | 0/? | Planned | - |
 | 36. Mini App Scaffold + Auth | v7.0 | 0/? | Planned | - |
 | 37. Mini App Features | v7.0 | 0/? | Planned | - |

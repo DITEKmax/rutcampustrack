@@ -181,8 +181,10 @@ Plans:
   3. Student can view a scrollable list of individual attendance records showing date, lesson name, and status with color coding (б/н/у/сп)
   4. Student opens the homework screen and sees all homework items for their group with title, subject, deadline, and completion status
   5. Student taps a checkbox on a homework item; the item toggles to done/undone and the state persists after closing and reopening the app
-**Plans:** not yet planned
-Plans: (to be created during phase planning)
+**Plans:** 2 plans
+Plans:
+- [ ] 32-01-PLAN.md — Attendance stats + records pages, BottomNav restructure, routing
+- [ ] 32-02-PLAN.md — Homework list page with server-side completion toggle
 **UI hint**: yes
 
 ## Progress
@@ -220,4 +222,4 @@ Plans: (to be created during phase planning)
 | 29. PWA Scaffold + Auth | v6.0 | 3/3 | Complete | 2026-04-06 |
 | 30. Schedule + Check-in UI | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 31. Push Frontend + End-to-End Integration | v6.0 | 2/2 | Complete   | 2026-04-06 |
-| 32. Stats + Homework | v6.0 | 0/? | Not started | - |
+| 32. Stats + Homework | v6.0 | 0/2 | Planned | - |

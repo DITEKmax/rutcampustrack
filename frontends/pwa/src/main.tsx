@@ -9,6 +9,7 @@ import { ProtectedRoute } from './shared/components/ProtectedRoute'
 import { AppShell } from './shared/components/AppShell'
 import { IOSOnboardingOverlay } from './features/auth/IOSOnboardingOverlay'
 import { LoadingSpinner } from './shared/components/LoadingSpinner'
+import { StompProvider } from './features/checkin/StompProvider'
 import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 
@@ -28,7 +29,9 @@ const router = createBrowserRouter([
     path: '/',
     element: (
       <ProtectedRoute>
-        <AppShell />
+        <StompProvider>
+          <AppShell />
+        </StompProvider>
       </ProtectedRoute>
     ),
     children: [

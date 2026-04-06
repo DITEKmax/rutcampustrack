@@ -1,69 +1,136 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderHook } from '@testing-library/react'
 
-// Mock @stomp/stompjs
+// Track constructor calls
+let mockClientInstances: Array<{
+  activate: ReturnType<typeof vi.fn>
+  deactivate: ReturnType<typeof vi.fn>
+  subscribe: ReturnType<typeof vi.fn>
+  onConnect: (() => void) | null
+  webSocketFactory: (() => unknown) | null
+}>
+
 vi.mock('@stomp/stompjs', () => {
-  const mockSubscribe = vi.fn()
-  const mockActivate = vi.fn()
-  const mockDeactivate = vi.fn()
-
   return {
-    Client: vi.fn().mockImplementation(() => ({
-      activate: mockActivate,
-      deactivate: mockDeactivate,
-      subscribe: mockSubscribe,
-      connected: false,
-      onConnect: null as (() => void) | null,
-    })),
-    __mockSubscribe: mockSubscribe,
-    __mockActivate: mockActivate,
+    Client: vi.fn().mockImplementation((config: { onConnect?: () => void; webSocketFactory?: () => unknown }) => {
+      const instance = {
+        activate: vi.fn(),
+        deactivate: vi.fn().mockResolvedValue(undefined),
+        subscribe: vi.fn(),
+        onConnect: config.onConnect ?? null,
+        webSocketFactory: config.webSocketFactory ?? null,
+      }
+      mockClientInstances.push(instance)
+      return instance
+    }),
   }
 })
+
+vi.mock('sockjs-client', () => ({
+  default: vi.fn().mockImplementation((url: string) => ({ url })),
+}))
+
+import { useStompCheckin } from '../useStompCheckin'
+import SockJSImport from 'sockjs-client'
+
+const SockJS = vi.mocked(SockJSImport)
 
 describe('useStompCheckin', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockClientInstances = []
   })
 
-  it('subscribes to /topic/group/{groupId} (stub test)', async () => {
-    // Stub: useStompCheckin hook is not yet implemented (Plan 02)
-    // This test validates the STOMP client mock setup works
-    const { Client } = await import('@stomp/stompjs')
-    const client = new Client({ brokerURL: 'ws://localhost/ws' })
+  it('creates Client with webSocketFactory using SockJS and token', () => {
+    const getAccessToken = () => 'test-jwt-token'
 
-    expect(client.activate).toBeDefined()
-    expect(client.subscribe).toBeDefined()
-    expect(Client).toHaveBeenCalledWith({ brokerURL: 'ws://localhost/ws' })
+    renderHook(() => useStompCheckin(5, getAccessToken, vi.fn()))
+
+    expect(mockClientInstances).toHaveLength(1)
+    const instance = mockClientInstances[0]
+    expect(instance.webSocketFactory).toBeDefined()
+
+    // Call the factory and verify it uses the token
+    instance.webSocketFactory!()
+    expect(SockJS).toHaveBeenCalledWith('/api/ws?token=test-jwt-token')
   })
 
-  it('calls onMarked callback on attendance.marked event (stub test)', async () => {
+  it('subscribes to /topic/group/{groupId} on connect', async () => {
+    const getAccessToken = () => 'test-token'
+
+    renderHook(() => useStompCheckin(5, getAccessToken, vi.fn()))
+
+    const instance = mockClientInstances[0]
+    expect(instance.activate).toHaveBeenCalled()
+
+    // Simulate onConnect
+    instance.onConnect!()
+    expect(instance.subscribe).toHaveBeenCalledWith(
+      '/topic/group/5',
+      expect.any(Function)
+    )
+  })
+
+  it('calls onMarked when attendance.marked event received', () => {
     const onMarked = vi.fn()
-    const { Client } = await import('@stomp/stompjs')
-    const client = new Client({ brokerURL: 'ws://localhost/ws' })
+    const getAccessToken = () => 'test-token'
 
-    // Simulate subscription and message
-    const mockMessage = {
+    renderHook(() => useStompCheckin(5, getAccessToken, onMarked))
+
+    const instance = mockClientInstances[0]
+    instance.onConnect!()
+
+    // Get the subscription callback
+    const subscribeCallback = instance.subscribe.mock.calls[0][1]
+
+    // Simulate an attendance.marked message
+    subscribeCallback({
       body: JSON.stringify({
-        lesson_id: 1,
-        user_id: 1,
-        group_id: 5,
-        status: 'present',
-        marked_by: 'geo',
+        type: 'attendance.marked',
+        payload: { lesson_id: 1, user_id: 42, group_id: 5, status: 'present', marked_by: 'student_geo' },
       }),
-    }
-
-    // Stub: when useStompCheckin is implemented, it will subscribe and call onMarked
-    // For now, verify the mock framework works
-    client.subscribe('/topic/group/5', (msg: { body: string }) => {
-      onMarked(JSON.parse(msg.body))
     })
 
-    // Simulate callback
-    const subscribeCall = vi.mocked(client.subscribe).mock.calls[0]
-    const callback = subscribeCall[1] as (msg: { body: string }) => void
-    callback(mockMessage)
+    expect(onMarked).toHaveBeenCalledWith({
+      lesson_id: 1,
+      user_id: 42,
+      group_id: 5,
+      status: 'present',
+      marked_by: 'student_geo',
+    })
+  })
 
-    expect(onMarked).toHaveBeenCalledWith(
-      expect.objectContaining({ lesson_id: 1, status: 'present' })
-    )
+  it('ignores events with different type (not attendance.marked)', () => {
+    const onMarked = vi.fn()
+    const getAccessToken = () => 'test-token'
+
+    renderHook(() => useStompCheckin(5, getAccessToken, onMarked))
+
+    const instance = mockClientInstances[0]
+    instance.onConnect!()
+
+    const subscribeCallback = instance.subscribe.mock.calls[0][1]
+
+    // Send a different event type
+    subscribeCallback({
+      body: JSON.stringify({
+        type: 'lesson.started',
+        payload: { lesson_id: 1 },
+      }),
+    })
+
+    expect(onMarked).not.toHaveBeenCalled()
+  })
+
+  it('deactivates client on unmount', () => {
+    const getAccessToken = () => 'test-token'
+
+    const { unmount } = renderHook(() => useStompCheckin(5, getAccessToken, vi.fn()))
+
+    const instance = mockClientInstances[0]
+    expect(instance.deactivate).not.toHaveBeenCalled()
+
+    unmount()
+    expect(instance.deactivate).toHaveBeenCalled()
   })
 })

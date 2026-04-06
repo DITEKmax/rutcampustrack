@@ -36,6 +36,15 @@ vi.mock('@/shared/hooks/useNetworkStatus', () => ({
   useNetworkStatus: () => ({ isOnline: true }),
 }))
 
+// Mock StompProvider
+vi.mock('@/features/checkin/StompProvider', () => ({
+  useStompEvents: () => ({
+    attendanceCounts: {},
+    personalStatuses: {},
+    markPersonalStatus: vi.fn(),
+  }),
+}))
+
 import { apiClient } from '@/shared/lib/axios'
 import { SchedulePage } from '../SchedulePage'
 

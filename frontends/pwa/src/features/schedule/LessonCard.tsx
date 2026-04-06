@@ -1,6 +1,8 @@
 import { motion } from 'motion/react'
+import { Check } from '@phosphor-icons/react'
 import { useSubjectName } from './api'
 import { StatusBadge } from './StatusBadge'
+import { CheckInButton } from '@/features/checkin/CheckInButton'
 import type { LessonResponse, AttendanceStatus } from './types'
 
 interface LessonCardProps {
@@ -8,6 +10,7 @@ interface LessonCardProps {
   attendanceCount?: number
   personalStatus?: AttendanceStatus | null
   onCheckin?: () => void
+  onCheckinError?: (msg: string) => void
   isCheckinLoading?: boolean
 }
 
@@ -21,6 +24,7 @@ export function LessonCard({
   attendanceCount,
   personalStatus,
   onCheckin,
+  onCheckinError,
   isCheckinLoading,
 }: LessonCardProps) {
   const { data: subjectName, isLoading: subjectLoading } = useSubjectName(lesson.subjectId)
@@ -39,7 +43,11 @@ export function LessonCard({
         <span className="text-base font-semibold">
           {formatTime(lesson.startTime)} - {formatTime(lesson.endTime)}
         </span>
-        <StatusBadge status={lesson.status} />
+        {personalStatus ? (
+          <StatusBadge status={personalStatus} />
+        ) : (
+          <StatusBadge status={lesson.status} />
+        )}
       </div>
 
       {/* Row 2: Subject name */}
@@ -62,27 +70,28 @@ export function LessonCard({
       {isActive && !isCancelled && (
         <div className="flex items-center justify-between mt-3">
           {personalStatus ? (
-            <StatusBadge status={personalStatus} />
+            <div className="flex items-center gap-2">
+              <Check size={20} weight="bold" className="text-green-600" />
+              <StatusBadge status={personalStatus} />
+            </div>
           ) : (
             <>
               {onCheckin && (
-                <button
-                  onClick={onCheckin}
+                <CheckInButton
+                  onSuccess={onCheckin}
+                  onError={onCheckinError}
                   disabled={isCheckinLoading}
-                  className="bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-medium min-h-[44px] disabled:opacity-50"
-                >
-                  {isCheckinLoading ? (
-                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  ) : (
-                    'Отметиться'
-                  )}
-                </button>
+                />
               )}
-              {attendanceCount !== undefined && (
-                <span className="text-xs text-muted-foreground">
-                  {attendanceCount} / ? чел
-                </span>
-              )}
+              <motion.span
+                key={attendanceCount}
+                initial={{ y: -8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                className="text-xs text-muted-foreground"
+              >
+                {attendanceCount ?? 0} чел
+              </motion.span>
             </>
           )}
         </div>

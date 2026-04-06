@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { useNetworkStatus } from '@/shared/hooks/useNetworkStatus'
+import { useStompEvents } from '@/features/checkin/StompProvider'
+import { CheckInToast } from '@/features/checkin/CheckInToast'
 import { useWeekSchedule, usePrefetchSubjects } from './api'
 import { WeekDayTabs } from './WeekDayTabs'
 import { LessonCard } from './LessonCard'
@@ -62,9 +64,11 @@ export function SchedulePage() {
   const { user } = useAuth()
   const groupId = user?.groupId ?? 0
   const { isOnline } = useNetworkStatus()
+  const { attendanceCounts, personalStatuses, markPersonalStatus } = useStompEvents()
 
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getMonday(new Date()))
   const [selectedDayIndex, setSelectedDayIndex] = useState(getTodayDayIndex)
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const hasAutoScrolled = useRef(false)
 
   const weekStart = formatDate(currentWeekStart)
@@ -128,6 +132,18 @@ export function SchedulePage() {
       setSelectedDayIndex((prev) => prev - 1)
     }
   }
+
+  const handleCheckinSuccess = useCallback(
+    (lessonId: number) => {
+      setToast({ type: 'success', message: 'Отметка принята' })
+      markPersonalStatus(lessonId, 'present')
+    },
+    [markPersonalStatus]
+  )
+
+  const handleCheckinError = useCallback((msg: string) => {
+    setToast({ type: 'error', message: msg })
+  }, [])
 
   return (
     <div className="flex flex-col min-h-full">
@@ -203,12 +219,29 @@ export function SchedulePage() {
                     visible: { opacity: 1 },
                   }}
                 >
-                  <LessonCard lesson={lesson} />
+                  <LessonCard
+                    lesson={lesson}
+                    attendanceCount={attendanceCounts[lesson.id]}
+                    personalStatus={personalStatuses[lesson.id] ?? null}
+                    onCheckin={() => handleCheckinSuccess(lesson.id)}
+                    onCheckinError={handleCheckinError}
+                  />
                 </motion.div>
               ))}
             </motion.div>
           )}
         </motion.div>
+      </AnimatePresence>
+
+      {/* Check-in toast */}
+      <AnimatePresence>
+        {toast && (
+          <CheckInToast
+            type={toast.type}
+            message={toast.message}
+            onDismiss={() => setToast(null)}
+          />
+        )}
       </AnimatePresence>
 
       {/* Floating "Сегодня" pill (D-04) */}

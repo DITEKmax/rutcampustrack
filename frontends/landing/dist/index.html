@@ -1,5 +1,252 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head><meta charset="UTF-8"><title>Landing — placeholder</title></head>
-<body><h1>Landing placeholder</h1><p>Phase 35 will replace this with the real build.</p></body>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RutCampusTrack — Система учёта посещаемости РУТ МИИТ</title>
+  <meta name="description" content="Автоматизированная геоотметка, расписание и статистика посещаемости для студентов и преподавателей РУТ МИИТ.">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'media',
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#2563EB', dark: '#1D4ED8', light: '#3B82F6' },
+            accent: '#10B981'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js"></script>
+
+  <style>
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .animate-bounce { animation: bounce 2s infinite; }
+  </style>
+</head>
+<body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+
+  <!-- Skip-to-content -->
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:bg-white focus:px-4 focus:py-2 focus:rounded">Перейти к содержимому</a>
+
+  <!-- Header / Nav -->
+  <header class="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <span class="font-bold text-xl text-blue-600">RutCampusTrack</span>
+
+      <!-- Desktop nav links -->
+      <div class="hidden sm:flex items-center gap-6">
+        <a href="#features" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Возможности</a>
+        <a href="#roles" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Роли</a>
+      </div>
+
+      <!-- Mobile hamburger (CSS-only) -->
+      <input type="checkbox" id="menu-toggle" class="peer hidden">
+      <!-- Open menu label (visible by default, hidden when checked) -->
+      <label for="menu-toggle" aria-label="Открыть меню" class="sm:hidden cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center peer-checked:hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
+        <div class="space-y-1.5">
+          <span class="block w-6 h-0.5 bg-gray-900 dark:bg-gray-100"></span>
+          <span class="block w-6 h-0.5 bg-gray-900 dark:bg-gray-100"></span>
+          <span class="block w-6 h-0.5 bg-gray-900 dark:bg-gray-100"></span>
+        </div>
+      </label>
+      <!-- Close menu label (hidden by default, visible when checked) -->
+      <label for="menu-toggle" aria-label="Закрыть меню" class="sm:hidden cursor-pointer min-h-[44px] min-w-[44px] hidden items-center justify-center peer-checked:flex focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
+        <svg class="w-6 h-6 text-gray-900 dark:text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </label>
+
+      <!-- Mobile dropdown -->
+      <div class="hidden peer-checked:flex flex-col absolute top-16 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sm:hidden p-4 gap-4">
+        <a href="#features" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Возможности</a>
+        <a href="#roles" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Роли</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <!-- Hero Section -->
+    <section id="hero" class="min-h-screen flex items-center">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:flex lg:items-center lg:gap-12">
+        <!-- Left column (text) -->
+        <div class="flex-1">
+          <h1 class="hero-headline text-5xl lg:text-6xl font-semibold tracking-tight text-gray-900 dark:text-white">Учёт посещаемости<br class="hidden sm:block"> для РУТ МИИТ</h1>
+          <p class="hero-sub mt-6 text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">Геоотметка за 10 секунд, расписание, статистика и уведомления в Telegram — всё в одном месте. Для студентов, старост и преподавателей.</p>
+          <div class="hero-cta mt-8 flex flex-col sm:flex-row items-start gap-4">
+            <a href="#" class="inline-flex items-center justify-center px-6 py-3 min-h-[44px] bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Открыть в Telegram</a>
+            <a href="#features" aria-label="Прокрутить к возможностям" class="mt-4 sm:mt-0 animate-bounce text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"><i class="ph-duotone ph-arrow-down" style="font-size:32px" aria-hidden="true"></i></a>
+          </div>
+        </div>
+        <!-- Right column (device mockup) -->
+        <div class="hidden lg:block flex-shrink-0">
+          <div class="rounded-3xl border-8 border-gray-200 dark:border-gray-700 shadow-2xl w-[280px] h-[560px] bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
+            <span class="text-gray-400 text-sm"><!-- TODO: replace with real screenshot --></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 lg:py-24 bg-gray-50 dark:bg-gray-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl sm:text-3xl font-semibold text-center text-gray-900 dark:text-white">Возможности системы</h2>
+        <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Feature 1: Геоотметка -->
+          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
+            <i class="ph-duotone ph-map-pin text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Геоотметка</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Отметьтесь на паре одним нажатием — GPS подтверждает присутствие на кампусе.</p>
+          </div>
+
+          <!-- Feature 2: Расписание -->
+          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
+            <i class="ph-duotone ph-calendar text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Расписание</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Расписание на день и неделю с автоматическим обновлением при изменениях.</p>
+          </div>
+
+          <!-- Feature 3: Статистика посещаемости -->
+          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
+            <i class="ph-duotone ph-chart-bar text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Статистика посещаемости</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Процент посещаемости по каждому предмету с индикатором красной зоны.</p>
+          </div>
+
+          <!-- Feature 4: Уведомления в Telegram -->
+          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
+            <i class="ph-duotone ph-telegram-logo text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Уведомления в Telegram</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Напоминания об отметке и уведомления прямо в мессенджере.</p>
+          </div>
+
+          <!-- Feature 5: Трекер ДЗ -->
+          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
+            <i class="ph-duotone ph-books text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Трекер ДЗ</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Список домашних заданий с отметкой о выполнении.</p>
+          </div>
+
+          <!-- Feature 6: Роль старосты -->
+          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
+            <i class="ph-duotone ph-crown text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Роль старосты</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Делегирование прав помощнику, журнал группы и настройка порогов.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Roles Section -->
+    <section id="roles" class="py-16 lg:py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl sm:text-3xl font-semibold text-center text-gray-900 dark:text-white">Для всех участников учебного процесса</h2>
+        <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <!-- Role 1: Студент -->
+          <div class="role-card opacity-0 translate-y-6 rounded-2xl p-6 bg-blue-50 dark:bg-blue-900/20">
+            <i class="ph-duotone ph-student text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Студент</h3>
+            <ul class="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+              <li>Геоотметка на парах</li>
+              <li>Расписание на день и неделю</li>
+              <li>Статистика посещаемости</li>
+              <li>ДЗ трекер</li>
+            </ul>
+          </div>
+
+          <!-- Role 2: Студент-Староста -->
+          <div class="role-card opacity-0 translate-y-6 rounded-2xl p-6 bg-violet-50 dark:bg-violet-900/20">
+            <i class="ph-duotone ph-crown text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Студент-Староста</h3>
+            <ul class="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+              <li>Делегирование прав помощнику</li>
+              <li>Журнал группы</li>
+              <li>Excuse-тикеты</li>
+              <li>Порог красной зоны</li>
+            </ul>
+          </div>
+
+          <!-- Role 3: Преподаватель -->
+          <div class="role-card opacity-0 translate-y-6 rounded-2xl p-6 bg-amber-50 dark:bg-amber-900/20">
+            <i class="ph-duotone ph-chalkboard-teacher text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Преподаватель</h3>
+            <ul class="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+              <li>Журнал посещаемости (read-only)</li>
+              <li>Статистика по группам</li>
+              <li>Фильтры по предметам</li>
+            </ul>
+          </div>
+
+          <!-- Role 4: Администратор -->
+          <div class="role-card opacity-0 translate-y-6 rounded-2xl p-6 bg-gray-100 dark:bg-gray-700/30">
+            <i class="ph-duotone ph-shield text-blue-600" style="font-size:32px" aria-hidden="true"></i>
+            <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Администратор</h3>
+            <ul class="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+              <li>CRUD пользователей</li>
+              <li>Управление группами</li>
+              <li>Управление семестрами</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-800 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <span class="font-bold text-blue-600">RutCampusTrack</span>
+      <div class="flex gap-6">
+        <a href="#features" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Возможности</a>
+        <a href="#roles" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Роли</a>
+      </div>
+      <p class="text-sm text-gray-500">&copy; 2026 РУТ МИИТ — RutCampusTrack</p>
+    </div>
+  </footer>
+
+  <!-- Noscript fallback -->
+  <noscript><style>.feature-card,.role-card{opacity:1!important;transform:none!important}</style></noscript>
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      // Hero — immediate, no ScrollTrigger
+      gsap.from(".hero-headline", { autoAlpha: 0, y: 30, duration: 0.8, ease: "power3.out" });
+      gsap.from(".hero-sub", { autoAlpha: 0, y: 20, duration: 0.8, delay: 0.15, ease: "power2.out" });
+      gsap.from(".hero-cta", { autoAlpha: 0, y: 15, duration: 0.6, delay: 0.3, ease: "power1.out" });
+      // Feature cards — batch ScrollTrigger
+      ScrollTrigger.batch(".feature-card", {
+        onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, stagger: 0.10, duration: 0.6, ease: "power2.out" }),
+        start: "top 85%",
+        once: true
+      });
+      // Role cards — batch ScrollTrigger
+      ScrollTrigger.batch(".role-card", {
+        onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.5, ease: "power2.out" }),
+        start: "top 85%",
+        once: true
+      });
+    });
+  </script>
+
+</body>
 </html>

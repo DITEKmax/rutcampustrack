@@ -77,7 +77,7 @@ Full details: `.planning/milestones/v5.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v6.0 PWA + Web Push (In Progress)
+### v6.0 PWA + Web Push (In Progress)
 
 **Milestone Goal:** Student mobile client «RutTrack» (React PWA) with native Web Push notifications — installable on Android/iOS, offline-capable app shell, geo check-in, schedule view, attendance stats, homework tracker.
 
@@ -152,8 +152,8 @@ Plans:
   6. When another student in the same group checks in, the current student's lesson card updates its attendance count in real time via the STOMP WebSocket
 **Plans:** 2 plans
 Plans:
-- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
-- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
+- [ ] 30-01-PLAN.md — Types, API hooks, schedule UI (SchedulePage, WeekDayTabs, LessonCard, StatusBadge, OfflineStaleNotice)
+- [ ] 30-02-PLAN.md — Check-in flow (CheckInButton, CheckInToast, useStompCheckin, CheckInScreen) + STOMP real-time integration
 **UI hint**: yes
 
 ### Phase 31: Push Frontend + End-to-End Integration
@@ -220,6 +220,6 @@ Plans:
 | 27. Web Push Backend | v6.0 | 3/3 | Complete   | 2026-04-05 |
 | 28. API Gateway CORS + nginx | v6.0 | 0/2 | Planned | - |
 | 29. PWA Scaffold + Auth | v6.0 | 3/3 | Complete   | 2026-04-06 |
-| 30. Schedule + Check-in UI | v6.0 | 0/? | Not started | - |
+| 30. Schedule + Check-in UI | v6.0 | 0/2 | Planned | - |
 | 31. Push Frontend + End-to-End Integration | v6.0 | 0/? | Not started | - |
 | 32. Stats + Homework | v6.0 | 0/? | Not started | - |

@@ -7,7 +7,8 @@
 - ✅ **v3.0 Schedule Service** — Phases 10-14 (shipped 2026-04-04)
 - ✅ **v4.0 Attendance Service MVP** — Phases 15-19 (shipped 2026-04-04)
 - ✅ **v5.0 Notification Service (Web + Bot)** — Phases 20-26 (shipped 2026-04-05)
-- 🚧 **v6.0 PWA + Web Push** — Phases 27-32 (in progress)
+- ✅ **v6.0 PWA + Web Push** — Phases 27-32 (shipped 2026-04-06)
+- 🚧 **v7.0 Frontends — Mini App, Web Panel, Landing** — Phases 33-40 (in progress)
 
 ## Phases
 
@@ -223,3 +224,4 @@ Plans:
 | 30. Schedule + Check-in UI | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 31. Push Frontend + End-to-End Integration | v6.0 | 2/2 | Complete   | 2026-04-06 |
 | 32. Stats + Homework | v6.0 | 0/2 | Planned | - |
+| 33. Infrastructure | v7.0 | 2/2 | Complete | 2026-04-06 |

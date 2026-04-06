@@ -1,40 +1,40 @@
 ---
 gsd_state_version: 1.0
-milestone: v6.0
-milestone_name: PWA + Web Push
+milestone: v7.0
+milestone_name: Frontends — Mini App, Web Panel, Landing
 status: executing
-stopped_at: Phase 32 context gathered
-last_updated: "2026-04-06T13:46:08.271Z"
-last_activity: 2026-04-06 -- Phase 32 planning complete
+stopped_at: Phase 33 complete — infrastructure scaffolding + Gateway CORS
+last_updated: "2026-04-06T19:10:00.000Z"
+last_activity: 2026-04-06 -- Phase 33 verified and complete
 progress:
-  total_phases: 6
-  completed_phases: 4
-  total_plans: 14
-  completed_plans: 9
-  percent: 64
+  total_phases: 8
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
+  percent: 12
 ---
 
 # Project State
 
 ## Current Milestone
 
-v6.0 PWA + Web Push — Phases 27-31 complete, ready to plan Phase 32
+v7.0 Frontends — Mini App, Web Panel, Landing
 
 ## Current Position
 
-Phase: 31 (push-frontend-end-to-end-integration) — COMPLETE
-Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-04-06 -- Phase 32 planning complete
+Phase: 33 (infrastructure) — COMPLETE ✓
+Plan: 2 of 2 complete
+Status: Phase 33 verified and complete
+Last activity: 2026-04-06 -- Phase 33 verified and complete
 
-Progress: [████████░░] 83% (5/6 phases)
+Progress: [█░░░░░░░░░] 12%
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-05)
+See: `.planning/PROJECT.md` (updated 2026-04-06)
 
-**Core value:** Student mobile client «RutTrack» (React PWA) with native push notifications — independent from Telegram, installable, offline-capable
-**Current focus:** Phase 32 — next phase
+**Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
+**Current focus:** Phase 33 — infrastructure
 
 ## Completed Milestones
 
@@ -45,6 +45,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 | v3.0 | Schedule Service | 10-14 | 10 | 2026-04-04 |
 | v4.0 | Attendance Service MVP | 15-19 | 12 | 2026-04-04 |
 | v5.0 | Notification Service (Web + Bot) | 20-26 | 16 | 2026-04-05 |
+| v6.0 | PWA + Web Push | 27-32 | 14 | 2026-04-06 |
 
 ## Accumulated Context
 
@@ -52,22 +53,17 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 See PROJECT.md Key Decisions table for full history.
 
-Recent decisions relevant to v6.0:
+Recent decisions affecting current work:
 
-- v5.0: STOMP in-memory broker (no external broker) — sufficient for single-instance VPS
-- v6.0 planning: VAPID keys persist in Redis (no TTL) — never regenerated on restart to avoid invalidating subscriptions
-- v6.0 planning: `injectManifest` strategy for vite-plugin-pwa — required for custom `push` event handler in Service Worker
-- [Phase 28]: OPTIONS bypass before isPublicRoute; explicit CORS origins (not wildcard) with allow-credentials
-- [Phase 28]: Added .gitignore exception for frontends/pwa/dist/ — placeholder files must be tracked
-- [Phase 29]: BeforeInstallPromptEvent must be inside declare global block for TypeScript module visibility
+- v6.0: httpOnly cookie for refresh token — Mini App cannot use this pattern (WebView drops cookies); use localStorage + body-based refresh (AUTH-02) instead
+- v6.0: OPTIONS bypass before isPublicRoute in Gateway — pattern established; Phase 33 must add new origins without breaking existing CORS
+- v5.0: STOMP in-memory broker — Mini App TMA-12 (real-time) deferred to future; no STOMP work in v7.0
 
 ### Research Flags
 
-- Phase 27: Verify BouncyCastle `bcprov-jdk18on` in Spring Boot executable JAR (signed JAR edge case)
-- Phase 27: Add `MONGODB_URI` env var to notification-web in docker-compose (currently missing)
-- Phase 29: vite-plugin-pwa 1.2.0 + Vite 8 peer dep — may need `--legacy-peer-deps`; fallback is Vite 7
-- Phase 31: iOS push only works in standalone mode (A2HS installed) — guard before subscription attempt
-- Phase 32: Physical iOS device required for geo check-in QA
+- Phase 36: Telegram WebView viewport edge cases + initData flow — deeper research needed during planning
+- Phase 39: CdkTable virtual scroll with 500+ rows — research optimal pattern during planning
+- Phases 33, 34, 35, 40: standard patterns, skip research
 
 ### Blockers/Concerns
 
@@ -75,7 +71,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-06T13:09:22.600Z
-Stopped at: Phase 32 context gathered
-Resume file: .planning/phases/32-stats-homework/32-CONTEXT.md
-Next action: Plan Phase 32
+Last session: 2026-04-06
+Stopped at: Roadmap created for v7.0 (38 requirements, 8 phases)
+Resume file: None
+Next action: `/gsd-plan-phase 34`

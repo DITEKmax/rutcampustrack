@@ -1,234 +1,292 @@
 # Pitfalls Research
 
-**Domain:** PWA + Web Push — adding React PWA mobile client and Web Push (VAPID) to an existing Spring Boot microservice attendance system (RutCampusTrack v6.0).
-**Researched:** 2026-04-05
-**Confidence:** HIGH (iOS PWA limitations verified against official Apple Developer Forums and MDN; CORS duplicate headers verified against Spring Cloud Gateway docs; Service Worker lifecycle pitfalls verified against Chrome Developers and MDN; JWT race condition patterns verified against multiple independent sources; Web Push 410 handling verified against push service HTTP status code documentation)
+**Domain:** v7.0 Frontends — Telegram Mini App (React), Angular Web Panel, Landing page — adding three frontend clients to an existing microservice attendance system (RutCampusTrack).
+**Researched:** 2026-04-06
+**Confidence:** HIGH for Telegram Mini App auth (verified against official Telegram Mini Apps docs); HIGH for nginx multi-frontend routing (verified against official nginx docs and multiple production guides); MEDIUM for Angular-in-Java-Gradle-monorepo (no official support, verified against community patterns); HIGH for CORS expansion risks (directly observed in existing system v6.0 key decisions).
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Service Worker skipWaiting() Causes Asset Version Mismatch Mid-Session
+### Pitfall 1: Using initDataUnsafe on the Backend — Any User Can Be Impersonated
 
 **What goes wrong:**
-When `skipWaiting()` is called unconditionally in the install handler, the new Service Worker activates immediately — but tabs already open were loaded with the old SW's cached assets. If the app uses code-splitting (React lazy imports), the old tab may try to load a chunk URL that no longer exists in the new cache, causing blank screens or runtime errors. Students mid-checkin lose their session.
+The Telegram WebApp SDK provides `window.Telegram.WebApp.initDataUnsafe` as a parsed JavaScript object on the client side. If a developer reads `initDataUnsafe.user.id` on the frontend and sends it to the backend as a user identifier (e.g., `POST /api/mini-app/auth { telegramId: initDataUnsafe.user.id }`), any attacker can forge an arbitrary `telegramId` and receive a JWT for any student account. The attack requires only a fetch call with a crafted JSON body.
 
 **Why it happens:**
-Developers see `skipWaiting()` as "always deploy updates immediately" and add it without coordinating with the client. The race condition is invisible in development (single tab, no lazy loading), but manifests in production with multiple open tabs and Vite/CRA chunk hashing.
+`initDataUnsafe` is the easiest way to get user data during development. The name "Unsafe" does not strongly convey "cryptographically unverified" to developers who are moving fast. It works perfectly in testing because Telegram sets it correctly for real users — the forgery problem only exists for server-side trust.
 
 **How to avoid:**
-Do NOT call `skipWaiting()` unconditionally in the install handler. Instead, use a user-driven update flow:
-1. In the SW, listen for a `postMessage` signal from the client before calling `skipWaiting()`.
-2. In the React app, detect `waiting` SW via `navigator.serviceWorker.addEventListener('controllerchange', ...)` and show a "New version available — tap to update" banner.
-3. Only call `skipWaiting()` after the user taps the banner (between user actions, not during checkin flow).
-
-For Vite + Workbox: use `vite-plugin-pwa` with `registerType: 'prompt'` (not `'autoUpdate'`), which implements this pattern.
+- The backend must validate the raw `initData` string (available as `window.Telegram.WebApp.initData`) — not the parsed `initDataUnsafe` object.
+- Send the raw `initData` string from Mini App to backend: `POST /api/mini-app/auth { initData: window.Telegram.WebApp.initData }`.
+- The backend validates the HMAC-SHA256 signature: compute `HMAC-SHA256(secret_key, data_check_string)` where `secret_key = HMAC-SHA256("WebAppData", BOT_TOKEN)` and `data_check_string` is all key=value pairs sorted alphabetically, excluding `hash`.
+- Check `auth_date` field for expiry (reject if older than 5 minutes for auth, up to 1 hour for read-only operations).
+- Use the `telegram-bot-api` Spring Boot library or a validated utility for HMAC verification — do not roll your own.
+- After successful initData validation, issue a standard JWT (same format as existing PWA JWTs) so downstream services need zero changes.
 
 **Warning signs:**
-- ChunkLoadError in the console after a deployment while a tab is open
-- Blank white screen after the page is left open overnight and refreshes
-- Users reporting "the checkin button disappeared" after a background update
+- Backend reads `telegramId` from a JSON body field without a corresponding signature check
+- initData validation is skipped in tests ("we'll add it later")
+- `window.Telegram.WebApp.initDataUnsafe.user` used as the source of truth for user identity anywhere in request construction
 
 **Phase to address:**
-Service Worker scaffold phase — establish the update strategy before writing any caching logic.
+Mini App authentication phase — implement backend initData validation before any authenticated endpoint is wired.
 
 ---
 
-### Pitfall 2: iOS PWA Web Push Only Works When Installed to Home Screen — No Fallback
+### Pitfall 2: Telegram Mini App Opens on Desktop Telegram — No initData Available
 
 **What goes wrong:**
-The `PushManager.subscribe()` call silently fails or the permission prompt never appears when the student opens the PWA in a Safari browser tab (not installed). On iOS 16.4–17, Web Push is only available to installed PWAs (Add to Home Screen). Additionally, iOS 17.4+ in EU countries has no PWA standalone mode at all due to the Digital Markets Act — PWAs open in Safari tabs with no push support, breaking the feature for EU students.
+`window.Telegram.WebApp.initData` is empty string (`""`) when the Mini App is opened in Telegram Desktop (Windows/macOS/Linux) or Telegram Web, depending on version. `initDataUnsafe` may be partially populated. If the auth flow blindly sends empty `initData` to the backend, validation fails with an opaque error and the user sees a broken blank screen with no explanation.
+
+Additionally, during development, opening the Mini App URL directly in a browser (not via Telegram) also yields empty initData — breaking the local dev workflow entirely unless handled.
 
 **Why it happens:**
-Developers test on Android Chrome where push works in the browser tab, then assume iOS behaves the same. The `'serviceWorker' in navigator` check passes in Safari, but `PushManager` subscription throws `NotAllowedError` outside a standalone context.
+Developers test on mobile Telegram first where initData is always present. Desktop edge cases are discovered only when the student union tries it on a laptop.
 
 **How to avoid:**
-- Before attempting any push subscription, check `window.matchMedia('(display-mode: standalone)').matches` on iOS.
-- If not standalone on iOS: show an "Install to home screen to enable push notifications" instruction screen with screenshots specific to Safari's share menu.
-- Use `navigator.userAgent` + `navigator.standalone` (Safari-specific property) to detect iOS Safari browser tab vs. installed PWA.
-- Never call `Notification.requestPermission()` outside a user gesture on iOS — it will be silently blocked.
-- Treat EU iOS as "push unsupported" and fall back gracefully to STOMP WebSocket for real-time alerts when the app is open.
+- On Mini App startup, check `window.Telegram.WebApp.initData !== ""` before attempting auth.
+- If empty (desktop Telegram or browser): show a "Please open this app in Telegram on your mobile device" screen with a deep-link button (`tg://resolve?domain=RutTrackBot&appname=checkin`).
+- For local development: use the `@telegram-apps/sdk` mock mode or Telegram's BotFather test environment. Never mock initData by hardcoding a fake string — this creates a security vulnerability that must be removed before deploy.
+- Add an env flag `VITE_TMA_DEV_MODE=true` that bypasses initData check in development only, clearly gating it to non-production builds.
 
 **Warning signs:**
-- `PushManager.subscribe()` throws `DOMException: NotAllowedError` on iOS without any permission dialog appearing
-- `navigator.standalone` is `undefined` or `false` — user is in browser tab
-- Zero iOS subscribers in your push subscription table despite iOS users existing
+- "Cannot read property of undefined" errors on `initDataUnsafe.user` on desktop
+- Blank white screen when Mini App is opened via Telegram Web
+- Local development requires commenting out initData validation code (this will be committed accidentally)
 
 **Phase to address:**
-Web Push subscription flow phase — implement platform detection and A2HS onboarding before wiring VAPID subscription.
+Mini App authentication phase — build the empty-initData fallback before any real user testing.
 
 ---
 
-### Pitfall 3: Duplicate CORS Headers — Gateway + Downstream Service Both Set Access-Control Headers
+### Pitfall 3: Telegram Mini App Viewport BottomSheet Breaks Fixed-Position Elements
 
 **What goes wrong:**
-Spring Cloud Gateway adds `Access-Control-Allow-Origin` headers to responses. If any downstream service (auth-service, attendance-service) also has `@CrossOrigin` or a `WebMvcConfigurer` CORS bean, the response contains the header twice. Browsers reject responses with duplicate `Access-Control-Allow-Origin` headers with "The 'Access-Control-Allow-Origin' header contains multiple values" — the PWA gets CORS errors despite the backend being "configured correctly."
+On mobile Telegram (iOS and Android), the Mini App is displayed inside a native BottomSheet component. While the sheet is being dragged to expand or collapse, `window.innerHeight` and `document.documentElement.clientHeight` change rapidly. Any UI element using `position: fixed; bottom: 0` (e.g., a check-in button bar, a bottom navigation tab bar similar to the PWA) jumps or shifts during drag. The visual result is jarring and can cause accidental taps.
+
+Additionally, on iOS the home indicator bar at the bottom overlaps `position: fixed; bottom: 0` content unless `env(safe-area-inset-bottom)` padding is applied. Telegram does NOT automatically apply this — it is the Mini App's responsibility.
 
 **Why it happens:**
-Backend services were developed before the PWA frontend existed. A developer adds `@CrossOrigin("*")` to a controller to fix a local dev test, or each service has its own CORS config from an earlier phase. The Gateway then adds its own headers on top.
+Developers test in Telegram Desktop or in a browser where there is no BottomSheet behavior, and the viewport size is stable. The issue only manifests on real mobile Telegram.
 
 **How to avoid:**
-- Configure CORS **only** at the Gateway level (`spring.cloud.gateway.globalcors`). Never add `@CrossOrigin` or `CorsConfigurationSource` beans in downstream services.
-- Add `DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin` filter at the gateway to remove duplicates as a safety net.
-- Set `spring.cloud.gateway.globalcors.add-to-simple-url-handler-mapping: true` so OPTIONS preflight requests are handled even for routes without explicit route predicates.
-- For the PWA dev server (e.g., `http://localhost:5173`), add it to `allowedOrigins` in gateway config — **not** via wildcard in production.
+- Use `window.Telegram.WebApp.expand()` on app init to immediately expand to full screen and lock the viewport height.
+- Subscribe to `window.Telegram.WebApp.onEvent('viewportChanged', handler)` to detect height changes and temporarily suppress layout animations during transitions.
+- For bottom-anchored elements, use CSS: `padding-bottom: env(safe-area-inset-bottom, 0px)` or rely on the Telegram CSS variable `var(--tg-viewport-stable-height)` for layout calculations instead of `100vh`.
+- Use `window.Telegram.WebApp.viewportStableHeight` (not `viewportHeight`) for any layout that must not animate during scroll.
+- Test on real mobile Telegram — simulators do not reproduce BottomSheet behavior.
 
 **Warning signs:**
-- Browser console: "The 'Access-Control-Allow-Origin' header contains multiple values '*, *'"
-- Preflight OPTIONS returns 404 (gateway not handling OPTIONS for that route)
-- Works in Postman but fails in browser
+- Bottom navigation bar or CTA button jumps visually when Mini App first opens
+- `100vh` height calculations show incorrect values on first render
+- Content hidden behind iPhone home indicator on iOS
 
 **Phase to address:**
-API Gateway CORS configuration phase — done before any PWA API call is wired.
+Mini App scaffold/layout phase — establish the viewport strategy and safe area handling before building any screen with fixed-positioned elements.
 
 ---
 
-### Pitfall 4: JWT Stored in localStorage is Vulnerable to XSS — Service Worker Intercept Required
+### Pitfall 4: Angular Web Panel Added Without Updating Gateway CORS — Breaks Immediately
 
 **What goes wrong:**
-Storing the JWT access token in `localStorage` exposes it to any injected script, including from compromised npm packages (supply chain attacks). React apps with many dependencies are high-risk. The attendance system JWT carries role + group info — stolen tokens allow impersonating students and faking checkins.
+The existing API Gateway CORS configuration (in `application.yml`) allows only `http://localhost:5173` and `http://localhost:80` as origins. When the Angular web panel makes API calls from its own origin (e.g., `http://localhost:4200` in dev, `https://admin.rutcampustrack.ru` in prod), every preflight returns a CORS error. Since Angular's `HttpClient` with credentials uses strict CORS, the panel cannot call a single endpoint until allowed origins are updated.
 
-Additionally, the Service Worker does not have access to `localStorage`. If a push notification arrives while the app is closed and the SW tries to make an authenticated API call (e.g., to display rich push content), it cannot read the token.
+This is not a new pitfall — it happened with the PWA too (v6.0 Key Decisions shows `OPTIONS bypass` and `DedupeResponseHeader` decisions) — but it is easy to forget to add the Angular origin alongside the React origins.
 
 **Why it happens:**
-`localStorage` is the simplest approach and is widely taught in tutorials. The Service Worker access gap is discovered only when implementing background push handlers that need auth.
+CORS config lives in a YAML file that is not part of the Angular project. The Angular developer starts the dev server on port 4200 and assumes the backend "just works" because it worked for the PWA.
 
 **How to avoid:**
-Use a hybrid storage strategy:
-- **Access token**: store in React memory only (React Context / Zustand). Never persist to localStorage. On page refresh, use the refresh token to get a new access token silently.
-- **Refresh token**: store in `httpOnly; Secure; SameSite=Strict` cookie. Set from the Spring Boot auth endpoint (`Set-Cookie` response header). The Gateway routes `/api/auth/refresh` without stripping cookies.
-- **For Service Worker background auth**: store only a non-sensitive user identifier in `IndexedDB` for display purposes (e.g., username for notification body). Never store the JWT in SW-accessible storage.
-
-The current system already rotates refresh tokens on use (delete on use pattern from v1.0 Key Decisions) — this is compatible with the cookie approach.
+- Before writing any Angular HTTP calls, add `http://localhost:4200` to `allowedOrigins` in Gateway `application.yml`.
+- Add the production Angular panel URL (e.g., `https://admin.rutcampustrack.ru` or the nginx path-based URL) to `allowedOrigins` before deployment.
+- Since the Angular panel uses `Authorization: Bearer <token>` in headers (not httpOnly cookies like the PWA), set `allowedHeaders: "*"` and keep `allowCredentials: false` for Bearer-based origins (or a separate route config) — mixing cookie-based and Bearer-based origins with `allowCredentials: true` requires exact origin matching, not wildcards.
+- Document in Gateway config why each origin exists (comment inline).
 
 **Warning signs:**
-- `localStorage.getItem('token')` call in React code
-- Service Worker trying to call API endpoints with Authorization headers using tokens from `localStorage` (throws because SW has no localStorage access)
-- Auth token visible in browser DevTools Application → Local Storage
+- Angular `HttpClient` calls return `net::ERR_FAILED` or CORS preflight 403 in DevTools
+- "Access to XMLHttpRequest has been blocked by CORS policy" in Angular app console
+- PWA still works but Angular panel does not — classic sign of missing origin
 
 **Phase to address:**
-PWA authentication layer phase — establish token storage strategy before any API integration.
+Angular infrastructure/auth phase — update Gateway CORS as the first task before any API integration work.
 
 ---
 
-### Pitfall 5: Web Push Subscription Endpoint Expires — Silent Delivery Failures Accumulate
+### Pitfall 5: Angular Panel Auth Uses localStorage for JWT — Inconsistent With System Security Model
 
 **What goes wrong:**
-Web Push subscriptions have endpoints that expire or become invalid when:
-- The user clears browser data
-- The browser reinstalls or updates
-- The user revokes notification permission from OS settings (not the browser UI)
-- iOS unsubscribes the user if the PWA is not used for 7+ days (Apple's aggressive cache eviction)
-
-When the backend sends to an expired endpoint, the push service returns `410 Gone` or `404 Not Found`. If the backend ignores these status codes, the subscription table accumulates dead endpoints. Over time, push attempts to thousands of dead endpoints waste resources and hide real delivery failures.
+The existing PWA uses httpOnly cookies for the refresh token and in-memory storage for the access token (established in v6.0 for XSS protection). Angular tutorials and the `@auth0/angular-jwt` library default to `localStorage` for JWT storage. If the Angular panel stores the JWT in `localStorage`, it becomes an XSS target — more dangerous here than in the PWA because admin/teacher accounts have elevated privileges (headman marking, user management). A compromised admin token can bulk-create users or mark all students as absent.
 
 **Why it happens:**
-Developers implement "happy path" push sending without error handling. The `nl.martijndwars:web-push` Java library throws `WebPushException` on non-2xx responses, but if the exception is caught and logged without action, dead subscriptions persist forever.
+Angular JWT authentication tutorials overwhelmingly show `localStorage.setItem('token', jwt)`. Developers copy this pattern without realizing the PWA already established a different standard for this system.
 
 **How to avoid:**
-In `notification-web` (Spring Boot), implement explicit status-code handling after every push attempt:
-- `410 Gone` or `404 Not Found`: delete the subscription from the database immediately. These are permanent failures.
-- `429 Too Many Requests`: back off with exponential retry (min 1 min). Do not delete.
-- `5xx`: retry with exponential backoff up to 3 times, then mark subscription as `suspect`.
+- The Angular panel should use the same auth pattern as the PWA: access token in memory (Angular service property, not localStorage), refresh token in httpOnly cookie via `POST /api/auth/refresh`.
+- Since Angular panel serves teachers and admins (who don't have Telegram), the login flow is: login form → `POST /api/auth/login` with username/password → receive access JWT in response body + refresh token in Set-Cookie httpOnly → store access token in Angular `AuthService` as a private property.
+- Use Angular `HttpInterceptorFn` (functional interceptor, Angular 15+) to attach `Authorization: Bearer <token>` to every outgoing request — reads from the in-memory service, not localStorage.
+- On page refresh: the in-memory token is lost, but the httpOnly refresh cookie persists → trigger a silent refresh on app init.
+- Never put the token in `sessionStorage` either — it is accessible to XSS just like `localStorage`.
 
-On the PWA side, implement `pushsubscriptionchange` event handler in the Service Worker to detect automatic endpoint renewal and POST the new subscription to the backend immediately.
+**Warning signs:**
+- `localStorage.setItem('accessToken', ...)` anywhere in the Angular codebase
+- Angular `AuthGuard` reading token from `localStorage`
+- Token visible in DevTools → Application → Local Storage
 
-```javascript
-// service-worker.js
-self.addEventListener('pushsubscriptionchange', async (event) => {
-  const newSubscription = event.newSubscription ||
-    await self.registration.pushManager.subscribe(event.oldSubscription.options);
-  await fetch('/api/notifications/subscriptions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newSubscription.toJSON())
-  });
-});
+**Phase to address:**
+Angular authentication layer phase — establish the in-memory + cookie pattern before any protected routes are built.
+
+---
+
+### Pitfall 6: Angular Frontend-Only RBAC Route Guards — Attackers Bypass by Editing JavaScript
+
+**What goes wrong:**
+Angular route guards (`canActivate`, role guards) and `*ngIf="user.role === 'ADMIN'"` directives are client-side checks only. They are good for UX (hiding irrelevant UI) but provide zero security. A determined student can open DevTools, modify the guard return value, or forge an API request directly with a captured teacher JWT to access admin-only endpoints. Since the backend uses `@RequireRole` AOP (not Spring Security at the service layer), the backend is the real security boundary — but only if it is correctly configured.
+
+**Why it happens:**
+When building the Angular panel, it is tempting to add RBAC only in the frontend to move fast. The `@RequireRole` on backend controllers exists in the Java services, but developers may accidentally leave some endpoints unguarded during the panel's development phase.
+
+**How to avoid:**
+- Angular route guards are for UX only — treat them as "redirect unauthorized users to login" not as security.
+- For every API call the panel makes, the corresponding backend endpoint must have `@RequireRole({"ADMIN"})` or `@RequireRole({"TEACHER", "ADMIN"})` AOP annotation — this was established in v4.0 and must be verified for every new endpoint the panel calls.
+- If a panel phase adds new backend endpoints (e.g., for admin user management), the AOP annotation must be part of the same plan, not deferred.
+- Add an integration test for each new endpoint that verifies a STUDENT role JWT receives 403.
+
+**Warning signs:**
+- Angular route guard that returns `true` unconditionally while "we add real checks later"
+- Backend endpoint added for the panel with no `@RequireRole` annotation
+- "The panel shows the right UI, so the security is done" reasoning
+
+**Phase to address:**
+Angular auth + RBAC phase — verify every backend endpoint the panel calls has `@RequireRole` coverage before considering a phase "done."
+
+---
+
+### Pitfall 7: nginx Serving Multiple Frontends Without Proper SPA Fallback Per App — Angular Routing Breaks
+
+**What goes wrong:**
+The current nginx container (`pwa-nginx`) serves the PWA from `root /usr/share/nginx/html` with a single `try_files $uri $uri/ /index.html` rule. When the Angular web panel is added to nginx (e.g., at `/panel`), Angular's router uses HTML5 pushState URLs (`/panel/dashboard`, `/panel/users`). If a user bookmarks `/panel/users` and navigates directly, nginx looks for a physical file at `dist/panel/users` — finds nothing — and falls through to the PWA's `index.html`. The user sees the PWA instead of the Angular panel.
+
+Similarly, the landing page at `/` conflicts with the PWA which currently owns `/`.
+
+**Why it happens:**
+The existing nginx config has exactly one `location /` block for the PWA. Adding a second frontend is done by adding a new `location /panel` block, but forgetting to add the SPA fallback `try_files` inside that block specifically.
+
+**How to avoid:**
+The correct nginx pattern for multi-SPA hosting:
+
+```nginx
+# PWA — served at /pwa or moved to a subpath
+location /pwa/ {
+    alias /usr/share/nginx/html/pwa/;
+    try_files $uri $uri/ /pwa/index.html;
+}
+
+# Angular Web Panel — at /panel
+location /panel/ {
+    alias /usr/share/nginx/html/panel/;
+    try_files $uri $uri/ /panel/index.html;
+}
+
+# Landing — at root (static, no SPA fallback needed)
+location / {
+    root /usr/share/nginx/html/landing/;
+    index index.html;
+}
 ```
 
+Angular must also be built with `--base-href /panel/` so that all asset URLs and router links are relative to `/panel/` not `/`.
+
+Alternatively: serve each frontend from a separate nginx container on a different port, with a single reverse-proxy nginx at the front routing by path or subdomain. This avoids the alias/try_files complexity entirely and keeps each frontend's nginx config simple and isolated.
+
 **Warning signs:**
-- Push delivery rate dropping over weeks without user growth declining
-- Database subscription count growing while active user count stays flat
-- 410/404 errors in notification-web logs that are caught but not actioned
+- Navigating to `/panel/users` directly returns the PWA `index.html` content
+- Angular assets (main.js, styles.css) return 404 after deployment because they are referenced as `/main.js` not `/panel/main.js`
+- Angular router `RouterModule.forRoot(routes, { useHash: false })` but nginx has no SPA fallback for that prefix
 
 **Phase to address:**
-Web Push backend (notification-web extension) phase — implement error handling before the first real push is sent.
+Infrastructure / nginx routing phase — design the multi-frontend nginx layout before Angular or Landing builds are attempted.
 
 ---
 
-### Pitfall 6: Geolocation Permission Denied on iOS Does Not Return `denied` State
+### Pitfall 8: Angular Built Into Java Gradle Monorepo Without Isolation — Breaks Java Build
 
 **What goes wrong:**
-On iOS/Safari, `navigator.permissions.query({ name: 'geolocation' })` returns `'prompt'` even when the user has previously denied geolocation in Settings. When the app then calls `getCurrentPosition()`, it gets `PERMISSION_DENIED` error (code 1) — a mismatch that makes it impossible to know in advance if permission will succeed. The "Request permission" button flow breaks: the app shows the button, user taps it, nothing appears (permission was already denied at OS level), and the checkin button stays disabled silently.
+The project is a Gradle-based Java monorepo. Angular uses `npm`/Node.js. If Angular is added as a Gradle subproject using `com.github.node-gradle/gradle-node-plugin` or similar, the Java build now requires Node.js to be installed on every developer's machine and in CI. The `./gradlew build` command starts downloading Node.js, running `npm install`, and building Angular — adding 3-5 minutes to every Java service build. If the Angular build fails (e.g., a missing npm dependency on CI), the entire Gradle build fails, blocking Java service development.
 
 **Why it happens:**
-Developers rely on the Permissions API to gate the checkin flow (show button only if state is `'prompt'` or `'granted'`). On Chrome/Android, this works perfectly. The iOS bug where `denied` is reported as `prompt` is undocumented behavior that surfaces only in QA.
+It feels "clean" to unify everything under Gradle. The `gradle-node-plugin` makes it technically possible.
 
 **How to avoid:**
-- Never gate checkin UI solely on `navigator.permissions.query`. Always attempt `getCurrentPosition()` and handle the error callback explicitly.
-- On `PERMISSION_DENIED` (code 1): show an actionable error with platform-specific instructions ("Go to Settings → Privacy → Location Services → Safari → Allow").
-- On `POSITION_UNAVAILABLE` (code 2): show "Cannot get location — are you indoors?" with retry button.
-- On `TIMEOUT` (code 3): retry once with higher timeout (15s instead of 5s), then show error.
-- Add a 15-second timeout to `getCurrentPosition()` — mobile browsers can hang indefinitely without one.
-- Test geolocation flows specifically on a physical iOS device, not just iPhone simulator (simulator GPS is unreliable).
+Keep Angular completely isolated from the Gradle build. Angular lives in `frontends/web-panel/` with its own `package.json`, `angular.json`, and `tsconfig.json`. It is built with `npm run build` directly — never via Gradle tasks.
+- In `settings.gradle.kts`, do NOT include `frontends/web-panel` as a Gradle subproject.
+- In `docker-compose.yml`, the web panel gets its own nginx container with a pre-built `dist/` directory — same pattern as the PWA.
+- CI pipeline has separate jobs: `build-java` and `build-angular` with no dependency between them.
+- Add `frontends/web-panel/node_modules/` to `.gitignore` and `frontends/web-panel/dist/` as well.
 
 **Warning signs:**
-- iOS users reporting the checkin button "does nothing" — likely permission denied silently
-- `PERMISSION_DENIED` errors in client-side error tracking from iOS devices
-- Location accuracy reported as >100m on indoor requests (not an error, but geofence may need widening)
+- `frontends/web-panel` listed in `settings.gradle.kts` includes
+- `./gradlew build` output contains "Downloading Node.js" or "npm install"
+- Java service tests fail because `npm` is not found in CI environment
 
 **Phase to address:**
-Geolocation checkin UI phase — implement robust error handling and platform detection before wiring to backend.
+Angular project scaffold phase — establish directory structure and isolation before any Angular code is written.
 
 ---
 
-### Pitfall 7: Notification Permission Requested Too Early — One-Shot Prompt Wasted
+### Pitfall 9: Landing Page Served at Root `/` Displaces PWA — Breaks Install Flow
 
 **What goes wrong:**
-Calling `Notification.requestPermission()` on app load or first visit results in the browser's native permission dialog appearing before the user understands the app. Students dismiss or block it. Once blocked, the browser will never show the prompt again — there is no programmatic way to re-trigger a browser permission dialog. The push notification feature is permanently dead for that user unless they manually go into browser settings.
+The PWA is currently served by `pwa-nginx` at port 80 as root (`/`). The Service Worker registers at `/sw.js` and the PWA manifest is at `/manifest.webmanifest`. If the landing page is also placed at `/` in the same nginx container, the PWA is overwritten. Students trying to install the PWA from the landing page's "Install the app" button will either get the landing page's `index.html` served as the PWA root or the Service Worker will not be found at `/sw.js`.
 
 **Why it happens:**
-It's the simplest implementation: subscribe on load. Developers underestimate how jarring a permission prompt feels when a user has just opened an app for the first time.
+It is natural to want the landing page at the root. The conflict with the existing PWA deployment is easy to overlook when thinking about them as separate things.
 
 **How to avoid:**
-Use the "double permission" (soft ask first) pattern:
-1. Show an in-app card/modal explaining WHY push is useful ("Get notified 5 minutes before each class starts — tap Allow to enable").
-2. Only if the user taps "Allow" on your custom UI, call `Notification.requestPermission()` to trigger the browser dialog.
-3. If the user taps "Not now" on your UI, store the decision and re-ask after 3 days or after the first missed checkin (contextual timing).
+Choose one layout strategy and commit to it before building the landing:
 
-Never call `Notification.requestPermission()` outside a user gesture on iOS — it will be silently rejected (no dialog, no error).
+**Option A (Recommended for simplicity):** Landing at `/`, PWA moved to `/app/`. Update PWA nginx config to serve from `/app/`, update Vite `base: '/app/'` config, update Service Worker scope to `/app/`, update all deep links in push notifications and bot.
+
+**Option B:** Separate nginx containers — landing on its own container, PWA on its own container, front-proxy nginx routes by path or subdomain.
+
+**Option C:** PWA stays at `/`, landing at `/about` or on a separate subdomain (`rut.ru` vs `app.rut.ru`).
+
+Whichever is chosen, document it and implement it in the infrastructure phase before any landing page content is written — changing the PWA base path after deployment invalidates all existing push subscription deep links.
 
 **Warning signs:**
-- Permission prompt appearing before the login screen
-- Push opt-in rate below 15% (industry benchmark for late-ask is 40–60%)
-- Users have `Notification.permission === 'denied'` on first session
+- Landing `index.html` and PWA `index.html` both configured to be served at `/`
+- `sw.js` returning 404 after adding the landing page
+- A2HS install prompt stops appearing after landing page deployment
 
 **Phase to address:**
-Push permission UX phase — design and implement the soft-ask flow before VAPID subscription wiring.
+Infrastructure / nginx routing phase — resolve URL layout before any frontend is deployed.
 
 ---
 
-### Pitfall 8: Extending notification-web With Web Push Breaks STOMP Threading Model
+### Pitfall 10: Telegram Mini App Does Not Support httpOnly Cookies — Authentication Must Use Authorization Header
 
 **What goes wrong:**
-`notification-web` currently runs as a Spring Boot app with an in-memory STOMP broker. Adding Web Push involves making outbound HTTPS calls to push service endpoints (FCM, APNs, etc.) per-user — potentially many concurrent requests. If these outbound HTTP calls are made synchronously on the STOMP message handling thread (the thread that consumes RabbitMQ messages), the consumer blocks. Under lesson start events (30+ students), the RabbitMQ consumer stalls, message queue grows, and other events (cancellation, homework) are delayed.
+The PWA uses httpOnly cookies for the refresh token (`Set-Cookie: refreshToken=...; HttpOnly; SameSite=Strict`). Telegram's WebView (the embedded browser that runs Mini Apps) has inconsistent and often disabled cookie support. On iOS, Telegram uses WKWebView which isolates cookies per-app and does not share them with Safari. Cookies set via `Set-Cookie` from the API Gateway may be silently dropped in the Telegram WebView, causing the refresh token to be lost immediately. The user appears logged in on first visit but is logged out on next open.
 
 **Why it happens:**
-The natural place to add push delivery is in the existing RabbitMQ message handler method — "handle event → send WebSocket → also send push." The outbound push HTTP call (to Google/Apple servers) can take 200–2000ms. 30 students × 1000ms = 30s of blocked consumer time.
+Developers copy the PWA auth flow for the Mini App because it seems natural to reuse the existing auth pattern. The WebView cookie restriction is discovered only during device testing.
 
 **How to avoid:**
-- Add push delivery as a separate `@Async` task submitted from the event handler, using a dedicated thread pool (`ThreadPoolTaskExecutor`) with queue capacity for bursts.
-- The event handler stays non-blocking: `messagingTemplate.convertAndSend(...)` (STOMP, fast) + `pushDispatcher.sendAsync(subscriptions, payload)` (async, does not block consumer).
-- Configure the thread pool: corePoolSize=5, maxPoolSize=20, queueCapacity=200. Size for peak lesson start (N_groups × N_students_per_group).
-- Use `PushAsyncService` from `nl.martijndwars:web-push` (or OkHttp async calls) — not the blocking `PushService`.
+For the Telegram Mini App specifically:
+- Do NOT rely on httpOnly cookies for token persistence. The Mini App must use a different storage strategy.
+- After validating initData and issuing JWT, return both the access token and refresh token in the **response body**.
+- Store the access token in React state (in-memory) and the refresh token in `localStorage` within the Mini App (Telegram WebView's localStorage persists across opens on the same device).
+- On Mini App open: check `localStorage` for a refresh token → call refresh endpoint with it in the request body (not cookie) → get a new access token in memory.
+- This requires a new auth endpoint variant: `POST /api/auth/refresh-token-body` that accepts `{ refreshToken: "..." }` in the body and returns `{ accessToken: "...", refreshToken: "..." }` without relying on cookies.
+- The security trade-off (localStorage vs cookie) is acceptable for the Mini App context: Telegram WebView is sandboxed per-app and not accessible from other apps.
 
 **Warning signs:**
-- STOMP WebSocket messages arriving late during lesson start peak periods
-- RabbitMQ consumer lag growing in RabbitMQ management UI during business hours
-- `notification-web` thread count spiking to container max under load
+- Mini App user is logged in on first open, but "not authenticated" on the second open
+- `document.cookie` shows empty string in Telegram WebView DevTools
+- `Set-Cookie` headers visible in network tab but cookie does not appear in application storage
 
 **Phase to address:**
-notification-web Web Push backend phase — design the async dispatch architecture before writing any push send code.
+Mini App authentication phase — design the token storage strategy for WebView before any authenticated API calls are made.
 
 ---
 
@@ -236,14 +294,14 @@ notification-web Web Push backend phase — design the async dispatch architectu
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| `localStorage` for JWT | Simple, works everywhere | XSS vulnerability, no SW access | Never — use memory + httpOnly cookie |
-| `skipWaiting()` unconditionally | Instant updates | Blank screens on active sessions | Never in production |
-| No subscription cleanup on 410 | Simpler backend code | Dead endpoint accumulation, degraded delivery | Never |
-| `@CrossOrigin("*")` on downstream services | Fixes local dev | Duplicate headers in production, security risk | Dev only, never commit |
-| Ask permission on app load | Fewer lines of code | One-shot prompt wasted, low opt-in rate | Never |
-| Synchronous push send in event handler | Simpler code | Blocks RabbitMQ consumer under load | Never with fan-out |
-| Precache all API responses | Offline looks good | Stale attendance/schedule data served | Never for dynamic data |
-| Cache-first for schedule API | Fast loads | Student sees yesterday's schedule offline | Never — use network-first for schedule |
+| Using `initDataUnsafe` for backend user identification | Faster development | Any user can be impersonated — critical security breach | Never — validate raw `initData` HMAC every time |
+| `localStorage` for JWT in Angular panel | Simple, tutorials show this | Admin/teacher tokens exposed to XSS | Never — use memory + httpOnly cookie |
+| Combining all frontends in one nginx container immediately | Single service | SPA routing conflicts, nginx config becomes complex/fragile | Acceptable only if URL layout is pre-designed |
+| Adding Angular to Gradle monorepo build | Unified `./gradlew build` | Node.js required everywhere, 3-5 min added to all Java builds, CI coupling | Never — keep isolated |
+| Skipping Angular route guard role checks ("UI only is fine") | Less code | Backend endpoints may be unguarded; attackers bypass with direct API calls | Never for admin/teacher operations |
+| Forwarding Telegram `user.id` as plain JSON field without HMAC | Simplest auth flow | Any user can impersonate any other user | Never |
+| `Notification.requestPermission()` auto-called in Mini App | Simpler code | One-shot prompt wasted; Telegram WebView blocks re-prompting | Never |
+| Empty-initData dev bypass committed to main branch | Easier local dev | Any browser can call Mini App endpoints without Telegram auth | Never commit — env-var gate only |
 
 ---
 
@@ -251,14 +309,15 @@ notification-web Web Push backend phase — design the async dispatch architectu
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| PWA → API Gateway | Using relative URLs (e.g., `/api/auth`) — works on same origin, breaks on CDN | Use env-var `VITE_API_BASE_URL=https://api.rutcampustrack.ru` at build time |
-| PWA → API Gateway | Not including `credentials: 'include'` in fetch for cookie-based refresh token | Add `credentials: 'include'` to all fetch calls; Gateway must have `allowCredentials: true` |
-| Service Worker → API Gateway | SW fetch bypass (SW caches a redirect, browser never follows it) | Return actual resources, not redirects, from API behind Gateway |
-| VAPID key pair | Regenerating VAPID keys after subscriptions exist | All existing subscriptions become invalid; treat VAPID keys as immutable once generated |
-| notification-web → Web Push | Sending VAPID `sub` claim as plain email (e.g., `noreply@example.com`) | Must be `mailto:noreply@example.com` — Apple APNs returns 403 Forbidden without `mailto:` prefix |
-| Spring Boot cookie | `Set-Cookie` for refresh token not reaching PWA on different domain | `SameSite=None; Secure` required for cross-origin cookie; Gateway must be same domain as PWA or use subdomain |
-| Push subscription → DB | Storing raw `PushSubscription` JSON as text | Store `endpoint`, `keys.p256dh`, `keys.auth` as separate columns — enables cleanup queries by endpoint |
-| iOS PWA install | Relying on `beforeinstallprompt` event to show A2HS prompt | iOS Safari does not fire `beforeinstallprompt` — must show manual instructions specific to Safari share button |
+| Mini App → API Gateway | Sending `initDataUnsafe.user.id` in request body as the user identifier | Send raw `initData` string; backend validates HMAC and extracts user |
+| Mini App → API Gateway | Using `credentials: 'include'` (cookie mode) — Telegram WebView drops httpOnly cookies | Use `Authorization: Bearer <token>` header for all Mini App API calls |
+| Angular → API Gateway | Not adding `http://localhost:4200` and production Angular origin to Gateway `allowedOrigins` | Add Angular origins to Gateway CORS config before any HTTP call |
+| Angular JWT | Angular `HttpClient` not attaching Bearer header automatically | Register `HttpInterceptorFn` via `provideHttpClient(withInterceptors([authInterceptor]))` in `app.config.ts` |
+| nginx → Angular SPA | Missing `try_files` inside Angular's `location /panel/` block | Each SPA location block needs its own `try_files $uri $uri/ /panel/index.html` |
+| Angular build → nginx | Angular built without `--base-href /panel/` | All asset paths are relative to `/` instead of `/panel/`; assets 404 |
+| Mini App Telegram theme | Hardcoded light-mode colors ignoring `tg.colorScheme` | Use `var(--tg-theme-bg-color)`, `var(--tg-theme-text-color)` CSS variables throughout |
+| Landing → PWA deep link | Landing "Install App" button links to `/` | Link must point to the PWA's actual base path (e.g., `/app/`) after URL restructuring |
+| CORS expansion | Adding Angular origin without checking `allowCredentials` implications | Bearer-token callers (`allowCredentials: false`) and cookie-token callers (`allowCredentials: true`) need separate gateway route configs or careful origin management |
 
 ---
 
@@ -266,11 +325,11 @@ notification-web Web Push backend phase — design the async dispatch architectu
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Precaching entire schedule data in SW | App takes 10+ seconds to install, users abort | Cache only app shell (HTML/CSS/JS), not API data | First install with >100 schedule entries |
-| Per-user push send in tight loop | notification-web CPU spikes, message queue backs up | Async thread pool + PushAsyncService | >10 concurrent students in same group |
-| IndexedDB for offline schedule with no eviction | Storage grows unbounded, iOS 50MB limit hit, data evicted | Store only current + next 7 days; evict past lessons on SW activate | After 2-3 weeks of daily use on iOS |
-| Real-time geolocation watch (`watchPosition`) left active | Battery drain on student's phone during entire class | Use `getCurrentPosition()` once for checkin, not continuous watch | Immediate (all mobile platforms) |
-| React re-renders on WebSocket message | UI jank while WebSocket messages stream in rapidly | Debounce or batch state updates from STOMP messages | During lesson start (multiple event types at once) |
+| Angular not using lazy-loaded routes | Initial bundle >2MB, slow first paint on teacher's laptop | Use `loadComponent` for each route — every route is lazy by default in modern Angular | Immediately; Angular panel has many pages |
+| Mini App loading React without code splitting | 3+ second white screen inside Telegram | Use React.lazy + Suspense for each page component | First user opens app on slow connection |
+| Angular panel fetching entire user list without pagination | 500-user table freeze UI, API times out | Use `PagedModel` (HATEOAS) from the existing backend, virtual scroll for long lists | >100 users in academic_db |
+| Landing page with unoptimized images (raw PNGs > 500KB) | Slow load, Google PageSpeed red score | Compress images, use WebP, add explicit `width`/`height` attributes | Immediate on mobile networks |
+| Mini App making sequential API calls for page data | Slow page loads inside Telegram | Use `Promise.all()` for parallel API calls; TanStack Query (already in PWA) can be reused | Every page open — Telegram WebView has cold start latency |
 
 ---
 
@@ -278,12 +337,12 @@ notification-web Web Push backend phase — design the async dispatch architectu
 
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| VAPID private key stored in code / git | Entire push service compromised — attacker sends push as your server | Store in environment variable or secrets manager; never in codebase |
-| Push subscription endpoint stored without user binding | Attacker who gains DB read can send push to arbitrary users | Bind subscription to `user_id` in DB; validate ownership on every push |
-| Service Worker intercepts auth token refresh without HTTPS check | Token refresh over plain HTTP if HTTPS misconfigured | SW registration requires HTTPS (except localhost) — verify redirect chain is HTTPS-only |
-| Trusting notification click payload data as authenticated | Notification payload is client-visible — do not use it for authorization decisions | Push payload = display data only; re-authenticate via API on notification click action |
-| `SameSite=Lax` on refresh token cookie | Cross-site POST can trigger token refresh (CSRF) | Use `SameSite=Strict` for refresh cookie; never `Lax` or `None` without CSRF token |
-| Caching API responses containing PII in SW cache | Other users on shared device can access cached attendance data | Never cache authenticated API responses in SW; scope cache to app shell only |
+| Trusting `initDataUnsafe` user data on the backend | Any student can impersonate any other user or teacher | Always validate raw `initData` HMAC-SHA256 on the backend before issuing JWT |
+| Storing admin JWT in `localStorage` | Admin token stolen via XSS; attacker gets full user management access | Store access token in Angular service memory only; refresh token in httpOnly cookie |
+| Angular frontend-only RBAC | Attacker bypasses route guard; calls unguarded admin endpoints directly | Every backend endpoint the panel calls must have `@RequireRole` AOP annotation |
+| Not checking `auth_date` in initData validation | Replay attack: captured initData replayed hours later to get a new JWT | Reject initData older than 5 minutes (configurable via app settings) |
+| Telegram bot token exposed in frontend bundle | Bot can be taken over; all users' Telegram accounts linked to the bot compromised | Bot token lives only in backend env vars; never included in any frontend build |
+| nginx serving `dist/` directory listing if index.html missing | Attacker can enumerate all frontend assets and JS chunk contents | Always include `index off` or `autoindex off` in nginx; ensure `index.html` exists before deploy |
 
 ---
 
@@ -291,27 +350,27 @@ notification-web Web Push backend phase — design the async dispatch architectu
 
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| No offline indicator | Students think checkin failed, retry, get duplicate request | Show "You're offline — checkin will be sent when connection restored" banner |
-| Permission blocked with no recovery path shown | Students who blocked push never get reminders | On every settings page visit, check `Notification.permission === 'denied'` and show "Enable in browser settings" with deep-link instructions |
-| Push notification with no action URL | Tapping notification opens PWA root, not the relevant lesson | Always set `data.url` in push payload and handle `notificationclick` in SW to navigate to the correct route |
-| Install prompt shown before value is demonstrated | User installs, then uninstalls immediately | Show A2HS prompt after first successful checkin — user has seen the value |
-| Geolocation spinner with no timeout | Student stands outside with poor GPS, spinner runs forever | 15-second hard timeout on `getCurrentPosition()`; show "Location taking too long — try moving outside" |
-| "Allow notifications" button in app while permission is `denied` | Button appears active but tapping it silently does nothing | Check `Notification.permission` before showing the button; if `denied`, show "Enable in Settings" link instead |
+| Mini App ignoring `tg.colorScheme` — hardcoded light colors | Dark mode Telegram users see blinding white app | Use CSS variables `var(--tg-theme-bg-color)` etc.; test in both Telegram dark and light themes |
+| Mini App showing same bottom tab bar as PWA | Telegram already has its own back button and navigation — double navigation confuses users | In Mini App, use the Telegram BackButton API (`window.Telegram.WebApp.BackButton`) instead of in-app navigation arrows |
+| Angular panel with no loading states on async table data | Teacher clicks "attendance journal" and sees blank screen for 2+ seconds | Add Angular `@defer` blocks or skeleton loading states for every async data fetch |
+| Landing page with no mobile viewport meta tag | Landing looks broken on student's phone | Always include `<meta name="viewport" content="width=device-width, initial-scale=1">` |
+| Mini App calling `window.Telegram.WebApp.close()` on logout | User is kicked out of Telegram app flow unexpectedly | On logout, navigate to Mini App's login screen, not close; only call `close()` on explicit "Done" user action |
+| Angular panel showing STUDENT role data to ADMIN | Admin sees student view, misses admin-only features | Role detection must happen before routing; show role-appropriate nav from the start |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **VAPID subscription:** Keys generated and stored — verify they are NOT in git history and NOT regenerated on app restart
-- [ ] **Push delivery:** Notification sends on happy path — verify 410/404 responses delete the subscription from DB
-- [ ] **Service Worker update:** SW installs — verify update flow uses user-driven activation, not unconditional `skipWaiting()`
-- [ ] **iOS push:** Works on Android Chrome — verify on physical iOS 16.4+ device after Add to Home Screen
-- [ ] **CORS:** PWA fetches work in dev — verify no duplicate `Access-Control-Allow-Origin` in production with `curl -I`
-- [ ] **JWT in cookies:** Token appears to work — verify `httpOnly` flag is set by inspecting `Set-Cookie` response header
-- [ ] **Offline checkin:** App loads offline — verify that cached attendance data is not served stale for >15 minutes
-- [ ] **Permission UX:** Notification opt-in implemented — verify soft-ask appears before native browser dialog
-- [ ] **Geolocation error handling:** Location succeeds in ideal conditions — verify all three error codes handled (1, 2, 3) with actionable messages
-- [ ] **pushsubscriptionchange handler:** SW registered — verify handler posts new subscription to backend (easy to forget, hard to test)
+- [ ] **Mini App auth:** initData validates on frontend — verify backend validates HMAC-SHA256 signature, not just parses `initDataUnsafe`
+- [ ] **Mini App token persistence:** Login works in one session — verify refresh token survives Mini App close and re-open (localStorage, not memory)
+- [ ] **Angular CORS:** API calls work from Angular dev server — verify production Angular origin is also in Gateway `allowedOrigins`
+- [ ] **Angular auth:** JWT appears to work — verify access token is NOT in `localStorage` (DevTools → Application → Local Storage must be empty)
+- [ ] **Angular RBAC:** Route guards redirect unauthorized users — verify corresponding backend endpoints have `@RequireRole` and reject wrong-role JWTs with 403
+- [ ] **Angular build:** `npm run build` produces files — verify `--base-href /panel/` is set and all assets load from the correct path in nginx
+- [ ] **nginx multi-SPA:** Each app loads at its configured path — verify direct navigation to deep routes (e.g., `/panel/users/123`) serves the correct `index.html`, not the PWA's
+- [ ] **Landing vs PWA conflict:** Landing deploys at `/` — verify PWA Service Worker at `/sw.js` is not broken (or PWA is moved to `/app/` with consistent redirects)
+- [ ] **Mini App dark mode:** App looks correct — verify `var(--tg-theme-bg-color)` is used, test specifically in Telegram's dark theme
+- [ ] **initData expiry:** Auth works — verify `auth_date` check rejects initData older than 5 minutes; test with a captured initData string
 
 ---
 
@@ -319,12 +378,12 @@ notification-web Web Push backend phase — design the async dispatch architectu
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| VAPID keys regenerated (all subscriptions invalid) | HIGH | Generate new key pair, update backend config, force re-subscription on next app load via flag in API response |
-| Dead subscriptions accumulated (no 410 cleanup) | MEDIUM | Write migration script to send test push to all subscriptions, delete all that return 410/404 |
-| localStorage JWT (XSS discovered) | HIGH | Rotate all JWT signing keys, invalidate all refresh tokens, migrate to cookie storage, notify users to re-login |
-| Duplicate CORS headers in production | LOW | Add `DedupeResponseHeader` filter in Gateway config, redeploy Gateway only |
-| iOS push permission blocked by all early-ask users | MEDIUM | Cannot re-trigger programmatically; add in-app "Enable in Safari Settings" guide; accept lower iOS opt-in rate |
-| SW stuck in waiting (users see stale app) | LOW | Add user-facing "New version available" banner with reload action; existing users unblocked on next explicit reload |
+| initDataUnsafe used in production — accounts impersonatable | HIGH | Invalidate all Mini App JWTs immediately; deploy backend HMAC validation; force all Mini App users to re-login |
+| Angular JWT in localStorage discovered post-deploy | HIGH | Rotate JWT signing keys; invalidate all tokens; migrate to in-memory storage; redeploy; notify affected users |
+| PWA broken by landing page conflict | MEDIUM | Roll back landing deploy; restructure nginx config with correct location blocks; update PWA base path; redeploy both |
+| Angular assets 404 after deploy (wrong base-href) | LOW | Rebuild Angular with `--base-href /panel/`; redeploy nginx volume only (no backend changes needed) |
+| Angular origin not in Gateway CORS | LOW | Add origin to Gateway `application.yml`; redeploy Gateway container only |
+| Telegram WebView cookie auth broken (refresh token lost) | MEDIUM | Implement body-based refresh token endpoint; update Mini App to use localStorage refresh token pattern |
 
 ---
 
@@ -332,35 +391,37 @@ notification-web Web Push backend phase — design the async dispatch architectu
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| skipWaiting race condition | Service Worker scaffold (Phase 1 of v6.0) | Test with 2 tabs open: deploy update, verify no chunk load error |
-| iOS push only in standalone | A2HS onboarding + push subscription phase | Test on physical iOS device in Safari tab — must show install instructions |
-| Duplicate CORS headers | API Gateway CORS config phase (before PWA wiring) | `curl -I` response for preflight; check header count = 1 |
-| JWT in localStorage | PWA auth layer phase | DevTools → Application → Local Storage must be empty of tokens |
-| Expired push endpoints | notification-web Web Push backend phase | Simulate 410 response, verify subscription deleted from DB |
-| iOS geolocation permission mismatch | Geolocation checkin UI phase | QA on physical iOS with location denied in Settings |
-| Permission prompt too early | Push permission UX phase | Verify permission dialog does NOT appear on first page load |
-| Blocking push send in STOMP handler | notification-web async architecture phase | Load test with 30 concurrent users; verify STOMP messages not delayed |
+| initDataUnsafe backend trust | Mini App auth phase (Phase 1 of v7.0 Mini App) | Send forged `{"telegramId": 999}` directly to auth endpoint — must get 401, not JWT |
+| Empty initData on desktop/browser | Mini App auth phase | Open Mini App URL in Chrome browser (not Telegram) — must show "Open in Telegram mobile" screen |
+| Telegram BottomSheet viewport quirks | Mini App scaffold/layout phase | Test on real mobile Telegram; expand/collapse sheet while app is open — UI must not jump |
+| Angular CORS blocked | Angular infra phase (first Angular phase) | `curl -I -X OPTIONS http://localhost:8080/api/academic -H "Origin: http://localhost:4200"` must return 200 with correct CORS headers |
+| Angular JWT in localStorage | Angular auth phase | DevTools Application → Local Storage must contain no tokens after login |
+| Angular frontend-only RBAC | Angular auth + RBAC phase | Direct `curl` to admin endpoint with student JWT must return 403 |
+| nginx multi-SPA routing conflict | Infrastructure / nginx routing phase (before any frontend deploys) | Navigate directly to `/panel/users` in browser — must serve Angular `index.html`, not PWA |
+| Angular added to Gradle monorepo | Angular scaffold phase | `./gradlew build` must complete without any Node.js download or npm invocation |
+| Landing conflicts with PWA root | Infrastructure / nginx routing phase | After landing deploy, `/sw.js` must still return Service Worker file (not 404) |
+| Mini App httpOnly cookie dropped by WebView | Mini App auth phase | Close and reopen Mini App — user must still be authenticated (refresh via localStorage token) |
 
 ---
 
 ## Sources
 
-- [PWA Push Notifications on iOS in 2026: What Really Works](https://webscraft.org/blog/pwa-pushspovischennya-na-ios-u-2026-scho-realno-pratsyuye?lang=en)
-- [PWA iOS Limitations and Safari Support 2026 — MagicBell](https://www.magicbell.com/blog/pwa-ios-limitations-safari-support-complete-guide)
-- [Permission UX — web.dev](https://web.dev/articles/push-notifications-permissions-ux)
-- [Web Push Error 410: subscription expired — Pushpad](https://pushpad.xyz/blog/web-push-error-410-the-push-subscription-has-expired-or-the-user-has-unsubscribed)
-- [Web Push errors HTTP status codes — Pushpad](https://pushpad.xyz/blog/web-push-errors-explained-with-http-status-codes)
-- [Service Worker Lifecycle — Felix Gerschau](https://felixgerschau.com/service-worker-lifecycle-update/)
-- [Handling Service Worker updates — Chrome for Developers (Workbox)](https://developer.chrome.com/docs/workbox/handling-service-worker-updates)
+- [Init Data — Telegram Mini Apps official docs](https://docs.telegram-mini-apps.com/platform/init-data)
+- [Authorizing User — Telegram Mini Apps official docs](https://docs.telegram-mini-apps.com/platform/authorizing-user)
+- [Viewport — Telegram Mini Apps official docs](https://docs.telegram-mini-apps.com/platform/viewport)
+- [Theming — Telegram Mini Apps official docs](https://docs.telegram-mini-apps.com/platform/theming)
+- [Seamless Authentication in Telegram Mini Apps — Medium/Miralex](https://medium.com/@miralex13/seamless-authentication-in-telegram-mini-apps-building-a-secure-and-frictionless-user-experience-6249599e2693)
+- [Telegram Mini App development and testing specifics — DEV Community](https://dev.to/dev_family/telegram-mini-app-development-and-testing-specifics-from-initialisation-to-launch-1ofh)
+- [Angular HTTP Interceptors — angular.dev official docs](https://angular.dev/guide/http/interceptors)
+- [Angular Route Guards — angular.dev official docs](https://angular.dev/guide/routing/route-guards)
+- [Angular JWT Guard for RBAC based on JWT — Scrum and Coke/Medium](https://medium.com/scrum-and-coke/angular-guard-for-role-based-access-control-rbac-based-on-jwt-e79dfdb41f2a)
+- [Hosting Angular and React on same domain using nginx — Medium/Devyash Sanghai](https://medium.com/@devyashsanghai/hosting-angular-and-react-app-on-a-same-domain-using-nginx-189f96493818)
+- [How to use nginx to service multiple React apps — Medium/Tonny](https://tonny.medium.com/how-to-use-nginx-to-service-multiple-react-apps-641501e92581)
+- [Mini App scrolls by iOS device's safe-area at bottom — Telegram-Mini-Apps GitHub Issues](https://github.com/Telegram-Mini-Apps/issues/issues/39)
+- [Safe area inset env() support in Mini Apps — TelegramMessenger/Telegram-iOS GitHub](https://github.com/TelegramMessenger/Telegram-iOS/issues/1377)
 - [CORS Configuration — Spring Cloud Gateway official docs](https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway-server-webflux/cors-configuration.html)
-- [LocalStorage vs Cookies JWT storage — Cyber Chief](https://www.cyberchief.ai/2023/05/secure-jwt-token-storage.html)
-- [Race Conditions in JWT Refresh Token Rotation — DEV Community](https://dev.to/silentwatcher_95/race-conditions-in-jwt-refresh-token-rotation-3j5k)
-- [Handling Geolocation for PWA Safari — Poespas Blog](https://blog.poespas.me/posts/2025/03/01/handling-geolocation-for-pwa-safari-challenges/)
-- [webpush-java library — web-push-libs GitHub](https://github.com/web-push-libs/webpush-java)
-- [Sending web push notifications from Spring Boot — Vaadin](https://vaadin.com/blog/send-web-push-notifications-java)
-- [Service Workers Caching — MDN](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Caching)
-- [STOMP WebSocket Spring Boot — Spring Framework docs](https://docs.spring.io/spring-framework/reference/web/websocket/stomp.html)
+- Existing v6.0 Key Decisions in `.planning/PROJECT.md` (OPTIONS bypass, DedupeResponseHeader, httpOnly cookie pattern)
 
 ---
-*Pitfalls research for: PWA + Web Push added to existing Spring Boot microservice attendance system*
-*Researched: 2026-04-05*
+*Pitfalls research for: v7.0 Frontends — Telegram Mini App (React), Angular Web Panel, Landing page — added to existing RutCampusTrack microservice system*
+*Researched: 2026-04-06*

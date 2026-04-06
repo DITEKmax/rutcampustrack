@@ -9,9 +9,9 @@
 | 2 | Academic Service | ✅ ЗАВЕРШЕНА |
 | 3 | Schedule Service | ✅ ЗАВЕРШЕНА |
 | 4 | Attendance Service | ✅ ЗАВЕРШЕНА |
-| 5 | Web Push Backend | ⏸ ОТЛОЖЕНА (включить в PWA milestone) |
+| 5 | Web Push Backend | ✅ ЗАВЕРШЕНА (v6.0 Phase 27, 2026-04-05) |
 | 6 | Notification Service (Web + Bot) | ✅ ЗАВЕРШЕНА (v5.0, 2026-04-05) |
-| 7 | PWA Mobile Client «RutTrack» | ⬜ |
+| 7 | PWA Mobile Client «RutTrack» | ✅ ЗАВЕРШЕНА (v6.0 Phases 29-32, 2026-04-06) |
 | 8 | Фронтенды (Mini App, Web Panel, Landing) | ⬜ |
 | 9 | CI/CD, мониторинг, документация | ⬜ |
 
@@ -320,7 +320,9 @@ services/api-gateway/src/main/java/ru/rutcampustrack/gateway/
 
 ---
 
-## Фаза 5: Web Push Backend
+## Фаза 5: Web Push Backend ✅
+
+**Завершена:** 2026-04-05 | **Отчёт:** `docs/phase-5-report.md` | **Milestone:** v6.0 Phase 27
 
 ### Цель
 
@@ -360,7 +362,9 @@ services/api-gateway/src/main/java/ru/rutcampustrack/gateway/
 
 ---
 
-## Фаза 6: Notification Service (Web + Bot)
+## Фаза 6: Notification Service (Web + Bot) ✅
+
+**Завершена:** 2026-04-05 | **Отчёт:** `docs/phase-6-report.md` | **Milestone:** v5.0 Phases 20-26
 
 ### Цель
 
@@ -414,7 +418,9 @@ Push-уведомления в реальном времени: в Telegram че
 
 ---
 
-## Фаза 7: PWA Mobile Client «RutTrack»
+## Фаза 7: PWA Mobile Client «RutTrack» ✅
+
+**Завершена:** 2026-04-06 | **Отчёт:** `docs/phase-7-report.md` | **Milestone:** v6.0 Phases 28-32
 
 ### Цель
 

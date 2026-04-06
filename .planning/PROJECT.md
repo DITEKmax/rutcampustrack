@@ -7,23 +7,38 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
 ## Core Value
-Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) + Schedule lifecycle (v3.0) + Attendance MVP (v4.0) + Real-time notifications (v5.0). All 5 services + 2 notification containers operational with complete inter-service communication (gRPC + RabbitMQ + WebSocket + Telegram).
-
-## Current Milestone: v6.0 PWA + Web Push
-
-**Goal:** Студенческий мобильный клиент «RutTrack» (React PWA) с нативными push-уведомлениями (Web Push API + VAPID). Объединяет оригинальные Фазы 5 (Web Push Backend) и 7 (PWA Mobile Client).
-
-**Target features:**
-- React PWA с установкой на домашний экран (A2HS), offline-режимом (Service Worker)
-- Web Push уведомления (VAPID, Push API, Service Worker push handler)
-- Студенческий интерфейс: расписание, геоотметка, статистика посещаемости
-- Push-нотификации о начале пары, напоминания об отметке, отмена занятий, ДЗ
-- Интеграция с существующими бэкенд-сервисами через API Gateway
+Full-stack attendance tracking system: 5 backend microservices (Auth, Academic, Schedule, Attendance, Notification) + React PWA «RutTrack» mobile client with Web Push notifications. Students can install the app, view schedule, geo-checkin, track attendance stats, manage homework — all with native push notifications independent from Telegram.
 
 ## Current State
-v5.0 shipped 2026-04-05. All backend services operational. v6.0 in progress: Phases 27-30 complete (4/6) — Web Push backend (VAPID, subscriptions, push delivery), API Gateway CORS + nginx, React PWA scaffold with auth (httpOnly cookie refactor, login/logout, A2HS, offline shell), schedule view + geo check-in UI (SchedulePage, WeekDayTabs, LessonCard, CheckInButton with GPS, StompProvider for real-time STOMP, CheckInScreen). 31 PWA tests + 11 gateway tests pass. Next: Phase 31 (push frontend + E2E integration).
+
+v6.0 shipped 2026-04-06. All 5 backend services + React PWA «RutTrack» operational.
+
+**Backend:** Auth (JWT/OTP) + Academic (CRUD/gRPC/Redis/RabbitMQ) + Schedule (auto-generation/status transitions/cron) + Attendance (geo-checkin/manual marking/reports/MongoDB) + Notification (STOMP WebSocket + Telegram bot + Web Push). All inter-service communication working: gRPC, RabbitMQ fanout, STOMP, Web Push API.
+
+**Frontend PWA:** React + Vite + TanStack Query + Tailwind + Framer Motion. Features: login with httpOnly cookie JWT, schedule view with week navigation, geo check-in with GPS, attendance stats with red zone indicators, homework list with optimistic toggle, Web Push notifications (lesson start/cancel/homework), A2HS install prompt, offline Service Worker shell. 63 vitest tests, 4,733 LOC TypeScript.
+
+**Infrastructure:** API Gateway with CORS + JWT filter, nginx container serving PWA, docker-compose with PostgreSQL×2 + MongoDB + Redis + RabbitMQ.
+
+**Next milestone:** v7.0 Frontends — Mini App, Web Panel, Landing.
 
 ## Shipped Milestones
+
+<details>
+<summary>v6.0 PWA + Web Push — SHIPPED 2026-04-06</summary>
+
+**Goal:** Student mobile client «RutTrack» (React PWA) with native Web Push notifications.
+**Phases:** 27-32 (6 phases, 14 plans)
+**Requirements:** 32/32 satisfied
+
+Key deliverables:
+- Web Push backend: VAPID keys, subscription CRUD, async push delivery (lesson/cancel/homework)
+- API Gateway CORS + nginx container for PWA serving
+- React PWA: JWT auth (httpOnly cookies), A2HS, offline shell, 5-tab BottomNav
+- Schedule + geo check-in UI with STOMP real-time updates
+- Service Worker push handlers with deep link navigation, soft-ask permission pattern
+- Attendance stats with red zone indicators + homework list with optimistic completion toggle
+
+</details>
 
 <details>
 <summary>v5.0 Notification Service (Web + Bot) — SHIPPED 2026-04-05</summary>
@@ -116,12 +131,27 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ NOTIF-08..09: Headman excuse/late-checkin alert handlers (wired, awaiting publisher) — v5.0 (partial)
 - ✓ WS-05..06: Headman WebSocket push handlers (wired, awaiting publisher) — v5.0 (partial)
 
+### Recently Validated (v6.0)
+- ✓ PWA-01..07: Login, token refresh, logout, manifest, Service Worker, A2HS, iOS onboarding — v6.0
+- ✓ SCHED-01..03: Schedule view (today/week), offline cache with stale-while-revalidate — v6.0
+- ✓ CHKIN-01..03: Geo check-in with GPS, success/failure feedback, real-time STOMP updates — v6.0
+- ✓ PUSH-01..07: VAPID keys, subscription CRUD, push delivery (lesson/cancel/homework), 410 cleanup — v6.0
+- ✓ PUSHUI-01..04: SW push handler, notificationclick deep links, soft-ask permission, foreground dedup — v6.0
+- ✓ ATT-01..03: Stats per subject, red zone indicators, attendance records with status badges — v6.0
+- ✓ HW-01..02: Homework list, optimistic completion toggle — v6.0
+- ✓ INFRA-01..03: Gateway CORS, push route, nginx PWA serving — v6.0
+
+## Current Milestone: v7.0 Frontends — Mini App, Web Panel, Landing
+
+**Goal:** Build the remaining three frontend applications — Telegram Mini App (React), teacher/admin Web Panel (Angular), and marketing Landing page (HTML/CSS).
+
+**Target features:**
+- Telegram Mini App (React) — student-facing UI inside Telegram for attendance, schedule, check-in
+- Web Panel (Angular) — teacher/admin dashboard for managing users, groups, semesters, viewing attendance journal
+- Landing page (HTML/CSS) — marketing/info page for the project
+
 ### Active
-- [ ] React PWA «RutTrack» с A2HS, Service Worker, offline shell
-- [ ] Web Push Backend: VAPID ключи, подписка, push endpoint в notification-web
-- [ ] Студенческий UI: расписание на день/неделю, геоотметка, статистика
-- [ ] Push-нотификации: начало пары, напоминание об отметке, отмена, ДЗ
-- [ ] Интеграция PWA с API Gateway (JWT auth, REST endpoints)
+(Requirements to be defined below)
 
 ### Deferred (from previous milestones)
 - [ ] Excuse tickets: create/submit/review flow with event publishing (excuse.requested)
@@ -147,6 +177,9 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - PDF/Excel export — deferred to v4.1+
 
 ## Milestones
+
+### v6.0: PWA + Web Push — ✅ SHIPPED 2026-04-06
+React PWA «RutTrack» with Web Push notifications. 6 phases, 14 plans, 32 requirements. See `.planning/milestones/v6.0-ROADMAP.md`.
 
 ### v5.0: Notification Service (Web + Bot) — ✅ SHIPPED 2026-04-05
 WebSocket push + Telegram bot with 3 commands, 8 event handlers, reminder lifecycle. 7 phases, 16 plans, 25 requirements (19 satisfied, 6 partial). See `.planning/milestones/v5.0-ROADMAP.md`.
@@ -202,6 +235,13 @@ Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 | TZ=Europe/Moscow env var on notification-bot | ✓ datetime.now() aligns with Moscow lesson times from Schedule Service | v5.0 |
 | OTP code returned in HTTP response body | ✓ Bot delivers OTP to student via Telegram instead of separate channel | v5.0 |
 | grpcio 1.73.0 + protobuf 6.31.0 | ✓ Compatible pair; 1.80.x requires protobuf 6.x breaking change | v5.0 |
+| VAPID keys persist in Redis (no TTL) | ✓ Never regenerated on restart — avoids invalidating subscriptions | v6.0 |
+| injectManifest for vite-plugin-pwa | ✓ Required for custom push event handler in Service Worker | v6.0 |
+| httpOnly cookie for refresh token | ✓ Prevents XSS token theft; access token in memory only | v6.0 |
+| OPTIONS bypass before isPublicRoute in Gateway | ✓ CORS preflight works without JWT | v6.0 |
+| BeforeInstallPromptEvent in declare global block | ✓ TypeScript module visibility for A2HS event | v6.0 |
+| useThreshold returns null on 404 | ✓ No red zone indicators shown when no threshold configured (D-06) | v6.0 |
+| Optimistic mutations with TanStack Query | ✓ Homework checkbox toggle feels instant; reverts on error | v6.0 |
 
 ## Evolution
 
@@ -221,4 +261,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after phases 27-30 completed*
+*Last updated: 2026-04-06 after v7.0 milestone start*

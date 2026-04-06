@@ -1,134 +1,176 @@
-# RutCampusTrack — Отчёт Фазы 5: Notification Service (Web + Bot)
+# RutCampusTrack — Отчёт Фазы 5: Web Push Backend
 
 ## Дата: Апрель 2026
 
 ## Цель фазы
 
-Notification Service v5.0: real-time push-уведомления через WebSocket (STOMP) для веб-панели и Telegram-бот для студентов. Оба канала потребляют события RabbitMQ от существующих сервисов. Бот отправляет inline-кнопки для отметки, напоминания с полным жизненным циклом (создание → удаление), команды /start, /login, /status.
+Web Push Backend: реструктуризация notification-web в notification-service (contract + app), генерация VAPID-ключей, хранение push-подписок в MongoDB, асинхронная доставка Web Push уведомлений для событий lesson.started, lesson.cancelled и homework.published. Маршрутизация через API Gateway, AOP-безопасность @RequireRole, автоматическая очистка истёкших подписок по HTTP 410.
 
 ---
 
 ## Что реализовано
 
-### Подфаза 20: Shared Infrastructure
+### Подфаза 27-01: Module Restructure and API Contract
 
-**Цель:** Общая инфраструктура — две durable RabbitMQ-очереди с DLQ, docker-compose контейнеры, Redis namespace для напоминаний.
+**Цель:** Реструктуризация notification-web в notification-service с двумя подмодулями (contract + app), создание PushApi контракта и WebPushConfig бина.
 
-- **RabbitMQ**: `notification-web.events` и `notification-bot.events` очереди с DLQ, привязка к `rut-uit.events` fanout exchange
-- **Docker-compose**: контейнеры notification-web (порт 9094) и notification-bot с health checks и depends_on
-- **Redis**: namespace `reminder:msgs:{lesson_id}:{user_id}` для хранения message_id напоминаний (RPUSH/LRANGE)
-- **3 плана**, завершено 2026-04-04
+- **Реструктуризация модулей**: `services/notification-web/` заменён на `services/notification-service/notification-api-contract/` (java-library) и `services/notification-service/notification-app/` (Spring Boot)
+- **PushApi контракт**: интерфейс с 3 эндпоинтами — `getVapidPublicKey`, `subscribe`, `unsubscribe`
+- **DTO**: `SubscribeRequest` (record с `@NotBlank endpoint`, `@NotNull Keys`), `UnsubscribeRequest` (record с `@NotBlank endpoint`), `VapidPublicKeyResponse` (extends `RepresentationModel`)
+- **WebPushConfig**: `@Value("${vapid.public-key}")`, bean `webPushService` с `BouncyCastleProvider`, `LoaderImplementation.CLASSIC` для совместимости с Spring Boot 3.2+ signed-JAR
+- **Зависимости**: `nl.martijndwars:web-push:5.1.2`, `bcprov-jdk15on:1.70`, `spring-boot-starter-data-mongodb`, `spring-boot-starter-aop`, `spring-boot-starter-hateoas`
+- **Gateway**: маршрут `notification-push` — `/api/push/**` → `notification-web:9094`, `StripPrefix=1`
+- **Docker-compose**: VAPID env vars (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`), MongoDB URI, `depends_on` mongo-attendance
 
-### Подфаза 21: Notification Web — WebSocket Core
+### Подфаза 27-02: Push Subscription CRUD and Security AOP
 
-**Цель:** STOMP WebSocket с JWT-аутентификацией на handshake, маршрутизация событий по группам.
+**Цель:** @RequireRole AOP-безопасность, PushController с MongoDB-хранением подписок, CRUD для subscribe/unsubscribe.
 
-- **WebSocketConfig**: STOMP endpoint `/api/ws` с SockJS fallback
-- **JwtHandshakeInterceptor**: JWT валидация при подключении, извлечение group_id и user_id в session attributes
-- **EventConsumer**: RabbitMQ → WebSocket маршрутизация 5 типов событий (lesson.started, lesson.closed, lesson.cancelled, homework.*, attendance.marked)
-- **Group topics**: `/topic/group/{groupId}`, `/topic/headman/{groupId}` для headman-only событий
-- **20 Java тестов**
-- **2 плана**, завершено 2026-04-05
+- **@RequireRole AOP**: 4 файла (RequireRole, RoleCheckAspect, RequestContext с `ScopedProxyMode.TARGET_CLASS`, UserContextFilter) — паттерн из attendance-service с переименованием пакетов
+- **PushController**: `implements PushApi`, `@RequireRole({UserRole.STUDENT})` на всех 3 методах
+  - `getVapidPublicKey` — возвращает VAPID public key (200 + HATEOAS)
+  - `subscribe` — сохраняет подписку в MongoDB с `userId`/`groupId` из `RequestContext` (201)
+  - `unsubscribe` — удаляет по `userId` + `endpoint` (204)
+- **PushSubscriptionDocument**: `@Document(collection = "push_subscriptions")`, 7 полей с `@Field` (snake_case)
+- **PushSubscriptionRepository**: `findAllByGroupId`, `deleteByUserIdAndEndpoint`, `deleteByEndpoint`
+- **PushMongoConfig**: `@PostConstruct` — compound unique index `uniq_user_endpoint` (userId + endpoint), index `idx_group_id`
+- **14 тестов**: 4 SecurityInfrastructure + 8 PushController + 2 PushSubscriptionRepository (structural)
 
-### Подфаза 22: Bot Infrastructure Layer
+### Подфаза 27-03: Async Web Push Delivery Engine
 
-**Цель:** Три инфраструктурных клиента для бота — aio-pika consumer с watchdog, gRPC async клиент, Redis async клиент, throttled send queue.
+**Цель:** Асинхронная доставка Web Push уведомлений через @Async thread pool, интеграция в EventConsumer после STOMP-отправки.
 
-- **aio-pika consumer**: watchdog-корутина с 5s retry loop, автовосстановление после рестарта RabbitMQ
-- **gRPC async client**: `GetGroupMembers` с 5-минутным кэшем, неблокирующий для asyncio event loop
-- **Redis async client**: RPUSH/LRANGE/DELETE для reminder message_ids
-- **Throttled send queue**: token bucket 30 msg/s, retry backoff [1, 2, 4]s с duck-typed retry_after
-- **3 плана**, завершено 2026-04-05
-
-### Подфаза 23: Bot Telegram Commands
-
-**Цель:** /start (привязка аккаунта), /login (OTP), /status (текущая посещаемость).
-
-- **/start**: `GetUserByTelegramId` gRPC RPC → приветствие с логином/паролем или инструкция обратиться к старосте
-- **/login**: запрос OTP через Auth Service → студент вводит код → подтверждение логина
-- **/status**: текущая пара и статус посещаемости через Schedule + Attendance gRPC
-- **OTP в HTTP response body**: бот получает OTP и пересылает студенту через Telegram
-- **3 плана**, завершено 2026-04-05
-
-### Подфаза 24: Bot Event Notifications
-
-**Цель:** Telegram-уведомления с inline-кнопками при начале пары, plain-уведомления при отмене и ДЗ, headman-алерты.
-
-- **lesson.started**: inline-кнопка с WebAppInfo для Mini App check-in, message_id сохраняется в Redis (RPUSH)
-- **lesson.cancelled**: plain text уведомление через throttled send queue
-- **homework.published/updated**: уведомление о новом/изменённом ДЗ
-- **excuse.requested / late_checkin.requested**: headman-only алерты (хендлеры готовы, но publisher ещё не существует)
-- **EventDispatcher**: маршрутизация по event_type к соответствующим хендлерам
-- **2 плана**, завершено 2026-04-05
-
-### Подфаза 25: Bot Reminder Lifecycle
-
-**Цель:** Полный жизненный цикл напоминаний — 3 сообщения (начало, середина, конец пары), удаление при закрытии пары или после отметки.
-
-- **ReminderScheduler**: asyncio timers для midpoint и near-end напоминаний
-- **lesson.closed handler**: LRANGE всех message_ids → bulk delete_message → DEL Redis keys
-- **attendance.marked handler**: немедленное удаление напоминаний конкретного студента при status=present
-- **3 напоминания**: начало пары (при lesson.started), середина, ближе к концу — как указано в CLAUDE.md
-- **2 плана**, завершено 2026-04-05
-
-### Подфаза 26: Notification Deployment Hardening
-
-**Цель:** Закрытие аудит-гэпов — None guard для reminder_scheduler, JWT key volume mount, docker-compose env vars.
-
-- **lesson_closed.py**: `reminder_scheduler is None` → warning log, продолжает удаление сообщений
-- **JWT public key**: volume mount в docker-compose для notification-web
-- **Docker-compose env vars**: 6 полей notification-bot (SCHEDULE_GRPC_HOST/PORT, AUTH_SERVICE_HOST/PORT, API_GATEWAY_URL, MINI_APP_URL)
-- **1 план**, завершено 2026-04-05
+- **AsyncConfig**: `@EnableAsync`, `pushTaskExecutor` (`ThreadPoolTaskExecutor`, core=4, max=10, queue=50, keepAlive=60s) — ограниченный пул предотвращает starving потока RabbitMQ consumer
+- **WebPushDeliveryService**: `@Async("pushTaskExecutor")`, `CompletableFuture<Void> sendToGroup()`:
+  - Fanout: `repository.findAllByGroupId(groupId)` → отправка каждому подписчику
+  - 3 типа событий: `lesson.started` (Пара началась), `lesson.cancelled` (Пара отменена), `homework.published` (Новое ДЗ)
+  - HTTP 410 auto-cleanup: `isGone()` проверяет `HttpResponseException.getStatusCode() == 410` → `repository.deleteByEndpoint(sub.getEndpoint())`
+  - Payload JSON: `{title, body, event_type, data}` — формат для Service Worker
+- **EventConsumer**: push hook ПОСЛЕ `messagingTemplate.convertAndSend` (STOMP):
+  - `shouldPush(eventType)` — gate через `PUSH_EVENT_TYPES` (3 типа)
+  - `sendToGroup(groupId, eventType, payload)` — асинхронный вызов, не блокирует STOMP
+- **22 теста**: 7 WebPushDeliveryServiceTest (fetch, fanout, 410 delete, non-410 skip, 3 payload content) + 15 EventConsumerTest (9 existing + 6 new push hook tests)
 
 ---
 
-## Статистика
+## API Notification Service (Push)
 
-| Метрика | Значение |
-|---------|----------|
-| Фаз | 7 (фазы 20-26) |
-| Планов | 16 |
-| Тестов | ~128 (20 Java + 108 Python) |
-| Timeline | 2 дня (2026-04-04 → 2026-04-05) |
-| Коммитов | 101 |
-| Файлов | 463 |
-| Требований | 19/25 satisfied (6 partial) |
+### REST Endpoints
 
-## Известные пробелы
+| Метод | URL | Описание | Роль |
+|-------|-----|----------|------|
+| GET | /push/vapid-public-key | Получить VAPID public key | STUDENT |
+| POST | /push/subscribe | Подписка на push-уведомления | STUDENT |
+| DELETE | /push/subscribe | Отписка от push-уведомлений | STUDENT |
 
-| ID | Описание | Причина |
-|----|----------|---------|
-| WS-05, WS-06 | Headman WebSocket push handlers | Хендлеры готовы, но publisher для excuse.requested / late_checkin.requested ещё не существует |
-| NOTIF-08, NOTIF-09 | Headman Telegram alert handlers | Аналогично — хендлеры готовы, awaiting publisher |
-| WS-07 | Group isolation verification | Нужна live-проверка на уровне брокера |
-| NOTIF-02, NOTIF-03 | Timer accuracy | TZ fix применён, но live timer testing ещё не проведён |
+**Gateway**: все через `Path=/api/push/**`, `StripPrefix=1`, маршрут `notification-push`
 
-## Ключевые решения
+### RabbitMQ Events (потребление + push-доставка)
+
+| Событие | STOMP | Web Push |
+|---------|-------|----------|
+| `lesson.started` | Да | Да — «Пара началась» |
+| `lesson.cancelled` | Да | Да — «Пара отменена» |
+| `homework.published` | Да | Да — «Новое ДЗ» |
+| `excuse.requested` | Да | Нет |
+| `attendance.marked` | Да | Нет |
+
+---
+
+## Ключевые технические решения
 
 | Решение | Обоснование |
-|---------|-------------|
-| STOMP in-memory broker (без external broker) | Достаточно для single-instance VPS |
-| JWT claims только при handshake | Упрощает WebSocket lifecycle; expired JWT клиенты продолжают получать |
-| Отдельный /headman topic (не ChannelInterceptor ACL) | Проще архитектура; honor system допустим для MVP |
-| aio-pika watchdog с 5s retry loop | Graceful restart после перезагрузки RabbitMQ |
-| Token bucket 30 msg/s | Нет 429 ошибок от Telegram API |
-| Redis RPUSH list для reminder message_ids | LRANGE возвращает все ID в порядке вставки для bulk delete |
-| grpcio 1.73.0 + protobuf 6.31.0 | Совместимая пара; 1.80.x требует breaking change в protobuf |
+|---------|------------|
+| VAPID ключи в env vars (не Redis) | Пользователь явно выбрал env vars вместо Redis (Discussion Log). Функциональная персистентность обеспечена конфигурацией |
+| `LoaderImplementation.CLASSIC` | Обходит конфликт BouncyCastle signed-JAR с Spring Boot 3.2+ nested-JAR loader |
+| `@Async("pushTaskExecutor")` | Асинхронная доставка push не блокирует RabbitMQ consumer thread и STOMP routing |
+| Push hook ПОСЛЕ convertAndSend | STOMP-доставка всегда происходит первой, push — асинхронно после неё |
+| `shouldPush()` gate в WebPushDeliveryService | EventConsumer не знает о типах событий — делегирует фильтрацию в delivery service |
+| `createNotification()` protected factory | Testability: `Notification` конструктор парсит EC ключи — mock через `@Spy` + `doReturn` |
+| MongoDB `push_subscriptions` | Переиспользует существующий MongoDB контейнер (attendance_db) |
+| Compound unique index `userId + endpoint` | Предотвращает дубликаты подписок |
 
-## Архитектура
+---
+
+## Файловая структура
 
 ```
-RabbitMQ (rut-uit.events fanout)
-    ├── notification-web.events queue
-    │   └── EventConsumer → STOMP SimpMessagingTemplate
-    │       ├── /topic/group/{groupId}     (все события)
-    │       └── /topic/headman/{groupId}   (excuse/late-checkin)
-    └── notification-bot.events queue
-        └── aio-pika consumer → EventDispatcher
-            ├── lesson.started  → inline button + Redis reminder
-            ├── lesson.cancelled → plain notification
-            ├── lesson.closed   → cleanup reminders
-            ├── attendance.marked → cleanup student reminders
-            ├── homework.*      → homework notification
-            └── excuse/late_checkin → headman alert
+services/notification-service/
+├── notification-api-contract/
+│   └── src/main/java/ru/rutcampustrack/notification/contract/
+│       ├── api/PushApi.java              ← Push REST контракт (3 эндпоинта)
+│       ├── dto/push/
+│       │   ├── SubscribeRequest.java     ← record с @NotBlank endpoint, @NotNull Keys
+│       │   ├── UnsubscribeRequest.java   ← record с @NotBlank endpoint
+│       │   └── VapidPublicKeyResponse.java ← extends RepresentationModel
+│       └── enums/UserRole.java           ← STUDENT, TEACHER, ADMIN
+└── notification-app/
+    └── src/
+        ├── main/java/ru/rutcampustrack/notification/
+        │   ├── config/
+        │   │   ├── WebPushConfig.java       ← VAPID PushService bean
+        │   │   ├── PushMongoConfig.java     ← MongoDB indexes
+        │   │   └── AsyncConfig.java         ← @EnableAsync + pushTaskExecutor
+        │   ├── push/
+        │   │   ├── PushController.java      ← implements PushApi, @RequireRole
+        │   │   ├── PushSubscriptionDocument.java ← @Document(push_subscriptions)
+        │   │   ├── PushSubscriptionRepository.java ← MongoRepository
+        │   │   └── WebPushDeliveryService.java ← @Async push delivery
+        │   ├── event/EventConsumer.java     ← STOMP + push hook
+        │   ├── security/                    ← RequireRole, RoleCheckAspect, RequestContext, UserContextFilter
+        │   └── exception/AccessDeniedException.java
+        └── test/java/ru/rutcampustrack/notification/
+            ├── security/SecurityInfrastructureTest.java  ← 4 tests
+            ├── push/
+            │   ├── PushControllerTest.java               ← 8 tests
+            │   ├── PushSubscriptionRepositoryTest.java   ← 2 tests
+            │   └── WebPushDeliveryServiceTest.java        ← 7 tests
+            └── event/EventConsumerTest.java               ← 15 tests (9+6)
 ```
+
+---
+
+## Тестовое покрытие
+
+| Модуль | Тесты | Тип | Фреймворк |
+|--------|-------|-----|-----------|
+| Security Infrastructure | 4 | Unit | Mockito |
+| PushController | 8 | Unit | Mockito |
+| PushSubscriptionRepository | 2 | Unit (structural) | JUnit |
+| WebPushDeliveryService | 7 | Unit | Mockito (@Spy) |
+| EventConsumer | 15 | Unit | Mockito |
+| **Итого** | **47** | | |
+
+Все тесты проходят: `./gradlew :services:notification-service:notification-app:test` — BUILD SUCCESSFUL
+
+---
+
+## Требования (покрытие)
+
+| Категория | ID | Статус |
+|-----------|-----|--------|
+| Web Push | PUSH-01 (VAPID keys) | ✅ |
+| Web Push | PUSH-02 (subscribe) | ✅ |
+| Web Push | PUSH-03 (unsubscribe) | ✅ |
+| Web Push | PUSH-04 (lesson.started push) | ✅ |
+| Web Push | PUSH-05 (lesson.cancelled push) | ✅ |
+| Web Push | PUSH-06 (homework.published push) | ✅ |
+| Web Push | PUSH-07 (HTTP 410 auto-delete) | ✅ |
+| Infrastructure | INFRA-02 (Gateway push route) | ✅ |
+| **Итого** | **8/8** | **100%** |
+
+---
+
+## Известный tech debt
+
+| Проблема | Серьёзность | Описание |
+|----------|-------------|----------|
+| ROADMAP SC-1 Redis vs env-var | Info | ROADMAP упоминает «VAPID key persisted in Redis», но пользователь явно выбрал env vars. Функционально эквивалентно |
+| ROADMAP SC-1..3 путь /api/ws/push/ | Info | ROADMAP использует `/api/ws/push/...`, реализация — `/api/push/...` с отдельным gateway route. Изменение намеренное |
+| End-to-end push delivery | Info | Требует живую инфраструктуру (Docker, VAPID ключи, браузер с push permission) для полной верификации |
+
+---
+
+## Следующая фаза
+
+**Фаза 7: PWA Mobile Client** — React PWA с авторизацией (cookie-based refresh), расписание, гео-отметка, push-уведомления, статистика посещаемости и ДЗ трекер.

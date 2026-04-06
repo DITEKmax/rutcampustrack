@@ -1,231 +1,251 @@
 # Feature Research
 
-**Domain:** PWA Mobile Client «RutTrack» — Student attendance app with Web Push notifications
-**Researched:** 2026-04-05
-**Project:** RutCampusTrack v6.0 PWA + Web Push
-**Confidence:** HIGH — based on PROJECT.md, job-stories.md, design-decisions.md, phases-plan.md, Web Push API docs, and comparable PWA attendance system research.
+**Domain:** University attendance tracking — v7.0 frontends (Telegram Mini App, Angular Web Panel, Landing Page)
+**Researched:** 2026-04-06
+**Confidence:** HIGH (backend APIs fully defined, existing PWA provides clear patterns, job stories documented)
 
 ---
 
 ## Context: What Already Exists (Must Not Re-Implement)
 
-All backend APIs are operational. The PWA consumes them. No new backend services are created in v6.0 (only VAPID push subscription management is added to notification-web).
+The backend is complete and all APIs are operational. The React PWA «RutTrack» already covers:
+- Student login (JWT/httpOnly cookies), schedule view, geo check-in, attendance stats, homework list, Web Push, A2HS, offline shell
 
-### Available Backend Endpoints (via API Gateway :8080)
-
-| Endpoint | Service | What PWA Uses It For |
-|----------|---------|---------------------|
-| `POST /api/auth/login` | auth-service:9090 | Student login (username + password) |
-| `POST /api/auth/refresh` | auth-service:9090 | Token refresh (auto-refresh before expiry) |
-| `POST /api/auth/logout` | auth-service:9090 | Logout (invalidates refresh token) |
-| `POST /api/auth/otp/request` | auth-service:9090 | OTP request via Telegram |
-| `POST /api/auth/otp/verify` | auth-service:9090 | OTP verify → JWT pair |
-| `GET /api/academic/students/{id}/profile` | academic-service:9091 | Student profile |
-| `GET /api/academic/groups/{id}/members` | academic-service:9091 | Group composition |
-| `GET /api/academic/homeworks` | academic-service:9091 | Homework list for group |
-| `POST/DELETE /api/academic/homework-completions` | academic-service:9091 | Personal homework tracker |
-| `GET /api/schedule/lessons` | schedule-service:9092 | Schedule (by date range + group) |
-| `GET /api/schedule/lessons/{id}` | schedule-service:9092 | Single lesson detail |
-| `POST /api/attendance/check-in` | attendance-service:9093 | Geo check-in submission |
-| `GET /api/reports/student-stats` | attendance-service:9093 | Student attendance stats |
-| `GET /api/reports/student-records` | attendance-service:9093 | Attendance records list |
-| `POST /api/attendance/excuse-tickets` | attendance-service:9093 | Create excuse ticket (deferred) |
-| `POST /api/attendance/late-checkin` | attendance-service:9093 | Late check-in request (deferred) |
-| `WS /api/ws` (STOMP) | notification-web:9094 | Real-time push events via WebSocket |
-
-### Existing Notification Infrastructure
-
-- STOMP WebSocket at `/api/ws` with JWT handshake (query param `token`)
-- 5 push event types already delivered: `lesson.started`, `lesson.cancelled`, `homework.published`, `excuse.requested`, `late_checkin.requested`
-- Telegram bot already covers same events — Web Push duplicates the channel
-
-### New Backend Needed for Web Push
-
-notification-web needs 2 new endpoints (VAPID subscription management):
-- `POST /api/ws/push/subscribe` — store PushSubscription object per user
-- `DELETE /api/ws/push/subscribe` — unsubscribe
-
-These are lightweight additions to the existing Java WebSocket service, not a new service.
+v7.0 adds three new frontends that consume the same backend APIs. Features below are scoped exclusively to what is NEW in these three frontends.
 
 ---
 
-## Feature Landscape
+## Application 1: Telegram Mini App (React, student-facing)
+
+The Mini App runs inside Telegram, opened from bot buttons or the bot menu. Authentication is via Telegram's `initData` (HMAC-SHA256 signed by bot secret) — no separate login screen needed once the student links their account via `/start`.
 
 ### Table Stakes (Users Expect These)
 
-Features the PWA cannot ship without. Missing = product feels incomplete or broken.
+| Feature | Why Expected | Complexity | Backend Dependency |
+|---------|--------------|------------|-------------------|
+| Seamless auth via initData (no login form) | Mini Apps never show a login screen — Telegram identity IS the credential | MEDIUM | Auth Service: new endpoint to exchange initData for JWT; bot already links telegram_id (v5.0 done) |
+| Today's schedule view | First thing a student checks before/during class | LOW | Schedule Service GET /api/schedule/lessons (date range) — already built |
+| Geo check-in button | Core purpose of the Mini App per JS-STUDENT-01 | MEDIUM | Attendance Service POST /api/attendance/check-in — already built |
+| Check-in success/failure feedback | Students need instant confirmation; silent failure is unacceptable | LOW | HTTP response + optimistic UI |
+| Attendance stats per subject | Students want to know if they are in the red zone (JS-STUDENT-07) | LOW | Attendance Service GET /api/reports/student-stats — already built |
+| Bottom navigation (Schedule / Check-in / Stats) | Standard Mini App navigation pattern; users expect tab-based navigation | LOW | No backend needed |
+| Telegram native theme colors | Mini App must respect Telegram's color scheme (light/dark, OLED) | LOW | useThemeParams from tma.js SDK |
+| MainButton integration | Telegram's native bottom action button for primary actions (check-in) | LOW | tma.js SDK useMainButton |
+| Back button wiring | Telegram provides a native BackButton — must be wired to app navigation | LOW | tma.js SDK useBackButton |
 
-| Feature | Why Expected | Complexity | Dependency on Backend |
-|---------|--------------|------------|----------------------|
-| **Login screen** | Entry point to all features. Students need username/password login. | LOW | `POST /api/auth/login`, `POST /api/auth/refresh` |
-| **Today's schedule view** | The primary daily-use screen. Students check what pairs they have today before going to campus. Missing = app is useless. | LOW | `GET /api/schedule/lessons?from=today&to=today&groupId=X` |
-| **Geo check-in button** | Core product function. Student taps "Отметиться", PWA requests GPS coords, sends to backend. Visible only during active pair window (5 min before start → 5 min after end). | MEDIUM | `POST /api/attendance/check-in`, Geolocation API (browser) |
-| **Check-in result feedback** | Immediate visual confirmation: "Отмечено" (green) or "Не в зоне кампуса" (red) after submission. | LOW | Same as check-in |
-| **Weekly schedule view** | Students plan their week. Missing = they go back to paper schedule or old Telegram bot. | LOW | `GET /api/schedule/lessons?from=weekStart&to=weekEnd&groupId=X` |
-| **Attendance stats screen** | Students track their own attendance percentage per subject. Core student concern (red zone threshold awareness). | MEDIUM | `GET /api/reports/student-stats` |
-| **JWT auto-refresh** | Access tokens expire in 15 min. Without silent refresh, student is logged out mid-session. | MEDIUM | `POST /api/auth/refresh` |
-| **"Add to Home Screen" prompt** | PWA identity feature. Students expect the app install prompt. Without it, it's just a website. Per design-decisions.md: show iOS Safari instruction for iOS users. | LOW | browser `beforeinstallprompt` API + manifest.json |
-| **Offline shell (app loads without network)** | Students check schedule before entering a building with bad signal. At minimum the cached schedule and stats must be readable. | MEDIUM | Service Worker + Cache API (no backend call needed offline) |
-| **Logout** | Security expectation. Essential on shared devices. | LOW | `POST /api/auth/logout` |
+### Differentiators
 
----
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Inline deep link from bot check-in button | One-tap from Telegram bot notification directly into Mini App at check-in screen | LOW | Bot already sends inline button (NOTIF-01 done v5.0); Mini App needs /checkin route |
+| Homework list (read-only) | Students see assigned homework without leaving Telegram | LOW | Academic Service GET /api/academic/homeworks — built |
+| Haptic feedback on check-in | Makes geo check-in feel native on iOS/Android | LOW | window.Telegram.WebApp.HapticFeedback — one-liner |
+| Late check-in request | JS-STUDENT-06: deferred; no competing Mini App has it | HIGH | Blocked — event publisher not yet built (NOTIF-08 partial); defer to v7.x |
+| Excuse ticket submission | JS-STUDENT-03..05: student picks reason, no file upload needed for MVP | HIGH | Blocked — same event publisher dependency; defer to v7.x |
 
-### Differentiators (Competitive Advantage)
-
-Features that make RutTrack meaningfully better than the Telegram bot alone.
-
-| Feature | Value Proposition | Complexity | Dependency on Backend |
-|---------|-------------------|------------|----------------------|
-| **Web Push notifications (lesson.started with check-in action button)** | Notifications arrive even with PWA closed. Tap "Отметиться" action button → PWA opens directly on check-in screen. This is the v6.0 headline feature — the reason for the milestone. | HIGH | VAPID: `POST /api/ws/push/subscribe`. Event delivery: notification-web pushes via Web Push API. Service Worker handles push event and `notificationclick`. |
-| **Web Push: lesson cancelled** | Student gets notified about cancellation without opening Telegram. PWA becomes an independent parallel channel as stated in design-decisions.md. | MEDIUM | notification-web pushes `lesson.cancelled` event via Web Push. Service Worker shows notification with "Посмотреть расписание" action. |
-| **Web Push: homework published** | Students get homework assignments outside Telegram. Reduces dependency on bot being linked. | MEDIUM | notification-web pushes `homework.published`. Service Worker shows notification. |
-| **Notification permission onboarding flow** | Ask for push permission after value has been demonstrated (not on first visit). Show a clear value proposition: "Получайте уведомления о начале пар прямо на телефон". | LOW | `PushManager.subscribe()` with VAPID public key |
-| **iOS onboarding screen** | iOS users need to install via Safari → Share → Add to Home Screen before Web Push works (iOS 16.4+ requirement). Show step-by-step illustrated guide on first visit from iOS Safari. | MEDIUM | None — pure frontend |
-| **Homework tracker (personal completions)** | Student marks homework as done. Visual progress. Differentiates from Telegram bot which only shows homework text. | MEDIUM | `POST/DELETE /api/academic/homework-completions` |
-| **Attendance records list with status indicators** | See each pair with its status (б/н/у/сп) with color coding. Students understand why their percentage is what it is. | MEDIUM | `GET /api/reports/student-records` |
-| **Red zone warning indicator** | Show a visual warning when student's attendance drops below the threshold for a subject. Proactive — student knows before it becomes a problem. | LOW | `GET /api/reports/student-stats` (threshold is in the response) |
-| **Real-time check-in state via WebSocket** | When STOMP WebSocket receives `attendance.marked` for the current user, update the UI to "Отмечено" without page refresh or polling. Feels native. | MEDIUM | STOMP WebSocket `/api/ws` — `attendance.marked` event |
-| **Headman view: manual marking** | Headman can mark attendance for their group from the PWA. Useful on-the-go — no need to open the desktop web panel. Per JS-HEADMAN-20. | HIGH | `POST /api/attendance/manual` — requires group member list + status grid UI |
-| **Offline cached schedule (stale-while-revalidate)** | Schedule is cached in IndexedDB/Cache API. Student can see today's schedule even with no network. Per JS-STUDENT-10 and design-decisions.md: "кэшировать расписание, статистику, ДЗ для чтения". | MEDIUM | Service Worker intercepts `/api/schedule/lessons` and serves from cache on failure |
-
----
-
-### Anti-Features (Commonly Requested, Often Problematic)
+### Anti-Features
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| **In-app Telegram bot commands** | "Replace the bot" — students want one app | The Telegram bot serves students who never install the PWA. Killing the bot removes the primary channel for non-PWA users. Per design-decisions.md: "PWA coexists with Mini App — both channels active". | Keep both. Web Push duplicates Telegram push; students use whichever channel they prefer. |
-| **Excuse ticket file upload from PWA** | Students want to submit medical certificates from their phone camera | File storage architecture is deferred (see PROJECT.md Out of Scope). The excuse ticket flow (create/submit/review) itself is deferred. Building file upload in PWA before the ticket flow is designed would be wasted work. | Defer to v6.1+ when excuse ticket backend flow is unblocked. |
-| **PWA push for ALL roles (teachers, headmen, admins)** | Teachers want schedule updates too | Web Push subscription management and notification routing by role adds significant complexity to notification-web. Teachers and admins have the Angular web panel (v8.0). Students are the priority audience for PWA. | Ship Web Push for STUDENT role first. Add TEACHER support in v8.0 when the web panel is built. |
-| **Background sync for check-in (offline queue)** | "What if the check-in request fails? Queue it and retry when online" | Attendance check-in has a strict 5-min time window. A background sync retry firing 10 minutes later would fail validation on the backend anyway. Storing a pending geo check-in offline creates a false sense of "it'll work". | Show clear "No network connection" message (per JS-STUDENT-10). Do not queue geo check-in. |
-| **Real-time attendance dashboard (who's present in my group)** | Headmen want to see live presence | This is the journal grid feature for headmen. Building a live group dashboard in PWA is high complexity (WebSocket updates + student list) and duplicates the web panel functionality. | Headman can mark attendance from PWA (the differentiator above) but the full journal belongs in the desktop web panel (v8.0). |
-| **PWA app update notification ("New version available")** | Users expect to know when the app updates | vite-plugin-pwa handles SW updates via `registerSW` with `onNeedRefresh` callback. Showing a modal "Update available" is standard but blocks users. | Use `autoUpdate` strategy for transparent updates on next navigation. No user-blocking modal. |
-| **Push notifications when PWA is in foreground** | "Show a popup even when I'm using the app" | Foreground push notifications duplicate the real-time WebSocket events already handled by the STOMP connection. The SW push fires when the app is closed/background. When in foreground, the app already receives the event via WebSocket. | In `push` Service Worker event handler: check `clients.matchAll()` — if any window is focused, skip `showNotification()`. The app handles it in-UI via WebSocket. |
-| **OTP login via PWA (password-less)** | Students who forget passwords want Telegram OTP | OTP flow works but requires the student to have the Telegram bot linked already. If they're on PWA first, they may not have done /start. This creates a confusing chicken-and-egg setup flow. | Primary login = username + password. Offer OTP as secondary option only for users who know their telegram_id is linked. |
+| Full login form with password | Fallback if initData auth fails | Defeats the purpose of the Mini App; creates two auth paths to maintain | Show error screen: "Link your account via /start in the bot" |
+| Push notification management (subscribe/unsubscribe) | Students want control | Web Push does not work inside Telegram's WebView | Keep push settings in the PWA only |
+| Schedule template creation / lesson management | Headman features feel natural to include | Mini App is student-facing; headman features belong in PWA or Web Panel | Headman uses PWA or Web Panel |
+| PDF/Excel export | Seems useful | Useless on mobile inside Telegram; large payloads | Link to Web Panel for exports |
+| Offline mode / Service Worker | Seems useful for reliability | Telegram WebView does not support Service Workers reliably | Show toast on network error; rely on TanStack Query cache |
+
+---
+
+## Application 2: Web Panel (Angular, teacher + admin facing)
+
+Desktop-first. Two distinct role contexts: TEACHER (read-only journal/stats) and ADMIN (full CRUD management). Headman features exist but are lower priority since the PWA covers headman workflows on mobile.
+
+### Table Stakes (Users Expect These)
+
+#### Teacher View
+
+| Feature | Why Expected | Complexity | Backend Dependency |
+|---------|--------------|------------|-------------------|
+| Login form (username + password) | Teachers have no Telegram identity in the system (JS-TEACHER-05) | LOW | Auth Service POST /api/auth/login — built |
+| Subject + group filter dropdowns | JS-TEACHER-01: teacher sees only their own groups and subjects | LOW | Academic Service GET /api/academic/teacher-subjects — built |
+| Attendance journal grid (students x lesson dates, status cells б/н/у/сп) | JS-TEACHER-03: core deliverable; read-only table | HIGH | Attendance Service GET /api/attendance/journal — built |
+| Attendance stats per subject/group | JS-TEACHER-06: % attendance for comparison between groups | MEDIUM | Attendance Service GET /api/reports/student-stats — built |
+| Token refresh / session persistence | Teacher should not be logged out mid-session | LOW | Auth Service POST /api/auth/refresh — built |
+| Logout | Standard security expectation | LOW | Auth Service POST /api/auth/logout — built |
+
+#### Admin View
+
+| Feature | Why Expected | Complexity | Backend Dependency |
+|---------|--------------|------------|-------------------|
+| Admin dashboard with summary stats (users/groups/semesters) | JS-ADMIN-11: first screen after login | LOW | Academic Service GET /api/academic/dashboard — built |
+| User list with search/filter (by role, group, status) | JS-ADMIN-01..04: user management is the core admin task | MEDIUM | Academic Service GET /api/academic/users — built |
+| Create user (ADMIN, TEACHER, STUDENT) with auto-generated login | JS-ADMIN-01: system generates studentXXXXX / teacherXXXXX | MEDIUM | Academic Service POST /api/academic/users — built |
+| Edit user (status change: active/expelled/suspended/archived, group assignment) | JS-ADMIN-02..03: expulsion, suspension, transfer | MEDIUM | Academic Service PATCH /api/academic/users/{id} — built |
+| Soft delete user (archive) | JS-ADMIN-04 | LOW | Academic Service DELETE /api/academic/users/{id} — built |
+| Group list and CRUD | JS-ADMIN-05: groups named e.g. ИВТ-21-1 | LOW | Academic Service /api/academic/groups — built |
+| Assign / revoke headman | JS-ADMIN-06..07: toggle is_headman on a student | LOW | Academic Service PATCH /api/academic/groups/{id}/headman — built |
+| Student transfer between groups | JS-ADMIN-03: with reason, history preserved | MEDIUM | Academic Service POST /api/academic/users/{id}/transfer — built |
+| Semester list and CRUD | JS-ADMIN-08..09: create, activate (only one active at a time), deactivate | MEDIUM | Academic Service /api/academic/semesters — built |
+| Semester delete with confirmation phrase | JS-ADMIN-10: type semester name to confirm deletion (GitHub-style) | LOW | Academic Service DELETE /api/academic/semesters/{id} — built |
+| Role-based route guards | ADMIN routes blocked for TEACHER; TEACHER routes show read-only view | MEDIUM | JWT role claim from Auth Service |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Real-time STOMP WebSocket notifications in panel | JS-SYSTEM-09: lesson events, excuse alerts arrive live without page refresh | HIGH | notification-web STOMP built (v5.0); Angular needs SockJS + @stomp/stompjs client |
+| Red zone student list per group | JS-ADMIN-12: students below threshold for decanat reporting | MEDIUM | Attendance + Academic APIs both built; cross-service join on frontend |
+| Red zone threshold configuration UI | Global/group/subject override chain per JS-ADMIN-12 context | MEDIUM | Academic Service campus_settings + group_settings + subject_settings endpoints — built |
+| Average attendance per group (admin dashboard) | JS-ADMIN-12: fast overview without export | MEDIUM | Attendance stats API built; aggregate on frontend |
+| Headman panel within Web Panel | Headman can mark attendance and manage excuses from desktop | HIGH | Attendance Service manual marking built; headman auth via JWT role check |
+
+### Anti-Features
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Teacher can edit attendance | Teachers ask for override capability | Violates JS-TEACHER-04 business rule; creates audit trail problems | Headman is the only role that marks; teachers see read-only journal |
+| Bulk CSV user import | Admins want to upload a spreadsheet | Out of scope per PROJECT.md (manual creation sufficient for now) | Use Create User form; admin can batch-create via API script |
+| PDF/Excel export | JS-TEACHER-07 / JS-ADMIN-13 request it | No backend PDF/Excel generation exists | Defer to v7.x; mark as future enhancement |
+| Real-time attendance marking by teacher during class | Teachers want to mark during class | Role violation; architectural complexity | Teachers observe only; headman marks via PWA |
+| Angular Material full design system | Consistent UI | Overkill for solo-developer project; increases bundle and setup time | TailwindCSS + Angular CDK, or PrimeNG (smaller API surface) |
+
+---
+
+## Application 3: Landing Page (HTML + CSS)
+
+Static marketing/info page. No login, no API calls. Target audience: students, teachers, and university administrators evaluating the system.
+
+### Table Stakes (Users Expect These)
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Hero section (product name, tagline, CTA) | First thing a visitor sees; must communicate the product in 5 seconds | LOW | CTA links to PWA install or bot /start |
+| Feature highlights (3-4 key features with icons) | Visitors need to understand what the system does before exploring | LOW | Geo check-in, Telegram integration, schedule, stats |
+| Role overview (Student / Teacher / Admin) | Different visitors have different questions; address each role | LOW | Cards or tabs per role |
+| "How it works" 3-step flow | Onboarding flow overview: install app, link Telegram, check in | LOW | Visual step diagram |
+| Screenshots / mockup section | Visitors want to see the UI before committing | LOW | PWA screenshots + Mini App screenshots |
+| Contact / footer with links | Basic credibility; navigation | LOW | GitHub link, developer info, university affiliation |
+| Mobile-responsive layout | Students will visit on phone | MEDIUM | Flexbox/Grid; no framework needed |
+
+### Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Dark mode support | Students and developers prefer dark mode | LOW | CSS prefers-color-scheme media query |
+| "Open in Telegram" deep link button | Direct CTA to launch the bot | LOW | https://t.me/{botname} link |
+| "Install PWA" instructions | Students can install RutTrack from the landing | LOW | Links to PWA URL; iOS instructions modal |
+| Live animated stats counter (students tracked, lessons recorded) | Social proof; makes the system feel active | LOW | CSS counter animation or small vanilla JS; purely cosmetic |
+
+### Anti-Features
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Login form on landing | Convenience — one less click | Mixes marketing and app concerns; CORS complexity for static page | Link to Angular web panel or PWA login |
+| JavaScript framework (React/Vue) | Seems easier to develop | Overkill for a static page; adds build pipeline; violates "HTML+CSS" constraint | Vanilla HTML + CSS; small vanilla JS for animations only |
+| CMS / dynamic content | Admin wants to update content without code | Out of scope for portfolio project | Static HTML; update via git |
+| Video background / autoplay | Modern and eye-catching | Slow load; bandwidth penalty on mobile; accessibility problems | Static screenshot or SVG illustration |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Login + JWT storage]
-    └──required-by──> ALL authenticated features
+[Mini App: geo check-in]
+    └──requires──> [initData auth exchange to JWT]
+                       └──requires──> [Bot /start account linking (DONE v5.0)]
+                       └──requires──> [New Auth Service endpoint: POST /api/auth/telegram]
 
-[manifest.json + HTTPS]
-    └──required-by──> [Add to Home Screen prompt]
-    └──required-by──> [Service Worker registration]
-    └──required-by──> [Web Push subscription]
+[Mini App: attendance stats]
+    └──requires──> [initData auth]
 
-[Service Worker registration]
-    └──required-by──> [Offline shell (app shell caching)]
-    └──required-by──> [Offline schedule cache]
-    └──required-by──> [Web Push push event handler]
-    └──required-by──> [notificationclick handler]
+[Mini App: late check-in request]
+    └──blocked-by──> [excuse.requested event publisher (NOT YET BUILT)]
+                         └──defer to v7.x
 
-[Web Push subscription (VAPID)]
-    └──requires──> [Notification permission granted by user]
-    └──requires──> [PWA installed to Home Screen (iOS only)]
-    └──requires──> [VAPID backend endpoint in notification-web]
-    └──required-by──> [lesson.started push notification]
-    └──required-by──> [lesson.cancelled push notification]
-    └──required-by──> [homework.published push notification]
+[Web Panel: STOMP notifications]
+    └──requires──> [notification-web STOMP server (DONE v5.0)]
+                       └──requires──> [Angular SockJS + @stomp/stompjs client setup]
 
-[Today's schedule view]
-    └──requires──> [Login + JWT]
-    └──enhances──> [Geo check-in button] (check-in shown on active lesson card)
+[Web Panel: red zone display]
+    └──requires──> [attendance stats API (DONE)] + [threshold API (DONE)]
 
-[Geo check-in button]
-    └──requires──> [Today's schedule view] (lesson_id must be known)
-    └──requires──> [Browser Geolocation API permission]
-    └──requires──> [Active lesson exists (schedule service state)]
+[Web Panel: admin CRUD]
+    └──requires──> [JWT with ADMIN role] ──requires──> [Login form]
 
-[Attendance stats screen]
-    └──requires──> [Login + JWT]
-    └──enhances──> [Red zone warning indicator] (same API response)
+[Web Panel: teacher journal grid]
+    └──requires──> [JWT with TEACHER role] ──requires──> [Login form]
 
-[Real-time check-in via WebSocket]
-    └──requires──> [STOMP WebSocket connection]
-    └──enhances──> [Geo check-in button] (updates UI on attendance.marked event)
+[Landing: "Open in Telegram" CTA]
+    └──requires──> [Bot deployed and linked (DONE v5.0)]
 
-[Headman manual marking]
-    └──requires──> [Login + JWT with is_headman=true]
-    └──requires──> [Group member list] (GET /api/academic/groups/{id}/members)
-    └──requires──> [Active lesson selection] (GET /api/schedule/lessons)
-
-[iOS onboarding screen]
-    └──must-appear-before──> [Web Push subscription request] (iOS requires A2HS install first)
-
-[Homework tracker]
-    └──requires──> [Homework list from Academic Service]
-    └──independent-of──> [Schedule] (can be navigated to separately)
+[Landing: "Install PWA" CTA]
+    └──requires──> [PWA URL deployed (DONE v6.0)]
 ```
 
 ### Dependency Notes
 
-- **Web Push on iOS requires PWA installed to Home Screen first.** iOS 16.4+ supports Web Push only for installed PWAs. The iOS onboarding screen (Safari → Share → Add to Home Screen) must be shown and completed before requesting notification permission. Never call `Notification.requestPermission()` on non-installed iOS Safari — it silently fails.
-- **Geo check-in requires an active lesson.** The check-in button should only be shown when a lesson is in `active` status for the student's group. The schedule view must reflect this — poll or use the WebSocket `lesson.started` event to activate the button.
-- **VAPID keys must be generated once and stored server-side.** The VAPID public key is embedded in the PWA at build time (or fetched once from a public endpoint). The private key never leaves notification-web. Generate once, store in Docker env var.
-- **Offline check-in is not supported.** The check-in path is deliberately network-only. The Service Worker must not cache `POST /api/attendance/check-in` requests.
-- **Push subscription must be re-stored on re-registration.** When the Service Worker updates, the push subscription may change. The PWA must re-POST the subscription to the backend after each SW update.
+- **Mini App initData auth requires one new backend endpoint.** The bot's `/start` command (v5.0) already records `telegram_id → user_id`. The new piece is a single Auth Service endpoint that accepts raw `initData` (HMAC-SHA256 validated) and returns a JWT pair. This is the only new backend work needed for v7.0.
+- **Mini App check-in requires no other new backend work.** Attendance Service geo-checkin endpoint exists; Mini App calls it with the JWT from initData auth.
+- **Web Panel STOMP requires new frontend setup only.** The server side is done. Angular needs SockJS + @stomp/stompjs client, connect on login, subscribe to `/topic/group/{groupId}`.
+- **PDF/Excel export is blocked.** No backend PDF/Excel generation exists. Correctly excluded from this milestone.
+- **Excuse/late check-in in Mini App is blocked.** Event publishers for `excuse.requested` and `late_checkin.requested` are listed as deferred in PROJECT.md (NOTIF-08 partial). Do not include in v7.0 Mini App scope.
 
 ---
 
 ## MVP Definition
 
-### Launch With (v6.0 — PWA Core)
+### Launch With (v7.0)
 
-Minimum viable mobile client validating that students can use RutTrack as a daily tool.
+Minimum to have all three frontends functional and useful.
 
-**Authentication:**
-- [ ] Login screen (username + password) with JWT storage in localStorage/sessionStorage
-- [ ] Auto-refresh of access token (15-min expiry) using refresh token
-- [ ] Logout
+**Telegram Mini App:**
+- [ ] initData auth exchange (one new Auth Service endpoint)
+- [ ] Today's schedule view with lesson status badges
+- [ ] Geo check-in with success/failure feedback
+- [ ] Attendance stats per subject with red zone indicator
+- [ ] Telegram native theme, MainButton, BackButton wiring
+- [ ] Deep link routing: /checkin opened from bot inline button
 
-**Schedule:**
-- [ ] Today's schedule view — list of lessons with time, subject name, room, status
-- [ ] Weekly schedule navigation (swipe/tab between days)
-- [ ] Offline cached schedule (Service Worker stale-while-revalidate for schedule endpoints)
+**Web Panel (Angular):**
+- [ ] Login form (teacher + admin, username + password)
+- [ ] Teacher: subject/group filter dropdowns
+- [ ] Teacher: attendance journal grid (students x lessons, read-only)
+- [ ] Teacher: attendance stats per subject/group
+- [ ] Admin: user CRUD (create, status change, soft delete)
+- [ ] Admin: group CRUD + headman assign/revoke
+- [ ] Admin: semester CRUD + activation + confirmation-phrase delete
+- [ ] Admin: dashboard summary stats
+- [ ] Role-based route guards (TEACHER / ADMIN)
+- [ ] Token refresh + logout
 
-**Check-in:**
-- [ ] Geo check-in button visible on active lesson card
-- [ ] GPS coordinate capture via browser Geolocation API
-- [ ] Submit to `POST /api/attendance/check-in`
-- [ ] Show success/failure feedback with reason (not in zone / no active lesson / already marked)
-- [ ] Offline: show "Нет подключения" message instead of attempting
+**Landing Page:**
+- [ ] Hero + tagline + CTA buttons (Telegram, PWA)
+- [ ] 3-4 feature highlights with icons
+- [ ] "How it works" 3-step flow
+- [ ] Role overview (Student / Teacher / Admin)
+- [ ] Screenshots/mockup section
+- [ ] Mobile-responsive layout
+- [ ] Footer with links (GitHub, Telegram bot, PWA)
 
-**PWA basics:**
-- [ ] manifest.json: name "RutTrack", display: standalone, icons 192x192 + 512x512
-- [ ] Service Worker registration via vite-plugin-pwa
-- [ ] App shell cached on install (HTML, CSS, JS — loads without network)
-- [ ] A2HS prompt handling (`beforeinstallprompt` → deferred prompt shown after first successful check-in)
-- [ ] iOS onboarding screen (detect iOS + not installed → show Safari install instructions)
+### Add After Validation (v7.x)
 
-**Web Push:**
-- [ ] VAPID key pair generation and storage in notification-web
-- [ ] `POST /api/ws/push/subscribe` endpoint in notification-web
-- [ ] Service Worker push event handler → `showNotification()`
-- [ ] Service Worker `notificationclick` handler → open PWA on check-in screen
-- [ ] Permission request flow (triggered by user action, not on first load)
-- [ ] `lesson.started` Web Push notification with "Отметиться" action button
-- [ ] `lesson.cancelled` Web Push notification
+- [ ] Mini App: late check-in request — unblocks when event publisher built
+- [ ] Mini App: excuse ticket submission — same blocker
+- [ ] Mini App: homework list with completion toggle
+- [ ] Web Panel: STOMP real-time notifications (lesson/homework/excuse push to panel)
+- [ ] Web Panel: red zone student list + threshold configuration UI
+- [ ] Web Panel: average attendance stats per group (admin view)
+- [ ] Web Panel: student transfer between groups
+- [ ] Web Panel: headman panel (mark attendance, manage excuses from desktop)
+- [ ] Landing: animated stats counter
+- [ ] Landing: dark mode
 
-### Add After Validation (v6.1)
+### Future Consideration (v8+)
 
-- [ ] Attendance stats screen (subject percentage, red zone indicator) — backend ready, high value
-- [ ] Attendance records list with status color coding — backend ready
-- [ ] Homework list + personal completion tracker — backend ready
-- [ ] `homework.published` Web Push notification
-- [ ] Real-time check-in state via STOMP WebSocket (`attendance.marked` → update UI)
-- [ ] Headman manual marking screen — requires complex group marking grid UI
-- [ ] Weekly schedule view improvements (current week highlighting, status badges)
-
-### Future Consideration (v6.2+)
-
-- [ ] Excuse ticket creation flow — blocked on backend (deferred in PROJECT.md)
-- [ ] Late check-in request flow — blocked on backend (deferred in PROJECT.md)
-- [ ] Push notification preferences (mute by type) — needs preferences storage backend
-- [ ] Web Push for TEACHER role — defer to v8.0 web panel milestone
-- [ ] PDF/Excel export — deferred project-wide
+- [ ] PDF/Excel export — requires new backend generation service
+- [ ] Admin analytics trends (top-skippers, red zone alerts with email)
+- [ ] Bulk CSV user import
+- [ ] Teacher attendance override with audit trail
+- [ ] Multi-language support (RU/EN)
 
 ---
 
@@ -233,86 +253,43 @@ Minimum viable mobile client validating that students can use RutTrack as a dail
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Login + JWT storage + auto-refresh | HIGH | LOW | P1 — gates everything |
-| Today's schedule view | HIGH | LOW | P1 — primary daily use |
-| Geo check-in button + GPS submit | HIGH | MEDIUM | P1 — core product function |
-| Check-in feedback (success/fail reason) | HIGH | LOW | P1 — without it, student doesn't know if it worked |
-| manifest.json + A2HS prompt | HIGH | LOW | P1 — PWA identity |
-| Service Worker + app shell cache | HIGH | MEDIUM | P1 — "offline" requirement in job stories |
-| iOS onboarding instructions | HIGH | LOW | P1 — ~50% of students likely on iOS |
-| VAPID setup + push/subscribe endpoint | HIGH | MEDIUM | P1 — Web Push headline feature |
-| lesson.started push notification | HIGH | MEDIUM | P1 — primary student engagement |
-| lesson.cancelled push notification | HIGH | LOW | P1 — students must know about cancellations |
-| Weekly schedule navigation | MEDIUM | LOW | P1 — users expect week view |
-| Offline schedule cache | MEDIUM | MEDIUM | P1 — stated in design-decisions.md |
-| Attendance stats screen | HIGH | MEDIUM | P2 — high value but schedule + checkin first |
-| Attendance records list | MEDIUM | LOW | P2 — supports understanding of stats |
-| Homework list + completions | MEDIUM | MEDIUM | P2 — valuable but not day-1 critical |
-| homework.published push notification | MEDIUM | LOW | P2 — once lesson push works, same pattern |
-| Real-time WebSocket check-in state | MEDIUM | MEDIUM | P2 — nice UX but polling works too |
-| Headman manual marking | HIGH | HIGH | P2 — high value for headmen, complex UI |
-| Red zone warning indicator | MEDIUM | LOW | P2 — trivial add-on to stats screen |
-| Excuse ticket flow | HIGH | HIGH | P3 — backend deferred |
-| Late check-in request | MEDIUM | MEDIUM | P3 — backend deferred |
+| Mini App: initData auth (new endpoint) | HIGH | MEDIUM | P1 |
+| Mini App: geo check-in | HIGH | LOW (API exists) | P1 |
+| Mini App: today's schedule | HIGH | LOW (API exists) | P1 |
+| Mini App: attendance stats | HIGH | LOW (API exists) | P1 |
+| Mini App: Telegram UX (MainButton, theme, haptics) | HIGH | LOW | P1 |
+| Web Panel: login + role guards | HIGH | LOW | P1 |
+| Web Panel: teacher journal grid | HIGH | HIGH (complex grid UI) | P1 |
+| Web Panel: admin user CRUD | HIGH | MEDIUM | P1 |
+| Web Panel: admin group + semester CRUD | HIGH | MEDIUM | P1 |
+| Web Panel: admin dashboard stats | MEDIUM | LOW | P1 |
+| Landing: hero + features + mobile responsive | MEDIUM | LOW | P1 |
+| Web Panel: STOMP notifications | MEDIUM | MEDIUM | P2 |
+| Web Panel: red zone + threshold config | MEDIUM | MEDIUM | P2 |
+| Web Panel: student transfer | MEDIUM | LOW | P2 |
+| Mini App: homework list | MEDIUM | LOW | P2 |
+| Landing: dark mode + animated counters | LOW | LOW | P2 |
+| Mini App: late check-in request | HIGH | HIGH (blocked) | P3 |
+| Mini App: excuse ticket submission | HIGH | HIGH (blocked) | P3 |
+| PDF/Excel export (any surface) | MEDIUM | HIGH (blocked on backend) | P3 |
 
 **Priority key:**
-- P1: Must have for v6.0 launch
-- P2: Ship in v6.1 iteration once core is validated
-- P3: Future milestone / blocked on backend
-
----
-
-## Competitor Feature Analysis
-
-| Feature | Telegram Mini App (existing) | Telegram Bot (existing) | RutTrack PWA (target) |
-|---------|------------------------------|------------------------|----------------------|
-| Check-in | Via bot inline button from lesson.started message | Inline "Отметиться" button | Geo check-in screen in PWA, also via push notification action |
-| Schedule view | Limited — bot text replies | Text list via /status | Full schedule UI with weekly view, status badges |
-| Push notifications | Telegram messages | Telegram messages | Web Push to phone even with app closed |
-| Offline access | No | No | Yes — cached schedule and stats |
-| Installable | No | No | Yes — A2HS, standalone mode, home screen icon |
-| Attendance stats | No dedicated view | /status shows current lesson | Full stats screen with per-subject percentages |
-| Homework tracker | No | Notifications only | List + personal completion checkboxes |
-| iOS support | Via Telegram app | Via Telegram app | Safari PWA + Web Push (iOS 16.4+) |
-| No Telegram required | No | No | Yes — PWA is independent channel |
-
----
-
-## Platform-Specific Considerations
-
-### iOS (Safari)
-
-- Web Push requires PWA installed to Home Screen (iOS 16.4+). Chrome/Firefox on iOS use WebKit — same restriction.
-- Storage quota: ~50MB cache. Aggressive eviction if app not used for 7 days. Solution: prioritize caching current week schedule (small) over historical records.
-- `beforeinstallprompt` does NOT fire on iOS. Detect iOS (`navigator.userAgent`) + not in standalone mode → show manual instruction banner.
-- `Notification.requestPermission()` must be called from a user gesture within the installed PWA. Never on page load.
-
-### Android (Chrome)
-
-- Full Web Push support. `beforeinstallprompt` fires after meeting PWA installability criteria.
-- A2HS prompt can be shown automatically or deferred and triggered on user action. Prefer deferred — show after first successful check-in for maximum relevance.
-- Background sync available but deliberately NOT used for check-in (time window constraint).
-
-### Network Conditions
-
-- University buildings often have poor mobile signal. PWA must handle network timeout on check-in gracefully (show retry button, not silent failure).
-- Schedule endpoint should be cached with stale-while-revalidate — serve cached data immediately, update in background. Max stale age: 1 hour (schedule changes are announced in advance via lesson.cancelled events).
+- P1: Must have for v7.0 launch
+- P2: Add after core is validated (v7.x)
+- P3: Future milestone or blocked on backend work
 
 ---
 
 ## Sources
 
-- `.planning/PROJECT.md` — v6.0 active requirements, target features, deferred items (HIGH confidence)
-- `docs/job-stories.md` — JS-STUDENT-01 through JS-STUDENT-11, JS-HEADMAN-20, JS-TEACHER-08, JS-SYSTEM-11..12 (HIGH confidence)
-- `docs/design-decisions.md` — PWA design decisions section 3, branding, offline caching strategy, iOS onboarding (HIGH confidence)
-- `CLAUDE.md` — existing endpoint architecture, business rules (check-in window, roles), notification rules (HIGH confidence)
-- [MDN Web Push / Push API docs](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Tutorials/js13kGames/Re-engageable_Notifications_Push) — Web Push implementation guidance (HIGH confidence)
-- [vite-plugin-pwa documentation](https://vite-pwa-org.netlify.app/) — Workbox integration, generateSW strategy, service worker registration (HIGH confidence — actively maintained 2025)
-- [iOS PWA limitations 2026 guide](https://www.mobiloud.com/blog/progressive-web-apps-ios) — iOS 16.4+ push requirements, storage limits (MEDIUM confidence — verify iOS version at implementation time)
-- [Offline-First PWA caching strategies](https://www.magicbell.com/blog/offline-first-pwas-service-worker-caching-strategies) — cache-first for shell, stale-while-revalidate for schedule, network-first for check-in (HIGH confidence — matches MDN guidance)
-- [PWA UX tips 2025](https://lollypop.design/blog/2025/september/progressive-web-app-ux-tips-2025/) — A2HS timing, notification permission UX patterns (MEDIUM confidence)
+- `.planning/PROJECT.md` — v7.0 active requirements, target features, deferred items (HIGH confidence — authoritative source)
+- `docs/job-stories.md` — JS-TEACHER-01..08, JS-ADMIN-01..13, JS-STUDENT-01..09, JS-HEADMAN-01..20 (HIGH confidence — authoritative source)
+- Existing PWA feature patterns: `frontends/pwa/src/features/` (HIGH confidence — live code)
+- Telegram Mini App SDK: [tma.js React template](https://github.com/Telegram-Mini-Apps/reactjs-template), [Authorizing User docs](https://docs.telegram-mini-apps.com/platform/authorizing-user), [Init Data docs](https://docs.telegram-mini-apps.com/platform/init-data)
+- Telegram Mini App capabilities 2025-2026: [DEV.to Mini App handbook](https://dev.to/simplr_sh/telegram-mini-apps-creation-handbook-58em), [Merge.rocks guide](https://merge.rocks/blog/how-to-build-a-telegram-mini-app-your-telegram-mini-apps-guide)
+- Angular education dashboard patterns: [CoreUI Angular](https://coreui.io/angular/), [Smart Angular template](https://einfosoft.com/templates/admin/smartangular/doc/intro.html)
 
 ---
 
-*Feature research for: PWA Mobile Client «RutTrack» — student attendance + Web Push*
-*Researched: 2026-04-05*
+*Feature research for: RutCampusTrack v7.0 — Telegram Mini App, Angular Web Panel, Landing Page*
+*Researched: 2026-04-06*

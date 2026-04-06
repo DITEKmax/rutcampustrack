@@ -52,7 +52,14 @@
       "Bash(npx tsc:*)",
       "Bash(echo \"exit:$?\")",
       "Bash(cat .planning/phases/31-push-frontend-end-to-end-integration/*-VERIFICATION.md)",
-      "Bash(echo \"EXIT:$?\")"
+      "Bash(echo \"EXIT:$?\")",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:endoflife.date)",
+      "WebFetch(domain:docs.telegram-mini-apps.com)",
+      "WebFetch(domain:angular.dev)",
+      "WebFetch(domain:socket.dev)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

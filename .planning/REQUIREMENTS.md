@@ -54,8 +54,8 @@ Requirements for PWA + Web Push milestone. Each maps to roadmap phases.
 
 ### Homework
 
-- [ ] **HW-01**: User can view homework list for their group
-- [ ] **HW-02**: User can mark homework as done/undone (personal completion tracker)
+- [x] **HW-01**: User can view homework list for their group
+- [x] **HW-02**: User can mark homework as done/undone (personal completion tracker)
 
 ### Infrastructure
 
@@ -126,8 +126,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ATT-01 | Phase 32 | Complete |
 | ATT-02 | Phase 32 | Complete |
 | ATT-03 | Phase 32 | Complete |
-| HW-01 | Phase 32 | Pending |
-| HW-02 | Phase 32 | Pending |
+| HW-01 | Phase 32 | Complete |
+| HW-02 | Phase 32 | Complete |
 
 **Coverage:**
 - v6.0 requirements: 32 total

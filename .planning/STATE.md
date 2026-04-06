@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: PWA + Web Push
 status: verifying
-stopped_at: Completed 32-01-PLAN.md
-last_updated: "2026-04-06T17:11:05.428Z"
+stopped_at: Completed 32-02-PLAN.md
+last_updated: "2026-04-06T17:18:11.778Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 14
-  completed_plans: 10
-  percent: 71
+  completed_plans: 11
+  percent: 79
 ---
 
 # Project State
@@ -62,6 +62,8 @@ Recent decisions relevant to v6.0:
 - [Phase 29]: BeforeInstallPromptEvent must be inside declare global block for TypeScript module visibility
 - [Phase 32]: useThreshold returns null on 404 — no red zone indicators shown (D-06)
 - [Phase 32]: HomeworkPage route deferred to Plan 02 — component does not exist yet
+- [Phase 32]: No deadline field in HomeworkResponse — backend DTO has no deadline, omitted per Research
+- [Phase 32]: useToggleHomework accepts groupId+semesterId as mutation vars to correctly target optimistic cache key
 
 ### Research Flags
 
@@ -77,7 +79,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-06T17:11:05.421Z
-Stopped at: Completed 32-01-PLAN.md
+Last session: 2026-04-06T17:18:11.769Z
+Stopped at: Completed 32-02-PLAN.md
 Resume file: None
 Next action: Plan Phase 32

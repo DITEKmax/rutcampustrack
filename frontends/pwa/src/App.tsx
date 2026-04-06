@@ -1,7 +1,5 @@
+// This file is kept for backwards compatibility but is no longer used.
+// All routing is handled in main.tsx via createBrowserRouter.
 export default function App() {
-  return (
-    <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-      <h1 className="text-3xl font-semibold">RutTrack</h1>
-    </div>
-  )
+  return null
 }

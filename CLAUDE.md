@@ -6,17 +6,13 @@ RutCampusTrack — микросервисная система учёта пос
 
 ## Текущий статус
 
-- **Фаза 0**: ЗАВЕРШЕНА (каркас, контракты, инфраструктура)
-- **Фаза 1**: ЗАВЕРШЕНА (Auth Service + API Gateway) — v1.0, 26 тестов, отчёт: `docs/phase-1-report.md`
-- **Фаза 2**: ЗАВЕРШЕНА (Academic Service) — v2.0, 50 тестов, отчёт: `docs/phase-2-report.md`
-- **Фаза 3**: ЗАВЕРШЕНА (Schedule Service) — v3.0, 55 тестов, отчёт: `docs/phase-3-report.md`
-- **Фаза 4**: ЗАВЕРШЕНА (Attendance Service) — v4.0, ~95 тестов, отчёт: `docs/phase-4-report.md`
-- **Фаза 5**: ОТЛОЖЕНА (Web Push Backend — включить в PWA milestone)
-- **Фаза 6**: ЗАВЕРШЕНА (Notification Service — Web + Bot) — v5.0, ~128 тестов (20 Java + 108 Python)
-- **Фаза 7**: В ОЧЕРЕДИ (PWA Mobile Client «RutTrack»)
-- **Фаза 8**: В ОЧЕРЕДИ (Фронтенды — Mini App, Web Panel, Landing)
-- **Фаза 9**: В ОЧЕРЕДИ (CI/CD, мониторинг, документация)
-- Полный план фаз: см. `docs/phases-plan.md`
+- **v1.0**: ЗАВЕРШЕНА (Auth Service + API Gateway) — фазы 1.1-1.4, 26 тестов
+- **v2.0**: ЗАВЕРШЕНА (Academic Service) — фазы 5-9, 50 тестов
+- **v3.0**: ЗАВЕРШЕНА (Schedule Service) — фазы 10-14, 55 тестов
+- **v4.0**: ЗАВЕРШЕНА (Attendance Service) — фазы 15-19, ~95 тестов
+- **v5.0**: ЗАВЕРШЕНА (Notification Service — Web + Bot) — фазы 20-26, ~128 тестов (20 Java + 108 Python)
+- **v6.0**: В РАБОТЕ (PWA + Web Push) — фазы 27-32, завершены 27-30 (4/6)
+- Полный план: `.planning/ROADMAP.md`, отчёты: `docs/phase-{N}-report.md`
 
 ## Архитектура (кратко)
 

@@ -3,38 +3,38 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: PWA + Web Push
 status: executing
-stopped_at: Phase 30 context gathered
-last_updated: "2026-04-06T09:49:05.449Z"
-last_activity: 2026-04-06
+stopped_at: Phase 31 completed, verified
+last_updated: "2026-04-06T13:10:00.000Z"
+last_activity: 2026-04-06 -- Phase 31 completed
 progress:
   total_phases: 6
-  completed_phases: 3
-  total_plans: 10
-  completed_plans: 7
-  percent: 70
+  completed_phases: 5
+  total_plans: 14
+  completed_plans: 9
+  percent: 83
 ---
 
 # Project State
 
 ## Current Milestone
 
-v6.0 PWA + Web Push — Roadmap created, ready to plan Phase 27
+v6.0 PWA + Web Push — Phases 27-31 complete, ready to plan Phase 32
 
 ## Current Position
 
-Phase: 31
-Plan: Not started
-Status: Executing Phase 30
-Last activity: 2026-04-06
+Phase: 31 (push-frontend-end-to-end-integration) — COMPLETE
+Plan: 2 of 2
+Status: Phase 31 completed, verified
+Last activity: 2026-04-06 -- Phase 31 completed
 
-Progress: [████████░░] 80%
+Progress: [████████░░] 83% (5/6 phases)
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Student mobile client «RutTrack» (React PWA) with native push notifications — independent from Telegram, installable, offline-capable
-**Current focus:** Phase 30 — schedule-check-in-ui
+**Current focus:** Phase 32 — next phase
 
 ## Completed Milestones
 
@@ -75,7 +75,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-06T08:28:34.841Z
-Stopped at: Phase 30 context gathered
-Resume file: .planning/phases/30-schedule-check-in-ui/30-CONTEXT.md
-Next action: Verify phase 28
+Last session: 2026-04-06
+Stopped at: Phase 31 completed, verified
+Resume file: .planning/phases/31-push-frontend-end-to-end-integration/31-VERIFICATION.md
+Next action: Plan Phase 32

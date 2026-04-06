@@ -21,7 +21,7 @@ Full backend microservice backbone shipped: Auth (v1.0) + Academic data (v2.0) +
 - Интеграция с существующими бэкенд-сервисами через API Gateway
 
 ## Current State
-v5.0 shipped 2026-04-05. All backend services operational. v6.0 in progress: Phase 30 complete — schedule view + geo check-in UI built (SchedulePage, WeekDayTabs, LessonCard, CheckInButton with GPS, StompProvider for real-time STOMP, CheckInScreen). 31 PWA tests pass. Next: Phase 31 (push frontend + E2E integration).
+v5.0 shipped 2026-04-05. All backend services operational. v6.0 in progress: Phases 27-30 complete (4/6) — Web Push backend (VAPID, subscriptions, push delivery), API Gateway CORS + nginx, React PWA scaffold with auth (httpOnly cookie refactor, login/logout, A2HS, offline shell), schedule view + geo check-in UI (SchedulePage, WeekDayTabs, LessonCard, CheckInButton with GPS, StompProvider for real-time STOMP, CheckInScreen). 31 PWA tests + 11 gateway tests pass. Next: Phase 31 (push frontend + E2E integration).
 
 ## Shipped Milestones
 
@@ -221,4 +221,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after v6.0 milestone started*
+*Last updated: 2026-04-06 after phases 27-30 completed*

@@ -47,7 +47,8 @@
       "Bash(npx vitest:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
-      "Bash(ls .planning/phases/29-pwa-scaffold-auth/*-SECURITY.md)"
+      "Bash(ls .planning/phases/29-pwa-scaffold-auth/*-SECURITY.md)",
+      "Bash(ls:*)"
     ]
   }
 }

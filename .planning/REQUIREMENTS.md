@@ -21,9 +21,9 @@ Requirements for Frontends milestone. Each maps to roadmap phases 33-40.
 
 ### Landing Page
 
-- [ ] **LAND-01**: Static HTML/CSS landing page with hero, features, role overview
-- [ ] **LAND-02**: Mobile-responsive layout (360px-1440px)
-- [ ] **LAND-03**: Served by dedicated nginx container
+- [x] **LAND-01**: Static HTML/CSS landing page with hero, features, role overview
+- [x] **LAND-02**: Mobile-responsive layout (360px-1440px)
+- [x] **LAND-03**: Served by dedicated nginx container
 
 ### Telegram Mini App — Auth
 
@@ -103,9 +103,9 @@ Requirements for Frontends milestone. Each maps to roadmap phases 33-40.
 | INFRA-04 | Phase 33 | Complete |
 | AUTH-01 | Phase 34 | Complete |
 | AUTH-02 | Phase 34 | Complete |
-| LAND-01 | Phase 35 | Pending |
-| LAND-02 | Phase 35 | Pending |
-| LAND-03 | Phase 35 | Pending |
+| LAND-01 | Phase 35 | Complete |
+| LAND-02 | Phase 35 | Complete |
+| LAND-03 | Phase 35 | Complete |
 | TMA-01 | Phase 36 | Pending |
 | TMA-02 | Phase 36 | Pending |
 | TMA-03 | Phase 36 | Pending |

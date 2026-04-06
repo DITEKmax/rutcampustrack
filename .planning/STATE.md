@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Frontends — Mini App, Web Panel, Landing
 status: verifying
-stopped_at: Completed 34-auth-service-tma/34-01-PLAN.md
-last_updated: "2026-04-06T22:16:44.494Z"
+stopped_at: Completed 35-01-PLAN.md
+last_updated: "2026-04-06T23:03:13.541Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 8
-  completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
   percent: 100
 ---
 
@@ -22,19 +22,19 @@ v7.0 Frontends — Mini App, Web Panel, Landing
 
 ## Current Position
 
-Phase: 34 (auth-service-tma) — EXECUTING
+Phase: 35 (landing-page) — EXECUTING
 Plan: 1 of 1
 Status: Phase complete — ready for verification
 Last activity: 2026-04-06
 
-Progress: [█░░░░░░░░░] 12%
+Progress: [██░░░░░░░░] 25%
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** Phase 34 — auth-service-tma
+**Current focus:** Phase 35 — landing-page
 
 ## Completed Milestones
 
@@ -61,6 +61,7 @@ Recent decisions affecting current work:
 - [Phase 34-auth-service-tma]: MessageDigest.isEqual for constant-time HMAC comparison prevents timing oracle (T-34-03)
 - [Phase 34-auth-service-tma]: TMA_BOT_TOKEN env var with dev fallback — bot token never hardcoded (T-34-05)
 - [Phase 34-auth-service-tma]: refresh-body delegates to AuthService.refresh() — one-line, same Redis JTI rotation, no over-engineering
+- [Phase 35]: Tailwind CDN + GSAP CDN for zero-build static landing page; CSS-only hamburger; darkMode media for automatic OS preference
 
 ### Research Flags
 
@@ -74,7 +75,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-06T22:16:44.490Z
-Stopped at: Completed 34-auth-service-tma/34-01-PLAN.md
+Last session: 2026-04-06T23:03:13.537Z
+Stopped at: Completed 35-01-PLAN.md
 Resume file: None
-Next action: `/gsd-plan-phase 34`
+Next action: `/gsd-plan-phase 35`

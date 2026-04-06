@@ -98,7 +98,7 @@ Full details: `.planning/milestones/v6.0-ROADMAP.md`
 
 - [x] **Phase 33: Infrastructure** — URL layout, Gateway CORS expansion, nginx configs, docker-compose (completed 2026-04-06)
 - [x] **Phase 34: Auth Service TMA** — `POST /api/auth/tma` initData endpoint + `POST /api/auth/refresh-body` (completed 2026-04-06)
-- [ ] **Phase 35: Landing Page** — Static HTML/CSS marketing page with nginx container
+- [x] **Phase 35: Landing Page** — Static HTML/CSS marketing page with nginx container (completed 2026-04-06)
 - [ ] **Phase 36: Mini App Scaffold + Auth** — Vite scaffold, Telegram SDK init, initData auth flow, dev mock env
 - [ ] **Phase 37: Mini App Features** — Schedule, geo check-in, attendance stats, homework, Telegram UX
 - [ ] **Phase 38: Web Panel Scaffold + Auth** — Angular 21 standalone, Tailwind, interceptors, role guards, login/logout
@@ -144,9 +144,9 @@ Plans:
   1. `http://localhost:8081` serves a responsive landing page with hero section, feature highlights, and role overview
   2. Page is fully static (no JS framework, no API calls)
   3. Mobile-responsive layout works on 360px-1440px viewports
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 35-01-PLAN.md — Complete landing page HTML with hero, features, roles, GSAP animations, dark mode
+- [x] 35-01-PLAN.md — Complete landing page HTML with hero, features, roles, GSAP animations, dark mode
 **UI hint**: yes
 
 ### Phase 36: Mini App Scaffold + Auth
@@ -249,7 +249,7 @@ Plans:
 | 32. Stats + Homework | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 33. Infrastructure | v7.0 | 2/2 | Complete | 2026-04-06 |
 | 34. Auth Service TMA | v7.0 | 1/1 | Complete   | 2026-04-06 |
-| 35. Landing Page | v7.0 | 0/1 | Planned | - |
+| 35. Landing Page | v7.0 | 1/1 | Complete   | 2026-04-06 |
 | 36. Mini App Scaffold + Auth | v7.0 | 0/? | Planned | - |
 | 37. Mini App Features | v7.0 | 0/? | Planned | - |
 | 38. Web Panel Scaffold + Auth | v7.0 | 0/? | Planned | - |

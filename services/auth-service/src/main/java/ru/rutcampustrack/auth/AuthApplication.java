@@ -5,9 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.config.OtpProperties;
+import ru.rutcampustrack.auth.config.TmaProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({JwtProperties.class, OtpProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, OtpProperties.class, TmaProperties.class})
 public class AuthApplication {
     public static void main(String[] args) {
         SpringApplication.run(AuthApplication.class, args);

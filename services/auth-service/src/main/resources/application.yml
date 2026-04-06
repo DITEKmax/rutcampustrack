@@ -46,6 +46,10 @@ otp:
   attempts-window-seconds: 300
   resend-cooldown-seconds: 60
 
+tma:
+  bot-token: ${TMA_BOT_TOKEN:test_bot_token_for_dev}
+  auth-date-max-age-seconds: 86400
+
 logging:
   level:
     ru.rutcampustrack: DEBUG

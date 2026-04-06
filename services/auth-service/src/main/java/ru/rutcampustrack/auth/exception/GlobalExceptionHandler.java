@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.stream.Collectors;
 import ru.rutcampustrack.auth.exception.OtpExpiredException;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
+import ru.rutcampustrack.auth.exception.TmaValidationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -92,6 +93,21 @@ public class GlobalExceptionHandler {
                         "about:blank",
                         "Rate Limited",
                         HttpStatus.TOO_MANY_REQUESTS.value(),
+                        ex.getMessage(),
+                        request.getRequestURI(),
+                        Instant.now()
+                ));
+    }
+
+    @ExceptionHandler(TmaValidationException.class)
+    public ResponseEntity<ErrorResponse> handleTmaValidation(
+            TmaValidationException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .contentType(PROBLEM_JSON)
+                .body(new ErrorResponse(
+                        "about:blank",
+                        "TMA Validation Failed",
+                        HttpStatus.UNAUTHORIZED.value(),
                         ex.getMessage(),
                         request.getRequestURI(),
                         Instant.now()

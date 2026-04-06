@@ -82,7 +82,7 @@ Full details: `.planning/milestones/v5.0-ROADMAP.md`
 **Milestone Goal:** Student mobile client «RutTrack» (React PWA) with native Web Push notifications — installable on Android/iOS, offline-capable app shell, geo check-in, schedule view, attendance stats, homework tracker.
 
 - [x] **Phase 27: Web Push Backend** — VAPID infrastructure and push subscription endpoints in notification-web (completed 2026-04-05)
-- [ ] **Phase 28: API Gateway CORS + nginx** — Gateway CORS config for PWA origin, push route, nginx serving container
+- [x] **Phase 28: API Gateway CORS + nginx** — Gateway CORS config for PWA origin, push route, nginx serving container (completed 2026-04-06)
 - [x] **Phase 29: PWA Scaffold + Auth** — React PWA project, login, JWT auth, manifest, A2HS, Service Worker shell (completed 2026-04-06)
 - [x] **Phase 30: Schedule + Check-in UI** — Today/week schedule view with offline cache, geo check-in button and feedback (completed 2026-04-06)
 - [ ] **Phase 31: Push Frontend + End-to-End Integration** — Service Worker push handler, subscription opt-in, end-to-end smoke test
@@ -115,10 +115,10 @@ Plans:
   1. A preflight OPTIONS request from `http://localhost:5173` to the Gateway returns `Access-Control-Allow-Origin: http://localhost:5173` without duplicate headers
   2. `GET /api/push/vapid-public-key` is routable through the Gateway (StripPrefix removes `/api/push` leaving `/vapid-public-key` reaching notification-web)
   3. `docker compose up` starts an nginx container serving a static HTML file at `http://localhost:80`; `sw.js` and `index.html` are served with `Cache-Control: no-cache`
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
-- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
+- [x] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
+- [x] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
 **UI hint**: no
 
 ### Phase 29: PWA Scaffold + Auth
@@ -167,8 +167,8 @@ Plans:
   4. When the PWA is open in the foreground, the push notification is suppressed (the STOMP WebSocket already delivered the same event as an in-app update)
 **Plans:** 2 plans
 Plans:
-- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
-- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
+- [ ] 31-01-PLAN.md — SW push + notificationclick handlers, push utilities + tests
+- [ ] 31-02-PLAN.md — Push subscription hook, PushPermissionCard, ProfilePage upgrade
 **UI hint**: yes
 
 ### Phase 32: Stats + Homework
@@ -183,8 +183,8 @@ Plans:
   5. Student taps a checkbox on a homework item; the item toggles to done/undone and the state persists after closing and reopening the app
 **Plans:** 2 plans
 Plans:
-- [ ] 28-01-PLAN.md — Gateway CORS config + JwtAuthenticationFilter OPTIONS bypass + tests
-- [ ] 28-02-PLAN.md — nginx container + placeholder PWA files + docker-compose
+- [ ] 31-01-PLAN.md — SW push + notificationclick handlers, push utilities + tests
+- [ ] 31-02-PLAN.md — Push subscription hook, PushPermissionCard, ProfilePage upgrade
 **UI hint**: yes
 
 ## Progress
@@ -217,9 +217,9 @@ Plans:
 | 24. Bot Event Notifications | v5.0 | 2/2 | Complete | 2026-04-05 |
 | 25. Bot Reminder Lifecycle | v5.0 | 2/2 | Complete | 2026-04-05 |
 | 26. Notification Deployment Hardening | v5.0 | 1/1 | Complete | 2026-04-05 |
-| 27. Web Push Backend | v6.0 | 3/3 | Complete   | 2026-04-05 |
-| 28. API Gateway CORS + nginx | v6.0 | 0/2 | Planned | - |
-| 29. PWA Scaffold + Auth | v6.0 | 3/3 | Complete   | 2026-04-06 |
-| 30. Schedule + Check-in UI | v6.0 | 2/2 | Complete    | 2026-04-06 |
+| 27. Web Push Backend | v6.0 | 3/3 | Complete | 2026-04-05 |
+| 28. API Gateway CORS + nginx | v6.0 | 2/2 | Complete | 2026-04-06 |
+| 29. PWA Scaffold + Auth | v6.0 | 3/3 | Complete | 2026-04-06 |
+| 30. Schedule + Check-in UI | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 31. Push Frontend + End-to-End Integration | v6.0 | 0/? | Not started | - |
 | 32. Stats + Homework | v6.0 | 0/? | Not started | - |

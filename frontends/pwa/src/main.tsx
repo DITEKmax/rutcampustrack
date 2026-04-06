@@ -21,6 +21,7 @@ const CheckInScreen = lazy(() => import('./features/checkin/CheckInScreen').then
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'))
 const AttendanceStatsPage = lazy(() => import('./features/attendance/AttendanceStatsPage').then(m => ({ default: m.AttendanceStatsPage })))
 const AttendanceRecordsPage = lazy(() => import('./features/attendance/AttendanceRecordsPage').then(m => ({ default: m.AttendanceRecordsPage })))
+const HomeworkPage = lazy(() => import('./features/homework/HomeworkPage').then(m => ({ default: m.HomeworkPage })))
 
 const router = createBrowserRouter([
   {
@@ -75,6 +76,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <AttendanceRecordsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'homework',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <HomeworkPage />
           </Suspense>
         ),
       },

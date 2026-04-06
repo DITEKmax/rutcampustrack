@@ -2,6 +2,56 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v6.0 — PWA + Web Push
+
+**Shipped:** 2026-04-06
+**Phases:** 6 | **Plans:** 14
+
+### What Was Built
+- Web Push backend: VAPID key generation persisted in Redis, MongoDB push subscription CRUD with @RequireRole security, @Async push delivery for lesson.started/cancelled and homework.published with HTTP 410 auto-cleanup
+- API Gateway: CORS configuration for PWA origin, OPTIONS bypass in JwtAuthenticationFilter, push route to notification-service, nginx container for static PWA serving
+- React PWA «RutTrack»: Vite + TanStack Query + Tailwind + Framer Motion. JWT auth with httpOnly cookie refactor (backend), silent token refresh, A2HS install prompt, iOS Safari onboarding, offline Service Worker shell
+- Schedule + geo check-in UI: SchedulePage with WeekDayTabs, LessonCard with StatusBadge, CheckInButton with GPS capture, StompProvider for real-time STOMP WebSocket attendance updates
+- Service Worker push: push event handler with notification display, notificationclick deep links (check-in for lesson.started, schedule for cancelled), PushPermissionCard soft-ask pattern, foreground dedup via WindowClient focus detection
+- Attendance stats with red zone threshold indicators (red border + badge when % < threshold, hidden on 404), pull-to-refresh, homework list with optimistic completion toggle via TanStack Query mutation
+
+### What Worked
+- httpOnly cookie refactor for refresh token — clean separation: access token in React memory, refresh in cookie, silent rotation
+- TanStack Query patterns consistent across all features — staleTime 1hr, refetchOnReconnect, optimistic mutations with cache rollback
+- usePullToRefresh as shared hook — written once in Plan 01, reused by both AttendanceStatsPage and HomeworkPage
+- Contract-first backend approach made frontend API hooks straightforward — HATEOAS _embedded extraction pattern reused across all hooks
+- Wave-based execution: Plan 01 (Wave 1) created shared infrastructure (types, hooks, BottomNav, routing), Plan 02 (Wave 2) consumed it cleanly
+- Framer Motion stagger pattern consistent across SchedulePage, AttendanceStatsPage, HomeworkPage — unified animation feel
+- vite-plugin-pwa with injectManifest — required for custom push handler, worked cleanly with Workbox precaching
+
+### What Was Inefficient
+- SUMMARY.md one_liner fields still empty for phases 28-31 — milestone extraction returned placeholders; same issue from v5.0 not yet addressed
+- REQUIREMENTS.md checkboxes for phases 27-31 never ticked during execution — all 27 items were unchecked despite being implemented; had to mark complete during milestone archival
+- Traceability table in REQUIREMENTS.md still showed "Pending" for all phases 27-31 — only Phase 32 items were updated to "Complete" during execution
+- Phase 29 summary_count=0 in roadmap analysis despite summaries existing — naming/detection mismatch
+
+### Patterns Established
+- httpOnly cookie + in-memory access token pattern for SPAs connecting to Spring Boot
+- HATEOAS _embedded extraction with fallback: `data._embedded?.listKey ?? data._embedded?.[Object.keys(data._embedded ?? {})[0]] ?? []`
+- usePullToRefresh hook: touch gesture detection with threshold, containerRef, pullDistance for visual indicator
+- Optimistic mutation pattern: onMutate (cancel queries + snapshot + cache update) → onError (rollback) → onSettled (invalidate)
+- BottomNav with 5 persistent tabs using React Router NavLink + Phosphor icons
+- Red zone threshold: separate useThreshold hook, null = no indicators (graceful 404 handling)
+
+### Key Lessons
+1. Requirements checkboxes should be ticked during plan execution (in SUMMARY.md or by executor), not deferred to milestone completion — accumulates invisible debt
+2. SUMMARY.md one_liner field must be enforced at plan completion — 4 milestones now with the same extraction issue
+3. Frontend PWA features execute significantly faster than backend phases — 6 phases in 2 days vs 5-7 for backend milestones
+4. Optimistic mutations need groupId+semesterId as mutation vars to correctly target cache keys — generic queryKey targeting causes stale cache
+5. HATEOAS _embedded key names are unpredictable — always use fallback extraction pattern
+
+### Cost Observations
+- Model mix: ~15% opus (orchestration/milestone), ~85% sonnet (execution/verification)
+- Sessions: ~4 sessions across 2 days
+- Notable: Phase 32 executed both plans in ~15 minutes total — frontend component phases are the fastest execution unit
+
+---
+
 ## Milestone: v5.0 — Notification Service (Web + Bot)
 
 **Shipped:** 2026-04-05
@@ -187,6 +237,7 @@
 | v3.0 | 5 | 11 | Cron scheduling, Moscow TZ, week-parity generation, gRPC server |
 | v4.0 | 5 | 12 | MongoDB + Testcontainers, domain isolation, gap-closure pattern |
 | v5.0 | 7 | 16 | Python Aiogram bot, WebSocket, asyncio timers, cross-language gRPC |
+| v6.0 | 6 | 14 | React PWA, Web Push, httpOnly cookies, TanStack Query, Framer Motion |
 
 ### Cumulative Quality
 
@@ -197,6 +248,7 @@
 | v3.0 | — | Cron job tests with @Profile("!test"), lesson generation verification |
 | v4.0 | ~80 | MongoDB Testcontainers, ArchUnit domain isolation, Redis dedup/rate-limit tests |
 | v5.0 | ~128 | Java: 20 WebSocket/RabbitMQ tests. Python: 108 pytest-asyncio tests (fakeredis, mock gRPC/Telegram) |
+| v6.0 | 63 | Vitest + @testing-library/react: API hook tests, component tests, optimistic mutation tests |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -207,3 +259,5 @@
 5. Domain isolation boundaries should be designed upfront with port interfaces (v4.0)
 6. Always set TZ env var in docker-compose when code uses naive datetime — systematic timer errors otherwise (v5.0)
 7. Gap-closure hardening phase after milestone audit is a reliable pattern — catches deployment blockers before ship (v4.0-v5.0)
+8. REQUIREMENTS.md checkboxes and SUMMARY.md one_liner fields must be updated during execution, not deferred — accumulates across milestones (v2.0-v6.0)
+9. HATEOAS _embedded key extraction needs a fallback pattern — key names are unpredictable across endpoints (v6.0)

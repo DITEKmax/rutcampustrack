@@ -97,7 +97,7 @@ Full details: `.planning/milestones/v6.0-ROADMAP.md`
 **Milestone Goal:** Build three remaining frontend clients: Telegram Mini App (React) for student attendance inside Telegram, Angular Web Panel for teacher/admin management, and a static Landing page.
 
 - [x] **Phase 33: Infrastructure** — URL layout, Gateway CORS expansion, nginx configs, docker-compose (completed 2026-04-06)
-- [ ] **Phase 34: Auth Service TMA** — `POST /api/auth/tma` initData endpoint + `POST /api/auth/refresh-body`
+- [x] **Phase 34: Auth Service TMA** — `POST /api/auth/tma` initData endpoint + `POST /api/auth/refresh-body` (completed 2026-04-06)
 - [ ] **Phase 35: Landing Page** — Static HTML/CSS marketing page with nginx container
 - [ ] **Phase 36: Mini App Scaffold + Auth** — Vite scaffold, Telegram SDK init, initData auth flow, dev mock env
 - [ ] **Phase 37: Mini App Features** — Schedule, geo check-in, attendance stats, homework, Telegram UX
@@ -131,9 +131,9 @@ Plans:
   2. `POST /api/auth/tma` with tampered initData returns 401 with clear error
   3. `POST /api/auth/refresh-body` with valid refresh token returns new access + refresh tokens in response body
   4. User lookup by `telegram_id` (stored from v5.0 bot /start linking) works correctly
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 34-01-PLAN.md — TmaService HMAC validation + controller endpoints + integration tests
+- [x] 34-01-PLAN.md — TmaService HMAC validation + controller endpoints + integration tests
 **UI hint**: no
 
 ### Phase 35: Landing Page
@@ -246,7 +246,7 @@ Plans:
 | 31. Push Frontend + E2E Integration | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 32. Stats + Homework | v6.0 | 2/2 | Complete | 2026-04-06 |
 | 33. Infrastructure | v7.0 | 2/2 | Complete | 2026-04-06 |
-| 34. Auth Service TMA | v7.0 | 0/1 | Planned | - |
+| 34. Auth Service TMA | v7.0 | 1/1 | Complete   | 2026-04-06 |
 | 35. Landing Page | v7.0 | 0/? | Planned | - |
 | 36. Mini App Scaffold + Auth | v7.0 | 0/? | Planned | - |
 | 37. Mini App Features | v7.0 | 0/? | Planned | - |

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Frontends — Mini App, Web Panel, Landing
-status: executing
-stopped_at: Phase 33 complete — infrastructure scaffolding + Gateway CORS
-last_updated: "2026-04-06T19:10:00.000Z"
-last_activity: 2026-04-06 -- Phase 33 verified and complete
+status: verifying
+stopped_at: Completed 34-auth-service-tma/34-01-PLAN.md
+last_updated: "2026-04-06T22:16:44.494Z"
+last_activity: 2026-04-06
 progress:
   total_phases: 8
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 12
+  completed_phases: 2
+  total_plans: 3
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -22,10 +22,10 @@ v7.0 Frontends — Mini App, Web Panel, Landing
 
 ## Current Position
 
-Phase: 33 (infrastructure) — COMPLETE ✓
-Plan: 2 of 2 complete
-Status: Phase 33 verified and complete
-Last activity: 2026-04-06 -- Phase 33 verified and complete
+Phase: 34 (auth-service-tma) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-04-06
 
 Progress: [█░░░░░░░░░] 12%
 
@@ -34,7 +34,7 @@ Progress: [█░░░░░░░░░] 12%
 See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** Phase 33 — infrastructure
+**Current focus:** Phase 34 — auth-service-tma
 
 ## Completed Milestones
 
@@ -58,6 +58,9 @@ Recent decisions affecting current work:
 - v6.0: httpOnly cookie for refresh token — Mini App cannot use this pattern (WebView drops cookies); use localStorage + body-based refresh (AUTH-02) instead
 - v6.0: OPTIONS bypass before isPublicRoute in Gateway — pattern established; Phase 33 must add new origins without breaking existing CORS
 - v5.0: STOMP in-memory broker — Mini App TMA-12 (real-time) deferred to future; no STOMP work in v7.0
+- [Phase 34-auth-service-tma]: MessageDigest.isEqual for constant-time HMAC comparison prevents timing oracle (T-34-03)
+- [Phase 34-auth-service-tma]: TMA_BOT_TOKEN env var with dev fallback — bot token never hardcoded (T-34-05)
+- [Phase 34-auth-service-tma]: refresh-body delegates to AuthService.refresh() — one-line, same Redis JTI rotation, no over-engineering
 
 ### Research Flags
 
@@ -71,7 +74,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-06
-Stopped at: Roadmap created for v7.0 (38 requirements, 8 phases)
+Last session: 2026-04-06T22:16:44.490Z
+Stopped at: Completed 34-auth-service-tma/34-01-PLAN.md
 Resume file: None
 Next action: `/gsd-plan-phase 34`

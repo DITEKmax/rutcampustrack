@@ -16,8 +16,8 @@ Requirements for Frontends milestone. Each maps to roadmap phases 33-40.
 
 ### Auth Service TMA
 
-- [ ] **AUTH-01**: `POST /api/auth/tma` validates Telegram initData (HMAC-SHA256) and returns JWT
-- [ ] **AUTH-02**: `POST /api/auth/refresh-body` accepts refresh token in request body and returns new token pair
+- [x] **AUTH-01**: `POST /api/auth/tma` validates Telegram initData (HMAC-SHA256) and returns JWT
+- [x] **AUTH-02**: `POST /api/auth/refresh-body` accepts refresh token in request body and returns new token pair
 
 ### Landing Page
 
@@ -101,8 +101,8 @@ Requirements for Frontends milestone. Each maps to roadmap phases 33-40.
 | INFRA-02 | Phase 33 | Complete |
 | INFRA-03 | Phase 33 | Complete |
 | INFRA-04 | Phase 33 | Complete |
-| AUTH-01 | Phase 34 | Pending |
-| AUTH-02 | Phase 34 | Pending |
+| AUTH-01 | Phase 34 | Complete |
+| AUTH-02 | Phase 34 | Complete |
 | LAND-01 | Phase 35 | Pending |
 | LAND-02 | Phase 35 | Pending |
 | LAND-03 | Phase 35 | Pending |

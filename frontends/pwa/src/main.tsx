@@ -19,6 +19,8 @@ registerSW({ immediate: true })
 const SchedulePage = lazy(() => import('./features/schedule/SchedulePage').then(m => ({ default: m.SchedulePage })))
 const CheckInScreen = lazy(() => import('./features/checkin/CheckInScreen').then(m => ({ default: m.CheckInScreen })))
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'))
+const AttendanceStatsPage = lazy(() => import('./features/attendance/AttendanceStatsPage').then(m => ({ default: m.AttendanceStatsPage })))
+const AttendanceRecordsPage = lazy(() => import('./features/attendance/AttendanceRecordsPage').then(m => ({ default: m.AttendanceRecordsPage })))
 
 const router = createBrowserRouter([
   {
@@ -35,15 +37,7 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Navigate to="/home" replace /> },
-      {
-        path: 'home',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SchedulePage />
-          </Suspense>
-        ),
-      },
+      { index: true, element: <Navigate to="/schedule" replace /> },
       {
         path: 'schedule',
         element: (
@@ -65,6 +59,22 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <ProfilePage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'stats',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AttendanceStatsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'stats/:subjectId',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AttendanceRecordsPage />
           </Suspense>
         ),
       },

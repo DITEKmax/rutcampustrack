@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router'
-import { House, Calendar, Fingerprint, User } from '@phosphor-icons/react'
+import { ChartBar, Calendar, Fingerprint, ClipboardText, User } from '@phosphor-icons/react'
 
 const tabs = [
-  { to: '/home', icon: House, label: 'Главная' },
+  { to: '/stats', icon: ChartBar, label: 'Статистика' },
   { to: '/schedule', icon: Calendar, label: 'Расписание' },
   { to: '/checkin', icon: Fingerprint, label: 'Отметка' },
+  { to: '/homework', icon: ClipboardText, label: 'Задания' },
   { to: '/profile', icon: User, label: 'Профиль' },
 ]
 

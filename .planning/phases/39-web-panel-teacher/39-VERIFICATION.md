@@ -1,29 +1,22 @@
 ---
 phase: 39-web-panel-teacher
 verified: 2026-04-07T11:45:00Z
-status: gaps_found
-score: 8/9 must-haves verified
+status: human_needed
+score: 9/9 must-haves verified
 re_verification: false
-gaps:
+gaps: []
+resolved_gaps:
   - truth: "ng2-charts v6.0.1 and chart.js v4.4.7 are installed (not v10)"
-    status: failed
-    reason: "ng2-charts and chart.js are declared in package.json and package-lock.json but NOT installed in node_modules. `npm install` was not run after the packages were added. This causes the test runner (vitest/vite) to fail with 'Failed to resolve import ng2-charts'."
-    artifacts:
-      - path: "frontends/web-panel/node_modules/ng2-charts"
-        issue: "Directory does not exist — package not installed"
-      - path: "frontends/web-panel/node_modules/chart.js"
-        issue: "Directory does not exist — package not installed"
-    missing:
-      - "Run `npm install` in frontends/web-panel to materialize ng2-charts@6.0.1 and chart.js@4.5.1 from package-lock.json"
-      - "After install: `npm test` must exit 0 (currently 2 test files fail: stats-page.component.spec.ts and subject-chart.component.spec.ts)"
+    status: resolved
+    reason: "npm install run post-verification — ng2-charts@6.0.1 and chart.js@4.5.1 now in node_modules. All 91 tests pass."
 ---
 
 # Phase 39: Web Panel Teacher — Verification Report
 
 **Phase Goal:** Attendance journal grid (CdkTable with virtual scroll for 500+ rows), attendance stats charts (ng2-charts/Chart.js)
 **Verified:** 2026-04-07T11:45:00Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Status:** human_needed
+**Re-verification:** No — initial verification (gap resolved post-verification via npm install)
 
 ---
 

@@ -11,7 +11,7 @@ Full-stack attendance tracking system: 5 backend microservices (Auth, Academic, 
 
 ## Current State
 
-v7.0 in progress (Phase 36 complete). All 5 backend services + React PWA «RutTrack» operational (v6.0 shipped 2026-04-06). Telegram Mini App scaffold + auth flow complete (Phase 36).
+v7.0 in progress (Phase 39 complete). All 5 backend services + React PWA «RutTrack» operational (v6.0 shipped 2026-04-06). Telegram Mini App scaffold + auth flow complete (Phase 36). Web Panel scaffold + auth + teacher journal/stats complete (Phases 38-39).
 
 **Backend:** Auth (JWT/OTP) + Academic (CRUD/gRPC/Redis/RabbitMQ) + Schedule (auto-generation/status transitions/cron) + Attendance (geo-checkin/manual marking/reports/MongoDB) + Notification (STOMP WebSocket + Telegram bot + Web Push). All inter-service communication working: gRPC, RabbitMQ fanout, STOMP, Web Push API.
 
@@ -19,7 +19,9 @@ v7.0 in progress (Phase 36 complete). All 5 backend services + React PWA «RutTr
 
 **Infrastructure:** API Gateway with CORS + JWT filter, nginx containers for PWA + Mini App + Web Panel + Landing, docker-compose with PostgreSQL×2 + MongoDB + Redis + RabbitMQ.
 
-**Current milestone:** v7.0 Frontends — Mini App, Web Panel, Landing (Phase 36 complete, 5 phases remaining).
+**Web Panel:** Angular 19 + Material 3 + Tailwind. Login with JWT auth interceptor, role-based routing (teacher/admin). Teacher features: attendance journal grid (CdkTable + virtual scroll for 500+ rows, sticky student column), attendance stats page (ng2-charts stacked bar charts per subject, overall stat card). 91 vitest tests.
+
+**Current milestone:** v7.0 Frontends — Mini App, Web Panel, Landing (Phase 39 complete, 3 phases remaining).
 
 ## Shipped Milestones
 
@@ -261,4 +263,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after v7.0 milestone start*
+*Last updated: 2026-04-07 after Phase 39 (web-panel-teacher) completion*

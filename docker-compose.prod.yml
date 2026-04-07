@@ -1,0 +1,391 @@
+version: "3.9"
+
+services:
+  # ============================================================
+  # INFRASTRUCTURE
+  # ============================================================
+
+  postgres-academic:
+    image: postgres:16
+    container_name: rct-postgres-academic
+    environment:
+      POSTGRES_DB: academic_db
+      POSTGRES_USER: rct_user
+      POSTGRES_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
+    expose:
+      - "5432"
+    volumes:
+      - pg-academic-data:/var/lib/postgresql/data
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rct_user -d academic_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-schedule:
+    image: postgres:16
+    container_name: rct-postgres-schedule
+    environment:
+      POSTGRES_DB: schedule_db
+      POSTGRES_USER: rct_user
+      POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD}
+      TZ: Europe/Moscow
+    expose:
+      - "5432"
+    volumes:
+      - pg-schedule-data:/var/lib/postgresql/data
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rct_user -d schedule_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-attendance:
+    image: mongo:7
+    container_name: rct-mongo-attendance
+    environment:
+      MONGO_INITDB_DATABASE: attendance_db
+    expose:
+      - "27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: rct-redis
+    expose:
+      - "6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rct-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    expose:
+      - "5672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - private_net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # BACKEND SERVICES
+  # ============================================================
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/api-gateway:latest
+    container_name: rct-api-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      AUTH_SERVICE_URL: http://auth-service:9090
+    ports:
+      - "80:8080"
+    networks:
+      - private_net
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      academic-service:
+        condition: service_healthy
+      schedule-service:
+        condition: service_healthy
+      attendance-service:
+        condition: service_healthy
+      notification-web:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/auth-service:latest
+    container_name: rct-auth-service
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
+      JWT_KEY_DIR: /keys
+      TMA_BOT_TOKEN: ${TMA_BOT_TOKEN}
+    volumes:
+      - jwt-keys:/keys
+    expose:
+      - "9090"
+    networks:
+      - private_net
+    depends_on:
+      postgres-academic:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+
+  academic-service:
+    build:
+      context: .
+      dockerfile: services/academic-service/academic-app/Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/academic-service:latest
+    container_name: rct-academic-service
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    expose:
+      - "9091"
+    networks:
+      - private_net
+    depends_on:
+      postgres-academic:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9091/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  schedule-service:
+    build:
+      context: .
+      dockerfile: services/schedule-service/schedule-app/Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/schedule-service:latest
+    container_name: rct-schedule-service
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      POSTGRES_SCHEDULE_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      TZ: Europe/Moscow
+    expose:
+      - "9092"
+    networks:
+      - private_net
+    depends_on:
+      postgres-schedule:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9092/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  attendance-service:
+    build:
+      context: .
+      dockerfile: services/attendance-service/attendance-app/Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/attendance-service:latest
+    container_name: rct-attendance-service
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    expose:
+      - "9093"
+    networks:
+      - private_net
+    depends_on:
+      mongo-attendance:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9093/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+
+  # ============================================================
+  # NOTIFICATION SERVICES
+  # ============================================================
+
+  notification-web:
+    build:
+      context: .
+      dockerfile: services/notification-service/notification-app/Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/notification-web:latest
+    container_name: rct-notification-web
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: "5672"
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_PUBLIC_KEY_PATH: /keys/public.key
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT}
+      SPRING_DATA_MONGODB_URI: mongodb://mongo-attendance:27017/attendance_db
+    volumes:
+      - jwt-keys:/keys:ro
+    expose:
+      - "9094"
+    networks:
+      - private_net
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongo-attendance:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9094/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  notification-bot:
+    build:
+      context: ./services/notification-bot
+      dockerfile: Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/notification-bot:latest
+    container_name: rct-notification-bot
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      ACADEMIC_GRPC_HOST: academic-service
+      ACADEMIC_GRPC_PORT: "19091"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      HEALTH_PORT: "8081"
+      SCHEDULE_GRPC_HOST: schedule-service
+      SCHEDULE_GRPC_PORT: "19092"
+      AUTH_SERVICE_HOST: auth-service
+      AUTH_SERVICE_PORT: "9090"
+      API_GATEWAY_URL: http://api-gateway:8080
+      MINI_APP_URL: ${MINI_APP_URL}
+      TZ: Europe/Moscow
+    networks:
+      - private_net
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ============================================================
+  # FRONTEND CONTAINERS
+  # ============================================================
+
+  pwa-nginx:
+    build:
+      context: ./frontends/pwa
+      dockerfile: Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/pwa-nginx:latest
+    container_name: rct-pwa-nginx
+    expose:
+      - "80"
+    networks:
+      - private_net
+    restart: unless-stopped
+
+  mini-app-nginx:
+    build:
+      context: ./frontends/mini-app
+      dockerfile: Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/mini-app-nginx:latest
+    container_name: rct-mini-app-nginx
+    expose:
+      - "80"
+    networks:
+      - private_net
+    restart: unless-stopped
+
+  web-panel-nginx:
+    build:
+      context: ./frontends/web-panel
+      dockerfile: Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/web-panel-nginx:latest
+    container_name: rct-web-panel-nginx
+    expose:
+      - "80"
+    networks:
+      - private_net
+    restart: unless-stopped
+
+  landing-nginx:
+    build:
+      context: ./frontends/landing
+      dockerfile: Dockerfile
+    image: ghcr.io/maksd/rutcampustrack/landing-nginx:latest
+    container_name: rct-landing-nginx
+    expose:
+      - "80"
+    networks:
+      - private_net
+    restart: unless-stopped
+
+networks:
+  private_net:
+    driver: bridge
+
+volumes:
+  pg-academic-data:
+  pg-schedule-data:
+  mongo-data:
+  redis-data:
+  rabbitmq-data:
+  jwt-keys:

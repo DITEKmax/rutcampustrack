@@ -29,7 +29,9 @@ export const routes: Routes = [
           {
             path: 'journal',
             loadComponent: () =>
-              import('./shared/empty/empty.component').then(m => m.EmptyComponent),
+              import('./features/teacher/journal/journal-page.component').then(
+                m => m.JournalPageComponent,
+              ),
           },
           {
             path: 'stats',

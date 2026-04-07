@@ -1,39 +1,22 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router'
+import { BrowserRouter, Routes, Route } from 'react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/shared/lib/queryClient'
 import { TelegramThemeProvider } from '@/shared/providers/TelegramThemeProvider'
 import { DevModeBanner } from '@/shared/components/DevModeBanner'
-import { BottomNav } from '@/shared/components/BottomNav'
 import { AuthProvider } from '@/features/auth/AuthProvider'
-import { SchedulePage } from '@/features/schedule/SchedulePage'
-import { CheckInPage } from '@/features/checkin/CheckInPage'
-import { StatsPage } from '@/features/stats/StatsPage'
-import { HomeworkPage } from '@/features/homework/HomeworkPage'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion } from 'motion/react'
 
-function AppLayout() {
-  const location = useLocation()
-  const isCheckinPage = location.pathname.startsWith('/checkin')
-
+function HomePage() {
   return (
-    <>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.1, ease: 'easeOut' }}
-        >
-          <Routes location={location}>
-            <Route path="/" element={<SchedulePage />} />
-            <Route path="/checkin/:lessonId" element={<CheckInPage />} />
-            <Route path="/stats" element={<StatsPage />} />
-            <Route path="/homework" element={<HomeworkPage />} />
-          </Routes>
-        </motion.div>
-      </AnimatePresence>
-      {!isCheckinPage && <BottomNav />}
-    </>
+    <motion.main
+      className="min-h-screen flex flex-col items-center justify-center p-4"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
+    >
+      <h1 className="text-xl font-semibold">Добро пожаловать в RutTrack</h1>
+      <p className="text-base text-muted-foreground mt-2">Функции появятся в следующей версии</p>
+    </motion.main>
   )
 }
 
@@ -44,7 +27,9 @@ export default function App() {
         <DevModeBanner />
         <AuthProvider>
           <BrowserRouter>
-            <AppLayout />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+            </Routes>
           </BrowserRouter>
         </AuthProvider>
       </TelegramThemeProvider>

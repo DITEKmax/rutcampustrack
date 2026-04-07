@@ -1,0 +1,60 @@
+<nav [@collapse]="collapsed() ? 'collapsed' : 'expanded'"
+     class="h-screen flex flex-col bg-[var(--mat-sys-surface-container)] border-r border-[var(--mat-sys-outline-variant)] overflow-hidden">
+
+  <!-- Logo / Brand area -->
+  <div class="flex items-center h-16 px-4 border-b border-[var(--mat-sys-outline-variant)]">
+    @if (!collapsed()) {
+      <span class="text-[20px] font-semibold text-[var(--mat-sys-primary)]">RutTrack</span>
+    } @else {
+      <span class="text-[20px] font-semibold text-[var(--mat-sys-primary)]">R</span>
+    }
+  </div>
+
+  <!-- Nav items -->
+  <div class="flex-1 overflow-y-auto py-2">
+    @for (item of filteredNavItems(); track item.route) {
+      <a [routerLink]="item.route"
+         routerLinkActive="bg-[var(--mat-sys-primary)]/10 text-[var(--mat-sys-primary)] border-l-[3px] border-[var(--mat-sys-primary)]"
+         class="flex items-center gap-3 px-4 py-3 text-sm text-[var(--mat-sys-on-surface)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+         [title]="item.label">
+        <i [class]="item.icon + ' text-[24px]'" class="shrink-0 ph"></i>
+        @if (!collapsed()) {
+          <span>{{ item.label }}</span>
+        }
+      </a>
+    }
+  </div>
+
+  <!-- Footer: theme toggle + logout + collapse toggle -->
+  <div class="border-t border-[var(--mat-sys-outline-variant)] py-2">
+    <!-- Theme toggle -->
+    <button (click)="toggleTheme()"
+            class="flex items-center gap-3 px-4 py-3 w-full text-sm text-[var(--mat-sys-on-surface)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            [title]="themeService.isDark() ? 'Светлая тема' : 'Тёмная тема'">
+      <i [class]="(themeService.isDark() ? 'ph-sun' : 'ph-moon') + ' text-[24px]'" class="shrink-0 ph"></i>
+      @if (!collapsed()) {
+        <span>{{ themeService.isDark() ? 'Светлая тема' : 'Тёмная тема' }}</span>
+      }
+    </button>
+
+    <!-- Logout -->
+    <button (click)="logout()"
+            class="flex items-center gap-3 px-4 py-3 w-full text-sm text-[var(--mat-sys-on-surface)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            title="Выйти">
+      <i class="ph-sign-out text-[24px] shrink-0 ph"></i>
+      @if (!collapsed()) {
+        <span>Выйти</span>
+      }
+    </button>
+
+    <!-- Collapse toggle -->
+    <button (click)="toggleCollapse()"
+            class="flex items-center gap-3 px-4 py-3 w-full text-sm text-[var(--mat-sys-on-surface)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+      <i [@rotateChevron]="collapsed() ? 'collapsed' : 'expanded'"
+         class="ph-caret-left text-[24px] shrink-0 ph"></i>
+      @if (!collapsed()) {
+        <span>Свернуть</span>
+      }
+    </button>
+  </div>
+</nav>

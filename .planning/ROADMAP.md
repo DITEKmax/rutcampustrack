@@ -100,8 +100,8 @@ Full details: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] **Phase 34: Auth Service TMA** — `POST /api/auth/tma` initData endpoint + `POST /api/auth/refresh-body` (completed 2026-04-06)
 - [x] **Phase 35: Landing Page** — Static HTML/CSS marketing page with nginx container (completed 2026-04-06)
 - [x] **Phase 36: Mini App Scaffold + Auth** — Vite scaffold, Telegram SDK init, initData auth flow, dev mock env (completed 2026-04-07)
-- [x] **Phase 37: Mini App Features** — Schedule, geo check-in, attendance stats, homework, Telegram UX (2/2 plans) (completed 2026-04-07)
-- [ ] **Phase 38: Web Panel Scaffold + Auth** — Angular 19 standalone, Tailwind, interceptors, role guards, login/logout (3 plans)
+- [ ] **Phase 37: Mini App Features** — Schedule, geo check-in, attendance stats, homework, Telegram UX
+- [ ] **Phase 38: Web Panel Scaffold + Auth** — Angular 21 standalone, Tailwind, interceptors, role guards, login/logout
 - [ ] **Phase 39: Web Panel Teacher** — Attendance journal grid (CdkTable), stats charts (ng2-charts)
 - [ ] **Phase 40: Web Panel Admin** — User/group/semester CRUD, headman assign/revoke, dashboard summary
 
@@ -175,27 +175,20 @@ Plans:
   3. Attendance stats show per-subject percentages with red zone indicators
   4. Homework list with completion toggle works
   5. UI respects Telegram theme (dark/light mode) and uses BackButton for navigation
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 37-01-PLAN.md — Shared hooks, API layers, types, StatusBadge, BottomNav
-- [x] 37-02-PLAN.md — Feature pages (Schedule, CheckIn, Stats, Homework), App wiring, tests
+**Plans:** TBD
 **UI hint**: yes
 
 ### Phase 38: Web Panel Scaffold + Auth
-**Goal**: Angular 19 standalone scaffold with Tailwind, HTTP interceptors, role-based route guards, login/logout for TEACHER and ADMIN roles
+**Goal**: Angular 21 standalone scaffold with Tailwind, HTTP interceptors, role-based route guards, login/logout for TEACHER and ADMIN roles
 **Depends on**: Phase 33 (Gateway CORS for Web Panel origin)
 **Requirements**: WPAN-01, WPAN-02, WPAN-03, WPAN-04, WPAN-05
 **Success Criteria** (what must be TRUE):
   1. Teacher/admin can log in with username/password and see role-appropriate dashboard
-  2. JWT access token and refresh token both in Angular signals (memory-only, not localStorage)
+  2. JWT access token in Angular signal (memory), refresh token in httpOnly cookie
   3. Unauthorized route access redirects to login
   4. Token auto-refresh works via HTTP interceptor
   5. Logout clears tokens and redirects to login
-**Plans:** 3 plans
-Plans:
-- [ ] 38-01-PLAN.md — Angular 19 scaffold + Tailwind v4 + Material M3 theme + Vitest
-- [ ] 38-02-PLAN.md — Auth core: AuthService, interceptor, guards, LoginComponent
-- [ ] 38-03-PLAN.md — Shell layout: sidebar, theme toggle, routes, stub dashboards
+**Plans:** TBD
 **UI hint**: yes
 
 ### Phase 39: Web Panel Teacher
@@ -261,7 +254,7 @@ Plans:
 | 34. Auth Service TMA | v7.0 | 1/1 | Complete   | 2026-04-06 |
 | 35. Landing Page | v7.0 | 1/1 | Complete   | 2026-04-06 |
 | 36. Mini App Scaffold + Auth | v7.0 | 2/2 | Complete    | 2026-04-07 |
-| 37. Mini App Features | v7.0 | 2/2 | Complete | 2026-04-07 |
-| 38. Web Panel Scaffold + Auth | v7.0 | 0/3 | Planned | - |
+| 37. Mini App Features | v7.0 | 0/? | Planned | - |
+| 38. Web Panel Scaffold + Auth | v7.0 | 0/? | Planned | - |
 | 39. Web Panel Teacher | v7.0 | 0/? | Planned | - |
 | 40. Web Panel Admin | v7.0 | 0/? | Planned | - |

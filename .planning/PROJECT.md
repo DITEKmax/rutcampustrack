@@ -11,15 +11,17 @@ Full-stack attendance tracking system: 5 backend microservices (Auth, Academic, 
 
 ## Current State
 
-v7.0 in progress (Phase 36 complete). All 5 backend services + React PWA «RutTrack» operational (v6.0 shipped 2026-04-06). Telegram Mini App scaffold + auth flow complete (Phase 36).
+v7.0 in progress (Phase 38 complete). All 5 backend services + React PWA «RutTrack» operational (v6.0 shipped 2026-04-06). Telegram Mini App scaffold + auth + features complete (Phases 36-37). Angular Web Panel scaffolded with auth layer and shell layout (Phase 38).
 
 **Backend:** Auth (JWT/OTP) + Academic (CRUD/gRPC/Redis/RabbitMQ) + Schedule (auto-generation/status transitions/cron) + Attendance (geo-checkin/manual marking/reports/MongoDB) + Notification (STOMP WebSocket + Telegram bot + Web Push). All inter-service communication working: gRPC, RabbitMQ fanout, STOMP, Web Push API.
 
 **Frontend PWA:** React + Vite + TanStack Query + Tailwind + Framer Motion. Features: login with httpOnly cookie JWT, schedule view with week navigation, geo check-in with GPS, attendance stats with red zone indicators, homework list with optimistic toggle, Web Push notifications (lesson start/cancel/homework), A2HS install prompt, offline Service Worker shell. 63 vitest tests, 4,733 LOC TypeScript.
 
+**Frontend Web Panel:** Angular 19 + Tailwind v4 + Angular Material M3 + Vitest. Features: signal-based JWT auth (memory-only tokens, body-based refresh), 401 interceptor with retry queue, role guards (TEACHER/ADMIN), login form, shell layout with collapsible sidebar, dark/light theme toggle. 43 vitest tests.
+
 **Infrastructure:** API Gateway with CORS + JWT filter, nginx containers for PWA + Mini App + Web Panel + Landing, docker-compose with PostgreSQL×2 + MongoDB + Redis + RabbitMQ.
 
-**Current milestone:** v7.0 Frontends — Mini App, Web Panel, Landing (Phase 36 complete, 5 phases remaining).
+**Current milestone:** v7.0 Frontends — Mini App, Web Panel, Landing (Phase 38 complete, 2 phases remaining).
 
 ## Shipped Milestones
 

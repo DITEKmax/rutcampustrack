@@ -1,0 +1,24 @@
+# Build artifacts
+**/build/
+**/.gradle/
+**/node_modules/
+**/dist/
+
+# IDE
+.idea/
+**/*.iml
+
+# Planning and docs (not needed in images)
+.planning/
+docs/
+.claude/
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+
+# Git
+.git/
+.gitignore

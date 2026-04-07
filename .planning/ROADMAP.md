@@ -115,7 +115,7 @@ Full details: `.planning/milestones/v7.0-ROADMAP.md`
 
 - [x] **Phase 41: Actuator Standardization** - Add health/info endpoints to all 4 Java services (completed 2026-04-07)
 - [ ] **Phase 42: Multi-Stage Dockerfiles** - Optimized build+runtime images for all services and frontends
-- [ ] **Phase 43: docker-compose.prod.yml** - Production compose with prod profile, secrets, Actuator healthchecks
+- [x] **Phase 43: docker-compose.prod.yml** - Production compose with prod profile, secrets, Actuator healthchecks (completed 2026-04-07)
 - [ ] **Phase 44: Nginx Reverse Proxy + SSL** - SSL termination and path-based routing via Let's Encrypt
 - [ ] **Phase 45: GitHub Actions CI** - Build, test, and lint pipeline for all services on push/PR
 - [ ] **Phase 46: GitHub Actions Deploy** - GHCR image push and SSH-based VPS deploy on merge to main
@@ -162,9 +162,9 @@ Plans:
   2. No database ports (5432, 27017, 6379, 5672) are exposed to the host machine
   3. All backend service containers have Actuator-based healthchecks (depends_on healthy)
   4. .env.prod file provides all secrets (DB passwords, RSA keys, bot token) and is gitignored
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 43-01-PLAN.md — Gitignore + env template + missing prod profiles + docker-compose.prod.yml with all 17 services
+- [x] 43-01-PLAN.md — Gitignore + env template + missing prod profiles + docker-compose.prod.yml with all 17 services
 
 
 ### Phase 44: Nginx Reverse Proxy + SSL
@@ -261,7 +261,7 @@ Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 �
 | 33-40 | v7.0 | 16/16 | Complete | 2026-04-07 |
 | 41. Actuator Standardization | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 42. Multi-Stage Dockerfiles | v8.0 | 0/TBD | Not started | - |
-| 43. docker-compose.prod.yml | v8.0 | 0/TBD | Not started | - |
+| 43. docker-compose.prod.yml | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 44. Nginx Reverse Proxy + SSL | v8.0 | 0/TBD | Not started | - |
 | 45. GitHub Actions CI | v8.0 | 0/TBD | Not started | - |
 | 46. GitHub Actions Deploy | v8.0 | 0/TBD | Not started | - |

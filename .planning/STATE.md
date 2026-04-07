@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v8.0
 milestone_name: CI/CD, Deployment & Documentation
-status: ready_to_plan
-stopped_at: Roadmap created — Phase 41 ready to plan
-last_updated: "2026-04-07"
-last_activity: 2026-04-07
+status: executing
+stopped_at: Roadmap written — ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated
+last_updated: "2026-04-07T16:01:25.719Z"
+last_activity: 2026-04-07 -- Phase 41 planning complete
 progress:
   total_phases: 8
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 1
+  completed_plans: 1
+  percent: 13
 ---
 
 # Project State
@@ -23,11 +23,11 @@ v8.0 CI/CD, Deployment & Documentation
 ## Current Position
 
 Phase: 41 of 48 (Actuator Standardization)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-04-07 — Roadmap created, 8 phases defined (41-48)
+Plan: 1 of 1 complete
+Status: Phase 41 complete — ready for Phase 42
+Last activity: 2026-04-07 -- Phase 41 Plan 01 executed (actuator standardization)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 13%
 
 ## Project Reference
 
@@ -55,10 +55,13 @@ See: `.planning/PROJECT.md` (updated 2026-04-07)
 See PROJECT.md Key Decisions table for full history.
 
 Recent decisions affecting v8.0:
+
 - Use GHCR (not build-on-VPS) for portfolio value
 - python:3.12-slim for notification-bot (Alpine has no grpcio musl wheels)
 - springdoc-openapi-starter-webflux-ui for Gateway (WebFlux variant required)
 - Actuator: expose only health and info in production profile (never env/heapdump)
+- GlobalExceptionHandler must handle NoHandlerFoundException + NoResourceFoundException before generic Exception catch-all (Spring 6.2 behavior: these extend ServletException, not ErrorResponseException)
+- Test profiles: disable health indicators for autoconfigure-excluded infra (management.health.redis/rabbit.enabled=false)
 
 ### Research Flags
 
@@ -72,5 +75,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-07
-Stopped at: Roadmap written — ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated
-Next action: /gsd-plan-phase 41
+Stopped at: Completed 41-01-PLAN.md (Actuator Standardization)
+Next action: /gsd-plan-phase 42

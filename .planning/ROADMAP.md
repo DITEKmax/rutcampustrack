@@ -109,11 +109,11 @@ Full details: `.planning/milestones/v7.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v8.0 CI/CD, Deployment & Documentation (In Progress)
+### v8.0 CI/CD, Deployment & Documentation (In Progress)
 
 **Milestone Goal:** Production-ready deployment pipeline — multi-stage Dockerfiles, docker-compose.prod.yml, SSL termination, GitHub Actions CI/CD, unified Swagger UI, and a complete project README.
 
-- [ ] **Phase 41: Actuator Standardization** - Add health/info endpoints to all 4 Java services
+- [x] **Phase 41: Actuator Standardization** - Add health/info endpoints to all 4 Java services (completed 2026-04-07)
 - [ ] **Phase 42: Multi-Stage Dockerfiles** - Optimized build+runtime images for all services and frontends
 - [ ] **Phase 43: docker-compose.prod.yml** - Production compose with prod profile, secrets, Actuator healthchecks
 - [ ] **Phase 44: Nginx Reverse Proxy + SSL** - SSL termination and path-based routing via Let's Encrypt
@@ -133,7 +133,9 @@ Full details: `.planning/milestones/v7.0-ROADMAP.md`
   2. GET /actuator/info returns 200 on all 4 services
   3. Sensitive actuator endpoints (env, heapdump, beans) return 404 in production profile
   4. No other actuator endpoints are exposed beyond health and info
-**Plans**: TBD
+**Plans:** 1/1 plans complete
+Plans:
+- [x] 41-01-PLAN.md — Add Actuator dependency, config, prod override, SecurityFilterChain fix, and integration tests for all 4 Java services
 
 ### Phase 42: Multi-Stage Dockerfiles
 **Goal**: All services have optimized multi-stage Dockerfiles producing minimal production images
@@ -230,7 +232,7 @@ Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 �
 | 20-26 | v5.0 | 16/16 | Complete | 2026-04-05 |
 | 27-32 | v6.0 | 14/14 | Complete | 2026-04-06 |
 | 33-40 | v7.0 | 16/16 | Complete | 2026-04-07 |
-| 41. Actuator Standardization | v8.0 | 0/TBD | Not started | - |
+| 41. Actuator Standardization | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 42. Multi-Stage Dockerfiles | v8.0 | 0/TBD | Not started | - |
 | 43. docker-compose.prod.yml | v8.0 | 0/TBD | Not started | - |
 | 44. Nginx Reverse Proxy + SSL | v8.0 | 0/TBD | Not started | - |

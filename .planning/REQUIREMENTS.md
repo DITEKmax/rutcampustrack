@@ -19,8 +19,8 @@ Requirements for CI/CD, Deployment & Documentation milestone. Each maps to roadm
 
 ### Monitoring
 
-- [ ] **MON-01**: spring-boot-starter-actuator added to auth, academic, schedule, attendance services
-- [ ] **MON-02**: Actuator exposes only health and info endpoints in production profile
+- [x] **MON-01**: spring-boot-starter-actuator added to auth, academic, schedule, attendance services
+- [x] **MON-02**: Actuator exposes only health and info endpoints in production profile
 - [ ] **MON-03**: docker-compose.prod.yml uses Actuator healthchecks for service containers
 
 ### CI/CD
@@ -80,8 +80,8 @@ Requirements for CI/CD, Deployment & Documentation milestone. Each maps to roadm
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MON-01 | Phase 41 | Pending |
-| MON-02 | Phase 41 | Pending |
+| MON-01 | Phase 41 | Complete |
+| MON-02 | Phase 41 | Complete |
 | DOCK-01 | Phase 42 | Pending |
 | DOCK-02 | Phase 42 | Pending |
 | DOCK-03 | Phase 42 | Pending |

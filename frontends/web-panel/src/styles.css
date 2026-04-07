@@ -1,0 +1,67 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+@import "@angular/material/prebuilt-themes/azure-blue.css";
+
+/* Tailwind v4 dark mode via class strategy */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Angular Material M3 CSS variable overrides */
+:root {
+  /* Font: Geist Variable (per UI-SPEC) */
+  --mat-sys-body-large-font: "Geist Variable", sans-serif;
+  --mat-sys-body-medium-font: "Geist Variable", sans-serif;
+  --mat-sys-body-small-font: "Geist Variable", sans-serif;
+  --mat-sys-headline-large-font: "Geist Variable", sans-serif;
+  --mat-sys-headline-medium-font: "Geist Variable", sans-serif;
+  --mat-sys-headline-small-font: "Geist Variable", sans-serif;
+  --mat-sys-title-large-font: "Geist Variable", sans-serif;
+  --mat-sys-title-medium-font: "Geist Variable", sans-serif;
+  --mat-sys-title-small-font: "Geist Variable", sans-serif;
+  --mat-sys-label-large-font: "Geist Variable", sans-serif;
+  --mat-sys-label-medium-font: "Geist Variable", sans-serif;
+  --mat-sys-label-small-font: "Geist Variable", sans-serif;
+
+  /* Brand colors (per UI-SPEC) */
+  --mat-sys-primary: #1A56DB;
+  --mat-sys-on-primary: #FFFFFF;
+  --mat-sys-error: #DC2626;
+  --mat-sys-on-error: #FFFFFF;
+  --mat-sys-surface: #FFFFFF;
+  --mat-sys-on-surface: #1A1A1A;
+  --mat-sys-surface-container: #F5F5F5;
+  --mat-sys-outline: #D1D5DB;
+  --mat-sys-outline-variant: #E5E7EB;
+}
+
+.dark {
+  --mat-sys-primary: #4D8BFF;
+  --mat-sys-on-primary: #FFFFFF;
+  --mat-sys-surface: #1A1A1A;
+  --mat-sys-on-surface: #E5E7EB;
+  --mat-sys-surface-container: #242424;
+  --mat-sys-outline: #4B5563;
+  --mat-sys-outline-variant: #374151;
+}
+
+/* Base styles */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: "Geist Variable", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body {
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+}
+
+/* Status semantic colors (from design-decisions.md) */
+:root {
+  --color-present: #16A34A;
+  --color-absent: #DC2626;
+  --color-excused: #D97706;
+  --color-free-attendance: #9333EA;
+  --color-pending: #6B7280;
+}

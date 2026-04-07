@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Редактировать семестр' : 'Новый семестр' }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" class="flex flex-col gap-4">
+    <mat-form-field class="w-full">
+      <mat-label>Название</mat-label>
+      <input matInput formControlName="name">
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Обязательное поле</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field class="w-full">
+      <mat-label>Дата начала</mat-label>
+      <input matInput [matDatepicker]="pickerFrom" formControlName="dateFrom">
+      <mat-datepicker-toggle matIconSuffix [for]="pickerFrom"></mat-datepicker-toggle>
+      <mat-datepicker #pickerFrom></mat-datepicker>
+      @if (form.controls.dateFrom.hasError('required')) {
+        <mat-error>Обязательное поле</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field class="w-full">
+      <mat-label>Дата окончания</mat-label>
+      <input matInput [matDatepicker]="pickerTo" formControlName="dateTo">
+      <mat-datepicker-toggle matIconSuffix [for]="pickerTo"></mat-datepicker-toggle>
+      <mat-datepicker #pickerTo></mat-datepicker>
+      @if (form.controls.dateTo.hasError('required')) {
+        <mat-error>Обязательное поле</mat-error>
+      }
+      @if (form.hasError('dateRange')) {
+        <mat-error>Дата окончания должна быть позже даты начала</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Отмена</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid || saving" (click)="save()">
+    {{ isEdit ? 'Сохранить изменения' : 'Создать семестр' }}
+  </button>
+</mat-dialog-actions>

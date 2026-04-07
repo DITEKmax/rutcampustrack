@@ -14,4 +14,13 @@ vi.mock('@telegram-apps/sdk-react', () => ({
     initDataRaw: 'auth_date=1234567890&hash=mockHash&user=%7B%22id%22%3A1%7D',
   }),
   useSignal: vi.fn().mockReturnValue(null),
+  backButton: {
+    show: Object.assign(vi.fn(), { isAvailable: vi.fn().mockReturnValue(true) }),
+    hide: Object.assign(vi.fn(), { isAvailable: vi.fn().mockReturnValue(true) }),
+    onClick: vi.fn().mockReturnValue(vi.fn()),
+  },
+  mainButton: {
+    setParams: Object.assign(vi.fn(), { isAvailable: vi.fn().mockReturnValue(true) }),
+    onClick: vi.fn().mockReturnValue(vi.fn()),
+  },
 }))

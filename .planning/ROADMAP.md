@@ -177,9 +177,9 @@ Plans:
   3. HTTPS requests route to all 4 frontend containers by path (PWA, Mini App, Web Panel, Landing)
   4. A valid Let's Encrypt certificate is installed and browser shows the padlock
   5. Certbot auto-renewal runs on schedule without manual intervention
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 44-01-PLAN.md — Nginx config files + docker-compose nginx/certbot services + api-gateway port fix
+- [x] 44-01-PLAN.md — Nginx config files + docker-compose nginx/certbot services + api-gateway port fix
 - [ ] 44-02-PLAN.md — init-letsencrypt.sh bootstrap script + gitignore for generated files
 
 ### Phase 45: GitHub Actions CI
@@ -260,7 +260,7 @@ Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 �
 | 41. Actuator Standardization | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 42. Multi-Stage Dockerfiles | v8.0 | 0/TBD | Not started | - |
 | 43. docker-compose.prod.yml | v8.0 | 1/1 | Complete   | 2026-04-07 |
-| 44. Nginx Reverse Proxy + SSL | v8.0 | 0/TBD | Not started | - |
+| 44. Nginx Reverse Proxy + SSL | v8.0 | 1/2 | In Progress|  |
 | 45. GitHub Actions CI | v8.0 | 0/TBD | Not started | - |
 | 46. GitHub Actions Deploy | v8.0 | 0/TBD | Not started | - |
 | 47. Unified Swagger UI | v8.0 | 0/TBD | Not started | - |

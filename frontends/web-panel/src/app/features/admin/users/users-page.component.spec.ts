@@ -13,7 +13,7 @@ import { UsersPageComponent } from './users-page.component';
 describe('UsersPageComponent', () => {
   let component: UsersPageComponent;
   let httpMock: HttpTestingController;
-  let dialogSpy: { open: ReturnType<typeof vi.fn> };
+  let dialog: MatDialog;
 
   const mockUsersResponse = {
     _embedded: {
@@ -45,20 +45,19 @@ describe('UsersPageComponent', () => {
   };
 
   beforeEach(() => {
-    dialogSpy = { open: vi.fn().mockReturnValue({ afterClosed: () => of(null) }) };
-
     TestBed.configureTestingModule({
       imports: [UsersPageComponent],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideAnimationsAsync(),
-        { provide: MatDialog, useValue: dialogSpy },
       ],
     });
     const fixture = TestBed.createComponent(UsersPageComponent);
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
+    dialog = TestBed.inject(MatDialog);
+    fixture.detectChanges(); // triggers ngOnInit
   });
 
   afterEach(() => {
@@ -76,8 +75,6 @@ describe('UsersPageComponent', () => {
   });
 
   it('ngOnInit triggers loadUsers and listGroups calls', () => {
-    component.ngOnInit();
-
     const groupsReq = httpMock.expectOne(req => req.url === '/api/academic/groups');
     expect(groupsReq.request.method).toBe('GET');
     groupsReq.flush(mockGroupsResponse);
@@ -94,9 +91,12 @@ describe('UsersPageComponent', () => {
   it('openCreateDialog opens MatDialog with mode create', () => {
     flushInitialRequests();
 
+    const componentDialog = (component as any).dialog as MatDialog;
+    const openSpy = vi.spyOn(componentDialog, 'open').mockReturnValue({ afterClosed: () => of(null) } as any);
+
     component.openCreateDialog();
 
-    expect(dialogSpy.open).toHaveBeenCalledWith(
+    expect(openSpy).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         data: expect.objectContaining({ mode: 'create' }),

@@ -1,40 +1,40 @@
 ---
 gsd_state_version: 1.0
-milestone: v7.0
-milestone_name: Frontends — Mini App, Web Panel, Landing
-status: verifying
-stopped_at: Phase 40 verified — all automated checks pass
-last_updated: "2026-04-07T10:23:48.496Z"
+milestone: v8.0
+milestone_name: CI/CD, Deployment & Documentation
+status: ready_to_plan
+stopped_at: Roadmap created — Phase 41 ready to plan
+last_updated: "2026-04-07"
 last_activity: 2026-04-07
 progress:
   total_phases: 8
-  completed_phases: 8
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Current Milestone
 
-v7.0 Frontends — Mini App, Web Panel, Landing
+v8.0 CI/CD, Deployment & Documentation
 
 ## Current Position
 
-Phase: 40
-Plan: 3/3 complete
-Status: Phase 40 verified — all automated checks pass, human UAT pending
-Last activity: 2026-04-07
+Phase: 41 of 48 (Actuator Standardization)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-04-07 — Roadmap created, 8 phases defined (41-48)
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-06)
+See: `.planning/PROJECT.md` (updated 2026-04-07)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** Phase 40 — web-panel-admin (complete)
+**Current focus:** Phase 41 — Actuator Standardization
 
 ## Completed Milestones
 
@@ -46,6 +46,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-06)
 | v4.0 | Attendance Service MVP | 15-19 | 12 | 2026-04-04 |
 | v5.0 | Notification Service (Web + Bot) | 20-26 | 16 | 2026-04-05 |
 | v6.0 | PWA + Web Push | 27-32 | 14 | 2026-04-06 |
+| v7.0 | Frontends — Mini App, Web Panel, Landing | 33-40 | 16 | 2026-04-07 |
 
 ## Accumulated Context
 
@@ -53,22 +54,16 @@ See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 See PROJECT.md Key Decisions table for full history.
 
-Recent decisions affecting current work:
-
-- v6.0: httpOnly cookie for refresh token — Mini App cannot use this pattern (WebView drops cookies); use localStorage + body-based refresh (AUTH-02) instead
-- v6.0: OPTIONS bypass before isPublicRoute in Gateway — pattern established; Phase 33 must add new origins without breaking existing CORS
-- v5.0: STOMP in-memory broker — Mini App TMA-12 (real-time) deferred to future; no STOMP work in v7.0
-- [Phase 34-auth-service-tma]: MessageDigest.isEqual for constant-time HMAC comparison prevents timing oracle (T-34-03)
-- [Phase 34-auth-service-tma]: TMA_BOT_TOKEN env var with dev fallback — bot token never hardcoded (T-34-05)
-- [Phase 34-auth-service-tma]: refresh-body delegates to AuthService.refresh() — one-line, same Redis JTI rotation, no over-engineering
-- [Phase 35]: Tailwind CDN + GSAP CDN for zero-build static landing page; CSS-only hamburger; darkMode media for automatic OS preference
-- [Phase 40]: Archive uses PATCH status=archived not DELETE for explicit control; restore has no confirmation dialog
+Recent decisions affecting v8.0:
+- Use GHCR (not build-on-VPS) for portfolio value
+- python:3.12-slim for notification-bot (Alpine has no grpcio musl wheels)
+- springdoc-openapi-starter-webflux-ui for Gateway (WebFlux variant required)
+- Actuator: expose only health and info in production profile (never env/heapdump)
 
 ### Research Flags
 
-- Phase 36: Telegram WebView viewport edge cases + initData flow — deeper research needed during planning
-- Phase 39: CdkTable virtual scroll with 500+ rows — research optimal pattern during planning
-- Phases 33, 34, 35, 40: standard patterns, skip research
+- Phase 44 (SSL): Certbot bootstrap sequence needs deeper research during planning (2-phase first deploy)
+- Phase 46 (Deploy): VPS user/SSH setup needs research during planning
 
 ### Blockers/Concerns
 
@@ -76,7 +71,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-07T09:45:00.000Z
-Stopped at: Phase 40 verified — all automated checks pass
-Resume file: .planning/phases/40-web-panel-admin/40-VERIFICATION.md
-Next action: Milestone v7.0 complete — all 8 phases delivered
+Last session: 2026-04-07
+Stopped at: Roadmap written — ROADMAP.md, STATE.md, REQUIREMENTS.md traceability updated
+Next action: /gsd-plan-phase 41

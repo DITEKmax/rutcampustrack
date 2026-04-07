@@ -165,9 +165,19 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ HW-01..02: Homework list, optimistic completion toggle — v6.0
 - ✓ INFRA-01..03: Gateway CORS, push route, nginx PWA serving — v6.0
 
-## Next Milestone
+## Current Milestone: v8.0 CI/CD, Deployment & Documentation
 
-Planning next milestone. Run `/gsd-new-milestone` to start.
+**Goal:** Production-ready deployment pipeline with CI, Docker, SSL, monitoring, API docs, and project README.
+
+**Target features:**
+- GitHub Actions CI: build + test + lint for Java/Python/frontend
+- Automated deploy to single VPS via SSH (docker-compose)
+- Multi-stage Dockerfiles for all services
+- docker-compose.prod.yml with production configs
+- Nginx reverse proxy with Let's Encrypt SSL (certbot standalone)
+- Spring Boot Actuator health/metrics endpoints
+- Unified Swagger UI via API Gateway (aggregated specs)
+- Full project README (architecture, setup, API summary, deploy guide)
 
 ### Deferred (from previous milestones)
 - [ ] Excuse tickets: create/submit/review flow with event publishing (excuse.requested)
@@ -300,4 +310,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after v7.0 milestone*
+*Last updated: 2026-04-07 after v8.0 milestone start*

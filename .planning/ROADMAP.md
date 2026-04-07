@@ -9,6 +9,7 @@
 - ✅ **v5.0 Notification Service (Web + Bot)** — Phases 20-26 (shipped 2026-04-05)
 - ✅ **v6.0 PWA + Web Push** — Phases 27-32 (shipped 2026-04-06)
 - ✅ **v7.0 Frontends — Mini App, Web Panel, Landing** — Phases 33-40 (shipped 2026-04-07)
+- 🚧 **v8.0 CI/CD, Deployment & Documentation** — Phases 41-48 (in progress)
 
 ## Phases
 
@@ -107,10 +108,121 @@ Full details: `.planning/milestones/v6.0-ROADMAP.md`
 Full details: `.planning/milestones/v7.0-ROADMAP.md`
 
 </details>
+
+### 🚧 v8.0 CI/CD, Deployment & Documentation (In Progress)
+
+**Milestone Goal:** Production-ready deployment pipeline — multi-stage Dockerfiles, docker-compose.prod.yml, SSL termination, GitHub Actions CI/CD, unified Swagger UI, and a complete project README.
+
+- [ ] **Phase 41: Actuator Standardization** - Add health/info endpoints to all 4 Java services
+- [ ] **Phase 42: Multi-Stage Dockerfiles** - Optimized build+runtime images for all services and frontends
+- [ ] **Phase 43: docker-compose.prod.yml** - Production compose with prod profile, secrets, Actuator healthchecks
+- [ ] **Phase 44: Nginx Reverse Proxy + SSL** - SSL termination and path-based routing via Let's Encrypt
+- [ ] **Phase 45: GitHub Actions CI** - Build, test, and lint pipeline for all services on push/PR
+- [ ] **Phase 46: GitHub Actions Deploy** - GHCR image push and SSH-based VPS deploy on merge to main
+- [ ] **Phase 47: Unified Swagger UI** - Aggregated API docs at Gateway with springdoc webflux-ui
+- [ ] **Phase 48: README** - Full project README with architecture, setup, API summary, deploy guide
+
+## Phase Details
+
+### Phase 41: Actuator Standardization
+**Goal**: All Java backend services expose health and info endpoints for compose healthchecks and basic monitoring
+**Depends on**: Nothing (config-only addition)
+**Requirements**: MON-01, MON-02
+**Success Criteria** (what must be TRUE):
+  1. GET /actuator/health returns 200 with status UP on auth, academic, schedule, and attendance services
+  2. GET /actuator/info returns 200 on all 4 services
+  3. Sensitive actuator endpoints (env, heapdump, beans) return 404 in production profile
+  4. No other actuator endpoints are exposed beyond health and info
+**Plans**: TBD
+
+### Phase 42: Multi-Stage Dockerfiles
+**Goal**: All services have optimized multi-stage Dockerfiles producing minimal production images
+**Depends on**: Nothing (parallel with Phase 41)
+**Requirements**: DOCK-01, DOCK-02, DOCK-03, DOCK-04
+**Success Criteria** (what must be TRUE):
+  1. All 5 Java services build via multi-stage Dockerfile with layered JARs (build stage + runtime stage)
+  2. notification-web Dockerfile uses the same multi-stage pattern as other Java services
+  3. notification-bot Dockerfile uses python:3.12-slim (not Alpine) and grpcio installs without error
+  4. All 4 frontend Dockerfiles produce nginx containers with optimized static asset builds
+  5. docker build completes successfully for every service image with no manual intervention
+**Plans**: TBD
+
+### Phase 43: docker-compose.prod.yml
+**Goal**: A production-ready compose file runs the entire system with the Spring production profile, no exposed database ports, and container-level healthchecks
+**Depends on**: Phase 42
+**Requirements**: DOCK-05, DOCK-06, DOCK-07, MON-03
+**Success Criteria** (what must be TRUE):
+  1. docker compose -f docker-compose.prod.yml up starts all services with SPRING_PROFILES_ACTIVE=prod
+  2. No database ports (5432, 27017, 6379, 5672) are exposed to the host machine
+  3. All backend service containers have Actuator-based healthchecks (depends_on healthy)
+  4. .env.prod file provides all secrets (DB passwords, RSA keys, bot token) and is gitignored
+**Plans**: TBD
+
+### Phase 44: Nginx Reverse Proxy + SSL
+**Goal**: A single nginx container terminates SSL and routes all external traffic to the correct backend service or frontend container
+**Depends on**: Phase 43
+**Requirements**: NET-01, NET-02, NET-03, NET-04, NET-05
+**Success Criteria** (what must be TRUE):
+  1. All HTTP traffic on port 80 redirects to HTTPS (301)
+  2. HTTPS requests on port 443 are routed to the correct backend service by path prefix
+  3. HTTPS requests route to all 4 frontend containers by path (PWA, Mini App, Web Panel, Landing)
+  4. A valid Let's Encrypt certificate is installed and browser shows the padlock
+  5. Certbot auto-renewal runs on schedule without manual intervention
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 45: GitHub Actions CI
+**Goal**: Every push and pull request triggers automated build, test, and lint checks for all services
+**Depends on**: Phase 42
+**Requirements**: CI-01, CI-02, CI-03, CI-04
+**Success Criteria** (what must be TRUE):
+  1. A push to any branch triggers the CI workflow and runs all Java service tests via Gradle
+  2. The CI workflow runs Python notification-bot linting and tests
+  3. The CI workflow builds and tests all 3 frontends (PWA, Mini App, Web Panel)
+  4. Gradle build cache is restored between runs, reducing Java build time on cache hit
+  5. A failing test causes the CI workflow to fail and blocks PR merge
+**Plans**: TBD
+
+### Phase 46: GitHub Actions Deploy
+**Goal**: Merging to main automatically pushes images to GHCR and deploys the updated stack to the VPS
+**Depends on**: Phase 45, Phase 43, Phase 44
+**Requirements**: CI-05, CI-06, CI-07
+**Success Criteria** (what must be TRUE):
+  1. A merge to main triggers the deploy workflow and pushes all service images to GitHub Container Registry
+  2. The deploy workflow connects to the VPS via SSH and runs docker compose pull + up -d
+  3. GitHub Secrets store all sensitive values (RSA keys base64-encoded, DB passwords, SSH key, bot token)
+  4. The running system on the VPS reflects the code from the latest main commit after deploy completes
+**Plans**: TBD
+
+### Phase 47: Unified Swagger UI
+**Goal**: A single Swagger UI at the API Gateway aggregates OpenAPI specs from all REST services into one browsable interface
+**Depends on**: Phase 41
+**Requirements**: DOC-01, DOC-02, DOC-03
+**Success Criteria** (what must be TRUE):
+  1. Navigating to the Gateway's Swagger UI URL shows a unified interface with specs from all REST services
+  2. API operations from auth, academic, schedule, and attendance services are all browsable and executable
+  3. springdoc version is 2.8.6 across all services with no version conflicts
+**Plans**: TBD
+
+### Phase 48: README
+**Goal**: The project repository has a complete README that communicates architecture, setup, API surface, and deployment to a developer reading it for the first time
+**Depends on**: Phase 47
+**Requirements**: DOC-04
+**Success Criteria** (what must be TRUE):
+  1. A developer can understand the system architecture (services, ports, databases, communication patterns) from the README alone
+  2. A developer can follow the README setup instructions to run the system locally with docker compose
+  3. The README links to the live Swagger UI and summarizes key API endpoints by role
+  4. The README contains a complete deploy guide (VPS setup, GitHub Secrets, first certbot run, compose up)
+**Plans**: TBD
+
 ## Progress
 
-| Phase | Milestone | Plans | Status | Completed |
-|-------|-----------|-------|--------|-----------|
+**Execution Order:**
+Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 → 48
+(Note: 42 and 45 can proceed in parallel as both depend only on Dockerfiles existing)
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
 | 1.1-1.4 | v1.0 | 4/4 | Complete | 2026-03-30 |
 | 5-9 | v2.0 | 12/12 | Complete | 2026-03-31 |
 | 10-14 | v3.0 | 10/10 | Complete | 2026-04-04 |
@@ -118,3 +230,11 @@ Full details: `.planning/milestones/v7.0-ROADMAP.md`
 | 20-26 | v5.0 | 16/16 | Complete | 2026-04-05 |
 | 27-32 | v6.0 | 14/14 | Complete | 2026-04-06 |
 | 33-40 | v7.0 | 16/16 | Complete | 2026-04-07 |
+| 41. Actuator Standardization | v8.0 | 0/TBD | Not started | - |
+| 42. Multi-Stage Dockerfiles | v8.0 | 0/TBD | Not started | - |
+| 43. docker-compose.prod.yml | v8.0 | 0/TBD | Not started | - |
+| 44. Nginx Reverse Proxy + SSL | v8.0 | 0/TBD | Not started | - |
+| 45. GitHub Actions CI | v8.0 | 0/TBD | Not started | - |
+| 46. GitHub Actions Deploy | v8.0 | 0/TBD | Not started | - |
+| 47. Unified Swagger UI | v8.0 | 0/TBD | Not started | - |
+| 48. README | v8.0 | 0/TBD | Not started | - |

@@ -66,3 +66,24 @@ body {
   --color-free-attendance: #9333EA;
   --color-pending: #6B7280;
 }
+
+/* Journal status cell chips */
+.status-chip {
+  width: 24px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+.status-chip--present { background: rgba(22, 163, 74, 0.12); color: var(--color-present); }
+.status-chip--absent { background: rgba(220, 38, 38, 0.12); color: var(--color-absent); }
+.status-chip--excused { background: rgba(217, 119, 6, 0.12); color: var(--color-excused); }
+.status-chip--free_attendance { background: rgba(147, 51, 234, 0.12); color: var(--color-free-attendance); }
+.dark .status-chip--present { background: rgba(22, 163, 74, 0.20); }
+.dark .status-chip--absent { background: rgba(220, 38, 38, 0.20); }
+.dark .status-chip--excused { background: rgba(217, 119, 6, 0.20); }
+.dark .status-chip--free_attendance { background: rgba(147, 51, 234, 0.20); }

@@ -16,3 +16,10 @@ logging:
 grpc:
   server:
     port: -1
+
+management:
+  health:
+    redis:
+      enabled: false
+    rabbit:
+      enabled: false

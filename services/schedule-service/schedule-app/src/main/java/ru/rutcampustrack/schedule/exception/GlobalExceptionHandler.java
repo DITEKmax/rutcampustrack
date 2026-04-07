@@ -5,9 +5,13 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.rutcampustrack.schedule.contract.exception.ErrorResponse;
 
 import java.time.Instant;
@@ -113,6 +117,70 @@ public class GlobalExceptionHandler {
                 null
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException ex,
+                                                           HttpServletRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                PROBLEM_BASE + "not-found",
+                "Resource not found",
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoHandler(NoHandlerFoundException ex,
+                                                          HttpServletRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                PROBLEM_BASE + "not-found",
+                "Resource not found",
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(ErrorResponseException.class)
+    public ResponseEntity<ErrorResponse> handleErrorResponse(ErrorResponseException ex,
+                                                              HttpServletRequest request) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
+        ErrorResponse body = new ErrorResponse(
+                status.value(),
+                PROBLEM_BASE + "error",
+                status.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(status).body(body);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex,
+                                                               HttpServletRequest request) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
+        ErrorResponse body = new ErrorResponse(
+                status.value(),
+                PROBLEM_BASE + "error",
+                status.getReasonPhrase(),
+                ex.getReason(),
+                request.getRequestURI(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(status).body(body);
     }
 
     @ExceptionHandler(Exception.class)

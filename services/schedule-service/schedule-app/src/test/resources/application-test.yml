@@ -20,3 +20,8 @@ grpc:
     academic-service:
       address: static://localhost:19091
       negotiation-type: plaintext
+
+management:
+  health:
+    rabbit:
+      enabled: false

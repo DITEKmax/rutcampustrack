@@ -36,3 +36,12 @@ springdoc:
 logging:
   level:
     ru.rutcampustrack: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never

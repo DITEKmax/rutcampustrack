@@ -57,3 +57,12 @@ logging:
   level:
     ru.rutcampustrack: DEBUG
     org.springframework.web: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never

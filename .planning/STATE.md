@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v8.0
 milestone_name: CI/CD, Deployment & Documentation
 status: verifying
-stopped_at: Completed 46-github-actions-deploy-01-PLAN.md
-last_updated: "2026-04-07T22:40:09.315Z"
+stopped_at: Completed 47-unified-swagger-ui-01-PLAN.md
+last_updated: "2026-04-07T23:37:16.927Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 8
-  completed_phases: 6
-  total_plans: 9
-  completed_plans: 9
+  completed_phases: 7
+  total_plans: 10
+  completed_plans: 10
   percent: 100
 ---
 
@@ -66,6 +66,7 @@ Recent decisions affecting v8.0:
 - [Phase 44]: Two-phase ACME bootstrap: staging cert test then production cert with --force-renewal
 - [Phase 46-github-actions-deploy]: Sequential build steps over matrix strategy for 11 images — simpler, avoids runner quota issues
 - [Phase 46-github-actions-deploy]: Job-level permissions:write for packages — least-privilege per GitHub best practices
+- [Phase 47]: springdoc-openapi-starter-webflux-ui for Gateway (WebFlux variant), RewritePath proxy routes for /openapi/{service}
 
 ### Research Flags
 
@@ -78,6 +79,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-07T22:40:09.311Z
-Stopped at: Completed 46-github-actions-deploy-01-PLAN.md
+Last session: 2026-04-07T23:37:16.923Z
+Stopped at: Completed 47-unified-swagger-ui-01-PLAN.md
 Next action: /gsd-plan-phase 42

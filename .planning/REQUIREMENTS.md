@@ -29,9 +29,9 @@ Requirements for CI/CD, Deployment & Documentation milestone. Each maps to roadm
 - [ ] **CI-02**: GitHub Actions workflow lints and tests Python notification-bot on push/PR
 - [ ] **CI-03**: GitHub Actions workflow builds and tests all 3 frontends (PWA, Mini App, Web Panel) on push/PR
 - [ ] **CI-04**: CI uses Gradle caching for faster Java builds
-- [ ] **CI-05**: GitHub Actions deploy workflow pushes images to GHCR on merge to main
-- [ ] **CI-06**: GitHub Actions deploy workflow deploys to VPS via SSH after image push
-- [ ] **CI-07**: GitHub Secrets configured for RSA keys, DB passwords, SSH key, bot token
+- [x] **CI-05**: GitHub Actions deploy workflow pushes images to GHCR on merge to main
+- [x] **CI-06**: GitHub Actions deploy workflow deploys to VPS via SSH after image push
+- [x] **CI-07**: GitHub Secrets configured for RSA keys, DB passwords, SSH key, bot token
 
 ### Networking & SSL
 
@@ -43,9 +43,9 @@ Requirements for CI/CD, Deployment & Documentation milestone. Each maps to roadm
 
 ### Documentation
 
-- [ ] **DOC-01**: Unified Swagger UI accessible at Gateway with aggregated specs from all services
-- [ ] **DOC-02**: springdoc upgraded to 2.8.6 across all services
-- [ ] **DOC-03**: Gateway uses springdoc-openapi-starter-webflux-ui for Swagger aggregation
+- [x] **DOC-01**: Unified Swagger UI accessible at Gateway with aggregated specs from all services
+- [x] **DOC-02**: springdoc upgraded to 2.8.6 across all services
+- [x] **DOC-03**: Gateway uses springdoc-openapi-starter-webflux-ui for Swagger aggregation
 - [ ] **DOC-04**: Project README with architecture overview, setup guide, API summary, deploy instructions
 
 ## Future Requirements
@@ -99,12 +99,12 @@ Requirements for CI/CD, Deployment & Documentation milestone. Each maps to roadm
 | CI-02 | Phase 45 | Pending |
 | CI-03 | Phase 45 | Pending |
 | CI-04 | Phase 45 | Pending |
-| CI-05 | Phase 46 | Pending |
-| CI-06 | Phase 46 | Pending |
-| CI-07 | Phase 46 | Pending |
-| DOC-01 | Phase 47 | Pending |
-| DOC-02 | Phase 47 | Pending |
-| DOC-03 | Phase 47 | Pending |
+| CI-05 | Phase 46 | Complete |
+| CI-06 | Phase 46 | Complete |
+| CI-07 | Phase 46 | Complete |
+| DOC-01 | Phase 47 | Complete |
+| DOC-02 | Phase 47 | Complete |
+| DOC-03 | Phase 47 | Complete |
 | DOC-04 | Phase 48 | Pending |
 
 **Coverage:**

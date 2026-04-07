@@ -119,7 +119,7 @@ Full details: `.planning/milestones/v7.0-ROADMAP.md`
 - [x] **Phase 44: Nginx Reverse Proxy + SSL** - SSL termination and path-based routing via Let's Encrypt (completed 2026-04-07)
 - [x] **Phase 45: GitHub Actions CI** - Build, test, and lint pipeline for all services on push/PR (completed 2026-04-07)
 - [x] **Phase 46: GitHub Actions Deploy** - GHCR image push and SSH-based VPS deploy on merge to main (completed 2026-04-07)
-- [ ] **Phase 47: Unified Swagger UI** - Aggregated API docs at Gateway with springdoc webflux-ui
+- [x] **Phase 47: Unified Swagger UI** - Aggregated API docs at Gateway with springdoc webflux-ui (completed 2026-04-07)
 - [ ] **Phase 48: README** - Full project README with architecture, setup, API summary, deploy guide
 
 ## Phase Details
@@ -217,9 +217,9 @@ Plans:
   1. Navigating to the Gateway's Swagger UI URL shows a unified interface with specs from all REST services
   2. API operations from auth, academic, schedule, and attendance services are all browsable and executable
   3. springdoc version is 2.8.6 across all services with no version conflicts
-**Plans:** TBD
+**Plans:** 1/1 plans complete
 Plans:
-- TBD
+- [x] 47-01-PLAN.md — Gateway springdoc-webflux-ui + aggregated specs + version upgrade + nginx proxy
 
 ### Phase 48: README
 **Goal**: The project repository has a complete README that communicates architecture, setup, API surface, and deployment to a developer reading it for the first time
@@ -255,5 +255,5 @@ Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 �
 | 44. Nginx Reverse Proxy + SSL | v8.0 | 2/2 | Complete   | 2026-04-07 |
 | 45. GitHub Actions CI | v8.0 | 1/1 | Complete    | 2026-04-07 |
 | 46. GitHub Actions Deploy | v8.0 | 1/1 | Complete   | 2026-04-07 |
-| 47. Unified Swagger UI | v8.0 | 0/TBD | Not started | - |
+| 47. Unified Swagger UI | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 48. README | v8.0 | 0/TBD | Not started | - |

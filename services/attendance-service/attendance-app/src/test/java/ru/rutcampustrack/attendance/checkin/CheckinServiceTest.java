@@ -7,6 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinRequest;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
@@ -64,13 +67,14 @@ class CheckinServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Build a valid lesson for 2026-04-04 (today) with a time window that covers "now"
+        // Build a valid lesson for today with a time window that covers "now"
         // We use a very wide window: 00:00 - 23:59
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         mockLesson = LessonResponse.newBuilder()
                 .setId(1L)
                 .setGroupId(10L)
                 .setSubjectId(5L)
-                .setDate("2026-04-04")
+                .setDate(today)
                 .setStartTime("00:00")
                 .setEndTime("23:59")
                 .setIsGeoBlocked(false)
@@ -132,11 +136,12 @@ class CheckinServiceTest {
 
     @Test
     void checkin_lessonGeoBlocked_throwsGeofenceBlockedException() {
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         LessonResponse blockedLesson = LessonResponse.newBuilder()
                 .setId(1L)
                 .setGroupId(10L)
                 .setSubjectId(5L)
-                .setDate("2026-04-04")
+                .setDate(today)
                 .setStartTime("00:00")
                 .setEndTime("23:59")
                 .setIsGeoBlocked(true)

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -17,7 +16,6 @@ import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
-import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.util.List;
@@ -41,9 +39,6 @@ class MarkingIntegrationTest extends AbstractAttendanceIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @MockitoBean
-    protected GeofenceService geofenceService;
 
     @MockitoSpyBean
     protected AttendanceEventPublisher attendanceEventPublisher;

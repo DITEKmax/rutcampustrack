@@ -13,6 +13,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.containers.RabbitMQContainer;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
+import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
@@ -48,6 +49,9 @@ public abstract class AbstractAttendanceIntegrationTest {
 
     @MockitoBean
     protected SemesterCacheService semesterCacheService;
+
+    @MockitoBean
+    protected GeofenceService geofenceService;
 
     static final MongoDBContainer MONGODB;
     static final RabbitMQContainer RABBITMQ;

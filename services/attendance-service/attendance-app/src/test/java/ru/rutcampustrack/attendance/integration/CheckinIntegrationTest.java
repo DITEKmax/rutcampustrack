@@ -14,13 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
-import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Duration;
@@ -49,9 +47,6 @@ class CheckinIntegrationTest extends AbstractAttendanceIntegrationTest {
 
     private static final String EXCHANGE = "rut-uit.events";
     private static final String TEST_QUEUE = "test-checkin-queue";
-
-    @MockitoBean
-    protected GeofenceService geofenceService;
 
     @Autowired
     private ObjectMapper objectMapper;

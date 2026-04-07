@@ -44,12 +44,14 @@ public class EventConsumer {
 
     private void handleLessonStarted(Map<String, Object> envelope) {
         Map<String, Object> payload = extractPayload(envelope);
+        if (payload == null) return;
         Long lessonId = extractLong(payload, "lesson_id");
         log.debug("lesson.started: no-op (lesson_id={})", lessonId);
     }
 
     private void handleLessonClosed(Map<String, Object> envelope) {
         Map<String, Object> payload = extractPayload(envelope);
+        if (payload == null) return;
         Long lessonId = extractLong(payload, "lesson_id");
         Long groupId = extractLong(payload, "group_id");
         lessonEventService.processLessonClosed(lessonId, groupId);
@@ -57,6 +59,7 @@ public class EventConsumer {
 
     private void handleLessonCancelled(Map<String, Object> envelope) {
         Map<String, Object> payload = extractPayload(envelope);
+        if (payload == null) return;
         Long lessonId = extractLong(payload, "lesson_id");
         lessonEventService.processLessonCancelled(lessonId);
     }
@@ -68,7 +71,12 @@ public class EventConsumer {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> extractPayload(Map<String, Object> envelope) {
-        return (Map<String, Object>) envelope.get("payload");
+        Object raw = envelope.get("payload");
+        if (raw == null) {
+            log.warn("Event envelope has no 'payload' field: {}", envelope);
+            return null;
+        }
+        return (Map<String, Object>) raw;
     }
 
     private Long extractLong(Map<String, Object> map, String key) {

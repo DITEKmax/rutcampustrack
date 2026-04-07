@@ -62,7 +62,12 @@
       "Bash(git checkout:*)",
       "WebFetch(domain:springdoc.org)",
       "WebFetch(domain:docs.gradle.org)",
-      "WebFetch(domain:www.baeldung.com)"
+      "WebFetch(domain:www.baeldung.com)",
+      "Bash(git stash:*)",
+      "Bash(git reset:*)",
+      "Bash(JAVA_HOME=\"/c/Users/maksd/.jdks/ms-21.0.9\" ./gradlew.bat :services:attendance-service:attendance-app:cleanTest :services:attendance-service:attendance-app:test)",
+      "Read(//tmp/**)",
+      "Bash(JAVA_HOME=\"/c/Users/maksd/.jdks/ms-21.0.9\" ./gradlew.bat :services:attendance-service:attendance-app:cleanTest :services:attendance-service:attendance-app:test --tests \"*EventConsumerIntegrationTest\")"
     ]
   }
 }

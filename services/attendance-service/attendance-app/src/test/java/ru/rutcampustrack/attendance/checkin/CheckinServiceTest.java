@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinRequest;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
@@ -69,7 +70,7 @@ class CheckinServiceTest {
     void setUp() {
         // Build a valid lesson for today with a time window that covers "now"
         // We use a very wide window: 00:00 - 23:59
-        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String today = LocalDate.now(ZoneId.of("Europe/Moscow")).format(DateTimeFormatter.ISO_LOCAL_DATE);
         mockLesson = LessonResponse.newBuilder()
                 .setId(1L)
                 .setGroupId(10L)
@@ -136,7 +137,7 @@ class CheckinServiceTest {
 
     @Test
     void checkin_lessonGeoBlocked_throwsGeofenceBlockedException() {
-        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String today = LocalDate.now(ZoneId.of("Europe/Moscow")).format(DateTimeFormatter.ISO_LOCAL_DATE);
         LessonResponse blockedLesson = LessonResponse.newBuilder()
                 .setId(1L)
                 .setGroupId(10L)

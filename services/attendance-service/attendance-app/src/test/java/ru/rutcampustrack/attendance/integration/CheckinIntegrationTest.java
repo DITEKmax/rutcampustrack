@@ -23,6 +23,7 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +89,7 @@ class CheckinIntegrationTest extends AbstractAttendanceIntegrationTest {
     // -------------------------------------------------------------------------
 
     private LessonResponse buildActiveLesson(boolean isGeoBlocked) {
-        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String today = LocalDate.now(ZoneId.of("Europe/Moscow")).format(DateTimeFormatter.ISO_LOCAL_DATE);
         return LessonResponse.newBuilder()
                 .setId(1L)
                 .setGroupId(10L)

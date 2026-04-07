@@ -49,3 +49,8 @@ docker-compose.override.yml
 
 # Production secrets
 .env.prod
+
+# Nginx SSL (generated on VPS, not in repo)
+nginx/dhparam.pem
+nginx/conf.d/*.bak
+nginx/conf.d/*.disabled

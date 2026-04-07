@@ -1,7 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Router } from '@angular/router';
-import { NgFor, NgIf } from '@angular/common';
 import {
   trigger,
   state,
@@ -23,7 +22,7 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, NgFor, NgIf],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './sidebar.component.html',
   animations: [
     trigger('collapse', [

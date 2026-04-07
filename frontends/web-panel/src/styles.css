@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "@fontsource-variable/geist";
 @import "@angular/material/prebuilt-themes/azure-blue.css";
+@import "@phosphor-icons/web/regular";
 
 /* Tailwind v4 dark mode via class strategy */
 @custom-variant dark (&:where(.dark, .dark *));

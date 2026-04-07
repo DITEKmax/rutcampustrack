@@ -36,7 +36,9 @@ export const routes: Routes = [
           {
             path: 'stats',
             loadComponent: () =>
-              import('./shared/empty/empty.component').then(m => m.EmptyComponent),
+              import('./features/teacher/stats/stats-page.component').then(
+                m => m.StatsPageComponent,
+              ),
           },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],

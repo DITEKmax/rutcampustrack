@@ -1,0 +1,57 @@
+<div class="p-6">
+  <h1 class="text-[20px] font-semibold leading-[1.2] mb-6 text-[var(--mat-sys-on-surface)]">
+    Статистика посещаемости
+  </h1>
+
+  <!-- Filter row -->
+  <div class="flex flex-wrap items-center gap-4 mb-6 p-4 rounded-lg bg-[var(--mat-sys-surface-container)]">
+    <mat-form-field class="w-48">
+      <mat-label>Группа</mat-label>
+      <mat-select (selectionChange)="onGroupChange($event.value)">
+        @for (g of groups(); track g.id) {
+          <mat-option [value]="g.id">{{ g.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" class="mb-4" />
+    <p class="text-sm text-[var(--mat-sys-on-surface)]/60">Загрузка статистики...</p>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <p class="text-sm text-[var(--mat-sys-error)]">{{ error() }}</p>
+  }
+
+  <!-- Empty state -->
+  @if (!loading() && !error() && chartDataMap().size === 0 && selectedGroupId()) {
+    <div class="text-center py-16">
+      <h2 class="text-lg font-semibold text-[var(--mat-sys-on-surface)]">Нет данных</h2>
+      <p class="text-sm text-[var(--mat-sys-on-surface)]/60 mt-2">
+        Для выбранной группы и предмета нет данных о посещаемости.
+      </p>
+    </div>
+  }
+
+  <!-- Overall stat card -->
+  @if (chartDataMap().size > 0) {
+    <app-overall-stat-card
+      [totalLessons]="overallStats().totalLessons"
+      [attendanceRate]="overallStats().attendanceRate"
+      class="block mb-6" />
+  }
+
+  <!-- Chart grid -->
+  @if (chartDataMap().size > 0) {
+    <div class="grid grid-cols-1 lg:grid-cols-[repeat(auto-fill,minmax(480px,1fr))] gap-6">
+      @for (entry of chartEntries(); track entry.name) {
+        <app-subject-chart
+          [subjectName]="entry.name"
+          [chartData]="entry.data" />
+      }
+    </div>
+  }
+</div>

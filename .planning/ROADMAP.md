@@ -99,7 +99,7 @@ Full details: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] **Phase 33: Infrastructure** — URL layout, Gateway CORS expansion, nginx configs, docker-compose (completed 2026-04-06)
 - [x] **Phase 34: Auth Service TMA** — `POST /api/auth/tma` initData endpoint + `POST /api/auth/refresh-body` (completed 2026-04-06)
 - [x] **Phase 35: Landing Page** — Static HTML/CSS marketing page with nginx container (completed 2026-04-06)
-- [ ] **Phase 36: Mini App Scaffold + Auth** — Vite scaffold, Telegram SDK init, initData auth flow, dev mock env
+- [x] **Phase 36: Mini App Scaffold + Auth** — Vite scaffold, Telegram SDK init, initData auth flow, dev mock env (completed 2026-04-07)
 - [ ] **Phase 37: Mini App Features** — Schedule, geo check-in, attendance stats, homework, Telegram UX
 - [ ] **Phase 38: Web Panel Scaffold + Auth** — Angular 21 standalone, Tailwind, interceptors, role guards, login/logout
 - [ ] **Phase 39: Web Panel Teacher** — Attendance journal grid (CdkTable), stats charts (ng2-charts)
@@ -159,10 +159,10 @@ Plans:
   3. Access token stored in React state, refresh token in memory (not localStorage per D-05)
   4. On 401, re-authenticate via initData (not refresh-body per D-06)
   5. Dev mock environment allows local development outside Telegram
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 36-01-PLAN.md — Vite scaffold + dependencies + SDK init + mock env + test infra
-- [ ] 36-02-PLAN.md — Auth flow + Axios interceptor + theme provider + UI screens + App wiring
+- [x] 36-01-PLAN.md — Vite scaffold + dependencies + SDK init + mock env + test infra
+- [x] 36-02-PLAN.md — Auth flow + Axios interceptor + theme provider + UI screens + App wiring
 **UI hint**: yes
 
 ### Phase 37: Mini App Features
@@ -253,7 +253,7 @@ Plans:
 | 33. Infrastructure | v7.0 | 2/2 | Complete | 2026-04-06 |
 | 34. Auth Service TMA | v7.0 | 1/1 | Complete   | 2026-04-06 |
 | 35. Landing Page | v7.0 | 1/1 | Complete   | 2026-04-06 |
-| 36. Mini App Scaffold + Auth | v7.0 | 0/2 | Planned | - |
+| 36. Mini App Scaffold + Auth | v7.0 | 2/2 | Complete    | 2026-04-07 |
 | 37. Mini App Features | v7.0 | 0/? | Planned | - |
 | 38. Web Panel Scaffold + Auth | v7.0 | 0/? | Planned | - |
 | 39. Web Panel Teacher | v7.0 | 0/? | Planned | - |

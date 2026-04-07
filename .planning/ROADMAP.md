@@ -147,7 +147,11 @@ Plans:
   3. notification-bot Dockerfile uses python:3.12-slim (not Alpine) and grpcio installs without error
   4. All 4 frontend Dockerfiles produce nginx containers with optimized static asset builds
   5. docker build completes successfully for every service image with no manual intervention
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
+- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
+- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
 
 ### Phase 43: docker-compose.prod.yml
 **Goal**: A production-ready compose file runs the entire system with the Spring production profile, no exposed database ports, and container-level healthchecks
@@ -158,7 +162,11 @@ Plans:
   2. No database ports (5432, 27017, 6379, 5672) are exposed to the host machine
   3. All backend service containers have Actuator-based healthchecks (depends_on healthy)
   4. .env.prod file provides all secrets (DB passwords, RSA keys, bot token) and is gitignored
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
+- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
+- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
 
 ### Phase 44: Nginx Reverse Proxy + SSL
 **Goal**: A single nginx container terminates SSL and routes all external traffic to the correct backend service or frontend container
@@ -170,7 +178,11 @@ Plans:
   3. HTTPS requests route to all 4 frontend containers by path (PWA, Mini App, Web Panel, Landing)
   4. A valid Let's Encrypt certificate is installed and browser shows the padlock
   5. Certbot auto-renewal runs on schedule without manual intervention
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
+- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
+- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
 **UI hint**: yes
 
 ### Phase 45: GitHub Actions CI
@@ -183,7 +195,11 @@ Plans:
   3. The CI workflow builds and tests all 3 frontends (PWA, Mini App, Web Panel)
   4. Gradle build cache is restored between runs, reducing Java build time on cache hit
   5. A failing test causes the CI workflow to fail and blocks PR merge
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
+- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
+- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
 
 ### Phase 46: GitHub Actions Deploy
 **Goal**: Merging to main automatically pushes images to GHCR and deploys the updated stack to the VPS
@@ -194,7 +210,11 @@ Plans:
   2. The deploy workflow connects to the VPS via SSH and runs docker compose pull + up -d
   3. GitHub Secrets store all sensitive values (RSA keys base64-encoded, DB passwords, SSH key, bot token)
   4. The running system on the VPS reflects the code from the latest main commit after deploy completes
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
+- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
+- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
 
 ### Phase 47: Unified Swagger UI
 **Goal**: A single Swagger UI at the API Gateway aggregates OpenAPI specs from all REST services into one browsable interface
@@ -204,7 +224,11 @@ Plans:
   1. Navigating to the Gateway's Swagger UI URL shows a unified interface with specs from all REST services
   2. API operations from auth, academic, schedule, and attendance services are all browsable and executable
   3. springdoc version is 2.8.6 across all services with no version conflicts
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
+- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
+- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
 
 ### Phase 48: README
 **Goal**: The project repository has a complete README that communicates architecture, setup, API surface, and deployment to a developer reading it for the first time
@@ -215,7 +239,11 @@ Plans:
   2. A developer can follow the README setup instructions to run the system locally with docker compose
   3. The README links to the live Swagger UI and summarizes key API endpoints by role
   4. The README contains a complete deploy guide (VPS setup, GitHub Secrets, first certbot run, compose up)
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
+- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
+- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
 
 ## Progress
 

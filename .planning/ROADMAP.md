@@ -100,9 +100,9 @@ Full details: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] **Phase 34: Auth Service TMA** — `POST /api/auth/tma` initData endpoint + `POST /api/auth/refresh-body` (completed 2026-04-06)
 - [x] **Phase 35: Landing Page** — Static HTML/CSS marketing page with nginx container (completed 2026-04-06)
 - [x] **Phase 36: Mini App Scaffold + Auth** — Vite scaffold, Telegram SDK init, initData auth flow, dev mock env (completed 2026-04-07)
-- [ ] **Phase 37: Mini App Features** — Schedule, geo check-in, attendance stats, homework, Telegram UX
-- [ ] **Phase 38: Web Panel Scaffold + Auth** — Angular 21 standalone, Tailwind, interceptors, role guards, login/logout
-- [ ] **Phase 39: Web Panel Teacher** — Attendance journal grid (CdkTable), stats charts (ng2-charts)
+- [x] **Phase 37: Mini App Features** — Schedule, geo check-in, attendance stats, homework, Telegram UX (2/2 plans) (completed 2026-04-07)
+- [x] **Phase 38: Web Panel Scaffold + Auth** — Angular 19 standalone, Tailwind, interceptors, role guards, login/logout (3 plans) (completed 2026-04-07)
+- [ ] **Phase 39: Web Panel Teacher** — Attendance journal grid (CdkTable), stats charts (ng2-charts) (2 plans)
 - [ ] **Phase 40: Web Panel Admin** — User/group/semester CRUD, headman assign/revoke, dashboard summary
 
 ## Phase Details
@@ -175,20 +175,27 @@ Plans:
   3. Attendance stats show per-subject percentages with red zone indicators
   4. Homework list with completion toggle works
   5. UI respects Telegram theme (dark/light mode) and uses BackButton for navigation
-**Plans:** TBD
+**Plans:** 2/2 plans complete
+Plans:
+- [x] 37-01-PLAN.md — Shared hooks, API layers, types, StatusBadge, BottomNav
+- [x] 37-02-PLAN.md — Feature pages (Schedule, CheckIn, Stats, Homework), App wiring, tests
 **UI hint**: yes
 
 ### Phase 38: Web Panel Scaffold + Auth
-**Goal**: Angular 21 standalone scaffold with Tailwind, HTTP interceptors, role-based route guards, login/logout for TEACHER and ADMIN roles
+**Goal**: Angular 19 standalone scaffold with Tailwind, HTTP interceptors, role-based route guards, login/logout for TEACHER and ADMIN roles
 **Depends on**: Phase 33 (Gateway CORS for Web Panel origin)
 **Requirements**: WPAN-01, WPAN-02, WPAN-03, WPAN-04, WPAN-05
 **Success Criteria** (what must be TRUE):
   1. Teacher/admin can log in with username/password and see role-appropriate dashboard
-  2. JWT access token in Angular signal (memory), refresh token in httpOnly cookie
+  2. JWT access token and refresh token both in Angular signals (memory-only, not localStorage)
   3. Unauthorized route access redirects to login
   4. Token auto-refresh works via HTTP interceptor
   5. Logout clears tokens and redirects to login
-**Plans:** TBD
+**Plans:** 3/3 plans complete
+Plans:
+- [x] 38-01-PLAN.md — Angular 19 scaffold + Tailwind v4 + Material M3 theme + Vitest
+- [x] 38-02-PLAN.md — Auth core: AuthService, interceptor, guards, LoginComponent
+- [x] 38-03-PLAN.md — Shell layout: sidebar, theme toggle, routes, stub dashboards
 **UI hint**: yes
 
 ### Phase 39: Web Panel Teacher
@@ -199,7 +206,10 @@ Plans:
   1. Teacher sees attendance journal as a students-x-lessons grid with status cells
   2. Grid handles 500+ students without performance degradation (virtual scroll)
   3. Teacher can view attendance stats chart per subject/group
-**Plans:** TBD
+**Plans:** 1/2 plans executed
+Plans:
+- [x] 39-01-PLAN.md — Types, API service, journal grid with CdkTable virtual scroll, filter bar, route wiring
+- [ ] 39-02-PLAN.md — ng2-charts install, stats derivation, stacked bar charts, stats page, route wiring
 **UI hint**: yes
 
 ### Phase 40: Web Panel Admin
@@ -211,7 +221,10 @@ Plans:
   2. Admin can manage groups and assign/revoke headmen
   3. Admin can manage semesters with confirmation phrase for delete
   4. Dashboard shows summary stats (total students, groups, attendance rates)
-**Plans:** TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 39-01-PLAN.md — Types, API service, journal grid with CdkTable virtual scroll, filter bar, route wiring
+- [ ] 39-02-PLAN.md — ng2-charts install, stats derivation, stacked bar charts, stats page, route wiring
 **UI hint**: yes
 
 ## Progress
@@ -254,7 +267,7 @@ Plans:
 | 34. Auth Service TMA | v7.0 | 1/1 | Complete   | 2026-04-06 |
 | 35. Landing Page | v7.0 | 1/1 | Complete   | 2026-04-06 |
 | 36. Mini App Scaffold + Auth | v7.0 | 2/2 | Complete    | 2026-04-07 |
-| 37. Mini App Features | v7.0 | 0/? | Planned | - |
-| 38. Web Panel Scaffold + Auth | v7.0 | 0/? | Planned | - |
-| 39. Web Panel Teacher | v7.0 | 0/? | Planned | - |
+| 37. Mini App Features | v7.0 | 2/2 | Complete | 2026-04-07 |
+| 38. Web Panel Scaffold + Auth | v7.0 | 3/3 | Complete    | 2026-04-07 |
+| 39. Web Panel Teacher | v7.0 | 1/2 | In Progress|  |
 | 40. Web Panel Admin | v7.0 | 0/? | Planned | - |

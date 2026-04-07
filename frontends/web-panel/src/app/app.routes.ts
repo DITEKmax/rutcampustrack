@@ -58,22 +58,17 @@ export const routes: Routes = [
           {
             path: 'users',
             loadComponent: () =>
-              import('./shared/empty/empty.component').then(m => m.EmptyComponent),
+              import('./features/admin/users/users-page.component').then(m => m.UsersPageComponent),
           },
           {
             path: 'groups',
             loadComponent: () =>
-              import('./shared/empty/empty.component').then(m => m.EmptyComponent),
+              import('./features/admin/groups/groups-page.component').then(m => m.GroupsPageComponent),
           },
           {
             path: 'semesters',
             loadComponent: () =>
-              import('./shared/empty/empty.component').then(m => m.EmptyComponent),
-          },
-          {
-            path: 'stats',
-            loadComponent: () =>
-              import('./shared/empty/empty.component').then(m => m.EmptyComponent),
+              import('./features/admin/semesters/semesters-page.component').then(m => m.SemestersPageComponent),
           },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],

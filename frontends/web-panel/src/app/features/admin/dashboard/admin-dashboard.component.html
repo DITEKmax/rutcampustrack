@@ -1,0 +1,38 @@
+<h1 class="text-[20px] font-semibold leading-[1.2] mb-8 text-[var(--mat-sys-on-surface)]">
+  Панель администратора
+</h1>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <app-stat-card
+    icon="ph-duotone ph-users-three"
+    iconColor="#1A56DB"
+    [value]="stats()?.totalStudents ?? 0"
+    label="Студентов"
+    [loading]="loading()"
+  />
+  <app-stat-card
+    icon="ph-duotone ph-buildings"
+    iconColor="#D97706"
+    [value]="stats()?.totalGroups ?? 0"
+    label="Групп"
+    [loading]="loading()"
+  />
+  <app-stat-card
+    icon="ph-duotone ph-calendar-dots"
+    iconColor="#16A34A"
+    [value]="stats()?.activeGroups ?? 0"
+    label="Активных семестров"
+    [loading]="loading()"
+  />
+  <app-stat-card
+    icon="ph-duotone ph-chart-bar"
+    iconColor="#9333EA"
+    [value]="stats()?.activeSemesterName ?? '\u2014'"
+    label="Текущий семестр"
+    [loading]="loading()"
+  />
+</div>
+
+@if (error()) {
+  <p class="text-sm text-[var(--mat-sys-error)] mt-4">{{ error() }}</p>
+}

@@ -1,0 +1,106 @@
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-semibold">Пользователи</h1>
+  <button mat-flat-button color="primary" (click)="openCreateDialog()">
+    Создать пользователя
+  </button>
+</div>
+
+<div class="flex flex-wrap gap-4 mb-4">
+  <mat-form-field class="flex-1 min-w-[220px]">
+    <mat-label>Поиск</mat-label>
+    <input matInput placeholder="Поиск по имени или логину…" [formControl]="searchControl" />
+  </mat-form-field>
+
+  <mat-form-field class="w-[180px]">
+    <mat-label>Роль</mat-label>
+    <mat-select [value]="roleFilter()" (selectionChange)="onRoleFilterChange($event.value)">
+      <mat-option value="">Все роли</mat-option>
+      <mat-option value="admin">Админ</mat-option>
+      <mat-option value="teacher">Преподаватель</mat-option>
+      <mat-option value="student">Студент</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field class="w-[180px]">
+    <mat-label>Статус</mat-label>
+    <mat-select [value]="statusFilter()" (selectionChange)="onStatusFilterChange($event.value)">
+      <mat-option value="">Все</mat-option>
+      <mat-option value="active">Активные</mat-option>
+      <mat-option value="archived">Архивные</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+@if (users().length === 0 && !loading()) {
+  <div class="text-center py-12">
+    <p class="text-lg font-semibold">Пользователи не найдены</p>
+    <p class="text-sm opacity-60">Измените фильтр или создайте первого пользователя.</p>
+  </div>
+} @else {
+  <mat-table [dataSource]="users()">
+    <ng-container matColumnDef="login">
+      <mat-header-cell *matHeaderCellDef>Логин</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.login }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="displayName">
+      <mat-header-cell *matHeaderCellDef>ФИО</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.displayName }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="role">
+      <mat-header-cell *matHeaderCellDef>Роль</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        <app-role-chip [role]="row.role" />
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="group">
+      <mat-header-cell *matHeaderCellDef>Группа</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ getGroupName(row.groupId) }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef>Статус</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        <app-status-chip [status]="row.status" />
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        <button mat-icon-button matTooltip="Редактировать" (click)="openEditDialog(row)">
+          <i class="ph ph-pencil-simple"></i>
+        </button>
+        @if (row.status !== 'archived') {
+          <button mat-icon-button matTooltip="Архивировать" (click)="archiveUser(row)">
+            <i class="ph ph-archive"></i>
+          </button>
+        } @else {
+          <button mat-icon-button matTooltip="Восстановить" (click)="restoreUser(row)">
+            <i class="ph ph-arrow-counter-clockwise"></i>
+          </button>
+        }
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      [class.opacity-60]="row.status === 'archived'"
+    ></mat-row>
+  </mat-table>
+
+  <mat-paginator
+    [length]="totalElements()"
+    [pageSize]="pageSize()"
+    [pageIndex]="pageIndex()"
+    [pageSizeOptions]="[20, 50, 100]"
+    (page)="onPageChange($event)"
+  ></mat-paginator>
+}

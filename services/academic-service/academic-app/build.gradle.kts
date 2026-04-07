@@ -28,7 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     // OpenAPI / Swagger UI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
 
     // Spring Security Crypto (BCrypt password encoding)
     implementation("org.springframework.security:spring-security-crypto")

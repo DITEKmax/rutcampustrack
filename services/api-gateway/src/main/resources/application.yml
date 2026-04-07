@@ -72,6 +72,52 @@ spring:
           filters:
             - StripPrefix=1
 
+        - id: auth-service-openapi
+          uri: http://auth-service:9090
+          predicates:
+            - Path=/openapi/auth-service
+          filters:
+            - RewritePath=/openapi/auth-service, /api-docs
+
+        - id: academic-service-openapi
+          uri: http://academic-service:9091
+          predicates:
+            - Path=/openapi/academic-service
+          filters:
+            - RewritePath=/openapi/academic-service, /api-docs
+
+        - id: schedule-service-openapi
+          uri: http://schedule-service:9092
+          predicates:
+            - Path=/openapi/schedule-service
+          filters:
+            - RewritePath=/openapi/schedule-service, /api-docs
+
+        - id: attendance-service-openapi
+          uri: http://attendance-service:9093
+          predicates:
+            - Path=/openapi/attendance-service
+          filters:
+            - RewritePath=/openapi/attendance-service, /api-docs
+
+springdoc:
+  enable-native-support: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: /openapi/auth-service
+        name: Auth Service
+      - url: /openapi/academic-service
+        name: Academic Service
+      - url: /openapi/schedule-service
+        name: Schedule Service
+      - url: /openapi/attendance-service
+        name: Attendance Service
+
 gateway:
   auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
 

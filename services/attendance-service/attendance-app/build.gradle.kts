@@ -25,7 +25,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
 
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
     implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")

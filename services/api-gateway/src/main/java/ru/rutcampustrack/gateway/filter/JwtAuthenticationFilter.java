@@ -34,11 +34,15 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/api/auth/refresh",
             "/api/auth/public-key",
             "/api/auth/tma",
-            "/api/auth/refresh-body"
+            "/api/auth/refresh-body",
+            "/swagger-ui.html"
     );
 
     private static final List<String> PUBLIC_PREFIXES = List.of(
-            "/api/auth/otp/"
+            "/api/auth/otp/",
+            "/swagger-ui/",
+            "/v3/api-docs",
+            "/openapi/"
     );
 
     private final PublicKeyConfig publicKeyConfig;

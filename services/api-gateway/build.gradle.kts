@@ -10,6 +10,7 @@ version = "0.1.0"
 dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6")
 
     // JWT validation (публичный ключ)
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")

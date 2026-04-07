@@ -118,7 +118,7 @@ Full details: `.planning/milestones/v7.0-ROADMAP.md`
 - [x] **Phase 43: docker-compose.prod.yml** - Production compose with prod profile, secrets, Actuator healthchecks (completed 2026-04-07)
 - [x] **Phase 44: Nginx Reverse Proxy + SSL** - SSL termination and path-based routing via Let's Encrypt (completed 2026-04-07)
 - [x] **Phase 45: GitHub Actions CI** - Build, test, and lint pipeline for all services on push/PR (completed 2026-04-07)
-- [ ] **Phase 46: GitHub Actions Deploy** - GHCR image push and SSH-based VPS deploy on merge to main
+- [x] **Phase 46: GitHub Actions Deploy** - GHCR image push and SSH-based VPS deploy on merge to main (completed 2026-04-07)
 - [ ] **Phase 47: Unified Swagger UI** - Aggregated API docs at Gateway with springdoc webflux-ui
 - [ ] **Phase 48: README** - Full project README with architecture, setup, API summary, deploy guide
 
@@ -205,11 +205,9 @@ Plans:
   2. The deploy workflow connects to the VPS via SSH and runs docker compose pull + up -d
   3. GitHub Secrets store all sensitive values (RSA keys base64-encoded, DB passwords, SSH key, bot token)
   4. The running system on the VPS reflects the code from the latest main commit after deploy completes
-**Plans:** 3 plans
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
-- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
-- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
+- [x] 46-01-PLAN.md — Deploy workflow with GHCR push (11 images) + SSH deploy + GitHub Secrets setup
 
 ### Phase 47: Unified Swagger UI
 **Goal**: A single Swagger UI at the API Gateway aggregates OpenAPI specs from all REST services into one browsable interface
@@ -219,11 +217,9 @@ Plans:
   1. Navigating to the Gateway's Swagger UI URL shows a unified interface with specs from all REST services
   2. API operations from auth, academic, schedule, and attendance services are all browsable and executable
   3. springdoc version is 2.8.6 across all services with no version conflicts
-**Plans:** 3 plans
+**Plans:** TBD
 Plans:
-- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
-- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
-- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
+- TBD
 
 ### Phase 48: README
 **Goal**: The project repository has a complete README that communicates architecture, setup, API surface, and deployment to a developer reading it for the first time
@@ -234,11 +230,9 @@ Plans:
   2. A developer can follow the README setup instructions to run the system locally with docker compose
   3. The README links to the live Swagger UI and summarizes key API endpoints by role
   4. The README contains a complete deploy guide (VPS setup, GitHub Secrets, first certbot run, compose up)
-**Plans:** 3 plans
+**Plans:** TBD
 Plans:
-- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
-- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
-- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
+- TBD
 
 ## Progress
 
@@ -260,6 +254,6 @@ Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 �
 | 43. docker-compose.prod.yml | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 44. Nginx Reverse Proxy + SSL | v8.0 | 2/2 | Complete   | 2026-04-07 |
 | 45. GitHub Actions CI | v8.0 | 1/1 | Complete    | 2026-04-07 |
-| 46. GitHub Actions Deploy | v8.0 | 0/TBD | Not started | - |
+| 46. GitHub Actions Deploy | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 47. Unified Swagger UI | v8.0 | 0/TBD | Not started | - |
 | 48. README | v8.0 | 0/TBD | Not started | - |

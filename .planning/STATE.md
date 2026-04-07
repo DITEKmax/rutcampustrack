@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v8.0
 milestone_name: CI/CD, Deployment & Documentation
-status: executing
-stopped_at: Completed 44-02-PLAN.md
-last_updated: "2026-04-07T21:05:38.316Z"
+status: verifying
+stopped_at: Completed 46-github-actions-deploy-01-PLAN.md
+last_updated: "2026-04-07T22:40:09.315Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 8
-  completed_phases: 4
-  total_plans: 8
-  completed_plans: 6
-  percent: 75
+  completed_phases: 6
+  total_plans: 9
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -22,9 +22,9 @@ v8.0 CI/CD, Deployment & Documentation
 
 ## Current Position
 
-Phase: 46
-Plan: Not started
-Status: Executing Phase 45
+Phase: 46 (github-actions-deploy) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
 Last activity: 2026-04-07
 
 Progress: [█░░░░░░░░░] 13%
@@ -34,7 +34,7 @@ Progress: [█░░░░░░░░░] 13%
 See: `.planning/PROJECT.md` (updated 2026-04-07)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** Phase 45 — github-actions-ci
+**Current focus:** Phase 46 — github-actions-deploy
 
 ## Completed Milestones
 
@@ -64,6 +64,8 @@ Recent decisions affecting v8.0:
 - Test profiles: disable health indicators for autoconfigure-excluded infra (management.health.redis/rabbit.enabled=false)
 - [Phase 44]: Nginx reverse proxy with certbot sidecar for SSL termination; only nginx binds host ports
 - [Phase 44]: Two-phase ACME bootstrap: staging cert test then production cert with --force-renewal
+- [Phase 46-github-actions-deploy]: Sequential build steps over matrix strategy for 11 images — simpler, avoids runner quota issues
+- [Phase 46-github-actions-deploy]: Job-level permissions:write for packages — least-privilege per GitHub best practices
 
 ### Research Flags
 
@@ -76,6 +78,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-07T20:19:05.742Z
-Stopped at: Completed 44-02-PLAN.md
+Last session: 2026-04-07T22:40:09.311Z
+Stopped at: Completed 46-github-actions-deploy-01-PLAN.md
 Next action: /gsd-plan-phase 42

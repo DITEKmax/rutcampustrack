@@ -87,7 +87,6 @@ describe('SidebarComponent', () => {
     expect(screen.getByText('Пользователи')).toBeTruthy();
     expect(screen.getByText('Группы')).toBeTruthy();
     expect(screen.getByText('Семестры')).toBeTruthy();
-    expect(screen.getByText('Статистика')).toBeTruthy();
     // Teacher-only items should not be present
     expect(screen.queryByText('Журнал посещаемости')).toBeNull();
   });

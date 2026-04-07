@@ -81,12 +81,6 @@ export class SidebarComponent implements OnInit {
       route: '/admin/semesters',
       roles: ['ADMIN'],
     },
-    {
-      label: 'Статистика',
-      icon: 'ph-chart-bar',
-      route: '/admin/stats',
-      roles: ['ADMIN'],
-    },
   ];
 
   filteredNavItems = computed(() => {

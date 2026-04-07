@@ -27,42 +27,42 @@ Requirements for Frontends milestone. Each maps to roadmap phases 33-40.
 
 ### Telegram Mini App — Auth
 
-- [ ] **TMA-01**: Mini App opens in Telegram WebView without blank screen
-- [ ] **TMA-02**: initData extracted and exchanged for JWT via `POST /api/auth/tma`
-- [ ] **TMA-03**: Access token in React state, refresh token in localStorage
-- [ ] **TMA-04**: Token refresh via body-based endpoint (not httpOnly cookie)
-- [ ] **TMA-05**: Dev mock environment for local development outside Telegram
+- [x] **TMA-01**: Mini App opens in Telegram WebView without blank screen
+- [x] **TMA-02**: initData extracted and exchanged for JWT via `POST /api/auth/tma`
+- [x] **TMA-03**: Access token in React state (memory-only per D-05)
+- [x] **TMA-04**: Token refresh via initData re-auth (per D-06, not refresh-body)
+- [x] **TMA-05**: Dev mock environment for local development outside Telegram
 
 ### Telegram Mini App — Features
 
-- [ ] **TMA-06**: Today's schedule view with lessons, times, rooms, status badges
-- [ ] **TMA-07**: Geo check-in via MainButton with GPS capture and haptic feedback
-- [ ] **TMA-08**: Attendance stats per subject with red zone indicators
-- [ ] **TMA-09**: Homework list with completion toggle
-- [ ] **TMA-10**: Telegram theme support (dark/light mode)
-- [ ] **TMA-11**: BackButton navigation integration
+- [x] **TMA-06**: Today's schedule view with lessons, times, rooms, status badges
+- [x] **TMA-07**: Geo check-in via MainButton with GPS capture and haptic feedback
+- [x] **TMA-08**: Attendance stats per subject with red zone indicators
+- [x] **TMA-09**: Homework list with completion toggle
+- [x] **TMA-10**: Telegram theme support (dark/light mode)
+- [x] **TMA-11**: BackButton navigation integration
 
 ### Web Panel — Auth
 
-- [ ] **WPAN-01**: Teacher/admin login with username/password
-- [ ] **WPAN-02**: JWT access token in Angular signal (memory), refresh in httpOnly cookie
-- [ ] **WPAN-03**: Role-based route guards (TEACHER, ADMIN)
-- [ ] **WPAN-04**: Token auto-refresh via HTTP interceptor
-- [ ] **WPAN-05**: Logout clears tokens and redirects to login
+- [x] **WPAN-01**: Teacher/admin login with username/password
+- [x] **WPAN-02**: JWT access token in Angular signal (memory-only per D-06)
+- [x] **WPAN-03**: Role-based route guards (TEACHER, ADMIN)
+- [x] **WPAN-04**: Token auto-refresh via HTTP interceptor
+- [x] **WPAN-05**: Logout clears tokens and redirects to login
 
 ### Web Panel — Teacher
 
-- [ ] **WPAN-06**: Attendance journal grid (students x lessons matrix)
-- [ ] **WPAN-07**: Virtual scroll for 500+ students in journal grid (CdkTable)
-- [ ] **WPAN-08**: Attendance stats charts per subject/group (ng2-charts)
+- [x] **WPAN-06**: Attendance journal grid (students x lessons matrix)
+- [x] **WPAN-07**: Virtual scroll for 500+ students in journal grid (CdkTable)
+- [x] **WPAN-08**: Attendance stats charts per subject/group (ng2-charts)
 
 ### Web Panel — Admin
 
 - [x] **WPAN-09**: User CRUD (create/edit/archive) with auto-generated logins
-- [ ] **WPAN-10**: Group management with headman assign/revoke
-- [ ] **WPAN-11**: Semester management with confirmation phrase for delete
-- [ ] **WPAN-12**: Dashboard with summary statistics
-- [ ] **WPAN-13**: Headman assistant management
+- [x] **WPAN-10**: Group management with headman assign/revoke
+- [x] **WPAN-11**: Semester management with confirmation phrase for delete
+- [x] **WPAN-12**: Dashboard with summary statistics
+- [ ] **WPAN-13**: Headman assistant management (blocked — backend @RequireRole(STUDENT))
 
 ## Previously Satisfied (v6.0)
 
@@ -106,36 +106,37 @@ Requirements for Frontends milestone. Each maps to roadmap phases 33-40.
 | LAND-01 | Phase 35 | Complete |
 | LAND-02 | Phase 35 | Complete |
 | LAND-03 | Phase 35 | Complete |
-| TMA-01 | Phase 36 | Pending |
-| TMA-02 | Phase 36 | Pending |
-| TMA-03 | Phase 36 | Pending |
-| TMA-04 | Phase 36 | Pending |
-| TMA-05 | Phase 36 | Pending |
-| TMA-06 | Phase 37 | Pending |
-| TMA-07 | Phase 37 | Pending |
-| TMA-08 | Phase 37 | Pending |
-| TMA-09 | Phase 37 | Pending |
-| TMA-10 | Phase 37 | Pending |
-| TMA-11 | Phase 37 | Pending |
-| WPAN-01 | Phase 38 | Pending |
-| WPAN-02 | Phase 38 | Pending |
-| WPAN-03 | Phase 38 | Pending |
-| WPAN-04 | Phase 38 | Pending |
-| WPAN-05 | Phase 38 | Pending |
-| WPAN-06 | Phase 39 | Pending |
-| WPAN-07 | Phase 39 | Pending |
-| WPAN-08 | Phase 39 | Pending |
+| TMA-01 | Phase 36 | Complete |
+| TMA-02 | Phase 36 | Complete |
+| TMA-03 | Phase 36 | Complete |
+| TMA-04 | Phase 36 | Complete |
+| TMA-05 | Phase 36 | Complete |
+| TMA-06 | Phase 37 | Complete |
+| TMA-07 | Phase 37 | Complete |
+| TMA-08 | Phase 37 | Complete |
+| TMA-09 | Phase 37 | Complete |
+| TMA-10 | Phase 37 | Complete |
+| TMA-11 | Phase 37 | Complete |
+| WPAN-01 | Phase 38 | Complete |
+| WPAN-02 | Phase 38 | Complete |
+| WPAN-03 | Phase 38 | Complete |
+| WPAN-04 | Phase 38 | Complete |
+| WPAN-05 | Phase 38 | Complete |
+| WPAN-06 | Phase 39 | Complete |
+| WPAN-07 | Phase 39 | Complete |
+| WPAN-08 | Phase 39 | Complete |
 | WPAN-09 | Phase 40 | Complete |
-| WPAN-10 | Phase 40 | Pending |
-| WPAN-11 | Phase 40 | Pending |
-| WPAN-12 | Phase 40 | Pending |
-| WPAN-13 | Phase 40 | Pending |
+| WPAN-10 | Phase 40 | Complete |
+| WPAN-11 | Phase 40 | Complete |
+| WPAN-12 | Phase 40 | Complete |
+| WPAN-13 | Phase 40 | Blocked |
 
 **Coverage:**
 - v7.0 requirements: 33 total (4 INFRA + 2 AUTH + 3 LAND + 11 TMA + 13 WPAN)
+- Satisfied: 32/33 (WPAN-13 blocked by backend role constraint)
 - Mapped to phases: 33
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after v7.0 roadmap creation (Phases 33-40)*
+*Last updated: 2026-04-07 after gap closure inline fixes*

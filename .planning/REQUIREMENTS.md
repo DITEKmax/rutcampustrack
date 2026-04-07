@@ -58,10 +58,10 @@ Requirements for Frontends milestone. Each maps to roadmap phases 33-40.
 
 ### Web Panel — Admin
 
-- [ ] **WPAN-09**: User CRUD (create/edit/archive) with auto-generated logins
-- [ ] **WPAN-10**: Group management with headman assign/revoke
-- [ ] **WPAN-11**: Semester management with confirmation phrase for delete
-- [ ] **WPAN-12**: Dashboard with summary statistics
+- [x] **WPAN-09**: User CRUD (create/edit/archive) with auto-generated logins
+- [x] **WPAN-10**: Group management with headman assign/revoke
+- [x] **WPAN-11**: Semester management with confirmation phrase for delete
+- [x] **WPAN-12**: Dashboard with summary statistics
 - [ ] **WPAN-13**: Headman assistant management
 
 ## Previously Satisfied (v6.0)
@@ -125,10 +125,10 @@ Requirements for Frontends milestone. Each maps to roadmap phases 33-40.
 | WPAN-06 | Phase 39 | Pending |
 | WPAN-07 | Phase 39 | Pending |
 | WPAN-08 | Phase 39 | Pending |
-| WPAN-09 | Phase 40 | Pending |
-| WPAN-10 | Phase 40 | Pending |
-| WPAN-11 | Phase 40 | Pending |
-| WPAN-12 | Phase 40 | Pending |
+| WPAN-09 | Phase 40 | Complete |
+| WPAN-10 | Phase 40 | Complete |
+| WPAN-11 | Phase 40 | Complete |
+| WPAN-12 | Phase 40 | Complete |
 | WPAN-13 | Phase 40 | Pending |
 
 **Coverage:**

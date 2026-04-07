@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: Frontends — Mini App, Web Panel, Landing
 status: executing
-stopped_at: Phase 39 UI-SPEC approved
-last_updated: "2026-04-07T08:42:59.895Z"
+stopped_at: Completed 40-01-PLAN.md
+last_updated: "2026-04-07T09:28:24.894Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_plans: 16
+  completed_plans: 14
+  percent: 88
 ---
 
 # Project State
@@ -22,9 +22,9 @@ v7.0 Frontends — Mini App, Web Panel, Landing
 
 ## Current Position
 
-Phase: 40
-Plan: Not started
-Status: Executing Phase 39
+Phase: 40 (web-panel-admin) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-07
 
 Progress: [██░░░░░░░░] 25%
@@ -34,7 +34,7 @@ Progress: [██░░░░░░░░] 25%
 See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** Phase 39 — web-panel-teacher
+**Current focus:** Phase 40 — web-panel-admin
 
 ## Completed Milestones
 
@@ -62,6 +62,7 @@ Recent decisions affecting current work:
 - [Phase 34-auth-service-tma]: TMA_BOT_TOKEN env var with dev fallback — bot token never hardcoded (T-34-05)
 - [Phase 34-auth-service-tma]: refresh-body delegates to AuthService.refresh() — one-line, same Redis JTI rotation, no over-engineering
 - [Phase 35]: Tailwind CDN + GSAP CDN for zero-build static landing page; CSS-only hamburger; darkMode media for automatic OS preference
+- [Phase 40]: 4th stat card shows activeSemesterName instead of avg attendance rate (no cross-service call)
 
 ### Research Flags
 
@@ -75,7 +76,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-07T06:01:21.569Z
-Stopped at: Phase 39 UI-SPEC approved
-Resume file: .planning/phases/39-web-panel-teacher/39-UI-SPEC.md
+Last session: 2026-04-07T09:28:24.888Z
+Stopped at: Completed 40-01-PLAN.md
+Resume file: None
 Next action: `/gsd-plan-phase 35`

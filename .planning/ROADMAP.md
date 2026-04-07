@@ -221,9 +221,9 @@ Plans:
   2. Admin can manage groups and assign/revoke headmen
   3. Admin can manage semesters with confirmation phrase for delete
   4. Dashboard shows summary stats (total students, groups, attendance rates)
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 Plans:
-- [ ] 40-01-PLAN.md — Foundation: types, AdminApiService, shared chips, dashboard stat cards, route wiring
+- [x] 40-01-PLAN.md — Foundation: types, AdminApiService, shared chips, dashboard stat cards, route wiring
 - [ ] 40-02-PLAN.md — User CRUD: paginated list, search/filter, create/edit dialog, archive/restore
 - [ ] 40-03-PLAN.md — Groups + Semesters: headman assign/revoke, typed-confirmation delete, WPAN-13 note
 **UI hint**: yes
@@ -271,4 +271,4 @@ Plans:
 | 37. Mini App Features | v7.0 | 2/2 | Complete | 2026-04-07 |
 | 38. Web Panel Scaffold + Auth | v7.0 | 3/3 | Complete    | 2026-04-07 |
 | 39. Web Panel Teacher | v7.0 | 2/2 | Complete    | 2026-04-07 |
-| 40. Web Panel Admin | v7.0 | 0/3 | Planned | - |
+| 40. Web Panel Admin | v7.0 | 1/3 | In Progress|  |

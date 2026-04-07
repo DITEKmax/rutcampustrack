@@ -1,0 +1,39 @@
+<div class="flex items-center justify-center min-h-screen bg-[var(--mat-sys-surface)]">
+  <mat-card class="w-full max-w-[400px] p-8">
+    <mat-card-header>
+      <mat-card-title class="text-[28px] font-normal leading-[1.2] mb-6">
+        Добро пожаловать
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Логин</mat-label>
+          <input matInput formControlName="login" autocomplete="username" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Пароль</mat-label>
+          <input matInput type="password" formControlName="password" autocomplete="current-password" />
+        </mat-form-field>
+
+        @if (errorMessage) {
+          <div class="text-sm text-[var(--mat-sys-error)] mt-1">
+            {{ errorMessage }}
+          </div>
+        }
+
+        <button mat-flat-button color="primary" type="submit"
+                [disabled]="form.invalid || loading"
+                class="w-full h-12 mt-2">
+          @if (loading) {
+            <mat-spinner diameter="20" class="inline-block mr-2"></mat-spinner>
+            Вход...
+          } @else {
+            Войти
+          }
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

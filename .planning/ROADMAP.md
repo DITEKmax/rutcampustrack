@@ -177,12 +177,10 @@ Plans:
   3. HTTPS requests route to all 4 frontend containers by path (PWA, Mini App, Web Panel, Landing)
   4. A valid Let's Encrypt certificate is installed and browser shows the padlock
   5. Certbot auto-renewal runs on schedule without manual intervention
-**Plans:** 3 plans
+**Plans:** 2 plans
 Plans:
-- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
-- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
-- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
-**UI hint**: yes
+- [ ] 44-01-PLAN.md — Nginx config files + docker-compose nginx/certbot services + api-gateway port fix
+- [ ] 44-02-PLAN.md — init-letsencrypt.sh bootstrap script + gitignore for generated files
 
 ### Phase 45: GitHub Actions CI
 **Goal**: Every push and pull request triggers automated build, test, and lint checks for all services

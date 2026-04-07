@@ -182,3 +182,15 @@ None — no external service configuration required.
 ---
 *Phase: 36-mini-app-scaffold-auth*
 *Completed: 2026-04-07*
+
+## Self-Check: PASSED
+
+- FOUND: frontends/mini-app/package.json
+- FOUND: frontends/mini-app/src/main.tsx
+- FOUND: frontends/mini-app/src/shared/lib/mockWebApp.ts
+- FOUND: frontends/mini-app/src/shared/components/DevModeBanner.tsx
+- FOUND: frontends/mini-app/node_modules/
+- FOUND: frontends/mini-app/dist/
+- FOUND: frontends/mini-app/src/components/ui/button.tsx
+- FOUND commit: d01ba9c (Task 1)
+- FOUND commit: 0b412a7 (Task 2)

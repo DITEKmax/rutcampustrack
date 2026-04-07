@@ -1,0 +1,1 @@
+import{j as e}from"./index-BHIUSlR3.js";function t(){return e.jsx("div",{className:"min-h-screen bg-background text-foreground flex items-center justify-center",children:e.jsx("p",{children:"RutTrack Mini App"})})}export{t as default};

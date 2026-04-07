@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Редактировать группу' : 'Новая группа' }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" class="flex flex-col gap-4">
+    <mat-form-field class="w-full">
+      <mat-label>Название</mat-label>
+      <input matInput formControlName="name" maxlength="50">
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Обязательное поле</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field class="w-full">
+      <mat-label>Код</mat-label>
+      <input matInput formControlName="code" maxlength="20">
+      @if (form.controls.code.hasError('required')) {
+        <mat-error>Обязательное поле</mat-error>
+      }
+    </mat-form-field>
+
+    @if (isEdit) {
+      <mat-slide-toggle formControlName="active">Активна</mat-slide-toggle>
+    }
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Отмена</button>
+  <button mat-flat-button color="primary" [disabled]="form.invalid || saving" (click)="save()">
+    {{ isEdit ? 'Сохранить изменения' : 'Создать группу' }}
+  </button>
+</mat-dialog-actions>

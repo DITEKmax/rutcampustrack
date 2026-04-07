@@ -1,0 +1,75 @@
+@if (data.mode === 'create') {
+  <h2 mat-dialog-title>Новый пользователь</h2>
+} @else {
+  <h2 mat-dialog-title>Редактировать пользователя</h2>
+}
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="flex flex-col gap-4">
+    <mat-form-field>
+      <mat-label>ФИО</mat-label>
+      <input matInput formControlName="displayName" />
+      @if (form.get('displayName')?.hasError('required')) {
+        <mat-error>ФИО обязательно</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Роль</mat-label>
+      <mat-select formControlName="role">
+        <mat-option value="admin">Админ</mat-option>
+        <mat-option value="teacher">Преподаватель</mat-option>
+        <mat-option value="student">Студент</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    @if (data.mode === 'create') {
+      <p class="text-sm opacity-60 -mt-2">Логин будет сгенерирован автоматически</p>
+    } @else {
+      <mat-form-field>
+        <mat-label>Логин</mat-label>
+        <input matInput [value]="data.user!.login" readonly />
+      </mat-form-field>
+    }
+
+    @if (form.get('role')?.value === 'student' || form.get('role')?.value === 'teacher') {
+      <mat-form-field>
+        <mat-label>Группа</mat-label>
+        <mat-select formControlName="groupId">
+          <mat-option [value]="null">—</mat-option>
+          @for (g of data.groups; track g.id) {
+            <mat-option [value]="g.id">{{ g.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+
+    @if (form.get('role')?.value === 'teacher') {
+      <mat-form-field>
+        <mat-label>Табельный номер</mat-label>
+        <input matInput formControlName="employeeNumber" />
+      </mat-form-field>
+    }
+
+    @if (form.get('role')?.value === 'student') {
+      <mat-checkbox formControlName="isHeadman">Является старостой</mat-checkbox>
+    }
+
+    @if (apiError()) {
+      <p class="text-sm text-[var(--mat-sys-error)] mt-2">
+        Не удалось сохранить. Проверьте данные и попробуйте снова.
+      </p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Отмена</button>
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="saving()">
+    @if (data.mode === 'create') {
+      Создать пользователя
+    } @else {
+      Сохранить изменения
+    }
+  </button>
+</mat-dialog-actions>

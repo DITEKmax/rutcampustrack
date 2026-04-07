@@ -116,7 +116,7 @@ Full details: `.planning/milestones/v7.0-ROADMAP.md`
 - [x] **Phase 41: Actuator Standardization** - Add health/info endpoints to all 4 Java services (completed 2026-04-07)
 - [ ] **Phase 42: Multi-Stage Dockerfiles** - Optimized build+runtime images for all services and frontends
 - [x] **Phase 43: docker-compose.prod.yml** - Production compose with prod profile, secrets, Actuator healthchecks (completed 2026-04-07)
-- [ ] **Phase 44: Nginx Reverse Proxy + SSL** - SSL termination and path-based routing via Let's Encrypt
+- [x] **Phase 44: Nginx Reverse Proxy + SSL** - SSL termination and path-based routing via Let's Encrypt (completed 2026-04-07)
 - [ ] **Phase 45: GitHub Actions CI** - Build, test, and lint pipeline for all services on push/PR
 - [ ] **Phase 46: GitHub Actions Deploy** - GHCR image push and SSH-based VPS deploy on merge to main
 - [ ] **Phase 47: Unified Swagger UI** - Aggregated API docs at Gateway with springdoc webflux-ui
@@ -177,10 +177,10 @@ Plans:
   3. HTTPS requests route to all 4 frontend containers by path (PWA, Mini App, Web Panel, Landing)
   4. A valid Let's Encrypt certificate is installed and browser shows the padlock
   5. Certbot auto-renewal runs on schedule without manual intervention
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 44-01-PLAN.md — Nginx config files + docker-compose nginx/certbot services + api-gateway port fix
-- [ ] 44-02-PLAN.md — init-letsencrypt.sh bootstrap script + gitignore for generated files
+- [x] 44-02-PLAN.md — init-letsencrypt.sh bootstrap script + gitignore for generated files
 
 ### Phase 45: GitHub Actions CI
 **Goal**: Every push and pull request triggers automated build, test, and lint checks for all services
@@ -260,7 +260,7 @@ Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 �
 | 41. Actuator Standardization | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 42. Multi-Stage Dockerfiles | v8.0 | 0/TBD | Not started | - |
 | 43. docker-compose.prod.yml | v8.0 | 1/1 | Complete   | 2026-04-07 |
-| 44. Nginx Reverse Proxy + SSL | v8.0 | 1/2 | In Progress|  |
+| 44. Nginx Reverse Proxy + SSL | v8.0 | 2/2 | Complete   | 2026-04-07 |
 | 45. GitHub Actions CI | v8.0 | 0/TBD | Not started | - |
 | 46. GitHub Actions Deploy | v8.0 | 0/TBD | Not started | - |
 | 47. Unified Swagger UI | v8.0 | 0/TBD | Not started | - |

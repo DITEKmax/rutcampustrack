@@ -37,7 +37,7 @@ Requirements for CI/CD, Deployment & Documentation milestone. Each maps to roadm
 
 - [x] **NET-01**: Single nginx reverse proxy terminates SSL and routes to all backend services
 - [x] **NET-02**: Nginx routes to all 4 frontend containers by path
-- [ ] **NET-03**: Let's Encrypt SSL certificate issued via certbot standalone
+- [x] **NET-03**: Let's Encrypt SSL certificate issued via certbot standalone
 - [x] **NET-04**: Certbot auto-renewal configured (cron or container restart)
 - [x] **NET-05**: HTTP→HTTPS redirect for all traffic
 
@@ -92,7 +92,7 @@ Requirements for CI/CD, Deployment & Documentation milestone. Each maps to roadm
 | MON-03 | Phase 43 | Pending |
 | NET-01 | Phase 44 | Complete |
 | NET-02 | Phase 44 | Complete |
-| NET-03 | Phase 44 | Pending |
+| NET-03 | Phase 44 | Complete |
 | NET-04 | Phase 44 | Complete |
 | NET-05 | Phase 44 | Complete |
 | CI-01 | Phase 45 | Pending |

@@ -1,11 +1,10 @@
 """Tests for AcademicGrpcClient — in-memory cache and gRPC delegation."""
-import time
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import grpc
 import grpc.aio
 import pytest
-import pytest_asyncio
 
 from bot.grpc_client.academic_client import AcademicGrpcClient
 

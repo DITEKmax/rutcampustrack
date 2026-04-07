@@ -1,4 +1,5 @@
 """Handler for lesson.closed events — deletes all reminder messages and clears Redis keys."""
+
 import logging
 
 from aiogram import Bot

@@ -13,6 +13,7 @@ Design decisions:
 - Default-arg binding s=student prevents Python late-binding closure bug (same pattern
   established in Phase 24 lesson_started.py).
 """
+
 import asyncio
 import logging
 from datetime import datetime, timedelta
@@ -42,9 +43,7 @@ def midpoint_delay_seconds(start_time: str, end_time: str) -> float:
     return max(0.0, (midpoint - now).total_seconds())
 
 
-def near_end_delay_seconds(
-    end_time: str, offset_minutes: int = NEAR_END_OFFSET_MINUTES
-) -> float:
+def near_end_delay_seconds(end_time: str, offset_minutes: int = NEAR_END_OFFSET_MINUTES) -> float:
     """Return seconds from now until offset_minutes before end_time. Minimum 0.0."""
     end_dt = _parse_hhmm_today(end_time)
     near_end = end_dt - timedelta(minutes=offset_minutes)
@@ -68,18 +67,12 @@ class ReminderScheduler:
         self._redis_client = redis_client
         self._timers: dict[int, list[asyncio.Task]] = {}
 
-    def schedule_reminders(
-        self, lesson_id: int, group_id: int, start_time: str, end_time: str
-    ) -> None:
+    def schedule_reminders(self, lesson_id: int, group_id: int, start_time: str, end_time: str) -> None:
         """Spawn two asyncio.Task instances for midpoint and near-end reminders."""
         mid_delay = midpoint_delay_seconds(start_time, end_time)
         end_delay = near_end_delay_seconds(end_time)
-        mid_task = asyncio.create_task(
-            self._send_reminder_after(mid_delay, lesson_id, group_id, "mid")
-        )
-        end_task = asyncio.create_task(
-            self._send_reminder_after(end_delay, lesson_id, group_id, "end")
-        )
+        mid_task = asyncio.create_task(self._send_reminder_after(mid_delay, lesson_id, group_id, "mid"))
+        end_task = asyncio.create_task(self._send_reminder_after(end_delay, lesson_id, group_id, "end"))
         self._timers[lesson_id] = [mid_task, end_task]
         logger.info(
             "Scheduled reminders for lesson_id=%d: mid=%.0fs, end=%.0fs",
@@ -88,9 +81,7 @@ class ReminderScheduler:
             end_delay,
         )
 
-    async def _send_reminder_after(
-        self, delay: float, lesson_id: int, group_id: int, label: str
-    ) -> None:
+    async def _send_reminder_after(self, delay: float, lesson_id: int, group_id: int, label: str) -> None:
         """Sleep until delay, then fan-out reminder to students not yet checked in."""
         if delay > 0:
             await asyncio.sleep(delay)
@@ -98,9 +89,7 @@ class ReminderScheduler:
         for student in members:
             if not student.telegram_id:
                 continue
-            existing_ids = await self._redis_client.get_message_ids(
-                lesson_id, student.user_id
-            )
+            existing_ids = await self._redis_client.get_message_ids(lesson_id, student.user_id)
             if not existing_ids:
                 continue  # Already checked in or lesson closed — skip
 
@@ -110,9 +99,7 @@ class ReminderScheduler:
                     chat_id=s.telegram_id,
                     text="Напоминание: отметьтесь на паре!",
                 )
-                await self._redis_client.add_message_id(
-                    lesson_id, s.user_id, result.message_id
-                )
+                await self._redis_client.add_message_id(lesson_id, s.user_id, result.message_id)
 
             await self._send_queue.put(
                 SendTask(
@@ -129,6 +116,4 @@ class ReminderScheduler:
         for task in tasks:
             task.cancel()
         if tasks:
-            logger.info(
-                "Cancelled %d timer(s) for lesson_id=%d", len(tasks), lesson_id
-            )
+            logger.info("Cancelled %d timer(s) for lesson_id=%d", len(tasks), lesson_id)

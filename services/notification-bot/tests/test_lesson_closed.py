@@ -3,7 +3,8 @@
 Verifies that when a lesson closes, all stored reminder messages are deleted
 from Telegram, Redis keys are cleared, and timer tasks are cancelled.
 """
-from unittest.mock import AsyncMock, MagicMock, call
+
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from aiogram.exceptions import TelegramBadRequest
@@ -96,8 +97,10 @@ async def test_lesson_closed_cancels_timer_tasks_before_deletions():
     call_order = []
 
     bot = MagicMock()
+
     async def track_delete(**kwargs):
         call_order.append("delete_message")
+
     bot.delete_message = AsyncMock(side_effect=track_delete)
 
     academic_client = MagicMock()
@@ -108,8 +111,10 @@ async def test_lesson_closed_cancels_timer_tasks_before_deletions():
     redis_client.delete_key = AsyncMock()
 
     reminder_scheduler = MagicMock()
+
     def track_cancel(lesson_id):
         call_order.append("cancel_lesson")
+
     reminder_scheduler.cancel_lesson = MagicMock(side_effect=track_cancel)
 
     await handle_lesson_closed(
@@ -128,7 +133,7 @@ async def test_lesson_closed_cancels_timer_tasks_before_deletions():
 async def test_lesson_closed_skips_students_without_telegram_id():
     """Students with telegram_id=0 are skipped — no deletion attempted."""
     students = [
-        _make_student(user_id=1, telegram_id=0),   # skipped
+        _make_student(user_id=1, telegram_id=0),  # skipped
         _make_student(user_id=2, telegram_id=222),  # processed
     ]
     message_ids_per_student = [[10]]  # only one call (for student 2)
@@ -241,9 +246,7 @@ async def test_lesson_closed_returns_early_on_missing_payload_fields():
 async def test_lesson_closed_handles_none_reminder_scheduler():
     """When reminder_scheduler=None, handler logs warning and continues with message deletion."""
     students = [_make_student(user_id=1, telegram_id=111)]
-    bot, academic_client, redis_client, _ = _make_handler_deps(
-        students=students, message_ids_per_student=[[42]]
-    )
+    bot, academic_client, redis_client, _ = _make_handler_deps(students=students, message_ids_per_student=[[42]])
 
     # Must not raise AttributeError
     await handle_lesson_closed(

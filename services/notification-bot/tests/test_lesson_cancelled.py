@@ -1,4 +1,5 @@
 """Tests for the lesson.cancelled notification handler."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -40,7 +41,7 @@ async def test_lesson_cancelled_sends_to_students_with_telegram_id():
     """Only students with telegram_id > 0 receive a message; telegram_id=0 is skipped."""
     students = [
         _make_student(user_id=1, telegram_id=111),
-        _make_student(user_id=2, telegram_id=0),   # skipped
+        _make_student(user_id=2, telegram_id=0),  # skipped
         _make_student(user_id=3, telegram_id=333),
     ]
 
@@ -49,9 +50,7 @@ async def test_lesson_cancelled_sends_to_students_with_telegram_id():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Физика")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -88,9 +87,7 @@ async def test_lesson_cancelled_message_contains_subject_name_and_date():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Теормех")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Теормех"))
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -125,9 +122,7 @@ async def test_lesson_cancelled_with_cancel_reason():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response()
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -161,9 +156,7 @@ async def test_lesson_cancelled_without_cancel_reason():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Химия")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Химия"))
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -202,9 +195,7 @@ async def test_lesson_cancelled_resolves_subject_name():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Дискретная математика")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Дискретная математика"))
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -237,9 +228,7 @@ async def test_lesson_cancelled_fallback_subject_name_on_grpc_error():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        side_effect=Exception("gRPC timeout")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC timeout"))
 
     send_queue = MagicMock()
     captured_tasks = []

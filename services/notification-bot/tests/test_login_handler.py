@@ -1,10 +1,11 @@
 """Tests for /login command handler (OTP FSM flow)."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 import aiohttp
 import pytest
 
-from bot.handlers.login import cmd_login, process_otp_code, LoginStates
+from bot.handlers.login import LoginStates, cmd_login, process_otp_code
 
 
 def _make_message(user_id: int = 12345, text: str = "") -> MagicMock:
@@ -67,7 +68,7 @@ async def test_login_already_logged_in():
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
     assert "Вы уже вошли" in text
-    auth_client.request_otp.assert_not_called() if hasattr(auth_client, 'request_otp') else None
+    auth_client.request_otp.assert_not_called() if hasattr(auth_client, "request_otp") else None
 
 
 @pytest.mark.asyncio
@@ -76,11 +77,13 @@ async def test_process_code_success():
     message = _make_message(text="654321")
     state = _make_state()
     auth_client = MagicMock()
-    auth_client.verify_otp = AsyncMock(return_value={
-        "accessToken": "access_tok",
-        "refreshToken": "refresh_tok",
-        "expiresIn": 900,
-    })
+    auth_client.verify_otp = AsyncMock(
+        return_value={
+            "accessToken": "access_tok",
+            "refreshToken": "refresh_tok",
+            "expiresIn": 900,
+        }
+    )
     jwt_redis = MagicMock()
     jwt_redis.save = AsyncMock()
 

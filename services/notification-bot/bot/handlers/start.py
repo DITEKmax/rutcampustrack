@@ -19,8 +19,7 @@ async def cmd_start(message: Message, academic_client) -> None:
         if not response.found:
             # D-03: unknown telegram_id
             await message.answer(
-                "Ваш Telegram не привязан к системе. "
-                "Обратитесь к старосте вашей группы для привязки аккаунта."
+                "Ваш Telegram не привязан к системе. Обратитесь к старосте вашей группы для привязки аккаунта."
             )
             return
 
@@ -37,9 +36,7 @@ async def cmd_start(message: Message, academic_client) -> None:
         else:
             # Password already changed
             await message.answer(
-                f"Добро пожаловать, {response.display_name}!\n\n"
-                f"Логин: {response.login}\n"
-                f"Группа: {response.group_name}"
+                f"Добро пожаловать, {response.display_name}!\n\nЛогин: {response.login}\nГруппа: {response.group_name}"
             )
 
     except Exception:

@@ -1,10 +1,9 @@
 """
 Tests for the throttled Telegram send queue (token bucket + retry logic).
 """
+
 import asyncio
 from unittest.mock import AsyncMock, patch
-
-import pytest
 
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
@@ -44,6 +43,7 @@ async def test_queue_processes_in_order():
     async def make_factory(n: int):
         async def factory():
             results.append(n)
+
         return factory
 
     queue = TelegramSendQueue()
@@ -76,10 +76,7 @@ async def test_rate_limit_token_bucket():
         factory = AsyncMock()
         queue.start()
 
-        await asyncio.gather(*[
-            queue.put(SendTask(coroutine_factory=factory))
-            for _ in range(35)
-        ])
+        await asyncio.gather(*[queue.put(SendTask(coroutine_factory=factory)) for _ in range(35)])
         await queue._queue.join()
 
     assert queue._total_sent == 35

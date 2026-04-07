@@ -15,8 +15,8 @@ class SendTask:
 
 
 class TelegramSendQueue:
-    _RATE = 30           # tokens per second
-    _MAX_TOKENS = 30     # burst ceiling
+    _RATE = 30  # tokens per second
+    _MAX_TOKENS = 30  # burst ceiling
     _RETRY_DELAYS = [1, 2, 4]  # backoff delays in seconds
 
     def __init__(self) -> None:

@@ -1,4 +1,5 @@
 """Tests for JwtRedisClient — JSON JWT storage in Redis with TTL."""
+
 from unittest.mock import AsyncMock, patch
 
 import pytest

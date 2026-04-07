@@ -17,8 +17,7 @@ class LoginStates(StatesGroup):
 
 
 @login_router.message(Command("login"))
-async def cmd_login(message: Message, state: FSMContext,
-                    auth_client, jwt_redis) -> None:
+async def cmd_login(message: Message, state: FSMContext, auth_client, jwt_redis) -> None:
     """Handle /login command — request OTP (D-05, D-06)."""
     telegram_id = message.from_user.id
 
@@ -30,10 +29,7 @@ async def cmd_login(message: Message, state: FSMContext,
 
     try:
         code = await auth_client.request_otp(telegram_id)
-        await message.answer(
-            f"Ваш код для входа: {code}\n\n"
-            "Введите его в следующем сообщении:"
-        )
+        await message.answer(f"Ваш код для входа: {code}\n\nВведите его в следующем сообщении:")
         await state.set_state(LoginStates.waiting_for_code)
 
     except aiohttp.ClientResponseError as e:
@@ -41,9 +37,7 @@ async def cmd_login(message: Message, state: FSMContext,
             # D-13: rate limit
             await message.answer("Слишком много попыток. Подождите.")
         elif e.status == 401:
-            await message.answer(
-                "Ваш аккаунт не найден. Обратитесь к старосте."
-            )
+            await message.answer("Ваш аккаунт не найден. Обратитесь к старосте.")
         else:
             # D-14: service unavailable
             logger.warning("OTP request failed: %s", e)
@@ -54,8 +48,7 @@ async def cmd_login(message: Message, state: FSMContext,
 
 
 @login_router.message(LoginStates.waiting_for_code)
-async def process_otp_code(message: Message, state: FSMContext,
-                           auth_client, jwt_redis) -> None:
+async def process_otp_code(message: Message, state: FSMContext, auth_client, jwt_redis) -> None:
     """Handle OTP code input in FSM state (D-05, D-07)."""
     code = message.text.strip() if message.text else ""
     telegram_id = message.from_user.id

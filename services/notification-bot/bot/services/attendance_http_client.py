@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 class TokenExpiredError(Exception):
     """Raised when JWT is expired (401 from API Gateway)."""
+
     pass
 
 

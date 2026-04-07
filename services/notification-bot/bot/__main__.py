@@ -10,7 +10,7 @@ from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
-from bot.handlers import start_router, login_router, status_router
+from bot.handlers import login_router, start_router, status_router
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.jwt_redis_client import JwtRedisClient
@@ -77,9 +77,7 @@ async def create_clients():
         host=config.redis_host,
         port=config.redis_port,
     )
-    auth_client = AuthHttpClient(
-        base_url=f"http://{config.auth_service_host}:{config.auth_service_port}"
-    )
+    auth_client = AuthHttpClient(base_url=f"http://{config.auth_service_host}:{config.auth_service_port}")
     attendance_client = AttendanceHttpClient(base_url=config.api_gateway_url)
 
     # Start HTTP sessions (must be in async context — Pitfall 3)

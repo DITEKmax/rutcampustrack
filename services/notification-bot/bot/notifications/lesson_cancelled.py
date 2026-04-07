@@ -1,4 +1,5 @@
 """Handler for lesson.cancelled events — sends plain-text cancellation to group students."""
+
 import logging
 
 from aiogram import Bot
@@ -38,9 +39,7 @@ async def handle_lesson_cancelled(
         if subjects_resp.subjects:
             subject_name = subjects_resp.subjects[0].subject_name
     except Exception:
-        logger.warning(
-            "Could not resolve subject_id=%s for lesson.cancelled, using fallback", subject_id
-        )
+        logger.warning("Could not resolve subject_id=%s for lesson.cancelled, using fallback", subject_id)
 
     text = f"Отмена пары\n\n{subject_name}\nДата: {date}"
     if cancel_reason:
@@ -54,9 +53,7 @@ async def handle_lesson_cancelled(
 
         await send_queue.put(
             SendTask(
-                coroutine_factory=lambda s=student: bot.send_message(
-                    chat_id=s.telegram_id, text=text
-                ),
+                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, text=text),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
             )

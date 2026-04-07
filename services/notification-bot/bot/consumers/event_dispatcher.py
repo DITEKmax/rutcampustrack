@@ -1,4 +1,5 @@
 """EventDispatcher — routes incoming RabbitMQ events to the correct handler."""
+
 import logging
 from typing import Awaitable, Callable
 
@@ -36,11 +37,11 @@ class EventDispatcher:
         self._reminder_scheduler = reminder_scheduler
 
         # Import handlers here to avoid circular imports at module level
-        from bot.notifications.lesson_cancelled import handle_lesson_cancelled
-        from bot.notifications.homework import handle_homework
-        from bot.notifications.headman_alerts import handle_headman_alert
-        from bot.notifications.lesson_closed import handle_lesson_closed
         from bot.notifications.attendance_marked import handle_attendance_marked
+        from bot.notifications.headman_alerts import handle_headman_alert
+        from bot.notifications.homework import handle_homework
+        from bot.notifications.lesson_cancelled import handle_lesson_cancelled
+        from bot.notifications.lesson_closed import handle_lesson_closed
 
         # Handler registry: event_type -> async callable(event: dict)
         self._handlers: dict[str, Callable[[dict], Awaitable[None]]] = {
@@ -98,6 +99,7 @@ class EventDispatcher:
         (NOTIF-02 and NOTIF-03).
         """
         from bot.notifications.lesson_started import handle_lesson_started
+
         await handle_lesson_started(
             event,
             bot=self._bot,
@@ -113,9 +115,7 @@ class EventDispatcher:
             start_time = payload.get("start_time")
             end_time = payload.get("end_time")
             if all(v is not None for v in [lesson_id, group_id, start_time, end_time]):
-                self._reminder_scheduler.schedule_reminders(
-                    lesson_id, group_id, start_time, end_time
-                )
+                self._reminder_scheduler.schedule_reminders(lesson_id, group_id, start_time, end_time)
 
     async def dispatch(self, event: dict) -> None:
         """Dispatch an event dict to the appropriate handler.

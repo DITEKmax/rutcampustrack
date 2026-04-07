@@ -1,4 +1,5 @@
 """Handler for headman alert events — sends notifications to group headmen only."""
+
 import logging
 
 from aiogram import Bot
@@ -37,9 +38,7 @@ async def handle_headman_alert(
     headmen = [m for m in members if m.is_headman and m.telegram_id]
 
     if not headmen:
-        logger.warning(
-            "No headman with telegram_id found for group_id=%s, skipping headman alert", group_id
-        )
+        logger.warning("No headman with telegram_id found for group_id=%s, skipping headman alert", group_id)
         return
 
     # Resolve student name: payload > member lookup > fallback
@@ -66,9 +65,7 @@ async def handle_headman_alert(
     for headman in headmen:
         await send_queue.put(
             SendTask(
-                coroutine_factory=lambda h=headman: bot.send_message(
-                    chat_id=h.telegram_id, text=text
-                ),
+                coroutine_factory=lambda h=headman: bot.send_message(chat_id=h.telegram_id, text=text),
                 user_id=headman.user_id,
                 chat_id=headman.telegram_id,
             )

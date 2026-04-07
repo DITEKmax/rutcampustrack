@@ -1,4 +1,5 @@
 """Tests for the headman alert notification handler."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest

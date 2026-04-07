@@ -1,4 +1,5 @@
 """Unit tests for ReminderScheduler — NOTIF-02 (midpoint) and NOTIF-03 (near-end)."""
+
 import asyncio
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -11,10 +12,10 @@ from bot.services.reminder_scheduler import (
     near_end_delay_seconds,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helper factories
 # ---------------------------------------------------------------------------
+
 
 def _make_student(user_id: int, telegram_id: int):
     s = MagicMock()
@@ -33,9 +34,7 @@ def _make_scheduler(
     bot.send_message = AsyncMock(return_value=MagicMock(message_id=500))
 
     academic_client = MagicMock()
-    academic_client.get_group_members = AsyncMock(
-        return_value=academic_return or []
-    )
+    academic_client.get_group_members = AsyncMock(return_value=academic_return or [])
 
     send_queue = MagicMock()
     send_queue.put = AsyncMock()
@@ -57,6 +56,7 @@ def _make_scheduler(
 # Test 1: midpoint_delay_seconds — correct delay from start_time to midpoint
 # ---------------------------------------------------------------------------
 
+
 def test_midpoint_delay_seconds_correct():
     """start_time=09:00, end_time=10:30 → midpoint=09:45. 'now'=09:00 → delay=2700s."""
     frozen_now = datetime(2026, 4, 5, 9, 0, 0)
@@ -72,6 +72,7 @@ def test_midpoint_delay_seconds_correct():
 # Test 2: near_end_delay_seconds — correct delay to 5 min before end_time
 # ---------------------------------------------------------------------------
 
+
 def test_near_end_delay_seconds_correct():
     """end_time=10:30, offset=5 → near_end=10:25. 'now'=09:00 → delay=5100s."""
     frozen_now = datetime(2026, 4, 5, 9, 0, 0)
@@ -84,6 +85,7 @@ def test_near_end_delay_seconds_correct():
 # ---------------------------------------------------------------------------
 # Test 3: delay already passed — returns 0.0 (not negative)
 # ---------------------------------------------------------------------------
+
 
 def test_midpoint_delay_already_passed_returns_zero():
     """If 'now' is after the midpoint, delay is clamped to 0.0."""
@@ -99,6 +101,7 @@ def test_midpoint_delay_already_passed_returns_zero():
 # Test 4: schedule_reminders creates exactly 2 asyncio.Task objects
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_schedule_reminders_creates_two_tasks():
     """After schedule_reminders, _timers[lesson_id] has exactly 2 asyncio.Task objects."""
@@ -108,11 +111,11 @@ async def test_schedule_reminders_creates_two_tasks():
         redis_ids=[100],
     )
     # Use 0-delay so tasks complete without waiting
-    with patch("bot.services.reminder_scheduler.midpoint_delay_seconds", return_value=0.0), \
-         patch("bot.services.reminder_scheduler.near_end_delay_seconds", return_value=0.0):
-        scheduler.schedule_reminders(
-            lesson_id=101, group_id=5, start_time="09:00", end_time="10:30"
-        )
+    with (
+        patch("bot.services.reminder_scheduler.midpoint_delay_seconds", return_value=0.0),
+        patch("bot.services.reminder_scheduler.near_end_delay_seconds", return_value=0.0),
+    ):
+        scheduler.schedule_reminders(lesson_id=101, group_id=5, start_time="09:00", end_time="10:30")
 
     assert 101 in scheduler._timers
     tasks = scheduler._timers[101]
@@ -128,6 +131,7 @@ async def test_schedule_reminders_creates_two_tasks():
 # Test 5: cancel_lesson cancels tasks and removes from _timers
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_cancel_lesson_cancels_tasks():
     """cancel_lesson cancels both tasks and removes the entry from _timers."""
@@ -135,11 +139,11 @@ async def test_cancel_lesson_cancels_tasks():
     scheduler, _, _, _, _ = _make_scheduler(academic_return=students, redis_ids=[100])
 
     # Large delay so tasks don't fire during the test
-    with patch("bot.services.reminder_scheduler.midpoint_delay_seconds", return_value=9999.0), \
-         patch("bot.services.reminder_scheduler.near_end_delay_seconds", return_value=9999.0):
-        scheduler.schedule_reminders(
-            lesson_id=202, group_id=5, start_time="09:00", end_time="10:30"
-        )
+    with (
+        patch("bot.services.reminder_scheduler.midpoint_delay_seconds", return_value=9999.0),
+        patch("bot.services.reminder_scheduler.near_end_delay_seconds", return_value=9999.0),
+    ):
+        scheduler.schedule_reminders(lesson_id=202, group_id=5, start_time="09:00", end_time="10:30")
 
     assert 202 in scheduler._timers
     tasks = list(scheduler._timers[202])  # copy before cancel removes them
@@ -157,6 +161,7 @@ async def test_cancel_lesson_cancels_tasks():
 # Test 6: _send_reminder_after skips students with no Redis key (already checked in)
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_send_reminder_after_skips_students_with_no_redis_key():
     """Students whose get_message_ids returns [] are skipped (send_queue.put not called)."""
@@ -166,9 +171,7 @@ async def test_send_reminder_after_skips_students_with_no_redis_key():
         redis_ids=[],  # empty → already checked in
     )
 
-    await scheduler._send_reminder_after(
-        delay=0.0, lesson_id=101, group_id=5, label="mid"
-    )
+    await scheduler._send_reminder_after(delay=0.0, lesson_id=101, group_id=5, label="mid")
 
     send_queue.put.assert_not_called()
 
@@ -176,6 +179,7 @@ async def test_send_reminder_after_skips_students_with_no_redis_key():
 # ---------------------------------------------------------------------------
 # Test 7: _send_reminder_after sends to students with Redis key and stores message_id
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_send_reminder_after_sends_and_stores_message_id():
@@ -194,9 +198,7 @@ async def test_send_reminder_after_sends_and_stores_message_id():
 
     send_queue.put = capture_put
 
-    await scheduler._send_reminder_after(
-        delay=0.0, lesson_id=101, group_id=5, label="end"
-    )
+    await scheduler._send_reminder_after(delay=0.0, lesson_id=101, group_id=5, label="end")
 
     assert len(captured_tasks) == 1
 
@@ -213,6 +215,7 @@ async def test_send_reminder_after_sends_and_stores_message_id():
 # ---------------------------------------------------------------------------
 # Test 8: cancel_lesson for non-existent lesson_id is a no-op
 # ---------------------------------------------------------------------------
+
 
 def test_cancel_lesson_nonexistent_is_noop():
     """cancel_lesson(999) with no registered timers does not raise."""

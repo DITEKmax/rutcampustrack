@@ -4,6 +4,7 @@ Verifies that when a student checks in (status=present), their reminder
 messages are deleted from Telegram and Redis keys are cleared.
 For status!=present, no deletion occurs.
 """
+
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest

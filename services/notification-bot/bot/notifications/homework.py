@@ -1,4 +1,5 @@
 """Handler for homework events — sends notifications to all group students."""
+
 import logging
 
 from aiogram import Bot
@@ -57,9 +58,7 @@ async def handle_homework(
 
         await send_queue.put(
             SendTask(
-                coroutine_factory=lambda s=student: bot.send_message(
-                    chat_id=s.telegram_id, text=text
-                ),
+                coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, text=text),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
             )

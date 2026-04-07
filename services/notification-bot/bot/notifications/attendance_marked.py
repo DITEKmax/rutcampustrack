@@ -1,4 +1,5 @@
 """Handler for attendance.marked events — deletes reminders when student checks in."""
+
 import logging
 
 from aiogram import Bot

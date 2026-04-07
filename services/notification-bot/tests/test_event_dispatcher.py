@@ -1,11 +1,12 @@
 """Tests for EventDispatcher routing and error handling."""
+
 import logging
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from bot.consumers.event_dispatcher import EventDispatcher
 from bot.config import Settings
+from bot.consumers.event_dispatcher import EventDispatcher
 
 
 def _make_dispatcher(handlers_override=None, reminder_scheduler=None):
@@ -195,6 +196,7 @@ async def test_lesson_started_calls_schedule_reminders_when_scheduler_set():
         pass
 
     import bot.notifications.lesson_started as ls_module
+
     original = ls_module.handle_lesson_started
     ls_module.handle_lesson_started = noop_lesson_started
 
@@ -226,6 +228,7 @@ async def test_lesson_started_does_not_call_schedule_reminders_when_no_scheduler
         pass
 
     import bot.notifications.lesson_started as ls_module
+
     original = ls_module.handle_lesson_started
     ls_module.handle_lesson_started = noop_lesson_started
 

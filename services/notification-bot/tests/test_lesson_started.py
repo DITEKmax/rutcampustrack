@@ -1,5 +1,6 @@
 """Tests for the lesson.started notification handler."""
-from unittest.mock import AsyncMock, MagicMock, call
+
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -46,7 +47,7 @@ async def test_lesson_started_sends_to_students_with_telegram_id():
     """Only students with telegram_id > 0 receive a message; telegram_id=0 is skipped."""
     students = [
         _make_student(user_id=1, telegram_id=111),
-        _make_student(user_id=2, telegram_id=0),   # should be skipped
+        _make_student(user_id=2, telegram_id=0),  # should be skipped
         _make_student(user_id=3, telegram_id=333, is_headman=True),
     ]
 
@@ -55,9 +56,7 @@ async def test_lesson_started_sends_to_students_with_telegram_id():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Математика")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Математика"))
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -105,9 +104,7 @@ async def test_lesson_started_message_contains_inline_keyboard_with_web_app():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Физика")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -158,9 +155,7 @@ async def test_lesson_started_stores_message_id_in_redis():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response()
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -202,9 +197,7 @@ async def test_lesson_started_resolves_subject_name():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Линейная алгебра")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Линейная алгебра"))
 
     send_queue = MagicMock()
     captured_tasks = []
@@ -230,8 +223,6 @@ async def test_lesson_started_resolves_subject_name():
 
     await captured_tasks[0].coroutine_factory()
 
-    _, kwargs = bot.send_message.call_args
-    text = kwargs.get("text") or bot.send_message.call_args[0][0] if bot.send_message.call_args[0] else ""
     # text is a keyword argument
     call_kwargs = bot.send_message.call_args.kwargs
     assert "Линейная алгебра" in call_kwargs.get("text", "")
@@ -247,9 +238,7 @@ async def test_lesson_started_fallback_subject_name_on_grpc_error():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        side_effect=Exception("gRPC down")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC down"))
 
     send_queue = MagicMock()
     captured_tasks = []

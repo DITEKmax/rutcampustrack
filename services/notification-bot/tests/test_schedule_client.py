@@ -1,4 +1,5 @@
 """Tests for ScheduleGrpcClient — GetActiveLesson with NOT_FOUND -> None handling."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 import grpc

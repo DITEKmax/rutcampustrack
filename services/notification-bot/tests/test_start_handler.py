@@ -1,4 +1,5 @@
 """Tests for /start command handler."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -82,9 +83,7 @@ async def test_start_unknown_user():
     """Unknown telegram_id shows instruction to contact headman."""
     message = _make_message()
     academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        return_value=_make_user_response(found=False)
-    )
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(found=False))
 
     await cmd_start(message, academic_client=academic_client)
 
@@ -99,9 +98,7 @@ async def test_start_grpc_error():
     """gRPC error shows service unavailable message."""
     message = _make_message()
     academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        side_effect=Exception("gRPC connection refused")
-    )
+    academic_client.get_user_by_telegram_id = AsyncMock(side_effect=Exception("gRPC connection refused"))
 
     await cmd_start(message, academic_client=academic_client)
 

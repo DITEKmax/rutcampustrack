@@ -1,15 +1,15 @@
 """
 Tests for the consumer watchdog and prefetch_count configuration.
 """
+
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 import bot.__main__ as main_module
-from bot.__main__ import run_with_watchdog, health_handler
+from bot.__main__ import health_handler, run_with_watchdog
 from bot.consumers.event_consumer import start_consumer
-
 
 # ---------------------------------------------------------------------------
 # Watchdog behaviour tests
@@ -90,9 +90,7 @@ async def test_health_up_during_reconnect():
     original_bot_task = main_module._bot_task
     try:
         with patch("bot.__main__.start_consumer", side_effect=mock_start_consumer):
-            main_module._consumer_task = asyncio.create_task(
-                run_with_watchdog("amqp://test/")
-            )
+            main_module._consumer_task = asyncio.create_task(run_with_watchdog("amqp://test/"))
             # Mock _bot_task as a live task so health_handler sees both tasks alive
             main_module._bot_task = asyncio.create_task(asyncio.sleep(9999))
             await asyncio.wait_for(started.wait(), timeout=5)

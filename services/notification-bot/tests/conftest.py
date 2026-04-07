@@ -1,5 +1,5 @@
-import pytest_asyncio
 import fakeredis
+import pytest_asyncio
 
 
 @pytest_asyncio.fixture

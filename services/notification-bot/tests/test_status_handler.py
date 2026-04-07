@@ -1,4 +1,5 @@
 """Tests for /status command handler."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -76,9 +77,7 @@ async def test_status_no_active_lesson():
     jwt_redis = MagicMock()
     jwt_redis.get = AsyncMock(return_value={"access_token": "tok", "refresh_token": "ref"})
     academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        return_value=_make_user_response(found=True, group_id=10)
-    )
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(found=True, group_id=10))
     schedule_client = MagicMock()
     schedule_client.get_active_lesson = AsyncMock(return_value=None)
     attendance_client = MagicMock()
@@ -104,18 +103,16 @@ async def test_status_with_lesson_present():
     jwt_redis = MagicMock()
     jwt_redis.get = AsyncMock(return_value={"access_token": "tok", "refresh_token": "ref"})
     academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        return_value=_make_user_response(found=True, group_id=10)
-    )
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Математика")
-    )
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(found=True, group_id=10))
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Математика"))
     schedule_client = MagicMock()
     schedule_client.get_active_lesson = AsyncMock(return_value=lesson)
     attendance_client = MagicMock()
-    attendance_client.get_student_records = AsyncMock(return_value=[
-        {"lessonId": 101, "status": "present"},
-    ])
+    attendance_client.get_student_records = AsyncMock(
+        return_value=[
+            {"lessonId": 101, "status": "present"},
+        ]
+    )
 
     await cmd_status(
         message,
@@ -140,18 +137,16 @@ async def test_status_not_marked():
     jwt_redis = MagicMock()
     jwt_redis.get = AsyncMock(return_value={"access_token": "tok", "refresh_token": "ref"})
     academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        return_value=_make_user_response(found=True, group_id=10)
-    )
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Физика")
-    )
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(found=True, group_id=10))
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
     schedule_client = MagicMock()
     schedule_client.get_active_lesson = AsyncMock(return_value=lesson)
     attendance_client = MagicMock()
-    attendance_client.get_student_records = AsyncMock(return_value=[
-        {"lessonId": 999, "status": "present"},  # different lesson
-    ])
+    attendance_client.get_student_records = AsyncMock(
+        return_value=[
+            {"lessonId": 999, "status": "present"},  # different lesson
+        ]
+    )
 
     await cmd_status(
         message,
@@ -175,18 +170,12 @@ async def test_status_token_expired():
     jwt_redis.get = AsyncMock(return_value={"access_token": "old_tok", "refresh_token": "ref"})
     jwt_redis.delete = AsyncMock()
     academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(
-        return_value=_make_user_response(found=True, group_id=10)
-    )
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Информатика")
-    )
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(found=True, group_id=10))
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Информатика"))
     schedule_client = MagicMock()
     schedule_client.get_active_lesson = AsyncMock(return_value=lesson)
     attendance_client = MagicMock()
-    attendance_client.get_student_records = AsyncMock(
-        side_effect=TokenExpiredError("JWT expired")
-    )
+    attendance_client.get_student_records = AsyncMock(side_effect=TokenExpiredError("JWT expired"))
 
     await cmd_status(
         message,

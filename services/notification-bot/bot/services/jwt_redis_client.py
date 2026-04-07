@@ -34,15 +34,15 @@ class JwtRedisClient:
     def _key(self, telegram_id: int) -> str:
         return f"{self._key_prefix}{telegram_id}"
 
-    async def save(
-        self, telegram_id: int, access_token: str, refresh_token: str, expires_in: int
-    ) -> None:
+    async def save(self, telegram_id: int, access_token: str, refresh_token: str, expires_in: int) -> None:
         """Save JWT pair. TTL = max(expires_in, self._ttl) to keep refresh token alive."""
         key = self._key(telegram_id)
-        data = json.dumps({
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-        })
+        data = json.dumps(
+            {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+            }
+        )
         # Use the larger of expires_in and default ttl to keep refresh token alive
         ttl = max(expires_in, self._ttl) if expires_in > 0 else self._ttl
         try:

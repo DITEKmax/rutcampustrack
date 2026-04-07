@@ -1,4 +1,5 @@
 """Handler for lesson.started events — sends inline check-in button to group students."""
+
 import logging
 
 from aiogram import Bot
@@ -44,9 +45,7 @@ async def handle_lesson_started(
         if subjects_resp.subjects:
             subject_name = subjects_resp.subjects[0].subject_name
     except Exception:
-        logger.warning(
-            "Could not resolve subject_id=%s for lesson.started, using fallback", subject_id
-        )
+        logger.warning("Could not resolve subject_id=%s for lesson.started, using fallback", subject_id)
 
     text = f"Пара началась!\n\n{subject_name}\nАудитория: {room}\nВремя: {start_time} - {end_time}"
 
@@ -55,9 +54,7 @@ async def handle_lesson_started(
             [
                 InlineKeyboardButton(
                     text="Отметиться",
-                    web_app=WebAppInfo(
-                        url=f"{config.mini_app_url}/checkin?lesson_id={lesson_id}"
-                    ),
+                    web_app=WebAppInfo(url=f"{config.mini_app_url}/checkin?lesson_id={lesson_id}"),
                 )
             ]
         ]
@@ -72,9 +69,7 @@ async def handle_lesson_started(
 
         # Use default arg binding to avoid late-binding closure bug
         async def send_and_store(s=student):
-            result = await bot.send_message(
-                chat_id=s.telegram_id, text=text, reply_markup=keyboard
-            )
+            result = await bot.send_message(chat_id=s.telegram_id, text=text, reply_markup=keyboard)
             await redis_client.add_message_id(lesson_id, s.user_id, result.message_id)
 
         await send_queue.put(

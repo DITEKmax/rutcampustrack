@@ -1,4 +1,5 @@
 """Tests for the homework notification handler."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -73,9 +74,7 @@ async def test_homework_published_sends_to_students_with_telegram_id():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Алгебра")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Алгебра"))
 
     captured_tasks = []
     send_queue = MagicMock()
@@ -106,9 +105,7 @@ async def test_homework_published_text_contains_subject_and_title():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Физика")
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
 
     captured_tasks = []
     send_queue = MagicMock()
@@ -149,9 +146,7 @@ async def test_homework_updated_sends_to_all_students_with_telegram_id():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response()
-    )
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
 
     captured_tasks = []
     send_queue = MagicMock()

@@ -1,0 +1,33 @@
+<div class="journal-grid-wrapper">
+  <cdk-virtual-scroll-viewport [itemSize]="40" [minBufferPx]="400" [maxBufferPx]="800"
+    class="journal-viewport">
+    <table cdk-table [dataSource]="dataSource()">
+      <!-- Sticky student name column -->
+      <ng-container cdkColumnDef="student" sticky>
+        <th cdk-header-cell *cdkHeaderCellDef class="student-header">Студент</th>
+        <td cdk-cell *cdkCellDef="let row" class="student-cell"
+            [title]="row.displayName">
+          {{ row.displayName }}
+        </td>
+      </ng-container>
+
+      <!-- Dynamic date/lesson columns -->
+      @for (col of columns(); track col.id) {
+        <ng-container [cdkColumnDef]="col.id">
+          <th cdk-header-cell *cdkHeaderCellDef class="date-header"
+              [class.today-column]="col.isToday">
+            <div class="date-label">{{ col.displayDate }}</div>
+            <div class="lesson-label">Пара {{ col.lessonNumber }}</div>
+          </th>
+          <td cdk-cell *cdkCellDef="let row" class="status-cell">
+            <app-journal-cell [cell]="getCellFor(row, col.date, col.lessonNumber)" />
+          </td>
+        </ng-container>
+      }
+
+      <tr cdk-header-row *cdkHeaderRowDef="displayedColumns(); sticky: true"></tr>
+      <tr cdk-row *cdkRowDef="let row; columns: displayedColumns();"
+          [class.even-row]="isEvenRow(row)"></tr>
+    </table>
+  </cdk-virtual-scroll-viewport>
+</div>

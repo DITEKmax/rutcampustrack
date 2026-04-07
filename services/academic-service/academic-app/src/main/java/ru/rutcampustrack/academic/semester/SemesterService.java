@@ -83,14 +83,16 @@ public class SemesterService {
         // Step 2: deactivate all currently active semesters
         semesterRepository.deactivateAllActive();
 
-        // Step 3: flush to ensure deactivation is visible before activation
+        // Step 3: flush bulk UPDATE then clear persistence context so subsequent
+        // findById re-reads from DB (bulk UPDATE bypasses entity cache — stale isActive)
         entityManager.flush();
+        entityManager.clear();
 
         // Step 4: publish semester.archived event for the deactivated semester
         previouslyActive.ifPresent(deactivated ->
                 eventPublisher.publishEvent(new SemesterArchivedEvent(this, deactivated.getId())));
 
-        // Step 5: find and activate the target semester
+        // Step 5: find and activate the target semester (re-read from DB after clear)
         Semester semester = findSemesterById(id);
         semester.setActive(true);
         return semesterRepository.saveAndFlush(semester);

@@ -165,8 +165,6 @@ Plans:
 **Plans:** 1/1 plans complete
 Plans:
 - [x] 43-01-PLAN.md — Gitignore + env template + missing prod profiles + docker-compose.prod.yml with all 17 services
-
-
 ### Phase 44: Nginx Reverse Proxy + SSL
 **Goal**: A single nginx container terminates SSL and routes all external traffic to the correct backend service or frontend container
 **Depends on**: Phase 43
@@ -230,10 +228,9 @@ Plans:
   2. A developer can follow the README setup instructions to run the system locally with docker compose
   3. The README links to the live Swagger UI and summarizes key API endpoints by role
   4. The README contains a complete deploy guide (VPS setup, GitHub Secrets, first certbot run, compose up)
-**Plans:** TBD
+**Plans:** 1 plan
 Plans:
-- TBD
-
+- [ ] 48-01-PLAN.md — Complete README with architecture, setup, API docs, and deploy guide
 ## Progress
 
 **Execution Order:**
@@ -256,4 +253,4 @@ Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 �
 | 45. GitHub Actions CI | v8.0 | 1/1 | Complete    | 2026-04-07 |
 | 46. GitHub Actions Deploy | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 47. Unified Swagger UI | v8.0 | 1/1 | Complete   | 2026-04-07 |
-| 48. README | v8.0 | 0/TBD | Not started | - |
+| 48. README | v8.0 | 0/1 | Planning | - |

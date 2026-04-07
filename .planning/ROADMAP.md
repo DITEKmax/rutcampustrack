@@ -114,7 +114,7 @@ Full details: `.planning/milestones/v7.0-ROADMAP.md`
 **Milestone Goal:** Production-ready deployment pipeline — multi-stage Dockerfiles, docker-compose.prod.yml, SSL termination, GitHub Actions CI/CD, unified Swagger UI, and a complete project README.
 
 - [x] **Phase 41: Actuator Standardization** - Add health/info endpoints to all 4 Java services (completed 2026-04-07)
-- [ ] **Phase 42: Multi-Stage Dockerfiles** - Optimized build+runtime images for all services and frontends
+- [x] **Phase 42: Multi-Stage Dockerfiles** - Optimized build+runtime images for all services and frontends (completed 2026-04-08)
 - [x] **Phase 43: docker-compose.prod.yml** - Production compose with prod profile, secrets, Actuator healthchecks (completed 2026-04-07)
 - [x] **Phase 44: Nginx Reverse Proxy + SSL** - SSL termination and path-based routing via Let's Encrypt (completed 2026-04-07)
 - [x] **Phase 45: GitHub Actions CI** - Build, test, and lint pipeline for all services on push/PR (completed 2026-04-07)
@@ -147,11 +147,11 @@ Plans:
   3. notification-bot Dockerfile uses python:3.12-slim (not Alpine) and grpcio installs without error
   4. All 4 frontend Dockerfiles produce nginx containers with optimized static asset builds
   5. docker build completes successfully for every service image with no manual intervention
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 Plans:
-- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
-- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
-- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
+- [x] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
+- [x] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
+- [x] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
 
 ### Phase 43: docker-compose.prod.yml
 **Goal**: A production-ready compose file runs the entire system with the Spring production profile, no exposed database ports, and container-level healthchecks
@@ -256,7 +256,7 @@ Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 �
 | 27-32 | v6.0 | 14/14 | Complete | 2026-04-06 |
 | 33-40 | v7.0 | 16/16 | Complete | 2026-04-07 |
 | 41. Actuator Standardization | v8.0 | 1/1 | Complete   | 2026-04-07 |
-| 42. Multi-Stage Dockerfiles | v8.0 | 0/TBD | Not started | - |
+| 42. Multi-Stage Dockerfiles | v8.0 | 3/3 | Complete | 2026-04-08 |
 | 43. docker-compose.prod.yml | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 44. Nginx Reverse Proxy + SSL | v8.0 | 2/2 | Complete   | 2026-04-07 |
 | 45. GitHub Actions CI | v8.0 | 1/1 | Complete    | 2026-04-07 |

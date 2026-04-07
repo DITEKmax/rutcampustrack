@@ -103,7 +103,7 @@ Full details: `.planning/milestones/v6.0-ROADMAP.md`
 - [x] **Phase 37: Mini App Features** — Schedule, geo check-in, attendance stats, homework, Telegram UX (2/2 plans) (completed 2026-04-07)
 - [x] **Phase 38: Web Panel Scaffold + Auth** — Angular 19 standalone, Tailwind, interceptors, role guards, login/logout (3 plans) (completed 2026-04-07)
 - [x] **Phase 39: Web Panel Teacher** — Attendance journal grid (CdkTable), stats charts (ng2-charts) (2 plans) (completed 2026-04-07)
-- [ ] **Phase 40: Web Panel Admin** — User/group/semester CRUD, headman assign/revoke, dashboard summary
+- [ ] **Phase 40: Web Panel Admin** — User/group/semester CRUD, headman assign/revoke, dashboard summary (3 plans)
 
 ## Phase Details
 
@@ -221,10 +221,11 @@ Plans:
   2. Admin can manage groups and assign/revoke headmen
   3. Admin can manage semesters with confirmation phrase for delete
   4. Dashboard shows summary stats (total students, groups, attendance rates)
-**Plans:** 2 plans
+**Plans:** 3 plans
 Plans:
-- [x] 39-01-PLAN.md — Types, API service, journal grid with CdkTable virtual scroll, filter bar, route wiring
-- [x] 39-02-PLAN.md — ng2-charts install, stats derivation, stacked bar charts, stats page, route wiring
+- [ ] 40-01-PLAN.md — Foundation: types, AdminApiService, shared chips, dashboard stat cards, route wiring
+- [ ] 40-02-PLAN.md — User CRUD: paginated list, search/filter, create/edit dialog, archive/restore
+- [ ] 40-03-PLAN.md — Groups + Semesters: headman assign/revoke, typed-confirmation delete, WPAN-13 note
 **UI hint**: yes
 
 ## Progress
@@ -270,4 +271,4 @@ Plans:
 | 37. Mini App Features | v7.0 | 2/2 | Complete | 2026-04-07 |
 | 38. Web Panel Scaffold + Auth | v7.0 | 3/3 | Complete    | 2026-04-07 |
 | 39. Web Panel Teacher | v7.0 | 2/2 | Complete    | 2026-04-07 |
-| 40. Web Panel Admin | v7.0 | 0/? | Planned | - |
+| 40. Web Panel Admin | v7.0 | 0/3 | Planned | - |

@@ -46,3 +46,6 @@ dist/
 
 # === Docker ===
 docker-compose.override.yml
+
+# Production secrets
+.env.prod

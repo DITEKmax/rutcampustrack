@@ -1,5 +1,20 @@
 # Milestones
 
+## v7.0 Frontends — Mini App, Web Panel, Landing (Shipped: 2026-04-07)
+
+**Phases completed:** 8 phases, 16 plans, 32 tasks
+
+**Key accomplishments:**
+
+- HMAC-SHA256 Telegram initData validation in auth-service: POST /auth/tma exchanges initData for JWT pair, POST /auth/refresh-body provides WebView-compatible cookie-less token refresh
+- Complete RutCampusTrack marketing landing page — single static HTML with Tailwind CDN, GSAP scroll animations, Phosphor Icons, responsive 360-1440px, dark mode via prefers-color-scheme
+- All 4 Mini App feature pages built with full UX states, App.tsx wired with routes and transitions, 21 new tests passing (35 total)
+- One-liner:
+- AdminApiService with 16 CRUD methods, dashboard with 4 stat cards, RoleChip/StatusChip components, and route wiring for all admin pages
+- Group CRUD with headman assign/revoke via user PATCH, semester CRUD with mat-datepicker and typed-confirmation delete
+
+---
+
 ## v6.0 PWA + Web Push (Shipped: 2026-04-06)
 
 **Phases completed:** 6 phases, 14 plans

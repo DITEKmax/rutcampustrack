@@ -7,23 +7,45 @@ Microservice attendance tracking system for RUT MIIT university. Production syst
 Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, Telegram Mini App) with a unified microservice architecture for tracking student attendance.
 
 ## Core Value
-Full-stack attendance tracking system: 5 backend microservices (Auth, Academic, Schedule, Attendance, Notification) + React PWA «RutTrack» mobile client with Web Push notifications. Students can install the app, view schedule, geo-checkin, track attendance stats, manage homework — all with native push notifications independent from Telegram.
+Full-stack attendance tracking system: 5 backend microservices + 4 frontend clients (React PWA, Telegram Mini App, Angular Web Panel, Landing page). Complete student-to-admin workflow — from geo-checkin in Telegram to admin dashboard in the browser.
 
 ## Current State
 
-v7.0 in progress (Phase 39 complete). All 5 backend services + React PWA «RutTrack» operational (v6.0 shipped 2026-04-06). Telegram Mini App scaffold + auth flow complete (Phase 36). Web Panel scaffold + auth + teacher journal/stats complete (Phases 38-39).
+v7.0 shipped (2026-04-07). All 5 backend services + all 4 frontend clients operational.
 
-**Backend:** Auth (JWT/OTP) + Academic (CRUD/gRPC/Redis/RabbitMQ) + Schedule (auto-generation/status transitions/cron) + Attendance (geo-checkin/manual marking/reports/MongoDB) + Notification (STOMP WebSocket + Telegram bot + Web Push). All inter-service communication working: gRPC, RabbitMQ fanout, STOMP, Web Push API.
+**Backend:** Auth (JWT/OTP/TMA) + Academic (CRUD/gRPC/Redis/RabbitMQ) + Schedule (auto-generation/status transitions/cron) + Attendance (geo-checkin/manual marking/reports/MongoDB) + Notification (STOMP WebSocket + Telegram bot + Web Push). All inter-service communication working: gRPC, RabbitMQ fanout, STOMP, Web Push API.
 
-**Frontend PWA:** React + Vite + TanStack Query + Tailwind + Framer Motion. Features: login with httpOnly cookie JWT, schedule view with week navigation, geo check-in with GPS, attendance stats with red zone indicators, homework list with optimistic toggle, Web Push notifications (lesson start/cancel/homework), A2HS install prompt, offline Service Worker shell. 63 vitest tests, 4,733 LOC TypeScript.
+**Frontend PWA:** React + Vite + TanStack Query + Tailwind + Framer Motion. Login with httpOnly cookie JWT, schedule, geo check-in, attendance stats, homework, Web Push, A2HS, offline SW shell. 63 vitest tests.
+
+**Telegram Mini App:** React + Vite + TanStack Query + Telegram SDK. initData HMAC-SHA256 auth, schedule view, geo check-in with MainButton + haptic feedback, attendance stats with red zone, homework list, Telegram theme support, BackButton navigation. 35 vitest tests.
+
+**Web Panel:** Angular 19 + Material 3 + Tailwind. Teacher features: attendance journal grid (CdkTable + virtual scroll), stats charts (ng2-charts). Admin features: dashboard with 4 stat cards, user CRUD with search/filter/pagination, group management with headman assign/revoke, semester management with typed-confirmation delete. 129 vitest tests.
+
+**Landing:** Static HTML/CSS with Tailwind CDN, GSAP scroll animations, responsive 360-1440px, dark mode.
 
 **Infrastructure:** API Gateway with CORS + JWT filter, nginx containers for PWA + Mini App + Web Panel + Landing, docker-compose with PostgreSQL×2 + MongoDB + Redis + RabbitMQ.
 
-**Web Panel:** Angular 19 + Material 3 + Tailwind. Login with JWT auth interceptor, role-based routing (teacher/admin). Teacher features: attendance journal grid (CdkTable + virtual scroll for 500+ rows, sticky student column), attendance stats page (ng2-charts stacked bar charts per subject, overall stat card). 91 vitest tests.
-
-**Current milestone:** v7.0 Frontends — Mini App, Web Panel, Landing (Phase 39 complete, 3 phases remaining).
+**Latest milestone:** v7.0 Frontends shipped 2026-04-07 (8 phases, 16 plans, 32/33 requirements — WPAN-13 blocked by backend role constraint).
 
 ## Shipped Milestones
+
+<details>
+<summary>v7.0 Frontends — Mini App, Web Panel, Landing — SHIPPED 2026-04-07</summary>
+
+**Goal:** Build 3 remaining frontend applications — Telegram Mini App, Angular Web Panel, Landing page.
+**Phases:** 33-40 (8 phases, 16 plans)
+**Requirements:** 32/33 satisfied (WPAN-13 blocked by backend role constraint)
+
+Key deliverables:
+- Gateway CORS expansion + nginx containers for Mini App, Web Panel, Landing
+- Telegram initData HMAC-SHA256 auth + body-based refresh endpoint
+- Static landing page with GSAP animations, responsive layout, dark mode
+- Telegram Mini App: schedule, geo check-in, stats, homework, theme support
+- Angular Web Panel scaffold: login, sidebar, role guards, auth interceptor
+- Teacher journal grid (CdkTable + virtual scroll) + stats charts (ng2-charts)
+- Admin dashboard + user/group/semester CRUD with headman management
+
+</details>
 
 <details>
 <summary>v6.0 PWA + Web Push — SHIPPED 2026-04-06</summary>
@@ -143,23 +165,26 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ HW-01..02: Homework list, optimistic completion toggle — v6.0
 - ✓ INFRA-01..03: Gateway CORS, push route, nginx PWA serving — v6.0
 
-## Current Milestone: v7.0 Frontends — Mini App, Web Panel, Landing
+## Next Milestone
 
-**Goal:** Build the remaining three frontend applications — Telegram Mini App (React), teacher/admin Web Panel (Angular), and marketing Landing page (HTML/CSS).
-
-**Target features:**
-- Telegram Mini App (React) — student-facing UI inside Telegram for attendance, schedule, check-in
-- Web Panel (Angular) — teacher/admin dashboard for managing users, groups, semesters, viewing attendance journal
-- Landing page (HTML/CSS) — marketing/info page for the project
-
-### Active
-(Requirements to be defined below)
+Planning next milestone. Run `/gsd-new-milestone` to start.
 
 ### Deferred (from previous milestones)
 - [ ] Excuse tickets: create/submit/review flow with event publishing (excuse.requested)
 - [ ] Late check-in ("forgot to mark") flow with event publishing (late_checkin.requested)
 - [ ] NOTIF-02, NOTIF-03: Live timer testing for midpoint/near-end reminders (TZ fix applied)
 - [ ] WS-07: Live broker-level group isolation verification
+- [ ] WPAN-13: Headman assistant management (blocked — backend @RequireRole(STUDENT) on assistant endpoints)
+
+### Recently Validated (v7.0)
+- ✓ INFRA-01..04: URL layout, Gateway CORS, nginx containers, SPA try_files — v7.0
+- ✓ AUTH-01..02: TMA initData HMAC-SHA256 auth, body-based refresh endpoint — v7.0
+- ✓ LAND-01..03: Landing page with responsive layout, nginx container — v7.0
+- ✓ TMA-01..05: Mini App opens in Telegram, initData auth, memory tokens, dev mock — v7.0
+- ✓ TMA-06..11: Schedule view, geo check-in, stats, homework, theme, BackButton — v7.0
+- ✓ WPAN-01..05: Web Panel login, JWT signals, role guards, auto-refresh, logout — v7.0
+- ✓ WPAN-06..08: Journal grid (CdkTable + virtual scroll), stats charts (ng2-charts) — v7.0
+- ✓ WPAN-09..12: User/group/semester CRUD, admin dashboard — v7.0
 
 ### Recently Validated (v4.0)
 - ✓ INFRA-01..06: MongoDB indexes, enum converters, gRPC clients, RabbitMQ queue, event publishing — v4.0
@@ -179,6 +204,9 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - PDF/Excel export — deferred to v4.1+
 
 ## Milestones
+
+### v7.0: Frontends — Mini App, Web Panel, Landing — ✅ SHIPPED 2026-04-07
+Telegram Mini App + Angular Web Panel + Landing page. 8 phases, 16 plans, 32/33 requirements. See `.planning/milestones/v7.0-ROADMAP.md`.
 
 ### v6.0: PWA + Web Push — ✅ SHIPPED 2026-04-06
 React PWA «RutTrack» with Web Push notifications. 6 phases, 14 plans, 32 requirements. See `.planning/milestones/v6.0-ROADMAP.md`.
@@ -244,6 +272,15 @@ Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 | BeforeInstallPromptEvent in declare global block | ✓ TypeScript module visibility for A2HS event | v6.0 |
 | useThreshold returns null on 404 | ✓ No red zone indicators shown when no threshold configured (D-06) | v6.0 |
 | Optimistic mutations with TanStack Query | ✓ Homework checkbox toggle feels instant; reverts on error | v6.0 |
+| MessageDigest.isEqual for TMA HMAC comparison | ✓ Constant-time prevents timing oracle on initData hash | v7.0 |
+| TMA re-auth via initData on 401 (not refresh-body) | ✓ Simpler than body-based refresh; initData always available in WebView | v7.0 |
+| Memory-only tokens in Mini App (not localStorage) | ✓ Follows D-05; initData re-auth replaces persistence need | v7.0 |
+| Tailwind CDN + GSAP CDN for landing page | ✓ Zero-build static page; CSS-only hamburger; darkMode media | v7.0 |
+| Angular signals for Web Panel token storage | ✓ Both tokens in signals (memory-only); D-06 overrides httpOnly cookie | v7.0 |
+| CdkTable + CdkVirtualScrollViewport for journal | ✓ Handles 500+ rows with 40px fixed row height; sticky student column | v7.0 |
+| AdminApiService single Injectable for all CRUD | ✓ 16 methods covering users/groups/semesters/dashboard | v7.0 |
+| http.request('DELETE') for semester delete | ✓ HttpClient.delete() drops request body; request() preserves it | v7.0 |
+| PATCH status=archived for user archive (not DELETE) | ✓ Explicit control over archive/restore; no confirmation dialog for restore | v7.0 |
 
 ## Evolution
 
@@ -263,4 +300,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after Phase 39 (web-panel-teacher) completion*
+*Last updated: 2026-04-07 after v7.0 milestone*

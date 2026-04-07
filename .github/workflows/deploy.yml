@@ -1,0 +1,130 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-push:
+    name: Build and Push to GHCR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push api-gateway
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: services/api-gateway/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/api-gateway:latest
+
+      - name: Build and push auth-service
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: services/auth-service/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/auth-service:latest
+
+      - name: Build and push academic-service
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: services/academic-service/academic-app/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/academic-service:latest
+
+      - name: Build and push schedule-service
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: services/schedule-service/schedule-app/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/schedule-service:latest
+
+      - name: Build and push attendance-service
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: services/attendance-service/attendance-app/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/attendance-service:latest
+
+      - name: Build and push notification-web
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: services/notification-service/notification-app/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/notification-web:latest
+
+      - name: Build and push notification-bot
+        uses: docker/build-push-action@v7
+        with:
+          context: services/notification-bot
+          file: services/notification-bot/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/notification-bot:latest
+
+      - name: Build and push pwa
+        uses: docker/build-push-action@v7
+        with:
+          context: frontends/pwa
+          file: frontends/pwa/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/pwa-nginx:latest
+
+      - name: Build and push mini-app
+        uses: docker/build-push-action@v7
+        with:
+          context: frontends/mini-app
+          file: frontends/mini-app/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/mini-app-nginx:latest
+
+      - name: Build and push web-panel
+        uses: docker/build-push-action@v7
+        with:
+          context: frontends/web-panel
+          file: frontends/web-panel/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/web-panel-nginx:latest
+
+      - name: Build and push landing
+        uses: docker/build-push-action@v7
+        with:
+          context: frontends/landing
+          file: frontends/landing/Dockerfile
+          push: true
+          tags: ghcr.io/maksd/rutcampustrack/landing-nginx:latest
+
+  deploy:
+    name: Deploy to VPS
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /opt/rutcampustrack
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans

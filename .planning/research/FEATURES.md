@@ -1,295 +1,149 @@
-# Feature Research
+# Feature Landscape
 
-**Domain:** University attendance tracking — v7.0 frontends (Telegram Mini App, Angular Web Panel, Landing Page)
-**Researched:** 2026-04-06
-**Confidence:** HIGH (backend APIs fully defined, existing PWA provides clear patterns, job stories documented)
+**Domain:** CI/CD, Docker Production Deployment, SSL, Observability, API Docs, README
+**Project:** RutCampusTrack v8.0
+**Researched:** 2026-04-07
+**Confidence:** HIGH (well-established ecosystem with extensive official docs)
 
 ---
 
 ## Context: What Already Exists (Must Not Re-Implement)
 
-The backend is complete and all APIs are operational. The React PWA «RutTrack» already covers:
-- Student login (JWT/httpOnly cookies), schedule view, geo check-in, attendance stats, homework list, Web Push, A2HS, offline shell
-
-v7.0 adds three new frontends that consume the same backend APIs. Features below are scoped exclusively to what is NEW in these three frontends.
-
----
-
-## Application 1: Telegram Mini App (React, student-facing)
-
-The Mini App runs inside Telegram, opened from bot buttons or the bot menu. Authentication is via Telegram's `initData` (HMAC-SHA256 signed by bot secret) — no separate login screen needed once the student links their account via `/start`.
-
-### Table Stakes (Users Expect These)
-
-| Feature | Why Expected | Complexity | Backend Dependency |
-|---------|--------------|------------|-------------------|
-| Seamless auth via initData (no login form) | Mini Apps never show a login screen — Telegram identity IS the credential | MEDIUM | Auth Service: new endpoint to exchange initData for JWT; bot already links telegram_id (v5.0 done) |
-| Today's schedule view | First thing a student checks before/during class | LOW | Schedule Service GET /api/schedule/lessons (date range) — already built |
-| Geo check-in button | Core purpose of the Mini App per JS-STUDENT-01 | MEDIUM | Attendance Service POST /api/attendance/check-in — already built |
-| Check-in success/failure feedback | Students need instant confirmation; silent failure is unacceptable | LOW | HTTP response + optimistic UI |
-| Attendance stats per subject | Students want to know if they are in the red zone (JS-STUDENT-07) | LOW | Attendance Service GET /api/reports/student-stats — already built |
-| Bottom navigation (Schedule / Check-in / Stats) | Standard Mini App navigation pattern; users expect tab-based navigation | LOW | No backend needed |
-| Telegram native theme colors | Mini App must respect Telegram's color scheme (light/dark, OLED) | LOW | useThemeParams from tma.js SDK |
-| MainButton integration | Telegram's native bottom action button for primary actions (check-in) | LOW | tma.js SDK useMainButton |
-| Back button wiring | Telegram provides a native BackButton — must be wired to app navigation | LOW | tma.js SDK useBackButton |
-
-### Differentiators
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Inline deep link from bot check-in button | One-tap from Telegram bot notification directly into Mini App at check-in screen | LOW | Bot already sends inline button (NOTIF-01 done v5.0); Mini App needs /checkin route |
-| Homework list (read-only) | Students see assigned homework without leaving Telegram | LOW | Academic Service GET /api/academic/homeworks — built |
-| Haptic feedback on check-in | Makes geo check-in feel native on iOS/Android | LOW | window.Telegram.WebApp.HapticFeedback — one-liner |
-| Late check-in request | JS-STUDENT-06: deferred; no competing Mini App has it | HIGH | Blocked — event publisher not yet built (NOTIF-08 partial); defer to v7.x |
-| Excuse ticket submission | JS-STUDENT-03..05: student picks reason, no file upload needed for MVP | HIGH | Blocked — same event publisher dependency; defer to v7.x |
-
-### Anti-Features
-
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Full login form with password | Fallback if initData auth fails | Defeats the purpose of the Mini App; creates two auth paths to maintain | Show error screen: "Link your account via /start in the bot" |
-| Push notification management (subscribe/unsubscribe) | Students want control | Web Push does not work inside Telegram's WebView | Keep push settings in the PWA only |
-| Schedule template creation / lesson management | Headman features feel natural to include | Mini App is student-facing; headman features belong in PWA or Web Panel | Headman uses PWA or Web Panel |
-| PDF/Excel export | Seems useful | Useless on mobile inside Telegram; large payloads | Link to Web Panel for exports |
-| Offline mode / Service Worker | Seems useful for reliability | Telegram WebView does not support Service Workers reliably | Show toast on network error; rely on TanStack Query cache |
+- 5 Java microservices + Python Aiogram bot + API Gateway (Spring Cloud Gateway)
+- 4 frontends: React PWA, React Mini App, Angular Web Panel, HTML Landing
+- Dev docker-compose: PostgreSQL×2, MongoDB, Redis, RabbitMQ, nginx for 4 frontends
+- Testcontainers integration tests for all Java services (227 vitest frontend tests)
+- GitHub repo exists; no CI/CD, no production Dockerfiles, no prod compose, no SSL yet
 
 ---
 
-## Application 2: Web Panel (Angular, teacher + admin facing)
+## Table Stakes
 
-Desktop-first. Two distinct role contexts: TEACHER (read-only journal/stats) and ADMIN (full CRUD management). Headman features exist but are lower priority since the PWA covers headman workflows on mobile.
-
-### Table Stakes (Users Expect These)
-
-#### Teacher View
-
-| Feature | Why Expected | Complexity | Backend Dependency |
-|---------|--------------|------------|-------------------|
-| Login form (username + password) | Teachers have no Telegram identity in the system (JS-TEACHER-05) | LOW | Auth Service POST /api/auth/login — built |
-| Subject + group filter dropdowns | JS-TEACHER-01: teacher sees only their own groups and subjects | LOW | Academic Service GET /api/academic/teacher-subjects — built |
-| Attendance journal grid (students x lesson dates, status cells б/н/у/сп) | JS-TEACHER-03: core deliverable; read-only table | HIGH | Attendance Service GET /api/attendance/journal — built |
-| Attendance stats per subject/group | JS-TEACHER-06: % attendance for comparison between groups | MEDIUM | Attendance Service GET /api/reports/student-stats — built |
-| Token refresh / session persistence | Teacher should not be logged out mid-session | LOW | Auth Service POST /api/auth/refresh — built |
-| Logout | Standard security expectation | LOW | Auth Service POST /api/auth/logout — built |
-
-#### Admin View
-
-| Feature | Why Expected | Complexity | Backend Dependency |
-|---------|--------------|------------|-------------------|
-| Admin dashboard with summary stats (users/groups/semesters) | JS-ADMIN-11: first screen after login | LOW | Academic Service GET /api/academic/dashboard — built |
-| User list with search/filter (by role, group, status) | JS-ADMIN-01..04: user management is the core admin task | MEDIUM | Academic Service GET /api/academic/users — built |
-| Create user (ADMIN, TEACHER, STUDENT) with auto-generated login | JS-ADMIN-01: system generates studentXXXXX / teacherXXXXX | MEDIUM | Academic Service POST /api/academic/users — built |
-| Edit user (status change: active/expelled/suspended/archived, group assignment) | JS-ADMIN-02..03: expulsion, suspension, transfer | MEDIUM | Academic Service PATCH /api/academic/users/{id} — built |
-| Soft delete user (archive) | JS-ADMIN-04 | LOW | Academic Service DELETE /api/academic/users/{id} — built |
-| Group list and CRUD | JS-ADMIN-05: groups named e.g. ИВТ-21-1 | LOW | Academic Service /api/academic/groups — built |
-| Assign / revoke headman | JS-ADMIN-06..07: toggle is_headman on a student | LOW | Academic Service PATCH /api/academic/groups/{id}/headman — built |
-| Student transfer between groups | JS-ADMIN-03: with reason, history preserved | MEDIUM | Academic Service POST /api/academic/users/{id}/transfer — built |
-| Semester list and CRUD | JS-ADMIN-08..09: create, activate (only one active at a time), deactivate | MEDIUM | Academic Service /api/academic/semesters — built |
-| Semester delete with confirmation phrase | JS-ADMIN-10: type semester name to confirm deletion (GitHub-style) | LOW | Academic Service DELETE /api/academic/semesters/{id} — built |
-| Role-based route guards | ADMIN routes blocked for TEACHER; TEACHER routes show read-only view | MEDIUM | JWT role claim from Auth Service |
-
-### Differentiators
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Real-time STOMP WebSocket notifications in panel | JS-SYSTEM-09: lesson events, excuse alerts arrive live without page refresh | HIGH | notification-web STOMP built (v5.0); Angular needs SockJS + @stomp/stompjs client |
-| Red zone student list per group | JS-ADMIN-12: students below threshold for decanat reporting | MEDIUM | Attendance + Academic APIs both built; cross-service join on frontend |
-| Red zone threshold configuration UI | Global/group/subject override chain per JS-ADMIN-12 context | MEDIUM | Academic Service campus_settings + group_settings + subject_settings endpoints — built |
-| Average attendance per group (admin dashboard) | JS-ADMIN-12: fast overview without export | MEDIUM | Attendance stats API built; aggregate on frontend |
-| Headman panel within Web Panel | Headman can mark attendance and manage excuses from desktop | HIGH | Attendance Service manual marking built; headman auth via JWT role check |
-
-### Anti-Features
-
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Teacher can edit attendance | Teachers ask for override capability | Violates JS-TEACHER-04 business rule; creates audit trail problems | Headman is the only role that marks; teachers see read-only journal |
-| Bulk CSV user import | Admins want to upload a spreadsheet | Out of scope per PROJECT.md (manual creation sufficient for now) | Use Create User form; admin can batch-create via API script |
-| PDF/Excel export | JS-TEACHER-07 / JS-ADMIN-13 request it | No backend PDF/Excel generation exists | Defer to v7.x; mark as future enhancement |
-| Real-time attendance marking by teacher during class | Teachers want to mark during class | Role violation; architectural complexity | Teachers observe only; headman marks via PWA |
-| Angular Material full design system | Consistent UI | Overkill for solo-developer project; increases bundle and setup time | TailwindCSS + Angular CDK, or PrimeNG (smaller API surface) |
-
----
-
-## Application 3: Landing Page (HTML + CSS)
-
-Static marketing/info page. No login, no API calls. Target audience: students, teachers, and university administrators evaluating the system.
-
-### Table Stakes (Users Expect These)
+Features expected in any production-shipped portfolio microservice project. Missing = incomplete.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Hero section (product name, tagline, CTA) | First thing a visitor sees; must communicate the product in 5 seconds | LOW | CTA links to PWA install or bot /start |
-| Feature highlights (3-4 key features with icons) | Visitors need to understand what the system does before exploring | LOW | Geo check-in, Telegram integration, schedule, stats |
-| Role overview (Student / Teacher / Admin) | Different visitors have different questions; address each role | LOW | Cards or tabs per role |
-| "How it works" 3-step flow | Onboarding flow overview: install app, link Telegram, check in | LOW | Visual step diagram |
-| Screenshots / mockup section | Visitors want to see the UI before committing | LOW | PWA screenshots + Mini App screenshots |
-| Contact / footer with links | Basic credibility; navigation | LOW | GitHub link, developer info, university affiliation |
-| Mobile-responsive layout | Students will visit on phone | MEDIUM | Flexbox/Grid; no framework needed |
+| Multi-stage Dockerfiles for each Java service | Container images are the unit of deployment; single-stage images ship JDK + build tools into prod | Medium | Build stage: `eclipse-temurin:21-jdk-alpine`; runtime stage: `eclipse-temurin:21-jre-alpine`; 60-70% image size reduction; dependency layer before code layer for cache hits; 7 targets: auth, academic, schedule, attendance, notification-web, api-gateway, notification-bot (Python) |
+| docker-compose.prod.yml | Separates dev and prod configurations; dev compose has bind mounts and exposed debug ports | Medium | Override pattern: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d`; prod removes bind mounts, adds `restart: unless-stopped`, uses image refs from registry instead of `build:` context |
+| Secrets and environment management for prod | Credentials must not exist in git repo | Low | `.env.prod` excluded from git (`.gitignore`); GitHub Actions secrets (SSH_HOST, SSH_USER, SSH_PRIVATE_KEY) for CI; no hardcoded passwords in any committed file |
+| Nginx reverse proxy with SSL (Let's Encrypt) | HTTPS is mandatory for production; PWA Service Worker and Web Push API require TLS origin; Telegram Mini App requires HTTPS host | High | Certbot standalone or webroot challenge; Let's Encrypt free certs; auto-renew via compose service or cron; single nginx terminates SSL for all upstreams; port 80 → 301 redirect to 443 |
+| Spring Boot Actuator /health endpoint | Production services must expose liveness probe for health-check in compose and future orchestration | Low | `spring-boot-starter-actuator` already a transitive dep; expose `/actuator/health` and `/actuator/info` only; management port 8081 not proxied through nginx externally; docker-compose `healthcheck:` uses it |
+| GitHub Actions CI — Java build and test | Every Java project on GitHub has CI; without it, test regressions are invisible | Medium | `actions/setup-java` with Temurin 21; `./gradlew build` in monorepo root; Gradle cache on `~/.gradle/caches` and `~/.gradle/wrapper` keyed by build file hashes |
+| Project README | First thing every reviewer reads; portfolio gate-check; employers and professors evaluate this before looking at code | Medium | Architecture diagram, service table with ports/tech, quick-start (docker compose up), deploy guide, API summary, tech stack badges |
 
-### Differentiators
+---
+
+## Differentiators
+
+Features above table-stakes baseline that meaningfully improve the project for portfolio or production use.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Dark mode support | Students and developers prefer dark mode | LOW | CSS prefers-color-scheme media query |
-| "Open in Telegram" deep link button | Direct CTA to launch the bot | LOW | https://t.me/{botname} link |
-| "Install PWA" instructions | Students can install RutTrack from the landing | LOW | Links to PWA URL; iOS instructions modal |
-| Live animated stats counter (students tracked, lessons recorded) | Social proof; makes the system feel active | LOW | CSS counter animation or small vanilla JS; purely cosmetic |
+| GitHub Actions SSH deploy to VPS | Closes dev-to-prod loop; one push ships everything; demonstrates complete DevOps lifecycle | Medium | `appleboy/ssh-action` or raw SSH with private key stored in GitHub secret; remote command: `docker compose pull && docker compose up -d`; deploy only on push to `main` after CI passes |
+| Docker images pushed to GHCR with git SHA tag | Enables rollback to any previous commit; immutable image per commit | Low | Tag: `ghcr.io/user/service:${{ github.sha }}` plus `:latest`; GitHub Container Registry is free for public repos; login: `docker/login-action` with `registry: ghcr.io` |
+| Unified Swagger UI via API Gateway | Single URL for all 5 services' API docs; portfolio showcase; removes need to know each service's port | Medium | `springdoc-openapi` on each service exposes `/v3/api-docs`; Gateway's `springdoc.swagger-ui.urls` config lists all upstream paths; existing HATEOAS + `@Operation` annotations already in api-contract modules surface automatically |
+| Path-filtered CI per service (changed modules only) | Prevents 8-service rebuild on a bot-only change; critical for fast feedback loop | Medium | `dorny/paths-filter` action detects which `services/` subdirs changed; matrix strategy runs build/test only for affected service; note: start simple (build all) and add filtering when CI time exceeds 5 min |
+| GitHub Actions — Python bot CI (lint + test) | Validates the Telegram bot is not silently broken; 108 pytest tests already exist | Low | `actions/setup-python` 3.11+; `ruff` for linting; `pytest` with `pytest-asyncio`; `pip cache` keyed by `requirements.txt` hash |
+| GitHub Actions — frontend test jobs | 227 vitest tests across 3 frontends are already written; CI should run them on every push | Low | `actions/setup-node` 20+; `npm ci`; `npm test -- --run` (vitest non-watch mode detects CI automatically); node_modules cache by package-lock hash; separate parallel jobs for pwa, mini-app, web-panel |
+| Actuator /metrics with Micrometer + Prometheus format | Enables future Grafana without any instrumentation code change; adds observability signal now | Low | Add `micrometer-registry-prometheus` dep; expose `/actuator/prometheus` on management port only (not through nginx); zero code change — pure config and dependency |
+| Nginx security headers | Adds security signal; PWA requires `Strict-Transport-Security`; makes portfolio look production-grade | Low | `X-Frame-Options SAMEORIGIN`, `X-Content-Type-Options nosniff`, `Strict-Transport-Security max-age=31536000`, basic `Content-Security-Policy`; all in nginx.conf, no application code change |
+| Docker Compose healthchecks | Services wait for dependencies to be healthy before starting; eliminates "database not ready" race condition on cold start | Low | `healthcheck:` on postgres, mongo, redis, rabbitmq; `depends_on: condition: service_healthy` on application services; uses existing `/actuator/health` for Java services |
+| Gradle build cache in CI | Cuts Java CI build time by ~60% on incremental runs | Low | Cache action: `~/.gradle/caches`, `~/.gradle/wrapper`; restore-key fallback; already standard for any Gradle project on GitHub Actions |
 
-### Anti-Features
+---
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Login form on landing | Convenience — one less click | Mixes marketing and app concerns; CORS complexity for static page | Link to Angular web panel or PWA login |
-| JavaScript framework (React/Vue) | Seems easier to develop | Overkill for a static page; adds build pipeline; violates "HTML+CSS" constraint | Vanilla HTML + CSS; small vanilla JS for animations only |
-| CMS / dynamic content | Admin wants to update content without code | Out of scope for portfolio project | Static HTML; update via git |
-| Video background / autoplay | Modern and eye-catching | Slow load; bandwidth penalty on mobile; accessibility problems | Static screenshot or SVG illustration |
+## Anti-Features
+
+Features to explicitly NOT build in v8.0.
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Kubernetes / Helm | Massive operational overhead for a single VPS; out of scope per PROJECT.md | Stay with docker-compose; document as "K8s-ready" in README; mention stateless services |
+| Prometheus + Grafana + Alertmanager stack | Adds 3 new containers; full monitoring is not the v8.0 goal; increases VPS RAM usage | Expose `/actuator/prometheus`; document "plug in Grafana here" in README; defer to future milestone |
+| Docker Swarm mode | Adds complexity with no benefit for single-node VPS deploy | Use plain docker-compose with `restart: unless-stopped`; no swarm orchestration needed |
+| Per-service Swagger UI instances accessible externally | Each service running its own publicly accessible UI wastes ports and fragments docs | Aggregate all specs in a single Gateway Swagger UI; service UIs available only on localhost management port if needed |
+| Nginx Proxy Manager (GUI container) | Adds container overhead; config-as-code is more portfolio-appropriate and reproducible | Write nginx.conf files directly; version-control them in repo |
+| Building Docker images on the VPS | Requires JDK + Node.js + Gradle on production server; slow; defeats CI/CD purpose | Build in GitHub Actions, push to GHCR, pull image on VPS |
+| Committing `.env.prod` or any credentials | Security leak; disqualifying for a portfolio project | `.env.prod` in `.gitignore`; CI uses GitHub Actions secrets; document format in `.env.prod.example` |
+| Monolithic single deploy job (all 7 services always redeploy) | Slow and risky; a Python bot change should not restart 5 Java services | Path-filter triggers; per-service deploy steps; only redeploy what changed |
+| Testing inside the final runtime Docker image | JRE-only image has no test tooling; mixing test and runtime is an anti-pattern | Multi-stage: run tests in the JDK build stage; ship JRE-only runtime stage with no test artifacts |
+| Self-hosted GitHub Actions runner | Requires VPS agent setup; adds operational complexity; GitHub-hosted runners are sufficient for this project | Use `ubuntu-latest` GitHub-hosted runners; free tier sufficient for solo project |
+| Docker secrets (Swarm) for single-node compose | Docker secrets require Swarm mode; `.env.prod` file is sufficient and simpler for single VPS | `.env.prod` file on VPS server, not committed, with restricted permissions (`chmod 600`) |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Mini App: geo check-in]
-    └──requires──> [initData auth exchange to JWT]
-                       └──requires──> [Bot /start account linking (DONE v5.0)]
-                       └──requires──> [New Auth Service endpoint: POST /api/auth/telegram]
+Multi-stage Dockerfiles (all services)
+  → docker-compose.prod.yml (references registry images, not build: context)
+  → GHCR push in GitHub Actions CI (images must exist before prod compose can pull)
+    → GitHub Actions SSH deploy (runs docker compose pull + up on VPS)
 
-[Mini App: attendance stats]
-    └──requires──> [initData auth]
+Nginx reverse proxy
+  → SSL / Let's Encrypt (nginx must serve HTTP first for ACME challenge)
+    → HTTPS is required before: PWA Web Push, Telegram Mini App, A2HS install
 
-[Mini App: late check-in request]
-    └──blocked-by──> [excuse.requested event publisher (NOT YET BUILT)]
-                         └──defer to v7.x
+Spring Boot Actuator /health
+  → Docker Compose healthchecks (healthcheck URL uses /actuator/health)
+  → Actuator /metrics + Micrometer (same dependency, same config, extend later)
 
-[Web Panel: STOMP notifications]
-    └──requires──> [notification-web STOMP server (DONE v5.0)]
-                       └──requires──> [Angular SockJS + @stomp/stompjs client setup]
+Unified Swagger UI (Gateway)
+  → springdoc-openapi on each service (must be added to all 5 app build.gradle.kts)
+  → Gateway springdoc config (swagger-ui.urls pointing to service /v3/api-docs paths)
+  → Nginx proxy (Swagger UI served through nginx, not raw Gateway port)
 
-[Web Panel: red zone display]
-    └──requires──> [attendance stats API (DONE)] + [threshold API (DONE)]
+GitHub Actions CI
+  → Gradle build cache (configured in same workflow file)
+  → GHCR image push (docker/build-push-action after tests pass)
+  → SSH deploy (deploy job depends_on CI job success)
 
-[Web Panel: admin CRUD]
-    └──requires──> [JWT with ADMIN role] ──requires──> [Login form]
-
-[Web Panel: teacher journal grid]
-    └──requires──> [JWT with TEACHER role] ──requires──> [Login form]
-
-[Landing: "Open in Telegram" CTA]
-    └──requires──> [Bot deployed and linked (DONE v5.0)]
-
-[Landing: "Install PWA" CTA]
-    └──requires──> [PWA URL deployed (DONE v6.0)]
+Path-filtered CI
+  → Matrix deploy (only deploy changed service entries in matrix)
+  Note: implement after basic "build all" CI is stable
 ```
 
-### Dependency Notes
-
-- **Mini App initData auth requires one new backend endpoint.** The bot's `/start` command (v5.0) already records `telegram_id → user_id`. The new piece is a single Auth Service endpoint that accepts raw `initData` (HMAC-SHA256 validated) and returns a JWT pair. This is the only new backend work needed for v7.0.
-- **Mini App check-in requires no other new backend work.** Attendance Service geo-checkin endpoint exists; Mini App calls it with the JWT from initData auth.
-- **Web Panel STOMP requires new frontend setup only.** The server side is done. Angular needs SockJS + @stomp/stompjs client, connect on login, subscribe to `/topic/group/{groupId}`.
-- **PDF/Excel export is blocked.** No backend PDF/Excel generation exists. Correctly excluded from this milestone.
-- **Excuse/late check-in in Mini App is blocked.** Event publishers for `excuse.requested` and `late_checkin.requested` are listed as deferred in PROJECT.md (NOTIF-08 partial). Do not include in v7.0 Mini App scope.
-
 ---
 
-## MVP Definition
+## MVP Recommendation
 
-### Launch With (v7.0)
+Prioritize in this order for v8.0:
 
-Minimum to have all three frontends functional and useful.
+1. **Multi-stage Dockerfiles** (all 5 Java services + Python bot + frontend nginx configs) — foundational; nothing else works without this
+2. **docker-compose.prod.yml** — production compose with restart policies, no bind mounts, image refs
+3. **Nginx reverse proxy + Let's Encrypt SSL** — HTTPS required for existing PWA Web Push and Mini App host validation
+4. **Spring Boot Actuator /health** — enables healthchecks in compose; one dep + two config lines per service
+5. **GitHub Actions CI** — Java build + test with Gradle cache; Gradle monorepo builds all subprojects naturally
+6. **GHCR image push** — tag with git SHA + latest; free for public repo
+7. **GitHub Actions SSH deploy** — deploy job runs after CI passes; closes the loop
+8. **Unified Swagger UI via Gateway** — add springdoc to all services; configure Gateway aggregation
+9. **README** — architecture diagram, service table, quick-start, deploy guide
 
-**Telegram Mini App:**
-- [ ] initData auth exchange (one new Auth Service endpoint)
-- [ ] Today's schedule view with lesson status badges
-- [ ] Geo check-in with success/failure feedback
-- [ ] Attendance stats per subject with red zone indicator
-- [ ] Telegram native theme, MainButton, BackButton wiring
-- [ ] Deep link routing: /checkin opened from bot inline button
-
-**Web Panel (Angular):**
-- [ ] Login form (teacher + admin, username + password)
-- [ ] Teacher: subject/group filter dropdowns
-- [ ] Teacher: attendance journal grid (students x lessons, read-only)
-- [ ] Teacher: attendance stats per subject/group
-- [ ] Admin: user CRUD (create, status change, soft delete)
-- [ ] Admin: group CRUD + headman assign/revoke
-- [ ] Admin: semester CRUD + activation + confirmation-phrase delete
-- [ ] Admin: dashboard summary stats
-- [ ] Role-based route guards (TEACHER / ADMIN)
-- [ ] Token refresh + logout
-
-**Landing Page:**
-- [ ] Hero + tagline + CTA buttons (Telegram, PWA)
-- [ ] 3-4 feature highlights with icons
-- [ ] "How it works" 3-step flow
-- [ ] Role overview (Student / Teacher / Admin)
-- [ ] Screenshots/mockup section
-- [ ] Mobile-responsive layout
-- [ ] Footer with links (GitHub, Telegram bot, PWA)
-
-### Add After Validation (v7.x)
-
-- [ ] Mini App: late check-in request — unblocks when event publisher built
-- [ ] Mini App: excuse ticket submission — same blocker
-- [ ] Mini App: homework list with completion toggle
-- [ ] Web Panel: STOMP real-time notifications (lesson/homework/excuse push to panel)
-- [ ] Web Panel: red zone student list + threshold configuration UI
-- [ ] Web Panel: average attendance stats per group (admin view)
-- [ ] Web Panel: student transfer between groups
-- [ ] Web Panel: headman panel (mark attendance, manage excuses from desktop)
-- [ ] Landing: animated stats counter
-- [ ] Landing: dark mode
-
-### Future Consideration (v8+)
-
-- [ ] PDF/Excel export — requires new backend generation service
-- [ ] Admin analytics trends (top-skippers, red zone alerts with email)
-- [ ] Bulk CSV user import
-- [ ] Teacher attendance override with audit trail
-- [ ] Multi-language support (RU/EN)
-
----
-
-## Feature Prioritization Matrix
-
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| Mini App: initData auth (new endpoint) | HIGH | MEDIUM | P1 |
-| Mini App: geo check-in | HIGH | LOW (API exists) | P1 |
-| Mini App: today's schedule | HIGH | LOW (API exists) | P1 |
-| Mini App: attendance stats | HIGH | LOW (API exists) | P1 |
-| Mini App: Telegram UX (MainButton, theme, haptics) | HIGH | LOW | P1 |
-| Web Panel: login + role guards | HIGH | LOW | P1 |
-| Web Panel: teacher journal grid | HIGH | HIGH (complex grid UI) | P1 |
-| Web Panel: admin user CRUD | HIGH | MEDIUM | P1 |
-| Web Panel: admin group + semester CRUD | HIGH | MEDIUM | P1 |
-| Web Panel: admin dashboard stats | MEDIUM | LOW | P1 |
-| Landing: hero + features + mobile responsive | MEDIUM | LOW | P1 |
-| Web Panel: STOMP notifications | MEDIUM | MEDIUM | P2 |
-| Web Panel: red zone + threshold config | MEDIUM | MEDIUM | P2 |
-| Web Panel: student transfer | MEDIUM | LOW | P2 |
-| Mini App: homework list | MEDIUM | LOW | P2 |
-| Landing: dark mode + animated counters | LOW | LOW | P2 |
-| Mini App: late check-in request | HIGH | HIGH (blocked) | P3 |
-| Mini App: excuse ticket submission | HIGH | HIGH (blocked) | P3 |
-| PDF/Excel export (any surface) | MEDIUM | HIGH (blocked on backend) | P3 |
-
-**Priority key:**
-- P1: Must have for v7.0 launch
-- P2: Add after core is validated (v7.x)
-- P3: Future milestone or blocked on backend work
+Defer within v8.0 scope (add once core works):
+- Path-filtered per-service CI: start with "build all on push to main"; add dorny/paths-filter when CI time exceeds 5 min
+- Python bot CI and frontend test CI: these are polish; add in later phases of v8.0
+- Actuator /metrics + Micrometer: add the dep, expose nothing externally, document "Grafana hookup point" in README
+- Nginx security headers: add after nginx config is stable
 
 ---
 
 ## Sources
 
-- `.planning/PROJECT.md` — v7.0 active requirements, target features, deferred items (HIGH confidence — authoritative source)
-- `docs/job-stories.md` — JS-TEACHER-01..08, JS-ADMIN-01..13, JS-STUDENT-01..09, JS-HEADMAN-01..20 (HIGH confidence — authoritative source)
-- Existing PWA feature patterns: `frontends/pwa/src/features/` (HIGH confidence — live code)
-- Telegram Mini App SDK: [tma.js React template](https://github.com/Telegram-Mini-Apps/reactjs-template), [Authorizing User docs](https://docs.telegram-mini-apps.com/platform/authorizing-user), [Init Data docs](https://docs.telegram-mini-apps.com/platform/init-data)
-- Telegram Mini App capabilities 2025-2026: [DEV.to Mini App handbook](https://dev.to/simplr_sh/telegram-mini-apps-creation-handbook-58em), [Merge.rocks guide](https://merge.rocks/blog/how-to-build-a-telegram-mini-app-your-telegram-mini-apps-guide)
-- Angular education dashboard patterns: [CoreUI Angular](https://coreui.io/angular/), [Smart Angular template](https://einfosoft.com/templates/admin/smartangular/doc/intro.html)
+- [GitHub Actions monorepo guide 2026 (Pockit)](https://pockit.tools/blog/github-actions-monorepo-runners-guide-2026/)
+- [How to Handle Monorepos with GitHub Actions (OneUptime)](https://oneuptime.com/blog/post/2026-01-26-monorepos-github-actions/view)
+- [Executing Gradle builds on GitHub Actions (official Gradle docs)](https://docs.gradle.org/current/userguide/github-actions.html)
+- [Multi-stage Docker builds concepts (Docker docs)](https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/)
+- [9 Tips for Containerizing Spring Boot (Docker official blog)](https://www.docker.com/blog/9-tips-for-containerizing-your-spring-boot-code/)
+- [Integrate OpenAPI with Spring Cloud Gateway (Baeldung)](https://www.baeldung.com/spring-cloud-gateway-integrate-openapi)
+- [Spring Boot Actuator production-ready features (Spring docs)](https://docs.spring.io/spring-boot/reference/actuator/index.html)
+- [Nginx + Certbot + docker-compose bootstrap (wmnnd/nginx-certbot)](https://github.com/wmnnd/nginx-certbot)
+- [Docker Compose SSH Deployment action (GitHub Marketplace)](https://github.com/marketplace/actions/docker-compose-deployment-ssh)
+- [Docker Compose secrets and environment variables best practices (Docker docs)](https://docs.docker.com/compose/how-tos/use-secrets/)
+- [A README for your microservice GitHub repository (DZone)](https://dzone.com/articles/a-readme-for-your-microservice-github-repository)
+- [Running Multiple Spring Boot Containers with NGINX (DEV Community)](https://dev.to/ankitdevcode/running-multiple-spring-boot-containers-with-nginx-reverse-proxy-docker-compose-4a69)
+- [Setting up Vitest with GitHub Actions (Steve Kinney)](https://stevekinney.com/courses/testing/continuous-integration)
 
 ---
 
-*Feature research for: RutCampusTrack v7.0 — Telegram Mini App, Angular Web Panel, Landing Page*
-*Researched: 2026-04-06*
+*Feature research for: RutCampusTrack v8.0 — CI/CD, Deployment & Documentation*
+*Researched: 2026-04-07*

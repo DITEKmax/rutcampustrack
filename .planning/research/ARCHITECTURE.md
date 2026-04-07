@@ -1,383 +1,462 @@
 # Architecture Research
 
-**Domain:** v7.0 Frontends — Telegram Mini App, Angular Web Panel, Landing page integration with existing RutCampusTrack microservice backend
-**Researched:** 2026-04-06
-**Confidence:** HIGH (full codebase inspection + official Telegram docs + Angular docs)
+**Domain:** CI/CD, Production Deployment & Documentation — v8.0 milestone for RutCampusTrack monorepo
+**Researched:** 2026-04-07
+**Confidence:** HIGH (codebase inspection + official docs + web verification)
 
 ---
 
 ## Standard Architecture
 
-### System Overview (after v7.0)
+### System Overview — v8.0 Production Topology
 
 ```
-┌────────────────────────────────────────────────────────────────────────────────┐
-│                           DOCKER PRIVATE NETWORK                                │
-│                                                                                 │
-│  CLIENTS                                                                        │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌─────────────────┐               │
-│  │  Telegram        │  │  Browser / PWA   │  │  Browser        │               │
-│  │  (Mini App       │  │  (RutTrack PWA)  │  │  (Web Panel     │               │
-│  │   WebView)       │  │                  │  │   Angular)      │               │
-│  │                  │  │                  │  │                 │               │
-│  │  Auth: initData  │  │  Auth: JWT       │  │  Auth: JWT      │               │
-│  │  → /auth/tma     │  │  Bearer token    │  │  Bearer token   │               │
-│  │  → own JWT       │  │  httpOnly cookie │  │  localStorage   │               │
-│  └────────┬─────────┘  └────────┬─────────┘  └────────┬────────┘               │
-│           │                     │                      │                        │
-│           │ HTTPS               │ HTTPS                │ HTTPS                  │
-│           └─────────────────────┴──────────────────────┘                        │
-│                                 │                                               │
-│                                 ▼                                               │
-│  ┌──────────────────────────────────────────────────────────────────────────┐   │
-│  │                      API Gateway  :8080                                  │   │
-│  │  CORS: allowed-origins += mini-app origin, web-panel origin              │   │
-│  │  JWT filter: validates RSA sig, injects X-User-Id, X-User-Role,         │   │
-│  │             X-Group-Id, X-Is-Headman into downstream headers             │   │
-│  │  Public: /api/auth/login, /api/auth/refresh, /api/auth/public-key,      │   │
-│  │          /api/auth/otp/*, /api/auth/tma (NEW)                           │   │
-│  │                                                                          │   │
-│  │  /api/auth/**       → auth-service:9090                                  │   │
-│  │  /api/academic/**   → academic-service:9091                              │   │
-│  │  /api/schedule/**   → schedule-service:9092                              │   │
-│  │  /api/attendance/** → attendance-service:9093                            │   │
-│  │  /api/ws/**         → notification-web:9094  (WS proxy)                  │   │
-│  │  /api/push/**       → notification-web:9094  (push subscriptions)        │   │
-│  └──────────────┬─────────────────────────────────────────────────────────┘    │
-│                 │                                                               │
-│   Auth(9090)  Acad(9091)  Sched(9092)  Att(9093)  Notification-web(9094)       │
-│                                                                                 │
-│  SERVING (static builds)                                                        │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌─────────────────┐               │
-│  │  pwa-nginx :80   │  │ panel-nginx :81  │  │ landing :82     │               │
-│  │  pwa/dist/       │  │ web-panel/dist/  │  │ landing/        │               │
-│  └──────────────────┘  └──────────────────┘  └─────────────────┘               │
-└────────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         GITHUB ACTIONS CI                               │
+│                                                                         │
+│  push to main                                                           │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────────────────┐    │
+│  │  Java build  │   │ Python lint  │   │  Frontend build + test   │    │
+│  │  + test      │   │ + test       │   │  (pwa, mini-app,         │    │
+│  │  (Gradle)    │   │  (pytest)    │   │   web-panel, vitest)     │    │
+│  └──────┬───────┘   └──────┬───────┘   └────────────┬─────────────┘    │
+│         └──────────────────┴──────────────────────────┘                 │
+│                             │  all pass                                 │
+│                             ▼                                           │
+│                  ┌──────────────────────┐                               │
+│                  │  Deploy job (SSH)    │                               │
+│                  │  scp docker-compose  │                               │
+│                  │  ssh: pull + up -d   │                               │
+│                  └──────────────────────┘                               │
+└─────────────────────────────────────────────────────────────────────────┘
+                              │  SSH + docker pull
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        VPS (single server)                              │
+│                                                                         │
+│  INTERNET                                                               │
+│  :80 (HTTP) ──────────────────────────────────────────────────────────┐ │
+│  :443 (HTTPS) ────────────────────────────────────────────────────┐   │ │
+│                                                                   │   │ │
+│  ┌────────────────────────────────────────────────────────────────▼───▼┐│
+│  │              nginx-proxy (edge, :80/:443)                           ││
+│  │  Let's Encrypt certs from /etc/letsencrypt (certbot volume)        ││
+│  │                                                                     ││
+│  │  / ──────────────→ landing-nginx:80                                ││
+│  │  /app ────────────→ pwa-nginx:80                                   ││
+│  │  /panel ──────────→ web-panel-nginx:80                             ││
+│  │  /miniapp ────────→ mini-app-nginx:80                              ││
+│  │  /api/** ─────────→ api-gateway:8080                               ││
+│  │  /docs ───────────→ api-gateway:8080/swagger-ui.html              ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                          │
+│  PRIVATE DOCKER NETWORK (private_net)                                   │
+│                                                                         │
+│  ┌────────────────┐   ┌──────────────────────────────────────────────┐  │
+│  │  api-gateway   │   │               BACKEND SERVICES               │  │
+│  │  :8080         │   │                                              │  │
+│  │  Actuator      │   │  auth-service      :9090  (Actuator health)  │  │
+│  │  /actuator/    │   │  academic-service  :9091  (Actuator health)  │  │
+│  │  health        │   │  schedule-service  :9092  (Actuator health)  │  │
+│  │  Swagger agg.  │   │  attendance-service:9093  (Actuator health)  │  │
+│  │  /swagger-ui   │   │  notification-web  :9094  (Actuator health)  │  │
+│  └────────────────┘   └──────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
+│  │ pwa-nginx    │  │web-panel-nginx│  │landing-nginx │  mini-app-nginx  │
+│  │ :80          │  │ :80          │  │ :80          │  :80             │
+│  └──────────────┘  └──────────────┘  └──────────────┘                  │
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │  INFRA (private_net only, no public ports)                        │  │
+│  │  postgres-academic  postgres-schedule  mongo-attendance           │  │
+│  │  redis              rabbitmq                                      │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌──────────────┐  ┌──────────────────┐                                 │
+│  │notification- │  │ notification-bot │                                 │
+│  │ web :9094    │  │ (Python Aiogram) │                                 │
+│  └──────────────┘  └──────────────────┘                                 │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Responsibilities
 
-| Component | Responsibility | New vs Existing |
+| Component | Responsibility | New vs Modified |
 |-----------|----------------|-----------------|
-| pwa-nginx | Serves React PWA static build, SPA fallback | Existing (port 80) |
-| panel-nginx | Serves Angular web panel static build, SPA fallback | NEW (port 81) |
-| landing (static) | Serves HTML/CSS landing page (optional nginx or CDN) | NEW (port 82) |
-| API Gateway | CORS, JWT validation, routing, header injection | Modified (add origins + TMA route) |
-| Auth Service | JWT login, refresh, OTP — plus new TMA initData exchange | Modified (add /auth/tma endpoint) |
-| Mini App (React) | Telegram-embedded UI for students: schedule, check-in, stats | NEW |
-| Web Panel (Angular) | Desktop admin/teacher CRUD dashboard | NEW |
-| Landing (HTML/CSS) | Marketing page, project description | NEW |
+| nginx-proxy (edge) | Single entry point, SSL termination, path-based routing to backends and frontends | NEW |
+| api-gateway :8080 | JWT validation, CORS, routing, Swagger aggregation at /swagger-ui | MODIFIED (add springdoc-webflux-ui, aggregation config) |
+| auth-service :9090 | JWT, OTP, TMA — Actuator /health only | MODIFIED (add Actuator config) |
+| academic-service :9091 | Academic CRUD, gRPC server — Actuator /health only | MODIFIED (add Actuator config) |
+| schedule-service :9092 | Schedule CRUD, cron — Actuator /health only | MODIFIED (add Actuator config) |
+| attendance-service :9093 | Geo-checkin, reports — Actuator /health only | MODIFIED (add Actuator config) |
+| notification-web :9094 | WebSocket/STOMP, Web Push — Actuator /health (already has basic config) | MODIFIED (standardize config) |
+| notification-bot (Python) | Telegram bot — existing health at /health :8081 | UNCHANGED |
+| pwa-nginx | Serves React PWA dist/ | UNCHANGED |
+| web-panel-nginx | Serves Angular Web Panel dist/ | UNCHANGED |
+| mini-app-nginx | Serves React Mini App dist/ | UNCHANGED |
+| landing-nginx | Serves static landing dist/ | UNCHANGED |
+| GitHub Actions CI | Build + test + lint + deploy pipeline | NEW |
+| docker-compose.prod.yml | Production-ready compose with no dev ports, prod env vars | NEW |
+| Dockerfiles (Java services) | Multi-stage: build stage (Gradle) + runtime stage (JRE) | NEW (5 new Dockerfiles) |
+| certbot | Let's Encrypt certificate renewal via HTTP-01 challenge | NEW |
 
 ---
 
-## Integration Points
-
-### 1. Telegram Mini App — Auth Integration
-
-**The challenge:** Telegram Mini App cannot use the standard login+password flow. The user identity comes from Telegram's `initData` (signed HMAC-SHA256 with bot token). This must be exchanged for a backend JWT.
-
-**Flow:**
-```
-[Telegram WebView launches Mini App]
-    ↓
-window.Telegram.WebApp.initData  ← signed string from Telegram native app
-    ↓
-POST /api/auth/tma
-  Authorization: tma <raw initData>
-    ↓
-Auth Service validates HMAC-SHA256 signature with bot token secret
-Auth Service finds user by telegram_id (from initData.user.id)
-Auth Service returns { accessToken, expiresIn }
-    ↓
-Mini App stores token in memory (no httpOnly cookie — no SPA cookie domain)
-All subsequent API calls: Authorization: Bearer <token>
-```
-
-**Backend changes required:**
-- New endpoint `POST /api/auth/tma` in auth-service (public route in Gateway)
-- Validate initData: HMAC-SHA256(bot_token with key "WebAppData") → compare hash field
-- Look up user by `telegram_id` in academic_db (users table already has telegram_id column per schema)
-- Return same `AccessTokenResponse` as login endpoint
-- Gateway: add `/api/auth/tma` to PUBLIC_PATHS
-
-**Confidence:** HIGH — Telegram official docs describe this exact flow. The `telegram_id` is already stored in the users table from the Telegram bot linking flow (v5.0).
-
-### 2. Mini App — CORS and Origin
-
-Telegram Mini App runs at `https://t.me` or inside the native Telegram app WebView. The WebView does NOT have a predictable HTTP origin — it may send `null` origin or the tma web app URL.
-
-**Decision:** The Mini App will be deployed as a web app at a known URL (e.g., `https://miniapp.rut.ru` or served from the same host). Gateway CORS must include that origin. During dev, `http://localhost:5174` (different port from PWA's 5173).
-
-**Alternative:** If deployed to Telegram Web Apps hosting or Vercel, add that origin to the Gateway `allowed-origins` list.
-
-### 3. Web Panel — Auth Integration
-
-Angular Web Panel uses the same JWT flow as the PWA:
-- `POST /api/auth/login` → access token in memory + refresh token in httpOnly cookie
-- Silent refresh via interceptor on 401
-- Same `Authorization: Bearer <token>` header pattern
-
-**Key difference from PWA:** Angular stores the access token differently. The recommended pattern:
-- Store access token in a service/signal (Angular signals, Angular 17+) — NOT localStorage (XSS risk)
-- httpOnly cookie for refresh token works identically since it's browser-native
-- Angular HttpClient interceptor (functional interceptor pattern, Angular 17+) handles token injection and 401 refresh
-
-**No backend changes required** for Web Panel auth — same endpoints, same JWT.
-
-### 4. Web Panel — Role-Based Views
-
-The Web Panel serves two roles with different capabilities:
-
-| Role | Access | Key Screens |
-|------|--------|-------------|
-| ADMIN | Full CRUD | Users, Groups, Semesters, Dashboard stats |
-| TEACHER | Read-only | Attendance journal, student stats, own subjects |
-
-Role comes from the JWT claim `role`. Angular route guards read from the decoded token.
-
-The backend already enforces `@RequireRole` — the UI guards are UX-only (not security).
-
-### 5. Landing Page — No Backend Integration
-
-The landing page is purely static HTML/CSS. No API calls. Links to:
-- PWA install URL
-- Telegram bot link (`t.me/RutTrackBot`)
-- (Optional) Web Panel login
-
-**Deployment:** Can be served by a simple nginx container or just bundled into the PWA nginx under a different path (`/landing`). Simplest: separate nginx container or serve from a public CDN/GitHub Pages.
-
-### 6. CORS Gateway Changes (REQUIRED)
-
-Current `application.yml` only allows:
-```yaml
-allowed-origins:
-  - "http://localhost:5173"
-  - "http://localhost:80"
-```
-
-Must add for v7.0:
-```yaml
-allowed-origins:
-  - "http://localhost:5173"   # PWA dev
-  - "http://localhost:5174"   # Mini App dev
-  - "http://localhost:4200"   # Angular dev
-  - "http://localhost:80"     # PWA prod (nginx)
-  - "http://localhost:81"     # Web Panel prod (nginx)
-  # production URLs as env-driven values
-```
-
-**Note:** Telegram Mini App WebView origin is unpredictable. Options:
-1. Add the deployed Mini App URL (e.g., `https://miniapp.rut.ru`) — preferred
-2. Use `allowedOriginPatterns` with wildcard — less secure, avoid
-3. Accept that Mini App requests go through a known domain
-
----
-
-## Recommended Project Structures
-
-### Mini App (`frontends/mini-app/`)
+## Recommended Project Structure
 
 ```
-frontends/mini-app/
-├── src/
-│   ├── features/
-│   │   ├── auth/           # TMA initData exchange → JWT
-│   │   ├── schedule/       # Reuse from PWA (copy or shared package)
-│   │   ├── checkin/        # Geo check-in (reuse from PWA)
-│   │   ├── attendance/     # Stats (reuse from PWA)
-│   │   └── homework/       # Homework list (reuse from PWA)
-│   ├── shared/
-│   │   ├── lib/
-│   │   │   ├── axios.ts    # Same pattern as PWA (copy, not share — different auth)
-│   │   │   └── tma.ts      # @telegram-apps/sdk init + theme sync
-│   │   └── components/     # Telegram-native UI adaptations
-│   ├── App.tsx
-│   └── main.tsx
-├── vite.config.ts          # Port 5174, proxy /api → Gateway
-└── package.json
+rutcampustrack/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                    # Build + test on PR and push to main
+│       └── deploy.yml                # Deploy on push to main (after CI passes)
+├── docker/
+│   └── nginx-proxy/
+│       └── nginx.conf                # Edge nginx: SSL + path routing
+├── docker-compose.yml                # Existing dev compose (keep as-is)
+├── docker-compose.prod.yml           # Production compose (new)
+├── services/
+│   ├── api-gateway/
+│   │   └── Dockerfile                # NEW: multi-stage (gradle → JRE)
+│   ├── auth-service/
+│   │   └── Dockerfile                # NEW: multi-stage
+│   ├── academic-service/
+│   │   └── Dockerfile                # NEW: multi-stage (academic-app)
+│   ├── schedule-service/
+│   │   └── Dockerfile                # NEW: multi-stage (schedule-app)
+│   ├── attendance-service/
+│   │   └── Dockerfile                # NEW: multi-stage (attendance-app)
+│   ├── notification-service/
+│   │   └── notification-app/
+│   │       └── Dockerfile            # EXISTING: already has single-stage, upgrade to multi-stage
+│   └── notification-bot/
+│       └── Dockerfile                # EXISTING: already correct
+└── frontends/
+    ├── pwa/                          # Existing nginx.conf + dist/
+    ├── mini-app/                     # Existing nginx.conf + dist/
+    ├── web-panel/                    # Existing nginx.conf + dist/
+    └── landing/                      # Existing nginx.conf + dist/
 ```
 
-**Code sharing strategy:** Copy feature API modules (api.ts, types.ts) from PWA rather than creating a shared package. A shared npm workspace package would require monorepo tooling (Turborepo/Nx) that adds overhead. At this scale, copy-with-intent is acceptable. UI components will differ (Telegram theming vs standalone PWA).
+### Structure Rationale
 
-### Web Panel (`frontends/web-panel/`)
-
-```
-frontends/web-panel/
-├── src/
-│   app/
-│   ├── core/
-│   │   ├── auth/           # AuthService (signals), HTTP interceptor, route guards
-│   │   ├── api/            # HttpClient-based API services per domain
-│   │   └── models/         # TypeScript interfaces matching backend DTOs
-│   ├── features/
-│   │   ├── dashboard/      # Admin stats overview
-│   │   ├── users/          # ADMIN: CRUD users, groups, semesters
-│   │   ├── schedule/       # ADMIN/HEADMAN: schedule templates
-│   │   ├── attendance/     # TEACHER/ADMIN: journal, stats, reports
-│   │   └── profile/        # Shared: own profile
-│   ├── shared/
-│   │   ├── components/     # Reusable UI (tables, forms, modals)
-│   │   └── pipes/          # Date formatting, status labels
-│   ├── app.config.ts       # provideRouter, provideHttpClient, interceptors
-│   ├── app.routes.ts       # Lazy-loaded feature routes
-│   └── app.component.ts    # Shell with sidebar nav
-├── angular.json
-└── package.json
-```
-
-**Angular version:** 18+ (current stable as of 2025). Use standalone components throughout — no NgModules. Functional interceptors for JWT injection. Signals for state.
-
-### Landing (`frontends/landing/`)
-
-```
-frontends/landing/
-├── index.html
-├── style.css
-├── main.js                 # Minimal JS (GSAP + ScrollTrigger for animations)
-├── assets/
-│   ├── icons/
-│   └── screenshots/        # App screenshots for showcasing
-└── Dockerfile              # nginx:alpine serving static files
-```
+- **.github/workflows/**: Standard GitHub Actions location. Two files to separate CI concerns (build/test) from deployment.
+- **docker/nginx-proxy/**: Edge nginx config separate from per-frontend nginx configs. This nginx handles SSL and routes; inner nginx containers handle SPA-specific caching rules.
+- **docker-compose.prod.yml**: Separate from dev compose to avoid accidentally exposing dev ports (RabbitMQ management :15672) or using dev credentials in prod.
+- **Dockerfiles at service root level**: Convention — Dockerfile lives next to the module it builds. For multi-module services (academic-app inside academic-service/), the Dockerfile goes in the `*-app/` directory to keep context minimal.
 
 ---
 
 ## Architectural Patterns
 
-### Pattern 1: TMA initData → JWT Exchange (NEW pattern for Mini App)
+### Pattern 1: Multi-Stage Gradle Dockerfile
 
-**What:** The Mini App sends raw `initData` from `window.Telegram.WebApp.initData` to a dedicated backend endpoint. The backend validates the HMAC signature, looks up the user, and returns a standard JWT.
+**What:** Two-stage build. Stage 1 (builder): full Gradle + JDK to compile and run tests. Stage 2 (runtime): minimal JRE only, copies the fat JAR.
 
-**When to use:** Every time the Mini App starts. initData expires quickly (Telegram re-issues on each open).
+**When to use:** All 5 Spring Boot services + api-gateway.
 
-**Trade-offs:** Adds one new endpoint and bot-token secret to auth-service. Bot token must be stored as environment variable. initData validation is well-documented and simple to implement.
+**Trade-offs:** Build stage is large (~700MB) but discarded. Runtime image is ~200MB. Cache invalidation: Gradle builds re-run when source files change (Docker layer cache). Building all services in one pass via root Gradle saves time because the proto stubs are shared.
 
-```typescript
-// Mini App: auth/api.ts
-import { retrieveLaunchParams } from '@telegram-apps/sdk-react'
+**Monorepo complication:** Each service Dockerfile needs the full monorepo context to run `./gradlew :services:academic-service:academic-app:bootJar`. The Docker build context must be the monorepo root, not the service subdirectory.
 
-export async function tmaLogin(): Promise<AccessTokenResponse> {
-  const { initDataRaw } = retrieveLaunchParams()
-  const { data } = await apiClient.post<AccessTokenResponse>('/auth/tma', {}, {
-    headers: { Authorization: `tma ${initDataRaw}` }
-  })
-  return data
+```dockerfile
+# services/academic-service/Dockerfile
+# Build context: monorepo root (rutcampustrack/)
+
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /workspace
+# Copy Gradle wrapper and build files first (layer cache for dependencies)
+COPY gradlew settings.gradle.kts build.gradle.kts ./
+COPY gradle/ gradle/
+COPY proto/ proto/
+COPY services/academic-service/ services/academic-service/
+RUN chmod +x gradlew && \
+    ./gradlew :services:academic-service:academic-app:bootJar --no-daemon -x test
+
+FROM eclipse-temurin:21-jre-alpine
+RUN apk add --no-cache wget
+WORKDIR /app
+COPY --from=builder /workspace/services/academic-service/academic-app/build/libs/*.jar app.jar
+EXPOSE 9091
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+**Note for api-contract modules:** The `*-api-contract` modules are pure Java libraries — they are not separately Dockerized. They are compiled as part of the `*-app` build via `implementation(project(...))` in Gradle.
+
+### Pattern 2: Edge Nginx as SSL Terminator + Path Router
+
+**What:** A single nginx container (`nginx-proxy`) faces the internet on ports 80 and 443. It terminates SSL and routes traffic by URL path to internal containers on the private Docker network.
+
+**When to use:** Single-VPS deployment. All frontends and the API gateway live on the same host.
+
+**Trade-offs:** Consolidates SSL in one place. If nginx-proxy restarts, all traffic is interrupted temporarily. Acceptable for single-VPS portfolio project.
+
+**Path routing vs subdomain routing:** Path-based (`/app`, `/panel`, `/api`) is simpler for a single VPS without DNS wildcard setup. Can be migrated to subdomains later by changing nginx config only.
+
+```nginx
+# docker/nginx-proxy/nginx.conf
+
+upstream api_gateway { server api-gateway:8080; }
+upstream pwa         { server pwa-nginx:80; }
+upstream web_panel   { server web-panel-nginx:80; }
+upstream mini_app    { server mini-app-nginx:80; }
+upstream landing     { server landing-nginx:80; }
+
+server {
+    listen 80;
+    server_name rut.example.com;
+    # Certbot ACME challenge passthrough
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name rut.example.com;
+    ssl_certificate     /etc/letsencrypt/live/rut.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/rut.example.com/privkey.pem;
+
+    location /api/     { proxy_pass http://api_gateway; }
+    location /docs     { proxy_pass http://api_gateway; }
+    location /app/     { proxy_pass http://pwa; }
+    location /panel/   { proxy_pass http://web_panel; }
+    location /miniapp/ { proxy_pass http://mini_app; }
+    location /         { proxy_pass http://landing; }
 }
 ```
 
-```java
-// Auth Service: new endpoint
-// POST /auth/tma — public route
-// Header: Authorization: tma <initDataRaw>
-// Validate HMAC-SHA256, extract user.id (telegram_id)
-// Find user in academic_db WHERE telegram_id = ?
-// Return same AccessTokenResponse as /auth/login
+### Pattern 3: Swagger Aggregation at API Gateway
+
+**What:** The API Gateway (Spring Cloud Gateway = WebFlux) hosts a unified Swagger UI that pulls `/api-docs` from each downstream service. Clients visit one URL (`/swagger-ui.html` on the gateway) and see all service APIs.
+
+**When to use:** v8.0 documentation requirement. All 4 Java services already have `springdoc` configured with `/api-docs` path.
+
+**Trade-offs:** Gateway requires `springdoc-openapi-starter-webflux-ui` (not `webmvc-ui` — Gateway is reactive). Services need to expose `/api-docs` through the gateway (add routes or allow internal access).
+
+**Implementation steps:**
+1. Add `springdoc-openapi-starter-webflux-ui:2.7.0` to `api-gateway/build.gradle.kts`
+2. Configure `springdoc.swagger-ui.urls` in gateway `application.yml` pointing to each service's `/api/*/api-docs` path (routed through gateway)
+3. Services: ensure their `/api-docs` endpoints are accessible through the gateway (add routes or bypass JWT filter for `/api-docs`)
+
+```yaml
+# api-gateway/src/main/resources/application.yml additions
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Auth Service
+        url: /api/auth/api-docs
+      - name: Academic Service
+        url: /api/academic/api-docs
+      - name: Schedule Service
+        url: /api/schedule/api-docs
+      - name: Attendance Service
+        url: /api/attendance/api-docs
+      - name: Notification Service
+        url: /api/ws/api-docs
+  api-docs:
+    enabled: false  # Gateway itself has no REST endpoints to document
 ```
 
-### Pattern 2: Angular Functional HTTP Interceptor (JWT injection)
+### Pattern 4: GitHub Actions CI — Path-Filtered Parallel Jobs
 
-**What:** Angular 17+ supports functional interceptors — no class boilerplate. Inject the token from an AuthService signal.
+**What:** Single `ci.yml` workflow with separate jobs for Java, Python, and each frontend. `paths` filters ensure the Python job only runs if `notification-bot/**` changes.
 
-**When to use:** All authenticated API calls from the Web Panel.
+**When to use:** All PR and push-to-main events.
 
-**Trade-offs:** Simpler than class-based, but requires care with dependency injection in functional context.
+**Trade-offs:** Parallel jobs use multiple runners simultaneously (faster, uses more Actions minutes). `paths` filter avoids running the full Java build when only landing page HTML changed.
 
-```typescript
-// core/auth/auth.interceptor.ts
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService)
-  const token = authService.accessToken()  // signal
-  if (token) {
-    return next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }))
-  }
-  return next(req)
-}
+```yaml
+# .github/workflows/ci.yml (structure)
+jobs:
+  java:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '21', distribution: 'temurin' }
+      - name: Build and test
+        run: ./gradlew build --no-daemon
 
-// app.config.ts
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideHttpClient(withInterceptors([authInterceptor]))
-  ]
-}
+  python:
+    runs-on: ubuntu-latest
+    if: contains(github.event.commits[0].modified, 'services/notification-bot')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -r services/notification-bot/requirements.txt
+      - run: pytest services/notification-bot/
+
+  pwa:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontends/pwa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci && npm test
+
+  mini-app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontends/mini-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci && npm test
+
+  web-panel:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontends/web-panel
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci && npm test
 ```
 
-### Pattern 3: Angular Route Guards with Role Checking
+### Pattern 5: SSH Deploy via docker compose pull + up
 
-**What:** canActivate/canMatch guards read the user role from decoded JWT and block access to role-specific routes.
+**What:** After CI passes on `main`, a deploy job SSH-es to the VPS and runs `docker compose -f docker-compose.prod.yml pull && docker compose -f docker-compose.prod.yml up -d`. No image registry needed for this scale — builds happen on VPS using `docker compose build`.
 
-**When to use:** All admin-only and teacher-only routes.
+**When to use:** Single VPS, solo developer, simple pipeline.
 
-```typescript
-// core/auth/role.guard.ts
-export const adminGuard: CanActivateFn = () => {
-  const auth = inject(AuthService)
-  return auth.role() === 'ADMIN' ? true : inject(Router).createUrlTree(['/dashboard'])
-}
+**Trade-offs:** Build on VPS means deploy is slower (compiles Java on the server). Alternative (build images in CI, push to GHCR/DockerHub, pull on VPS) is faster but requires image registry setup. For portfolio project with a single small VPS, build-on-server is simpler to start.
+
+**Simpler alternative (recommended for v8.0):** SSH to VPS, `git pull`, then `docker compose build && docker compose up -d`. No registry. Full source on VPS.
+
+```yaml
+# .github/workflows/deploy.yml (structure)
+jobs:
+  deploy:
+    needs: [java, python, pwa, mini-app, web-panel]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/rutcampustrack
+            git pull origin main
+            docker compose -f docker-compose.prod.yml build --no-cache
+            docker compose -f docker-compose.prod.yml up -d
+            docker image prune -f
 ```
 
-### Pattern 4: Separate nginx Containers per Frontend
+### Pattern 6: Spring Boot Actuator — Health-Only Exposure
 
-**What:** Each frontend (PWA, Web Panel, Landing) gets its own nginx:alpine container with separate port mapping. Builds run locally (`npm run build`) and the `dist/` folder is mounted as a read-only volume.
+**What:** Expose only `/actuator/health` (not metrics, env, beans). Docker `HEALTHCHECK` hits this endpoint. Notification-web already has this pattern — apply consistently to all services.
 
-**When to use:** Consistent with the existing `pwa-nginx` pattern already in docker-compose.
+**When to use:** All Spring Boot services. No Prometheus/Grafana required for v8.0 scope.
 
-**Trade-offs:** Requires running 3 build commands before deployment. No hot-reload in production containers (dev uses `vite dev` / `ng serve`). Simple and predictable.
+**Trade-offs:** Simple. No metrics scraping infrastructure. Enough for docker-compose healthchecks and operational monitoring via `docker ps`.
+
+```yaml
+# Standard addition to all service application.yml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+```
+
+```dockerfile
+# Standard addition to all Java service Dockerfiles
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
+  CMD wget -qO- http://localhost:${PORT}/actuator/health || exit 1
+```
 
 ---
 
 ## Data Flow
 
-### Mini App Auth Flow
+### CI/CD Pipeline Flow
 
 ```
-Telegram opens Mini App (WebView)
+Developer pushes to main
     ↓
-@telegram-apps/sdk init() → mounts on window.Telegram.WebApp
-    ↓
-retrieveLaunchParams() → { initDataRaw: "..." }
-    ↓
-POST /api/auth/tma  [Authorization: tma <initDataRaw>]  (public route)
-    ↓
-Auth Service: HMAC-SHA256 validate → extract telegram_id
-Auth Service: SELECT * FROM users WHERE telegram_id = ?
-Auth Service: return { accessToken, expiresIn }
-    ↓
-Mini App stores token in React state / ref
-All API calls: Authorization: Bearer <token>
+GitHub Actions triggers ci.yml
+    ↓ (parallel)
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│  Java build  │  │ Python test  │  │  TS/vitest   │
+│  ./gradlew   │  │  pytest      │  │  npm test    │
+│  build       │  │              │  │  (3 jobs)    │
+└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
+       └──────────────────┴──────────────────┘
+                          ↓ all pass
+                   deploy.yml triggers
+                          ↓
+              SSH into VPS → git pull → docker compose build → up -d
+                          ↓
+              Docker builds each service image on VPS
+                          ↓
+              New containers replace old ones (rolling, per service)
 ```
 
-### Web Panel Request Flow
+### Production Request Flow
 
 ```
-User opens /admin/users
+Browser/client request (HTTPS)
     ↓
-Angular Router → canActivate adminGuard → reads AuthService.role() signal
-    ↓
-UsersComponent → UsersApiService.getUsers() → HttpClient.get('/api/academic/users')
-    ↓
-authInterceptor injects: Authorization: Bearer <token>
-    ↓
-API Gateway: validates JWT, injects X-User-Id / X-User-Role headers
-    ↓
-Academic Service: @RequireRole(ADMIN) passes → return PagedModel<UserResponse>
-    ↓
-UsersComponent: renders table with HATEOAS pagination links
+nginx-proxy :443 (SSL termination)
+    ↓ path-based routing
+/api/** → api-gateway:8080
+    ↓ JWT filter → strip /api prefix
+auth-service|academic-service|schedule-service|attendance-service|notification-web
+    ↓ response
+← api-gateway ← nginx-proxy ← client
+
+/app/** → pwa-nginx:80 (React PWA static)
+/panel/** → web-panel-nginx:80 (Angular static)
+/miniapp/** → mini-app-nginx:80 (Mini App static)
+/ → landing-nginx:80 (Landing static)
 ```
 
-### Silent Token Refresh (Web Panel)
+### Swagger Aggregation Flow
 
 ```
-API call returns 401 (token expired)
+Developer opens /swagger-ui.html (via nginx-proxy → api-gateway)
     ↓
-refreshInterceptor detects 401 + !_retry flag
+springdoc webflux-ui renders in browser
+    ↓ (for each service)
+Browser fetches /api/academic/api-docs → gateway → academic-service /api-docs
+Browser fetches /api/auth/api-docs → gateway → auth-service /api-docs
+Browser fetches /api/schedule/api-docs → gateway → schedule-service /api-docs
+Browser fetches /api/attendance/api-docs → gateway → attendance-service /api-docs
     ↓
-POST /api/auth/refresh (withCredentials: true → sends httpOnly cookie)
+Unified Swagger UI with service selector dropdown
+```
+
+### SSL Certificate Renewal Flow
+
+```
+Certbot container (runs every 12h)
+    ↓ checks certificate expiry
+    ↓ if < 30 days remaining
+HTTP-01 challenge: GET http://rut.example.com/.well-known/acme-challenge/<token>
+    ↓ nginx-proxy serves /.well-known/ from shared certbot volume
+Let's Encrypt CA validates
     ↓
-Auth Service: validates refresh token, returns new access token
-    ↓
-AuthService.accessToken.set(newToken)
-    ↓
-Retry original request with new token
+New cert written to /etc/letsencrypt/live/ (shared volume with nginx-proxy)
+nginx-proxy reloads: docker exec nginx nginx -s reload
 ```
 
 ---
@@ -386,61 +465,73 @@ Retry original request with new token
 
 | Component | Status | What Changes |
 |-----------|--------|-------------|
-| API Gateway `application.yml` | MODIFIED | Add Mini App + Web Panel origins to `allowed-origins`; add `/api/auth/tma` to public paths |
-| `JwtAuthenticationFilter.java` | MODIFIED | Add `/api/auth/tma` to `PUBLIC_PATHS` set |
-| Auth Service | MODIFIED | New `POST /auth/tma` endpoint: initData validation + telegram_id lookup |
-| `docker-compose.yml` | MODIFIED | Add `panel-nginx` and `landing` services; add `BOT_TOKEN` env var to auth-service |
-| `frontends/mini-app/` | NEW | React + Vite + @telegram-apps/sdk-react, same API pattern as PWA |
-| `frontends/web-panel/` | NEW | Angular 18 standalone, HttpClient, signals, lazy routes |
-| `frontends/landing/` | NEW | HTML + CSS + GSAP, no backend dependency |
+| `.github/workflows/ci.yml` | NEW | Parallel build/test jobs for Java, Python, 3 frontends |
+| `.github/workflows/deploy.yml` | NEW | SSH to VPS, git pull, docker compose up |
+| `docker-compose.prod.yml` | NEW | No dev ports, prod env vars from secrets, nginx-proxy + certbot added |
+| `docker/nginx-proxy/nginx.conf` | NEW | Edge SSL termination, path routing to all backends/frontends |
+| `services/api-gateway/Dockerfile` | NEW | Multi-stage: JDK builder + JRE runtime |
+| `services/auth-service/Dockerfile` | NEW | Multi-stage: JDK builder + JRE runtime |
+| `services/academic-service/Dockerfile` | NEW | Multi-stage: built from academic-app subproject |
+| `services/schedule-service/Dockerfile` | NEW | Multi-stage: built from schedule-app subproject |
+| `services/attendance-service/Dockerfile` | NEW | Multi-stage: built from attendance-app subproject |
+| `services/notification-service/notification-app/Dockerfile` | MODIFIED | Upgrade from single-stage to multi-stage |
+| `services/notification-bot/Dockerfile` | UNCHANGED | Already correct (Python slim + requirements install) |
+| `services/api-gateway/build.gradle.kts` | MODIFIED | Add springdoc-openapi-starter-webflux-ui |
+| `services/api-gateway/src/main/resources/application.yml` | MODIFIED | Add springdoc.swagger-ui.urls for aggregation; Actuator health |
+| All `*-app/src/main/resources/application.yml` | MODIFIED | Standardize Actuator management config (health only) |
+| `services/api-gateway/src/main/java/.../JwtAuthenticationFilter.java` | MODIFIED | Add /api-docs paths to PUBLIC_PATHS (for Swagger access) |
+| `README.md` | MODIFIED | Full project documentation |
 
 ---
 
 ## Build Order
 
-1. **Auth Service extension** — `POST /auth/tma` endpoint and bot token env var. Unblocks Mini App auth. Gateway public path change included.
-2. **Gateway CORS update** — Add new origins. Simple config change, can be done in same step as auth.
-3. **Landing page** — Zero backend dependencies. Can build in parallel with auth.
-4. **Mini App** — Depends on auth/tma endpoint. Shares API patterns with PWA (can reuse api.ts files).
-5. **Web Panel** — Depends only on existing REST APIs (already complete). Angular scaffold → feature by feature.
+The following order minimizes blocking dependencies:
 
-**Critical dependency:** Mini App auth is the only new backend work. Everything else connects to existing APIs.
+1. **Actuator standardization** — Add `management` config to all 4 service application.yml files that lack it. No code changes, pure config. Can be done in one commit across all services. Unblocks docker-compose healthcheck improvements.
+
+2. **Multi-stage Dockerfiles** — Write Dockerfiles for the 5 Java services that lack them (api-gateway, auth, academic, schedule, attendance). Upgrade notification-web's existing Dockerfile. All follow the same pattern. Build context is monorepo root for all of them. Can be done in parallel.
+
+3. **docker-compose.prod.yml** — Only after Dockerfiles exist. References the Dockerfiles' build contexts. Removes dev ports (:15672 for RabbitMQ management). Adds nginx-proxy and certbot services. All env vars come from `.env.prod` (gitignored) or GitHub Secrets.
+
+4. **Edge nginx + SSL** — Write `docker/nginx-proxy/nginx.conf`. Requires knowing the domain name. Certbot container added to docker-compose.prod.yml. SSL setup is done manually once on VPS (first certbot run), then auto-renewed.
+
+5. **Swagger aggregation at Gateway** — Add webflux-ui dependency + springdoc config to api-gateway. Add /api-docs routes or whitelist in JWT filter. Test that all 4 service specs are accessible through gateway.
+
+6. **GitHub Actions CI** — Write ci.yml. Requires no VPS access — pure GitHub configuration. Test by pushing a branch and watching Actions tab.
+
+7. **GitHub Actions Deploy** — Write deploy.yml. Requires VPS SSH key added to GitHub Secrets. Trigger: on CI success on main branch.
+
+8. **README** — Final step. Describes architecture, setup, API summary, deploy guide. Written after everything else works.
+
+**Critical dependency chain:** Dockerfiles → docker-compose.prod.yml → VPS setup → GitHub Actions deploy (deploy job needs working containers). Swagger and Actuator are independent of deploy flow.
 
 ---
 
-## Anti-Patterns
+## Integration Points
 
-### Anti-Pattern 1: Shared npm Package for PWA + Mini App
+### New Component Interactions
 
-**What people do:** Create `frontends/shared/` workspace package with common components and API clients.
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| nginx-proxy ↔ api-gateway | HTTP proxy (internal Docker network) | nginx passes `X-Forwarded-For`, `X-Forwarded-Proto` headers |
+| nginx-proxy ↔ frontend nginx containers | HTTP proxy (internal Docker network) | pwa-nginx, web-panel-nginx, mini-app-nginx, landing-nginx remain unchanged |
+| certbot ↔ nginx-proxy | Shared volume `/etc/letsencrypt` | nginx reads certs; certbot writes on renewal |
+| certbot ↔ nginx-proxy webroot | Shared volume `/var/www/certbot` for ACME challenge | nginx serves `/.well-known/acme-challenge/` from this path |
+| api-gateway ↔ service /api-docs | Internal HTTP fetch (gateway → service:port/api-docs) | Must add /api-docs to gateway routes AND to JWT filter PUBLIC_PATHS |
+| GitHub Actions ↔ VPS | SSH (appleboy/ssh-action or similar) | SSH private key stored as GitHub Secret |
+| Docker healthchecks ↔ Actuator /health | HTTP GET inside container | All Java services expose /actuator/health on their server port |
 
-**Why it's wrong:** Requires Turborepo or Nx for build orchestration. Mini App and PWA have different auth mechanisms (initData vs login/password) and different UI patterns (Telegram theming vs standalone). The shared code surface is small (API types, a few utility functions).
+### Existing Interactions Unchanged
 
-**Do this instead:** Copy feature API modules (`api.ts`, `types.ts`) from PWA into Mini App at the start of each feature. Accept the duplication — it's intentional divergence, not accidental.
-
-### Anti-Pattern 2: Using localStorage for Access Token in Angular
-
-**What people do:** Store the JWT access token in `localStorage` for Angular's simpler "persist across tabs" pattern.
-
-**Why it's wrong:** XSS vulnerability. Any injected script can read `localStorage`. The PWA uses in-memory storage for the same reason.
-
-**Do this instead:** Store access token in an Angular signal inside `AuthService`. Token lives in JS heap — lost on page refresh, recovered by silent refresh via httpOnly cookie. This is the same pattern the PWA uses.
-
-### Anti-Pattern 3: Single nginx for All Frontends
-
-**What people do:** Serve PWA, Web Panel, and Landing from one nginx container with path-based routing (`/panel`, `/app`, `/`).
-
-**Why it's wrong:** SPA routing conflicts. Both React and Angular handle their own routing and need `try_files $uri /index.html` — but only for their own path subtree. One nginx config serving multiple SPAs at different paths requires complex location blocks.
-
-**Do this instead:** Separate nginx containers per frontend (consistent with existing `pwa-nginx` pattern). Each container has its own `nginx.conf` with a clean `try_files` setup.
-
-### Anti-Pattern 4: Validating initData on the Frontend
-
-**What people do:** Check if initData looks valid in the Mini App before sending to the backend.
-
-**Why it's wrong:** initData validation requires the bot token secret. Exposing that in client-side code defeats the purpose.
-
-**Do this instead:** Send raw initData to the backend immediately. Backend validates with the secret. Frontend trusts the backend response.
+| Boundary | Communication | Status |
+|----------|---------------|--------|
+| api-gateway ↔ auth-service | HTTP proxy via Spring Cloud Gateway | Unchanged |
+| services ↔ PostgreSQL/MongoDB/Redis | JDBC/MongoClient/RedisClient on private_net | Unchanged |
+| services ↔ RabbitMQ | AMQP on private_net | Unchanged |
+| services ↔ services (gRPC) | gRPC on private_net (ports 19090-19093) | Unchanged |
+| notification-web ↔ clients | STOMP WebSocket via api-gateway | Unchanged |
+| notification-bot ↔ RabbitMQ/Redis/gRPC | All internal network | Unchanged |
 
 ---
 
@@ -448,26 +539,71 @@ Retry original request with new token
 
 | Scale | Architecture Adjustments |
 |-------|--------------------------|
-| 0-5k users | Current single-VPS docker-compose is sufficient. All frontends as static builds. |
-| 5k-50k users | Add CDN (Cloudflare) in front of static files. Backend unchanged. |
-| 50k+ users | Gateway horizontal scaling with load balancer. Frontend CDN mandatory. |
+| Current (< 5k users) | Single VPS, single nginx-proxy, all containers on one host — sufficient |
+| 5k-20k users | Add CDN (Cloudflare) in front of nginx-proxy for static assets and TLS offloading |
+| 20k+ users | Separate frontend serving to CDN/object storage; add load balancer in front of api-gateway replicas |
 
-At the university scale (500-5000 students), no scaling changes are needed for v7.0. Static builds served by nginx containers handle thousands of concurrent connections without backend involvement.
+At RUT MIIT student scale (500-5000), the single-VPS docker-compose architecture handles all load. The bottleneck would be the PostgreSQL databases before any other component.
+
+---
+
+## Anti-Patterns
+
+### Anti-Pattern 1: Exposing /actuator/* Publicly
+
+**What people do:** Set `include: "*"` on management endpoints and expose them through the edge nginx.
+
+**Why it's wrong:** Exposes env vars, bean definitions, and heap dumps to the internet.
+
+**Do this instead:** Only expose `health`. Keep `/actuator/**` blocked at the nginx-proxy level. It's only needed internally by Docker healthchecks, which run inside the container network.
+
+### Anti-Pattern 2: Build Context = Service Subdirectory for Gradle Monorepo
+
+**What people do:** Set Docker build context to `./services/academic-service/academic-app/` in docker-compose.
+
+**Why it's wrong:** The `./gradlew` wrapper, `settings.gradle.kts`, `proto/` dir, and other api-contract modules are in the monorepo root. The build fails because `COPY gradlew .` finds nothing.
+
+**Do this instead:** Set build context to the monorepo root (`.`) and use a context-specific `.dockerignore` to exclude large irrelevant directories (`node_modules`, `frontends/`, `build/`).
+
+### Anti-Pattern 3: Single nginx.conf for All Frontends
+
+**What people do:** Combine pwa, web-panel, mini-app, and landing into one nginx server block with path prefixes.
+
+**Why it's wrong:** Each SPA needs `try_files $uri /index.html` only within its own path subtree. A single server block can't cleanly serve multiple SPAs with different base paths without router conflicts.
+
+**Do this instead:** Keep the existing separate nginx containers per frontend. The edge nginx-proxy routes to each internal nginx by path prefix. The internal containers handle their own SPA routing rules.
+
+### Anti-Pattern 4: Hard-coding Credentials in docker-compose.prod.yml
+
+**What people do:** Copy dev credentials (`rct_dev_pass`) into the prod compose file and commit it.
+
+**Why it's wrong:** Credentials in source control. Even if repo is private, this is a bad habit and a security risk.
+
+**Do this instead:** All passwords, tokens, and keys use `${VAR:-}` syntax. On the VPS, create a `.env.prod` file (gitignored) with real values. In GitHub Actions deploy job, the `.env.prod` can be generated from GitHub Secrets before running compose up.
+
+### Anti-Pattern 5: JWT Private Keys in Docker Image Layers
+
+**What people do:** `COPY keys/ /app/keys/` in Dockerfile to embed RSA keys in the image.
+
+**Why it's wrong:** Keys end up in Docker image layers, which can be extracted. Keys rotate differently from code.
+
+**Do this instead:** Mount keys as a Docker volume (already done in existing docker-compose.yml with `jwt-keys` named volume). In prod, initialize the volume with keys separately from the compose file. Auth service reads from `${JWT_KEY_DIR}` env var.
 
 ---
 
 ## Sources
 
-- [Telegram Mini Apps — Init Data validation](https://docs.telegram-mini-apps.com/platform/init-data) (official)
-- [Telegram Mini Apps — Authorizing User](https://docs.telegram-mini-apps.com/platform/authorizing-user) (official)
-- [Telegram WebApp API reference](https://core.telegram.org/bots/webapps) (official)
-- [@tma.js/sdk-react npm](https://www.npmjs.com/package/@tma.js/sdk-react)
-- [Angular Standalone Components — Angular 2025](https://metadesignsolutions.com/standalone-components-in-angular-clean-architecture-in-2025/)
-- [Angular Functional Interceptors](https://angular.dev/guide/http/interceptors) (official)
-- Existing codebase: `services/api-gateway/src/main/java/.../JwtAuthenticationFilter.java` (source of truth for public routes)
-- Existing codebase: `services/api-gateway/src/main/resources/application.yml` (source of truth for CORS config)
-- Existing codebase: `frontends/pwa/src/shared/lib/axios.ts` (source of truth for JWT auth pattern)
+- [Integrate OpenAPI With Spring Cloud Gateway — Baeldung](https://www.baeldung.com/spring-cloud-gateway-integrate-openapi) (verified approach)
+- [Springdoc-openapi Demos — official](https://springdoc.org/demos.html) (Spring Boot 3 + Gateway demo)
+- [GitHub Actions VPS CI/CD 2025 — Webtrophy](https://www.webtrophy.dev/posts/github-actions-vps-deployment) (SSH deploy patterns)
+- [Setup SSL with Docker, NGINX and Let's Encrypt](https://www.programonaut.com/setup-ssl-with-docker-nginx-and-lets-encrypt/) (certbot volume pattern)
+- [Spring Boot Actuator — Production-ready Features](https://docs.spring.io/spring-boot/reference/actuator/index.html) (official)
+- [Multi-Stage Dockerfiles for Spring Boot](https://medium.com/@office.yeon/dockerizing-with-multi-stage-builds-in-spring-boot-multi-module-project-1fd3aa886afc) (multi-module Gradle pattern)
+- Existing codebase: `services/notification-service/notification-app/Dockerfile` (source of truth for current Java Dockerfile pattern)
+- Existing codebase: `docker-compose.yml` (source of truth for current service topology, ports, networks, volumes)
+- Existing codebase: `services/api-gateway/src/main/resources/application.yml` (source of truth for current gateway routing and CORS)
+- Existing codebase: `services/api-gateway/build.gradle.kts` (confirms spring-boot-starter-actuator already present in gateway)
 
 ---
-*Architecture research for: v7.0 Frontends (Mini App + Web Panel + Landing)*
-*Researched: 2026-04-06*
+*Architecture research for: v8.0 CI/CD, Deployment & Documentation*
+*Researched: 2026-04-07*

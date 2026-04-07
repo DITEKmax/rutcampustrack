@@ -1,197 +1,293 @@
 # Stack Research
 
-**Domain:** University attendance system — 3 new frontend apps (Telegram Mini App, Angular Web Panel, Landing)
-**Researched:** 2026-04-06
-**Confidence:** MEDIUM-HIGH (most claims verified via official docs or multiple sources)
+**Domain:** CI/CD, Production Docker, SSL, Monitoring & API Documentation for microservice university attendance system
+**Researched:** 2026-04-07
+**Confidence:** HIGH (most claims verified against official docs or multiple credible sources)
 
 ---
 
 ## Context: What Already Exists (Do NOT Re-add)
 
-The PWA at `frontends/pwa/` already uses:
-- React 19.1, Vite 7, TypeScript 5.8, Tailwind 4.1, TanStack Query 5.96, React Router 7
-- Axios 1.14, STOMP/SockJS, Framer Motion (motion 12), Phosphor Icons, shadcn/ui
-- Vitest 3.1, Testing Library 16, vite-plugin-pwa 1.2
+This is an additive milestone. The following are confirmed present in the codebase — do not duplicate:
 
-The new frontends must integrate with the same API Gateway (port 8080, httpOnly JWT cookies, `/api/...` routes).
+**Java backend (all services):**
+- `springdoc-openapi-starter-webmvc-ui:2.7.0` — already on auth, academic, schedule, attendance, notification-web
+- `spring-boot-starter-actuator` — already on api-gateway and notification-web only
+- `spring-boot-starter-actuator` is MISSING from: auth-service, academic-app, schedule-app, attendance-app
 
----
+**Docker:**
+- Single-stage `FROM eclipse-temurin:21-jre-alpine` Dockerfile on notification-web (copy JAR only, no build stage)
+- Single-stage `FROM python:3.12-slim` Dockerfile on notification-bot
+- `docker-compose.yml` handles dev infra (Postgres×2, Mongo, Redis, RabbitMQ) + nginx containers for all 4 frontends
+- No `docker-compose.prod.yml` exists
+- No Dockerfile exists for: api-gateway, auth-service, academic-app, schedule-app, attendance-app
 
-## 1. Telegram Mini App (React)
+**nginx:**
+- `nginx:1.27-alpine` containers for PWA (port 80), mini-app (port 3000), web-panel (port 4200), landing (port 8081)
+- No single reverse proxy — services are on separate ports
+- No SSL anywhere
 
-Student-facing app running inside Telegram WebView. Shares attendance/schedule features with the PWA but adapted for Telegram's native UI patterns.
-
-### Core Technologies
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| React | 19.1 (pin to PWA) | UI framework | Same version as PWA — share types/logic; React 19 concurrent features matter for smooth Telegram WebView |
-| Vite | 7.x | Build tool | Matches PWA; Telegram templates officially use Vite; fast HMR critical for Mini App iteration |
-| TypeScript | 5.8 | Type safety | Same TS config as PWA possible; Telegram SDK ships full types |
-| @telegram-apps/sdk-react | ^3.3.9 | Telegram platform APIs | Official Telegram SDK; React bindings with hooks for platform, theme, back button, viewport, haptics |
-| @telegram-apps/telegram-ui | ^2.x | Native Telegram UI components | 25+ components matching Telegram iOS/Android design; AppRoot handles light/dark theme automatically |
-
-### Supporting Libraries
-
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @tanstack/react-query | ^5.96 (pin to PWA) | Server state / API fetching | Reuse same query patterns as PWA; caching same schedule/attendance endpoints |
-| axios | ^1.14 (pin to PWA) | HTTP client | Reuse same axios instance with `withCredentials: true` for httpOnly cookies |
-| react-router | ^7.x (pin to PWA) | Client-side routing | Telegram Mini Apps need browser hash routing; `createHashRouter` required in WebView |
-| @stomp/stompjs + sockjs-client | pin to PWA versions | Real-time STOMP events | Receive lesson.started / check-in confirmation events same as PWA |
-| @telegram-apps/react-router-integration | latest | Back button to router sync | Wires Telegram hardware Back button to React Router navigation automatically |
-
-### Development Tools
-
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| @vitejs/plugin-basic-ssl | Local HTTPS | Telegram WebView requires HTTPS; vite-plugin-mkcert is the alternative |
-| mockTelegramEnv (from sdk) | Browser testing | Call in `src/mockEnv.ts`; wrap in try/catch — uses real params inside Telegram, mock params in browser |
-| Eruda | Mobile debug console | Inject conditionally in dev mode only; shows console/network inside Telegram WebView |
-
-### Installation
-
-```bash
-# Mini App frontend
-npm create vite@latest frontends/mini-app -- --template react-ts
-
-# Telegram SDK
-npm install @telegram-apps/sdk-react @telegram-apps/telegram-ui
-
-# Reuse from PWA (check exact versions match)
-npm install @tanstack/react-query axios react-router @stomp/stompjs sockjs-client
-
-# Telegram router integration
-npm install @telegram-apps/react-router-integration
-
-# Dev: HTTPS for local Telegram testing
-npm install -D @vitejs/plugin-basic-ssl
-```
-
-### Critical Integration Note: Routing
-
-Use `createHashRouter`, not `createBrowserRouter`. Telegram WebView does not support HTML5 History API navigation. The `@telegram-apps/react-router-integration` package binds the Telegram Back button to `router.navigate(-1)` — this is required or the hardware back button will close the Mini App instead of going back.
-
-### Critical Integration Note: Auth
-
-The Mini App user IS a Telegram user. Auth flow differs from PWA:
-- The Telegram SDK provides `initData` / `initDataRaw` (signed launch params)
-- Backend must verify `initDataRaw` HMAC against the bot token
-- No traditional login form — Telegram identity is the session
-- The existing Auth Service OTP flow (bot `/login` command) is the bridge: bot sends OTP, user enters it, receives JWT cookie
+**GitHub Actions:** No `.github/` directory exists — CI/CD is entirely absent.
 
 ---
 
-## 2. Angular Web Panel
+## 1. CI/CD — GitHub Actions
 
-Teacher/admin dashboard for managing users, groups, semesters, viewing attendance journal, and subject management. Read-heavy with complex data tables.
+### Core Workflow Actions
 
-### Core Technologies
+| Action | Version | Purpose | Why |
+|--------|---------|---------|-----|
+| `actions/checkout` | v4 | Clone repo | Standard; v4 uses git sparse-checkout for large repos |
+| `actions/setup-java` | v4 | Install Temurin 21 | Official; supports `distribution: temurin`, `java-version: 21` |
+| `gradle/actions/setup-gradle` | v4 | Gradle build + dependency cache | Official Gradle action; caches `~/.gradle` using build file hashes; replaces deprecated `gradle/gradle-build-action`; v4 is current stable (v6 exists but licensing changed for caching in v6) |
+| `actions/setup-node` | v4 | Node.js for frontend builds | `node-version: 22` (LTS); built-in caching with `cache: npm` |
+| `actions/setup-python` | v5 | Python 3.12 for bot tests | `python-version: 3.12`; built-in pip caching |
+| `docker/setup-buildx-action` | v3 | Docker BuildKit multi-stage | Required for `--mount=type=cache` and layer caching in CI |
+| `docker/login-action` | v3 | Authenticate to registry | Supports Docker Hub, GHCR, any registry |
+| `docker/build-push-action` | v6 | Build and push Docker images | BuildKit-based; supports `cache-from`/`cache-to` for GitHub cache |
+| `appleboy/ssh-action` | v1 | SSH into VPS and run deploy | Most widely used SSH action; runs `docker compose pull && docker compose up -d` on VPS |
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Angular | ^21.2.7 | Framework | Current stable (released Nov 2025, latest patch Apr 1 2026); zoneless change detection default; esbuild CLI |
-| Angular CLI | ^21.x | Build/scaffold | esbuild default builder in v21 — significantly faster than Webpack; `ng add tailwindcss` for automated Tailwind setup |
-| TypeScript | ~5.8 | Type safety | Angular 21 requires TS 5.7+; pin to same TS version as PWA |
-| Tailwind CSS | ^4.1 | Utility-first styling | Angular CLI ng add support official as of v21; CSS-first config (no tailwind.config.js needed); consistent with PWA visual language |
-| @tanstack/angular-query-experimental | ^5.96.2 | Server state management | Same TanStack Query patterns as PWA; version 5.96.2 latest (Apr 3 2026); works with Angular Signals; experimental but actively maintained |
+### Workflow Structure
 
-### Supporting Libraries
+Two separate workflows (not one monolithic file):
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @angular/cdk | ^21.x | Table, virtual scroll, overlay primitives | Use for the attendance journal grid (CdkTable + virtual scrolling for 500+ rows); ships with Angular Material package |
-| ng2-charts | ^10.0 | Chart.js Angular wrapper | Attendance stats bar/line charts; v10 supports Angular 14+; Chart.js 4 peer dep; lightweight vs. Highcharts or ECharts |
-| chart.js | ^4.x | Charting engine | Peer dep of ng2-charts; include explicitly |
-| @phosphor-icons/web | ^2.x | Icon set | Same icon family as PWA; web/CSS version for Angular (no React dependency) |
+**`ci.yml`** — runs on every push/PR to main:
+1. Java build + test (`./gradlew build`) — all 5 backend services via monorepo root
+2. Python lint + test (`pytest`) — notification-bot
+3. Frontend build + test — PWA, mini-app, web-panel (`npm ci && npm test && npm run build`)
 
-### Development Tools
+**`deploy.yml`** — runs on push to main (after CI passes, or manual trigger):
+1. Build multi-stage Docker images for all Java services
+2. Push to registry (Docker Hub or GHCR)
+3. SSH into VPS → `docker compose -f docker-compose.prod.yml pull && up -d`
 
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| Angular DevTools (Chrome extension) | Component inspection, signal debugging | Essential for zoneless apps with signals |
-| Karma + Jasmine (Angular CLI default) | Unit tests | Keep Angular default test setup; no need to switch to Jest for this project |
+### GitHub Actions Free Tier Note
 
-### Installation
-
-```bash
-# Scaffold Angular project (standalone, no SSR, CSS styles)
-npx @angular/cli@21 new frontends/web-panel --standalone --style=css --routing --ssr=false
-
-# Tailwind CSS (official automated setup)
-cd frontends/web-panel
-ng add tailwindcss
-
-# TanStack Query for Angular
-npm install @tanstack/angular-query-experimental
-
-# Charts
-npm install ng2-charts chart.js
-
-# Angular CDK (for table/virtual scroll)
-npm install @angular/cdk
-
-# Icons (web/CSS version of Phosphor)
-npm install @phosphor-icons/web
-```
-
-### Auth Integration Pattern
-
-```typescript
-// app.config.ts — functional interceptor with withCredentials for httpOnly cookies
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideHttpClient(
-      withFetch(),
-      withInterceptors([credentialsInterceptor])
-    )
-  ]
-};
-
-// credentials.interceptor.ts
-export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
-  return next(req.clone({ withCredentials: true }));
-};
-```
-
-The backend already issues httpOnly cookie JWTs. Angular just needs `withCredentials: true` on all requests — no token storage in browser.
-
-### Angular Architecture Pattern for This Project
-
-Use standalone components exclusively (no NgModule). Angular 21 default. Use `inject()` function instead of constructor injection. Use Signals (`signal()`, `computed()`) for component-local state. Use TanStack Query for all server state — do NOT use BehaviorSubject/Subject for async data.
+Public repositories: unlimited minutes at no cost (confirmed as free regardless of 2026 pricing changes). This project is a portfolio project — keep it public to avoid minute limits on private repos (2,000 min/month free on Free plan).
 
 ---
 
-## 3. Landing Page
+## 2. Multi-Stage Dockerfiles — Java Services
 
-Marketing/info page for the RutCampusTrack project. No framework required.
+The current single-stage Dockerfiles (copy JAR, run) only work if the JAR is pre-built locally. For CI, multi-stage builds that compile inside Docker are cleaner and reproducible.
 
-### Core Technologies
+### Recommended Pattern: Two-Stage Gradle Build
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| HTML5 | — | Structure | No framework overhead; fastest possible load |
-| CSS3 | — | Styling | Custom properties for theming; no build step required |
-| Vanilla JavaScript | ES2020+ | Minimal interactivity | Smooth scroll, hamburger menu, simple animations — no framework needed |
+```dockerfile
+# Stage 1: Build
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /workspace
 
-### Approach: No Build Tool, No Framework
+# Copy Gradle wrapper and build files first (layer cache)
+COPY gradle/ gradle/
+COPY gradlew settings.gradle.kts build.gradle.kts ./
+COPY services/auth-service/ services/auth-service/
+# (repeat per service in that service's Dockerfile)
 
-A university project landing page needs zero runtime overhead. Vanilla HTML/CSS/JS loads instantly, has no dependency security risk, and can be served from nginx alongside the PWA with a single `COPY` line in Dockerfile.
+RUN ./gradlew :services:auth-service:bootJar --no-daemon -x test
 
-Optional lightweight CSS additions (only if needed):
+# Stage 2: Runtime
+FROM eclipse-temurin:21-jre-alpine
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+WORKDIR /app
+COPY --from=builder /workspace/services/auth-service/build/libs/*.jar app.jar
+USER appuser
+EXPOSE 9090
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
 
-| Library | CDN | Purpose | Note |
-|---------|-----|---------|------|
-| Google Fonts / local @font-face | — | Geist or system font | Match PWA font for brand consistency |
-| AOS (Animate on Scroll) | CDN 2.3.4 | Scroll-triggered fade-ins | 13KB; CDN only, no npm install |
+**Key decisions:**
+- JDK in builder, JRE in runtime — reduces final image from ~600MB to ~200MB
+- Non-root user (`appuser`) — security baseline for production
+- `-x test` in CI Dockerfile — tests already ran in `ci.yml`; don't double-run in Docker build
+- `--no-daemon` — Gradle daemon wastes memory in containers
 
-### What NOT to Use for Landing
+### Alternative: Pre-build JAR in CI, COPY only in Dockerfile
 
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| React/Next.js | 200KB+ runtime for a static page | Vanilla HTML |
-| Bootstrap | 30KB+ CSS for a page with custom design | CSS custom properties + Flexbox/Grid |
-| Any npm build pipeline | Adds maintenance overhead for static content | Direct HTML/CSS files served by nginx |
+Valid approach: `ci.yml` runs `./gradlew build`, then Docker just copies `build/libs/*.jar`. Simpler Dockerfiles, faster Docker build, no Gradle in Docker. **Use this approach** — it avoids caching complexity inside BuildKit and the Gradle cache in CI is already handled by `gradle/actions/setup-gradle`.
+
+The notification-web Dockerfile already follows this pattern. Standardize all Java services to match.
+
+---
+
+## 3. docker-compose.prod.yml
+
+### What Changes from docker-compose.yml
+
+| Concern | Dev (`docker-compose.yml`) | Prod (`docker-compose.prod.yml`) |
+|---------|---------------------------|----------------------------------|
+| Service builds | `build: context: ./services/...` | `image: registry/rct-auth:latest` (pre-built) |
+| Port exposure | Services on separate ports (80, 3000, 4200, 8081, 15672) | Only port 80 and 443 exposed; all traffic via reverse proxy nginx |
+| RabbitMQ management UI | Port 15672 exposed | Remove — internal only |
+| Env vars | Hardcoded dev defaults | `${VAR}` with no defaults — fail fast if .env missing |
+| Restart policy | `unless-stopped` (already set) | `unless-stopped` (keep) |
+| Health checks | Already present | Keep; add `start_period` tuning |
+| Volume mounts | Local `./dist` folders for nginx | Same (built artifacts copied in) |
+
+### New Service: Reverse Proxy nginx
+
+Add a single `nginx-proxy` container that:
+- Listens on port 80 and 443
+- Terminates SSL
+- Routes by domain/path to backend services and frontends
+- Replaces the separate per-frontend nginx containers on individual ports
+
+All other nginx containers become internal (remove `ports:`, keep `expose:`).
+
+---
+
+## 4. SSL — nginx + Certbot (Let's Encrypt)
+
+### Recommended Approach: Webroot with nginx
+
+| Component | Technology | Version | Why |
+|-----------|-----------|---------|-----|
+| SSL certificates | Let's Encrypt via Certbot | `certbot/certbot:latest` Docker image | Free, auto-renew, 90-day certs; industry standard |
+| Challenge method | Webroot | — | nginx stays running during renewal; safer than standalone (which requires stopping nginx) |
+| nginx config | Two-phase startup | — | HTTP-only initially to pass ACME challenge, then add HTTPS after first cert issue |
+| Auto-renewal | `certbot renew` via cron or systemd timer on VPS | — | Certbot Docker image + cron = simplest for single VPS |
+
+### Certbot docker-compose service
+
+```yaml
+certbot:
+  image: certbot/certbot:latest
+  volumes:
+    - certbot-certs:/etc/letsencrypt
+    - certbot-webroot:/var/www/certbot
+  # Run once to obtain cert, then exit; renewal via cron
+  entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done"
+```
+
+nginx mounts `certbot-certs` read-only for SSL certs and `certbot-webroot` for ACME challenge files.
+
+**Do NOT use:** Traefik (adds complexity, magic config, harder to debug for solo dev), nginx-proxy-manager (GUI tool, not infrastructure-as-code), standalone challenge (requires nginx downtime).
+
+---
+
+## 5. Spring Boot Actuator — Missing Services
+
+### Current State Gap
+
+Actuator is present on: api-gateway, notification-web.
+Actuator is MISSING on: auth-service, academic-app, schedule-app, attendance-app.
+
+All 5 Java backend services need actuator for health checks (used in `docker-compose.yml` `healthcheck:` blocks and future monitoring).
+
+### Dependency to Add (5 services missing it)
+
+```kotlin
+implementation("org.springframework.boot:spring-boot-starter-actuator")
+```
+
+### Production Actuator Config (application-prod.yml or env override)
+
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never      # Never expose internals publicly
+      probes:
+        enabled: true          # /actuator/health/liveness + /actuator/health/readiness
+  info:
+    env:
+      enabled: true
+```
+
+Only expose `health`, `info`, `metrics` — never expose `env`, `beans`, `heapdump`, `threaddump` publicly. The actuator port must NOT be routed through the public nginx (bind actuator to a separate management port or keep it internal-only).
+
+### Management Port Isolation
+
+```yaml
+management:
+  server:
+    port: 9099   # Different from service port; not exposed in docker-compose ports
+```
+
+This keeps actuator entirely on the private Docker network — only accessible from other containers (e.g., healthcheck scripts, Prometheus scrape from within the private_net).
+
+---
+
+## 6. Swagger UI Aggregation via API Gateway
+
+### How It Works
+
+springdoc-openapi supports a gateway aggregation pattern where the API Gateway serves a single Swagger UI that loads OpenAPI specs from each downstream service.
+
+Each service already exposes `/api-docs` (verified in academic-app application.yml: `springdoc.api-docs.path: /api-docs`).
+
+The Gateway must proxy `/api-docs/{service}` → `http://{service}:{port}/api-docs`.
+
+### Dependency for API Gateway
+
+```kotlin
+// API Gateway uses Spring Cloud Gateway (WebFlux) — needs webflux variant
+implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6")
+```
+
+Version 2.8.x is the current stable series (2.8.16 is latest as of 2026-02-27). Bump all services from 2.7.0 → 2.8.6 (or latest 2.8.x) for consistency. The 2.7→2.8 bump is non-breaking for this use case.
+
+### Gateway application.yml addition
+
+```yaml
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: auth
+        url: /api-docs/auth
+      - name: academic
+        url: /api-docs/academic
+      - name: schedule
+        url: /api-docs/schedule
+      - name: attendance
+        url: /api-docs/attendance
+      - name: notification
+        url: /api-docs/notification
+  api-docs:
+    enabled: false   # Gateway itself has no API endpoints to document
+```
+
+Add corresponding Gateway routes proxying `/api-docs/{service}` to each service's `/api-docs` endpoint (without StripPrefix).
+
+### Version Alignment
+
+| Service | Current | Target | Change |
+|---------|---------|--------|--------|
+| auth-service | 2.7.0 | 2.8.6 | Upgrade |
+| academic-app | 2.7.0 | 2.8.6 | Upgrade |
+| schedule-app | 2.7.0 | 2.8.6 | Upgrade |
+| attendance-app | 2.7.0 | 2.8.6 | Upgrade |
+| notification-app | 2.7.0 | 2.8.6 | Upgrade |
+| api-gateway | — | 2.8.6 (webflux-ui) | New addition |
+
+---
+
+## 7. README Documentation
+
+README is Markdown — no library dependencies. Key structural decision: what to include.
+
+### Recommended README Structure
+
+```
+# RutCampusTrack
+
+## Architecture diagram (ASCII or SVG embedded)
+## Tech stack table
+## Quick start (docker compose up)
+## Services table (ports, responsibilities)
+## API documentation (link to Swagger UI)
+## Development setup (Java, Node, Python)
+## Deployment guide (VPS, SSL, env vars)
+## Testing (how to run each test suite)
+```
+
+**Do NOT:** Write the README as code (use the Write tool). Do not include implementation details that belong in `docs/architecture.md` — README links to it. Keep Quick Start under 10 commands.
 
 ---
 
@@ -199,25 +295,13 @@ Optional lightweight CSS additions (only if needed):
 
 | Category | Recommended | Alternative | Why Not |
 |----------|-------------|-------------|---------|
-| Mini App UI | @telegram-apps/telegram-ui | Custom Tailwind components | telegram-ui matches Telegram's exact design language; saves weeks of matching iOS/Android Telegram patterns |
-| Mini App routing | createHashRouter | createBrowserRouter | Telegram WebView does not support HTML5 History API |
-| Angular UI library | Angular CDK + Tailwind | Angular Material | Angular Material enforces Material Design visual language; Tailwind gives freedom to match PWA aesthetics |
-| Angular UI library | Angular CDK + Tailwind | PrimeNG | PrimeNG is comprehensive but heavy; CDK is lightweight primitive layer that pairs well with Tailwind |
-| Angular charts | ng2-charts (Chart.js) | ngx-echarts | Chart.js is simpler and sufficient for bar/line attendance stats; ECharts is overkill for this use case |
-| Angular state | TanStack Query | NgRx | NgRx is complex boilerplate; TanStack Query covers server state (the dominant use case here) with signals integration |
-| Mini App auth | initData HMAC + OTP | Traditional login form | Mini Apps run inside Telegram — user IS already authenticated via Telegram |
-
----
-
-## Version Compatibility
-
-| Package | Compatible With | Notes |
-|---------|-----------------|-------|
-| @tanstack/angular-query-experimental@5.96 | Angular 21, TypeScript 5.8 | Works with Angular Signals; still "experimental" — pin to patch version |
-| @telegram-apps/sdk-react@3.3.9 | React 18 + 19 | Confirmed React bindings; React 19 likely works, pin and verify on first install |
-| ng2-charts@10.x | Angular 14+ (confirmed for 20) | Latest published ~March 2026; Chart.js 4 peer dep |
-| Tailwind 4.1 | Angular CLI 21 | `ng add tailwindcss` automated; CSS-first config, no tailwind.config.js needed |
-| React 19 (Mini App) | @tanstack/react-query 5.96 | Same version as PWA — no conflict |
+| CI/CD platform | GitHub Actions | Jenkins, GitLab CI, CircleCI | Free for public repos; zero infra to maintain; native GitHub integration |
+| SSL management | Certbot/nginx | Traefik | Traefik adds a complex proxy layer; for solo VPS with static routes, nginx + certbot is simpler and debuggable |
+| SSL management | Certbot/nginx | Nginx Proxy Manager | NPM is GUI-based, not infrastructure-as-code; harder to automate in CI |
+| Docker registry | GHCR (GitHub Container Registry) | Docker Hub | GHCR is free for public repos and integrated with GitHub Actions auth; Docker Hub free tier rate-limits pulls |
+| Actuator exposure | management.server.port isolation | Separate security filter chain | Port isolation is simpler and doesn't require Spring Security config changes |
+| Swagger aggregation | springdoc webflux-ui at gateway | Separate docs service | Gateway is the natural aggregation point; no additional service needed |
+| Gradle CI action | `gradle/actions/setup-gradle@v4` | `gradle/actions/setup-gradle@v6` | v6 changed caching to proprietary license; v4 is stable and fully open |
 
 ---
 
@@ -225,43 +309,44 @@ Optional lightweight CSS additions (only if needed):
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| Zone.js in Angular 21 | Angular 21 defaults to zoneless; adding zone.js is a step backward | Signals + OnPush change detection |
-| NgModule in Angular panel | Deprecated pattern; standalone is the Angular 21 default | Standalone components with inject() |
-| @tma.js/sdk (old package name) | Legacy package, superseded by @telegram-apps/sdk | @telegram-apps/sdk-react 3.x |
-| localStorage for JWT in Angular | XSS risk; backend uses httpOnly cookies | withCredentials: true on HttpClient |
-| BehaviorSubject for API state in Angular | TanStack Query handles caching/loading/errors better | @tanstack/angular-query-experimental |
-| React in Angular web panel | Mixing frameworks; no shared component boundary justified | Angular standalone components |
+| Kubernetes / Helm | Massive overkill for single VPS; solo developer | `docker compose` on VPS via SSH |
+| Prometheus + Grafana stack | Adds 4+ containers; monitoring needs are basic for MVP | Actuator `/health` + `/metrics` endpoints readable directly |
+| Jaeger / distributed tracing | Complex setup; no tracing requirements in v8.0 scope | Structured logging only |
+| `management.endpoints.web.exposure.include: *` | Exposes sensitive endpoints (env, beans, heapdump) | Explicit list: health, info, metrics |
+| `springdoc-openapi-starter-webmvc-ui` at gateway | Gateway is WebFlux (reactive); webmvc won't work | `springdoc-openapi-starter-webflux-ui` |
+| Gradle `v6` caching action | Caching component moved to proprietary license in v6 | `gradle/actions/setup-gradle@v4` |
+| Standalone certbot challenge | Requires nginx downtime for renewal | Webroot challenge (nginx stays up) |
 
 ---
 
-## Stack Patterns by Variant
+## Version Compatibility
 
-**Mini App — Attendance/Schedule views (shared with PWA):**
-- Reuse the same TanStack Query hooks shape and axios instance
-- Do NOT copy-paste PWA components — they use Tailwind/shadcn which looks wrong in Telegram; use @telegram-apps/telegram-ui equivalents
-
-**Angular Web Panel — Read-heavy journal grid:**
-- Use CdkTable with virtual scrolling for attendance journal (500+ students x 30+ lessons)
-- Compute derived stats client-side with Angular Signals + computed()
-
-**Landing Page — Static hosting:**
-- Single `index.html` + `style.css` + optional `main.js`
-- Serve from the same nginx container as PWA (`location /landing { root /usr/share/nginx/html; }`)
+| Package | Version | Compatible With | Notes |
+|---------|---------|-----------------|-------|
+| `springdoc-openapi-starter-webflux-ui` | 2.8.6 | Spring Boot 3.4, Spring Cloud Gateway 2024.0.0 | WebFlux variant required for reactive Gateway |
+| `springdoc-openapi-starter-webmvc-ui` | 2.8.6 | Spring Boot 3.4, Java 21 | WebMVC variant for all non-Gateway services |
+| `spring-boot-starter-actuator` | managed by Spring Boot 3.4 BOM | No explicit version needed | BOM already in all service builds |
+| `actions/setup-java@v4` | v4 | ubuntu-latest runner, Temurin 21 | `distribution: temurin`, `java-version: 21` |
+| `gradle/actions/setup-gradle@v4` | v4 | Gradle wrapper in repo | Caches `~/.gradle`; open source caching |
+| `docker/build-push-action@v6` | v6 | `docker/setup-buildx-action@v3` | Must pair with buildx setup action |
+| `appleboy/ssh-action@v1` | v1 | Any Linux VPS | Stable; IPv6 support added Jan 2026 |
+| `certbot/certbot` | latest | nginx:1.27-alpine | Webroot challenge; mount shared volume |
 
 ---
 
 ## Sources
 
-- [Angular end-of-life dates — endoflife.date](https://endoflife.date/angular) — Angular 21.2.7 confirmed as current stable (HIGH confidence)
-- [Angular v21 release — angular.dev](https://angular.dev/events/v21) — zoneless default, esbuild CLI (HIGH confidence)
-- [@tanstack/angular-query-experimental — npm](https://www.npmjs.com/package/@tanstack/angular-query-experimental) — version 5.96.2, Apr 3 2026 (HIGH confidence)
-- [@telegram-apps/sdk-react — npm](https://www.npmjs.com/package/@telegram-apps/sdk-react) — version 3.3.9, last published Oct 2025 (MEDIUM confidence — npm returned 403 on direct fetch, confirmed via WebSearch)
-- [Telegram Mini Apps reactjs-template — GitHub](https://github.com/Telegram-Mini-Apps/reactjs-template) — official React+Vite template reference (HIGH confidence)
-- [Angular Tailwind integration — angular.dev/guide/tailwind](https://angular.dev/guide/tailwind) — ng add automated setup confirmed for v21 (HIGH confidence)
-- [ng2-charts — npm](https://www.npmjs.com/package/ng2-charts) — version 10.0.0, supports Angular 14+ (MEDIUM confidence)
-- [Angular CDK virtual scrolling — material.angular.dev](https://material.angular.dev/cdk/scrolling) — CdkTable for large grids (HIGH confidence)
-- Vanilla HTML/CSS for landing — consensus from multiple 2026 sources (HIGH confidence — no disputed alternative for static marketing page)
+- [springdoc.org](https://springdoc.org/) — confirmed v2.8.16 latest stable, webflux-ui for Gateway (HIGH confidence)
+- [springdoc CHANGELOG](https://github.com/springdoc/springdoc-openapi/blob/main/CHANGELOG.md) — 2.8.16 released 2026-02-27 (HIGH confidence)
+- [Baeldung: Spring Cloud Gateway + OpenAPI](https://www.baeldung.com/spring-cloud-gateway-integrate-openapi) — aggregation pattern via springdoc.swagger-ui.urls (MEDIUM confidence — 403 on direct fetch, confirmed via WebSearch summary)
+- [gradle/actions README](https://github.com/gradle/actions) — setup-gradle v4 vs v6 licensing difference (HIGH confidence)
+- [Gradle Blog: GitHub Actions v6](https://blog.gradle.org/github-actions-for-gradle-v6) — caching proprietary license in v6 (HIGH confidence)
+- [Spring Boot Actuator docs](https://docs.spring.io/spring-boot/reference/actuator/index.html) — endpoint exposure, management port config (HIGH confidence)
+- [GitHub Actions billing docs](https://docs.github.com/billing/managing-billing-for-github-actions/about-billing-for-github-actions) — public repos unlimited free (HIGH confidence)
+- [appleboy/ssh-action releases](https://github.com/appleboy/ssh-action/releases) — v1 stable, updated Jan 2026 (HIGH confidence)
+- [Let's Encrypt Certbot Docker](https://community.letsencrypt.org/t/nginx-and-certbot-with-docker/214552) — webroot vs standalone pattern (MEDIUM confidence)
+- [eclipse-temurin Docker Hub](https://hub.docker.com/_/eclipse-temurin) — 21-jdk-alpine (build), 21-jre-alpine (runtime) images (HIGH confidence)
 
 ---
-*Stack research for: RutCampusTrack v7.0 — Mini App, Web Panel, Landing*
-*Researched: 2026-04-06*
+*Stack research for: RutCampusTrack v8.0 — CI/CD, Deployment & Documentation*
+*Researched: 2026-04-07*

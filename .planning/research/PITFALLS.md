@@ -1,292 +1,269 @@
 # Pitfalls Research
 
-**Domain:** v7.0 Frontends — Telegram Mini App (React), Angular Web Panel, Landing page — adding three frontend clients to an existing microservice attendance system (RutCampusTrack).
-**Researched:** 2026-04-06
-**Confidence:** HIGH for Telegram Mini App auth (verified against official Telegram Mini Apps docs); HIGH for nginx multi-frontend routing (verified against official nginx docs and multiple production guides); MEDIUM for Angular-in-Java-Gradle-monorepo (no official support, verified against community patterns); HIGH for CORS expansion risks (directly observed in existing system v6.0 key decisions).
+**Domain:** CI/CD, Docker Production Deployment, SSL, Monitoring, API Docs — Spring Boot 3.4 Gradle Monorepo
+**Researched:** 2026-04-07
+**Confidence:** HIGH (verified against official Spring Boot docs, Docker docs, Let's Encrypt community, and multiple post-mortems)
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Using initDataUnsafe on the Backend — Any User Can Be Impersonated
+### Pitfall 1: Actuator Endpoint Exposure Through the API Gateway
 
 **What goes wrong:**
-The Telegram WebApp SDK provides `window.Telegram.WebApp.initDataUnsafe` as a parsed JavaScript object on the client side. If a developer reads `initDataUnsafe.user.id` on the frontend and sends it to the backend as a user identifier (e.g., `POST /api/mini-app/auth { telegramId: initDataUnsafe.user.id }`), any attacker can forge an arbitrary `telegramId` and receive a JWT for any student account. The attack requires only a fetch call with a crafted JSON body.
+Services configure `management.endpoints.web.exposure.include=*` during development. When the API Gateway route table also proxies `/actuator/**`, every `/actuator/env`, `/actuator/heapdump`, and `/actuator/beans` endpoint becomes publicly accessible. The `env` endpoint exposes all Spring `Environment` properties — including database passwords, Redis credentials, and bot tokens stored as env vars. The `heapdump` endpoint returns a raw JVM heap dump containing plaintext secrets in memory. Real-world cases (documented as recently as April 2026) resulted in full database schema and credential exfiltration via an open `/actuator/env` endpoint.
 
 **Why it happens:**
-`initDataUnsafe` is the easiest way to get user data during development. The name "Unsafe" does not strongly convey "cryptographically unverified" to developers who are moving fast. It works perfectly in testing because Telegram sets it correctly for real users — the forgery problem only exists for server-side trust.
+Developers enable wide actuator exposure for local debugging and carry those settings to production without restricting them. They assume the Gateway JWT filter protects internal endpoints but forget that `/actuator/health` is a common public route exemption — and that some gateway configs exempt the entire `/actuator/**` prefix.
 
 **How to avoid:**
-- The backend must validate the raw `initData` string (available as `window.Telegram.WebApp.initData`) — not the parsed `initDataUnsafe` object.
-- Send the raw `initData` string from Mini App to backend: `POST /api/mini-app/auth { initData: window.Telegram.WebApp.initData }`.
-- The backend validates the HMAC-SHA256 signature: compute `HMAC-SHA256(secret_key, data_check_string)` where `secret_key = HMAC-SHA256("WebAppData", BOT_TOKEN)` and `data_check_string` is all key=value pairs sorted alphabetically, excluding `hash`.
-- Check `auth_date` field for expiry (reject if older than 5 minutes for auth, up to 1 hour for read-only operations).
-- Use the `telegram-bot-api` Spring Boot library or a validated utility for HMAC verification — do not roll your own.
-- After successful initData validation, issue a standard JWT (same format as existing PWA JWTs) so downstream services need zero changes.
+- On every Java service, set `management.endpoints.web.exposure.include=health,info` in the production profile only. Never include `env`, `heapdump`, `threaddump`, or `beans` for publicly reachable services.
+- Bind the management server to a non-routable address: `management.server.port=9099` and `management.server.address=127.0.0.1` so actuator is accessible only inside the Docker network, not mapped to the host.
+- In the API Gateway route configuration, explicitly never route `/actuator/**` paths from internal services outward. The Gateway's own `/actuator/health` for load balancer checks is fine.
+- Use a production Spring profile (`application-prod.yml`) that overrides the dev actuator settings.
 
 **Warning signs:**
-- Backend reads `telegramId` from a JSON body field without a corresponding signature check
-- initData validation is skipped in tests ("we'll add it later")
-- `window.Telegram.WebApp.initDataUnsafe.user` used as the source of truth for user identity anywhere in request construction
+- `curl https://yourdomain.com/api/auth/actuator/env` returns JSON with property sources
+- Actuator endpoints are not configured on a separate `management.server.port`
+- Dev and prod `application.yml` share the same `management.endpoints.web.exposure.include` line
 
-**Phase to address:**
-Mini App authentication phase — implement backend initData validation before any authenticated endpoint is wired.
+**Phase to address:** Spring Boot Actuator phase
 
 ---
 
-### Pitfall 2: Telegram Mini App Opens on Desktop Telegram — No initData Available
+### Pitfall 2: Certbot Chicken-and-Egg Bootstrap Failure
 
 **What goes wrong:**
-`window.Telegram.WebApp.initData` is empty string (`""`) when the Mini App is opened in Telegram Desktop (Windows/macOS/Linux) or Telegram Web, depending on version. `initDataUnsafe` may be partially populated. If the auth flow blindly sends empty `initData` to the backend, validation fails with an opaque error and the user sees a broken blank screen with no explanation.
-
-Additionally, during development, opening the Mini App URL directly in a browser (not via Telegram) also yields empty initData — breaking the local dev workflow entirely unless handled.
+The nginx config references `ssl_certificate` and `ssl_certificate_key` paths that do not exist yet. nginx refuses to start because cert files are missing. Certbot standalone mode needs port 80 free, but nginx is already holding it. Neither service starts successfully — the first deploy hangs entirely.
 
 **Why it happens:**
-Developers test on mobile Telegram first where initData is always present. Desktop edge cases are discovered only when the student union tries it on a laptop.
+Developers write the final production `nginx.conf` (with HTTPS blocks) before running initial certificate issuance. The `docker-compose.prod.yml` brings everything up simultaneously; nginx fails on startup, certbot cannot reach its challenge responder, and the entire stack is broken on first boot.
 
 **How to avoid:**
-- On Mini App startup, check `window.Telegram.WebApp.initData !== ""` before attempting auth.
-- If empty (desktop Telegram or browser): show a "Please open this app in Telegram on your mobile device" screen with a deep-link button (`tg://resolve?domain=RutTrackBot&appname=checkin`).
-- For local development: use the `@telegram-apps/sdk` mock mode or Telegram's BotFather test environment. Never mock initData by hardcoding a fake string — this creates a security vulnerability that must be removed before deploy.
-- Add an env flag `VITE_TMA_DEV_MODE=true` that bypasses initData check in development only, clearly gating it to non-production builds.
+- Use a two-phase bootstrap. Phase 1: start nginx with an HTTP-only config (no `ssl_certificate` lines), run `certbot certonly --webroot` serving `/.well-known/acme-challenge/` through an nginx `location` block. Phase 2: swap in the full HTTPS config after certs exist, reload nginx.
+- Commit a `nginx.conf.bootstrap` alongside the final `nginx.conf` with instructions for first-deploy usage.
+- Certbot volumes must be mounted `:rw` (not `:ro`). A read-only mount silently prevents cert writing — certbot exits 0 but writes nothing.
+- Never use `certbot certonly --standalone` if nginx is running on port 80. Use `--webroot` instead, pointing to the nginx-served challenge directory.
 
 **Warning signs:**
-- "Cannot read property of undefined" errors on `initDataUnsafe.user` on desktop
-- Blank white screen when Mini App is opened via Telegram Web
-- Local development requires commenting out initData validation code (this will be committed accidentally)
+- nginx container exits immediately on first `docker compose up` with "cannot load certificate"
+- Certbot container log shows "Connection refused" for the ACME challenge
+- Port 80 is not exposed in the compose file while using standalone mode
 
-**Phase to address:**
-Mini App authentication phase — build the empty-initData fallback before any real user testing.
+**Phase to address:** SSL/nginx phase — must be the first infra task before anything else runs in production
 
 ---
 
-### Pitfall 3: Telegram Mini App Viewport BottomSheet Breaks Fixed-Position Elements
+### Pitfall 3: Gradle Monorepo Rebuilds Every Service on Every Push
 
 **What goes wrong:**
-On mobile Telegram (iOS and Android), the Mini App is displayed inside a native BottomSheet component. While the sheet is being dragged to expand or collapse, `window.innerHeight` and `document.documentElement.clientHeight` change rapidly. Any UI element using `position: fixed; bottom: 0` (e.g., a check-in button bar, a bottom navigation tab bar similar to the PWA) jumps or shifts during drag. The visual result is jarring and can cause accidental taps.
-
-Additionally, on iOS the home indicator bar at the bottom overlaps `position: fixed; bottom: 0` content unless `env(safe-area-inset-bottom)` padding is applied. Telegram does NOT automatically apply this — it is the Mini App's responsibility.
+A single GitHub Actions workflow runs `./gradlew build` at the repo root. Every push — even a one-line landing page HTML change — triggers a full build of all 5 Java services, each with Testcontainers integration tests that pull Docker images. CI takes 25-30 minutes. Developers stop waiting for green before merging, defeating the purpose of CI.
 
 **Why it happens:**
-Developers test in Telegram Desktop or in a browser where there is no BottomSheet behavior, and the viewport size is stable. The issue only manifests on real mobile Telegram.
+"Build everything always" is the simple default. Selective builds in Gradle monorepos require path-based filtering in GitHub Actions (`on.push.paths`) paired with correct inter-module dependency awareness. This is non-trivial so it gets skipped.
 
 **How to avoid:**
-- Use `window.Telegram.WebApp.expand()` on app init to immediately expand to full screen and lock the viewport height.
-- Subscribe to `window.Telegram.WebApp.onEvent('viewportChanged', handler)` to detect height changes and temporarily suppress layout animations during transitions.
-- For bottom-anchored elements, use CSS: `padding-bottom: env(safe-area-inset-bottom, 0px)` or rely on the Telegram CSS variable `var(--tg-viewport-stable-height)` for layout calculations instead of `100vh`.
-- Use `window.Telegram.WebApp.viewportStableHeight` (not `viewportHeight`) for any layout that must not animate during scroll.
-- Test on real mobile Telegram — simulators do not reproduce BottomSheet behavior.
+- Use `on.push.paths` in each service-specific workflow to trigger only when files under `services/{service-name}/**`, `proto/**`, or root `build.gradle.kts` change.
+- Add `gradle/actions/setup-gradle` with `cache-read-only: false` to persist the Gradle wrapper and dependency cache across runs. The official `gradle/actions` v3+ supports GitHub Actions cache natively.
+- Separate CI into two job tiers: (a) per-service jobs, path-filtered, run on every push; (b) full integration run only on PRs to `main`.
+- Use a GitHub Actions matrix to run per-service builds in parallel, not serially.
 
 **Warning signs:**
-- Bottom navigation bar or CTA button jumps visually when Mini App first opens
-- `100vh` height calculations show incorrect values on first render
-- Content hidden behind iPhone home indicator on iOS
+- CI always takes 25+ minutes regardless of what changed
+- Changing only `frontends/landing/index.html` triggers all Java service tests
+- No `paths:` filter in any workflow's `on.push` trigger
 
-**Phase to address:**
-Mini App scaffold/layout phase — establish the viewport strategy and safe area handling before building any screen with fixed-positioned elements.
+**Phase to address:** GitHub Actions CI phase
 
 ---
 
-### Pitfall 4: Angular Web Panel Added Without Updating Gateway CORS — Breaks Immediately
+### Pitfall 4: Docker Layer Cache Completely Unused in GitHub Actions
 
 **What goes wrong:**
-The existing API Gateway CORS configuration (in `application.yml`) allows only `http://localhost:5173` and `http://localhost:80` as origins. When the Angular web panel makes API calls from its own origin (e.g., `http://localhost:4200` in dev, `https://admin.rutcampustrack.ru` in prod), every preflight returns a CORS error. Since Angular's `HttpClient` with credentials uses strict CORS, the panel cannot call a single endpoint until allowed origins are updated.
-
-This is not a new pitfall — it happened with the PWA too (v6.0 Key Decisions shows `OPTIONS bypass` and `DedupeResponseHeader` decisions) — but it is easy to forget to add the Angular origin alongside the React origins.
+Dockerfiles follow best practices (copy `package.json` before source, copy fat JAR last), but GitHub Actions runners are ephemeral — each run starts on a fresh VM with zero Docker layer cache. Without a persistent cache backend, every build redownloads the base JRE image and all dependencies. A monorepo with 5 Java services produces 5 × 150MB image pushes on every deploy, even when only one service changed. Build-plus-push time exceeds 15 minutes per run.
 
 **Why it happens:**
-CORS config lives in a YAML file that is not part of the Angular project. The Angular developer starts the dev server on port 4200 and assumes the backend "just works" because it worked for the PWA.
+Docker layer caching works transparently in local development. Developers assume it works the same in CI. The GitHub Actions runner's local daemon cache is evicted between runs.
 
 **How to avoid:**
-- Before writing any Angular HTTP calls, add `http://localhost:4200` to `allowedOrigins` in Gateway `application.yml`.
-- Add the production Angular panel URL (e.g., `https://admin.rutcampustrack.ru` or the nginx path-based URL) to `allowedOrigins` before deployment.
-- Since the Angular panel uses `Authorization: Bearer <token>` in headers (not httpOnly cookies like the PWA), set `allowedHeaders: "*"` and keep `allowCredentials: false` for Bearer-based origins (or a separate route config) — mixing cookie-based and Bearer-based origins with `allowCredentials: true` requires exact origin matching, not wildcards.
-- Document in Gateway config why each origin exists (comment inline).
+- Use `docker/build-push-action` with `cache-from: type=gha` and `cache-to: type=gha,mode=max`. This stores layer cache in GitHub Actions Cache between runs.
+- Scope the cache key per service: include the service name in the cache key (e.g., `docker-auth-service-${{ hashFiles('services/auth-service/**') }}`). Without scoping, multiple service build jobs overwrite each other's cache.
+- Be aware of the 10GB GitHub Actions Cache limit per repository. With 5 Java services + Python bot + 4 frontend nginx images, the cache may be evicted. Monitor cache size in the Actions tab.
+- For Spring Boot services specifically, use layered JARs (see Pitfall 9) so that the dependency layers are large but stable — only the thin application layer changes per build.
 
 **Warning signs:**
-- Angular `HttpClient` calls return `net::ERR_FAILED` or CORS preflight 403 in DevTools
-- "Access to XMLHttpRequest has been blocked by CORS policy" in Angular app console
-- PWA still works but Angular panel does not — classic sign of missing origin
+- Docker build logs show "CACHED" for 0 layers on every CI run
+- Image push always transfers 150MB+ per service regardless of change size
+- No `cache-from` or `cache-to` in any `docker/build-push-action` step
 
-**Phase to address:**
-Angular infrastructure/auth phase — update Gateway CORS as the first task before any API integration work.
+**Phase to address:** GitHub Actions CI phase (Docker build jobs)
 
 ---
 
-### Pitfall 5: Angular Panel Auth Uses localStorage for JWT — Inconsistent With System Security Model
+### Pitfall 5: Multiline RSA / SSH Private Key Corruption in GitHub Secrets
 
 **What goes wrong:**
-The existing PWA uses httpOnly cookies for the refresh token and in-memory storage for the access token (established in v6.0 for XSS protection). Angular tutorials and the `@auth0/angular-jwt` library default to `localStorage` for JWT storage. If the Angular panel stores the JWT in `localStorage`, it becomes an XSS target — more dangerous here than in the PWA because admin/teacher accounts have elevated privileges (headman marking, user management). A compromised admin token can bulk-create users or mark all students as absent.
+The RSA private key for JWT signing (or the SSH deploy key) is pasted into a GitHub Secret. GitHub can silently corrupt multiline values by wrapping lines. The secret is written to a file in the workflow but the key is malformed — missing line breaks or containing extra whitespace. Spring Boot fails to load the key on startup with a cryptic "Cannot load private key" error. SSH deploy connections fail with "invalid format." The secret looks correct in the GitHub UI but is corrupted.
 
 **Why it happens:**
-Angular JWT authentication tutorials overwhelmingly show `localStorage.setItem('token', jwt)`. Developers copy this pattern without realizing the PWA already established a different standard for this system.
+GitHub Secrets UI can corrupt multiline values. Additionally, environment variable interpolation strips trailing newlines, which PEM keys require. RSA keys in PEM format are strictly line-length sensitive.
 
 **How to avoid:**
-- The Angular panel should use the same auth pattern as the PWA: access token in memory (Angular service property, not localStorage), refresh token in httpOnly cookie via `POST /api/auth/refresh`.
-- Since Angular panel serves teachers and admins (who don't have Telegram), the login flow is: login form → `POST /api/auth/login` with username/password → receive access JWT in response body + refresh token in Set-Cookie httpOnly → store access token in Angular `AuthService` as a private property.
-- Use Angular `HttpInterceptorFn` (functional interceptor, Angular 15+) to attach `Authorization: Bearer <token>` to every outgoing request — reads from the in-memory service, not localStorage.
-- On page refresh: the in-memory token is lost, but the httpOnly refresh cookie persists → trigger a silent refresh on app init.
-- Never put the token in `sessionStorage` either — it is accessible to XSS just like `localStorage`.
+- Store the RSA private key as a base64-encoded single-line secret: `base64 -w 0 private.key` produces a single line → store that → decode in workflow: `echo "${{ secrets.RSA_PRIVATE_KEY_B64 }}" | base64 -d > private.key`.
+- For SSH deploy keys, use the `webfactory/ssh-agent` action which handles PEM format and multiline keys correctly rather than manually writing key files.
+- Never store keys with a passphrase if they must be used non-interactively in CI.
+- Validate key integrity in CI after decoding: `openssl rsa -in private.key -check -noout` for RSA keys; `ssh-keygen -y -f deploy_key` for SSH keys. Fail the workflow immediately if the key is malformed rather than letting it fail silently at runtime.
 
 **Warning signs:**
-- `localStorage.setItem('accessToken', ...)` anywhere in the Angular codebase
-- Angular `AuthGuard` reading token from `localStorage`
-- Token visible in DevTools → Application → Local Storage
+- Spring Boot startup log: "Cannot load private key" or "DerValue: not enough data"
+- SSH step fails with "invalid format" or "no supported authentication methods"
+- `openssl rsa -in key.pem -check` reports errors in workflow logs after decoding
 
-**Phase to address:**
-Angular authentication layer phase — establish the in-memory + cookie pattern before any protected routes are built.
+**Phase to address:** GitHub Actions CI phase — secrets setup step, done before any deploy workflow runs
 
 ---
 
-### Pitfall 6: Angular Frontend-Only RBAC Route Guards — Attackers Bypass by Editing JavaScript
+### Pitfall 6: docker-compose.prod.yml Leaks Dev Config or Exposes Database Ports
 
 **What goes wrong:**
-Angular route guards (`canActivate`, role guards) and `*ngIf="user.role === 'ADMIN'"` directives are client-side checks only. They are good for UX (hiding irrelevant UI) but provide zero security. A determined student can open DevTools, modify the guard return value, or forge an API request directly with a captured teacher JWT to access admin-only endpoints. Since the backend uses `@RequireRole` AOP (not Spring Security at the service layer), the backend is the real security boundary — but only if it is correctly configured.
+The production compose file is created by copying `docker-compose.yml` and editing it. Dev config bleeds into prod: database ports are exposed to the host (`0.0.0.0:5432->5432/tcp`, `6379->6379/tcp`, `27017->27017/tcp`, `15672->15672/tcp` for RabbitMQ management UI). Any attacker who knows the server IP can connect directly to PostgreSQL, Redis, MongoDB, and RabbitMQ without any authentication bypass — they only need to know the service password. Additionally, `SPRING_PROFILES_ACTIVE=dev` may remain set, enabling development-only endpoints.
 
 **Why it happens:**
-When building the Angular panel, it is tempting to add RBAC only in the frontend to move fast. The `@RequireRole` on backend controllers exists in the Java services, but developers may accidentally leave some endpoints unguarded during the panel's development phase.
+The dev compose file has all ports exposed for local developer tooling. These are copied to prod without audit. The developer thinks "the firewall will protect it" but VPS firewalls are often misconfigured or disabled.
 
 **How to avoid:**
-- Angular route guards are for UX only — treat them as "redirect unauthorized users to login" not as security.
-- For every API call the panel makes, the corresponding backend endpoint must have `@RequireRole({"ADMIN"})` or `@RequireRole({"TEACHER", "ADMIN"})` AOP annotation — this was established in v4.0 and must be verified for every new endpoint the panel calls.
-- If a panel phase adds new backend endpoints (e.g., for admin user management), the AOP annotation must be part of the same plan, not deferred.
-- Add an integration test for each new endpoint that verifies a STUDENT role JWT receives 403.
+- In `docker-compose.prod.yml`, remove ALL host port mappings for databases (PostgreSQL, MongoDB, Redis, RabbitMQ). These services communicate over the internal Docker bridge network — they need no host port exposure.
+- The only host port mappings in prod are: nginx on 80 and 443. The API Gateway (8080) should be accessible only from nginx's Docker network, not from the host.
+- Set `SPRING_PROFILES_ACTIVE=prod` explicitly in every Java service's environment block in the prod compose file.
+- Add `restart: unless-stopped` and memory limits to every service.
+- Keep a `.env.example` committed with all variable names but no values. The `.env` file on the VPS is created manually from this template and is never committed. Verify with `git ls-files .env` — must return nothing.
 
 **Warning signs:**
-- Angular route guard that returns `true` unconditionally while "we add real checks later"
-- Backend endpoint added for the panel with no `@RequireRole` annotation
-- "The panel shows the right UI, so the security is done" reasoning
+- `docker compose -f docker-compose.prod.yml ps` shows `0.0.0.0:5432->5432/tcp` in the output
+- `docker exec <auth-service> env | grep SPRING_PROFILES` returns `dev` or nothing
+- `.env` appears in `git status` as a tracked file
 
-**Phase to address:**
-Angular auth + RBAC phase — verify every backend endpoint the panel calls has `@RequireRole` coverage before considering a phase "done."
+**Phase to address:** Docker prod compose phase
 
 ---
 
-### Pitfall 7: nginx Serving Multiple Frontends Without Proper SPA Fallback Per App — Angular Routing Breaks
+### Pitfall 7: Swagger/OpenAPI Aggregation CORS Failure at the Gateway Level
 
 **What goes wrong:**
-The current nginx container (`pwa-nginx`) serves the PWA from `root /usr/share/nginx/html` with a single `try_files $uri $uri/ /index.html` rule. When the Angular web panel is added to nginx (e.g., at `/panel`), Angular's router uses HTML5 pushState URLs (`/panel/dashboard`, `/panel/users`). If a user bookmarks `/panel/users` and navigates directly, nginx looks for a physical file at `dist/panel/users` — finds nothing — and falls through to the PWA's `index.html`. The user sees the PWA instead of the Angular panel.
-
-Similarly, the landing page at `/` conflicts with the PWA which currently owns `/`.
+Each microservice exposes its OpenAPI spec at `/v3/api-docs`. The API Gateway proxies these paths. The Swagger UI (served from the Gateway at `/swagger-ui.html`) fetches individual service specs by calling their proxied paths. Browsers block these requests because the `servers` field in the OpenAPI JSON points to `http://auth-service:9090` (the internal Docker hostname) instead of `https://yourdomain.com`. The Swagger UI shows "Fetch error: Possible cross-origin (CORS) issue?" for every service spec.
 
 **Why it happens:**
-The existing nginx config has exactly one `location /` block for the PWA. Adding a second frontend is done by adding a new `location /panel` block, but forgetting to add the SPA fallback `try_files` inside that block specifically.
+SpringDoc generates `server` URLs based on the request's `Host` header at the service level. When the Gateway fetches the spec internally (Docker network), the host is the container name and port, not the public domain. This internally-generated spec is then served to the browser with wrong server URLs.
 
 **How to avoid:**
-The correct nginx pattern for multi-SPA hosting:
-
-```nginx
-# PWA — served at /pwa or moved to a subpath
-location /pwa/ {
-    alias /usr/share/nginx/html/pwa/;
-    try_files $uri $uri/ /pwa/index.html;
-}
-
-# Angular Web Panel — at /panel
-location /panel/ {
-    alias /usr/share/nginx/html/panel/;
-    try_files $uri $uri/ /panel/index.html;
-}
-
-# Landing — at root (static, no SPA fallback needed)
-location / {
-    root /usr/share/nginx/html/landing/;
-    index index.html;
-}
-```
-
-Angular must also be built with `--base-href /panel/` so that all asset URLs and router links are relative to `/panel/` not `/`.
-
-Alternatively: serve each frontend from a separate nginx container on a different port, with a single reverse-proxy nginx at the front routing by path or subdomain. This avoids the alias/try_files complexity entirely and keeps each frontend's nginx config simple and isolated.
+- In each microservice's `application-prod.yml`, set `springdoc.server.url=https://yourdomain.com` (or inject via env var) so generated specs always reference the public gateway URL with the correct path prefix.
+- In the Gateway, configure a `RewritePath` filter for `/v3/api-docs/{segment}` routes that strips the internal path prefix before passing to downstream services.
+- Add `springdoc.api-docs.groups.enabled=true` in the Gateway and declare one `GroupedOpenApi` bean per downstream service, using `pathsToMatch` to proxy the correct service spec URL.
+- For production, consider restricting Swagger UI access to a trusted IP range or removing it entirely — the internal API architecture should not be publicly browsable.
 
 **Warning signs:**
-- Navigating to `/panel/users` directly returns the PWA `index.html` content
-- Angular assets (main.js, styles.css) return 404 after deployment because they are referenced as `/main.js` not `/panel/main.js`
-- Angular router `RouterModule.forRoot(routes, { useHash: false })` but nginx has no SPA fallback for that prefix
+- Swagger UI loads but all "Try it out" requests fail
+- Browser dev tools show CORS errors on `/v3/api-docs/...` requests
+- The `servers` array in any service's OpenAPI JSON shows `localhost`, a Docker container hostname, or an internal port number
 
-**Phase to address:**
-Infrastructure / nginx routing phase — design the multi-frontend nginx layout before Angular or Landing builds are attempted.
+**Phase to address:** API documentation phase
 
 ---
 
-### Pitfall 8: Angular Built Into Java Gradle Monorepo Without Isolation — Breaks Java Build
+### Pitfall 8: Nginx Reload Not Triggered After Certificate Renewal
 
 **What goes wrong:**
-The project is a Gradle-based Java monorepo. Angular uses `npm`/Node.js. If Angular is added as a Gradle subproject using `com.github.node-gradle/gradle-node-plugin` or similar, the Java build now requires Node.js to be installed on every developer's machine and in CI. The `./gradlew build` command starts downloading Node.js, running `npm install`, and building Angular — adding 3-5 minutes to every Java service build. If the Angular build fails (e.g., a missing npm dependency on CI), the entire Gradle build fails, blocking Java service development.
+Certbot auto-renewal succeeds (new cert written to the mounted volume) but nginx continues serving the old certificate until the container is manually restarted. Users see certificate expiry warnings 30-60 days after initial launch. The system appears healthy (certbot cron is green) but TLS is actually broken from the browser's perspective.
 
 **Why it happens:**
-It feels "clean" to unify everything under Gradle. The `gradle-node-plugin` makes it technically possible.
+nginx holds the certificate in memory from startup. Writing new cert files to the volume does not cause nginx to reload. The certbot renewal deploy hook (`--deploy-hook`) must explicitly trigger nginx reload, but this is routinely omitted from first-pass setups.
 
 **How to avoid:**
-Keep Angular completely isolated from the Gradle build. Angular lives in `frontends/web-panel/` with its own `package.json`, `angular.json`, and `tsconfig.json`. It is built with `npm run build` directly — never via Gradle tasks.
-- In `settings.gradle.kts`, do NOT include `frontends/web-panel` as a Gradle subproject.
-- In `docker-compose.yml`, the web panel gets its own nginx container with a pre-built `dist/` directory — same pattern as the PWA.
-- CI pipeline has separate jobs: `build-java` and `build-angular` with no dependency between them.
-- Add `frontends/web-panel/node_modules/` to `.gitignore` and `frontends/web-panel/dist/` as well.
+- Add a `--deploy-hook` to the certbot renewal command. If certbot and nginx share a container: `certbot renew --deploy-hook "nginx -s reload"`. If they are separate containers: `certbot renew --deploy-hook "docker exec nginx-container nginx -s reload"`.
+- For separate containers, the certbot container needs the Docker socket (`/var/run/docker.sock`) mounted to execute docker commands — or use a cron job on the VPS host.
+- Add a VPS cron job: `0 0,12 * * * certbot renew --quiet && docker exec rutcampustrack-nginx-1 nginx -s reload`.
+- Test before going live: `certbot renew --dry-run`. Verify the deploy hook runs successfully in the dry-run output.
 
 **Warning signs:**
-- `frontends/web-panel` listed in `settings.gradle.kts` includes
-- `./gradlew build` output contains "Downloading Node.js" or "npm install"
-- Java service tests fail because `npm` is not found in CI environment
+- Certificate expiry date does not advance after 60 days despite certbot cron running
+- Let's Encrypt sends "your certificate will expire soon" email warning
+- `openssl s_client -connect yourdomain.com:443 | grep notAfter` shows the original issuance date
 
-**Phase to address:**
-Angular project scaffold phase — establish directory structure and isolation before any Angular code is written.
+**Phase to address:** SSL/nginx phase
 
 ---
 
-### Pitfall 9: Landing Page Served at Root `/` Displaces PWA — Breaks Install Flow
+### Pitfall 9: Spring Boot Fat JAR Layer Cache Busted on Every Build
 
 **What goes wrong:**
-The PWA is currently served by `pwa-nginx` at port 80 as root (`/`). The Service Worker registers at `/sw.js` and the PWA manifest is at `/manifest.webmanifest`. If the landing page is also placed at `/` in the same nginx container, the PWA is overwritten. Students trying to install the PWA from the landing page's "Install the app" button will either get the landing page's `index.html` served as the PWA root or the Service Worker will not be found at `/sw.js`.
+The Dockerfile copies the assembled fat JAR directly: `COPY build/libs/app.jar app.jar`. Every code change — even a one-line comment fix — produces a new JAR with a different checksum. Docker invalidates the entire layer. The image rebuild copies ~150MB of dependencies on every push. On a VPS with limited upload bandwidth, image pushes take 3-5 minutes per service, per deploy.
 
 **Why it happens:**
-It is natural to want the landing page at the root. The conflict with the existing PWA deployment is easy to overlook when thinking about them as separate things.
+The fat JAR bundles application code and all dependencies into a single file. Docker cannot distinguish "only app code changed" from "a dependency version changed" — the whole file changes.
 
 **How to avoid:**
-Choose one layout strategy and commit to it before building the landing:
-
-**Option A (Recommended for simplicity):** Landing at `/`, PWA moved to `/app/`. Update PWA nginx config to serve from `/app/`, update Vite `base: '/app/'` config, update Service Worker scope to `/app/`, update all deep links in push notifications and bot.
-
-**Option B:** Separate nginx containers — landing on its own container, PWA on its own container, front-proxy nginx routes by path or subdomain.
-
-**Option C:** PWA stays at `/`, landing at `/about` or on a separate subdomain (`rut.ru` vs `app.rut.ru`).
-
-Whichever is chosen, document it and implement it in the infrastructure phase before any landing page content is written — changing the PWA base path after deployment invalidates all existing push subscription deep links.
+- Enable Spring Boot's layered JAR feature. In `build.gradle.kts`: `tasks.bootJar { layered { enabled = true } }`. In the multi-stage Dockerfile, extract layers explicitly:
+  ```
+  RUN java -Djarmode=layertools -jar app.jar extract
+  COPY --from=builder dependencies/ ./
+  COPY --from=builder spring-boot-loader/ ./
+  COPY --from=builder snapshot-dependencies/ ./
+  COPY --from=builder application/ ./
+  ```
+- The layer order is critical: `dependencies/` (rarely changes, always cached) → `spring-boot-loader/` (almost never changes) → `snapshot-dependencies/` (changes occasionally) → `application/` (changes every build but is tiny — only compiled classes and resources).
+- This approach means only the `application/` layer (~1-5MB) is pushed on each deploy, not the full 150MB JAR. Dependency layers are served from Docker's layer cache.
 
 **Warning signs:**
-- Landing `index.html` and PWA `index.html` both configured to be served at `/`
-- `sw.js` returning 404 after adding the landing page
-- A2HS install prompt stops appearing after landing page deployment
+- `docker build` log shows no "CACHED" lines for the layer that copies the JAR
+- Image push always transfers 150MB+ per service regardless of change size
+- `docker image history <image>` shows one massive layer for the entire JAR
 
-**Phase to address:**
-Infrastructure / nginx routing phase — resolve URL layout before any frontend is deployed.
+**Phase to address:** Docker Dockerfiles phase (Java services)
 
 ---
 
-### Pitfall 10: Telegram Mini App Does Not Support httpOnly Cookies — Authentication Must Use Authorization Header
+### Pitfall 10: Vite Build-Time Env Vars Hardcoded into Frontend Images
 
 **What goes wrong:**
-The PWA uses httpOnly cookies for the refresh token (`Set-Cookie: refreshToken=...; HttpOnly; SameSite=Strict`). Telegram's WebView (the embedded browser that runs Mini Apps) has inconsistent and often disabled cookie support. On iOS, Telegram uses WKWebView which isolates cookies per-app and does not share them with Safari. Cookies set via `Set-Cookie` from the API Gateway may be silently dropped in the Telegram WebView, causing the refresh token to be lost immediately. The user appears logged in on first visit but is logged out on next open.
+The PWA and Mini App are built with `VITE_API_BASE_URL=http://localhost:8080` from the local `.env`. The built nginx-serving container is deployed to the VPS. All API calls fail because `localhost:8080` does not exist on the user's device. The error is silent at image build time — the build succeeds, the container starts, but every API call 404s or connection-refuses.
 
 **Why it happens:**
-Developers copy the PWA auth flow for the Mini App because it seems natural to reuse the existing auth pattern. The WebView cookie restriction is discovered only during device testing.
+Vite replaces `import.meta.env.VITE_*` at build time, not runtime. The built JavaScript bundle contains the literal string value. Runtime environment variables passed to the nginx container have no effect on already-built JS.
 
 **How to avoid:**
-For the Telegram Mini App specifically:
-- Do NOT rely on httpOnly cookies for token persistence. The Mini App must use a different storage strategy.
-- After validating initData and issuing JWT, return both the access token and refresh token in the **response body**.
-- Store the access token in React state (in-memory) and the refresh token in `localStorage` within the Mini App (Telegram WebView's localStorage persists across opens on the same device).
-- On Mini App open: check `localStorage` for a refresh token → call refresh endpoint with it in the request body (not cookie) → get a new access token in memory.
-- This requires a new auth endpoint variant: `POST /api/auth/refresh-token-body` that accepts `{ refreshToken: "..." }` in the body and returns `{ accessToken: "...", refreshToken: "..." }` without relying on cookies.
-- The security trade-off (localStorage vs cookie) is acceptable for the Mini App context: Telegram WebView is sandboxed per-app and not accessible from other apps.
+- Use relative API paths (`/api`) in the Vite app config instead of absolute URLs. nginx's `proxy_pass` directive then handles routing to the gateway. This avoids the env var problem entirely — the frontend always calls its own origin regardless of where it is deployed.
+- If absolute URLs are needed, pass Vite build args through Docker `--build-arg`: declare `ARG VITE_API_BASE_URL` in the Dockerfile build stage, set `ENV VITE_API_BASE_URL=$VITE_API_BASE_URL`, then `RUN npm run build`. In `docker-compose.prod.yml`, pass `build.args.VITE_API_BASE_URL: "${VITE_API_BASE_URL}"`.
+- Document clearly in `.env.example` that `VITE_API_BASE_URL` is a **build-time** variable requiring image rebuild if changed, not a runtime override.
+- For Angular, `environment.prod.ts` is the build-time config. Use relative `/api` paths there too.
 
 **Warning signs:**
-- Mini App user is logged in on first open, but "not authenticated" on the second open
-- `document.cookie` shows empty string in Telegram WebView DevTools
-- `Set-Cookie` headers visible in network tab but cookie does not appear in application storage
+- Browser network tab shows requests to `localhost:8080` or `localhost:9090` in production
+- `grep -r "localhost" pwa/dist/assets/*.js` returns matches after a production build
+- API calls work in local Docker but fail on the VPS without any code changes
 
-**Phase to address:**
-Mini App authentication phase — design the token storage strategy for WebView before any authenticated API calls are made.
+**Phase to address:** Docker Dockerfiles phase (frontend services)
+
+---
+
+### Pitfall 11: Python Bot Using Alpine — Silent Build Failures for grpcio/aiohttp
+
+**What goes wrong:**
+The notification-bot Dockerfile uses `python:3.11-alpine` to reduce image size. `grpcio` and `aiohttp` (dependencies of aiogram 3 + aio-pika) do not have pre-built wheels for Alpine's musl libc. The image build succeeds locally (wheels cached from previous builds) but fails on clean CI runners or the VPS — either with a 20-minute compile attempt (if gcc is present) or an immediate failure (if it is not). In the worst case, the build silently produces an image that crashes at import time.
+
+**Why it happens:**
+Alpine uses musl instead of glibc. Many Python packages with C extensions distribute only glibc-linked wheels on PyPI. When no compatible wheel exists, pip falls back to source compilation. Per the project's `KEY DECISIONS`, the notification-bot already uses `grpcio==1.73.0` and `protobuf==6.31.0` — these are C-extension packages that will fail on Alpine without explicit toolchain setup.
+
+**How to avoid:**
+- Use `python:3.11-slim` (Debian-based glibc) for the notification-bot. The image is ~25MB larger than Alpine but avoids all musl compatibility issues and all pinned C-extension dependencies install from binary wheels instantly.
+- If Alpine is strictly required, add `apk add --no-cache gcc musl-dev libffi-dev python3-dev` in the build stage and use a multi-stage build to drop the compiler in the final image.
+- Verify the exact Docker build succeeds on a fresh CI runner (not just locally) before marking the Dockerfile complete.
+
+**Warning signs:**
+- Build log contains "error: command 'gcc' failed" or "No matching distribution found for grpcio"
+- Docker build takes 15+ minutes for the Python bot (compiling from source)
+- Bot container crashes immediately after start with `ImportError` on `grpc._cython`
+
+**Phase to address:** Docker Dockerfiles phase (Python bot service)
 
 ---
 
@@ -294,14 +271,14 @@ Mini App authentication phase — design the token storage strategy for WebView 
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Using `initDataUnsafe` for backend user identification | Faster development | Any user can be impersonated — critical security breach | Never — validate raw `initData` HMAC every time |
-| `localStorage` for JWT in Angular panel | Simple, tutorials show this | Admin/teacher tokens exposed to XSS | Never — use memory + httpOnly cookie |
-| Combining all frontends in one nginx container immediately | Single service | SPA routing conflicts, nginx config becomes complex/fragile | Acceptable only if URL layout is pre-designed |
-| Adding Angular to Gradle monorepo build | Unified `./gradlew build` | Node.js required everywhere, 3-5 min added to all Java builds, CI coupling | Never — keep isolated |
-| Skipping Angular route guard role checks ("UI only is fine") | Less code | Backend endpoints may be unguarded; attackers bypass with direct API calls | Never for admin/teacher operations |
-| Forwarding Telegram `user.id` as plain JSON field without HMAC | Simplest auth flow | Any user can impersonate any other user | Never |
-| `Notification.requestPermission()` auto-called in Mini App | Simpler code | One-shot prompt wasted; Telegram WebView blocks re-prompting | Never |
-| Empty-initData dev bypass committed to main branch | Easier local dev | Any browser can call Mini App endpoints without Telegram auth | Never commit — env-var gate only |
+| Single CI job builds all services | Simple one-file workflow | 25-min builds for every trivial change; developers bypass CI | MVP launch only — replace within first week |
+| `management.endpoints.web.exposure.include=*` in prod | Full actuator visibility | DB credentials and heap dumps publicly readable | Never in production — use `application-prod.yml` override |
+| Self-signed cert instead of Let's Encrypt | Zero bootstrap complexity | Browsers block the site; Telegram Mini App and Web Push require HTTPS | Only during private staging on a VPN |
+| Use `docker-compose.yml` directly in prod | One file to maintain | Dev ports exposed, no restart policies, wrong profiles | Never — prod and dev configs must be separate files |
+| Fat JAR Docker COPY (no layered JARs) | Simple Dockerfile | 150MB push per service per deploy; slow CI | Never — layered JARs are a one-time 30-min setup |
+| `springdoc.swagger-ui.enabled=true` with no auth or IP restriction | Easy API browsing | Internal API architecture publicly accessible | Dev environment only |
+| Python base image `alpine` without toolchain | Smaller image | Build failures or 20-min compiles for grpcio, aiohttp | Only if verified to work on a clean runner |
+| Store `.env` with real credentials in the repository | Easy sharing | Credentials in git history; very hard to fully remove | Never |
 
 ---
 
@@ -309,15 +286,16 @@ Mini App authentication phase — design the token storage strategy for WebView 
 
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| Mini App → API Gateway | Sending `initDataUnsafe.user.id` in request body as the user identifier | Send raw `initData` string; backend validates HMAC and extracts user |
-| Mini App → API Gateway | Using `credentials: 'include'` (cookie mode) — Telegram WebView drops httpOnly cookies | Use `Authorization: Bearer <token>` header for all Mini App API calls |
-| Angular → API Gateway | Not adding `http://localhost:4200` and production Angular origin to Gateway `allowedOrigins` | Add Angular origins to Gateway CORS config before any HTTP call |
-| Angular JWT | Angular `HttpClient` not attaching Bearer header automatically | Register `HttpInterceptorFn` via `provideHttpClient(withInterceptors([authInterceptor]))` in `app.config.ts` |
-| nginx → Angular SPA | Missing `try_files` inside Angular's `location /panel/` block | Each SPA location block needs its own `try_files $uri $uri/ /panel/index.html` |
-| Angular build → nginx | Angular built without `--base-href /panel/` | All asset paths are relative to `/` instead of `/panel/`; assets 404 |
-| Mini App Telegram theme | Hardcoded light-mode colors ignoring `tg.colorScheme` | Use `var(--tg-theme-bg-color)`, `var(--tg-theme-text-color)` CSS variables throughout |
-| Landing → PWA deep link | Landing "Install App" button links to `/` | Link must point to the PWA's actual base path (e.g., `/app/`) after URL restructuring |
-| CORS expansion | Adding Angular origin without checking `allowCredentials` implications | Bearer-token callers (`allowCredentials: false`) and cookie-token callers (`allowCredentials: true`) need separate gateway route configs or careful origin management |
+| Let's Encrypt + nginx | Start nginx with final SSL config before cert exists | Bootstrap with HTTP-only nginx config; issue cert; swap to HTTPS config |
+| Let's Encrypt renewal | Trust certbot cron alone to keep TLS working | Add `--deploy-hook "nginx -s reload"` to every renewal command |
+| GitHub Actions + RSA/SSH key | Paste raw PEM into GitHub Secret (line-wrap corruption) | Base64-encode the key; decode with `base64 -d` in workflow; validate with `openssl`/`ssh-keygen` |
+| SpringDoc + Gateway | Each service generates OpenAPI spec with internal `server` URL | Set `SPRINGDOC_SERVER_URL` env var to public gateway domain in prod profile |
+| Vite + Docker build | Assume runtime env vars affect VITE_ prefixed variables | Pass `--build-arg` at `docker build` time; prefer relative `/api` paths |
+| Gradle + GitHub Actions cache | Default `actions/cache` key covers entire repo | Scope Gradle cache key per service using `hashFiles('services/X/**')` |
+| Docker layer cache + monorepo matrix | Multiple service workflows share same GHA cache key | Prefix cache key with `matrix.service` to prevent cache collisions |
+| RabbitMQ management UI | Port 15672 mapped to host in prod compose | Remove host port mapping; access via SSH tunnel on demand |
+| MongoDB/Redis/PostgreSQL | All DB ports mapped to host in prod | Internal Docker network only; zero host port mappings in prod |
+| Spring Boot Actuator | Actuator routed through public API Gateway | Never add `actuator/**` to Gateway's public route table; bind management port to `127.0.0.1` |
 
 ---
 
@@ -325,11 +303,11 @@ Mini App authentication phase — design the token storage strategy for WebView 
 
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Angular not using lazy-loaded routes | Initial bundle >2MB, slow first paint on teacher's laptop | Use `loadComponent` for each route — every route is lazy by default in modern Angular | Immediately; Angular panel has many pages |
-| Mini App loading React without code splitting | 3+ second white screen inside Telegram | Use React.lazy + Suspense for each page component | First user opens app on slow connection |
-| Angular panel fetching entire user list without pagination | 500-user table freeze UI, API times out | Use `PagedModel` (HATEOAS) from the existing backend, virtual scroll for long lists | >100 users in academic_db |
-| Landing page with unoptimized images (raw PNGs > 500KB) | Slow load, Google PageSpeed red score | Compress images, use WebP, add explicit `width`/`height` attributes | Immediate on mobile networks |
-| Mini App making sequential API calls for page data | Slow page loads inside Telegram | Use `Promise.all()` for parallel API calls; TanStack Query (already in PWA) can be reused | Every page open — Telegram WebView has cold start latency |
+| Fat JAR Docker layers | 5-min image push per service on every deploy | Use Spring Boot layered JARs + split `COPY` layers in Dockerfile | From day 1; compounds with each service added |
+| All CI jobs in serial | 40-min CI wall time for 5 services | Use GitHub Actions matrix for parallel per-service builds | From day 1 with more than 1 service |
+| Gradle dependency re-download on every CI run | 8-12 min cold builds even with no code changes | `gradle/actions/setup-gradle` with persistent GHA cache | Without cache every cold runner downloads ~500MB |
+| `npm install` / `pnpm install` without lockfile cache | 5-min frontend CI for trivial changes | `actions/cache` keyed on `package-lock.json` or `pnpm-lock.yaml` hash | Without cache, every install is fully uncached |
+| Docker image push of all 5 services on every commit | 20-min deploy pipeline regardless of change | Path-filtered workflows trigger only the changed service's deploy | From first over-broad workflow trigger |
 
 ---
 
@@ -337,40 +315,32 @@ Mini App authentication phase — design the token storage strategy for WebView 
 
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| Trusting `initDataUnsafe` user data on the backend | Any student can impersonate any other user or teacher | Always validate raw `initData` HMAC-SHA256 on the backend before issuing JWT |
-| Storing admin JWT in `localStorage` | Admin token stolen via XSS; attacker gets full user management access | Store access token in Angular service memory only; refresh token in httpOnly cookie |
-| Angular frontend-only RBAC | Attacker bypasses route guard; calls unguarded admin endpoints directly | Every backend endpoint the panel calls must have `@RequireRole` AOP annotation |
-| Not checking `auth_date` in initData validation | Replay attack: captured initData replayed hours later to get a new JWT | Reject initData older than 5 minutes (configurable via app settings) |
-| Telegram bot token exposed in frontend bundle | Bot can be taken over; all users' Telegram accounts linked to the bot compromised | Bot token lives only in backend env vars; never included in any frontend build |
-| nginx serving `dist/` directory listing if index.html missing | Attacker can enumerate all frontend assets and JS chunk contents | Always include `index off` or `autoindex off` in nginx; ensure `index.html` exists before deploy |
-
----
-
-## UX Pitfalls
-
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Mini App ignoring `tg.colorScheme` — hardcoded light colors | Dark mode Telegram users see blinding white app | Use CSS variables `var(--tg-theme-bg-color)` etc.; test in both Telegram dark and light themes |
-| Mini App showing same bottom tab bar as PWA | Telegram already has its own back button and navigation — double navigation confuses users | In Mini App, use the Telegram BackButton API (`window.Telegram.WebApp.BackButton`) instead of in-app navigation arrows |
-| Angular panel with no loading states on async table data | Teacher clicks "attendance journal" and sees blank screen for 2+ seconds | Add Angular `@defer` blocks or skeleton loading states for every async data fetch |
-| Landing page with no mobile viewport meta tag | Landing looks broken on student's phone | Always include `<meta name="viewport" content="width=device-width, initial-scale=1">` |
-| Mini App calling `window.Telegram.WebApp.close()` on logout | User is kicked out of Telegram app flow unexpectedly | On logout, navigate to Mini App's login screen, not close; only call `close()` on explicit "Done" user action |
-| Angular panel showing STUDENT role data to ADMIN | Admin sees student view, misses admin-only features | Role detection must happen before routing; show role-appropriate nav from the start |
+| `management.endpoints.web.exposure.include=*` in prod | Heap dump and env properties publicly readable — full credential exfiltration | Prod profile limits to `health,info`; management port bound to `127.0.0.1` |
+| Actuator routed through public API Gateway | Same credential exfiltration risk at scale | Never add `/actuator/**` to Gateway's public route table |
+| DB ports exposed to host in prod compose | Direct DB access if server IP is reachable | Remove all DB host port mappings in `docker-compose.prod.yml` |
+| RSA private key stored as plain multiline text in GitHub Secret | Key corruption OR key compromise if repo/secret is exposed | Base64-encode; document key rotation procedure |
+| Bot token committed in `docker-compose.yml` | Anyone with repo read access has bot token; bot can be hijacked | Use `.env` file on VPS; reference as `${BOT_TOKEN}` in compose; never commit |
+| Swagger UI publicly accessible in prod without IP restriction | Internal API structure and all endpoints disclosed | Restrict to admin IP range or disable `springdoc.swagger-ui.enabled` in prod entirely |
+| SSH deploy user with `sudo` privileges | An attacker who gets the deploy key can escalate to root | Create a `deploy` user with no sudo, `nologin` shell, authorized only for `docker compose` commands |
+| `certbot --force-renewal` in daily cron | Rate limit hit (5 certificates per domain per week); Let's Encrypt blocks future renewals | Run `certbot renew` (not `--force-renewal`) twice daily; it only renews if cert expires within 30 days |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Mini App auth:** initData validates on frontend — verify backend validates HMAC-SHA256 signature, not just parses `initDataUnsafe`
-- [ ] **Mini App token persistence:** Login works in one session — verify refresh token survives Mini App close and re-open (localStorage, not memory)
-- [ ] **Angular CORS:** API calls work from Angular dev server — verify production Angular origin is also in Gateway `allowedOrigins`
-- [ ] **Angular auth:** JWT appears to work — verify access token is NOT in `localStorage` (DevTools → Application → Local Storage must be empty)
-- [ ] **Angular RBAC:** Route guards redirect unauthorized users — verify corresponding backend endpoints have `@RequireRole` and reject wrong-role JWTs with 403
-- [ ] **Angular build:** `npm run build` produces files — verify `--base-href /panel/` is set and all assets load from the correct path in nginx
-- [ ] **nginx multi-SPA:** Each app loads at its configured path — verify direct navigation to deep routes (e.g., `/panel/users/123`) serves the correct `index.html`, not the PWA's
-- [ ] **Landing vs PWA conflict:** Landing deploys at `/` — verify PWA Service Worker at `/sw.js` is not broken (or PWA is moved to `/app/` with consistent redirects)
-- [ ] **Mini App dark mode:** App looks correct — verify `var(--tg-theme-bg-color)` is used, test specifically in Telegram's dark theme
-- [ ] **initData expiry:** Auth works — verify `auth_date` check rejects initData older than 5 minutes; test with a captured initData string
+- [ ] **Actuator security:** `curl https://yourdomain.com/api/auth/actuator/env` returns 404, not JSON
+- [ ] **Management port isolation:** `docker exec auth-service-1 ss -tlnp | grep 9099` shows management port bound to `127.0.0.1` only
+- [ ] **Database ports:** `docker compose -f docker-compose.prod.yml ps` shows no host bindings for PostgreSQL (5432), Redis (6379), MongoDB (27017), or RabbitMQ (5672/15672)
+- [ ] **SPRING_PROFILES_ACTIVE:** `docker exec auth-service-1 env | grep SPRING_PROFILES` returns `prod`
+- [ ] **Certbot bootstrap:** `certbot renew --dry-run` succeeds on the VPS without stopping nginx
+- [ ] **Nginx cert reload:** After `certbot renew`, `openssl s_client -connect yourdomain.com:443 2>/dev/null | grep notAfter` shows the new expiry date
+- [ ] **Swagger server URL:** The `servers[0].url` in each service's OpenAPI JSON points to `https://yourdomain.com`, not `localhost` or a Docker container hostname
+- [ ] **Vite API base:** `grep -r "localhost" pwa/dist/assets/*.js` returns nothing
+- [ ] **Docker layer cache:** Second build with same dependencies shows "CACHED" for the `dependencies/` layer in build logs
+- [ ] **GitHub Actions cache keys:** Different services use distinct cache keys (verify `matrix.service` or equivalent in cache key definition)
+- [ ] **SSH deploy key:** The deploy user on the VPS cannot `sudo` and cannot modify `~/.ssh/authorized_keys`
+- [ ] **Restart policy:** All prod services have `restart: unless-stopped` in `docker-compose.prod.yml`
+- [ ] **RSA key integrity:** CI step that decodes the RSA key runs `openssl rsa -check -noout` and fails the workflow if the key is malformed
 
 ---
 
@@ -378,12 +348,15 @@ Mini App authentication phase — design the token storage strategy for WebView 
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| initDataUnsafe used in production — accounts impersonatable | HIGH | Invalidate all Mini App JWTs immediately; deploy backend HMAC validation; force all Mini App users to re-login |
-| Angular JWT in localStorage discovered post-deploy | HIGH | Rotate JWT signing keys; invalidate all tokens; migrate to in-memory storage; redeploy; notify affected users |
-| PWA broken by landing page conflict | MEDIUM | Roll back landing deploy; restructure nginx config with correct location blocks; update PWA base path; redeploy both |
-| Angular assets 404 after deploy (wrong base-href) | LOW | Rebuild Angular with `--base-href /panel/`; redeploy nginx volume only (no backend changes needed) |
-| Angular origin not in Gateway CORS | LOW | Add origin to Gateway `application.yml`; redeploy Gateway container only |
-| Telegram WebView cookie auth broken (refresh token lost) | MEDIUM | Implement body-based refresh token endpoint; update Mini App to use localStorage refresh token pattern |
+| Actuator exposed and credentials accessed | HIGH | Rotate all DB passwords, Redis password, bot token, RSA keys immediately; redeploy all services; audit access logs for exfiltration |
+| Certbot bootstrap failure on first deploy | LOW | Stop nginx container; run `certbot certonly --standalone` with port 80 free; restart nginx with SSL config |
+| Corrupt SSH/RSA key in GitHub Secret | LOW | Re-encode as base64 with `base64 -w 0`; update GitHub Secret; re-run workflow |
+| `.env` committed with real credentials | HIGH | Rotate all credentials immediately; `git filter-repo` to remove from history; force-push; rotate any GitHub Actions secrets referencing those values |
+| Fat JAR deploys are too slow | LOW | Add `tasks.bootJar { layered { enabled = true } }` to `build.gradle.kts`; update Dockerfiles with split COPY layers; rebuild images |
+| Swagger CORS failures | LOW | Set `SPRINGDOC_SERVER_URL` env var in each service; redeploy affected services |
+| Certbot cert not renewing silently | MEDIUM | Add `--deploy-hook` to renewal command; run `certbot renew --force-renewal` to immediate-renew; verify nginx serves new cert |
+| Python bot Alpine build failure on CI | LOW | Switch base image to `python:3.11-slim` in bot Dockerfile; rebuild |
+| Vite localhost hardcoded in prod bundle | LOW | Update Vite config to use relative `/api` paths; rebuild frontend images; redeploy nginx containers |
 
 ---
 
@@ -391,37 +364,42 @@ Mini App authentication phase — design the token storage strategy for WebView 
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| initDataUnsafe backend trust | Mini App auth phase (Phase 1 of v7.0 Mini App) | Send forged `{"telegramId": 999}` directly to auth endpoint — must get 401, not JWT |
-| Empty initData on desktop/browser | Mini App auth phase | Open Mini App URL in Chrome browser (not Telegram) — must show "Open in Telegram mobile" screen |
-| Telegram BottomSheet viewport quirks | Mini App scaffold/layout phase | Test on real mobile Telegram; expand/collapse sheet while app is open — UI must not jump |
-| Angular CORS blocked | Angular infra phase (first Angular phase) | `curl -I -X OPTIONS http://localhost:8080/api/academic -H "Origin: http://localhost:4200"` must return 200 with correct CORS headers |
-| Angular JWT in localStorage | Angular auth phase | DevTools Application → Local Storage must contain no tokens after login |
-| Angular frontend-only RBAC | Angular auth + RBAC phase | Direct `curl` to admin endpoint with student JWT must return 403 |
-| nginx multi-SPA routing conflict | Infrastructure / nginx routing phase (before any frontend deploys) | Navigate directly to `/panel/users` in browser — must serve Angular `index.html`, not PWA |
-| Angular added to Gradle monorepo | Angular scaffold phase | `./gradlew build` must complete without any Node.js download or npm invocation |
-| Landing conflicts with PWA root | Infrastructure / nginx routing phase | After landing deploy, `/sw.js` must still return Service Worker file (not 404) |
-| Mini App httpOnly cookie dropped by WebView | Mini App auth phase | Close and reopen Mini App — user must still be authenticated (refresh via localStorage token) |
+| Actuator endpoint exposure | Spring Boot Actuator phase | `curl https://domain/api/auth/actuator/env` returns 404 |
+| Certbot bootstrap chicken-and-egg | SSL/nginx phase — must be first infra task | Site loads over HTTPS with valid cert before any other prod task |
+| Gradle monorepo rebuilds everything | GitHub Actions CI phase | Changing only `services/auth-service/` triggers only auth-service workflow |
+| Docker layer cache unused in CI | GitHub Actions CI phase (Docker build jobs) | Second CI run with no dependency changes shows "CACHED" for dependency layers |
+| Multiline RSA/SSH key corruption | GitHub Actions CI phase — secrets setup | `openssl rsa -check` step succeeds; Spring Boot starts without key errors |
+| docker-compose.prod.yml leaks dev config | Docker prod compose phase | No DB host ports visible; `SPRING_PROFILES_ACTIVE=prod` confirmed |
+| Swagger CORS at Gateway | API documentation phase | Swagger UI Try-It-Out executes requests without CORS errors |
+| Nginx cert not reloaded after renewal | SSL/nginx phase | `certbot renew --dry-run` log shows deploy-hook executed |
+| Spring Boot fat JAR layer cache bust | Docker Dockerfiles phase (Java services) | Second build with same deps shows "CACHED" for `dependencies/` layer |
+| Vite env vars hardcoded at build time | Docker Dockerfiles phase (frontend) | `grep localhost pwa/dist/assets/*.js` returns nothing |
+| Python bot Alpine build failure | Docker Dockerfiles phase (Python bot) | Fresh CI runner builds notification-bot image in under 5 minutes |
 
 ---
 
 ## Sources
 
-- [Init Data — Telegram Mini Apps official docs](https://docs.telegram-mini-apps.com/platform/init-data)
-- [Authorizing User — Telegram Mini Apps official docs](https://docs.telegram-mini-apps.com/platform/authorizing-user)
-- [Viewport — Telegram Mini Apps official docs](https://docs.telegram-mini-apps.com/platform/viewport)
-- [Theming — Telegram Mini Apps official docs](https://docs.telegram-mini-apps.com/platform/theming)
-- [Seamless Authentication in Telegram Mini Apps — Medium/Miralex](https://medium.com/@miralex13/seamless-authentication-in-telegram-mini-apps-building-a-secure-and-frictionless-user-experience-6249599e2693)
-- [Telegram Mini App development and testing specifics — DEV Community](https://dev.to/dev_family/telegram-mini-app-development-and-testing-specifics-from-initialisation-to-launch-1ofh)
-- [Angular HTTP Interceptors — angular.dev official docs](https://angular.dev/guide/http/interceptors)
-- [Angular Route Guards — angular.dev official docs](https://angular.dev/guide/routing/route-guards)
-- [Angular JWT Guard for RBAC based on JWT — Scrum and Coke/Medium](https://medium.com/scrum-and-coke/angular-guard-for-role-based-access-control-rbac-based-on-jwt-e79dfdb41f2a)
-- [Hosting Angular and React on same domain using nginx — Medium/Devyash Sanghai](https://medium.com/@devyashsanghai/hosting-angular-and-react-app-on-a-same-domain-using-nginx-189f96493818)
-- [How to use nginx to service multiple React apps — Medium/Tonny](https://tonny.medium.com/how-to-use-nginx-to-service-multiple-react-apps-641501e92581)
-- [Mini App scrolls by iOS device's safe-area at bottom — Telegram-Mini-Apps GitHub Issues](https://github.com/Telegram-Mini-Apps/issues/issues/39)
-- [Safe area inset env() support in Mini Apps — TelegramMessenger/Telegram-iOS GitHub](https://github.com/TelegramMessenger/Telegram-iOS/issues/1377)
-- [CORS Configuration — Spring Cloud Gateway official docs](https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway-server-webflux/cors-configuration.html)
-- Existing v6.0 Key Decisions in `.planning/PROJECT.md` (OPTIONS bypass, DedupeResponseHeader, httpOnly cookie pattern)
+- Wiz Blog — Spring Boot Actuator Misconfigurations: https://www.wiz.io/blog/spring-boot-actuator-misconfigurations
+- SYSCREST — Securing Spring Boot Actuator (2025): https://www.syscrest.com/2025/02/securing-spring-boot-actuator/
+- Trend Micro — Misconfigured Actuator to credential exfiltration (2026): https://www.trendmicro.com/en_us/research/26/c/from-misconfigured-spring-boot-actuator-to-sharepoint-exfiltrati.html
+- Spring Boot Docs — Actuator endpoints: https://docs.spring.io/spring-boot/reference/actuator/endpoints.html
+- Baeldung — Integrate OpenAPI With Spring Cloud Gateway: https://www.baeldung.com/spring-cloud-gateway-integrate-openapi
+- Spring Cloud Gateway — CORS configuration: https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/
+- Docker Docs — Multi-stage builds: https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/
+- Spring Boot Docs — Efficient Container Images (layered JARs): https://docs.spring.io/spring-boot/reference/packaging/container-images/efficient-images.html
+- Python Speed — Alpine makes Python Docker builds 50x slower: https://pythonspeed.com/articles/alpine-docker-python/
+- Docker Docs — GitHub Actions cache for Docker: https://docs.docker.com/build/ci/github-actions/cache/
+- Blacksmith — Docker Layer Caching in GitHub Actions guide: https://www.blacksmith.sh/blog/cache-is-king-a-guide-for-docker-layer-caching-in-github-actions
+- Docker Docs — Compose environment variable best practices: https://docs.docker.com/compose/how-tos/environment-variables/best-practices/
+- Let's Encrypt Community — nginx certbot ACME challenge port conflict: https://community.letsencrypt.org/t/ssl-lets-encrypt-nginx-docker-compose/220544
+- wmnnd/nginx-certbot bootstrap pattern: https://github.com/wmnnd/nginx-certbot
+- webfactory/ssh-agent GitHub Action: https://github.com/webfactory/ssh-agent
+- GitHub Community — multiline secrets in GitHub Actions: https://github.com/orgs/community/discussions/142004
+- Certbot user guide (deploy hooks): https://eff-certbot.readthedocs.io/en/stable/using.html
+- Vite Docker production deployment guide: https://www.buildwithmatija.com/blog/production-react-vite-docker-deployment
+- Medium/Engineering Playbook — actuator in production incident (2026): https://medium.com/engineering-playbook/i-enabled-spring-boot-actuator-in-production-50be66aef9d2
 
 ---
-*Pitfalls research for: v7.0 Frontends — Telegram Mini App (React), Angular Web Panel, Landing page — added to existing RutCampusTrack microservice system*
-*Researched: 2026-04-06*
+*Pitfalls research for: CI/CD, Docker Production Deployment, SSL, Monitoring, API Docs — Spring Boot 3.4 Gradle Monorepo*
+*Researched: 2026-04-07*

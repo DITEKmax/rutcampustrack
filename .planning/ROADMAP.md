@@ -162,11 +162,10 @@ Plans:
   2. No database ports (5432, 27017, 6379, 5672) are exposed to the host machine
   3. All backend service containers have Actuator-based healthchecks (depends_on healthy)
   4. .env.prod file provides all secrets (DB passwords, RSA keys, bot token) and is gitignored
-**Plans:** 3 plans
+**Plans:** 1 plan
 Plans:
-- [ ] 42-01-PLAN.md — Root .dockerignore + multi-stage Dockerfiles for 5 standalone Java services
-- [ ] 42-02-PLAN.md — Upgrade notification-web to multi-stage + harden notification-bot
-- [ ] 42-03-PLAN.md — Frontend Dockerfiles: pwa, mini-app, web-panel, landing
+- [ ] 43-01-PLAN.md — Gitignore + env template + missing prod profiles + docker-compose.prod.yml with all 17 services
+
 
 ### Phase 44: Nginx Reverse Proxy + SSL
 **Goal**: A single nginx container terminates SSL and routes all external traffic to the correct backend service or frontend container

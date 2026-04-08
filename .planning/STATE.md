@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v8.0
 milestone_name: CI/CD, Deployment & Documentation
 status: verifying
-stopped_at: Completed 47-unified-swagger-ui-01-PLAN.md
-last_updated: "2026-04-07T23:37:16.927Z"
-last_activity: 2026-04-07
+stopped_at: Completed 48-01-PLAN.md
+last_updated: "2026-04-08T00:03:12.449Z"
+last_activity: 2026-04-08
 progress:
   total_phases: 8
-  completed_phases: 7
-  total_plans: 10
-  completed_plans: 10
+  completed_phases: 8
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -22,19 +22,19 @@ v8.0 CI/CD, Deployment & Documentation
 
 ## Current Position
 
-Phase: 46 (github-actions-deploy) — EXECUTING
+Phase: 47 (unified-swagger-ui) — COMPLETE ✓
 Plan: 1 of 1
 Status: Phase complete — ready for verification
-Last activity: 2026-04-07
+Last activity: 2026-04-08
 
-Progress: [█░░░░░░░░░] 13%
+Progress: [██████████] 100%
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-07)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** Phase 46 — github-actions-deploy
+**Current focus:** Phase 47 — unified-swagger-ui (complete)
 
 ## Completed Milestones
 
@@ -67,6 +67,7 @@ Recent decisions affecting v8.0:
 - [Phase 46-github-actions-deploy]: Sequential build steps over matrix strategy for 11 images — simpler, avoids runner quota issues
 - [Phase 46-github-actions-deploy]: Job-level permissions:write for packages — least-privilege per GitHub best practices
 - [Phase 47]: springdoc-openapi-starter-webflux-ui for Gateway (WebFlux variant), RewritePath proxy routes for /openapi/{service}
+- [Phase 48-readme]: Rewrote README.md as 372-line developer onboarding document with architecture, setup, deploy guide
 
 ### Research Flags
 
@@ -79,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-07T23:37:16.923Z
-Stopped at: Completed 47-unified-swagger-ui-01-PLAN.md
+Last session: 2026-04-08T00:03:12.445Z
+Stopped at: Completed 48-01-PLAN.md
 Next action: /gsd-plan-phase 42

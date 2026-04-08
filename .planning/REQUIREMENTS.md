@@ -46,7 +46,7 @@ Requirements for CI/CD, Deployment & Documentation milestone. Each maps to roadm
 - [x] **DOC-01**: Unified Swagger UI accessible at Gateway with aggregated specs from all services
 - [x] **DOC-02**: springdoc upgraded to 2.8.6 across all services
 - [x] **DOC-03**: Gateway uses springdoc-openapi-starter-webflux-ui for Swagger aggregation
-- [ ] **DOC-04**: Project README with architecture overview, setup guide, API summary, deploy instructions
+- [x] **DOC-04**: Project README with architecture overview, setup guide, API summary, deploy instructions
 
 ## Future Requirements
 
@@ -105,7 +105,7 @@ Requirements for CI/CD, Deployment & Documentation milestone. Each maps to roadm
 | DOC-01 | Phase 47 | Complete |
 | DOC-02 | Phase 47 | Complete |
 | DOC-03 | Phase 47 | Complete |
-| DOC-04 | Phase 48 | Pending |
+| DOC-04 | Phase 48 | Complete |
 
 **Coverage:**
 - v8.0 requirements: 26 total

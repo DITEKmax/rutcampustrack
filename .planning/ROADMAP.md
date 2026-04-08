@@ -120,7 +120,7 @@ Full details: `.planning/milestones/v7.0-ROADMAP.md`
 - [x] **Phase 45: GitHub Actions CI** - Build, test, and lint pipeline for all services on push/PR (completed 2026-04-07)
 - [x] **Phase 46: GitHub Actions Deploy** - GHCR image push and SSH-based VPS deploy on merge to main (completed 2026-04-07)
 - [x] **Phase 47: Unified Swagger UI** - Aggregated API docs at Gateway with springdoc webflux-ui (completed 2026-04-07)
-- [ ] **Phase 48: README** - Full project README with architecture, setup, API summary, deploy guide
+- [x] **Phase 48: README** - Full project README with architecture, setup, API summary, deploy guide (completed 2026-04-08)
 
 ## Phase Details
 
@@ -228,9 +228,9 @@ Plans:
   2. A developer can follow the README setup instructions to run the system locally with docker compose
   3. The README links to the live Swagger UI and summarizes key API endpoints by role
   4. The README contains a complete deploy guide (VPS setup, GitHub Secrets, first certbot run, compose up)
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 48-01-PLAN.md — Complete README with architecture, setup, API docs, and deploy guide
+- [x] 48-01-PLAN.md — Complete README with architecture, setup, API docs, and deploy guide
 ## Progress
 
 **Execution Order:**
@@ -253,4 +253,4 @@ Phases execute in numeric order: 41 → 42 → 43 → 44 → 45 → 46 → 47 �
 | 45. GitHub Actions CI | v8.0 | 1/1 | Complete    | 2026-04-07 |
 | 46. GitHub Actions Deploy | v8.0 | 1/1 | Complete   | 2026-04-07 |
 | 47. Unified Swagger UI | v8.0 | 1/1 | Complete   | 2026-04-07 |
-| 48. README | v8.0 | 0/1 | Planning | - |
+| 48. README | v8.0 | 1/1 | Complete   | 2026-04-08 |

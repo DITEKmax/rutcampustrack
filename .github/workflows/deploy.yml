@@ -154,6 +154,7 @@ jobs:
             echo "$GHCR_TOKEN" | docker login ghcr.io -u ditekmax --password-stdin
             cd /opt/rutcampustrack
             git pull --ff-only
+            [ -f /opt/rutcampustrack/nginx/dhparam.pem ] || openssl dhparam -out /opt/rutcampustrack/nginx/dhparam.pem 2048
             docker volume create rutcampustrack_jwt-keys >/dev/null 2>&1 || true
             docker run --rm -v rutcampustrack_jwt-keys:/keys alpine sh -c \
               "apk add --no-cache openssl >/dev/null 2>&1 && \

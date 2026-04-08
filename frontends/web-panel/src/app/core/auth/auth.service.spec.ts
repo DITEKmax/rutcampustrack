@@ -11,8 +11,12 @@ const makeJwt = (payload: object): string => {
   return `${header}.${body}.signature`;
 };
 
-const ACCESS_TOKEN = makeJwt({ sub: '1', role: 'TEACHER', exp: 9999999999 });
-const ADMIN_ACCESS_TOKEN = makeJwt({ sub: '2', role: 'ADMIN', exp: 9999999999 });
+const ACCESS_TOKEN = makeJwt({ sub: '1', role: 'TEACHER', is_headman: false, group_id: null, exp: 9999999999 });
+const ADMIN_ACCESS_TOKEN = makeJwt({ sub: '2', role: 'ADMIN', is_headman: false, group_id: null, exp: 9999999999 });
+const STUDENT_ACCESS_TOKEN = makeJwt({ sub: '3', role: 'STUDENT', is_headman: false, group_id: 5, exp: 9999999999 });
+const HEADMAN_ACCESS_TOKEN = makeJwt({ sub: '4', role: 'STUDENT', is_headman: true, group_id: 5, exp: 9999999999 });
+const TOKEN_WITHOUT_HEADMAN = makeJwt({ sub: '5', role: 'STUDENT', group_id: 7, exp: 9999999999 });
+const TOKEN_WITHOUT_GROUP = makeJwt({ sub: '6', role: 'ADMIN', is_headman: false, exp: 9999999999 });
 const REFRESH_TOKEN = 'refresh-token-abc';
 
 describe('AuthService', () => {
@@ -94,5 +98,71 @@ describe('AuthService', () => {
     expect(mockAuthApi.logout).toHaveBeenCalledWith(REFRESH_TOKEN);
     expect(service.isAuthenticated()).toBe(false);
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('currentUser() returns STUDENT role with isHeadman=false and groupId from JWT', () => {
+    service.setTokens(STUDENT_ACCESS_TOKEN, REFRESH_TOKEN);
+    const user = service.currentUser();
+    expect(user).not.toBeNull();
+    expect(user!.id).toBe(3);
+    expect(user!.role).toBe('STUDENT');
+    expect(user!.isHeadman).toBe(false);
+    expect(user!.groupId).toBe(5);
+  });
+
+  it('currentUser() returns STUDENT role with isHeadman=true for headman token', () => {
+    service.setTokens(HEADMAN_ACCESS_TOKEN, REFRESH_TOKEN);
+    const user = service.currentUser();
+    expect(user!.id).toBe(4);
+    expect(user!.role).toBe('STUDENT');
+    expect(user!.isHeadman).toBe(true);
+    expect(user!.groupId).toBe(5);
+  });
+
+  it('currentUser() defaults isHeadman to false when claim is absent', () => {
+    service.setTokens(TOKEN_WITHOUT_HEADMAN, REFRESH_TOKEN);
+    const user = service.currentUser();
+    expect(user!.isHeadman).toBe(false);
+  });
+
+  it('currentUser() defaults groupId to null when claim is absent', () => {
+    service.setTokens(TOKEN_WITHOUT_GROUP, REFRESH_TOKEN);
+    const user = service.currentUser();
+    expect(user!.groupId).toBeNull();
+  });
+
+  it('currentUser() for TEACHER returns isHeadman=false and groupId=null', () => {
+    service.setTokens(ACCESS_TOKEN, REFRESH_TOKEN);
+    const user = service.currentUser();
+    expect(user!.isHeadman).toBe(false);
+    expect(user!.groupId).toBeNull();
+  });
+
+  it('resolveDashboardFor(null) returns /login', () => {
+    expect(service.resolveDashboardFor(null)).toBe('/login');
+  });
+
+  it('resolveDashboardFor(ADMIN) returns /admin/dashboard', () => {
+    expect(
+      service.resolveDashboardFor({ id: 2, role: 'ADMIN', isHeadman: false, groupId: null }),
+    ).toBe('/admin/dashboard');
+  });
+
+  it('resolveDashboardFor(TEACHER) returns /teacher/dashboard', () => {
+    expect(
+      service.resolveDashboardFor({ id: 1, role: 'TEACHER', isHeadman: false, groupId: null }),
+    ).toBe('/teacher/dashboard');
+  });
+
+  it('resolveDashboardFor(plain STUDENT) returns /student/dashboard', () => {
+    expect(
+      service.resolveDashboardFor({ id: 3, role: 'STUDENT', isHeadman: false, groupId: 5 }),
+    ).toBe('/student/dashboard');
+  });
+
+  it('resolveDashboardFor(headman STUDENT) returns /headman/dashboard', () => {
+    expect(
+      service.resolveDashboardFor({ id: 4, role: 'STUDENT', isHeadman: true, groupId: 5 }),
+    ).toBe('/headman/dashboard');
   });
 });

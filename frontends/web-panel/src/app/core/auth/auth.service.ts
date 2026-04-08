@@ -5,7 +5,9 @@ import { AuthApi } from './auth.api';
 
 export interface AuthUser {
   id: number;
-  role: 'TEACHER' | 'ADMIN';
+  role: 'TEACHER' | 'ADMIN' | 'STUDENT';
+  isHeadman: boolean;
+  groupId: number | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,7 +26,9 @@ export class AuthService {
       const payload = JSON.parse(atob(parts[1]));
       return {
         id: Number(payload.sub),
-        role: (payload.role as string).toUpperCase() as 'TEACHER' | 'ADMIN',
+        role: (payload.role as string).toUpperCase() as 'TEACHER' | 'ADMIN' | 'STUDENT',
+        isHeadman: payload.is_headman === true,
+        groupId: payload.group_id ?? null,
       };
     } catch {
       return null;
@@ -56,5 +60,21 @@ export class AuthService {
     }
     this.clearTokens();
     router.navigate(['/login']);
+  }
+
+  /**
+   * Single source of truth for post-login redirects (Phase 50, D-09).
+   *
+   * Used by login.component.ts after successful auth, by guestGuard
+   * (when already-logged-in user hits /login), and by roleGuard fallback
+   * (so denied access routes the user to *their own* dashboard, not a
+   * hard-coded admin route).
+   */
+  resolveDashboardFor(user: AuthUser | null): string {
+    if (!user) return '/login';
+    if (user.role === 'ADMIN') return '/admin/dashboard';
+    if (user.role === 'TEACHER') return '/teacher/dashboard';
+    if (user.isHeadman) return '/headman/dashboard';
+    return '/student/dashboard';
   }
 }

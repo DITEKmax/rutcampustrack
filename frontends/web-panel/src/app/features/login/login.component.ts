@@ -46,8 +46,8 @@ export class LoginComponent {
     this.authApi.login({ login: login!, password: password! }).subscribe({
       next: (tokens) => {
         this.authService.setTokens(tokens.accessToken, tokens.refreshToken);
-        const role = this.authService.currentUser()?.role;
-        this.router.navigate([role === 'ADMIN' ? '/admin/dashboard' : '/teacher/dashboard']);
+        const target = this.authService.resolveDashboardFor(this.authService.currentUser());
+        this.router.navigateByUrl(target);
       },
       error: (err) => {
         this.loading = false;

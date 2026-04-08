@@ -1,10 +1,14 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { roleGuard } from './core/auth/role.guard';
+import { studentGuard } from './core/auth/student.guard';
+import { headmanGuard } from './core/auth/headman.guard';
+import { guestGuard } from './core/auth/guest.guard';
 
 export const routes: Routes = [
   {
     path: 'login',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./features/login/login.component').then(m => m.LoginComponent),
   },
@@ -78,6 +82,48 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/admin/semesters/semesters-page.component').then(m => m.SemestersPageComponent),
             data: { title: 'Семестры', eyebrow: 'Администратор' },
+          },
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+        ],
+      },
+      // Student routes (D-07 — placeholder Phase 50, real в Phase 51-53)
+      {
+        path: 'student',
+        canActivate: [studentGuard],
+        data: { eyebrow: 'Студент' },
+        children: [
+          {
+            path: 'dashboard',
+            loadComponent: () =>
+              import('./features/student/student-placeholder/student-placeholder.component').then(
+                m => m.StudentPlaceholderComponent,
+              ),
+            data: { title: 'Личный кабинет', eyebrow: 'Студент' },
+          },
+          {
+            path: 'schedule',
+            loadComponent: () =>
+              import('./features/student/student-placeholder/student-placeholder.component').then(
+                m => m.StudentPlaceholderComponent,
+              ),
+            data: { title: 'Расписание', eyebrow: 'Студент' },
+          },
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+        ],
+      },
+      // Headman routes (D-07 — placeholder Phase 50, real в Phase 54-55)
+      {
+        path: 'headman',
+        canActivate: [headmanGuard],
+        data: { eyebrow: 'Староста' },
+        children: [
+          {
+            path: 'dashboard',
+            loadComponent: () =>
+              import('./features/headman/headman-placeholder/headman-placeholder.component').then(
+                m => m.HeadmanPlaceholderComponent,
+              ),
+            data: { title: 'Кабинет старосты', eyebrow: 'Староста' },
           },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],

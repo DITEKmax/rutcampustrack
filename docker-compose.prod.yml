@@ -323,6 +323,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
       AUTH_SERVICE_URL: http://auth-service:9090
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN}
     expose:
       - "8080"
     networks:

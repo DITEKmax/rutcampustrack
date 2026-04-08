@@ -57,3 +57,6 @@ nginx/conf.d/*.disabled
 
 .claude/worktrees/
 .claude/settings.local.json
+
+.agents/
+.claude/

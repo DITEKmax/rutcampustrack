@@ -1,225 +1,372 @@
 # External Integrations
 
-**Analysis Date:** 2026-03-28
+**Analysis Date:** 2026-04-08
 
 ## APIs & External Services
 
 **Telegram Bot API:**
-- Service: Notification Bot (`services/notification-bot/`)
-- SDK: Aiogram 3.15.0 (`services/notification-bot/requirements.txt`)
-- Auth: Bot token via environment variable (see `services/notification-bot/.env.example`)
-- Purpose: Push notifications to students via Telegram (attendance reminders, excuse confirmations, homework alerts)
+- Service: Telegram Bot API (for notification-bot)
+- What it's used for: Sending attendance reminders, lesson notifications, excuse ticket updates to users via Telegram
+- SDK/Client: Aiogram 3.15.0 (Python async framework)
+- Auth: Environment variable `BOT_TOKEN` (Telegram bot token)
+- Location: `services/notification-bot/` at `/services/notification-bot/`
 
-**Springdoc OpenAPI / Swagger UI:**
-- Services: Academic, Schedule, Attendance, Auth
-- Library: `org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0`
-- Endpoints per service:
-  - API docs: `/api-docs`
-  - Swagger UI: `/swagger-ui.html`
-- Annotations defined in `*-api-contract` modules using `io.swagger.core.v3:swagger-annotations-jakarta`
+**Telegram Mini App:**
+- Service: Telegram Mini App platform (embedded app in Telegram)
+- What it's used for: Mobile check-in interface for students (geolocation-based attendance marking)
+- SDK/Client: @telegram-apps/sdk 3.11.8 (TypeScript SDK for Mini App)
+- React Bindings: @telegram-apps/sdk-react 3.3.9
+- Auth: HMAC signature verification of Telegram Mini App init data (`tma.initData`, `tma.initDataUnsafe`)
+- Environment: `TMA_BOT_TOKEN` (bot token for HMAC verification)
+- Location: `frontends/mini-app/` at `/frontends/mini-app/`
+- Manifest Integration: Telegram Mini App manifest configured in Mini App frontend
 
-## Message Queues & Events
+**Telegram API Gateway:**
+- Service: Telegram API (for auth verification via Bot API `getMe`)
+- Used by: Auth Service for validating Mini App init data
+- Implementation: Direct HTTP calls to https://api.telegram.org/bot{BOT_TOKEN}/ endpoints
 
-**RabbitMQ 3.13:**
-- Connection: `rabbitmq:5672` (all services)
-- Auth: `${RABBITMQ_USER:rct_user}` / `${RABBITMQ_PASSWORD:rct_dev_pass}`
-- Pattern: Fanout exchange for async domain events
-- Client libraries:
-  - Java: `spring-boot-starter-amqp` (Spring AMQP / RabbitTemplate)
-  - Python: `aio-pika:9.5.3` (async)
+## Data Storage
 
-**Event Schemas (JSON Schema 2020-12):**
-All schemas in `event-schemas/` directory. Standard envelope:
-```json
-{
-  "event_type": "domain.action",
-  "event_id": "uuid",
-  "occurred_at": "ISO-8601 datetime",
-  "payload": { ... }
-}
-```
+**Databases:**
 
-**Events produced by Schedule Service:**
-- `lesson.started` (`event-schemas/lesson.started.json`)
-  - Trigger: Lesson transitions to ACTIVE status
-  - Payload: `lesson_id`, `group_id`, `subject_id`, `teacher_id`, `lesson_number`, `start_time`, `end_time`, `room`
-  - Consumers: Attendance Service (opens check-in window), Notification services (send reminders)
+**PostgreSQL (Two instances):**
+- Academic Database: `academic_db`
+  - Host: `postgres-academic` (dev), internal network (prod)
+  - Port: 5432
+  - Auth: User `rct_user`, password from `POSTGRES_ACADEMIC_PASSWORD` env var
+  - Client: Spring Data JPA + Hibernate ORM
+  - Location: `services/academic-service/academic-app/` at `/services/academic-service/academic-app/`
+  - Migrations: Flyway at `services/academic-service/academic-app/src/main/resources/db/migration/`
+  - Schema: Departments, Programs, Courses, Teachers, Groups, Semesters, Academic calendar
 
-- `lesson.closed` (`event-schemas/lesson.closed.json`)
-  - Trigger: Lesson transitions to CLOSED status
-  - Payload: `lesson_id`, `group_id`, `subject_id`
-  - Consumers: Attendance Service (auto-mark absent for unmarked students)
+- Schedule Database: `schedule_db`
+  - Host: `postgres-schedule` (dev), internal network (prod)
+  - Port: 5432
+  - Auth: User `rct_user`, password from `POSTGRES_SCHEDULE_PASSWORD` env var
+  - Client: Spring Data JPA + Hibernate ORM
+  - Location: `services/schedule-service/schedule-app/` at `/services/schedule-service/schedule-app/`
+  - Migrations: Flyway at `services/schedule-service/schedule-app/src/main/resources/db/migration/`
+  - Schema: Lessons, lesson schedules, classroom assignments, timeslots, lesson states (planned/in-progress/completed/cancelled)
 
-- `lesson.cancelled` (`event-schemas/lesson.cancelled.json`)
-  - Trigger: Headman cancels a lesson
-  - Payload: `lesson_id`, `group_id`, `subject_id`, `date`, `cancel_reason`
-  - Consumers: Notification services (inform students)
+**MongoDB:**
+- Attendance Database: `attendance_db`
+  - Host: `mongo-attendance` (dev), internal network (prod)
+  - Port: 27017
+  - Auth: Root user (from env vars), application user `${MONGO_USER}:${MONGO_PASSWORD}`
+  - Connection String: `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin`
+  - Client: Spring Data MongoDB (embedded driver)
+  - Locations:
+    - `services/attendance-service/attendance-app/` at `/services/attendance-service/attendance-app/`
+    - `services/notification-service/notification-app/` at `/services/notification-service/notification-app/` (for push subscriptions)
+  - Collections: Attendance records, excuse tickets, push subscriptions
 
-**Events produced by Attendance Service:**
-- `attendance.marked` (`event-schemas/attendance.marked.json`)
-  - Trigger: Student check-in recorded
-  - Payload: `lesson_id`, `user_id`, `group_id`, `status` (present/absent/excused/free_attendance), `marked_by` (student_geo/headman/auto_scheduler/late_checkin)
-  - Consumers: Notification services (confirm to student)
+**File Storage:**
+- None persistent - excuse ticket files are NOT stored in the system
+- Implementation: Files uploaded by students are transmitted directly to Telegram headman private chats
 
-- `excuse.requested` (`event-schemas/excuse.requested.json`)
-  - Trigger: Student submits excuse ticket
-  - Payload: `user_id`, `group_id`, `excuse_type`, `ticket_id`, `lesson_ids`, `has_attachments`
-  - Consumers: Notification-Bot (forward to headman via Telegram)
+## Caching & Session Store
 
-- `late_checkin.requested` (`event-schemas/late_checkin.requested.json`)
-  - Trigger: Student requests retroactive check-in
-  - Payload: `user_id`, `group_id`, `lesson_id`, `student_name`, `lesson_date`
-  - Consumers: Notification-Bot (send approval request to headman)
+**Redis:**
+- Service: Redis 7-alpine
+- Host: `redis` (dev), internal network (prod)
+- Port: 6379
+- Auth: Password from `REDIS_PASSWORD` env var (requirepass setting)
+- Client: Spring Data Redis (Lettuce driver)
+- Uses:
+  - Session storage for JWT refresh tokens (auth-service)
+  - Entity caching (academic-service)
+  - Reminder message storage (notification-bot)
+  - Distributed cache for frequently accessed data
+- Location: Used by `services/auth-service/`, `services/academic-service/`, `services/notification-service/notification-app/`, `services/notification-bot/`
+- Connection: Environment variables `REDIS_PASSWORD`, `REDIS_HOST`, `REDIS_PORT`
 
-**Events produced by Academic Service:**
-- `homework.published` (`event-schemas/homework.published.json`)
-  - Trigger: Headman publishes homework
-  - Payload: `homework_id`, `group_id`, `subject_id`, `lesson_id`, `title`, `has_link`
-  - Consumers: Notification services (notify group students)
+## Message Broker & Event Streaming
 
-## Inter-Service Communication
+**RabbitMQ:**
+- Service: RabbitMQ 3.13 (management-alpine for dev, alpine for prod)
+- Host: `rabbitmq` (dev), internal network (prod)
+- Port: 5672 (AMQP), 15672 (Management UI - dev only)
+- Auth: User `${RABBITMQ_USER}` (rct_user), password `${RABBITMQ_PASSWORD}`
+- Client: Spring AMQP (RabbitTemplate + message listeners)
+- Exchange Type: Fanout exchange (broadcast events to all subscribers)
+- Event Flow:
+  - Academic Service publishes: `lesson.started`, `lesson.ended`, `lesson.cancelled`
+  - Schedule Service publishes: `schedule.updated`
+  - Attendance Service publishes: `attendance.marked`, `attendance.auto_marked`, `excuse_ticket.created`, `excuse_ticket.resolved`
+  - Notification Web and Bot subscribe to all events
+- Event Schema: JSON Schema definitions at `event-schemas/` at `/event-schemas/`
+- Locations:
+  - `services/academic-service/academic-app/` - Publisher
+  - `services/schedule-service/schedule-app/` - Publisher
+  - `services/attendance-service/attendance-app/` - Publisher
+  - `services/notification-service/notification-app/` - Consumer
+  - `services/notification-bot/` - Consumer
+- Connection: Environment variables `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, `SPRING_RABBITMQ_HOST`, `SPRING_RABBITMQ_PORT`
 
-**REST via API Gateway:**
-- Gateway: `services/api-gateway/` on port 8080
-- Pattern: Path-based routing with `StripPrefix=1`
-- Routes defined in `services/api-gateway/src/main/resources/application.yml`:
+## Authentication & Identity
 
-| Route Pattern | Target Service | Target Port |
-|---------------|---------------|-------------|
-| `/api/auth/**` | auth-service | 9090 |
-| `/api/academic/**` | academic-service | 9091 |
-| `/api/schedule/**` | schedule-service | 9092 |
-| `/api/attendance/**`, `/api/reports/**` | attendance-service | 9093 |
-| `/api/ws/**` | notification-web | 9094 |
+**Auth Provider:**
+- Custom JWT-based authentication
+- Implementation: Auth Service at `services/auth-service/` at `/services/auth-service/`
+- Mechanism:
+  - JWT signed with RS256 (RSA private key) by auth-service
+  - Verified with public key by api-gateway and other services
+  - Keys: RSA 3072-bit keypair stored in Docker volume `jwt-keys`
+  - Private key: `/keys/private.key` (auth-service only)
+  - Public key: `/keys/public.key` (shared via volume, accessible to gateway and notification-web)
+- Key Generation (deployment):
+  - Script in `.github/workflows/deploy.yml` generates keys on first deployment using OpenSSL
+  - Keys persisted in named volume `rutcampustrack_jwt-keys`
+  - Permissions: private.key (640), public.key (644)
+- Token Structure: Standard JWT with roles, user ID, tenant context
+- Refresh Tokens: Stored in Redis with expiration
+- Password Hashing: BCrypt via Spring Security (academic-service)
 
-**gRPC (proto contracts defined, implementation planned for Phase 2):**
-- Proto definitions: `proto/` directory
-- Java gRPC starter (`net.devh:grpc-spring-boot-starter:3.1.0.RELEASE`) commented out in build files
-- Python gRPC client active in notification-bot: `grpcio:1.69.0`
-
-**Academic gRPC Service** (`proto/academic.proto`):
-- Package: `rutcampustrack.academic` / Java: `ru.rutcampustrack.academic.grpc`
-- RPCs:
-  - `GetGroup(GroupRequest) -> GroupResponse`
-  - `GetGroupMembers(GroupMembersRequest) -> GroupMembersResponse`
-  - `GetTeacherSubjects(TeacherSubjectsRequest) -> TeacherSubjectsResponse`
-  - `IsHeadman(HeadmanCheckRequest) -> HeadmanCheckResponse`
-  - `GetActiveSemester(Empty) -> SemesterResponse`
-  - `GetCampusGeofence(Empty) -> GeofenceResponse`
-  - `GetUserById(UserRequest) -> UserResponse`
-
-**Schedule gRPC Service** (`proto/schedule.proto`):
-- Package: `rutcampustrack.schedule` / Java: `ru.rutcampustrack.schedule.grpc`
-- RPCs:
-  - `GetActiveLesson(ActiveLessonRequest) -> LessonResponse`
-  - `GetLessonById(LessonByIdRequest) -> LessonResponse`
-  - `GetLessonsByGroup(LessonsByGroupRequest) -> LessonsResponse`
-
-**WebSocket (Notification-Web):**
-- Service: `services/notification-web/` on port 9094
-- Framework: `spring-boot-starter-websocket`
-- Purpose: Real-time push notifications to frontend clients
-- Receives events from RabbitMQ, pushes to connected WebSocket clients
-
-## Authentication & Security
-
-**JWT-based Authentication:**
-- Library: JJWT 0.12.6 (`io.jsonwebtoken:jjwt-api`)
-- Token types:
-  - Access token: 900 seconds (15 minutes)
-  - Refresh token: 604,800 seconds (7 days)
-- Configuration: `services/auth-service/src/main/resources/application.yml`
-
-**Auth Service** (`services/auth-service/`):
-- Spring Security (`spring-boot-starter-security`)
-- JWT creation and validation
-- OTP support (planned)
-- Token storage: Redis (`spring-boot-starter-data-redis`)
-- BCrypt password hashing (via Spring Security)
-
-**API Gateway JWT Validation:**
-- Gateway validates JWT using public key (`services/api-gateway/build.gradle.kts` includes JJWT)
-- Routes protected at gateway level before forwarding to services
-
-**Service-to-Service Auth:**
-- Currently internal network only (Docker `private_net`)
-- No service-to-service auth tokens defined yet
-- gRPC calls (when implemented) will use internal network trust
-
-## Data Storage Connections
-
-**PostgreSQL 16 (two isolated instances):**
-- Academic DB:
-  - Host: `postgres-academic:5432`
-  - Database: `academic_db`
-  - User: `rct_user`
-  - Password: `${POSTGRES_ACADEMIC_PASSWORD:rct_dev_pass}`
-  - Config: `services/academic-service/academic-app/src/main/resources/application.yml`
-- Schedule DB:
-  - Host: `postgres-schedule:5432`
-  - Database: `schedule_db`
-  - User: `rct_user`
-  - Password: `${POSTGRES_SCHEDULE_PASSWORD:rct_dev_pass}`
-  - Config: `services/schedule-service/schedule-app/src/main/resources/application.yml`
-
-**MongoDB 7:**
-- Host: `mongo-attendance:27017`
-- Database: `attendance_db`
-- No authentication in dev mode
-- Config: `services/attendance-service/attendance-app/src/main/resources/application.yml`
-
-**Redis 7:**
-- Host: `redis:6379`
-- No authentication in dev mode
-- Used by: Auth Service (token store), Academic Service (cache)
+**Telegram Mini App Auth:**
+- OAuth-like flow via Telegram Mini App
+- Init data HMAC signature verification (bot token as secret)
+- User identity: Telegram user ID embedded in init data
+- Implementation: auth-service validates Mini App init data payload
 
 ## Monitoring & Observability
 
-**Spring Boot Actuator:**
-- Enabled on API Gateway (`services/api-gateway/build.gradle.kts`)
-- Not explicitly added to other services
+**Health Checks:**
+- Spring Boot Actuator `/actuator/health` endpoints on each service
+- Health check types:
+  - Liveness: `/actuator/health/liveness` (notification-web)
+  - Readiness: `/actuator/health` (api-gateway)
+  - Custom: Docker HEALTHCHECK directives
+- Used by: docker-compose health checks, Kubernetes (if deployed)
 
-**Logging:**
-- Standard Spring Boot logging
-- Debug level for `ru.rutcampustrack` package in all services
-- Gateway: debug level for `org.springframework.cloud.gateway`
+**Metrics:**
+- Spring Boot Actuator `/actuator/metrics` (enabled on all services)
+- Metrics collected: request counts, response times, JVM memory, database connection pools
+- Exposed via: Actuator endpoints (JMX not exposed in containers)
 
-**Error Tracking:** Not configured
+**Error Tracking:**
+- None detected - errors logged to stdout via Logback
 
-**Metrics:** Not configured beyond Actuator defaults
+**Logs:**
+- Approach: Structured logging via SLF4J + Logback
+- Output: STDOUT (Docker captures to container logs)
+- Access: `docker logs <container-name>`
+- Log level: Configured via Spring profile `logging.level.*` properties
 
 ## CI/CD & Deployment
 
-**CI Pipeline:** Not detected (no `.github/workflows/`, `Jenkinsfile`, or `.gitlab-ci.yml`)
+**Hosting:**
+- Platform: Docker containers on Linux VPS
+- Container Registry: GitHub Container Registry (GHCR) at `ghcr.io/ditekmax/rutcampustrack/*`
+- Deployment method: SSH script execution (`.github/workflows/deploy.yml`)
 
-**Containerization:**
-- `docker-compose.yml` for infrastructure only (databases, Redis, RabbitMQ)
-- No Dockerfiles detected for application services
-- Services run locally during development, infrastructure in Docker
+**CI Pipeline:**
+- Platform: GitHub Actions (`.github/workflows/ci.yml`)
+- Triggers: Push to any branch, Pull Requests
+- Jobs:
+  1. **Java Build & Test**: Gradle build/test for each service (matrix strategy)
+     - Services tested: api-gateway, auth-service, academic-service, schedule-service, attendance-service, notification-service
+     - Java version: 21 (Temurin)
+     - Cache: Gradle dependency cache
+  2. **Python Lint & Test**: Python notification-bot
+     - Python version: 3.12
+     - Tools: ruff (linter + formatter), pytest
+     - Cache: pip dependencies cache
+  3. **Frontend Build & Test**: React and Angular apps
+     - Apps tested: pwa, mini-app, web-panel
+     - Node version: 22
+     - Commands: npm ci, npm test, npm run build
+- Artifacts: Test reports uploaded to GitHub Actions (retention 7 days on failure)
+
+**CD Pipeline:**
+- Trigger: Push to `main` branch (triggers after CI passes)
+- Docker Build & Push:
+  - Tool: docker/build-push-action@v7
+  - Registry: ghcr.io (requires GHCR_TOKEN secret)
+  - Images built:
+    - `ghcr.io/ditekmax/rutcampustrack/api-gateway:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/auth-service:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/academic-service:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/schedule-service:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/attendance-service:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/notification-web:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/notification-bot:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/pwa-nginx:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:latest`
+    - `ghcr.io/ditekmax/rutcampustrack/landing-nginx:latest`
+  - Tags: `latest` and git commit SHA
+  - Caching: GHA cache per service (mode=max for better reuse)
+- Deployment:
+  - Tool: appleboy/ssh-action@v1
+  - Target: VPS host (from secrets `VPS_HOST`, `VPS_USER`)
+  - Auth: SSH private key (from secrets `SSH_PRIVATE_KEY`)
+  - Deployment Script:
+    1. Docker login to GHCR using `GHCR_TOKEN`
+    2. Git pull --ff-only (fast-forward only)
+    3. Generate nginx dhparam.pem (2048-bit) if missing
+    4. Create Docker volume `rutcampustrack_jwt-keys` if not exists
+    5. Generate RSA keypair (3072-bit) for JWT signing if missing
+    6. Docker pull latest images
+    7. Docker Compose up with `.env.prod` and `docker-compose.prod.yml`
+    8. Sleep 30s, run docker compose up again (for health check settling)
 
 ## Environment Configuration
 
-**Required environment variables (with dev defaults):**
-- `POSTGRES_ACADEMIC_PASSWORD` (default: `rct_dev_pass`)
-- `POSTGRES_SCHEDULE_PASSWORD` (default: `rct_dev_pass`)
-- `RABBITMQ_USER` (default: `rct_user`)
-- `RABBITMQ_PASSWORD` (default: `rct_dev_pass`)
-- JWT secret/key (configured in auth-service, specific var not in application.yml)
-- Telegram bot token (notification-bot, see `.env.example`)
+**Required Environment Variables (Dev):**
+- `POSTGRES_ACADEMIC_PASSWORD` - Academic DB password
+- `POSTGRES_SCHEDULE_PASSWORD` - Schedule DB password
+- `MONGO_USER` - MongoDB application user
+- `MONGO_PASSWORD` - MongoDB application password
+- `REDIS_PASSWORD` - Redis password
+- `RABBITMQ_USER` - RabbitMQ user
+- `RABBITMQ_PASSWORD` - RabbitMQ password
+- `BOT_TOKEN` - Telegram Bot API token
+- `JWT_KEY_DIR` - Path to JWT keypair (default: `/keys` in containers)
+- `TMA_BOT_TOKEN` - Telegram Mini App bot token (for HMAC verification)
 
-**Secrets location:**
-- Environment variables with defaults for development
-- `.env.example` in `services/notification-bot/` documents required Python bot config
-- No centralized secret management (Vault, AWS Secrets Manager, etc.)
+**Required Environment Variables (Prod):**
+Same as dev, plus:
+- `VAPID_PUBLIC_KEY` - Web Push VAPID public key
+- `VAPID_PRIVATE_KEY` - Web Push VAPID private key
+- `VAPID_SUBJECT` - Web Push VAPID subject (mailto:email)
+- `CORS_ALLOWED_ORIGIN` - CORS allowed origin for API Gateway
+- `MINI_APP_URL` - Telegram Mini App URL (https://t.me/BotUsername/appname)
+- `GHCR_TOKEN` - GitHub Container Registry token (for docker login)
+
+**Configuration File Locations:**
+- `.env` - Development environment variables (git-ignored, contains secrets)
+- `.env.prod` - Production environment variables (git-ignored, contains secrets)
+- `.github/workflows/deploy.yml` - CI/CD deployment script references secrets
+
+**Secrets Management:**
+- Secrets location: GitHub Actions Secrets
+  - `GHCR_TOKEN` - Push images to GHCR
+  - `VPS_HOST` - Deployment target IP/hostname
+  - `VPS_USER` - SSH user on VPS
+  - `SSH_PRIVATE_KEY` - SSH private key for VPS access
+- Deployment: SSH script exports `GHCR_TOKEN` as environment variable during execution
+- Sensitive files in `.env` and `.env.prod` are git-ignored
+
+## SSL/TLS & HTTPS
+
+**Certificate Provider:**
+- Let's Encrypt (free, automated)
+- Implementation: certbot Docker container (certbot/certbot image)
+- Location: `docker-compose.prod.yml` service `certbot`
+
+**Certificate Management:**
+- Renewal: Automated renewal in container (12-hour interval check)
+- Storage: Docker volume `certbot-conf:/etc/letsencrypt`
+- Certificate files: `/etc/letsencrypt/live/ruttrack.site/` (on VPS)
+- Renewal script: Certbot renewal runs on 12-hour loop with `--quiet` flag
+- Reverse proxy: nginx at `nginx/` at `/nginx/` handles HTTPS termination
+
+**Nginx Configuration:**
+- Main config: `nginx/nginx.conf` at `/nginx/nginx.conf`
+- Site configs: `nginx/conf.d/` at `/nginx/conf.d/` (included from main)
+- Enabled: HTTP/2, TLS 1.2/1.3, cipher suites
+- Features:
+  - Client max body size: 10MB
+  - Server tokens hidden (security, NET-01)
+  - SSL cert reload: Every 6 hours (from deploy.yml command)
+  - Certificate paths: `/etc/letsencrypt/live/` (mounted from certbot volume)
 
 ## Webhooks & Callbacks
 
-**Incoming:**
-- None detected (Telegram bot uses long polling via Aiogram, not webhooks)
+**Incoming Webhooks:**
+- Telegram Bot API webhook - Not applicable (polling-based via aiogram)
+- RabbitMQ event listeners - Event-driven architecture (no HTTP webhooks)
 
-**Outgoing:**
-- None detected
+**Outgoing Webhooks:**
+- None detected - System publishes RabbitMQ events internally
+
+## Web Push (Notifications)
+
+**Web Push Service:**
+- Protocol: Web Push API (RFC 8030)
+- SDK: nl.martijndwars/web-push 5.1.2 (Java)
+- Implementation: Notification Web Service at `services/notification-service/notification-app/`
+
+**VAPID Configuration:**
+- VAPID Key Pair: Application-generated RSA keypair
+- Public Key: Sent to browsers, embedded in Web App Manifest
+- Private Key: Used by server to sign push messages
+- Subject: mailto: email for push service provider contact
+- Generation: Manual (not auto-generated like JWT keys)
+- Storage: Environment variables `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+
+**Push Subscription Storage:**
+- Database: MongoDB in `attendance_db`
+- Collection: `push_subscriptions` (implied)
+- Data: Endpoint URL, P256DH key, auth token (from browser Service Worker)
+- Delivery Service: Notification Web Service at port 9094
+
+**Service Worker Integration:**
+- Location: PWA frontend at `frontends/pwa/` at `/frontends/pwa/`
+- Plugin: vite-plugin-pwa 1.2.0 auto-generates Web App Manifest
+- Manifest includes: VAPID public key
+- Browser support: Subscribe via ServiceWorkerContainer.pushManager
+
+## gRPC Inter-Service Communication
+
+**gRPC Services:**
+All services using gRPC are defined in `proto/` directory at `/proto/`
+
+**Services Exposing gRPC:**
+- Academic Service: Port 19091 (internal, intra-container)
+  - Location: `services/academic-service/academic-app/`
+  - Endpoints: Querying academic data
+  - Clients: Notification Bot, Schedule Service (client calls)
+  - Security: GRPC_SECRET env var for authentication
+
+- Schedule Service: Port 19092 (internal, intra-container)
+  - Location: `services/schedule-service/schedule-app/`
+  - Endpoints: Querying lesson schedules, states
+  - Clients: Notification Bot, Attendance Service (client calls)
+  - Security: GRPC_SECRET env var for authentication
+
+- Attendance Service: gRPC server
+  - Location: `services/attendance-service/attendance-app/`
+  - Clients: Schedule Service, other services
+  - Security: GRPC_SECRET env var for authentication
+
+**gRPC Client Usage:**
+- Notification Bot: gRPC clients for academic-service (19091) and schedule-service (19092)
+  - Language: Python gRPC (grpcio 1.73.0, grpcio-tools 1.73.0)
+  - Protobuf: protobuf 6.31.0
+  - Implementation: `services/notification-bot/` at `/services/notification-bot/`
+
+**gRPC Security:**
+- Authentication: GRPC_SECRET shared env var (interceptor-based auth)
+- Transport: Plain gRPC over HTTP/2 (internal network only, no TLS in dev)
+- Metadata: Custom headers for auth token/secret
+
+## STOMP WebSocket Protocol
+
+**WebSocket Service:**
+- Service: Notification Web Service at `services/notification-service/notification-app/`
+- Protocol: STOMP (Streaming Text Oriented Messaging Protocol)
+- Port: 9094 (exposed to clients through API Gateway at /api/notification/ws)
+- Location: `services/notification-service/notification-app/`
+
+**STOMP Configuration:**
+- Framework: Spring WebSocket + STOMP broker
+- Broker: In-memory message broker (no external broker)
+- Endpoints: `/api/notification/ws` (configured in app)
+- Authentication: JWT token validation at WebSocket handshake
+
+**Client Integration:**
+- SDK: @stomp/stompjs 7.3.0 (TypeScript/JavaScript)
+- Fallback: sockjs-client 1.6.1 (for browsers without WebSocket support)
+- Location: `frontends/pwa/` at `/frontends/pwa/` uses STOMP for real-time notifications
+
+**Message Flow:**
+1. Browser connects to `/api/notification/ws` with JWT token
+2. STOMP subscribe to user-specific topics (e.g., `/user/{userId}/queue/attendance-updates`)
+3. Server publishes messages from RabbitMQ events to WebSocket subscribers
+4. Notification Web Service bridges RabbitMQ events → STOMP topics
 
 ---
 
-*Integration audit: 2026-03-28*
+*Integration audit: 2026-04-08*

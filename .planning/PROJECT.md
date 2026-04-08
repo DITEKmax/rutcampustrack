@@ -9,6 +9,24 @@ Replace three separate backends (Spring Boot web, Python FastAPI + Aiogram bot, 
 ## Core Value
 Full-stack attendance tracking system: 5 backend microservices + 4 frontend clients (React PWA, Telegram Mini App, Angular Web Panel, Landing page). Complete student-to-admin workflow — from geo-checkin in Telegram to admin dashboard in the browser.
 
+## Current Milestone: v9.0 Frontend Unification — Single Login & Role-Based Web Clients
+
+**Goal:** Fix critical post-v8.0 production frontend bugs and deliver full web cabinets for STUDENT and HEADMAN roles, unified under a single `/login` entry point.
+
+**Target features:**
+- **Block A — Infra & routing fixes:** nginx root `/` → `/login` (not PWA), landing to `/presentation/`, PWA to `/app/`, dead `https://t.me/` links removed, web-panel `baseHref` migration `/admin/` → `/`, unified `/login` for all roles
+- **Block B — Student web cabinet:** `/student/{dashboard, schedule, checkin, homework, stats, notifications, excuses, late-checkin, profile}`, PWA install prompt (non-intrusive, no forced redirect)
+- **Block C — Headman web cabinet:** `/headman/{dashboard, group, subjects, journal, excuses, late-checkin, stats}`, closes WPAN-13 blocker
+- **Block D — Headman PWA mode:** HEADMAN role branch in React PWA (closes `docs/design-decisions.md §3` promise)
+- **Block E — Landing presentation mode + docs:** landing → `/presentation/` with GSAP "how the system works" animation, docs sync
+
+**Key context:**
+- Full context brief: `.planning/v9.0-BRIEF.md` (problems, architecture, constraints, phase breakdown, draft requirements)
+- Fresh codebase map: `.planning/codebase/` (7 docs, 3070 lines, generated 2026-04-08)
+- Closes documented but unimplemented job stories: JS-TEACHER-08, JS-HEADMAN-01/04/20, JS-STUDENT-09, JS-SYSTEM-04
+- HEADMAN = `is_headman` boolean (already in JWT claims per `JwtService.java:96`); `UserRole` enum stays `{ADMIN, TEACHER, STUDENT}`
+- OTP login UI deferred to v10.0 (backend ready, only UI missing)
+
 ## Current State
 
 v8.0 shipped (2026-04-08). Full production-ready system: 5 backend services, 4 frontend clients, CI/CD pipeline, Docker deployment, SSL, unified API docs, comprehensive README.
@@ -201,6 +219,9 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 
 ## Milestones
 
+### v9.0: Frontend Unification — Single Login & Role-Based Web Clients — 🛠 IN PROGRESS
+Post-v8.0 production revealed that root `/` serves PWA to all roles, `/admin/` login is broken for non-ADMIN users (infinite redirect loop), landing has dead Telegram links, and web cabinets for STUDENT/HEADMAN don't exist despite being fixed in `docs/design-decisions.md §3` and `docs/job-stories.md`. v9.0 unifies all web clients under a single `/login` with role-based routing, delivers full student and headman web cabinets, extends PWA to HEADMAN, and moves landing to `/presentation/`. See `.planning/v9.0-BRIEF.md` for full context.
+
 ### v8.0: CI/CD, Deployment & Documentation — ✅ SHIPPED 2026-04-08
 Production-ready deployment pipeline. Actuator health endpoints, multi-stage Dockerfiles (11 images), docker-compose.prod.yml (17 services), nginx SSL with certbot, GitHub Actions CI + GHCR deploy, unified Swagger UI, complete README. 8 phases, 11 plans, 26 requirements. See `.planning/milestones/v8.0-ROADMAP.md`.
 
@@ -306,4 +327,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-08 after v8.0 milestone completion*
+*Last updated: 2026-04-08 after v9.0 milestone start*

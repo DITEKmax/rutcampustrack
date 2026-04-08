@@ -1,185 +1,491 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-03-28
-
-## Implementation Status
-
-**Phase 0 is complete — scaffolding only.** Every service contains only a `@SpringBootApplication` main class. There are zero controllers, services, repositories, entities, DTOs (beyond enums), or REST interfaces implemented across the entire codebase.
-
-**What exists (Phase 0 deliverables):**
-- 6 Spring Boot application shells (main class + `application.yml`)
-- 3 API contract modules with enums only (no DTO records, no REST interface definitions)
-- 2 Flyway baseline migrations (`academic_db`: 12 tables, `schedule_db`: 2 tables)
-- 2 gRPC proto definitions (`proto/academic.proto`, `proto/schedule.proto`)
-- 7 JSON Schema event definitions in `event-schemas/`
-- `LowercaseEnumConverter` + `EnumConverters` for Academic and Schedule services
-- `ErrorResponse` record + `ResourceNotFoundException` in `academic-api-contract`
-- Docker Compose for infrastructure (PostgreSQL x2, MongoDB, Redis, RabbitMQ)
-- Python `requirements.txt` for notification-bot
-
-**What is NOT implemented (Phases 1-6):**
-- Auth Service: no JWT, no OTP, no login/logout/refresh endpoints
-- API Gateway: no JWT validation filter, no CORS config, no rate limiting
-- Academic Service: no entities, no repositories, no controllers, no gRPC server
-- Schedule Service: no entities, no repositories, no controllers, no gRPC server
-- Attendance Service: no MongoDB documents, no controllers, no report domain
-- Notification Web: no WebSocket config, no STOMP endpoints
-- Notification Bot: no Python source files (only `requirements.txt`)
-- All 3 frontends: directories do not exist (`frontends/` not created)
-- No tests whatsoever across all modules
-
-## Technical Debt
-
-**Duplicated enum converter pattern:**
-- Issue: Schedule service's `EnumConverters` at `services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/EnumConverters.java` duplicates the converter logic inline instead of reusing the `LowercaseEnumConverter` base class from Academic service.
-- Files: `services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/config/EnumConverters.java` vs `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/config/LowercaseEnumConverter.java`
-- Impact: When Attendance service needs similar converters, there will be a third copy. Maintenance burden grows.
-- Fix approach: Extract `LowercaseEnumConverter` into a shared module (e.g., `common-jpa`) or copy the base class into each service and have converters extend it consistently.
-
-**ErrorResponse and ResourceNotFoundException only in academic-api-contract:**
-- Issue: `ErrorResponse` and `ResourceNotFoundException` live in `services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/exception/`. Other services will need these exact types but have no access without depending on `academic-api-contract`.
-- Files: `services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/exception/ErrorResponse.java`, `services/academic-service/academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/exception/ResourceNotFoundException.java`
-- Impact: Schedule and Attendance services will either duplicate these classes or take an awkward cross-service dependency.
-- Fix approach: Create a shared `common-contracts` module containing `ErrorResponse`, `ResourceNotFoundException`, and other cross-cutting types.
-
-**No contract REST interfaces or DTOs defined yet:**
-- Issue: The contract-first approach requires `*-api-contract` modules to define REST interface definitions and DTOs before implementation. Currently, contracts contain only enums.
-- Files: `services/academic-service/academic-api-contract/`, `services/schedule-service/schedule-api-contract/`, `services/attendance-service/attendance-api-contract/`
-- Impact: Not actual debt yet since implementation has not started, but these must be populated before implementing controllers.
-- Fix approach: Define interfaces and DTOs in the contract modules as part of each phase's implementation.
-
-**No TODO/FIXME/HACK/XXX comments in code:**
-- The codebase is clean of inline debt markers (confirmed via grep). This is expected given Phase 0 is pure scaffolding.
-
-## Security Concerns
-
-**No authentication or authorization implemented:**
-- Risk: All services are currently unprotected. Any endpoint added will be publicly accessible until Auth Service (Phase 1) is complete.
-- Files: `services/auth-service/src/main/java/ru/rutcampustrack/auth/AuthApplication.java` (empty shell), `services/api-gateway/src/main/java/ru/rutcampustrack/gateway/GatewayApplication.java` (empty shell)
-- Current mitigation: None. No Spring Security configuration exists in any service.
-- Recommendations: Phase 1 must be completed before any other service exposes REST endpoints. Gateway JWT filter is critical path.
-
-**No JWT secret/key configuration:**
-- Risk: `services/auth-service/src/main/resources/application.yml` defines `jwt.access-token-expiration` and `jwt.refresh-token-expiration` but has no JWT signing key/secret property.
-- Files: `services/auth-service/src/main/resources/application.yml`
-- Current mitigation: Auth service is not implemented yet.
-- Recommendations: JWT signing key must be injected via environment variable, never committed. Add `jwt.secret` or asymmetric key path to `application.yml` with `${JWT_SECRET}` placeholder.
-
-**No CORS configuration anywhere:**
-- Risk: When frontends (React Mini App, Angular Web Panel) start calling the API, CORS will block all requests.
-- Files: `services/api-gateway/src/main/resources/application.yml` (no CORS section)
-- Current mitigation: None needed yet (no frontends exist).
-- Recommendations: Add CORS configuration to API Gateway. Must restrict origins to known frontend domains.
-
-**MongoDB has no authentication:**
-- Risk: `docker-compose.yml` line 49-50 configures MongoDB without `MONGO_INITDB_ROOT_USERNAME`/`MONGO_INITDB_ROOT_PASSWORD`. Attendance service connects without credentials at `services/attendance-service/attendance-app/src/main/resources/application.yml` line 10.
-- Files: `docker-compose.yml`, `services/attendance-service/attendance-app/src/main/resources/application.yml`
-- Current mitigation: MongoDB is on private Docker network (`private_net`), not exposed to host.
-- Recommendations: Add MongoDB authentication before production. Even for development, authenticated connections are better practice.
-
-**Hardcoded default passwords in application.yml:**
-- Risk: Default password `rct_dev_pass` is used as fallback across all services when environment variables are not set.
-- Files: `services/academic-service/academic-app/src/main/resources/application.yml` (lines 11, 36), `services/schedule-service/schedule-app/src/main/resources/application.yml` (lines 11, 27), `services/attendance-service/attendance-app/src/main/resources/application.yml` (line 16), `services/notification-web/src/main/resources/application.yml` (line 12)
-- Current mitigation: `.env` file is in `.gitignore`. Default values are for development only.
-- Recommendations: Use Spring profiles (`application-prod.yml`) with no default values for production. Fail fast if secrets are not provided in production profile.
-
-**RabbitMQ Management UI exposed on port 15672:**
-- Risk: `docker-compose.yml` line 87 exposes RabbitMQ Management UI to the host with default credentials.
-- Files: `docker-compose.yml`
-- Current mitigation: Comment in docker-compose says "только для dev, убрать в production".
-- Recommendations: Use a separate `docker-compose.prod.yml` or override that removes port mapping.
-
-## Scalability Concerns
-
-**No Redis caching implemented:**
-- Problem: Academic service includes `spring-boot-starter-data-redis` dependency but has no `@Cacheable` annotations, cache config, or any Redis usage.
-- Files: `services/academic-service/academic-app/build.gradle.kts` (line 17)
-- Cause: Phase 0 only — implementation planned for Phase 2.
-- Improvement path: Implement cache for frequently-read reference data (groups, subjects, semesters) in Phase 2.
-
-**Schedule service missing Redis dependency:**
-- Problem: Schedule service has no Redis dependency in `build.gradle.kts` despite likely needing caching for schedule lookups (hot path for attendance check-in).
-- Files: `services/schedule-service/schedule-app/build.gradle.kts`
-- Cause: Oversight or intentional deferral.
-- Improvement path: Add `spring-boot-starter-data-redis` when implementing schedule queries.
-
-**No database connection pooling configuration:**
-- Problem: PostgreSQL services use default HikariCP settings. For a system serving 500-5000 students with concurrent attendance check-ins, default pool size (10) may be insufficient.
-- Files: `services/academic-service/academic-app/src/main/resources/application.yml`, `services/schedule-service/schedule-app/src/main/resources/application.yml`
-- Cause: Not configured yet.
-- Improvement path: Add `spring.datasource.hikari.maximum-pool-size` tuning in later phases.
-
-**Single MongoDB instance with no replica set:**
-- Problem: `docker-compose.yml` runs a single MongoDB instance. MongoDB transactions require a replica set, and the attendance service will likely need transactions for atomic mark + status updates.
-- Files: `docker-compose.yml` (lines 46-61)
-- Cause: Development simplicity.
-- Improvement path: Configure MongoDB replica set for production. Consider if transactions are needed for attendance writes.
-
-## Dependency Risks
-
-**Pinned dependency versions in api-contract modules:**
-- Risk: API contract `build.gradle.kts` files pin specific versions of Spring Web (`6.2.1`), Spring HATEOAS (`2.4.1`), Jackson (`2.18.2`), Swagger (`2.2.22`), and Jakarta Validation (`3.1.0`) independently from the Spring Boot BOM.
-- Files: `services/academic-service/academic-api-contract/build.gradle.kts`, `services/schedule-service/schedule-api-contract/build.gradle.kts`, `services/attendance-service/attendance-api-contract/build.gradle.kts`
-- Impact: Version mismatches between api-contract modules and Spring Boot-managed app modules. If Spring Boot upgrades from 3.4.1, these pinned versions will lag behind and may cause classpath conflicts.
-- Migration plan: Use a version catalog (`gradle/libs.versions.toml`) or apply `io.spring.dependency-management` to contract modules (even without Spring Boot plugin) to align versions.
-
-**gRPC not yet integrated into Gradle build:**
-- Risk: `proto/academic.proto` and `proto/schedule.proto` exist but no Gradle protobuf plugin is configured. The comment in `services/academic-service/academic-app/build.gradle.kts` line 33 says "gRPC будет добавлено в Фазе 2".
-- Files: `build.gradle.kts` (root), `services/academic-service/academic-app/build.gradle.kts` (line 33)
-- Impact: Proto files are documentation-only until the protobuf Gradle plugin is added. Generated Java stubs do not exist.
-- Migration plan: Add `com.google.protobuf` Gradle plugin and `net.devh:grpc-spring-boot-starter` in Phase 2.
-
-**Python notification-bot dependencies are version-pinned but no lockfile:**
-- Risk: `services/notification-bot/requirements.txt` pins exact versions but there is no `requirements.lock` or `pip-compile` workflow.
-- Files: `services/notification-bot/requirements.txt`
-- Impact: Low risk currently since exact versions are pinned. Transitive dependencies are not locked.
-- Migration plan: Consider using `pip-tools` or `poetry` for proper dependency locking.
-
-## Missing Infrastructure
-
-**No CI/CD pipeline:**
-- There is no `.github/workflows/`, `Jenkinsfile`, or any CI configuration.
-- Impact: No automated builds, no test execution, no lint checks on push/PR.
-- Priority: Planned for Phase 6. Should be introduced earlier (at least `./gradlew build` check on PRs).
-
-**No tests at all:**
-- Zero test files exist across the entire codebase. Not a single unit test, integration test, or test configuration.
-- Files: `services/**/src/test/` directories do not contain any `*.java` files.
-- Impact: No safety net for refactoring or new feature development.
-- Priority: High. Each phase should include tests for the code it produces.
-
-**No centralized logging / monitoring:**
-- No ELK, Loki, Prometheus, Grafana, or Micrometer configuration.
-- Services use basic `logging.level` config with console output only.
-- Files: All `application.yml` files (logging section)
-- Impact: No observability in development or production.
-- Priority: Planned for Phase 6.
-
-**No Spring Boot Actuator on most services:**
-- Only API Gateway includes `spring-boot-starter-actuator` (`services/api-gateway/build.gradle.kts` line 12). All other services lack health/metrics endpoints.
-- Files: `services/auth-service/build.gradle.kts`, `services/academic-service/academic-app/build.gradle.kts`, `services/schedule-service/schedule-app/build.gradle.kts`, `services/attendance-service/attendance-app/build.gradle.kts`, `services/notification-web/build.gradle.kts`
-- Impact: No `/actuator/health` for container health checks, no metrics export.
-- Priority: Medium. Add Actuator to all services.
-
-**No Dockerfiles for application services:**
-- Docker Compose only defines infrastructure containers (PostgreSQL, MongoDB, Redis, RabbitMQ). No Dockerfiles exist for the Java services or Python bot.
-- Impact: Services must be run locally via Gradle. No containerized deployment possible.
-- Priority: Needed before Phase 6 (CI/CD), but useful earlier for integration testing.
-
-**No Spring profiles for environment separation:**
-- All services have a single `application.yml` with no `application-dev.yml`, `application-prod.yml`, or `application-test.yml`.
-- Files: All `services/*/src/main/resources/application.yml`
-- Impact: Cannot differentiate dev/test/prod configurations. Particularly risky for secrets management.
-- Priority: Medium. Add at minimum a `prod` profile with strict secret requirements.
-
-## Test Coverage Gaps
-
-**Entire codebase is untested:**
-- What's not tested: Everything. Zero test classes exist.
-- Files: All `services/**/src/test/` directories are empty.
-- Risk: Any code added in future phases has no regression safety net.
-- Priority: High. Must be addressed starting from Phase 1.
+**Analysis Date:** 2026-04-08
 
 ---
 
-*Concerns audit: 2026-03-28*
+## CRITICAL ISSUES — Production Broken (v9.0 targets these)
+
+### 1. Root URL Routes All Users to PWA (INFRA)
+
+**Problem:** `nginx/conf.d/default.conf:125-128` catch-all `location /` proxies everything to PWA, regardless of user role.
+
+```nginx
+# --- PWA at root (NET-02) — MUST be last (catch-all) ---
+location / {
+    proxy_pass http://rct-pwa-nginx:80;
+    proxy_set_header Host $host;
+}
+```
+
+**Impact:** 
+- Admins accessing `https://ruttrack.site/` see student PWA (React mobile UI)
+- Teachers see student PWA
+- Only way to reach admin/teacher panels is via explicit `/admin/` path
+- No role-based entry point; confusing for all users
+- Breaking: v8.0 shipped with this config; real users complained post-deploy
+
+**Fix approach (Phase 49):**
+- Redirect `https://ruttrack.site/` → `/login` (unified entry point)
+- Landing accessible via `/presentation/` (explicit path only)
+- After login, Angular auth guard redirects per role: ADMIN → `/admin/dashboard`, TEACHER → `/teacher/dashboard`, STUDENT → `/student/dashboard`, HEADMAN → `/headman/dashboard`
+- PWA stays at `/app/` (intentional separate channel)
+
+**Files involved:**
+- `nginx/conf.d/default.conf` (lines 4-129)
+
+---
+
+### 2. Web-Panel Login Broken for Non-ADMIN Roles (AUTH)
+
+**Problem:** Hard-coded role type and routing logic prevent STUDENT login; broken loop for TEACHER.
+
+**Files & Code:**
+
+**`frontends/web-panel/src/app/core/auth/auth.service.ts:8`**
+```typescript
+export interface AuthUser {
+  id: number;
+  role: 'TEACHER' | 'ADMIN';  // ❌ STUDENT not listed — parsing fails
+}
+```
+When JWT contains `role: STUDENT`, `toUpperCase()` at line 27 produces valid string, but TypeScript type assertion at line 27 only allows `TEACHER | ADMIN`. Frontend silently parses but type is invalid.
+
+**`frontends/web-panel/src/app/features/login/login.component.ts:50`**
+```typescript
+const role = this.authService.currentUser()?.role;
+this.router.navigate([role === 'ADMIN' ? '/admin/dashboard' : '/teacher/dashboard']);
+```
+After login:
+- ADMIN → `/admin/dashboard` ✓ (works)
+- TEACHER → `/teacher/dashboard` ✓ (works)
+- STUDENT → `/teacher/dashboard` ❌ (wrong dashboard)
+- HEADMAN (student with `is_headman=true`) → `/teacher/dashboard` ❌ (wrong)
+
+**`frontends/web-panel/src/app/app.routes.ts:20`**
+```typescript
+{
+  path: 'teacher',
+  canActivate: [roleGuard(['TEACHER'])],
+  children: [ /* dashboard, journal, stats */ ]
+}
+```
+After STUDENT lands on `/teacher/dashboard`, `roleGuard(['TEACHER'])` blocks access → navigates to `/login` → login form submits again → `/teacher/dashboard` → blocked again → **infinite redirect loop**.
+
+**`frontends/web-panel/src/app/app.routes.ts` (lines 1-89)**
+- Routes for TEACHER and ADMIN only
+- No STUDENT routes exist
+- No HEADMAN routes exist
+- No dynamic role-based routing
+
+**Impact:**
+- STUDENT cannot login to web panel (breaks production for ~500+ users if they try web access)
+- HEADMAN has same problem as STUDENT (is_headman is JWT claim, not separate route)
+- TEACHER works but demonstrates fragile single-path assumption
+- Workaround: Only explicit path like `/admin/` works for those roles; breaks user experience post-Phase 49 redirect
+
+**Fix approach (Phase 50):**
+- Expand `AuthUser` interface: `role: 'ADMIN' | 'TEACHER' | 'STUDENT'` + `isHeadman: boolean`
+- Update `currentUser()` to parse `is_headman` from JWT claim (already present in `JwtService.java:96`)
+- Rewrite `login.component.ts:50`: Route to `/student/dashboard` for STUDENT, `/headman/dashboard` for HEADMAN+STUDENT
+- Add child routes: `{ path: 'student', canActivate: [studentGuard], children: [...] }` and `{ path: 'headman', canActivate: [headmanGuard], children: [...] }`
+- Implement `studentGuard` and `headmanGuard` (latter checks `role === STUDENT && is_headman === true`)
+
+**Files involved:**
+- `frontends/web-panel/src/app/core/auth/auth.service.ts` (interface + computed)
+- `frontends/web-panel/src/app/features/login/login.component.ts` (redirect logic)
+- `frontends/web-panel/src/app/app.routes.ts` (route definitions)
+- `frontends/web-panel/src/app/core/auth/role.guard.ts` (new guards)
+
+---
+
+### 3. Landing Page Dead Telegram Links
+
+**Problem:** Three links in landing page point to empty `https://t.me/` (no bot username).
+
+**Files & Lines:**
+- `frontends/landing/dist/index.html:1029` — header "Открыть в Telegram" button
+- `frontends/landing/dist/index.html:1107` — middle section "Открыть в Telegram"
+- `frontends/landing/dist/index.html:1306` — footer "Открыть в Telegram"
+
+**Current HTML:**
+```html
+<a href="https://t.me/" class="btn btn--primary btn--sm" rel="noopener">
+```
+
+**Impact:**
+- User clicks "Открыть в Telegram" → browser navigates to `https://t.me/` (Telegram home)
+- Not the intended Mini App or bot
+- Breaks user journey from landing to app
+- Production visible since v7.0 landing deployed
+
+**Fix approach (Phase 49):**
+- Replace all three `href="https://t.me/"` with either:
+  - `href="/login"` (send users to unified login)
+  - OR `href="https://t.me/{bot_username}"` (if bot username available — check with stakeholder)
+- Landing will move to `/presentation/` in Phase 49, so verify links work in new location
+
+**Files involved:**
+- `frontends/landing/dist/index.html` (lines 1029, 1107, 1306)
+
+---
+
+### 4. WPAN-13 Blocked: Headman Assistant Management Backend
+
+**Problem:** Backend `@RequireRole(STUDENT)` guard in academic-service prevents headman-scoped assistant operations.
+
+**Context:**
+- Job story `JS-HEADMAN-14` requires: "Assign assistant to group, grant specific permissions"
+- Assistant CRUD exists in `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/`
+- But `@RequireRole(STUDENT)` on endpoints assumes student-self operation, not headman-delegated-on-group
+
+**Impact:**
+- v7.0 deferred WPAN-13 — blocked on backend authorization model
+- v9.0 Phase 55 (`/headman/group` management) cannot proceed without backend fix
+- Workaround: Headman cannot delegate assistant rights through web UI (only through direct DB or old TMA)
+
+**Fix approach (v9.0 Phases 50+55 coordination):**
+- Extend `@RequireRole(STUDENT)` logic: allow headman-scoped operations if user is headman of target group
+- New contract: `AssistantApi` with methods like `createAssistantForGroup(groupId, studentId, permissions)`
+- Authorization check: `if (isHeadman(user) && isHeadmanOf(user, groupId)) allow operation`
+- Alternative: New role `@RequireRole({STUDENT, HEADMAN})` with group-scope validation
+
+**Files involved:**
+- `services/academic-service/academic-app/src/main/java/ru/rutcampustrack/academic/assistant/` (controller/service)
+- `services/auth-service/src/main/java/ru/rutcampustrack/auth/` (permissions/gRPC IsHeadman call)
+
+---
+
+## Architectural Debt
+
+### 1. Design Gap: PWA Built Only for STUDENT Role
+
+**Problem:** `docs/design-decisions.md §3` explicitly states:
+> "PWA — аудитория: **все роли** (студенты, старосты, преподаватели). Админы остаются на desktop веб-панели"
+
+**Reality:** `frontends/pwa/src/` implemented only for STUDENT. No UI for TEACHER, HEADMAN.
+
+**Impact:**
+- Job story `JS-TEACHER-08` (teacher mobile journal) unimplemented
+- Job story `JS-HEADMAN-20` (headman mobile full-featured panel) unimplemented
+- v9.0 Brief commits to HEADMAN PWA support (Phase 57), but TEACHER remains deferred
+
+**Files involved:**
+- `frontends/pwa/src/` (all feature folders: `schedule`, `checkin`, `stats`, `homework`)
+- `frontends/pwa/src/features/auth/AuthProvider.tsx` (role-switching logic exists but incomplete)
+
+**Fix approach (v10.0+):**
+- Add TEACHER-specific BottomNav tab in PWA (journal, stats, export)
+- Add conditional rendering in PWA shell based on `AuthUser.role`
+- Leverage existing `TanStackQuery` + `axios` client for backend calls
+
+---
+
+### 2. Monolithic Web-Panel: STUDENT+HEADMAN Web Cabinet Not Scoped
+
+**Problem:** `frontends/web-panel/angular.json:44` has `baseHref: "/admin/"`. After Phase 50 migration to `/`, single app becomes entry point for 4 roles.
+
+**Risk:**
+- Web-panel bundle size grows significantly (admin + teacher + student + headman lazy routes)
+- CI Docker build time increases (multi-stage Dockerfile must compile all feature modules)
+- Lazy-loaded routes for student/headman must be tree-shaken properly (test coverage)
+
+**Impact:**
+- v8.0: `rct-web-panel-nginx` image ~50MB (admin+teacher only)
+- v9.0 projection: +student lazy routes (+20MB?), +headman lazy routes (+20MB?) → ~90MB
+- Deploy times increase; CI/CD pipeline slower
+
+**Fix approach:**
+- Verify Webpack lazy chunking works: `ng build --configuration production --stats-json`
+- Test bundle analyzer to confirm unused routes don't ship
+- Monitor actual image size after Phase 50 build
+
+**Files involved:**
+- `frontends/web-panel/angular.json` (baseHref, outputPath)
+- `frontends/web-panel/Dockerfile` (multi-stage build)
+
+---
+
+### 3. HEADMAN as Boolean Flag, Not Enum Role
+
+**Problem:** Backend architectural decision (non-breaking): `UserRole = { ADMIN, TEACHER, STUDENT }`. HEADMAN represented as `is_headman: boolean` on `User.entity`.
+
+**Complexity:**
+- Frontend must check TWO fields: `role === STUDENT && is_headman === true` for authorization
+- gRPC call `IsHeadman(userId)` exists (proto/academic.proto:23) but PWA already reads `is_headman` from JWT claim
+- JWT generation in `JwtService.java:96` already includes `is_headman` — good. But frontend code must handle both claims-based and role-based checks
+
+**Impact:**
+- Inconsistency: `role.guard.ts` checks single role, but headman guard must check role + boolean
+- Prone to bugs: forgetting `is_headman` check allows regular student to access headman routes
+- v9.0 introduces 4 guards: `authGuard`, `roleGuard(['TEACHER'])`, `studentGuard`, `headmanGuard` — complexity
+
+**Fix approach:**
+- Document in `CONVENTIONS.md`: "Headman guard pattern: check `role === STUDENT && isHeadman === true`"
+- Create `AuthUser.isHeadman` computed property (done in Phase 50 fix)
+- Consistent usage across all guards
+
+**Files involved:**
+- `frontends/web-panel/src/app/core/auth/` (all guards)
+- `frontends/pwa/src/features/auth/AuthProvider.tsx` (role logic)
+
+---
+
+## Known Gaps from Previous Milestones
+
+### v3.0 (Schedule Service) — Unfixed Debt
+
+**1. IllegalArgumentException → HTTP 500**
+- Problem: `REST layer missing exception handler for `IllegalArgumentException`
+- Files: `services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/` (controller)
+- Impact: Malformed requests return generic 500 instead of RFC 7807 400 Bad Request
+- Fix: Add `@ExceptionHandler(IllegalArgumentException.class)` to `ControllerAdvice`
+
+**2. LSSN-03 Idempotency: saveAll Throws 409**
+- Problem: `LessonRepository.saveAll()` throws unique constraint violation on retry
+- Files: `services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java`
+- Impact: Lesson creation not idempotent — retries fail
+- Fix: Use PostgreSQL `ON CONFLICT DO NOTHING` in Flyway migration or batch insert with UpsertRepository pattern
+
+**3. GRPC-03 GetLessonsByGroup Includes Cancelled**
+- Problem: gRPC endpoint returns cancelled lessons
+- Files: `services/schedule-service/schedule-app/src/main/grpc/` (service impl)
+- Impact: Attendance service sees phantom lessons; statistics include cancelled
+- Fix: Filter `status != CANCELLED` in query
+
+---
+
+### v5.0 (Notification Service) — Handlers Wired, No Publishers
+
+**Problem:** Event handlers for `excuse.requested` and `late_checkin.requested` exist but no backend publisher sends these events.
+
+**Files:**
+- `services/notification-service/notification-app/src/main/java/ru/rutcampustrack/notification/event/EventConsumer.java:27-28` — handlers registered
+- `services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/event/EventConsumerTest.java` — tests wired
+- No corresponding `AttendanceEventService` publishing these events
+
+**Impact (marked WS-05, WS-06, NOTIF-08, NOTIF-09):**
+- Excuse ticket UI exists in PWA but no notifications reach headman
+- Late check-in UI exists but no notifications
+- Features appear broken in production
+- v9.0 Brief notes: "Excuse ticket creation and late check-in request flows: fully deferred — backend not implemented"
+
+**Fix approach:**
+- Implement `ExcuseEventService` in `attendance-service` to publish `excuse.requested` on excuse creation
+- Implement late-check-in publisher (same)
+- Wire in RabbitMQ template with event envelope
+- Test integration with notification-service
+
+**Files blocked:**
+- `frontends/pwa/src/features/excuses/` (UI complete, backend missing)
+- `frontends/pwa/src/features/late-checkin/` (UI complete, backend missing)
+
+---
+
+### v5.0 — WebSocket Group Isolation (WS-07)
+
+**Problem:** Group-based topic routing wired in `notification-web`, but no live broker-level verification that user cannot see other groups' messages.
+
+**Impact:** Low-severity (auth guard blocks, but no encryption layer)
+- Any student theoretically could subscribe to `/topic/group/{other_group_id}` if they knew ID
+- Current guards prevent this at HTTP level, but STOMP protocol has no cross-check
+
+**Fix approach:** 
+- Add subscription interceptor in notification-web to verify group membership before STOMP delivery
+- Log/block unauthorized subscription attempts
+
+---
+
+### v5.0 — Notification Timezone & Timer Testing (NOTIF-02, NOTIF-03)
+
+**Problem:** "TZ fix applied; live timer testing still needed"
+
+**Status:** Timezone fix in code, but live e2e tests never run to confirm reminder timers work correctly.
+
+**Impact:** Low (minor bugs in reminder timing only)
+
+**Fix approach:** Run E2E test with Testcontainers + RabbitMQ to confirm 3 reminders fire at correct UTC times
+
+---
+
+## Test Coverage Gaps
+
+### 1. Web-Panel Route Guards — 34 Tests Insufficient
+
+**Problem:** `frontends/web-panel/` has 34 spec files but angular.json has `skipTests: true` for components (lines 9-27).
+
+**Files:** `frontends/web-panel/src/**/*.spec.ts` (34 total)
+
+**Gaps:**
+- STUDENT and HEADMAN routes don't exist yet → no tests for new guards
+- `login.component.ts:50` redirect logic never tested with STUDENT role
+- Role guard guard conditions partial
+
+**Risk:** Phase 50 route migration can break existing teacher/admin tests if not re-run comprehensively
+
+**Fix approach:**
+- Expand test suite after Phase 50 to cover all 4 roles
+- Test `headmanGuard` explicitly: `role === STUDENT && isHeadman === true`
+- Test redirect logic: `ADMIN → /admin/dashboard`, `TEACHER → /teacher/dashboard`, `STUDENT → /student/dashboard`, `HEADMAN → /headman/dashboard`
+
+---
+
+### 2. PWA Vitest Coverage — 63 Tests Locked to STUDENT
+
+**Problem:** `frontends/pwa/` has 63 vitest tests, all assume STUDENT role.
+
+**Files:** `frontends/pwa/src/**/__tests__/**` (63 total, per v6.0 report)
+
+**Gaps:**
+- No HEADMAN role tests
+- No TEACHER role tests
+- v9.0 Phase 57 (PWA headman role) will add HEADMAN UI without pre-existing tests
+
+**Risk:** Phase 57 can accidentally break STUDENT UI while adding HEADMAN
+
+**Fix approach:**
+- Add test parameterization: test all features for both STUDENT and HEADMAN roles
+- Verify existing 63 tests pass with HEADMAN auth context
+- Add new test file `PWAHeadmanRole.test.tsx` for headman-specific features
+
+---
+
+## Code Duplication & Shared Resources
+
+### Frontend React Code Duplication (PWA vs Mini App)
+
+**Problem:** Both `frontends/pwa/` and `frontends/mini-app/` are React projects. Potential duplication:
+- Check-in logic (GPS capture, status validation)
+- Schedule view (week navigation, lesson rendering)
+- API client (axios + TanStack Query setup)
+
+**Status:** `frontends/shared/` exists but usage unknown (not checked in detail).
+
+**Impact:** Medium
+- Maintenance burden: bug fix in PWA might need same fix in Mini App
+- Bundle duplication: both ship similar code
+
+**Fix approach:**
+- Audit `frontends/shared/` contents
+- Extract common types/constants (AttendanceStatus enum, API client setup)
+- Create `@rct/shared` npm workspace package for shared logic
+- Link both PWA and Mini App to it
+
+**Files involved:**
+- `frontends/pwa/src/features/` (check-in, schedule, auth)
+- `frontends/mini-app/src/features/` (check-in, schedule, auth)
+- `frontends/shared/` (should be expanded)
+
+---
+
+## Deployment & Infrastructure
+
+### 1. CI Docker Image Size Growth Projections
+
+**Problem:** v9.0 will add STUDENT and HEADMAN routes to web-panel, growing the image.
+
+**Current (v8.0):**
+- `rct-web-panel-nginx`: ~50MB (admin + teacher routes)
+- Multi-stage build in `frontends/web-panel/Dockerfile`
+
+**v9.0 Projection:**
+- +STUDENT feature routes (schedule, checkin, homework, stats, excuses, late-checkin, profile)
+- +HEADMAN feature routes (group, subjects, journal, excuses, late-checkin, stats)
+- Estimated: +40MB → ~90MB total
+
+**Impact:** 
+- Longer push to registry (GitHub Container Registry)
+- Longer deploy time (VPS image pull)
+- Storage cost
+
+**Fix approach:**
+- Monitor actual image size after Phase 50
+- Use `docker image inspect` and `dive` tool to find optimization opportunities
+- Consider aggressive tree-shaking / lazy-chunking validation
+- If >100MB, consider splitting into micro-frontends (future)
+
+---
+
+### 2. Service Worker Cache Invalidation on PWA Redeploy
+
+**Problem:** PWA (`frontends/pwa/`) has Service Worker (workbox) that caches static assets and API responses.
+
+**Risk:** 
+- Redeploy v9.0 PWA with breaking API changes (new endpoints for HEADMAN)
+- Old SW cache serves stale API responses
+- Users on old version see broken UI
+
+**Status:** Workbox precache hash validation exists (workbox auto-invalidates precache on hash change), but offline cache strategy unclear.
+
+**Impact:** Low-medium (users can manually refresh or uninstall/reinstall app)
+
+**Fix approach:**
+- Document cache invalidation strategy in `frontends/pwa/vite.config.ts` comments
+- Consider adding version check: on SW update, prompt user to refresh
+- Test in dev: change API response, verify SW updates correctly
+
+**Files involved:**
+- `frontends/pwa/vite.config.ts` (workbox config)
+- `frontends/pwa/src/service-worker.ts` (if exists) or workbox handlers
+
+---
+
+### 3. Nginx baseHref Redirect Impact
+
+**Problem:** Phase 49 changes nginx routing from `/admin/` catch-all to `/` redirect.
+
+**Risk:**
+- Old external links `https://ruttrack.site/admin/...` will 404 after redirect
+- Docs/landing/emails with `/admin/` links become broken
+
+**Impact:** Medium (user experience + SEO)
+
+**Fix approach:**
+- Phase 49 must include: grep all docs/landing/footer for `/admin/` links and update to `/login`
+- Add nginx rewrite rule as fallback: `rewrite ^/admin/(.*) /$1 permanent;` (optional legacy redirect)
+- Update any external documentation (README, runbook, etc.)
+
+**Files to audit:**
+- `README.md` (if has admin link)
+- `frontends/landing/dist/index.html` (footer links)
+- `.planning/` docs (cross-references)
+
+---
+
+## CLAUDE.md Status Out of Date
+
+**Problem:** `CLAUDE.md` (project instructions) has stale status section.
+
+**Lines 7-15:**
+```
+- **v6.0**: В РАБОТЕ (PWA + Web Push) — фазы 27-32, завершены 27-30 (4/6)
+```
+
+**Reality:** v8.0 shipped 2026-04-08. v6.0 completed long ago.
+
+**Impact:** Low (informational only, doesn't break functionality)
+
+**Fix approach (Phase 59 Documentation):**
+- Update status to show v8.0 complete, v9.0 planned
+- Change "В РАБОТЕ" section to reflect v9.0 phases 49-59
+
+**Files involved:**
+- `CLAUDE.md` (lines 7-15)
+
+---
+
+## Summary by Severity
+
+| Severity | Count | Items | v9.0 Target? |
+|----------|-------|-------|--------------|
+| **CRITICAL** (production broken) | 4 | Nginx routing, web-panel auth loop, landing links, WPAN-13 backend | YES — Phases 49-50, 55 |
+| **Architectural debt** | 3 | PWA role gap, web-panel size growth, HEADMAN boolean complexity | PARTIAL — v10.0+ mostly |
+| **Known gaps** (v3-v5) | 6 | Exception handler, idempotency, late-checkin flow, excuse flow, group isolation, timer testing | DEFERRED — v10.0+ |
+| **Test coverage** | 2 | Web-panel guards, PWA HEADMAN role | Phase 50+57 |
+| **Code duplication** | 1 | React shared code (PWA+Mini App) | Optional v9.0 |
+| **Deployment risks** | 3 | Image size, SW cache, nginx redirects | Phase 49-50 |
+| **Docs** | 1 | CLAUDE.md status | Phase 59 |
+
+---
+
+*Concerns audit: 2026-04-08*

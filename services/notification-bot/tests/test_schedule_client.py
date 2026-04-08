@@ -25,6 +25,7 @@ def _make_client_with_stub(stub: MagicMock) -> ScheduleGrpcClient:
     client = ScheduleGrpcClient.__new__(ScheduleGrpcClient)
     client._channel = MagicMock()
     client._stub = stub
+    client._metadata = ()
     return client
 
 

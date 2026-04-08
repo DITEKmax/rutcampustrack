@@ -22,6 +22,7 @@ def _make_client_with_stub(stub: AsyncMock) -> AcademicGrpcClient:
     client._channel = MagicMock()
     client._stub = stub
     client._cache = {}
+    client._metadata = ()
     return client
 
 

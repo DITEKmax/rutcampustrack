@@ -150,9 +150,14 @@ jobs:
           port: 22
           envs: GHCR_TOKEN
           script: |
+            set -e
             echo "$GHCR_TOKEN" | docker login ghcr.io -u ditekmax --password-stdin
             cd /opt/rutcampustrack
             git pull --ff-only
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker volume create rutcampustrack_jwt-keys >/dev/null
+            docker run --rm -v rutcampustrack_jwt-keys:/keys alpine chown -R 1000:1000 /keys
+            docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml pull
+            docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans
+            sleep 30
+            docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans
             docker logout ghcr.io

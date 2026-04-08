@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 # Stage 1: Build
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /workspace
@@ -10,7 +12,10 @@ COPY settings.gradle.kts .
 COPY services/auth-service/build.gradle.kts services/auth-service/
 COPY services/auth-service/src services/auth-service/src
 
-RUN chmod +x gradlew && ./gradlew :services:auth-service:bootJar --no-daemon -x test
+# BuildKit cache mount: persists Gradle wrapper + dependency cache across builds.
+# Requires BuildKit (DOCKER_BUILDKIT=1 locally; enabled by default in docker/build-push-action).
+RUN --mount=type=cache,target=/root/.gradle \
+    chmod +x gradlew && ./gradlew :services:auth-service:bootJar --no-daemon -x test
 
 # Stage 2: Extract layers
 FROM eclipse-temurin:21-jre-alpine AS extractor

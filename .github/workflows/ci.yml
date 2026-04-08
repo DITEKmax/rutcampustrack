@@ -8,8 +8,24 @@ on:
 
 jobs:
   java-build-test:
-    name: Java Build & Test
+    name: Java — ${{ matrix.service.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: api-gateway
+            path: ':services:api-gateway'
+          - name: auth-service
+            path: ':services:auth-service'
+          - name: academic-service
+            path: ':services:academic-service:academic-app'
+          - name: schedule-service
+            path: ':services:schedule-service:schedule-app'
+          - name: attendance-service
+            path: ':services:attendance-service:attendance-app'
+          - name: notification-service
+            path: ':services:notification-service:notification-app'
     steps:
       - uses: actions/checkout@v4
 
@@ -17,6 +33,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -24,8 +41,18 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build and test all Java services
-        run: ./gradlew build
+      - name: Build and test ${{ matrix.service.name }}
+        run: ./gradlew ${{ matrix.service.path }}:check --no-daemon
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.service.name }}
+          path: |
+            services/**/build/reports/tests/
+            services/**/build/test-results/
+          retention-days: 7
 
   python-lint-test:
     name: Python Lint & Test
@@ -60,8 +87,12 @@ jobs:
         run: pytest tests/ -v
 
   frontend-build-test:
-    name: Frontend Build & Test
+    name: Frontend — ${{ matrix.app }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [pwa, mini-app, web-panel]
     steps:
       - uses: actions/checkout@v4
 
@@ -69,19 +100,8 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: |
-            frontends/pwa/package-lock.json
-            frontends/mini-app/package-lock.json
-            frontends/web-panel/package-lock.json
+          cache-dependency-path: frontends/${{ matrix.app }}/package-lock.json
 
-      - name: PWA - install, test, build
-        working-directory: frontends/pwa
-        run: npm ci && npm test && npm run build
-
-      - name: Mini App - install, test, build
-        working-directory: frontends/mini-app
-        run: npm ci && npm test && npm run build
-
-      - name: Web Panel - install, test, build
-        working-directory: frontends/web-panel
+      - name: Install, test, build
+        working-directory: frontends/${{ matrix.app }}
         run: npm ci && npm test && npm run build

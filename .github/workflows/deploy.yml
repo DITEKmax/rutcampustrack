@@ -31,6 +31,8 @@ jobs:
           file: services/api-gateway/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/api-gateway:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/api-gateway:latest
+          cache-from: type=gha,scope=api-gateway
+          cache-to: type=gha,scope=api-gateway,mode=max
 
       - name: Build and push auth-service
         uses: docker/build-push-action@v7
@@ -39,6 +41,8 @@ jobs:
           file: services/auth-service/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/auth-service:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/auth-service:latest
+          cache-from: type=gha,scope=auth-service
+          cache-to: type=gha,scope=auth-service,mode=max
 
       - name: Build and push academic-service
         uses: docker/build-push-action@v7
@@ -47,6 +51,8 @@ jobs:
           file: services/academic-service/academic-app/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/academic-service:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/academic-service:latest
+          cache-from: type=gha,scope=academic-service
+          cache-to: type=gha,scope=academic-service,mode=max
 
       - name: Build and push schedule-service
         uses: docker/build-push-action@v7
@@ -55,6 +61,8 @@ jobs:
           file: services/schedule-service/schedule-app/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/schedule-service:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/schedule-service:latest
+          cache-from: type=gha,scope=schedule-service
+          cache-to: type=gha,scope=schedule-service,mode=max
 
       - name: Build and push attendance-service
         uses: docker/build-push-action@v7
@@ -63,6 +71,8 @@ jobs:
           file: services/attendance-service/attendance-app/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/attendance-service:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/attendance-service:latest
+          cache-from: type=gha,scope=attendance-service
+          cache-to: type=gha,scope=attendance-service,mode=max
 
       - name: Build and push notification-web
         uses: docker/build-push-action@v7
@@ -71,6 +81,8 @@ jobs:
           file: services/notification-service/notification-app/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/notification-web:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/notification-web:latest
+          cache-from: type=gha,scope=notification-web
+          cache-to: type=gha,scope=notification-web,mode=max
 
       - name: Build and push notification-bot
         uses: docker/build-push-action@v7
@@ -79,6 +91,8 @@ jobs:
           file: services/notification-bot/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/notification-bot:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/notification-bot:latest
+          cache-from: type=gha,scope=notification-bot
+          cache-to: type=gha,scope=notification-bot,mode=max
 
       - name: Build and push pwa
         uses: docker/build-push-action@v7
@@ -87,6 +101,8 @@ jobs:
           file: frontends/pwa/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/pwa-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/pwa-nginx:latest
+          cache-from: type=gha,scope=pwa
+          cache-to: type=gha,scope=pwa,mode=max
 
       - name: Build and push mini-app
         uses: docker/build-push-action@v7
@@ -95,6 +111,8 @@ jobs:
           file: frontends/mini-app/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:latest
+          cache-from: type=gha,scope=mini-app
+          cache-to: type=gha,scope=mini-app,mode=max
 
       - name: Build and push web-panel
         uses: docker/build-push-action@v7
@@ -103,6 +121,8 @@ jobs:
           file: frontends/web-panel/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:latest
+          cache-from: type=gha,scope=web-panel
+          cache-to: type=gha,scope=web-panel,mode=max
 
       - name: Build and push landing
         uses: docker/build-push-action@v7
@@ -111,6 +131,8 @@ jobs:
           file: frontends/landing/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/landing-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/landing-nginx:latest
+          cache-from: type=gha,scope=landing
+          cache-to: type=gha,scope=landing,mode=max
 
   deploy:
     name: Deploy to VPS

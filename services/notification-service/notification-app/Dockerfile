@@ -1,16 +1,47 @@
+# syntax=docker/dockerfile:1.7
+
+# Stage 1: Build
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /workspace
+
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle.kts .
+COPY settings.gradle.kts .
+
+# API contract module
+COPY services/notification-service/notification-api-contract/build.gradle.kts \
+     services/notification-service/notification-api-contract/
+COPY services/notification-service/notification-api-contract/src \
+     services/notification-service/notification-api-contract/src
+
+# App module
+COPY services/notification-service/notification-app/build.gradle.kts \
+     services/notification-service/notification-app/
+COPY services/notification-service/notification-app/src \
+     services/notification-service/notification-app/src
+
+# BuildKit cache mount: persists Gradle wrapper + dependency cache across builds.
+# Requires BuildKit (DOCKER_BUILDKIT=1 locally; enabled by default in docker/build-push-action).
+RUN --mount=type=cache,target=/root/.gradle \
+    chmod +x gradlew && ./gradlew :services:notification-service:notification-app:bootJar --no-daemon -x test
+
+# Stage 2: Extract layers
+FROM eclipse-temurin:21-jre-alpine AS extractor
+WORKDIR /app
+COPY --from=builder /workspace/services/notification-service/notification-app/build/libs/*.jar app.jar
+RUN java -Djarmode=layertools -jar app.jar extract
+
+# Stage 3: Runtime
 FROM eclipse-temurin:21-jre-alpine
-
-RUN apk add --no-cache wget && \
-    addgroup -S app && adduser -S app -G app
-
+RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 
-COPY build/libs/*.jar app.jar
-
-RUN chown app:app app.jar
+COPY --from=extractor /app/dependencies/ ./
+COPY --from=extractor /app/spring-boot-loader/ ./
+COPY --from=extractor /app/snapshot-dependencies/ ./
+COPY --from=extractor /app/application/ ./
 
 USER app
-
 EXPOSE 9094
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

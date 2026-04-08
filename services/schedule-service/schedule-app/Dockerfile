@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 # Stage 1: Build
 # Note: must be a glibc-based image (not alpine/musl).
 # protobuf-gradle-plugin downloads `protoc-gen-grpc-java-*-linux-x86_64.exe`,
@@ -25,7 +27,10 @@ COPY services/schedule-service/schedule-app/build.gradle.kts \
 COPY services/schedule-service/schedule-app/src \
      services/schedule-service/schedule-app/src
 
-RUN chmod +x gradlew && ./gradlew :services:schedule-service:schedule-app:bootJar --no-daemon -x test
+# BuildKit cache mount: persists Gradle wrapper + dependency cache across builds.
+# Requires BuildKit (DOCKER_BUILDKIT=1 locally; enabled by default in docker/build-push-action).
+RUN --mount=type=cache,target=/root/.gradle \
+    chmod +x gradlew && ./gradlew :services:schedule-service:schedule-app:bootJar --no-daemon -x test
 
 # Stage 2: Extract layers
 FROM eclipse-temurin:21-jre-alpine AS extractor

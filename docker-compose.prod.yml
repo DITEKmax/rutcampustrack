@@ -210,6 +210,7 @@ services:
     container_name: rct-attendance-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}

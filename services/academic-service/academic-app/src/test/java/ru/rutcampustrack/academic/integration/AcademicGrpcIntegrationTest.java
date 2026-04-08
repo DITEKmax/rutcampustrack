@@ -394,7 +394,8 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         assertThat(response.getGroupName()).isEqualTo("IVT-21-1");
         assertThat(response.getIsHeadman()).isFalse();
         assertThat(response.getTelegramId()).isEqualTo(987654321L);
-        assertThat(response.getInitialPassword()).isEqualTo("initpass123");
+        // IMP-11: initial_password no longer returned via gRPC — always empty
+        assertThat(response.getInitialPassword()).isEmpty();
         assertThat(response.getPasswordChanged()).isFalse();
 
         // Cleanup

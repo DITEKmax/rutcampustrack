@@ -154,8 +154,14 @@ jobs:
             echo "$GHCR_TOKEN" | docker login ghcr.io -u ditekmax --password-stdin
             cd /opt/rutcampustrack
             git pull --ff-only
-            docker volume create rutcampustrack_jwt-keys >/dev/null
-            docker run --rm -v rutcampustrack_jwt-keys:/keys alpine chown -R 1000:1000 /keys
+            docker volume create rutcampustrack_jwt-keys >/dev/null 2>&1 || true
+            docker run --rm -v rutcampustrack_jwt-keys:/keys alpine sh -c \
+              "apk add --no-cache openssl >/dev/null 2>&1 && \
+               ([ -f /keys/private.key ] || openssl genrsa -out /keys/private.key 3072) && \
+               ([ -f /keys/public.key ] || openssl rsa -in /keys/private.key -pubout -out /keys/public.key) && \
+               chown -R 1000:1000 /keys && \
+               chmod 600 /keys/private.key && \
+               chmod 644 /keys/public.key"
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml pull
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans
             sleep 30

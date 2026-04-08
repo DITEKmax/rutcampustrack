@@ -55,6 +55,7 @@ services:
       - "27017"
     volumes:
       - mongo-data:/data/db
+      - ./infra/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - private_net
     healthcheck:

@@ -12,8 +12,10 @@ const makeJwt = (payload: object): string => {
   return `${header}.${body}.signature`;
 };
 
-const TEACHER_TOKEN = makeJwt({ sub: '1', role: 'TEACHER', exp: 9999999999 });
-const ADMIN_TOKEN = makeJwt({ sub: '2', role: 'ADMIN', exp: 9999999999 });
+const TEACHER_TOKEN = makeJwt({ sub: '1', role: 'TEACHER', is_headman: false, group_id: null, exp: 9999999999 });
+const ADMIN_TOKEN = makeJwt({ sub: '2', role: 'ADMIN', is_headman: false, group_id: null, exp: 9999999999 });
+const STUDENT_TOKEN = makeJwt({ sub: '3', role: 'STUDENT', is_headman: false, group_id: 5, exp: 9999999999 });
+const HEADMAN_TOKEN = makeJwt({ sub: '4', role: 'STUDENT', is_headman: true, group_id: 5, exp: 9999999999 });
 const REFRESH_TOKEN = 'refresh-token-abc';
 
 describe('authGuard', () => {
@@ -108,5 +110,32 @@ describe('roleGuard', () => {
     );
     expect(result).not.toBe(true);
     expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('roleGuard([ADMIN]) redirects plain STUDENT to /student/dashboard via resolveDashboardFor', () => {
+    authService.setTokens(STUDENT_TOKEN, REFRESH_TOKEN);
+    const result = TestBed.runInInjectionContext(() =>
+      roleGuard(['ADMIN'])({} as any, {} as any)
+    );
+    expect(result).not.toBe(true);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/student/dashboard']);
+  });
+
+  it('roleGuard([ADMIN]) redirects headman to /headman/dashboard via resolveDashboardFor', () => {
+    authService.setTokens(HEADMAN_TOKEN, REFRESH_TOKEN);
+    const result = TestBed.runInInjectionContext(() =>
+      roleGuard(['ADMIN'])({} as any, {} as any)
+    );
+    expect(result).not.toBe(true);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/headman/dashboard']);
+  });
+
+  it('roleGuard([TEACHER]) redirects plain STUDENT to /student/dashboard via resolveDashboardFor', () => {
+    authService.setTokens(STUDENT_TOKEN, REFRESH_TOKEN);
+    const result = TestBed.runInInjectionContext(() =>
+      roleGuard(['TEACHER'])({} as any, {} as any)
+    );
+    expect(result).not.toBe(true);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/student/dashboard']);
   });
 });

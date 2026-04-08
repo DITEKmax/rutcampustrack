@@ -2,6 +2,92 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v8.0 — CI/CD, Deployment & Documentation
+
+**Shipped:** 2026-04-08
+**Phases:** 8 | **Plans:** 11
+
+### What Was Built
+- Spring Boot Actuator health/info endpoints on all 4 Java services with production-safe config
+- Multi-stage Dockerfiles for all 11 services: 5 Java (layered JARs), 1 Python (grpcio-compatible), 4 frontends (nginx), 1 notification-web
+- Production docker-compose.prod.yml with 17 services, Actuator healthchecks, .env.prod secret interpolation, no exposed DB ports
+- Nginx reverse proxy with Let's Encrypt SSL: path-based routing, HTTP→HTTPS redirect, certbot sidecar with auto-renewal
+- SSL bootstrap script (init-letsencrypt.sh) with two-phase ACME approach (staging validation then production cert)
+- GitHub Actions CI: Java build+test, Python ruff lint+test, frontend builds, Gradle caching
+- GitHub Actions Deploy: 11 GHCR image push (sequential), SSH-based VPS docker compose pull+up
+- Unified Swagger UI at Gateway aggregating OpenAPI specs from all 4 REST services (springdoc 2.8.6)
+- Complete 372-line README with architecture diagram, local dev setup, API docs, and production deploy guide
+
+### What Worked
+- Sequential GHCR build steps over matrix strategy — simpler CI config, avoids GitHub runner quota issues for 11 images
+- Two-phase ACME bootstrap — validates DNS/config with staging cert before requesting production cert
+- springdoc-openapi-starter-webflux-ui for Gateway — correct variant for Spring Cloud Gateway (WebFlux)
+- python:3.12-slim over Alpine — grpcio musl wheels unavailable, slim works out of box
+- Phase 48 README as final milestone phase — captures all prior decisions and infrastructure in one document
+- Actuator restricted to health+info only — minimal attack surface while enabling container healthchecks
+
+### What Was Inefficient
+- REQUIREMENTS.md checkboxes for phases 42-45 remained unchecked despite phase completion — traceability table status also stale ("Pending")
+- SUMMARY.md one_liner extraction still poor — milestone CLI extracted gibberish for most plans (filenames, partial sentences)
+- No milestone audit run before completion — relied on individual phase verifications
+
+### Patterns Established
+- Multi-stage Dockerfile: Gradle build stage → eclipse-temurin:21-jre runtime stage with layered JARs
+- Frontend Dockerfile: node build stage → nginx:alpine runtime with custom nginx.conf
+- Production compose: .env.prod interpolation, no host DB ports, Actuator healthcheck wait conditions
+- SSL: nginx + certbot sidecar with volume-shared certs, init-letsencrypt.sh for first deploy
+- CI/CD: ci.yml on push/PR, deploy.yml on main merge, GHCR for container registry
+
+### Key Lessons
+1. Requirements checkboxes should be updated at phase completion, not deferred to milestone — stale checkboxes create false "incomplete" signals during milestone readiness checks
+2. SUMMARY.md one_liner field is consistently unreliable across milestones — either enforce structured extraction or deprecate the field
+3. Infra-only milestones (no new business logic) execute faster than feature milestones — 8 phases in 2 days with no rework
+4. springdoc WebFlux variant is required for Spring Cloud Gateway — standard servlet variant fails silently
+
+### Cost Observations
+- Model mix: ~15% opus (orchestration), ~85% sonnet (execution/verification)
+- Sessions: ~3 sessions across 2 days
+- Notable: Documentation-heavy milestone (Dockerfiles, compose, CI YAML, README) — no test writing, faster execution than feature milestones
+
+---
+
+## Milestone: v7.0 — Frontends — Mini App, Web Panel, Landing
+
+**Shipped:** 2026-04-07
+**Phases:** 8 | **Plans:** 16
+
+### What Was Built
+- Gateway CORS expansion + nginx containers for Mini App, Web Panel, Landing
+- Telegram initData HMAC-SHA256 auth + body-based refresh endpoint
+- Static landing page with GSAP animations, responsive layout, dark mode
+- Telegram Mini App: schedule, geo check-in, stats, homework, theme support
+- Angular Web Panel: login, teacher journal+stats, admin dashboard+user/group/semester CRUD
+
+### What Worked
+- MessageDigest.isEqual for TMA HMAC comparison — constant-time prevents timing oracle
+- Memory-only tokens in Mini App (not localStorage) — initData re-auth replaces persistence need
+- CdkTable + CdkVirtualScrollViewport for journal — handles 500+ rows efficiently
+- AdminApiService single Injectable for all CRUD — 16 methods, clean API surface
+
+### What Was Inefficient
+- WPAN-13 (headman assistant management) blocked by backend @RequireRole(STUDENT) constraint — deferred
+- v7.0 milestone archives not created during v6.0 completion
+
+### Patterns Established
+- TMA auth: initData HMAC-SHA256 validation, re-auth on 401 via initData (no refresh token)
+- Angular signals for token storage (memory-only)
+- Landing: Tailwind CDN + GSAP CDN, zero-build static page
+
+### Key Lessons
+1. httpOnly cookies don't work in Telegram WebView — Mini App needs body-based refresh
+2. Angular Material 3 requires standalone components — no NgModule declarations
+
+### Cost Observations
+- Model mix: ~20% opus, ~80% sonnet
+- Sessions: ~4 sessions across 2 days
+
+---
+
 ## Milestone: v6.0 — PWA + Web Push
 
 **Shipped:** 2026-04-06
@@ -236,6 +322,8 @@
 | v4.0 | 5 | 12 | MongoDB + Testcontainers, domain isolation, gap-closure pattern |
 | v5.0 | 7 | 16 | Python Aiogram bot, WebSocket, asyncio timers, cross-language gRPC |
 | v6.0 | 6 | 14 | First frontend: React PWA, Web Push, Service Worker, STOMP from browser |
+| v7.0 | 8 | 16 | Telegram Mini App, Angular Web Panel, Landing; TMA HMAC auth |
+| v8.0 | 8 | 11 | CI/CD pipeline, Docker, SSL, Swagger aggregation, README |
 
 ### Cumulative Quality
 
@@ -247,6 +335,8 @@
 | v4.0 | ~80 | MongoDB Testcontainers, ArchUnit domain isolation, Redis dedup/rate-limit tests |
 | v5.0 | ~128 | Java: 20 WebSocket/RabbitMQ tests. Python: 108 pytest-asyncio tests (fakeredis, mock gRPC/Telegram) |
 | v6.0 | 63 | Vitest for React components + hooks, TanStack Query test utils, SW push handler mocks |
+| v7.0 | 164 | Angular Vitest (129 Web Panel), Mini App vitest (35), ArchUnit |
+| v8.0 | — | No new tests (infra/docs milestone); Actuator integration tests in Phase 41 |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -258,3 +348,4 @@
 6. Always set TZ env var in docker-compose when code uses naive datetime — systematic timer errors otherwise (v5.0)
 7. Gap-closure hardening phase after milestone audit is a reliable pattern — catches deployment blockers before ship (v4.0-v5.0)
 8. Milestone completion must atomically update ALL planning files and create archives — partial updates by agents cause state drift requiring manual repair (v6.0)
+9. Requirements checkboxes should be updated at phase completion — stale checkboxes create false incomplete signals at milestone readiness (v8.0)

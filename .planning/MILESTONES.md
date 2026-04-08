@@ -1,5 +1,29 @@
 # Milestones
 
+## v8.0 CI/CD, Deployment & Documentation (Shipped: 2026-04-08)
+
+**Phases completed:** 8 phases, 11 plans
+**Timeline:** 2 days (2026-04-07 → 2026-04-08)
+**Requirements:** 26/26 satisfied
+**Git:** 30 commits, 253 files, +41,428 lines
+
+**Key accomplishments:**
+
+1. Spring Boot Actuator health/info endpoints on all 4 Java services with production-safe config (MON-01, MON-02)
+2. Multi-stage Dockerfiles for all 11 services: 5 Java (layered JARs), 1 Python (grpcio-compatible), 4 frontends (nginx), 1 notification-web
+3. Production docker-compose.prod.yml with 17 services, Actuator healthchecks, .env.prod secret interpolation, no exposed DB ports
+4. Nginx reverse proxy with Let's Encrypt SSL: path-based routing to all services and frontends, certbot bootstrap script
+5. GitHub Actions CI (Java build+test, Python ruff lint, frontend builds) + Deploy (11 GHCR images, SSH-based VPS deploy)
+6. Unified Swagger UI at Gateway aggregating OpenAPI specs from auth, academic, schedule, attendance services (springdoc 2.8.6)
+7. Complete 372-line README with architecture diagram, local dev setup, Swagger UI links, and production deploy guide
+
+**Archives:**
+
+- `.planning/milestones/v8.0-ROADMAP.md`
+- `.planning/milestones/v8.0-REQUIREMENTS.md`
+
+---
+
 ## v7.0 Frontends — Mini App, Web Panel, Landing (Shipped: 2026-04-07)
 
 **Phases completed:** 8 phases, 16 plans, 32 tasks

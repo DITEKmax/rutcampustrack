@@ -11,7 +11,7 @@ Full-stack attendance tracking system: 5 backend microservices + 4 frontend clie
 
 ## Current State
 
-v7.0 shipped (2026-04-07). All 5 backend services + all 4 frontend clients operational.
+v8.0 shipped (2026-04-08). Full production-ready system: 5 backend services, 4 frontend clients, CI/CD pipeline, Docker deployment, SSL, unified API docs, comprehensive README.
 
 **Backend:** Auth (JWT/OTP/TMA) + Academic (CRUD/gRPC/Redis/RabbitMQ) + Schedule (auto-generation/status transitions/cron) + Attendance (geo-checkin/manual marking/reports/MongoDB) + Notification (STOMP WebSocket + Telegram bot + Web Push). All inter-service communication working: gRPC, RabbitMQ fanout, STOMP, Web Push API.
 
@@ -23,9 +23,9 @@ v7.0 shipped (2026-04-07). All 5 backend services + all 4 frontend clients opera
 
 **Landing:** Static HTML/CSS with Tailwind CDN, GSAP scroll animations, responsive 360-1440px, dark mode.
 
-**Infrastructure:** API Gateway with CORS + JWT filter, nginx containers for PWA + Mini App + Web Panel + Landing, docker-compose with PostgreSQL×2 + MongoDB + Redis + RabbitMQ.
+**Infrastructure:** API Gateway with CORS + JWT filter, nginx reverse proxy with Let's Encrypt SSL, multi-stage Dockerfiles for all 11 services, docker-compose.prod.yml (17 containers), GitHub Actions CI + GHCR deploy pipeline, unified Swagger UI at Gateway.
 
-**Latest milestone:** v7.0 Frontends shipped 2026-04-07 (8 phases, 16 plans, 32/33 requirements — WPAN-13 blocked by backend role constraint).
+**Latest milestone:** v8.0 CI/CD, Deployment & Documentation shipped 2026-04-08 (8 phases, 11 plans, 26/26 requirements).
 
 ## Shipped Milestones
 
@@ -165,20 +165,6 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ HW-01..02: Homework list, optimistic completion toggle — v6.0
 - ✓ INFRA-01..03: Gateway CORS, push route, nginx PWA serving — v6.0
 
-## Current Milestone: v8.0 CI/CD, Deployment & Documentation
-
-**Goal:** Production-ready deployment pipeline with CI, Docker, SSL, monitoring, API docs, and project README.
-
-**Target features:**
-- GitHub Actions CI: build + test + lint for Java/Python/frontend
-- Automated deploy to single VPS via SSH (docker-compose)
-- Multi-stage Dockerfiles for all services
-- docker-compose.prod.yml with production configs
-- Nginx reverse proxy with Let's Encrypt SSL (certbot standalone)
-- Spring Boot Actuator health/metrics endpoints
-- Unified Swagger UI via API Gateway (aggregated specs)
-- Full project README (architecture, setup, API summary, deploy guide)
-
 ### Deferred (from previous milestones)
 - [ ] Excuse tickets: create/submit/review flow with event publishing (excuse.requested)
 - [ ] Late check-in ("forgot to mark") flow with event publishing (late_checkin.requested)
@@ -186,15 +172,15 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - [ ] WS-07: Live broker-level group isolation verification
 - [ ] WPAN-13: Headman assistant management (blocked — backend @RequireRole(STUDENT) on assistant endpoints)
 
-### Recently Validated (v7.0)
-- ✓ INFRA-01..04: URL layout, Gateway CORS, nginx containers, SPA try_files — v7.0
-- ✓ AUTH-01..02: TMA initData HMAC-SHA256 auth, body-based refresh endpoint — v7.0
-- ✓ LAND-01..03: Landing page with responsive layout, nginx container — v7.0
-- ✓ TMA-01..05: Mini App opens in Telegram, initData auth, memory tokens, dev mock — v7.0
-- ✓ TMA-06..11: Schedule view, geo check-in, stats, homework, theme, BackButton — v7.0
-- ✓ WPAN-01..05: Web Panel login, JWT signals, role guards, auto-refresh, logout — v7.0
-- ✓ WPAN-06..08: Journal grid (CdkTable + virtual scroll), stats charts (ng2-charts) — v7.0
-- ✓ WPAN-09..12: User/group/semester CRUD, admin dashboard — v7.0
+### Recently Validated (v8.0)
+- ✓ MON-01..02: Spring Boot Actuator health/info on all 4 Java services, production-safe config — v8.0
+- ✓ DOCK-01..04: Multi-stage Dockerfiles for all 11 services (5 Java + 1 Python + 4 frontend + notification-web) — v8.0
+- ✓ DOCK-05..07, MON-03: docker-compose.prod.yml with 17 services, healthchecks, .env.prod secrets, no exposed DB ports — v8.0
+- ✓ NET-01..05: Nginx SSL termination, path-based routing, Let's Encrypt certbot, HTTP→HTTPS redirect — v8.0
+- ✓ CI-01..04: GitHub Actions CI (Java build+test, Python ruff lint, frontend builds, Gradle cache) — v8.0
+- ✓ CI-05..07: GitHub Actions Deploy (11 GHCR images, SSH deploy, GitHub Secrets) — v8.0
+- ✓ DOC-01..03: Unified Swagger UI at Gateway (springdoc 2.8.6, aggregated specs, webflux-ui) — v8.0
+- ✓ DOC-04: Complete 372-line README with architecture, setup, API docs, deploy guide — v8.0
 
 ### Recently Validated (v4.0)
 - ✓ INFRA-01..06: MongoDB indexes, enum converters, gRPC clients, RabbitMQ queue, event publishing — v4.0
@@ -214,6 +200,9 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - PDF/Excel export — deferred to v4.1+
 
 ## Milestones
+
+### v8.0: CI/CD, Deployment & Documentation — ✅ SHIPPED 2026-04-08
+Production-ready deployment pipeline. Actuator health endpoints, multi-stage Dockerfiles (11 images), docker-compose.prod.yml (17 services), nginx SSL with certbot, GitHub Actions CI + GHCR deploy, unified Swagger UI, complete README. 8 phases, 11 plans, 26 requirements. See `.planning/milestones/v8.0-ROADMAP.md`.
 
 ### v7.0: Frontends — Mini App, Web Panel, Landing — ✅ SHIPPED 2026-04-07
 Telegram Mini App + Angular Web Panel + Landing page. 8 phases, 16 plans, 32/33 requirements. See `.planning/milestones/v7.0-ROADMAP.md`.
@@ -291,6 +280,13 @@ Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
 | AdminApiService single Injectable for all CRUD | ✓ 16 methods covering users/groups/semesters/dashboard | v7.0 |
 | http.request('DELETE') for semester delete | ✓ HttpClient.delete() drops request body; request() preserves it | v7.0 |
 | PATCH status=archived for user archive (not DELETE) | ✓ Explicit control over archive/restore; no confirmation dialog for restore | v7.0 |
+| Actuator: health+info only, no env/heapdump in prod | ✓ Minimal attack surface; SecurityFilterChain permits /actuator/** | v8.0 |
+| Multi-stage Dockerfiles with layered JARs | ✓ ~300MB images; layer caching for dependencies | v8.0 |
+| python:3.12-slim for notification-bot (not Alpine) | ✓ grpcio musl wheels unavailable on Alpine; slim works out of box | v8.0 |
+| Sequential GHCR build steps (not matrix) | ✓ Simpler, avoids runner quota issues for 11 images | v8.0 |
+| Nginx reverse proxy + certbot sidecar | ✓ SSL termination at edge; only nginx binds host ports 80/443 | v8.0 |
+| Two-phase ACME bootstrap (staging then prod) | ✓ Validates DNS/config before requesting real cert | v8.0 |
+| springdoc-openapi-starter-webflux-ui for Gateway | ✓ WebFlux variant required; RewritePath proxy for /openapi/{service} | v8.0 |
 
 ## Evolution
 
@@ -310,4 +306,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after v8.0 milestone start*
+*Last updated: 2026-04-08 after v8.0 milestone completion*

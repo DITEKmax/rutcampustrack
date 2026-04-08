@@ -6,3 +6,5 @@ management:
   endpoint:
     health:
       show-details: never
+      probes:
+        enabled: true

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     academic_grpc_port: int = 19091
     redis_host: str = "redis"
     redis_port: int = 6379
+    redis_password: str = "rct_dev_pass"
     health_port: int = 8081
 
     # Redis key namespace for reminder messages (per D-07)
@@ -19,6 +20,9 @@ class Settings(BaseSettings):
     # TTL: 86400 seconds (24 hours) — safety net against event loss (per D-08)
     reminder_key_template: str = "reminder:msgs:{lesson_id}:{user_id}"
     reminder_key_ttl: int = 86400
+
+    # gRPC shared secret (IMP-09)
+    grpc_secret: str = ""
 
     # Schedule Service gRPC
     schedule_grpc_host: str = "schedule-service"

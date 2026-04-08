@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.user;
 
+import jakarta.validation.constraints.Size;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 
 /**
@@ -9,6 +10,7 @@ import ru.rutcampustrack.academic.contract.enums.AccountStatus;
  */
 public record PatchUserRequest(
 
+        @Size(max = 255)
         String displayName,
 
         Boolean isHeadman,

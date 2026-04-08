@@ -71,6 +71,8 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(publicKey)
+                    .requireIssuer("rutcampustrack-auth")
+                    .requireAudience("rutcampustrack")
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();

@@ -24,6 +24,7 @@ spring:
     redis:
       host: redis
       port: 6379
+      password: ${REDIS_PASSWORD:rct_dev_pass}
 
   flyway:
     enabled: true
@@ -44,6 +45,8 @@ springdoc:
 grpc:
   server:
     port: 19091
+  auth:
+    secret: ${GRPC_SECRET:}
 
 cache:
   ttl:

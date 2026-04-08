@@ -30,7 +30,7 @@ jobs:
           context: .
           file: services/api-gateway/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/api-gateway:latest
+          tags: ghcr.io/maksd/rutcampustrack/api-gateway:${{ github.sha }},ghcr.io/maksd/rutcampustrack/api-gateway:latest
 
       - name: Build and push auth-service
         uses: docker/build-push-action@v7
@@ -38,7 +38,7 @@ jobs:
           context: .
           file: services/auth-service/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/auth-service:latest
+          tags: ghcr.io/maksd/rutcampustrack/auth-service:${{ github.sha }},ghcr.io/maksd/rutcampustrack/auth-service:latest
 
       - name: Build and push academic-service
         uses: docker/build-push-action@v7
@@ -46,7 +46,7 @@ jobs:
           context: .
           file: services/academic-service/academic-app/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/academic-service:latest
+          tags: ghcr.io/maksd/rutcampustrack/academic-service:${{ github.sha }},ghcr.io/maksd/rutcampustrack/academic-service:latest
 
       - name: Build and push schedule-service
         uses: docker/build-push-action@v7
@@ -54,7 +54,7 @@ jobs:
           context: .
           file: services/schedule-service/schedule-app/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/schedule-service:latest
+          tags: ghcr.io/maksd/rutcampustrack/schedule-service:${{ github.sha }},ghcr.io/maksd/rutcampustrack/schedule-service:latest
 
       - name: Build and push attendance-service
         uses: docker/build-push-action@v7
@@ -62,7 +62,7 @@ jobs:
           context: .
           file: services/attendance-service/attendance-app/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/attendance-service:latest
+          tags: ghcr.io/maksd/rutcampustrack/attendance-service:${{ github.sha }},ghcr.io/maksd/rutcampustrack/attendance-service:latest
 
       - name: Build and push notification-web
         uses: docker/build-push-action@v7
@@ -70,7 +70,7 @@ jobs:
           context: .
           file: services/notification-service/notification-app/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/notification-web:latest
+          tags: ghcr.io/maksd/rutcampustrack/notification-web:${{ github.sha }},ghcr.io/maksd/rutcampustrack/notification-web:latest
 
       - name: Build and push notification-bot
         uses: docker/build-push-action@v7
@@ -78,7 +78,7 @@ jobs:
           context: services/notification-bot
           file: services/notification-bot/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/notification-bot:latest
+          tags: ghcr.io/maksd/rutcampustrack/notification-bot:${{ github.sha }},ghcr.io/maksd/rutcampustrack/notification-bot:latest
 
       - name: Build and push pwa
         uses: docker/build-push-action@v7
@@ -86,7 +86,7 @@ jobs:
           context: frontends/pwa
           file: frontends/pwa/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/pwa-nginx:latest
+          tags: ghcr.io/maksd/rutcampustrack/pwa-nginx:${{ github.sha }},ghcr.io/maksd/rutcampustrack/pwa-nginx:latest
 
       - name: Build and push mini-app
         uses: docker/build-push-action@v7
@@ -94,7 +94,7 @@ jobs:
           context: frontends/mini-app
           file: frontends/mini-app/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/mini-app-nginx:latest
+          tags: ghcr.io/maksd/rutcampustrack/mini-app-nginx:${{ github.sha }},ghcr.io/maksd/rutcampustrack/mini-app-nginx:latest
 
       - name: Build and push web-panel
         uses: docker/build-push-action@v7
@@ -102,7 +102,7 @@ jobs:
           context: frontends/web-panel
           file: frontends/web-panel/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/web-panel-nginx:latest
+          tags: ghcr.io/maksd/rutcampustrack/web-panel-nginx:${{ github.sha }},ghcr.io/maksd/rutcampustrack/web-panel-nginx:latest
 
       - name: Build and push landing
         uses: docker/build-push-action@v7
@@ -110,7 +110,7 @@ jobs:
           context: frontends/landing
           file: frontends/landing/Dockerfile
           push: true
-          tags: ghcr.io/maksd/rutcampustrack/landing-nginx:latest
+          tags: ghcr.io/maksd/rutcampustrack/landing-nginx:${{ github.sha }},ghcr.io/maksd/rutcampustrack/landing-nginx:latest
 
   deploy:
     name: Deploy to VPS

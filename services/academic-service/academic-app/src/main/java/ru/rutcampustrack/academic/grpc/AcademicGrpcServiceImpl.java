@@ -243,7 +243,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 .setGroupName(groupName)
                 .setIsHeadman(user.isHeadman())
                 .setTelegramId(user.getTelegramId() != null ? user.getTelegramId() : 0L)
-                .setInitialPassword(user.getInitialPassword() != null ? user.getInitialPassword() : "")
+                // IMP-11: initial_password removed from gRPC response — deliver via RabbitMQ event only
+                .setInitialPassword("")
                 .setPasswordChanged(user.isPasswordChanged())
                 .build();
 

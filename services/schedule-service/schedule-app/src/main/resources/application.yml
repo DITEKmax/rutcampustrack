@@ -46,6 +46,8 @@ springdoc:
 grpc:
   server:
     port: 19092
+  auth:
+    secret: ${GRPC_SECRET:}
   client:
     academic-service:
       address: static://academic-service:19091

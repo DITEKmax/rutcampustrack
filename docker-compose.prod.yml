@@ -49,6 +49,8 @@ services:
     container_name: rct-mongo-attendance
     environment:
       MONGO_INITDB_DATABASE: attendance_db
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     expose:
       - "27017"
     volumes:
@@ -64,6 +66,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: rct-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     expose:
       - "6379"
     volumes:
@@ -71,13 +74,13 @@ services:
     networks:
       - private_net
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   rabbitmq:
-    image: rabbitmq:3.13-management-alpine
+    image: rabbitmq:3.13-alpine
     container_name: rct-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
@@ -171,6 +174,7 @@ services:
       POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      GRPC_SECRET: ${GRPC_SECRET}
     expose:
       - "9091"
     networks:
@@ -201,6 +205,7 @@ services:
       POSTGRES_SCHEDULE_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      GRPC_SECRET: ${GRPC_SECRET}
       TZ: Europe/Moscow
     expose:
       - "9092"
@@ -231,6 +236,7 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      GRPC_SECRET: ${GRPC_SECRET}
     expose:
       - "9093"
     networks:
@@ -270,7 +276,7 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       VAPID_SUBJECT: ${VAPID_SUBJECT}
-      SPRING_DATA_MONGODB_URI: mongodb://mongo-attendance:27017/attendance_db
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin
     volumes:
       - jwt-keys:/keys:ro
     expose:
@@ -303,9 +309,11 @@ services:
       ACADEMIC_GRPC_PORT: "19091"
       REDIS_HOST: redis
       REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       HEALTH_PORT: "8081"
       SCHEDULE_GRPC_HOST: schedule-service
       SCHEDULE_GRPC_PORT: "19092"
+      GRPC_SECRET: ${GRPC_SECRET}
       AUTH_SERVICE_HOST: auth-service
       AUTH_SERVICE_PORT: "9090"
       API_GATEWAY_URL: http://api-gateway:8080

@@ -98,6 +98,18 @@ public class OtpService {
         }
 
         if (!storedCode.equals(request.code())) {
+            // IMP-03: Track verification attempts, annul OTP after 3 failures
+            String verifyKey = "otp_verify_attempts:" + telegramId;
+            Long attempts = redisTemplate.opsForValue().increment(verifyKey);
+            if (attempts != null && attempts == 1L) {
+                redisTemplate.expire(verifyKey, otpProperties.ttlSeconds(), TimeUnit.SECONDS);
+            }
+            if (attempts != null && attempts >= 3) {
+                // Annul the OTP — force user to request a new one
+                redisTemplate.delete("otp:" + telegramId);
+                redisTemplate.delete(verifyKey);
+                throw new OtpRateLimitException("Too many verification attempts. Request a new code");
+            }
             throw new OtpExpiredException();
         }
 
@@ -105,6 +117,7 @@ public class OtpService {
         redisTemplate.delete("otp:" + telegramId);
         redisTemplate.delete("otp_attempts:" + telegramId);
         redisTemplate.delete("otp_sent:" + telegramId);
+        redisTemplate.delete("otp_verify_attempts:" + telegramId);
 
         // Generate JWT pair
         String accessToken = jwtService.generateAccessToken(user);

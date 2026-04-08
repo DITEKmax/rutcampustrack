@@ -1,3 +1,25 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - ${CORS_ALLOWED_ORIGIN:https://rutcampustrack.ru}
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowed-headers:
+              - Authorization
+              - Content-Type
+              - X-Requested-With
+            allow-credentials: true
+            max-age: 3600
+
 management:
   endpoints:
     web:

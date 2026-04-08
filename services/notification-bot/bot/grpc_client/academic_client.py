@@ -12,10 +12,12 @@ logger = logging.getLogger(__name__)
 class AcademicGrpcClient:
     _CACHE_TTL_SECONDS = 300  # 5 minutes
 
-    def __init__(self, host: str, port: int) -> None:
+    def __init__(self, host: str, port: int, grpc_secret: str = "") -> None:
         target = f"{host}:{port}"
         self._channel = grpc.aio.insecure_channel(target)
         self._stub = academic_pb2_grpc.AcademicGrpcServiceStub(self._channel)
+        # IMP-09: Shared secret for inter-service gRPC auth
+        self._metadata = (("x-grpc-secret", grpc_secret),) if grpc_secret else ()
         self._cache: dict[int, tuple[float, list[Any]]] = {}
 
     async def get_group_members(self, group_id: int) -> list[Any]:
@@ -25,7 +27,7 @@ class AcademicGrpcClient:
             if now - ts < self._CACHE_TTL_SECONDS:
                 return members
         request = academic_pb2.GroupMembersRequest(group_id=group_id)
-        response = await self._stub.GetGroupMembers(request)
+        response = await self._stub.GetGroupMembers(request, metadata=self._metadata)
         members = list(response.students)
         self._cache[group_id] = (now, members)
         return members
@@ -40,12 +42,12 @@ class AcademicGrpcClient:
         Does NOT raise on not-found (uses found flag instead of gRPC error).
         """
         request = academic_pb2.UserByTelegramIdRequest(telegram_id=telegram_id)
-        return await self._stub.GetUserByTelegramId(request)
+        return await self._stub.GetUserByTelegramId(request, metadata=self._metadata)
 
     async def get_subjects_by_ids(self, subject_ids: list[int]):
         """Resolve subject IDs to names. Returns SubjectsByIdsResponse proto."""
         request = academic_pb2.SubjectsByIdsRequest(subject_ids=subject_ids)
-        return await self._stub.GetSubjectsByIds(request)
+        return await self._stub.GetSubjectsByIds(request, metadata=self._metadata)
 
     async def close(self) -> None:
         await self._channel.close()

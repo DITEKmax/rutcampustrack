@@ -51,11 +51,21 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         this.publicKeyConfig = publicKeyConfig;
     }
 
+    private static final List<String> INTERNAL_HEADERS = List.of(
+            "X-User-Id", "X-User-Role", "X-Group-Id", "X-Is-Headman"
+    );
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
             return chain.filter(exchange);
         }
+
+        // CRIT-01: Strip client-supplied internal headers to prevent privilege escalation
+        ServerHttpRequest sanitized = exchange.getRequest().mutate()
+                .headers(h -> INTERNAL_HEADERS.forEach(h::remove))
+                .build();
+        exchange = exchange.mutate().request(sanitized).build();
 
         String path = exchange.getRequest().getURI().getPath();
 
@@ -73,6 +83,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(publicKeyConfig.getPublicKey())
+                    .requireIssuer("rutcampustrack-auth")
+                    .requireAudience("rutcampustrack")
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();

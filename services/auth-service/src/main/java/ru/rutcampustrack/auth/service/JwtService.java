@@ -31,9 +31,13 @@ public class JwtService {
     private final JwtProperties jwtProperties;
     private final StringRedisTemplate redisTemplate;
 
+    private static final String JWT_ISSUER = "rutcampustrack-auth";
+    private static final String JWT_AUDIENCE = "rutcampustrack";
+
     private PrivateKey privateKey;
     private PublicKey publicKey;
     private String publicKeyPem;
+    private String keyId;
 
     public JwtService(JwtProperties jwtProperties, StringRedisTemplate redisTemplate) {
         this.jwtProperties = jwtProperties;
@@ -46,15 +50,18 @@ public class JwtService {
         Path privateKeyPath = keyDir.resolve("private.key");
         Path publicKeyPath = keyDir.resolve("public.key");
 
+        Path kidPath = keyDir.resolve("kid.txt");
+
         if (Files.exists(privateKeyPath) && Files.exists(publicKeyPath)) {
             log.info("Loading RSA keys from filesystem: {}", keyDir.toAbsolutePath());
             privateKey = loadPrivateKey(privateKeyPath);
             publicKey = loadPublicKey(publicKeyPath);
         } else {
-            log.info("Generating new RSA key pair in: {}", keyDir.toAbsolutePath());
+            // REC-04: Generate RSA 3072-bit keys (NIST recommended)
+            log.info("Generating new RSA 3072-bit key pair in: {}", keyDir.toAbsolutePath());
             Files.createDirectories(keyDir);
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-            generator.initialize(2048);
+            generator.initialize(3072);
             KeyPair keyPair = generator.generateKeyPair();
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
@@ -62,9 +69,17 @@ public class JwtService {
             writeKeyToFile(publicKey, publicKeyPath, "PUBLIC KEY");
         }
 
+        // REC-04: Load or generate key ID for JWT kid header (supports future key rotation)
+        if (Files.exists(kidPath)) {
+            keyId = Files.readString(kidPath).strip();
+        } else {
+            keyId = UUID.randomUUID().toString().substring(0, 8);
+            Files.writeString(kidPath, keyId);
+        }
+
         publicKeyPem = buildPem(publicKey.getEncoded(), "PUBLIC KEY");
         redisTemplate.opsForValue().set("jwt:public_key", publicKeyPem, Duration.ofSeconds(3600));
-        log.info("RSA key pair ready, public key cached in Redis");
+        log.info("RSA key pair ready (kid={}), public key cached in Redis", keyId);
     }
 
     public String generateAccessToken(User user) {
@@ -72,7 +87,10 @@ public class JwtService {
         Date expiration = new Date(now.getTime() + jwtProperties.accessTokenExpiration() * 1000);
 
         return Jwts.builder()
+                .header().keyId(keyId).and()
                 .subject(user.getId().toString())
+                .issuer(JWT_ISSUER)
+                .audience().add(JWT_AUDIENCE).and()
                 .claim("role", user.getRole().name())
                 .claim("group_id", user.getGroupId())
                 .claim("is_headman", user.isHeadman())
@@ -87,7 +105,10 @@ public class JwtService {
         Date expiration = new Date(now.getTime() + jwtProperties.refreshTokenExpiration() * 1000);
 
         return Jwts.builder()
+                .header().keyId(keyId).and()
                 .subject(user.getId().toString())
+                .issuer(JWT_ISSUER)
+                .audience().add(JWT_AUDIENCE).and()
                 .id(UUID.randomUUID().toString())
                 .issuedAt(now)
                 .expiration(expiration)
@@ -98,6 +119,8 @@ public class JwtService {
     public Jws<Claims> parseToken(String token) {
         return Jwts.parser()
                 .verifyWith(publicKey)
+                .requireIssuer(JWT_ISSUER)
+                .requireAudience(JWT_AUDIENCE)
                 .build()
                 .parseSignedClaims(token);
     }
@@ -117,6 +140,17 @@ public class JwtService {
     private void writeKeyToFile(Key key, Path path, String type) throws IOException {
         String pem = buildPem(key.getEncoded(), type);
         Files.writeString(path, pem);
+        // IMP-08: Restrict file permissions to owner-read-only for private keys
+        try {
+            java.nio.file.attribute.PosixFilePermission ownerRead =
+                    java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+            java.nio.file.attribute.PosixFilePermission ownerWrite =
+                    java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+            Files.setPosixFilePermissions(path, java.util.Set.of(ownerRead, ownerWrite));
+        } catch (UnsupportedOperationException e) {
+            // Windows doesn't support POSIX permissions — skip silently
+            log.debug("POSIX file permissions not supported on this OS, skipping for {}", path);
+        }
         log.debug("Written {} to {}", type, path);
     }
 

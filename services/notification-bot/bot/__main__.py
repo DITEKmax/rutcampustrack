@@ -69,13 +69,14 @@ async def run_with_watchdog(rabbitmq_url: str, dispatcher=None) -> None:
 
 async def create_clients():
     """Create and start all service clients for bot handlers."""
-    academic_client = AcademicGrpcClient(config.academic_grpc_host, config.academic_grpc_port)
-    schedule_client = ScheduleGrpcClient(config.schedule_grpc_host, config.schedule_grpc_port)
+    academic_client = AcademicGrpcClient(config.academic_grpc_host, config.academic_grpc_port, config.grpc_secret)
+    schedule_client = ScheduleGrpcClient(config.schedule_grpc_host, config.schedule_grpc_port, config.grpc_secret)
     jwt_redis = JwtRedisClient(
         key_prefix=config.jwt_key_prefix,
         ttl=config.jwt_ttl,
         host=config.redis_host,
         port=config.redis_port,
+        password=config.redis_password,
     )
     auth_client = AuthHttpClient(base_url=f"http://{config.auth_service_host}:{config.auth_service_port}")
     attendance_client = AttendanceHttpClient(base_url=config.api_gateway_url)
@@ -120,6 +121,7 @@ async def main() -> None:
         ttl=config.reminder_key_ttl,
         host=config.redis_host,
         port=config.redis_port,
+        password=config.redis_password,
     )
 
     # Create reminder scheduler (NOTIF-02, NOTIF-03 — Plan 25-01/25-02)

@@ -21,12 +21,14 @@ class JwtRedisClient:
         ttl: int = 604800,
         host: str = "redis",
         port: int = 6379,
+        password: str = "",
         redis_client: Optional[aioredis.Redis] = None,
     ) -> None:
         if redis_client is not None:
             self._redis = redis_client
         else:
-            url = f"redis://{host}:{port}"
+            auth = f":{password}@" if password else ""
+            url = f"redis://{auth}{host}:{port}"
             self._redis = aioredis.from_url(url, max_connections=10, decode_responses=True)
         self._key_prefix = key_prefix
         self._ttl = ttl

@@ -25,34 +25,49 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final StringRedisTemplate redisTemplate;
     private final JwtProperties jwtProperties;
+    private final LoginRateLimiter loginRateLimiter;
 
     public AuthService(UserRepository userRepository,
                        JwtService jwtService,
                        PasswordEncoder passwordEncoder,
                        StringRedisTemplate redisTemplate,
-                       JwtProperties jwtProperties) {
+                       JwtProperties jwtProperties,
+                       LoginRateLimiter loginRateLimiter) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.redisTemplate = redisTemplate;
         this.jwtProperties = jwtProperties;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
     public TokenResponse login(LoginRequest request) {
+        // IMP-02: Check if account is blocked due to too many failed attempts
+        loginRateLimiter.checkBlocked(request.login());
+
         User user = userRepository.findByLogin(request.login())
-                .orElseThrow(InvalidCredentialsException::new);
+                .orElseThrow(() -> {
+                    loginRateLimiter.recordFailure(request.login());
+                    return new InvalidCredentialsException();
+                });
 
         if (user.getStatus() != AccountStatus.ACTIVE) {
+            loginRateLimiter.recordFailure(request.login());
             throw new InvalidCredentialsException();
         }
 
         if (user.getPasswordHash() == null) {
+            loginRateLimiter.recordFailure(request.login());
             throw new InvalidCredentialsException();
         }
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            loginRateLimiter.recordFailure(request.login());
             throw new InvalidCredentialsException();
         }
+
+        // Successful login — clear failure counter
+        loginRateLimiter.clearFailures(request.login());
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
@@ -119,6 +134,12 @@ public class AuthService {
 
         String newHash = passwordEncoder.encode(request.newPassword());
         userRepository.updatePassword(userId, newHash);
+
+        // IMP-10: Revoke all refresh tokens for this user
+        java.util.Set<String> keys = redisTemplate.keys("refresh:" + userId + ":*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
     }
 
     public PublicKeyResponse getPublicKey() {

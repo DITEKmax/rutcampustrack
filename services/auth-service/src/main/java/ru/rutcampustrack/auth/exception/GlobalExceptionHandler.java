@@ -183,16 +183,19 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(
             Exception ex, HttpServletRequest request) {
+        log.error("Unhandled exception at {}: {}", request.getRequestURI(), ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .contentType(PROBLEM_JSON)
                 .body(new ErrorResponse(
                         "about:blank",
                         "Internal Server Error",
                         HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        ex.getMessage(),
+                        "An unexpected error occurred",
                         request.getRequestURI(),
                         Instant.now()
                 ));

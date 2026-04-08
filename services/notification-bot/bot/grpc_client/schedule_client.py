@@ -14,10 +14,12 @@ class ScheduleGrpcClient:
     No caching — GetActiveLesson must return current state.
     """
 
-    def __init__(self, host: str, port: int) -> None:
+    def __init__(self, host: str, port: int, grpc_secret: str = "") -> None:
         target = f"{host}:{port}"
         self._channel = grpc.aio.insecure_channel(target)
         self._stub = schedule_pb2_grpc.ScheduleGrpcServiceStub(self._channel)
+        # IMP-09: Shared secret for inter-service gRPC auth
+        self._metadata = (("x-grpc-secret", grpc_secret),) if grpc_secret else ()
 
     async def get_active_lesson(self, group_id: int) -> object | None:
         """Get currently active lesson for a group.
@@ -30,7 +32,7 @@ class ScheduleGrpcClient:
             timestamp=timestamp,
         )
         try:
-            return await self._stub.GetActiveLesson(request)
+            return await self._stub.GetActiveLesson(request, metadata=self._metadata)
         except grpc.aio.AioRpcError as e:
             if e.code() == grpc.StatusCode.NOT_FOUND:
                 return None

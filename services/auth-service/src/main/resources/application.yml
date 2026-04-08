@@ -9,6 +9,7 @@ spring:
     redis:
       host: redis
       port: 6379
+      password: ${REDIS_PASSWORD:rct_dev_pass}
 
   datasource:
     url: jdbc:postgresql://postgres-academic:5432/academic_db
@@ -47,7 +48,7 @@ otp:
   resend-cooldown-seconds: 60
 
 tma:
-  bot-token: ${TMA_BOT_TOKEN:test_bot_token_for_dev}
+  bot-token: ${TMA_BOT_TOKEN}
   auth-date-max-age-seconds: 86400
 
 logging:

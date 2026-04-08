@@ -116,7 +116,7 @@ class OtpIntegrationTest extends AbstractIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        ChangePasswordRequest changeRequest = new ChangePasswordRequest("password", "newpass123");
+        ChangePasswordRequest changeRequest = new ChangePasswordRequest("password", "NewPass1x");
         HttpEntity<ChangePasswordRequest> entity = new HttpEntity<>(changeRequest, headers);
 
         ResponseEntity<Void> changeResponse = restTemplate.postForEntity(
@@ -124,7 +124,7 @@ class OtpIntegrationTest extends AbstractIntegrationTest {
         assertThat(changeResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         // Verify can login with new password
-        LoginRequest newLoginRequest = new LoginRequest("student", "newpass123");
+        LoginRequest newLoginRequest = new LoginRequest("student", "NewPass1x");
         ResponseEntity<TokenResponse> newLoginResponse = restTemplate.postForEntity(
                 "/auth/login", newLoginRequest, TokenResponse.class);
         assertThat(newLoginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -144,7 +144,7 @@ class OtpIntegrationTest extends AbstractIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        ChangePasswordRequest changeRequest = new ChangePasswordRequest("wrongpass", "newpass123");
+        ChangePasswordRequest changeRequest = new ChangePasswordRequest("wrongpass", "NewPass1x");
         HttpEntity<ChangePasswordRequest> entity = new HttpEntity<>(changeRequest, headers);
 
         ResponseEntity<String> changeResponse = restTemplate.postForEntity(

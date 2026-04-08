@@ -21,37 +21,34 @@ class ActuatorIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void infoEndpointReturns200() {
+    void infoEndpointRequiresAuth() {
+        // REC-03: Only /actuator/health is public; /actuator/info requires authentication
         ResponseEntity<String> response = restTemplate.getForEntity("/actuator/info", String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void envEndpointReturns404() {
+    void envEndpointRequiresAuth() {
         ResponseEntity<String> response = restTemplate.getForEntity("/actuator/env", String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void beansEndpointReturns404() {
+    void beansEndpointRequiresAuth() {
         ResponseEntity<String> response = restTemplate.getForEntity("/actuator/beans", String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void heapdumpEndpointReturns404() {
+    void heapdumpEndpointRequiresAuth() {
         ResponseEntity<String> response = restTemplate.getForEntity("/actuator/heapdump", String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void actuatorIndexShowsOnlyHealthAndInfo() {
+    void actuatorIndexRequiresAuth() {
+        // REC-03: /actuator index is not public
         ResponseEntity<String> response = restTemplate.getForEntity("/actuator", String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("health");
-        assertThat(response.getBody()).contains("info");
-        assertThat(response.getBody()).doesNotContain("\"env\"");
-        assertThat(response.getBody()).doesNotContain("\"beans\"");
-        assertThat(response.getBody()).doesNotContain("\"heapdump\"");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }

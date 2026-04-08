@@ -110,7 +110,7 @@ jobs:
           context: frontends/mini-app
           file: frontends/mini-app/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:latest
           cache-from: type=gha,scope=mini-app
           cache-to: type=gha,scope=mini-app,mode=max
 
@@ -159,8 +159,8 @@ jobs:
               "apk add --no-cache openssl >/dev/null 2>&1 && \
                ([ -f /keys/private.key ] || openssl genrsa -out /keys/private.key 3072) && \
                ([ -f /keys/public.key ] || openssl rsa -in /keys/private.key -pubout -out /keys/public.key) && \
-               chown -R 1000:1000 /keys && \
-               chmod 600 /keys/private.key && \
+               chown -R 100:101 /keys && \
+               chmod 640 /keys/private.key && \
                chmod 644 /keys/public.key"
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml pull
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans

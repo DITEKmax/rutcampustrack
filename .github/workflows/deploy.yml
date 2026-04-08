@@ -152,6 +152,7 @@ jobs:
           script: |
             echo "$GHCR_TOKEN" | docker login ghcr.io -u ditekmax --password-stdin
             cd /opt/rutcampustrack
+            git pull --ff-only
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             docker logout ghcr.io

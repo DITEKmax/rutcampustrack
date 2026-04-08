@@ -14,8 +14,10 @@ const makeJwt = (payload: object): string => {
   return `${header}.${body}.signature`;
 };
 
-const TEACHER_TOKEN = makeJwt({ sub: '1', role: 'TEACHER', exp: 9999999999 });
-const ADMIN_TOKEN = makeJwt({ sub: '2', role: 'ADMIN', exp: 9999999999 });
+const TEACHER_TOKEN = makeJwt({ sub: '1', role: 'TEACHER', is_headman: false, group_id: null, exp: 9999999999 });
+const ADMIN_TOKEN = makeJwt({ sub: '2', role: 'ADMIN', is_headman: false, group_id: null, exp: 9999999999 });
+const STUDENT_TOKEN = makeJwt({ sub: '3', role: 'STUDENT', is_headman: false, group_id: 5, exp: 9999999999 });
+const HEADMAN_TOKEN = makeJwt({ sub: '4', role: 'STUDENT', is_headman: true, group_id: 5, exp: 9999999999 });
 const REFRESH_TOKEN = 'refresh-token-abc';
 
 describe('LoginComponent', () => {
@@ -32,10 +34,18 @@ describe('LoginComponent', () => {
       setTokens: vi.fn(),
       currentUser: vi.fn().mockReturnValue(null),
       isAuthenticated: vi.fn().mockReturnValue(false) as any,
+      resolveDashboardFor: vi.fn((user: any) => {
+        if (!user) return '/login';
+        if (user.role === 'ADMIN') return '/admin/dashboard';
+        if (user.role === 'TEACHER') return '/teacher/dashboard';
+        if (user.isHeadman) return '/headman/dashboard';
+        return '/student/dashboard';
+      }),
     };
 
     mockRouter = {
       navigate: vi.fn(),
+      navigateByUrl: vi.fn(),
     };
   });
 
@@ -84,6 +94,8 @@ describe('LoginComponent', () => {
     (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
       id: 1,
       role: 'TEACHER',
+      isHeadman: false,
+      groupId: null,
     });
 
     await render(LoginComponent, {
@@ -112,6 +124,8 @@ describe('LoginComponent', () => {
     (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
       id: 1,
       role: 'TEACHER',
+      isHeadman: false,
+      groupId: null,
     });
 
     await render(LoginComponent, {
@@ -128,7 +142,7 @@ describe('LoginComponent', () => {
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
     expect(mockAuthService.setTokens).toHaveBeenCalledWith(TEACHER_TOKEN, REFRESH_TOKEN);
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/teacher/dashboard']);
+    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/teacher/dashboard');
   });
 
   it('on successful login with ADMIN role, navigates to /admin/dashboard', async () => {
@@ -138,6 +152,8 @@ describe('LoginComponent', () => {
     (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
       id: 2,
       role: 'ADMIN',
+      isHeadman: false,
+      groupId: null,
     });
 
     await render(LoginComponent, {
@@ -153,7 +169,61 @@ describe('LoginComponent', () => {
     await user.type(screen.getByLabelText(/пароль/i), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/admin/dashboard']);
+    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/admin/dashboard');
+  });
+
+  it('on successful login with plain STUDENT role, navigates to /student/dashboard', async () => {
+    (mockAuthApi.login as ReturnType<typeof vi.fn>).mockReturnValue(
+      of({ accessToken: STUDENT_TOKEN, refreshToken: REFRESH_TOKEN, expiresIn: 3600 })
+    );
+    (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
+      id: 3,
+      role: 'STUDENT',
+      isHeadman: false,
+      groupId: 5,
+    });
+
+    await render(LoginComponent, {
+      providers: [
+        { provide: AuthApi, useValue: mockAuthApi },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: Router, useValue: mockRouter },
+      ],
+    });
+
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/логин/i), 'student00001');
+    await user.type(screen.getByLabelText(/пароль/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /войти/i }));
+
+    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/student/dashboard');
+  });
+
+  it('on successful login with headman STUDENT role, navigates to /headman/dashboard', async () => {
+    (mockAuthApi.login as ReturnType<typeof vi.fn>).mockReturnValue(
+      of({ accessToken: HEADMAN_TOKEN, refreshToken: REFRESH_TOKEN, expiresIn: 3600 })
+    );
+    (mockAuthService.currentUser as ReturnType<typeof vi.fn>).mockReturnValue({
+      id: 4,
+      role: 'STUDENT',
+      isHeadman: true,
+      groupId: 5,
+    });
+
+    await render(LoginComponent, {
+      providers: [
+        { provide: AuthApi, useValue: mockAuthApi },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: Router, useValue: mockRouter },
+      ],
+    });
+
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/логин/i), 'headman01');
+    await user.type(screen.getByLabelText(/пароль/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /войти/i }));
+
+    expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/headman/dashboard');
   });
 
   it('on 401 error, shows error message for wrong credentials', async () => {

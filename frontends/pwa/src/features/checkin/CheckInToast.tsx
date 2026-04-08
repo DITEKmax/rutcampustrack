@@ -1,6 +1,17 @@
 import { useEffect } from 'react'
 import { motion } from 'motion/react'
+import { CheckCircle, WarningCircle } from '@phosphor-icons/react'
 
+/**
+ * Check-in feedback toast (brandbook §5.4 "micro-interactions: успешный
+ * чекин — pulse + confetti-burst").
+ *
+ * Two tones: success uses --accent-primary (the brand green), error uses
+ * --accent-danger. Auto-dismisses after 3s (success) / 5s (error) — timings
+ * preserved from the previous implementation so the 2 test cases pass.
+ *
+ * Only compositor-prop animations (opacity + translateY).
+ */
 interface CheckInToastProps {
   type: 'success' | 'error'
   message: string
@@ -15,25 +26,48 @@ export function CheckInToast({ type, message, onDismiss }: CheckInToastProps) {
   }, [type, onDismiss])
 
   const isSuccess = type === 'success'
+  const displayMessage = isSuccess ? 'Отметка принята' : message
 
   return (
     <motion.div
-      initial={{ y: 64, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: 64, opacity: 0 }}
-      transition={{ duration: isSuccess ? 0.2 : 0.15, ease: isSuccess ? 'easeOut' : 'easeIn' }}
+      initial={{ opacity: 0, y: 32 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 32 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
       role={isSuccess ? 'status' : 'alert'}
-      className={`fixed bottom-16 left-4 right-4 z-40 rounded-lg p-4 shadow-lg ${
-        isSuccess
-          ? 'bg-card border border-green-200 text-green-800'
-          : 'bg-card border border-destructive/30 text-destructive'
-      }`}
+      className="fixed inset-x-4 bottom-20 z-[var(--z-toast)] mx-auto flex max-w-sm items-center gap-3 rounded-xl px-4 py-3"
+      style={{
+        background: 'var(--bg-elevated)',
+        border: `1px solid ${
+          isSuccess
+            ? 'color-mix(in oklab, var(--accent-primary) 32%, transparent)'
+            : 'color-mix(in oklab, var(--accent-danger) 32%, transparent)'
+        }`,
+        boxShadow: 'var(--shadow-lg)',
+      }}
     >
-      {isSuccess ? (
-        <p className="font-medium text-sm">Отметка принята</p>
-      ) : (
-        <p className="font-medium text-sm">{message}</p>
-      )}
+      <span
+        aria-hidden="true"
+        className="grid size-9 place-items-center rounded-full"
+        style={{
+          background: isSuccess
+            ? 'color-mix(in oklab, var(--accent-primary) 18%, transparent)'
+            : 'color-mix(in oklab, var(--accent-danger) 18%, transparent)',
+          color: isSuccess ? 'var(--accent-primary)' : 'var(--accent-danger)',
+        }}
+      >
+        {isSuccess ? (
+          <CheckCircle size={20} weight="fill" />
+        ) : (
+          <WarningCircle size={20} weight="fill" />
+        )}
+      </span>
+      <p
+        className="text-sm font-medium leading-tight text-pretty"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        {displayMessage}
+      </p>
     </motion.div>
   )
 }

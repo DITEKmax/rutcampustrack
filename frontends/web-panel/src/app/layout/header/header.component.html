@@ -1,0 +1,20 @@
+<header class="shell-header">
+  <div class="shell-header__title">
+    <span class="shell-header__eyebrow">{{ pageEyebrow() }}</span>
+    <p class="shell-header__heading">{{ pageTitle() }}</p>
+  </div>
+
+  <div class="shell-header__actions">
+    <app-theme-toggle />
+
+    @if (currentUser(); as user) {
+      <div class="user-chip" aria-label="Текущий пользователь">
+        <span class="user-chip__avatar" aria-hidden="true">{{ userInitial() }}</span>
+        <div class="user-chip__meta">
+          <span class="user-chip__name">ID {{ user.id }}</span>
+          <span [class]="roleChipClass()">{{ roleLabel() }}</span>
+        </div>
+      </div>
+    }
+  </div>
+</header>

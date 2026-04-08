@@ -1,57 +1,79 @@
-@if (loading()) {
-  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-}
+<div class="page-stack">
+  <header class="page-header">
+    <div class="page-header__title">
+      <h1>Группы</h1>
+      <p class="page-header__subtitle">
+        Учебные группы, их старосты и состав студентов.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn-brand" (click)="openCreateDialog()">
+        <i class="ph ph-plus" aria-hidden="true"></i>
+        Создать группу
+      </button>
+    </div>
+  </header>
 
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-xl font-semibold">Группы</h1>
-  <button mat-flat-button color="primary" (click)="openCreateDialog()">Создать группу</button>
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  @if (error()) {
+    <div class="page-error" role="alert">
+      <i class="ph ph-warning-circle" aria-hidden="true"></i>
+      {{ error() }}
+    </div>
+  }
+
+  @if (groups().length === 0 && !loading()) {
+    <div class="page-card">
+      <div class="page-empty">
+        <div class="page-empty__icon" aria-hidden="true">
+          <i class="ph-duotone ph-users-three"></i>
+        </div>
+        <h3 class="page-empty__title">Групп нет</h3>
+        <p class="page-empty__text">Создайте первую учебную группу через кнопку выше.</p>
+      </div>
+    </div>
+  } @else {
+    <div class="page-card page-card--flush">
+      <mat-table [dataSource]="groups()">
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
+          <mat-cell *matCellDef="let group">{{ group.name }} ({{ group.code }})</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="headman">
+          <mat-header-cell *matHeaderCellDef>Староста</mat-header-cell>
+          <mat-cell *matCellDef="let group">{{ groupHeadman(group.id)?.displayName ?? 'Не назначен' }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="studentCount">
+          <mat-header-cell *matHeaderCellDef>Студентов</mat-header-cell>
+          <mat-cell *matCellDef="let group">{{ groupStudentCount(group.id) }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let group">
+            <button mat-icon-button matTooltip="Редактировать" aria-label="Редактировать" (click)="openEditDialog(group)">
+              <i class="ph ph-pencil-simple" aria-hidden="true"></i>
+            </button>
+            @if (groupHeadman(group.id)) {
+              <button mat-icon-button matTooltip="Снять старосту" aria-label="Снять старосту" (click)="revokeHeadman(group)">
+                <i class="ph ph-crown-cross" aria-hidden="true"></i>
+              </button>
+            } @else {
+              <button mat-icon-button matTooltip="Назначить старосту" aria-label="Назначить старосту" (click)="assignHeadman(group)">
+                <i class="ph ph-crown" aria-hidden="true"></i>
+              </button>
+            }
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+    </div>
+  }
 </div>
-
-@if (error()) {
-  <p class="text-red-500 mb-4">{{ error() }}</p>
-}
-
-@if (groups().length === 0 && !loading()) {
-  <div class="text-center py-12">
-    <p class="text-lg font-semibold">Групп нет</p>
-    <p class="text-sm opacity-60">Создайте первую группу.</p>
-  </div>
-} @else {
-  <mat-table [dataSource]="groups()">
-    <ng-container matColumnDef="name">
-      <mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
-      <mat-cell *matCellDef="let group">{{ group.name }} ({{ group.code }})</mat-cell>
-    </ng-container>
-
-    <ng-container matColumnDef="headman">
-      <mat-header-cell *matHeaderCellDef>Староста</mat-header-cell>
-      <mat-cell *matCellDef="let group">{{ groupHeadman(group.id)?.displayName ?? 'Не назначен' }}</mat-cell>
-    </ng-container>
-
-    <ng-container matColumnDef="studentCount">
-      <mat-header-cell *matHeaderCellDef>Студентов</mat-header-cell>
-      <mat-cell *matCellDef="let group">{{ groupStudentCount(group.id) }}</mat-cell>
-    </ng-container>
-
-    <ng-container matColumnDef="actions">
-      <mat-header-cell *matHeaderCellDef></mat-header-cell>
-      <mat-cell *matCellDef="let group">
-        <button mat-icon-button matTooltip="Редактировать" (click)="openEditDialog(group)">
-          <i class="ph ph-pencil-simple"></i>
-        </button>
-        @if (groupHeadman(group.id)) {
-          <button mat-icon-button matTooltip="Снять старосту" (click)="revokeHeadman(group)">
-            <i class="ph ph-crown-cross"></i>
-          </button>
-        } @else {
-          <button mat-icon-button matTooltip="Назначить старосту" (click)="assignHeadman(group)">
-            <i class="ph ph-crown"></i>
-          </button>
-        }
-      </mat-cell>
-    </ng-container>
-
-    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-  </mat-table>
-}

@@ -1,51 +1,72 @@
-<div class="p-6">
-  <h1 class="text-[20px] font-semibold leading-[1.2] mb-6 text-[var(--mat-sys-on-surface)]">
-    Статистика посещаемости
-  </h1>
+<div class="page-stack">
+  <header class="page-header">
+    <div class="page-header__title">
+      <h1>Статистика посещаемости</h1>
+      <p class="page-header__subtitle">
+        Процент присутствия по предметам и общий показатель группы.
+      </p>
+    </div>
+  </header>
 
   <!-- Filter row -->
-  <div class="flex flex-wrap items-center gap-4 mb-6 p-4 rounded-lg bg-[var(--mat-sys-surface-container)]">
-    <mat-form-field class="w-48">
-      <mat-label>Группа</mat-label>
-      <mat-select (selectionChange)="onGroupChange($event.value)">
-        @for (g of groups(); track g.id) {
-          <mat-option [value]="g.id">{{ g.name }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+  <div class="page-card">
+    <div class="page-filters">
+      <mat-form-field class="w-48">
+        <mat-label>Группа</mat-label>
+        <mat-select (selectionChange)="onGroupChange($event.value)">
+          @for (g of groups(); track g.id) {
+            <mat-option [value]="g.id">{{ g.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
   </div>
 
-  <!-- Loading -->
   @if (loading()) {
-    <mat-progress-bar mode="indeterminate" class="mb-4" />
-    <p class="text-sm text-[var(--mat-sys-on-surface)]/60">Загрузка статистики...</p>
+    <mat-progress-bar mode="indeterminate" />
   }
 
-  <!-- Error -->
   @if (error()) {
-    <p class="text-sm text-[var(--mat-sys-error)]">{{ error() }}</p>
-  }
-
-  <!-- Empty state -->
-  @if (!loading() && !error() && chartDataMap().size === 0 && selectedGroupId()) {
-    <div class="text-center py-16">
-      <h2 class="text-lg font-semibold text-[var(--mat-sys-on-surface)]">Нет данных</h2>
-      <p class="text-sm text-[var(--mat-sys-on-surface)]/60 mt-2">
-        Для выбранной группы и предмета нет данных о посещаемости.
-      </p>
+    <div class="page-error" role="alert">
+      <i class="ph ph-warning-circle" aria-hidden="true"></i>
+      {{ error() }}
     </div>
   }
 
-  <!-- Overall stat card -->
+  @if (!loading() && !error() && chartDataMap().size === 0 && selectedGroupId()) {
+    <div class="page-card">
+      <div class="page-empty">
+        <div class="page-empty__icon" aria-hidden="true">
+          <i class="ph-duotone ph-chart-line"></i>
+        </div>
+        <h3 class="page-empty__title">Нет данных</h3>
+        <p class="page-empty__text">
+          Для выбранной группы ещё нет данных о посещаемости.
+        </p>
+      </div>
+    </div>
+  }
+
+  @if (!selectedGroupId() && !loading() && !error()) {
+    <div class="page-card">
+      <div class="page-empty">
+        <div class="page-empty__icon" aria-hidden="true">
+          <i class="ph-duotone ph-funnel"></i>
+        </div>
+        <h3 class="page-empty__title">Выберите группу</h3>
+        <p class="page-empty__text">
+          Чтобы увидеть статистику, выберите группу в фильтре выше.
+        </p>
+      </div>
+    </div>
+  }
+
   @if (chartDataMap().size > 0) {
     <app-overall-stat-card
       [totalLessons]="overallStats().totalLessons"
       [attendanceRate]="overallStats().attendanceRate"
-      class="block mb-6" />
-  }
+      class="block" />
 
-  <!-- Chart grid -->
-  @if (chartDataMap().size > 0) {
     <div class="grid grid-cols-1 lg:grid-cols-[repeat(auto-fill,minmax(480px,1fr))] gap-6">
       @for (entry of chartEntries(); track entry.name) {
         <app-subject-chart

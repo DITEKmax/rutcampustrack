@@ -1,0 +1,74 @@
+<section class="dashboard">
+  <!-- Hero -->
+  <header class="dashboard__hero">
+    <div class="dashboard__greeting">
+      <p class="dashboard__eyebrow">
+        <span class="dashboard__pulse" aria-hidden="true"></span>
+        Преподаватель · read-only
+      </p>
+      <h2 class="dashboard__title">{{ greeting() }}, коллега</h2>
+      <p class="dashboard__subtitle">{{ dateLabel() }}</p>
+    </div>
+
+    <div class="dashboard__clock" aria-hidden="true">
+      <span class="dashboard__clock-value">{{ timeLabel() }}</span>
+      <span class="dashboard__clock-label">по Москве</span>
+    </div>
+  </header>
+
+  <!-- Quick access cards -->
+  <div class="dashboard__section">
+    <div class="dashboard__section-head">
+      <h3 class="dashboard__section-title">Быстрый доступ</h3>
+      <p class="dashboard__section-sub">Журнал и статистика по вашим группам</p>
+    </div>
+
+    <div class="dashboard__actions">
+      <a routerLink="/teacher/journal" class="access-card" data-accent="primary">
+        <div class="access-card__icon" aria-hidden="true">
+          <i class="ph-duotone ph-book-open"></i>
+        </div>
+        <h4 class="access-card__title">Журнал посещаемости</h4>
+        <p class="access-card__text">
+          Посмотреть отметки по группам и предметам за выбранный период.
+        </p>
+        <span class="access-card__cta">
+          Открыть журнал
+          <i class="ph ph-arrow-right" aria-hidden="true"></i>
+        </span>
+      </a>
+
+      <a routerLink="/teacher/stats" class="access-card" data-accent="secondary">
+        <div class="access-card__icon" aria-hidden="true">
+          <i class="ph-duotone ph-chart-line-up"></i>
+        </div>
+        <h4 class="access-card__title">Статистика</h4>
+        <p class="access-card__text">
+          Процент посещаемости по предметам и группам с визуализацией.
+        </p>
+        <span class="access-card__cta">
+          Посмотреть статистику
+          <i class="ph ph-arrow-right" aria-hidden="true"></i>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Info panel -->
+  <aside class="dashboard__info">
+    <div class="info-panel">
+      <div class="info-panel__icon" aria-hidden="true">
+        <i class="ph-duotone ph-info"></i>
+      </div>
+      <div class="info-panel__body">
+        <h4 class="info-panel__title">Как работает журнал</h4>
+        <p class="info-panel__text">
+          Студенты отмечаются самостоятельно через Telegram в окне с 5 минут
+          до пары до 5 минут после. Неотметившиеся получают статус «н»
+          автоматически при закрытии пары. Уважительные причины (у, сп)
+          выставляет староста.
+        </p>
+      </div>
+    </div>
+  </aside>
+</section>

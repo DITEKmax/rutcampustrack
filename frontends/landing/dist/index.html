@@ -1,252 +1,1488 @@
 <!DOCTYPE html>
-<html lang="ru" class="scroll-smooth">
+<html lang="ru" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RutCampusTrack — Система учёта посещаемости РУТ МИИТ</title>
-  <meta name="description" content="Автоматизированная геоотметка, расписание и статистика посещаемости для студентов и преподавателей РУТ МИИТ.">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0E17" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#F8FAFB" media="(prefers-color-scheme: light)" />
 
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>RutCampusTrack — Учёт посещаемости РУТ МИИТ</title>
+  <meta name="description" content="Геоотметка за 10 секунд, расписание, статистика и уведомления в Telegram. Транспортная сеть вашего учебного маршрута." />
+
+  <!-- OpenGraph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="RutCampusTrack — Учёт посещаемости РУТ МИИТ" />
+  <meta property="og:description" content="Геоотметка за 10 секунд, расписание, статистика и уведомления в Telegram." />
+  <meta property="og:url" content="https://ruttrack.site/landing/" />
+  <meta property="og:locale" content="ru_RU" />
+
+  <!-- No render until theme is decided (prevents flash) -->
   <script>
-    tailwind.config = {
-      darkMode: 'media',
-      theme: {
-        extend: {
-          colors: {
-            brand: { DEFAULT: '#2563EB', dark: '#1D4ED8', light: '#3B82F6' },
-            accent: '#10B981'
-          }
-        }
+    (function () {
+      try {
+        var stored = localStorage.getItem('ruttrack.theme');
+        var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
       }
-    }
+    })();
   </script>
 
+  <!-- Brand fonts: Fontshare (Clash Display, General Sans) + Google (DM Sans, JetBrains Mono) -->
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=general-sans@500,600&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+
   <!-- Phosphor Icons -->
-  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+
+  <!-- Inline favicon: stylized R with a route marker dot (brand green) -->
+  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230A0E17"/><path d="M18 14h16a12 12 0 0 1 6.5 22.1L48 50h-9l-7-12h-6v12h-8V14zm8 8v8h8a4 4 0 0 0 0-8h-8z" fill="%2300E5A0"/><circle cx="50" cy="16" r="4" fill="%2300E5A0"/></svg>' />
 
   <style>
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
+    /* ==========================================================================
+     * Transit Grid — design tokens (mirrored from frontends/shared/styles/tokens.css)
+     * Kept inline because the landing has no build pipeline.
+     * ========================================================================== */
+
+    :root,
+    [data-theme="dark"] {
+      --bg-primary: #0A0E17;
+      --bg-secondary: #111827;
+      --bg-elevated: #1A2236;
+      --bg-surface: #0F1520;
+
+      --text-primary: #F0F2F5;
+      --text-secondary: #8B95A8;
+      --text-muted: #4A5568;
+
+      --accent-primary: #00E5A0;
+      --accent-primary-contrast: #0A0E17;
+      --accent-secondary: #3B82F6;
+      --accent-warning: #F59E0B;
+      --accent-danger: #EF4444;
+      --accent-info: #8B5CF6;
+
+      --gradient-brand: linear-gradient(135deg, #00E5A0 0%, #3B82F6 100%);
+      --gradient-glow: radial-gradient(circle at 50% 50%, rgba(0, 229, 160, 0.18) 0%, transparent 70%);
+      --gradient-hero: radial-gradient(ellipse at 20% 10%, rgba(0, 229, 160, 0.12), transparent 55%),
+                       radial-gradient(ellipse at 85% 30%, rgba(59, 130, 246, 0.14), transparent 55%),
+                       radial-gradient(ellipse at 60% 90%, rgba(139, 92, 246, 0.10), transparent 60%);
+
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.12);
+      --border-accent: rgba(0, 229, 160, 0.3);
+
+      --glow-primary: 0 0 28px rgba(0, 229, 160, 0.32);
+      --glow-blue: 0 0 28px rgba(59, 130, 246, 0.32);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+      --grid-line: rgba(139, 149, 168, 0.08);
+      --grid-line-strong: rgba(139, 149, 168, 0.14);
+
+      color-scheme: dark;
     }
-    .animate-bounce { animation: bounce 2s infinite; }
+
+    [data-theme="light"] {
+      --bg-primary: #F8FAFB;
+      --bg-secondary: #FFFFFF;
+      --bg-elevated: #FFFFFF;
+      --bg-surface: #EEF1F5;
+
+      --text-primary: #0A0E17;
+      --text-secondary: #4A5568;
+      --text-muted: #8B95A8;
+
+      --accent-primary: #00B87A;
+      --accent-primary-contrast: #FFFFFF;
+      --accent-secondary: #2563EB;
+      --accent-warning: #D97706;
+      --accent-danger: #DC2626;
+      --accent-info: #7C3AED;
+
+      --gradient-brand: linear-gradient(135deg, #00B87A 0%, #2563EB 100%);
+      --gradient-glow: radial-gradient(circle at 50% 50%, rgba(0, 184, 122, 0.10) 0%, transparent 70%);
+      --gradient-hero: radial-gradient(ellipse at 20% 10%, rgba(0, 184, 122, 0.10), transparent 55%),
+                       radial-gradient(ellipse at 85% 30%, rgba(37, 99, 235, 0.10), transparent 55%),
+                       radial-gradient(ellipse at 60% 90%, rgba(124, 58, 237, 0.08), transparent 60%);
+
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --border-default: rgba(0, 0, 0, 0.14);
+      --border-accent: rgba(0, 184, 122, 0.3);
+
+      --glow-primary: 0 0 20px rgba(0, 184, 122, 0.18);
+      --glow-blue: 0 0 20px rgba(37, 99, 235, 0.18);
+      --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.14);
+
+      --grid-line: rgba(10, 14, 23, 0.06);
+      --grid-line-strong: rgba(10, 14, 23, 0.12);
+
+      color-scheme: light;
+    }
+
+    /* ===== Theme-independent tokens ===== */
+    :root {
+      --font-display: "Clash Display", "General Sans", system-ui, -apple-system, sans-serif;
+      --font-heading: "General Sans", system-ui, -apple-system, sans-serif;
+      --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --radius-full: 9999px;
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-8: 64px;
+      --space-9: 96px;
+
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --duration-fast: 150ms;
+      --duration-base: 200ms;
+      --duration-slow: 300ms;
+
+      --header-height: 72px;
+      --landing-max-width: 1200px;
+    }
+
+    /* ==========================================================================
+     * Reset & base
+     * ========================================================================== */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      line-height: 1.5;
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      transition: background-color var(--duration-slow) var(--ease-out),
+                  color var(--duration-slow) var(--ease-out);
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; }
+    :focus-visible {
+      outline: 2px solid var(--accent-primary);
+      outline-offset: 3px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ==========================================================================
+     * Layout helpers
+     * ========================================================================== */
+    .container {
+      width: 100%;
+      max-width: var(--landing-max-width);
+      margin: 0 auto;
+      padding: 0 var(--space-5);
+    }
+    @media (min-width: 768px) {
+      .container { padding: 0 var(--space-6); }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .skip-link {
+      position: absolute; top: -40px; left: var(--space-4);
+      background: var(--accent-primary);
+      color: var(--accent-primary-contrast);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      z-index: 100;
+      transition: top var(--duration-base) var(--ease-out);
+    }
+    .skip-link:focus { top: var(--space-4); }
+
+    /* ==========================================================================
+     * Header
+     * ========================================================================== */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: color-mix(in oklab, var(--bg-primary) 82%, transparent);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background-color var(--duration-slow) var(--ease-out),
+                  border-color var(--duration-slow) var(--ease-out);
+    }
+    .site-header__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: var(--header-height);
+      gap: var(--space-4);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.125rem;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+    .brand__mark {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      background: var(--gradient-brand);
+      display: grid;
+      place-items: center;
+      color: var(--accent-primary-contrast);
+      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      box-shadow: var(--glow-primary);
+      position: relative;
+    }
+    .brand__mark::after {
+      content: "";
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 8px rgba(255,255,255,0.8);
+    }
+    .brand__name { white-space: nowrap; }
+
+    .nav-links {
+      display: none;
+      gap: var(--space-6);
+      align-items: center;
+    }
+    .nav-links a {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      transition: color var(--duration-base) var(--ease-out);
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+    @media (min-width: 768px) {
+      .nav-links { display: inline-flex; }
+    }
+
+    .header-actions { display: inline-flex; align-items: center; gap: var(--space-3); }
+
+    .theme-toggle {
+      width: 42px; height: 42px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-default);
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      display: inline-grid;
+      place-items: center;
+      transition: all var(--duration-base) var(--ease-out);
+    }
+    .theme-toggle:hover {
+      color: var(--accent-primary);
+      border-color: var(--border-accent);
+      box-shadow: var(--glow-primary);
+    }
+    .theme-toggle i { font-size: 20px; }
+    .theme-toggle .theme-toggle__sun { display: none; }
+    .theme-toggle .theme-toggle__moon { display: inline-block; }
+    [data-theme="light"] .theme-toggle .theme-toggle__sun { display: inline-block; }
+    [data-theme="light"] .theme-toggle .theme-toggle__moon { display: none; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: 12px 24px;
+      min-height: 44px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      letter-spacing: -0.005em;
+      transition: transform var(--duration-base) var(--ease-out),
+                  box-shadow var(--duration-base) var(--ease-out),
+                  background-color var(--duration-base) var(--ease-out),
+                  border-color var(--duration-base) var(--ease-out),
+                  color var(--duration-base) var(--ease-out);
+      white-space: nowrap;
+    }
+    .btn--primary {
+      background: var(--accent-primary);
+      color: var(--accent-primary-contrast);
+      box-shadow: var(--glow-primary);
+    }
+    .btn--primary:hover { transform: translateY(-1px) scale(1.02); box-shadow: 0 0 36px rgba(0,229,160,0.5); }
+    .btn--primary:active { transform: scale(0.98); }
+    .btn--secondary {
+      background: transparent;
+      border: 1px solid var(--border-accent);
+      color: var(--accent-primary);
+    }
+    .btn--secondary:hover {
+      background: color-mix(in oklab, var(--accent-primary) 12%, transparent);
+      border-color: var(--accent-primary);
+    }
+    .btn--ghost {
+      background: transparent;
+      color: var(--text-secondary);
+    }
+    .btn--ghost:hover { color: var(--text-primary); }
+    .btn--sm { padding: 8px 16px; min-height: 38px; font-size: 0.875rem; }
+
+    /* ==========================================================================
+     * Hero
+     * ========================================================================== */
+    .hero {
+      position: relative;
+      padding: var(--space-9) 0 var(--space-8);
+      overflow: hidden;
+    }
+    .hero__bg {
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-hero);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero__grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 56px 56px;
+      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%);
+              mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero__routes {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.9;
+    }
+    .hero__inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: var(--space-8);
+      grid-template-columns: 1fr;
+      align-items: center;
+    }
+    @media (min-width: 1024px) {
+      .hero { padding: 120px 0 var(--space-9); }
+      .hero__inner { grid-template-columns: 1.15fr 0.85fr; gap: var(--space-9); }
+    }
+
+    .hero__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      background: color-mix(in oklab, var(--accent-primary) 10%, transparent);
+      border: 1px solid var(--border-accent);
+      color: var(--accent-primary);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-5);
+    }
+    .hero__eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-primary);
+      box-shadow: 0 0 8px var(--accent-primary);
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.35); }
+    }
+
+    .hero__title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(2.5rem, 5.5vw + 0.5rem, 4.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin: 0 0 var(--space-5);
+      color: var(--text-primary);
+    }
+    .hero__title .gradient-text {
+      background: var(--gradient-brand);
+      -webkit-background-clip: text;
+              background-clip: text;
+      color: transparent;
+      display: inline-block;
+    }
+    .hero__title .line { display: block; overflow: hidden; }
+    .hero__title .line > span { display: inline-block; transform: translateY(110%); will-change: transform; }
+
+    .hero__subtitle {
+      font-family: var(--font-sans);
+      font-size: clamp(1rem, 1vw + 0.75rem, 1.25rem);
+      line-height: 1.6;
+      color: var(--text-secondary);
+      max-width: 56ch;
+      margin: 0 0 var(--space-6);
+    }
+    .hero__cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      align-items: center;
+    }
+    .hero__meta {
+      margin-top: var(--space-7);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-6);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-family: var(--font-mono);
+    }
+    .hero__meta span {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+    }
+    .hero__meta strong {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    /* ===== Hero device / map visual ===== */
+    .hero__visual {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+      aspect-ratio: 4 / 5;
+    }
+    .hero__visual::before {
+      content: "";
+      position: absolute;
+      inset: -8%;
+      background: var(--gradient-glow);
+      filter: blur(24px);
+      z-index: 0;
+    }
+    .device {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      border-radius: 36px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.04);
+      overflow: hidden;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .device__notch {
+      width: 80px; height: 5px;
+      background: var(--border-default);
+      border-radius: var(--radius-full);
+      margin: 0 auto var(--space-3);
+    }
+    .device__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4px;
+    }
+    .device__header h4 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .device__badge {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background: color-mix(in oklab, var(--accent-primary) 15%, transparent);
+      color: var(--accent-primary);
+      border: 1px solid var(--border-accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .device__stat {
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      padding: var(--space-4);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .device__stat .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+    }
+    .device__stat .value {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 2.25rem;
+      line-height: 1;
+      color: var(--accent-primary);
+      letter-spacing: -0.02em;
+      grid-column: 1 / -1;
+    }
+    .device__stat .spark {
+      grid-column: 1 / -1;
+      height: 40px;
+    }
+    .device__stat .spark path { stroke: var(--accent-primary); }
+
+    .device__lessons {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      flex: 1;
+    }
+    .device__lesson {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: var(--space-3);
+      align-items: center;
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+    }
+    .device__lesson .time {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .device__lesson .name {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .pill {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      border: 1px solid transparent;
+    }
+    .pill--present { background: color-mix(in oklab, var(--accent-primary) 15%, transparent); color: var(--accent-primary); border-color: var(--border-accent); }
+    .pill--absent { background: color-mix(in oklab, var(--accent-danger) 15%, transparent); color: var(--accent-danger); border-color: color-mix(in oklab, var(--accent-danger) 30%, transparent); }
+    .pill--excused { background: color-mix(in oklab, var(--accent-warning) 15%, transparent); color: var(--accent-warning); border-color: color-mix(in oklab, var(--accent-warning) 30%, transparent); }
+    .pill--now { background: var(--accent-primary); color: var(--accent-primary-contrast); animation: pulse 2s ease-in-out infinite; }
+
+    /* ==========================================================================
+     * Section headers
+     * ========================================================================== */
+    section { position: relative; }
+    .section {
+      padding: var(--space-9) 0;
+    }
+    @media (max-width: 768px) {
+      .section { padding: var(--space-8) 0; }
+    }
+    .section__eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--accent-primary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 0 0 var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      justify-content: center;
+    }
+    .section__eyebrow::before,
+    .section__eyebrow::after {
+      content: "";
+      height: 1px;
+      width: 40px;
+      background: var(--border-accent);
+    }
+    .section__title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.75rem, 3vw + 0.5rem, 2.75rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      text-align: center;
+      color: var(--text-primary);
+      margin: 0 auto var(--space-4);
+      max-width: 20ch;
+    }
+    .section__subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 1.0625rem;
+      line-height: 1.6;
+      max-width: 60ch;
+      margin: 0 auto var(--space-8);
+    }
+
+    /* ==========================================================================
+     * Features grid
+     * ========================================================================== */
+    .features {
+      background:
+        radial-gradient(ellipse at 50% 0%, color-mix(in oklab, var(--accent-primary) 6%, transparent), transparent 60%),
+        var(--bg-primary);
+    }
+    .features__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+    @media (min-width: 640px) {
+      .features__grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (min-width: 1024px) {
+      .features__grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .feature-card {
+      position: relative;
+      padding: var(--space-6);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      transition: transform var(--duration-slow) var(--ease-out),
+                  border-color var(--duration-slow) var(--ease-out),
+                  box-shadow var(--duration-slow) var(--ease-out);
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .feature-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), color-mix(in oklab, var(--accent-primary) 14%, transparent), transparent 60%);
+      opacity: 0;
+      transition: opacity var(--duration-slow) var(--ease-out);
+      z-index: -1;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-accent);
+      box-shadow: var(--shadow-lg);
+    }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-card__icon {
+      width: 52px; height: 52px;
+      border-radius: var(--radius-md);
+      background: color-mix(in oklab, var(--accent-primary) 12%, transparent);
+      border: 1px solid var(--border-accent);
+      display: grid;
+      place-items: center;
+      color: var(--accent-primary);
+      margin-bottom: var(--space-4);
+    }
+    .feature-card__icon i { font-size: 26px; }
+    .feature-card h3 {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-3);
+      letter-spacing: -0.01em;
+    }
+    .feature-card p {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ==========================================================================
+     * How it works — transit line
+     * ========================================================================== */
+    .how-it-works {
+      background: var(--bg-primary);
+      position: relative;
+    }
+    .timeline {
+      position: relative;
+      display: grid;
+      gap: var(--space-6);
+      grid-template-columns: 1fr;
+      counter-reset: step;
+    }
+    @media (min-width: 1024px) {
+      .timeline { grid-template-columns: repeat(3, 1fr); gap: var(--space-5); }
+      .timeline::before {
+        content: "";
+        position: absolute;
+        top: 34px;
+        left: 16.66%;
+        right: 16.66%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--border-accent) 10%, var(--border-accent) 90%, transparent);
+      }
+    }
+    .step {
+      position: relative;
+      padding: var(--space-6);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      text-align: center;
+      counter-increment: step;
+    }
+    .step__marker {
+      width: 68px; height: 68px;
+      margin: 0 auto var(--space-4);
+      border-radius: 50%;
+      background: var(--bg-primary);
+      border: 2px solid var(--accent-primary);
+      display: grid;
+      place-items: center;
+      position: relative;
+      box-shadow: var(--glow-primary);
+    }
+    .step__marker::before {
+      content: counter(step);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--accent-primary);
+    }
+    .step__marker::after {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px dashed var(--border-accent);
+      animation: spin 12s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .step__marker::after { animation: none; }
+    }
+    .step h3 {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-3);
+    }
+    .step p {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ==========================================================================
+     * Roles
+     * ========================================================================== */
+    .roles__grid {
+      display: grid;
+      gap: var(--space-5);
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 640px) { .roles__grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 1024px) { .roles__grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .role-card {
+      position: relative;
+      padding: var(--space-6);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      transition: all var(--duration-slow) var(--ease-out);
+      overflow: hidden;
+    }
+    .role-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-3px);
+    }
+    .role-card__tint {
+      position: absolute;
+      top: 0; right: 0;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      filter: blur(48px);
+      opacity: 0.55;
+      pointer-events: none;
+      transform: translate(30%, -30%);
+    }
+    .role-card[data-role="student"] .role-card__tint { background: var(--accent-primary); }
+    .role-card[data-role="headman"] .role-card__tint { background: var(--accent-info); }
+    .role-card[data-role="teacher"] .role-card__tint { background: var(--accent-warning); }
+    .role-card[data-role="admin"] .role-card__tint { background: var(--accent-secondary); }
+
+    .role-card__icon {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-md);
+      display: grid;
+      place-items: center;
+      margin-bottom: var(--space-4);
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface);
+    }
+    .role-card[data-role="student"] .role-card__icon { color: var(--accent-primary); border-color: var(--border-accent); }
+    .role-card[data-role="headman"] .role-card__icon { color: var(--accent-info); border-color: color-mix(in oklab, var(--accent-info) 30%, transparent); }
+    .role-card[data-role="teacher"] .role-card__icon { color: var(--accent-warning); border-color: color-mix(in oklab, var(--accent-warning) 30%, transparent); }
+    .role-card[data-role="admin"] .role-card__icon { color: var(--accent-secondary); border-color: color-mix(in oklab, var(--accent-secondary) 30%, transparent); }
+    .role-card__icon i { font-size: 22px; }
+    .role-card h3 {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1.125rem;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-3);
+    }
+    .role-card ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .role-card li {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      line-height: 1.5;
+    }
+    .role-card li::before {
+      content: "";
+      flex-shrink: 0;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      margin-top: 8px;
+    }
+    .role-card[data-role="headman"] li::before { background: var(--accent-info); }
+    .role-card[data-role="teacher"] li::before { background: var(--accent-warning); }
+    .role-card[data-role="admin"] li::before { background: var(--accent-secondary); }
+
+    /* ==========================================================================
+     * CTA
+     * ========================================================================== */
+    .cta {
+      padding: var(--space-9) 0;
+    }
+    .cta__card {
+      position: relative;
+      padding: var(--space-9) var(--space-6);
+      border-radius: var(--radius-xl);
+      background:
+        radial-gradient(ellipse at 30% 20%, color-mix(in oklab, var(--accent-primary) 18%, transparent), transparent 60%),
+        radial-gradient(ellipse at 70% 80%, color-mix(in oklab, var(--accent-secondary) 20%, transparent), transparent 60%),
+        var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      text-align: center;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .cta__card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-line-strong) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line-strong) 1px, transparent 1px);
+      background-size: 48px 48px;
+      -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, #000 30%, transparent 75%);
+              mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, #000 30%, transparent 75%);
+      z-index: -1;
+    }
+    .cta h2 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.75rem, 3vw + 0.5rem, 2.75rem);
+      line-height: 1.1;
+      margin: 0 auto var(--space-4);
+      max-width: 20ch;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    .cta p {
+      color: var(--text-secondary);
+      font-size: 1.0625rem;
+      max-width: 56ch;
+      margin: 0 auto var(--space-6);
+    }
+    .cta__actions { display: inline-flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; }
+
+    /* ==========================================================================
+     * Footer
+     * ========================================================================== */
+    .site-footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: var(--space-7) 0;
+      background: var(--bg-primary);
+    }
+    .site-footer__inner {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      align-items: center;
+      text-align: center;
+    }
+    @media (min-width: 768px) {
+      .site-footer__inner { flex-direction: row; justify-content: space-between; text-align: left; }
+    }
+    .site-footer__links { display: flex; gap: var(--space-5); flex-wrap: wrap; justify-content: center; }
+    .site-footer__links a {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      transition: color var(--duration-base) var(--ease-out);
+    }
+    .site-footer__links a:hover { color: var(--accent-primary); }
+    .site-footer__copy {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ==========================================================================
+     * GSAP initial states (no-flash for animated elements)
+     * ========================================================================== */
+    .js .reveal { opacity: 0; transform: translateY(24px); }
+    .js .hero__eyebrow,
+    .js .hero__subtitle,
+    .js .hero__cta,
+    .js .hero__meta,
+    .js .hero__visual { opacity: 0; }
+
+    /* Noscript fallback */
+    .no-js .hero__title .line > span { transform: none; }
   </style>
 </head>
-<body class="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+<body class="no-js">
+  <a href="#main" class="skip-link">Перейти к содержимому</a>
 
-  <!-- Skip-to-content -->
-  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:bg-white focus:px-4 focus:py-2 focus:rounded">Перейти к содержимому</a>
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a href="#hero" class="brand" aria-label="RutCampusTrack — на главную">
+        <span class="brand__mark" aria-hidden="true">R</span>
+        <span class="brand__name">RutCampusTrack</span>
+      </a>
 
-  <!-- Header / Nav -->
-  <header class="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-100 dark:border-gray-800">
-    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <span class="font-bold text-xl text-blue-600">RutCampusTrack</span>
+      <nav class="nav-links" aria-label="Главное меню">
+        <a href="#features">Возможности</a>
+        <a href="#how-it-works">Как это работает</a>
+        <a href="#roles">Роли</a>
+      </nav>
 
-      <!-- Desktop nav links -->
-      <div class="hidden sm:flex items-center gap-6">
-        <a href="#features" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Возможности</a>
-        <a href="#roles" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Роли</a>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Переключить тему">
+          <i class="ph ph-moon theme-toggle__moon" aria-hidden="true"></i>
+          <i class="ph ph-sun theme-toggle__sun" aria-hidden="true"></i>
+        </button>
+        <a href="https://t.me/" class="btn btn--primary btn--sm" rel="noopener">
+          <i class="ph-duotone ph-telegram-logo" aria-hidden="true"></i>
+          Открыть
+        </a>
       </div>
-
-      <!-- Mobile hamburger (CSS-only) -->
-      <input type="checkbox" id="menu-toggle" class="peer hidden">
-      <!-- Open menu label (visible by default, hidden when checked) -->
-      <label for="menu-toggle" aria-label="Открыть меню" class="sm:hidden cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center peer-checked:hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
-        <div class="space-y-1.5">
-          <span class="block w-6 h-0.5 bg-gray-900 dark:bg-gray-100"></span>
-          <span class="block w-6 h-0.5 bg-gray-900 dark:bg-gray-100"></span>
-          <span class="block w-6 h-0.5 bg-gray-900 dark:bg-gray-100"></span>
-        </div>
-      </label>
-      <!-- Close menu label (hidden by default, visible when checked) -->
-      <label for="menu-toggle" aria-label="Закрыть меню" class="sm:hidden cursor-pointer min-h-[44px] min-w-[44px] hidden items-center justify-center peer-checked:flex focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
-        <svg class="w-6 h-6 text-gray-900 dark:text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </label>
-
-      <!-- Mobile dropdown -->
-      <div class="hidden peer-checked:flex flex-col absolute top-16 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sm:hidden p-4 gap-4">
-        <a href="#features" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Возможности</a>
-        <a href="#roles" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Роли</a>
-      </div>
-    </nav>
+    </div>
   </header>
 
   <main id="main">
+    <!-- ============ HERO ============ -->
+    <section id="hero" class="hero">
+      <div class="hero__bg" aria-hidden="true"></div>
+      <div class="hero__grid" aria-hidden="true"></div>
+      <!-- Transit routes SVG background -->
+      <svg class="hero__routes" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="routeGradGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="var(--accent-primary)" stop-opacity="0"/>
+            <stop offset="50%" stop-color="var(--accent-primary)" stop-opacity="0.7"/>
+            <stop offset="100%" stop-color="var(--accent-primary)" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="routeGradBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="var(--accent-secondary)" stop-opacity="0"/>
+            <stop offset="50%" stop-color="var(--accent-secondary)" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="var(--accent-secondary)" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="routeGradViolet" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="var(--accent-info)" stop-opacity="0"/>
+            <stop offset="50%" stop-color="var(--accent-info)" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="var(--accent-info)" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Subway-style routes -->
+        <path class="route route--green" d="M-50 240 Q 200 240 320 240 Q 420 240 460 300 Q 500 360 600 360 L 880 360 Q 960 360 1000 420 L 1500 420"
+              fill="none" stroke="url(#routeGradGreen)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="route route--blue" d="M-50 600 L 260 600 Q 340 600 380 540 Q 420 480 520 480 L 780 480 Q 860 480 900 540 Q 940 600 1040 600 L 1500 600"
+              fill="none" stroke="url(#routeGradBlue)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="route route--violet" d="M-50 120 L 140 120 Q 220 120 260 180 L 380 360 Q 420 420 500 420 L 680 420 Q 760 420 800 480 L 920 660 Q 960 720 1040 720 L 1500 720"
+              fill="none" stroke="url(#routeGradViolet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 8"/>
 
-    <!-- Hero Section -->
-    <section id="hero" class="min-h-screen flex items-center">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:flex lg:items-center lg:gap-12">
-        <!-- Left column (text) -->
-        <div class="flex-1">
-          <h1 class="hero-headline text-5xl lg:text-6xl font-semibold tracking-tight text-gray-900 dark:text-white">Учёт посещаемости<br class="hidden sm:block"> для РУТ МИИТ</h1>
-          <p class="hero-sub mt-6 text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">Геоотметка за 10 секунд, расписание, статистика и уведомления в Telegram — всё в одном месте. Для студентов, старост и преподавателей.</p>
-          <div class="hero-cta mt-8 flex flex-col sm:flex-row items-start gap-4">
-            <a href="#" class="inline-flex items-center justify-center px-6 py-3 min-h-[44px] bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Открыть в Telegram</a>
-            <a href="#features" aria-label="Прокрутить к возможностям" class="mt-4 sm:mt-0 animate-bounce text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"><i class="ph-duotone ph-arrow-down" style="font-size:32px" aria-hidden="true"></i></a>
+        <!-- Station dots -->
+        <g class="stations">
+          <circle cx="320" cy="240" r="5" fill="var(--accent-primary)"/>
+          <circle cx="600" cy="360" r="5" fill="var(--accent-primary)"/>
+          <circle cx="880" cy="360" r="5" fill="var(--accent-primary)"/>
+          <circle cx="260" cy="600" r="5" fill="var(--accent-secondary)"/>
+          <circle cx="520" cy="480" r="5" fill="var(--accent-secondary)"/>
+          <circle cx="780" cy="480" r="5" fill="var(--accent-secondary)"/>
+          <circle cx="380" cy="360" r="4" fill="var(--accent-info)"/>
+          <circle cx="680" cy="420" r="4" fill="var(--accent-info)"/>
+        </g>
+
+        <!-- Moving pulse dot on green line -->
+        <circle class="pulse-dot pulse-dot--green" cx="0" cy="0" r="6" fill="var(--accent-primary)">
+          <animateMotion dur="9s" repeatCount="indefinite" rotate="auto"
+            path="M-50 240 Q 200 240 320 240 Q 420 240 460 300 Q 500 360 600 360 L 880 360 Q 960 360 1000 420 L 1500 420"/>
+        </circle>
+        <circle class="pulse-dot pulse-dot--blue" cx="0" cy="0" r="5" fill="var(--accent-secondary)" opacity="0.85">
+          <animateMotion dur="12s" begin="1s" repeatCount="indefinite" rotate="auto"
+            path="M-50 600 L 260 600 Q 340 600 380 540 Q 420 480 520 480 L 780 480 Q 860 480 900 540 Q 940 600 1040 600 L 1500 600"/>
+        </circle>
+      </svg>
+
+      <div class="container hero__inner">
+        <div>
+          <span class="hero__eyebrow reveal">
+            <span class="dot"></span>
+            Транспортная сеть вашего обучения
+          </span>
+          <h1 class="hero__title">
+            <span class="line"><span>Учёт посещаемости,</span></span>
+            <span class="line"><span>который движется</span></span>
+            <span class="line"><span class="gradient-text">вместе с&nbsp;вами</span></span>
+          </h1>
+          <p class="hero__subtitle reveal">
+            Геоотметка за 10 секунд, расписание, статистика и уведомления в&nbsp;Telegram — всё в&nbsp;одном месте. Для студентов, старост и&nbsp;преподавателей РУТ&nbsp;МИИТ.
+          </p>
+          <div class="hero__cta reveal">
+            <a href="https://t.me/" class="btn btn--primary" rel="noopener">
+              <i class="ph-duotone ph-telegram-logo" aria-hidden="true"></i>
+              Открыть в Telegram
+            </a>
+            <a href="#how-it-works" class="btn btn--secondary">
+              Как это работает
+              <i class="ph ph-arrow-right" aria-hidden="true"></i>
+            </a>
+          </div>
+          <div class="hero__meta reveal">
+            <span><strong data-count="10">10</strong>&nbsp;сек на&nbsp;отметку</span>
+            <span><strong data-count="5">5</strong>&nbsp;ролей в&nbsp;системе</span>
+            <span><strong data-count="24">24</strong>/7&nbsp;доступность</span>
           </div>
         </div>
-        <!-- Right column (device mockup) -->
-        <div class="hidden lg:block flex-shrink-0">
-          <div class="rounded-3xl border-8 border-gray-200 dark:border-gray-700 shadow-2xl w-[280px] h-[560px] bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
-            <span class="text-gray-400 text-sm"><!-- TODO: replace with real screenshot --></span>
+
+        <!-- Device mockup -->
+        <div class="hero__visual reveal" aria-hidden="true">
+          <div class="device">
+            <div class="device__notch"></div>
+            <div class="device__header">
+              <h4>Сегодня</h4>
+              <span class="device__badge">ЧТ · 8 АПР</span>
+            </div>
+            <div class="device__stat">
+              <span class="label">Посещаемость за семестр</span>
+              <span class="value" data-count="94">94<span style="font-size:60%;">%</span></span>
+              <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+                <path d="M0,28 L20,24 L40,26 L60,18 L80,22 L100,12 L120,16 L140,8 L160,12 L180,6 L200,10"
+                      fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="device__lessons">
+              <div class="device__lesson">
+                <span class="time">09:00</span>
+                <span class="name">Математический анализ</span>
+                <span class="pill pill--present">был</span>
+              </div>
+              <div class="device__lesson">
+                <span class="time">10:40</span>
+                <span class="name">Базы данных</span>
+                <span class="pill pill--now">сейчас</span>
+              </div>
+              <div class="device__lesson">
+                <span class="time">12:20</span>
+                <span class="name">Иностранный язык</span>
+                <span class="pill pill--excused">у</span>
+              </div>
+              <div class="device__lesson">
+                <span class="time">14:00</span>
+                <span class="name">История транспорта</span>
+                <span class="pill pill--absent">н</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="py-16 lg:py-24 bg-gray-50 dark:bg-gray-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-2xl sm:text-3xl font-semibold text-center text-gray-900 dark:text-white">Возможности системы</h2>
-        <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- ============ FEATURES ============ -->
+    <section id="features" class="section features">
+      <div class="container">
+        <p class="section__eyebrow">Возможности</p>
+        <h2 class="section__title">Всё, что нужно для контроля учебного&nbsp;маршрута</h2>
+        <p class="section__subtitle">Единая система для студентов, старост, преподавателей и администрации — интегрирована с Telegram и работает в браузере.</p>
 
-          <!-- Feature 1: Геоотметка -->
-          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
-            <i class="ph-duotone ph-map-pin text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Геоотметка</h3>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Отметьтесь на паре одним нажатием — GPS подтверждает присутствие на кампусе.</p>
-          </div>
+        <div class="features__grid">
+          <article class="feature-card reveal">
+            <div class="feature-card__icon"><i class="ph-duotone ph-map-pin" aria-hidden="true"></i></div>
+            <h3>Геоотметка за 10&nbsp;секунд</h3>
+            <p>GPS подтверждает присутствие на кампусе. Окно отметки — с&nbsp;5 минут до пары до&nbsp;5 минут после.</p>
+          </article>
 
-          <!-- Feature 2: Расписание -->
-          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
-            <i class="ph-duotone ph-calendar text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Расписание</h3>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Расписание на день и неделю с автоматическим обновлением при изменениях.</p>
-          </div>
+          <article class="feature-card reveal">
+            <div class="feature-card__icon"><i class="ph-duotone ph-calendar-check" aria-hidden="true"></i></div>
+            <h3>Живое расписание</h3>
+            <p>Пары на день и неделю с автоматическим обновлением. Перенесённые и отменённые занятия видны сразу.</p>
+          </article>
 
-          <!-- Feature 3: Статистика посещаемости -->
-          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
-            <i class="ph-duotone ph-chart-bar text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Статистика посещаемости</h3>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Процент посещаемости по каждому предмету с индикатором красной зоны.</p>
-          </div>
+          <article class="feature-card reveal">
+            <div class="feature-card__icon"><i class="ph-duotone ph-chart-line-up" aria-hidden="true"></i></div>
+            <h3>Статистика и&nbsp;красная зона</h3>
+            <p>Процент посещаемости по каждому предмету. Настраиваемый порог красной зоны — от глобального до&nbsp;предмета.</p>
+          </article>
 
-          <!-- Feature 4: Уведомления в Telegram -->
-          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
-            <i class="ph-duotone ph-telegram-logo text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Уведомления в Telegram</h3>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Напоминания об отметке и уведомления прямо в мессенджере.</p>
-          </div>
+          <article class="feature-card reveal">
+            <div class="feature-card__icon"><i class="ph-duotone ph-bell-ringing" aria-hidden="true"></i></div>
+            <h3>Уведомления в&nbsp;Telegram</h3>
+            <p>Три напоминания об отметке: в&nbsp;начале, середине и конце пары. После пары сообщения автоматически удаляются.</p>
+          </article>
 
-          <!-- Feature 5: Трекер ДЗ -->
-          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
-            <i class="ph-duotone ph-books text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Трекер ДЗ</h3>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Список домашних заданий с отметкой о выполнении.</p>
-          </div>
+          <article class="feature-card reveal">
+            <div class="feature-card__icon"><i class="ph-duotone ph-notepad" aria-hidden="true"></i></div>
+            <h3>Трекер домашних&nbsp;заданий</h3>
+            <p>Список ДЗ с отметкой о выполнении. Синхронизация между Telegram Mini App и мобильным PWA.</p>
+          </article>
 
-          <!-- Feature 6: Роль старосты -->
-          <div class="feature-card opacity-0 translate-y-6 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition-shadow duration-200">
-            <i class="ph-duotone ph-crown text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Роль старосты</h3>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Делегирование прав помощнику, журнал группы и настройка порогов.</p>
-          </div>
-
+          <article class="feature-card reveal">
+            <div class="feature-card__icon"><i class="ph-duotone ph-users-three" aria-hidden="true"></i></div>
+            <h3>Excuse-тикеты и&nbsp;помощники</h3>
+            <p>Студент прикладывает файлы — они пересылаются старосте в&nbsp;Telegram. Староста может делегировать права помощнику.</p>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- Roles Section -->
-    <section id="roles" class="py-16 lg:py-24">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-2xl sm:text-3xl font-semibold text-center text-gray-900 dark:text-white">Для всех участников учебного процесса</h2>
-        <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- ============ HOW IT WORKS ============ -->
+    <section id="how-it-works" class="section how-it-works">
+      <div class="container">
+        <p class="section__eyebrow">Как это работает</p>
+        <h2 class="section__title">Три остановки на пути к&nbsp;отметке</h2>
+        <p class="section__subtitle">Открыли Telegram — нажали кнопку — отметились. Система сама проверит время, место и присутствие.</p>
 
-          <!-- Role 1: Студент -->
-          <div class="role-card opacity-0 translate-y-6 rounded-2xl p-6 bg-blue-50 dark:bg-blue-900/20">
-            <i class="ph-duotone ph-student text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Студент</h3>
-            <ul class="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+        <div class="timeline">
+          <div class="step reveal">
+            <div class="step__marker" aria-hidden="true"></div>
+            <h3>Открыть&nbsp;бота</h3>
+            <p>Нажмите на RutCampusTrack в Telegram — система распознает вас по аккаунту и подгрузит расписание.</p>
+          </div>
+          <div class="step reveal">
+            <div class="step__marker" aria-hidden="true"></div>
+            <h3>Нажать «Отметиться»</h3>
+            <p>Кнопка доступна за 5 минут до начала пары и до 5 минут после. GPS проверит, что вы на кампусе.</p>
+          </div>
+          <div class="step reveal">
+            <div class="step__marker" aria-hidden="true"></div>
+            <h3>Готово</h3>
+            <p>Отметка появится в&nbsp;журнале старосты и в&nbsp;статистике. Неотметившиеся получают статус «н» автоматически.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ROLES ============ -->
+    <section id="roles" class="section">
+      <div class="container">
+        <p class="section__eyebrow">Роли</p>
+        <h2 class="section__title">Для всех участников учебного&nbsp;процесса</h2>
+        <p class="section__subtitle">Каждой роли — свой интерфейс и свои возможности. Права разграничены и наследуются.</p>
+
+        <div class="roles__grid">
+          <article class="role-card reveal" data-role="student">
+            <span class="role-card__tint" aria-hidden="true"></span>
+            <div class="role-card__icon"><i class="ph-duotone ph-student" aria-hidden="true"></i></div>
+            <h3>Студент</h3>
+            <ul>
               <li>Геоотметка на парах</li>
-              <li>Расписание на день и неделю</li>
+              <li>Расписание дня и недели</li>
               <li>Статистика посещаемости</li>
-              <li>ДЗ трекер</li>
+              <li>Трекер ДЗ и excuse-тикеты</li>
             </ul>
-          </div>
+          </article>
 
-          <!-- Role 2: Студент-Староста -->
-          <div class="role-card opacity-0 translate-y-6 rounded-2xl p-6 bg-violet-50 dark:bg-violet-900/20">
-            <i class="ph-duotone ph-crown text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Студент-Староста</h3>
-            <ul class="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
-              <li>Делегирование прав помощнику</li>
-              <li>Журнал группы</li>
-              <li>Excuse-тикеты</li>
+          <article class="role-card reveal" data-role="headman">
+            <span class="role-card__tint" aria-hidden="true"></span>
+            <div class="role-card__icon"><i class="ph-duotone ph-crown" aria-hidden="true"></i></div>
+            <h3>Староста</h3>
+            <ul>
+              <li>Журнал всей группы</li>
               <li>Порог красной зоны</li>
+              <li>Рассмотрение excuse-тикетов</li>
+              <li>Делегирование помощнику</li>
             </ul>
-          </div>
+          </article>
 
-          <!-- Role 3: Преподаватель -->
-          <div class="role-card opacity-0 translate-y-6 rounded-2xl p-6 bg-amber-50 dark:bg-amber-900/20">
-            <i class="ph-duotone ph-chalkboard-teacher text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Преподаватель</h3>
-            <ul class="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
-              <li>Журнал посещаемости (read-only)</li>
-              <li>Статистика по группам</li>
-              <li>Фильтры по предметам</li>
+          <article class="role-card reveal" data-role="teacher">
+            <span class="role-card__tint" aria-hidden="true"></span>
+            <div class="role-card__icon"><i class="ph-duotone ph-chalkboard-teacher" aria-hidden="true"></i></div>
+            <h3>Преподаватель</h3>
+            <ul>
+              <li>Read-only журнал групп</li>
+              <li>Статистика по предметам</li>
+              <li>Фильтры и выгрузки</li>
+              <li>Без Telegram — только web</li>
             </ul>
-          </div>
+          </article>
 
-          <!-- Role 4: Администратор -->
-          <div class="role-card opacity-0 translate-y-6 rounded-2xl p-6 bg-gray-100 dark:bg-gray-700/30">
-            <i class="ph-duotone ph-shield text-blue-600" style="font-size:32px" aria-hidden="true"></i>
-            <h3 class="mt-4 font-semibold text-gray-900 dark:text-white">Администратор</h3>
-            <ul class="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
-              <li>CRUD пользователей</li>
-              <li>Управление группами</li>
-              <li>Управление семестрами</li>
+          <article class="role-card reveal" data-role="admin">
+            <span class="role-card__tint" aria-hidden="true"></span>
+            <div class="role-card__icon"><i class="ph-duotone ph-shield-check" aria-hidden="true"></i></div>
+            <h3>Администратор</h3>
+            <ul>
+              <li>Управление пользователями</li>
+              <li>Группы и семестры</li>
+              <li>Глобальные пороги</li>
+              <li>Аудит и настройки</li>
             </ul>
-          </div>
-
+          </article>
         </div>
       </div>
     </section>
 
+    <!-- ============ CTA ============ -->
+    <section class="cta">
+      <div class="container">
+        <div class="cta__card reveal">
+          <h2>Отметиться — быстрее, чем&nbsp;зайти в&nbsp;аудиторию</h2>
+          <p>Запустите RutCampusTrack в&nbsp;Telegram и забудьте про бумажные журналы. Бесплатно для студентов и сотрудников РУТ&nbsp;МИИТ.</p>
+          <div class="cta__actions">
+            <a href="https://t.me/" class="btn btn--primary" rel="noopener">
+              <i class="ph-duotone ph-telegram-logo" aria-hidden="true"></i>
+              Открыть в Telegram
+            </a>
+            <a href="https://ruttrack.site/" class="btn btn--secondary" rel="noopener">
+              <i class="ph ph-device-mobile" aria-hidden="true"></i>
+              Мобильная версия (PWA)
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-800 py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <span class="font-bold text-blue-600">RutCampusTrack</span>
-      <div class="flex gap-6">
-        <a href="#features" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Возможности</a>
-        <a href="#roles" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Роли</a>
-      </div>
-      <p class="text-sm text-gray-500">&copy; 2026 РУТ МИИТ — RutCampusTrack</p>
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <a href="#hero" class="brand">
+        <span class="brand__mark" aria-hidden="true">R</span>
+        <span class="brand__name">RutCampusTrack</span>
+      </a>
+      <nav class="site-footer__links" aria-label="Подвал">
+        <a href="#features">Возможности</a>
+        <a href="#how-it-works">Как это работает</a>
+        <a href="#roles">Роли</a>
+        <a href="https://ruttrack.site/admin/">Панель администратора</a>
+      </nav>
+      <p class="site-footer__copy">&copy; 2026 РУТ&nbsp;МИИТ · RutCampusTrack</p>
     </div>
   </footer>
 
-  <!-- Noscript fallback -->
-  <noscript><style>.feature-card,.role-card{opacity:1!important;transform:none!important}</style></noscript>
+  <noscript>
+    <style>
+      .reveal { opacity: 1 !important; transform: none !important; }
+      .hero__eyebrow, .hero__subtitle, .hero__cta, .hero__meta, .hero__visual { opacity: 1 !important; }
+      .hero__title .line > span { transform: none !important; }
+    </style>
+  </noscript>
 
   <!-- GSAP + ScrollTrigger -->
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+
   <script>
-    gsap.registerPlugin(ScrollTrigger);
-    const mm = gsap.matchMedia();
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      // Hero — immediate, no ScrollTrigger
-      gsap.from(".hero-headline", { autoAlpha: 0, y: 30, duration: 0.8, ease: "power3.out" });
-      gsap.from(".hero-sub", { autoAlpha: 0, y: 20, duration: 0.8, delay: 0.15, ease: "power2.out" });
-      gsap.from(".hero-cta", { autoAlpha: 0, y: 15, duration: 0.6, delay: 0.3, ease: "power1.out" });
-      // Feature cards — batch ScrollTrigger
-      ScrollTrigger.batch(".feature-card", {
-        onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, stagger: 0.10, duration: 0.6, ease: "power2.out" }),
-        start: "top 85%",
-        once: true
+    // Flag: JS is enabled — allow initial-state styles
+    document.body.classList.remove('no-js');
+    document.body.classList.add('js');
+  </script>
+
+  <script defer>
+    // ============================================================
+    // Theme toggle — sync with localStorage + prefers-color-scheme
+    // ============================================================
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById('theme-toggle');
+      var STORAGE_KEY = 'ruttrack.theme';
+      var mq = window.matchMedia('(prefers-color-scheme: light)');
+      var userOverride = !!localStorage.getItem(STORAGE_KEY);
+
+      function apply(theme, persist) {
+        root.classList.add('theme-transitioning');
+        root.setAttribute('data-theme', theme);
+        if (persist) {
+          localStorage.setItem(STORAGE_KEY, theme);
+          userOverride = true;
+        }
+        setTimeout(function () { root.classList.remove('theme-transitioning'); }, 320);
+      }
+
+      btn && btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        apply(next, true);
       });
-      // Role cards — batch ScrollTrigger
-      ScrollTrigger.batch(".role-card", {
-        onEnter: (els) => gsap.to(els, { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.5, ease: "power2.out" }),
-        start: "top 85%",
-        once: true
+
+      // Follow OS change until user explicitly toggles
+      if (mq.addEventListener) {
+        mq.addEventListener('change', function (e) {
+          if (!userOverride) apply(e.matches ? 'light' : 'dark', false);
+        });
+      }
+    })();
+
+    // ============================================================
+    // GSAP animations — only when loaded
+    // ============================================================
+    window.addEventListener('load', function () {
+      if (typeof gsap === 'undefined') return;
+      if (typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+
+      var mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: no-preference)', function () {
+        // Hero headline — line reveal
+        gsap.to('.hero__title .line > span', {
+          y: 0,
+          duration: 0.9,
+          ease: 'power4.out',
+          stagger: 0.12,
+          delay: 0.1
+        });
+
+        // Hero supporting content
+        gsap.to('.hero__eyebrow', { opacity: 1, y: 0, duration: 0.6, delay: 0.05, ease: 'power2.out' });
+        gsap.to('.hero__subtitle', { opacity: 1, y: 0, duration: 0.7, delay: 0.45, ease: 'power2.out' });
+        gsap.to('.hero__cta', { opacity: 1, y: 0, duration: 0.6, delay: 0.6, ease: 'power2.out' });
+        gsap.to('.hero__meta', { opacity: 1, y: 0, duration: 0.6, delay: 0.75, ease: 'power2.out' });
+        gsap.to('.hero__visual', {
+          opacity: 1, y: 0, scale: 1, duration: 1.0, delay: 0.35, ease: 'power3.out',
+          clearProps: 'transform'
+        });
+
+        // CountUp for hero meta numbers
+        document.querySelectorAll('[data-count]').forEach(function (el) {
+          var target = parseFloat(el.getAttribute('data-count'));
+          var suffix = '';
+          var raw = el.textContent.trim();
+          var match = raw.match(/%|\/\d+/);
+          if (match) suffix = match[0];
+
+          var obj = { v: 0 };
+          gsap.to(obj, {
+            v: target,
+            duration: 1.6,
+            ease: 'power2.out',
+            delay: 0.6,
+            onUpdate: function () {
+              var val = Math.round(obj.v);
+              if (el.classList.contains('value')) {
+                el.innerHTML = val + '<span style="font-size:60%;">%</span>';
+              } else {
+                el.textContent = val;
+              }
+            }
+          });
+        });
+
+        // Reveal on scroll — batched
+        if (typeof ScrollTrigger !== 'undefined') {
+          ScrollTrigger.batch('.reveal:not(.hero__eyebrow):not(.hero__subtitle):not(.hero__cta):not(.hero__meta):not(.hero__visual)', {
+            start: 'top 88%',
+            once: true,
+            onEnter: function (els) {
+              gsap.to(els, {
+                opacity: 1,
+                y: 0,
+                duration: 0.7,
+                ease: 'power3.out',
+                stagger: 0.09
+              });
+            }
+          });
+
+          // Parallax on hero routes
+          gsap.to('.hero__routes', {
+            yPercent: 12,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: '.hero',
+              start: 'top top',
+              end: 'bottom top',
+              scrub: true
+            }
+          });
+        }
+
+        // Feature card hover — subtle light follow
+        document.querySelectorAll('.feature-card').forEach(function (card) {
+          card.addEventListener('pointermove', function (e) {
+            var rect = card.getBoundingClientRect();
+            card.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100) + '%');
+            card.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
+          });
+        });
+      });
+
+      // Reduced motion — show everything instantly
+      mm.add('(prefers-reduced-motion: reduce)', function () {
+        gsap.set('.hero__title .line > span', { y: 0 });
+        gsap.set('.hero__eyebrow, .hero__subtitle, .hero__cta, .hero__meta, .hero__visual, .reveal', { opacity: 1, y: 0 });
       });
     });
   </script>
-
 </body>
 </html>

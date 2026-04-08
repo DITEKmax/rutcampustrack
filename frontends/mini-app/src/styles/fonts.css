@@ -1,0 +1,22 @@
+/*
+ * RutCampusTrack — Brand font imports
+ * ==========================================================================
+ * Google Fonts + Fontshare. Loaded with font-display: swap so text is
+ * visible during font fetch. Each app should import this ONCE at the top
+ * of its global stylesheet (before tokens.css).
+ *
+ * Roles per brandbook section 3:
+ *   Clash Display  — H1–H2, hero numbers (600, 700)
+ *   General Sans   — H3–H5, card headings (500, 600)
+ *   DM Sans        — body text (400, 500)
+ *   JetBrains Mono — codes, IDs, data cells (400)
+ *
+ * Clash Display + General Sans are hosted on Fontshare (not Google Fonts).
+ * ==========================================================================
+ */
+
+/* Clash Display + General Sans (Fontshare) */
+@import url("https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=general-sans@500,600&display=swap");
+
+/* DM Sans + JetBrains Mono (Google Fonts) */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap");

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './shared/lib/queryClient'
+import { ThemeProvider } from './shared/theme/ThemeProvider'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { LoginPage } from './features/auth/LoginPage'
 import { ProtectedRoute } from './shared/components/ProtectedRoute'
@@ -74,11 +75,13 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <IOSOnboardingOverlay />
-        <RouterProvider router={router} />
-      </AuthProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <IOSOnboardingOverlay />
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   </StrictMode>
 )

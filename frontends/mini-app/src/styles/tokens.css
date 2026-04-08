@@ -1,0 +1,231 @@
+/*
+ * RutCampusTrack — Transit Grid Design Tokens
+ * ==========================================================================
+ * Single source of truth for colors, typography, spacing, radii, shadows.
+ * Two equal themes: dark (default) and light. Toggled via [data-theme] on <html>.
+ *
+ * CANONICAL SOURCE: frontends/shared/styles/tokens.css
+ * This file is mirrored into each frontend's src/styles/tokens.css because
+ * the monorepo has no workspaces package for cross-app imports. When editing,
+ * update the canonical file and re-copy into:
+ *   - frontends/pwa/src/styles/tokens.css
+ *   - frontends/mini-app/src/styles/tokens.css
+ *   - frontends/web-panel/src/styles/tokens.css
+ *
+ * Brandbook reference: "Rutcampustrack brandbook.md" sections 2, 3, 7.
+ * ==========================================================================
+ */
+
+/* ===== DARK THEME (default / primary) ===== */
+:root,
+[data-theme="dark"] {
+  /* --- Surfaces --- */
+  --bg-primary: #0A0E17;      /* deep near-black blue — app background */
+  --bg-secondary: #111827;    /* cards, panels */
+  --bg-elevated: #1A2236;     /* modals, popovers, dropdowns */
+  --bg-surface: #0F1520;      /* inputs, tables, inset surfaces */
+
+  /* --- Text --- */
+  --text-primary: #F0F2F5;
+  --text-secondary: #8B95A8;
+  --text-muted: #4A5568;
+
+  /* --- Accents --- */
+  --accent-primary: #00E5A0;       /* neon green — CTA, primary action */
+  --accent-primary-contrast: #0A0E17;
+  --accent-secondary: #3B82F6;     /* blue — links, secondary action */
+  --accent-warning: #F59E0B;       /* yellow — warnings, late */
+  --accent-danger: #EF4444;        /* red — critical absence, destructive */
+  --accent-info: #8B5CF6;          /* violet — info panels */
+
+  /* --- Status (attendance-specific semantic colors) --- */
+  --status-present: #00E5A0;
+  --status-absent: #EF4444;
+  --status-excused: #F59E0B;
+  --status-free-attendance: #8B5CF6;
+  --status-pending: #8B95A8;
+
+  /* --- Gradients --- */
+  --gradient-brand: linear-gradient(135deg, #00E5A0 0%, #3B82F6 100%);
+  --gradient-dark: linear-gradient(180deg, #0A0E17 0%, #111827 100%);
+  --gradient-glow: radial-gradient(circle at 50% 50%, rgba(0, 229, 160, 0.15) 0%, transparent 70%);
+
+  /* --- Borders --- */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(0, 229, 160, 0.3);
+
+  /* --- Effects: glow + shadow --- */
+  --glow-primary: 0 0 20px rgba(0, 229, 160, 0.3);
+  --glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+  color-scheme: dark;
+}
+
+/* ===== LIGHT THEME (equal, not a "watered-down dark") ===== */
+[data-theme="light"] {
+  /* --- Surfaces --- */
+  --bg-primary: #F8FAFB;
+  --bg-secondary: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-surface: #EEF1F5;
+
+  /* --- Text --- */
+  --text-primary: #0A0E17;
+  --text-secondary: #4A5568;
+  --text-muted: #8B95A8;
+
+  /* --- Accents (deeper for contrast on light surfaces) --- */
+  --accent-primary: #00B87A;
+  --accent-primary-contrast: #FFFFFF;
+  --accent-secondary: #2563EB;
+  --accent-warning: #D97706;
+  --accent-danger: #DC2626;
+  --accent-info: #7C3AED;
+
+  /* --- Status --- */
+  --status-present: #00B87A;
+  --status-absent: #DC2626;
+  --status-excused: #D97706;
+  --status-free-attendance: #7C3AED;
+  --status-pending: #6B7280;
+
+  /* --- Gradients --- */
+  --gradient-brand: linear-gradient(135deg, #00B87A 0%, #2563EB 100%);
+  --gradient-dark: linear-gradient(180deg, #F8FAFB 0%, #EEF1F5 100%);
+  --gradient-glow: radial-gradient(circle at 50% 50%, rgba(0, 184, 122, 0.08) 0%, transparent 70%);
+
+  /* --- Borders --- */
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-default: rgba(0, 0, 0, 0.14);
+  --border-accent: rgba(0, 184, 122, 0.25);
+
+  /* --- Effects --- */
+  --glow-primary: 0 0 16px rgba(0, 184, 122, 0.15);
+  --glow-blue: 0 0 16px rgba(37, 99, 235, 0.15);
+  --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 36px rgba(15, 23, 42, 0.12);
+
+  color-scheme: light;
+}
+
+/* ===== TOKENS THAT DO NOT CHANGE BETWEEN THEMES ===== */
+:root {
+  /* --- Typography: font families --- */
+  /* Primary display: Clash Display. Fallback chain uses General Sans -> system. */
+  --font-display: "Clash Display", "General Sans", "Geist Variable", system-ui, -apple-system, sans-serif;
+  --font-heading: "General Sans", "Geist Variable", system-ui, -apple-system, sans-serif;
+  --font-sans: "DM Sans", "Geist Variable", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* --- Typography: scale --- */
+  --text-xs: 0.75rem;     /* 12 */
+  --text-sm: 0.875rem;    /* 14 */
+  --text-base: 1rem;      /* 16 */
+  --text-lg: 1.125rem;    /* 18 */
+  --text-xl: 1.25rem;     /* 20 */
+  --text-2xl: 1.5rem;     /* 24 */
+  --text-3xl: 2rem;       /* 32 */
+  --text-4xl: 2.5rem;     /* 40 */
+  --text-5xl: 3.5rem;     /* 56 */
+  --text-6xl: 4.5rem;     /* 72 */
+
+  /* --- Line heights --- */
+  --leading-display: 1.1;
+  --leading-heading: 1.2;
+  --leading-body: 1.5;
+  --leading-long: 1.6;
+
+  /* --- Letter spacing --- */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.05em;
+
+  /* --- Radii --- */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* --- Spacing scale (8px base) --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* --- Motion --- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+
+  /* --- Layout --- */
+  --sidebar-width: 260px;
+  --sidebar-width-collapsed: 72px;
+  --bottom-nav-height: 64px;
+  --header-height: 64px;
+  --content-max-width: 1280px;
+  --landing-max-width: 1200px;
+
+  /* --- Z-index scale --- */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-popover: 500;
+  --z-toast: 600;
+}
+
+/* ===== THEME TRANSITION ===== */
+/* Apply a brief transition on theme switch so colors interpolate smoothly.
+ * Scoped via .theme-transitioning class (added by ThemeProvider) to avoid
+ * interfering with other animations. */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition:
+    background-color var(--duration-slow) var(--ease-out),
+    border-color var(--duration-slow) var(--ease-out),
+    color var(--duration-slow) var(--ease-out),
+    fill var(--duration-slow) var(--ease-out),
+    stroke var(--duration-slow) var(--ease-out),
+    box-shadow var(--duration-slow) var(--ease-out) !important;
+}
+
+/* Respect user motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+  .theme-transitioning,
+  .theme-transitioning *,
+  .theme-transitioning *::before,
+  .theme-transitioning *::after {
+    transition: none !important;
+  }
+}
+
+/* ==========================================================================
+ * Focus-visible — brand-accent outline ring.
+ * Global default per WCAG 2.2 SC 2.4.11 (Focus Appearance). Applies to any
+ * element that enters keyboard focus. Components that already ship their
+ * own custom focus treatment (e.g. Material form fields) keep their style
+ * — this only catches elements that would otherwise get no outline or the
+ * browser default.
+ * ========================================================================== */
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+

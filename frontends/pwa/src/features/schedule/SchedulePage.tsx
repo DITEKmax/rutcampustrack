@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { CaretLeft, CaretRight } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, CalendarBlank } from '@phosphor-icons/react'
 import { useAuth } from '@/features/auth/AuthProvider'
-import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
+import { SkeletonList } from '@/shared/components/Skeleton'
 import { useNetworkStatus } from '@/shared/hooks/useNetworkStatus'
 import { useStompEvents } from '@/features/checkin/StompProvider'
 import { CheckInToast } from '@/features/checkin/CheckInToast'
+import { cn } from '@/lib/utils'
 import { useWeekSchedule, usePrefetchSubjects } from './api'
 import { WeekDayTabs } from './WeekDayTabs'
 import { LessonCard } from './LessonCard'
@@ -16,7 +17,6 @@ const MONTH_ABBREV = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн'
 function getMonday(date: Date): Date {
   const d = new Date(date)
   const day = d.getDay()
-  // getDay(): 0=Sun, 1=Mon...6=Sat
   const diff = day === 0 ? -6 : 1 - day
   d.setDate(d.getDate() + diff)
   d.setHours(0, 0, 0, 0)
@@ -38,7 +38,6 @@ function formatDate(date: Date): string {
 
 function getTodayDayIndex(): number {
   const dow = new Date().getDay()
-  // 0=Sun -> 5 (Saturday), 1=Mon -> 0, ..., 6=Sat -> 5
   if (dow === 0) return 5
   return dow - 1
 }
@@ -76,35 +75,31 @@ export function SchedulePage() {
 
   const weekDates = useMemo(
     () => Array.from({ length: 6 }, (_, i) => addDays(currentWeekStart, i)),
-    [currentWeekStart]
+    [currentWeekStart],
   )
 
   const { data: lessons, isLoading, dataUpdatedAt } = useWeekSchedule(groupId, weekStart, weekEnd)
 
-  // Prefetch subject names to avoid waterfall
   const subjectIds = useMemo(
     () => (lessons ?? []).map((l) => l.subjectId),
-    [lessons]
+    [lessons],
   )
   usePrefetchSubjects(subjectIds)
 
-  // Filter lessons for selected day
   const dayLessons = useMemo(() => {
     if (!lessons) return []
-    const backendDow = selectedDayIndex + 1 // 1=Mon..6=Sat
+    const backendDow = selectedDayIndex + 1
     return lessons
       .filter((l) => l.dayOfWeek === backendDow)
       .sort((a, b) => a.lessonNumber - b.lessonNumber)
   }, [lessons, selectedDayIndex])
 
-  // Auto-scroll to current/next lesson on initial mount (D-03)
   useEffect(() => {
     if (hasAutoScrolled.current || !dayLessons.length) return
 
     const active = dayLessons.find((l) => l.status === 'ACTIVE')
     const target = active ?? dayLessons.find((l) => l.status === 'PLANNED')
     if (target) {
-      // Wait a tick for DOM to render
       requestAnimationFrame(() => {
         document
           .querySelector(`[data-lesson-id="${target.id}"]`)
@@ -138,7 +133,7 @@ export function SchedulePage() {
       setToast({ type: 'success', message: 'Отметка принята' })
       markPersonalStatus(lessonId, 'present')
     },
-    [markPersonalStatus]
+    [markPersonalStatus],
   )
 
   const handleCheckinError = useCallback((msg: string) => {
@@ -146,23 +141,51 @@ export function SchedulePage() {
   }, [])
 
   return (
-    <div className="flex flex-col min-h-full">
-      {/* Week navigation header */}
-      <div className="flex items-center justify-between px-4 py-2">
+    <div className="flex min-h-full flex-col">
+      {/* Week nav strip */}
+      <div
+        className="flex items-center justify-between gap-2 px-3 py-2"
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}
+      >
         <button
+          type="button"
           onClick={() => handleSwipeWeek('prev')}
-          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted-foreground"
+          className={cn(
+            'grid size-11 place-items-center rounded-full',
+            'transition-colors duration-200 ease-out',
+          )}
+          style={{ color: 'var(--text-secondary)' }}
           aria-label="Предыдущая неделя"
         >
-          <CaretLeft size={24} />
+          <CaretLeft size={20} weight="bold" />
         </button>
-        <span className="text-sm font-medium">{formatWeekRange(currentWeekStart)}</span>
+
+        <div className="flex flex-col items-center gap-0.5">
+          <span
+            className="text-[10px] font-medium uppercase tracking-wide"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Неделя
+          </span>
+          <span
+            className="text-sm font-semibold tabular-nums tracking-tight"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {formatWeekRange(currentWeekStart)}
+          </span>
+        </div>
+
         <button
+          type="button"
           onClick={() => handleSwipeWeek('next')}
-          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted-foreground"
+          className={cn(
+            'grid size-11 place-items-center rounded-full',
+            'transition-colors duration-200 ease-out',
+          )}
+          style={{ color: 'var(--text-secondary)' }}
           aria-label="Следующая неделя"
         >
-          <CaretRight size={24} />
+          <CaretRight size={20} weight="bold" />
         </button>
       </div>
 
@@ -175,7 +198,7 @@ export function SchedulePage() {
         hasOfflineBanner={!isOnline}
       />
 
-      {/* Offline stale notice (D-15) */}
+      {/* Offline stale notice */}
       <OfflineStaleNotice dataUpdatedAt={dataUpdatedAt} />
 
       {/* Lesson list */}
@@ -185,22 +208,17 @@ export function SchedulePage() {
           initial={{ opacity: 0, x: 8 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.12 }}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
           drag="x"
           dragDirectionLock
           dragConstraints={{ left: 0, right: 0 }}
           onDragEnd={handleDaySwipe as never}
-          className="flex flex-col gap-3 px-4 pt-2 pb-20"
+          className="flex flex-col gap-3 px-4 pb-4 pt-3"
         >
           {isLoading ? (
-            <LoadingSpinner />
+            <SkeletonList count={4} />
           ) : dayLessons.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <h2 className="text-xl font-semibold text-center">Занятий нет</h2>
-              <p className="text-sm text-muted-foreground text-center mt-1">
-                В этот день пар не запланировано
-              </p>
-            </div>
+            <EmptyDayState />
           ) : (
             <motion.div
               className="flex flex-col gap-3"
@@ -244,21 +262,74 @@ export function SchedulePage() {
         )}
       </AnimatePresence>
 
-      {/* Floating "Сегодня" pill (D-04) */}
+      {/* Floating "Сегодня" pill */}
       <AnimatePresence>
         {!isCurrentWeek && (
           <motion.button
+            key="today-pill"
+            type="button"
             initial={{ y: 16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 16, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            whileTap={{ scale: 0.96 }}
             onClick={handleTodayPill}
-            className="fixed bottom-16 left-1/2 -translate-x-1/2 z-30 bg-primary text-primary-foreground rounded-full px-4 py-2 text-sm font-medium shadow-lg"
+            className={cn(
+              'fixed left-1/2 z-[var(--z-sticky)] -translate-x-1/2',
+              'flex items-center gap-2 rounded-full px-5 py-2.5',
+              'text-sm font-semibold',
+            )}
+            style={{
+              bottom: 'calc(80px + env(safe-area-inset-bottom))',
+              background: 'var(--gradient-brand)',
+              color: 'var(--accent-primary-contrast)',
+              boxShadow: 'var(--glow-primary)',
+            }}
           >
+            <CalendarBlank size={16} weight="fill" aria-hidden="true" />
             Сегодня
           </motion.button>
         )}
       </AnimatePresence>
+    </div>
+  )
+}
+
+function EmptyDayState() {
+  return (
+    <div
+      className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-dashed p-8 text-center"
+      style={{
+        borderColor: 'var(--border-default)',
+        background: 'color-mix(in oklab, var(--bg-secondary) 50%, transparent)',
+      }}
+    >
+      <div
+        className="grid size-14 place-items-center rounded-full"
+        style={{
+          background: 'color-mix(in oklab, var(--accent-primary) 12%, transparent)',
+          border: '1px solid var(--border-accent)',
+          color: 'var(--accent-primary)',
+        }}
+      >
+        <CalendarBlank size={24} weight="duotone" />
+      </div>
+      <h2
+        className="text-lg font-semibold text-balance"
+        style={{
+          color: 'var(--text-primary)',
+          fontFamily: 'var(--font-heading)',
+        }}
+      >
+        Занятий нет
+      </h2>
+      <p
+        className="max-w-xs text-sm text-pretty"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        В этот день пар не запланировано. Хорошее время
+        чтобы отдохнуть или подготовиться.
+      </p>
     </div>
   )
 }

@@ -1,0 +1,66 @@
+:host {
+  display: block;
+  height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.shell {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.shell__sidebar {
+  flex-shrink: 0;
+}
+
+.shell__column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  /* Soft ambient glow behind content so pages don't feel flat */
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, color-mix(in oklab, var(--accent-primary) 4%, transparent), transparent 60%),
+    var(--bg-primary);
+}
+
+.shell__main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  outline: none;
+  scrollbar-gutter: stable;
+}
+
+.shell__content {
+  max-width: var(--content-max-width, 1280px);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-6) var(--space-9);
+}
+
+@media (max-width: 768px) {
+  .shell__content {
+    padding: var(--space-4) var(--space-4) var(--space-8);
+  }
+}
+
+/* Scrollbar — match the theme instead of OS default */
+.shell__main::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.shell__main::-webkit-scrollbar-track {
+  background: transparent;
+}
+.shell__main::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-full);
+  border: 3px solid var(--bg-primary);
+}
+.shell__main::-webkit-scrollbar-thumb:hover {
+  background: var(--border-accent);
+}

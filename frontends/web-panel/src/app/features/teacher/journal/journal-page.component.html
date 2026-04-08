@@ -1,76 +1,96 @@
-<div class="p-6">
-  <h1 class="text-[20px] font-semibold leading-[1.2] mb-6 text-[var(--mat-sys-on-surface)]">
-    Журнал посещаемости
-  </h1>
+<div class="page-stack">
+  <header class="page-header">
+    <div class="page-header__title">
+      <h1>Журнал посещаемости</h1>
+      <p class="page-header__subtitle">
+        Отметки группы за выбранный период. Read-only.
+      </p>
+    </div>
+  </header>
 
-  <!-- Filter row -->
-  <div class="flex flex-wrap items-center gap-4 mb-4 p-4 rounded-lg bg-[var(--mat-sys-surface-container)]">
-    <mat-form-field class="w-48">
-      <mat-label>Группа</mat-label>
-      <mat-select (selectionChange)="onGroupChange($event.value)">
-        @for (g of groups(); track g.id) {
-          <mat-option [value]="g.id">{{ g.name }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+  <!-- Filters -->
+  <div class="page-card">
+    <div class="page-filters">
+      <mat-form-field class="w-48">
+        <mat-label>Группа</mat-label>
+        <mat-select (selectionChange)="onGroupChange($event.value)">
+          @for (g of groups(); track g.id) {
+            <mat-option [value]="g.id">{{ g.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
 
-    <mat-form-field class="w-48">
-      <mat-label>Предмет</mat-label>
-      <mat-select (selectionChange)="selectedSubjectId.set($event.value)">
-        @for (s of subjects(); track s.id) {
-          <mat-option [value]="s.id">{{ s.name }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+      <mat-form-field class="w-48">
+        <mat-label>Предмет</mat-label>
+        <mat-select (selectionChange)="selectedSubjectId.set($event.value)">
+          @for (s of subjects(); track s.id) {
+            <mat-option [value]="s.id">{{ s.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
 
-    <mat-form-field class="w-36">
-      <mat-label>С</mat-label>
-      <input matInput [matDatepicker]="pickerFrom" [value]="dateFrom()"
-             (dateChange)="dateFrom.set($event.value?.toISOString().slice(0,10) ?? '')">
-      <mat-datepicker-toggle matIconSuffix [for]="pickerFrom" />
-      <mat-datepicker #pickerFrom />
-    </mat-form-field>
+      <mat-form-field class="w-40">
+        <mat-label>С</mat-label>
+        <input matInput [matDatepicker]="pickerFrom" [value]="dateFrom()"
+               (dateChange)="dateFrom.set($event.value?.toISOString().slice(0,10) ?? '')">
+        <mat-datepicker-toggle matIconSuffix [for]="pickerFrom" />
+        <mat-datepicker #pickerFrom />
+      </mat-form-field>
 
-    <mat-form-field class="w-36">
-      <mat-label>По</mat-label>
-      <input matInput [matDatepicker]="pickerTo" [value]="dateTo()"
-             (dateChange)="dateTo.set($event.value?.toISOString().slice(0,10) ?? '')">
-      <mat-datepicker-toggle matIconSuffix [for]="pickerTo" />
-      <mat-datepicker #pickerTo />
-    </mat-form-field>
+      <mat-form-field class="w-40">
+        <mat-label>По</mat-label>
+        <input matInput [matDatepicker]="pickerTo" [value]="dateTo()"
+               (dateChange)="dateTo.set($event.value?.toISOString().slice(0,10) ?? '')">
+        <mat-datepicker-toggle matIconSuffix [for]="pickerTo" />
+        <mat-datepicker #pickerTo />
+      </mat-form-field>
 
-    <button mat-flat-button color="primary" [disabled]="!canApply() || loading()"
-            (click)="loadJournal()">
-      Показать журнал
-    </button>
+      <button type="button"
+              class="btn-brand"
+              [disabled]="!canApply() || loading()"
+              (click)="loadJournal()">
+        <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+        Показать журнал
+      </button>
+    </div>
   </div>
 
   <!-- Loading -->
   @if (loading()) {
-    <p class="text-sm text-[var(--mat-sys-on-surface)]/60 mb-4">Загрузка журнала...</p>
+    <p class="text-sm" style="color: var(--text-secondary);">Загрузка журнала…</p>
   }
 
   <!-- Error -->
   @if (error()) {
-    <div class="mb-4">
-      <p class="text-sm text-[var(--mat-sys-error)]">{{ error() }}</p>
-      <button mat-stroked-button (click)="loadJournal()" class="mt-2">Повторить загрузку</button>
+    <div class="page-error" role="alert">
+      <i class="ph ph-warning-circle" aria-hidden="true"></i>
+      {{ error() }}
+      <button type="button" class="btn-brand" style="margin-left: var(--space-4);" (click)="loadJournal()">
+        Повторить
+      </button>
     </div>
   }
 
   <!-- Empty state -->
   @if (!journalData() && !loading() && !error()) {
-    <div class="text-center py-16">
-      <h2 class="text-lg font-semibold text-[var(--mat-sys-on-surface)]">Журнал пуст</h2>
-      <p class="text-sm text-[var(--mat-sys-on-surface)]/60 mt-2">
-        Выберите группу и предмет, чтобы загрузить журнал.
-      </p>
+    <div class="page-card">
+      <div class="page-empty">
+        <div class="page-empty__icon" aria-hidden="true">
+          <i class="ph-duotone ph-book-open"></i>
+        </div>
+        <h3 class="page-empty__title">Журнал пуст</h3>
+        <p class="page-empty__text">
+          Выберите группу и предмет, чтобы загрузить журнал посещаемости.
+        </p>
+      </div>
     </div>
   }
 
   <!-- Grid -->
   @if (journalData()) {
-    <app-journal-grid [journalData]="journalData()!" />
-    <app-status-legend class="mt-4 block" />
+    <div class="page-card page-card--flush">
+      <app-journal-grid [journalData]="journalData()!" />
+    </div>
+    <app-status-legend />
   }
 </div>

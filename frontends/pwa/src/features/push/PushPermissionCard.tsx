@@ -33,7 +33,10 @@ export function PushPermissionCard() {
       )}
 
       {error === 'iOS_NOT_STANDALONE' && (
-        <div className="flex items-start gap-2 text-xs text-amber-600">
+        <div
+          className="flex items-start gap-2 text-xs"
+          style={{ color: 'var(--accent-warning)' }}
+        >
           <Warning size={16} weight="bold" className="mt-0.5 shrink-0" />
           <span>Установите RutTrack на домашний экран, чтобы получать уведомления.</span>
         </div>

@@ -1,59 +1,121 @@
-<nav [@collapse]="collapsed() ? 'collapsed' : 'expanded'"
-     class="h-screen flex flex-col bg-[var(--mat-sys-surface-container)] border-r border-[var(--mat-sys-outline-variant)] overflow-hidden">
-
-  <!-- Logo / Brand area -->
-  <div class="flex items-center h-16 px-4 border-b border-[var(--mat-sys-outline-variant)]">
+<nav
+  [@collapse]="collapsed() ? 'collapsed' : 'expanded'"
+  class="sidebar"
+  [class.sidebar--collapsed]="collapsed()"
+  aria-label="Основная навигация"
+>
+  <!-- Brand -->
+  <a routerLink="/" class="sidebar__brand" aria-label="RutCampusTrack — главная">
+    <span class="sidebar__brand-mark" aria-hidden="true">R</span>
     @if (!collapsed()) {
-      <span class="text-[20px] font-semibold text-[var(--mat-sys-primary)]">RutTrack</span>
+      <span class="sidebar__brand-name">RutTrack</span>
+    }
+  </a>
+
+  <!-- Primary nav (dashboard) -->
+  @if (filteredPrimaryItems().length > 0) {
+    <ul class="sidebar__nav sidebar__nav--primary">
+      @for (item of filteredPrimaryItems(); track item.route) {
+        <li>
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="sidebar__link--active"
+            class="sidebar__link"
+            [title]="item.label"
+            [attr.aria-label]="collapsed() ? item.label : null"
+          >
+            <i [class]="item.icon" class="ph sidebar__icon" aria-hidden="true"></i>
+            @if (!collapsed()) {
+              <span class="sidebar__label">{{ item.label }}</span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  }
+
+  <!-- Section header -->
+  @if (filteredNavItems().length > 0) {
+    @if (!collapsed()) {
+      <p class="sidebar__section">{{ sectionLabel() }}</p>
     } @else {
-      <span class="text-[20px] font-semibold text-[var(--mat-sys-primary)]">R</span>
+      <div class="sidebar__section-divider" aria-hidden="true"></div>
     }
-  </div>
+  }
 
-  <!-- Nav items -->
-  <div class="flex-1 overflow-y-auto py-2">
+  <!-- Secondary nav -->
+  <ul class="sidebar__nav">
     @for (item of filteredNavItems(); track item.route) {
-      <a [routerLink]="item.route"
-         routerLinkActive="bg-[var(--mat-sys-primary)]/10 text-[var(--mat-sys-primary)] border-l-[3px] border-[var(--mat-sys-primary)]"
-         class="flex items-center gap-3 px-4 py-3 text-sm text-[var(--mat-sys-on-surface)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-         [title]="item.label">
-        <i [class]="item.icon + ' text-[24px]'" class="shrink-0 ph"></i>
-        @if (!collapsed()) {
-          <span>{{ item.label }}</span>
-        }
-      </a>
+      <li>
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="sidebar__link--active"
+          class="sidebar__link"
+          [title]="item.label"
+        >
+          <i [class]="item.icon" class="ph sidebar__icon" aria-hidden="true"></i>
+          @if (!collapsed()) {
+            <span class="sidebar__label">{{ item.label }}</span>
+          }
+        </a>
+      </li>
     }
-  </div>
+  </ul>
 
-  <!-- Footer: theme toggle + logout + collapse toggle -->
-  <div class="border-t border-[var(--mat-sys-outline-variant)] py-2">
-    <!-- Theme toggle -->
-    <button (click)="toggleTheme()"
-            class="flex items-center gap-3 px-4 py-3 w-full text-sm text-[var(--mat-sys-on-surface)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-            [title]="themeService.isDark() ? 'Светлая тема' : 'Тёмная тема'">
-      <i [class]="(themeService.isDark() ? 'ph-sun' : 'ph-moon') + ' text-[24px]'" class="shrink-0 ph"></i>
+  <!-- Spacer -->
+  <div class="sidebar__spacer"></div>
+
+  <!-- Footer: user block + logout + collapse -->
+  <div class="sidebar__footer">
+    @if (currentUser(); as user) {
       @if (!collapsed()) {
-        <span>{{ themeService.isDark() ? 'Светлая тема' : 'Тёмная тема' }}</span>
+        <div class="sidebar__user">
+          <span class="sidebar__user-avatar" aria-hidden="true">
+            {{ (user.id + '').slice(0, 2).toUpperCase() }}
+          </span>
+          <div class="sidebar__user-meta">
+            <span class="sidebar__user-id">ID {{ user.id }}</span>
+            <span class="sidebar__user-role">
+              {{ user.role === 'ADMIN' ? 'Администратор' : 'Преподаватель' }}
+            </span>
+          </div>
+        </div>
+      } @else {
+        <div class="sidebar__user sidebar__user--collapsed" [title]="'ID ' + user.id">
+          <span class="sidebar__user-avatar" aria-hidden="true">
+            {{ (user.id + '').slice(0, 2).toUpperCase() }}
+          </span>
+        </div>
+      }
+    }
+
+    <button
+      type="button"
+      (click)="logout()"
+      class="sidebar__footer-btn"
+      title="Выйти"
+      [attr.aria-label]="collapsed() ? 'Выйти' : null"
+    >
+      <i class="ph ph-sign-out sidebar__icon" aria-hidden="true"></i>
+      @if (!collapsed()) {
+        <span class="sidebar__label">Выйти</span>
       }
     </button>
 
-    <!-- Logout -->
-    <button (click)="logout()"
-            class="flex items-center gap-3 px-4 py-3 w-full text-sm text-[var(--mat-sys-on-surface)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-            title="Выйти">
-      <i class="ph-sign-out text-[24px] shrink-0 ph"></i>
+    <button
+      type="button"
+      (click)="toggleCollapse()"
+      class="sidebar__footer-btn sidebar__collapse-btn"
+      [attr.aria-label]="collapsed() ? 'Развернуть меню' : 'Свернуть меню'"
+      [title]="collapsed() ? 'Развернуть меню' : 'Свернуть меню'"
+    >
+      <i
+        [@rotateChevron]="collapsed() ? 'collapsed' : 'expanded'"
+        class="ph ph-caret-left sidebar__icon"
+        aria-hidden="true"
+      ></i>
       @if (!collapsed()) {
-        <span>Выйти</span>
-      }
-    </button>
-
-    <!-- Collapse toggle -->
-    <button (click)="toggleCollapse()"
-            class="flex items-center gap-3 px-4 py-3 w-full text-sm text-[var(--mat-sys-on-surface)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-      <i [@rotateChevron]="collapsed() ? 'collapsed' : 'expanded'"
-         class="ph-caret-left text-[24px] shrink-0 ph"></i>
-      @if (!collapsed()) {
-        <span>Свернуть</span>
+        <span class="sidebar__label">Свернуть</span>
       }
     </button>
   </div>

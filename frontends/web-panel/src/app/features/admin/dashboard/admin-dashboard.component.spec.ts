@@ -4,6 +4,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AdminDashboardComponent } from './admin-dashboard.component';
 
@@ -14,7 +15,7 @@ describe('AdminDashboardComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [AdminDashboardComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
     const fixture = TestBed.createComponent(AdminDashboardComponent);
     component = fixture.componentInstance;

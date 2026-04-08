@@ -1,7 +1,12 @@
+import { SkeletonList } from './Skeleton'
+
+/**
+ * Default loading fallback used by lazy routes (`Suspense fallback`).
+ *
+ * Name kept for backwards compat with existing imports and test mocks,
+ * but per brandbook §5.4 we now render a skeleton list instead of a
+ * spinning circle.
+ */
 export function LoadingSpinner() {
-  return (
-    <div className="flex items-center justify-center min-h-[200px]">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-    </div>
-  )
+  return <SkeletonList count={4} />
 }

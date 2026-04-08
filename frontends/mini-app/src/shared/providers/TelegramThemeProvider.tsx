@@ -1,29 +1,34 @@
-import { useEffect, type ReactNode } from 'react'
-import { useSignal, themeParams } from '@telegram-apps/sdk-react'
+import { useMemo, type ReactNode } from 'react'
+import { useSignal, miniApp } from '@telegram-apps/sdk-react'
+import { ThemeProvider, type Theme } from '@/shared/theme/ThemeProvider'
 
-const THEME_MAP: Record<string, string> = {
-  bg_color: '--background',
-  text_color: '--foreground',
-  secondary_bg_color: '--card',
-  button_color: '--primary',
-  button_text_color: '--primary-foreground',
-  hint_color: '--muted-foreground',
-  link_color: '--accent',
-}
-
+/**
+ * RutCampusTrack — Telegram-aware theme bridge.
+ *
+ * Reads Telegram's `miniApp.isDark` signal on first render and feeds it into
+ * the Transit Grid `ThemeProvider` as `initialTheme`. The Transit Grid provider
+ * then owns the active theme (dark | light) via the `[data-theme]` attribute
+ * and all colors come from `tokens.css` — NOT from Telegram's raw color codes.
+ *
+ * Why not apply Telegram colors directly?
+ * The previous implementation mapped `bg_color`, `text_color`, etc. to
+ * `--background` / `--foreground`, which clobbered our brand palette and left
+ * the app unbranded inside Telegram. The brandbook requires RutCampusTrack
+ * to look like itself everywhere — Telegram's color scheme only hints which
+ * of our two themes to start with.
+ *
+ * The user can still manually toggle via the ThemeToggle button; their choice
+ * is persisted in localStorage and takes precedence over Telegram's signal.
+ */
 export function TelegramThemeProvider({ children }: { children: ReactNode }) {
-  // useSignal returns null when themeParams is not mounted (dev mock mode)
-  // Fall back to PWA neutral CSS var defaults from index.css in that case
-  const params = useSignal(themeParams.state) as Record<string, string> | null
+  // `useSignal(miniApp.isDark)` returns boolean | undefined; undefined when
+  // SDK isn't mounted (dev mock) — we default to 'dark' in that case.
+  const isDark = useSignal(miniApp.isDark) as boolean | undefined
 
-  useEffect(() => {
-    if (!params) return
-    const root = document.documentElement
-    for (const [tgKey, cssVar] of Object.entries(THEME_MAP)) {
-      const value = params[tgKey]
-      if (value) root.style.setProperty(cssVar, value)
-    }
-  }, [params])
+  const initialTheme = useMemo<Theme>(
+    () => (isDark === false ? 'light' : 'dark'),
+    [isDark],
+  )
 
-  return <>{children}</>
+  return <ThemeProvider initialTheme={initialTheme}>{children}</ThemeProvider>
 }

@@ -1,14 +1,35 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { motion } from 'motion/react'
 import { hapticFeedback } from '@telegram-apps/sdk-react'
-import { CheckCircle, Check, ClockCountdown, MapPin, Timer, WarningCircle } from '@phosphor-icons/react'
+import {
+  CheckCircle,
+  ClockCountdown,
+  MapPin,
+  Timer,
+  WarningCircle,
+  CircleNotch,
+  Fingerprint,
+} from '@phosphor-icons/react'
 import { useBackButton } from '@/shared/hooks/useBackButton'
 import { useMainButton } from '@/shared/hooks/useMainButton'
+import { cn } from '@/lib/utils'
 import { useCheckin, mapCheckinError } from './api'
 
+/**
+ * CheckIn flow inside the Telegram Mini App.
+ *
+ * Layout: centered brand hero (fingerprint) + geolocation status card +
+ * result card. The primary CTA lives in Telegram's native MainButton via
+ * `useMainButton`, with a dev-mode fallback button for browsers outside
+ * Telegram. Back navigation uses Telegram's BackButton via `useBackButton`.
+ * All haptic feedback is preserved — the only changes are visual tokens.
+ */
 type GpsState = 'idle' | 'acquiring' | 'acquired' | 'error'
-type ResultState = { kind: 'success' } | { kind: 'error'; status: number; message: string } | null
+type ResultState =
+  | { kind: 'success' }
+  | { kind: 'error'; status: number; message: string }
+  | null
 
 export function CheckInPage() {
   const { lessonId } = useParams<{ lessonId: string }>()
@@ -39,13 +60,14 @@ export function CheckInPage() {
               setTimeout(() => navigate('/'), 1500)
             },
             onError: (error: unknown) => {
-              const status = (error as { response?: { status?: number } })?.response?.status ?? 500
+              const status =
+                (error as { response?: { status?: number } })?.response?.status ?? 500
               setResult({ kind: 'error', status, message: mapCheckinError(status) })
               if (hapticFeedback.notificationOccurred.isAvailable()) {
                 hapticFeedback.notificationOccurred('error')
               }
             },
-          }
+          },
         )
       },
       () => {
@@ -54,16 +76,19 @@ export function CheckInPage() {
           hapticFeedback.notificationOccurred('error')
         }
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000 },
     )
   }, [checkinMutation, navigate])
 
   const mainButtonText =
-    gpsState === 'acquiring' ? 'Определяем местоположение...' :
-    isSubmitting ? 'Отправляем отметку...' :
-    'Отметиться'
+    gpsState === 'acquiring'
+      ? 'Определяем местоположение...'
+      : isSubmitting
+        ? 'Отправляем отметку...'
+        : 'Отметиться'
 
-  const mainButtonEnabled = gpsState !== 'acquiring' && !isSubmitting && result?.kind !== 'success'
+  const mainButtonEnabled =
+    gpsState !== 'acquiring' && !isSubmitting && result?.kind !== 'success'
   const mainButtonVisible = result?.kind !== 'success'
 
   useMainButton({
@@ -75,66 +100,167 @@ export function CheckInPage() {
 
   return (
     <motion.div
-      className="px-4 pt-4 min-h-screen"
-      initial={{ opacity: 0, x: 16 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.15, ease: 'easeOut' }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className="flex min-h-screen flex-col px-4 pt-[calc(env(safe-area-inset-top)+16px)]"
     >
-      <h1 className="text-base font-semibold">Отметка на паре</h1>
-      <p className="text-xs text-muted-foreground mt-1">Пара #{lessonId}</p>
+      {/* Brand hero */}
+      <header className="flex flex-col items-center gap-3 pt-6 text-center">
+        <div
+          className="grid size-16 place-items-center rounded-2xl"
+          style={{
+            background: 'var(--gradient-brand)',
+            color: 'var(--accent-primary-contrast)',
+            boxShadow: 'var(--glow-primary)',
+          }}
+          aria-hidden="true"
+        >
+          <Fingerprint size={32} weight="fill" />
+        </div>
+        <h1
+          className="text-xl font-bold leading-tight text-balance"
+          style={{
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          Отметка на паре
+        </h1>
+        <p
+          className="text-xs font-medium tabular-nums"
+          style={{
+            color: 'var(--text-muted)',
+            fontFamily: 'var(--font-mono)',
+          }}
+        >
+          Пара #{lessonId}
+        </p>
+      </header>
 
-      <div className="mt-6 space-y-4">
-        {/* GPS status */}
-        {gpsState === 'acquiring' && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div className="w-5 h-5 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm">Определяем местоположение...</span>
-          </div>
-        )}
-        {gpsState === 'acquired' && (
-          <div className="flex items-center gap-2 text-green-600">
-            <MapPin size={20} weight="fill" />
-            <span className="text-sm">Геолокация получена</span>
-          </div>
-        )}
-        {gpsState === 'error' && (
-          <div className="flex items-center gap-2 text-destructive">
-            <WarningCircle size={20} weight="bold" />
-            <span className="text-sm">Не удалось получить геолокацию</span>
-          </div>
-        )}
+      {/* Status cards */}
+      <div className="mt-6 flex flex-col gap-3">
+        {gpsState === 'acquiring' && <StatusCard tone="neutral" icon={<CircleNotch size={18} className="animate-spin" />} text="Определяем местоположение..." />}
+        {gpsState === 'acquired' && <StatusCard tone="success" icon={<MapPin size={18} weight="fill" />} text="Геолокация получена" />}
+        {gpsState === 'error' && <StatusCard tone="danger" icon={<WarningCircle size={18} weight="bold" />} text="Не удалось получить геолокацию" />}
 
         {/* Result */}
         {result?.kind === 'success' && (
-          <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
-            <CheckCircle size={24} weight="fill" className="text-green-600" />
-            <span className="text-sm font-semibold">Отметка принята!</span>
-          </div>
+          <ResultCard tone="success" icon={<CheckCircle size={24} weight="fill" />} text="Отметка принята!" />
         )}
         {result?.kind === 'error' && (
-          <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
-            {result.status === 409 && <Check size={24} weight="fill" className="text-green-600" />}
-            {result.status === 422 && <ClockCountdown size={24} className="text-muted-foreground" />}
-            {result.status === 403 && <WarningCircle size={24} className="text-destructive" />}
-            {result.status === 429 && <Timer size={24} className="text-muted-foreground" />}
-            {![409, 422, 403, 429].includes(result.status) && <WarningCircle size={24} className="text-destructive" />}
-            <span className={`text-sm ${result.status === 403 ? 'text-destructive' : 'text-muted-foreground'}`}>
-              {result.message}
-            </span>
-          </div>
+          <ResultCard
+            tone={result.status === 409 ? 'warning' : result.status === 403 ? 'danger' : 'neutral'}
+            icon={
+              result.status === 409 ? (
+                <CheckCircle size={24} weight="fill" />
+              ) : result.status === 422 ? (
+                <ClockCountdown size={24} />
+              ) : result.status === 403 ? (
+                <WarningCircle size={24} />
+              ) : result.status === 429 ? (
+                <Timer size={24} />
+              ) : (
+                <WarningCircle size={24} />
+              )
+            }
+            text={result.message}
+          />
         )}
       </div>
 
-      {/* Dev fallback button */}
+      {/* Dev fallback button (only shown outside Telegram where MainButton
+          isn't available) */}
       {import.meta.env.VITE_TMA_DEV === 'true' && (
         <button
+          type="button"
           onClick={handleCheckin}
           disabled={!mainButtonEnabled}
-          className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold min-h-[48px] mt-6 disabled:opacity-50"
+          className={cn(
+            'mt-6 inline-flex w-full items-center justify-center gap-2',
+            'min-h-[48px] rounded-full px-6 text-sm font-semibold',
+            'transition-opacity duration-200 ease-out',
+            !mainButtonEnabled && 'opacity-55',
+          )}
+          style={{
+            background: 'var(--gradient-brand)',
+            color: 'var(--accent-primary-contrast)',
+            boxShadow: mainButtonEnabled ? 'var(--glow-primary)' : 'none',
+          }}
         >
+          <Fingerprint size={18} weight="fill" />
           Отметиться
         </button>
       )}
     </motion.div>
+  )
+}
+
+type Tone = 'neutral' | 'success' | 'warning' | 'danger'
+
+function toneColors(tone: Tone) {
+  switch (tone) {
+    case 'success':
+      return { fg: 'var(--accent-primary)', bg: 'color-mix(in oklab, var(--accent-primary) 12%, transparent)', bd: 'var(--border-accent)' }
+    case 'warning':
+      return { fg: 'var(--accent-warning)', bg: 'color-mix(in oklab, var(--accent-warning) 12%, transparent)', bd: 'color-mix(in oklab, var(--accent-warning) 28%, transparent)' }
+    case 'danger':
+      return { fg: 'var(--accent-danger)', bg: 'color-mix(in oklab, var(--accent-danger) 12%, transparent)', bd: 'color-mix(in oklab, var(--accent-danger) 28%, transparent)' }
+    default:
+      return { fg: 'var(--text-secondary)', bg: 'var(--bg-surface)', bd: 'var(--border-subtle)' }
+  }
+}
+
+function StatusCard({
+  tone,
+  icon,
+  text,
+}: {
+  tone: Tone
+  icon: ReactNode
+  text: string
+}) {
+  const c = toneColors(tone)
+  return (
+    <div
+      className="flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium"
+      style={{ background: c.bg, borderColor: c.bd, color: c.fg }}
+    >
+      <span aria-hidden="true">{icon}</span>
+      <span>{text}</span>
+    </div>
+  )
+}
+
+function ResultCard({
+  tone,
+  icon,
+  text,
+}: {
+  tone: Tone
+  icon: ReactNode
+  text: string
+}) {
+  const c = toneColors(tone)
+  return (
+    <div
+      className="flex items-center gap-3 rounded-2xl border p-4"
+      style={{ background: 'var(--bg-secondary)', borderColor: c.bd }}
+    >
+      <span
+        aria-hidden="true"
+        className="grid size-11 shrink-0 place-items-center rounded-full"
+        style={{ background: c.bg, color: c.fg }}
+      >
+        {icon}
+      </span>
+      <span
+        className="text-sm font-semibold text-pretty"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        {text}
+      </span>
+    </div>
   )
 }

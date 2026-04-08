@@ -1,38 +1,104 @@
-<h1 class="text-[20px] font-semibold leading-[1.2] mb-8 text-[var(--mat-sys-on-surface)]">
-  Панель администратора
-</h1>
+<section class="dashboard">
+  <!-- Greeting + live clock -->
+  <header class="dashboard__hero">
+    <div class="dashboard__greeting">
+      <p class="dashboard__eyebrow">
+        <span class="dashboard__pulse" aria-hidden="true"></span>
+        Система активна
+      </p>
+      <h2 class="dashboard__title">{{ greeting() }}, администратор</h2>
+      <p class="dashboard__subtitle">
+        {{ dateLabel() }} · текущий семестр
+        <strong>{{ stats()?.activeSemesterName ?? '—' }}</strong>
+      </p>
+    </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-  <app-stat-card
-    icon="ph-duotone ph-users-three"
-    iconColor="#1A56DB"
-    [value]="stats()?.totalStudents ?? 0"
-    label="Студентов"
-    [loading]="loading()"
-  />
-  <app-stat-card
-    icon="ph-duotone ph-buildings"
-    iconColor="#D97706"
-    [value]="stats()?.totalGroups ?? 0"
-    label="Групп"
-    [loading]="loading()"
-  />
-  <app-stat-card
-    icon="ph-duotone ph-calendar-dots"
-    iconColor="#16A34A"
-    [value]="stats()?.activeGroups ?? 0"
-    label="Активных семестров"
-    [loading]="loading()"
-  />
-  <app-stat-card
-    icon="ph-duotone ph-chart-bar"
-    iconColor="#9333EA"
-    [value]="stats()?.activeSemesterName ?? '\u2014'"
-    label="Текущий семестр"
-    [loading]="loading()"
-  />
-</div>
+    <div class="dashboard__clock" aria-hidden="true">
+      <span class="dashboard__clock-value">{{ timeLabel() }}</span>
+      <span class="dashboard__clock-label">по Москве</span>
+    </div>
+  </header>
 
-@if (error()) {
-  <p class="text-sm text-[var(--mat-sys-error)] mt-4">{{ error() }}</p>
-}
+  <!-- Stat grid -->
+  <div class="dashboard__grid">
+    <app-stat-card
+      accent="primary"
+      icon="ph-duotone ph-students"
+      [value]="stats()?.totalStudents ?? 0"
+      label="Студентов"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      accent="secondary"
+      icon="ph-duotone ph-chalkboard-teacher"
+      [value]="stats()?.totalTeachers ?? 0"
+      label="Преподавателей"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      accent="warning"
+      icon="ph-duotone ph-users-three"
+      [value]="stats()?.totalGroups ?? 0"
+      label="Групп всего"
+      [loading]="loading()"
+    />
+    <app-stat-card
+      accent="info"
+      icon="ph-duotone ph-buildings"
+      [value]="stats()?.activeGroups ?? 0"
+      label="Активных групп"
+      suffix="{{ activeGroupsPct() ? activeGroupsPct() + '%' : '' }}"
+      [loading]="loading()"
+    />
+  </div>
+
+  @if (error()) {
+    <div class="dashboard__error" role="alert">
+      <i class="ph ph-warning-circle" aria-hidden="true"></i>
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Quick actions -->
+  <div class="dashboard__section">
+    <div class="dashboard__section-head">
+      <h3 class="dashboard__section-title">Быстрые действия</h3>
+      <p class="dashboard__section-sub">Часто используемые разделы панели</p>
+    </div>
+
+    <div class="dashboard__actions">
+      <a routerLink="/admin/users" class="action-card" data-accent="primary">
+        <div class="action-card__icon" aria-hidden="true">
+          <i class="ph-duotone ph-users"></i>
+        </div>
+        <div class="action-card__body">
+          <h4 class="action-card__title">Пользователи</h4>
+          <p class="action-card__text">Создать, редактировать, архивировать учётные записи</p>
+        </div>
+        <i class="ph ph-arrow-right action-card__arrow" aria-hidden="true"></i>
+      </a>
+
+      <a routerLink="/admin/groups" class="action-card" data-accent="warning">
+        <div class="action-card__icon" aria-hidden="true">
+          <i class="ph-duotone ph-users-three"></i>
+        </div>
+        <div class="action-card__body">
+          <h4 class="action-card__title">Группы</h4>
+          <p class="action-card__text">Учебные группы и их состав</p>
+        </div>
+        <i class="ph ph-arrow-right action-card__arrow" aria-hidden="true"></i>
+      </a>
+
+      <a routerLink="/admin/semesters" class="action-card" data-accent="info">
+        <div class="action-card__icon" aria-hidden="true">
+          <i class="ph-duotone ph-calendar"></i>
+        </div>
+        <div class="action-card__body">
+          <h4 class="action-card__title">Семестры</h4>
+          <p class="action-card__text">Расписание учебных периодов</p>
+        </div>
+        <i class="ph ph-arrow-right action-card__arrow" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+</section>

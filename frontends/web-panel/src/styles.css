@@ -1,105 +1,378 @@
 @import "tailwindcss";
-@import "@fontsource-variable/geist";
 @import "@angular/material/prebuilt-themes/azure-blue.css";
 @import "@phosphor-icons/web/regular";
 
-/* Tailwind v4 dark mode via class strategy */
-@custom-variant dark (&:where(.dark, .dark *));
+/* ==========================================================================
+ * RutCampusTrack — Transit Grid design system
+ * Fonts must load before tokens (tokens reference the font families).
+ * ========================================================================== */
+@import "./styles/fonts.css";
+@import "./styles/tokens.css";
 
-/* Angular Material M3 CSS variable overrides */
+/* Tailwind v4 dark mode: both [data-theme="dark"] attribute and legacy .dark
+ * class so Angular Material theming and existing status chips continue working.
+ * ThemeService sets both in lockstep. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
+/* ==========================================================================
+ * Angular Material M3 bridge — route Material system tokens to Transit Grid.
+ * This re-themes every Material component (buttons, cards, tables, inputs)
+ * without replacing the Material theme. Scoped to :root so both themes inherit.
+ * ========================================================================== */
 :root {
-  /* Font: Geist Variable (per UI-SPEC) */
-  --mat-sys-body-large-font: "Geist Variable", sans-serif;
-  --mat-sys-body-medium-font: "Geist Variable", sans-serif;
-  --mat-sys-body-small-font: "Geist Variable", sans-serif;
-  --mat-sys-headline-large-font: "Geist Variable", sans-serif;
-  --mat-sys-headline-medium-font: "Geist Variable", sans-serif;
-  --mat-sys-headline-small-font: "Geist Variable", sans-serif;
-  --mat-sys-title-large-font: "Geist Variable", sans-serif;
-  --mat-sys-title-medium-font: "Geist Variable", sans-serif;
-  --mat-sys-title-small-font: "Geist Variable", sans-serif;
-  --mat-sys-label-large-font: "Geist Variable", sans-serif;
-  --mat-sys-label-medium-font: "Geist Variable", sans-serif;
-  --mat-sys-label-small-font: "Geist Variable", sans-serif;
+  /* Material font stack */
+  --mat-sys-body-large-font: var(--font-sans);
+  --mat-sys-body-medium-font: var(--font-sans);
+  --mat-sys-body-small-font: var(--font-sans);
+  --mat-sys-headline-large-font: var(--font-display);
+  --mat-sys-headline-medium-font: var(--font-display);
+  --mat-sys-headline-small-font: var(--font-heading);
+  --mat-sys-title-large-font: var(--font-heading);
+  --mat-sys-title-medium-font: var(--font-heading);
+  --mat-sys-title-small-font: var(--font-heading);
+  --mat-sys-label-large-font: var(--font-sans);
+  --mat-sys-label-medium-font: var(--font-sans);
+  --mat-sys-label-small-font: var(--font-sans);
 
-  /* Brand colors (per UI-SPEC) */
-  --mat-sys-primary: #1A56DB;
-  --mat-sys-on-primary: #FFFFFF;
-  --mat-sys-error: #DC2626;
+  /* Material semantic colors -> Transit Grid accents */
+  --mat-sys-primary: var(--accent-primary);
+  --mat-sys-on-primary: var(--accent-primary-contrast);
+  --mat-sys-secondary: var(--accent-secondary);
+  --mat-sys-on-secondary: var(--text-primary);
+  --mat-sys-tertiary: var(--accent-info);
+  --mat-sys-error: var(--accent-danger);
   --mat-sys-on-error: #FFFFFF;
-  --mat-sys-surface: #FFFFFF;
-  --mat-sys-on-surface: #1A1A1A;
-  --mat-sys-surface-container: #F5F5F5;
-  --mat-sys-outline: #D1D5DB;
-  --mat-sys-outline-variant: #E5E7EB;
+  --mat-sys-surface: var(--bg-primary);
+  --mat-sys-on-surface: var(--text-primary);
+  --mat-sys-surface-container: var(--bg-secondary);
+  --mat-sys-surface-container-high: var(--bg-elevated);
+  --mat-sys-surface-container-highest: var(--bg-elevated);
+  --mat-sys-outline: var(--border-default);
+  --mat-sys-outline-variant: var(--border-subtle);
 }
 
-.dark {
-  --mat-sys-primary: #4D8BFF;
-  --mat-sys-on-primary: #FFFFFF;
-  --mat-sys-surface: #1A1A1A;
-  --mat-sys-on-surface: #E5E7EB;
-  --mat-sys-surface-container: #242424;
-  --mat-sys-outline: #4B5563;
-  --mat-sys-outline-variant: #374151;
-}
+/* Ensure the legacy .dark class (still used by Material theming and existing
+ * chip utilities) mirrors the [data-theme="dark"] attribute the ThemeService
+ * sets. No separate Material overrides needed — variables already cascade. */
 
-/* Base styles */
+/* ==========================================================================
+ * Base typography
+ * ========================================================================== */
 html, body {
   height: 100%;
   margin: 0;
-  font-family: "Geist Variable", sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
-/* Status semantic colors (from design-decisions.md) */
-:root {
-  --color-present: #16A34A;
-  --color-absent: #DC2626;
-  --color-excused: #D97706;
-  --color-free-attendance: #9333EA;
-  --color-pending: #6B7280;
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-display);
 }
 
-/* Journal status cell chips */
+h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: var(--leading-heading);
+}
+
+code, kbd, pre, samp {
+  font-family: var(--font-mono);
+}
+
+/* ==========================================================================
+ * Status chips — journal cell badges (present/absent/excused/free_attendance)
+ * Retained from previous UI-SPEC; now read Transit Grid status tokens so both
+ * themes work automatically.
+ * ========================================================================== */
 .status-chip {
   width: 24px;
   height: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 2px;
-  font-size: 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
   font-weight: 600;
   line-height: 1;
 }
-.status-chip--present { background: rgba(22, 163, 74, 0.12); color: var(--color-present); }
-.status-chip--absent { background: rgba(220, 38, 38, 0.12); color: var(--color-absent); }
-.status-chip--excused { background: rgba(217, 119, 6, 0.12); color: var(--color-excused); }
-.status-chip--free_attendance { background: rgba(147, 51, 234, 0.12); color: var(--color-free-attendance); }
-.dark .status-chip--present { background: rgba(22, 163, 74, 0.20); }
-.dark .status-chip--absent { background: rgba(220, 38, 38, 0.20); }
-.dark .status-chip--excused { background: rgba(217, 119, 6, 0.20); }
-.dark .status-chip--free_attendance { background: rgba(147, 51, 234, 0.20); }
+.status-chip--present {
+  background: color-mix(in srgb, var(--status-present) 12%, transparent);
+  color: var(--status-present);
+}
+.status-chip--absent {
+  background: color-mix(in srgb, var(--status-absent) 12%, transparent);
+  color: var(--status-absent);
+}
+.status-chip--excused {
+  background: color-mix(in srgb, var(--status-excused) 12%, transparent);
+  color: var(--status-excused);
+}
+.status-chip--free_attendance {
+  background: color-mix(in srgb, var(--status-free-attendance) 12%, transparent);
+  color: var(--status-free-attendance);
+}
+[data-theme="dark"] .status-chip--present,
+.dark .status-chip--present {
+  background: color-mix(in srgb, var(--status-present) 20%, transparent);
+}
+[data-theme="dark"] .status-chip--absent,
+.dark .status-chip--absent {
+  background: color-mix(in srgb, var(--status-absent) 20%, transparent);
+}
+[data-theme="dark"] .status-chip--excused,
+.dark .status-chip--excused {
+  background: color-mix(in srgb, var(--status-excused) 20%, transparent);
+}
+[data-theme="dark"] .status-chip--free_attendance,
+.dark .status-chip--free_attendance {
+  background: color-mix(in srgb, var(--status-free-attendance) 20%, transparent);
+}
 
 /* Role chips (admin pages) */
-.role-chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; line-height: 1.4; }
-.role-chip--admin { background: rgba(29, 78, 216, 0.12); color: #1D4ED8; }
-.role-chip--teacher { background: rgba(217, 119, 6, 0.12); color: #D97706; }
-.role-chip--student { background: rgba(22, 163, 74, 0.12); color: #16A34A; }
-.dark .role-chip--admin { background: rgba(29, 78, 216, 0.20); }
-.dark .role-chip--teacher { background: rgba(217, 119, 6, 0.20); }
-.dark .role-chip--student { background: rgba(22, 163, 74, 0.20); }
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.4;
+}
+.role-chip--admin {
+  background: color-mix(in srgb, var(--accent-secondary) 12%, transparent);
+  color: var(--accent-secondary);
+}
+.role-chip--teacher {
+  background: color-mix(in srgb, var(--accent-warning) 12%, transparent);
+  color: var(--accent-warning);
+}
+.role-chip--student {
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  color: var(--accent-primary);
+}
+[data-theme="dark"] .role-chip--admin,
+.dark .role-chip--admin {
+  background: color-mix(in srgb, var(--accent-secondary) 20%, transparent);
+}
+[data-theme="dark"] .role-chip--teacher,
+.dark .role-chip--teacher {
+  background: color-mix(in srgb, var(--accent-warning) 20%, transparent);
+}
+[data-theme="dark"] .role-chip--student,
+.dark .role-chip--student {
+  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+}
+
+/* ==========================================================================
+ * Page shell — shared layout primitives for all admin/teacher pages.
+ * Per brandbook §7 every content page sits inside the shell's max-width
+ * container (1280px) and is composed from these three primitives:
+ *
+ *   .page-header  — eyebrow + title + optional action button row
+ *   .page-card    — surface container for filters, tables, empty states
+ *   .page-stack   — vertical spacer between sections on a page
+ *
+ * Kept in global styles so lazy-loaded route components don't each ship
+ * ~1 KB of duplicated layout CSS.
+ * ========================================================================== */
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+.page-header__title :where(h1, h2) {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2vw + 0.5rem, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 0;
+}
+.page-header__subtitle {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  margin: var(--space-2) 0 0;
+  line-height: 1.5;
+}
+.page-header__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+/* Brand primary button — a minimal pill that matches the brandbook CTA style
+ * without pulling in Material. Usable wherever a bare <button> lives. */
+.btn-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px 20px;
+  min-height: 42px;
+  border-radius: var(--radius-full);
+  background: var(--accent-primary);
+  color: var(--accent-primary-contrast);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: -0.005em;
+  border: 0;
+  cursor: pointer;
+  box-shadow: var(--glow-primary);
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    background-color var(--duration-base) var(--ease-out);
+  text-decoration: none;
+}
+.btn-brand:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 0 28px color-mix(in oklab, var(--accent-primary) 50%, transparent);
+}
+.btn-brand:active:not(:disabled) { transform: scale(0.98); }
+.btn-brand:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+.btn-brand i { font-size: 18px; line-height: 1; }
+
+.page-card {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+}
+.page-card--flush { padding: 0; overflow: hidden; }
+.page-card__header {
+  padding: var(--space-5) var(--space-5) 0;
+}
+.page-card__body { padding: 0; }
+
+.page-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+/* Empty / error states living inside a page-card */
+.page-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+}
+.page-empty__icon {
+  width: 56px; height: 56px;
+  border-radius: var(--radius-md);
+  display: grid; place-items: center;
+  background: color-mix(in oklab, var(--accent-primary) 12%, transparent);
+  border: 1px solid var(--border-accent);
+  color: var(--accent-primary);
+  margin-bottom: var(--space-2);
+}
+.page-empty__icon i { font-size: 26px; }
+.page-empty__title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+.page-empty__text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 44ch;
+}
+
+.page-error {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-danger) 28%, transparent);
+  color: var(--accent-danger);
+  font-size: 0.875rem;
+}
+.page-error i { font-size: 20px; }
+
+/* Semester status pills — replaces previous bg-green-100 tailwind hardcodes */
+.semester-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  border: 1px solid transparent;
+}
+.semester-status--active {
+  background: color-mix(in srgb, var(--status-present) 14%, transparent);
+  color: var(--status-present);
+  border-color: color-mix(in srgb, var(--status-present) 30%, transparent);
+}
+.semester-status--planned {
+  background: color-mix(in srgb, var(--status-excused) 14%, transparent);
+  color: var(--status-excused);
+  border-color: color-mix(in srgb, var(--status-excused) 30%, transparent);
+}
+.semester-status--finished {
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
+}
 
 /* User status chips (admin pages) */
-.status-chip-admin { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; line-height: 1.4; }
-.status-chip-admin--active { background: rgba(22, 163, 74, 0.12); color: #16A34A; }
-.status-chip-admin--archived { background: rgba(220, 38, 38, 0.12); color: #DC2626; }
-.dark .status-chip-admin--active { background: rgba(22, 163, 74, 0.20); }
-.dark .status-chip-admin--archived { background: rgba(220, 38, 38, 0.20); }
+.status-chip-admin {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.4;
+}
+.status-chip-admin--active {
+  background: color-mix(in srgb, var(--status-present) 12%, transparent);
+  color: var(--status-present);
+}
+.status-chip-admin--archived {
+  background: color-mix(in srgb, var(--status-absent) 12%, transparent);
+  color: var(--status-absent);
+}
+[data-theme="dark"] .status-chip-admin--active,
+.dark .status-chip-admin--active {
+  background: color-mix(in srgb, var(--status-present) 20%, transparent);
+}
+[data-theme="dark"] .status-chip-admin--archived,
+.dark .status-chip-admin--archived {
+  background: color-mix(in srgb, var(--status-absent) 20%, transparent);
+}

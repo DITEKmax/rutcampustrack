@@ -1,6 +1,12 @@
-<div class="flex h-screen overflow-hidden bg-[var(--mat-sys-surface)]">
-  <app-sidebar />
-  <main class="flex-1 overflow-y-auto p-8">
-    <router-outlet />
-  </main>
+<div class="shell">
+  <app-sidebar class="shell__sidebar" />
+
+  <div class="shell__column">
+    <app-header />
+    <main class="shell__main" tabindex="-1">
+      <div class="shell__content">
+        <router-outlet />
+      </div>
+    </main>
+  </div>
 </div>

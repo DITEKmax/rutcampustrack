@@ -54,3 +54,6 @@ docker-compose.override.yml
 nginx/dhparam.pem
 nginx/conf.d/*.bak
 nginx/conf.d/*.disabled
+
+.claude/worktrees/
+.claude/settings.local.json

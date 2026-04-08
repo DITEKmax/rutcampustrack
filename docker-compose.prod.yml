@@ -107,38 +107,6 @@ services:
   # BACKEND SERVICES
   # ============================================================
 
-  api-gateway:
-    build:
-      context: .
-      dockerfile: services/api-gateway/Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/api-gateway:latest
-    container_name: rct-api-gateway
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      AUTH_SERVICE_URL: http://auth-service:9090
-    expose:
-      - "8080"
-    networks:
-      - private_net
-    depends_on:
-      auth-service:
-        condition: service_healthy
-      academic-service:
-        condition: service_healthy
-      schedule-service:
-        condition: service_healthy
-      attendance-service:
-        condition: service_healthy
-      notification-web:
-        condition: service_healthy
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
   auth-service:
     build:
       context: .
@@ -294,6 +262,8 @@ services:
         condition: service_healthy
       mongo-attendance:
         condition: service_healthy
+      auth-service:          # <-- FIX: ждём пока auth-service сгенерит /keys/public.key
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9094/actuator/health/liveness || exit 1"]
@@ -339,6 +309,38 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    image: ghcr.io/ditekmax/rutcampustrack/api-gateway:latest
+    container_name: rct-api-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      AUTH_SERVICE_URL: http://auth-service:9090
+    expose:
+      - "8080"
+    networks:
+      - private_net
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      academic-service:
+        condition: service_healthy
+      schedule-service:
+        condition: service_healthy
+      attendance-service:
+        condition: service_healthy
+      notification-web:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # ============================================================
   # REVERSE PROXY

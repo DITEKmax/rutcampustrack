@@ -13,8 +13,7 @@ export const roleGuard =
     if (!user) return router.createUrlTree(['/login']);
 
     if (!allowedRoles.includes(user.role)) {
-      const dashboard = user.role === 'ADMIN' ? '/admin/dashboard' : '/teacher/dashboard';
-      return router.createUrlTree([dashboard]);
+      return router.createUrlTree([auth.resolveDashboardFor(user)]);
     }
 
     return true;

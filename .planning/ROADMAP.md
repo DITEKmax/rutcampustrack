@@ -130,7 +130,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 
 **Milestone Goal:** Fix critical post-v8.0 production frontend bugs and deliver full web cabinets for STUDENT and HEADMAN roles, unified under a single `/login` entry point. Extend React PWA to HEADMAN. Move landing to `/presentation/`.
 
-- [ ] **Phase 49: Nginx Routing + Landing Dead Link Fix** — CRITICAL-PATH: redirect root to `/login`, surface landing at `/presentation/`, patch three broken Telegram links
+- [x] **Phase 49: Nginx Routing + Landing Dead Link Fix** — CRITICAL-PATH: redirect root to `/login`, surface landing at `/presentation/`, patch three broken Telegram links (completed 2026-04-08)
 - [ ] **Phase 50: baseHref Migration + Unified /login** — CRITICAL-PATH: migrate Angular web-panel `baseHref` to `/`, wire role-based routing and new guards for STUDENT/HEADMAN
 - [ ] **Phase 51: Student Web Cabinet — Shell + Schedule + Check-in** — New Angular routes `/student/dashboard`, `/student/schedule`, `/student/checkin` with STOMP real-time status
 - [ ] **Phase 52: Student Web Cabinet — Homework + Stats + Notifications + Profile** — Angular routes `/student/homework`, `/student/stats`, `/student/notifications`, `/student/profile`
@@ -153,7 +153,9 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
   3. Visiting `https://ruttrack.site/app/` serves the React PWA (now moved from `/`)
   4. All "Открыть в Telegram" / "Войти" buttons on the landing navigate to `/login` — none of them navigate to `https://t.me/`
   5. GitHub Actions CI pipeline passes without any modification to `.github/workflows/*.yml`; all 4 frontend Docker images rebuild successfully in CI
-**Plans**: TBD
+**Plans**: 2 plans
+- [x] 49-01-PLAN.md — Nginx reverse-proxy routing: root → 301 /login, /presentation/ → landing, /app/ → PWA, remove /landing/ block (INFRA-v9-01, 02, 03, 07)
+- [x] 49-02-PLAN.md — Landing HTML dead link fix: replace 3× https://t.me/ with /login, fix og:url to /presentation/, rewire "Мобильная версия (PWA)" button to /app/, verify CI workflows untouched (INFRA-v9-05, 06, LAND-v9-01, 03)
 **UI hint**: yes
 
 ### Phase 50: baseHref Migration + Unified /login
@@ -309,7 +311,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 | 27-32 | v6.0 | 14/14 | Complete | 2026-04-06 |
 | 33-40 | v7.0 | 16/16 | Complete | 2026-04-07 |
 | 41-48 | v8.0 | 11/11 | Complete | 2026-04-08 |
-| 49. Nginx Routing + Landing Dead Link Fix | v9.0 | 0/TBD | Not started | - |
+| 49. Nginx Routing + Landing Dead Link Fix | v9.0 | 2/2 | Complete    | 2026-04-08 |
 | 50. baseHref Migration + Unified /login | v9.0 | 0/TBD | Not started | - |
 | 51. Student Web Cabinet — Shell + Schedule + Check-in | v9.0 | 0/TBD | Not started | - |
 | 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 0/TBD | Not started | - |

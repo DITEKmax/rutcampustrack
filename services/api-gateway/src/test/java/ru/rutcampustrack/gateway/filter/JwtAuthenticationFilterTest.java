@@ -43,6 +43,8 @@ class JwtAuthenticationFilterTest {
     private String generateToken(PrivateKey privateKey, Map<String, Object> claims, Date expiry) {
         var builder = Jwts.builder()
                 .subject("123")
+                .issuer("rutcampustrack-auth")
+                .audience().add("rutcampustrack").and()
                 .expiration(expiry)
                 .signWith(privateKey);
         claims.forEach(builder::claim);

@@ -1,5 +1,8 @@
 # Stage 1: Build
-FROM eclipse-temurin:21-jdk-alpine AS builder
+# Note: must be a glibc-based image (not alpine/musl).
+# protobuf-gradle-plugin downloads `protoc-gen-grpc-java-*-linux-x86_64.exe`,
+# which is a glibc-linked ELF binary and fails to execute on musl (Alpine).
+FROM eclipse-temurin:21-jdk-jammy AS builder
 WORKDIR /workspace
 
 COPY gradlew .

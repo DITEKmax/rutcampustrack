@@ -45,6 +45,8 @@ v8.0 shipped (2026-04-08). Full production-ready system: 5 backend services, 4 f
 
 **Latest milestone:** v8.0 CI/CD, Deployment & Documentation shipped 2026-04-08 (8 phases, 11 plans, 26/26 requirements).
 
+**v9.0 progress:** Phase 49 complete (2026-04-08) — nginx root redirects to `/login`, landing moved to `/presentation/`, PWA moved to `/app/`, dead `t.me/` links replaced with `/login`. Critical-path routing fix landed; Phase 50 (`baseHref` migration + unified `/login`) unblocked. 8/33 v9.0 requirements satisfied offline; 8 HUMAN-UAT items pending live-host verification.
+
 ## Shipped Milestones
 
 <details>
@@ -327,4 +329,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-08 after v9.0 milestone start*
+*Last updated: 2026-04-09 after Phase 49 completion (nginx routing + landing dead-link fix)*

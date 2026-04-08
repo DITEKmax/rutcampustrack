@@ -42,6 +42,8 @@ class JwtHandshakeInterceptorTest {
     private String buildJwt(long userId, long groupId, String role, boolean isHeadman, Instant expiry) {
         return Jwts.builder()
                 .subject(String.valueOf(userId))
+                .issuer("rutcampustrack-auth")
+                .audience().add("rutcampustrack").and()
                 .claim("group_id", groupId)
                 .claim("role", role)
                 .claim("is_headman", isHeadman)

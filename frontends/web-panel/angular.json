@@ -41,7 +41,7 @@
             "outputPath": "dist",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "baseHref": "/admin/",
+            "baseHref": "/",
             "polyfills": [
               "zone.js"
             ],
@@ -59,7 +59,7 @@
           },
           "configurations": {
             "production": {
-              "baseHref": "/admin/",
+              "baseHref": "/",
               "budgets": [
                 {
                   "type": "initial",

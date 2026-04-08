@@ -24,7 +24,7 @@ interface NavItem {
   label: string;
   icon: string; // Phosphor icon class name
   route: string;
-  roles: ('TEACHER' | 'ADMIN')[];
+  roles: ('TEACHER' | 'ADMIN' | 'STUDENT')[];
 }
 
 @Component({
@@ -124,7 +124,9 @@ export class SidebarComponent implements OnInit {
   readonly sectionLabel = computed(() => {
     const user = this.currentUser();
     if (!user) return '';
-    return user.role === 'ADMIN' ? 'Администрирование' : 'Работа';
+    if (user.role === 'ADMIN') return 'Администрирование';
+    if (user.role === 'STUDENT') return 'Учёба';
+    return 'Работа'; // TEACHER
   });
 
   ngOnInit(): void {

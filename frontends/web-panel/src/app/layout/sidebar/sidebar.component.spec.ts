@@ -49,7 +49,7 @@ describe('SidebarComponent', () => {
   });
 
   it('renders filtered nav items for TEACHER role', async () => {
-    const teacherUser: AuthUser = { id: 1, role: 'TEACHER' };
+    const teacherUser: AuthUser = { id: 1, role: 'TEACHER', isHeadman: false, groupId: null };
     const authServiceMock = makeAuthServiceMock(teacherUser);
 
     await render(SidebarComponent, {
@@ -71,7 +71,7 @@ describe('SidebarComponent', () => {
   });
 
   it('renders filtered nav items for ADMIN role', async () => {
-    const adminUser: AuthUser = { id: 2, role: 'ADMIN' };
+    const adminUser: AuthUser = { id: 2, role: 'ADMIN', isHeadman: false, groupId: null };
     const authServiceMock = makeAuthServiceMock(adminUser);
 
     await render(SidebarComponent, {
@@ -91,8 +91,30 @@ describe('SidebarComponent', () => {
     expect(screen.queryByText('Журнал посещаемости')).toBeNull();
   });
 
+  it('renders no nav items for plain STUDENT role (placeholder phase — D-06)', async () => {
+    const studentUser: AuthUser = { id: 3, role: 'STUDENT', isHeadman: false, groupId: 5 };
+    const authServiceMock = makeAuthServiceMock(studentUser);
+
+    await render(SidebarComponent, {
+      providers: [
+        provideRouter([]),
+        provideNoopAnimations(),
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: AuthApi, useValue: mockAuthApi },
+        { provide: ThemeService, useValue: mockThemeService },
+      ],
+    });
+
+    // Per D-06: no sidebar entries for STUDENT in Phase 50
+    expect(screen.queryByText('Журнал посещаемости')).toBeNull();
+    expect(screen.queryByText('Пользователи')).toBeNull();
+    expect(screen.queryByText('Группы')).toBeNull();
+    expect(screen.queryByText('Семестры')).toBeNull();
+    expect(screen.queryByText('Статистика')).toBeNull();
+  });
+
   it('collapse toggle updates collapsed signal and persists to localStorage', async () => {
-    const teacherUser: AuthUser = { id: 1, role: 'TEACHER' };
+    const teacherUser: AuthUser = { id: 1, role: 'TEACHER', isHeadman: false, groupId: null };
     const authServiceMock = makeAuthServiceMock(teacherUser);
 
     const { fixture } = await render(SidebarComponent, {
@@ -116,7 +138,7 @@ describe('SidebarComponent', () => {
   });
 
   it('logout button calls authService.logout', async () => {
-    const teacherUser: AuthUser = { id: 1, role: 'TEACHER' };
+    const teacherUser: AuthUser = { id: 1, role: 'TEACHER', isHeadman: false, groupId: null };
     const authServiceMock = makeAuthServiceMock(teacherUser);
 
     const { fixture } = await render(SidebarComponent, {

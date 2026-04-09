@@ -105,10 +105,14 @@ describe('SidebarComponent', () => {
       ],
     });
 
-    // STUDENT should see three nav items (Главная primary, Расписание + Отметиться secondary)
+    // STUDENT should see all student nav items
     expect(screen.getByText('Главная')).toBeTruthy();
     expect(screen.getByText('Расписание')).toBeTruthy();
     expect(screen.getByText('Отметиться')).toBeTruthy();
+    expect(screen.getByText('Домашние задания')).toBeTruthy();
+    expect(screen.getByText('Статистика')).toBeTruthy();
+    expect(screen.getByText('Уведомления')).toBeTruthy();
+    expect(screen.getByText('Профиль')).toBeTruthy();
     // Role chip reads "Студент"
     expect(screen.getByText('Студент')).toBeTruthy();
     // Teacher/Admin items must NOT leak into STUDENT view
@@ -116,7 +120,6 @@ describe('SidebarComponent', () => {
     expect(screen.queryByText('Пользователи')).toBeNull();
     expect(screen.queryByText('Группы')).toBeNull();
     expect(screen.queryByText('Семестры')).toBeNull();
-    expect(screen.queryByText('Статистика')).toBeNull();
   });
 
   it('collapse toggle updates collapsed signal and persists to localStorage', async () => {

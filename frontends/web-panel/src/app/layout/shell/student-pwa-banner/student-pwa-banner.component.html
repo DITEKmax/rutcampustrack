@@ -1,0 +1,41 @@
+@if (bannerService.shouldShow()) {
+  <div
+    class="pwa-banner"
+    [@bannerSlide]
+    role="banner"
+    aria-label="Установите приложение RutTrack"
+  >
+    <i class="ph-duotone ph-device-mobile-camera pwa-banner__icon" aria-hidden="true"></i>
+
+    <div class="pwa-banner__text">
+      @if (isIos()) {
+        <span class="pwa-banner__title">Установите RutTrack: откройте в Safari → Поделиться → На экран «Домой»</span>
+      } @else {
+        <span class="pwa-banner__title">Установите RutTrack на главный экран</span>
+      }
+    </div>
+
+    @if (isIos()) {
+      <a href="/app/" class="btn-brand btn-brand--sm" target="_blank" rel="noopener">
+        Открыть в Safari
+      </a>
+    } @else if (hasPrompt()) {
+      <button class="btn-brand btn-brand--sm" type="button" (click)="install()">
+        Установить приложение
+      </button>
+    } @else {
+      <a href="/app/" class="btn-brand btn-brand--sm">
+        Открыть приложение
+      </a>
+    }
+
+    <button
+      class="pwa-banner__dismiss"
+      type="button"
+      aria-label="Закрыть баннер"
+      (click)="dismiss()"
+    >
+      <i class="ph ph-x" aria-hidden="true"></i>
+    </button>
+  </div>
+}

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
+import { StudentPwaBannerComponent } from './student-pwa-banner/student-pwa-banner.component';
 
 /**
  * Authenticated shell layout.
@@ -15,7 +16,7 @@ import { HeaderComponent } from '../header/header.component';
   selector: 'app-shell',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent],
+  imports: [RouterOutlet, SidebarComponent, HeaderComponent, StudentPwaBannerComponent],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.css',
 })

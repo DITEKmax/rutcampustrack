@@ -1,0 +1,33 @@
+@if (lesson; as l) {
+  <article class="next-lesson-card" [class.next-lesson-card--active]="isActive">
+    <p class="next-lesson-card__eyebrow">
+      @if (isActive) {
+        <span class="next-lesson-card__live-dot" aria-hidden="true"></span>
+      }
+      {{ heading }}
+    </p>
+    <h3 class="next-lesson-card__subject">{{ subjectName }}</h3>
+    <p class="next-lesson-card__meta">
+      <i class="ph-fill ph-clock" aria-hidden="true"></i>
+      <span class="next-lesson-card__time">{{ timeLabel }}</span>
+      <span class="next-lesson-card__sep" aria-hidden="true"></span>
+      <i class="ph-fill ph-map-pin" aria-hidden="true"></i>
+      <span>Ауд. {{ l.room }}</span>
+    </p>
+    @if (isActive) {
+      <a routerLink="/student/checkin" class="next-lesson-card__cta">
+        <i class="ph-fill ph-map-pin" aria-hidden="true"></i>
+        Отметиться
+        <i class="ph ph-arrow-right" aria-hidden="true"></i>
+      </a>
+    }
+  </article>
+} @else {
+  <article class="next-lesson-card next-lesson-card--empty">
+    <div class="next-lesson-card__empty-icon" aria-hidden="true">
+      <i class="ph-duotone ph-calendar-blank"></i>
+    </div>
+    <h3 class="next-lesson-card__subject">Сегодня пар нет</h3>
+    <p class="next-lesson-card__meta">Хорошее время чтобы отдохнуть или подготовиться.</p>
+  </article>
+}

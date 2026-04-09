@@ -1,0 +1,88 @@
+<section class="checkin" [@routeFade]>
+  <div class="checkin__frame">
+    @let active = activeLesson();
+    @let nextPlanned = nextPlannedLesson();
+
+    @if (loading()) {
+      <div class="checkin__skeleton" aria-busy="true" aria-label="Загрузка…"></div>
+    } @else if (fetchError()) {
+      <p class="checkin__fetch-error" role="alert">{{ fetchError() }}</p>
+    } @else if (active) {
+      <!-- Active lesson hero -->
+      <div class="checkin__hero" data-testid="checkin-active-hero">
+        <div class="checkin__live" aria-hidden="true">
+          <span class="checkin__live-dot"></span>
+          <span class="checkin__live-label">Идёт сейчас</span>
+        </div>
+
+        <h2 class="checkin__subject">
+          {{ (getSubjectName$(active.subjectId) | async) ?? 'Предмет' }}
+        </h2>
+
+        <p class="checkin__meta">
+          <i class="ph-fill ph-clock" aria-hidden="true"></i>
+          <span class="checkin__meta-time">
+            {{ formatTime(active.startTime) }}–{{ formatTime(active.endTime) }}
+          </span>
+          <span class="checkin__meta-sep" aria-hidden="true"></span>
+          <i class="ph-fill ph-map-pin" aria-hidden="true"></i>
+          <span>Ауд. {{ active.room }}</span>
+        </p>
+
+        <div class="checkin__cta-wrap">
+          @if (isConfirmed()) {
+            <div class="checkin__confirmed" role="status">
+              <i class="ph-fill ph-check-circle" aria-hidden="true"></i>
+              Вы отметились
+            </div>
+          } @else {
+            <button
+              type="button"
+              class="checkin__cta"
+              [attr.aria-label]="buttonAriaLabel()"
+              [attr.aria-busy]="isGpsPending() || isSubmitting()"
+              [disabled]="buttonDisabled()"
+              (click)="onCheckinClick()"
+            >
+              {{ buttonLabel() }}
+            </button>
+          }
+
+          <p class="checkin__counter" aria-live="polite">
+            <i class="ph-fill ph-users" aria-hidden="true"></i>
+            {{ attendeeCount() }} отметилось
+          </p>
+        </div>
+
+        @if (isError()) {
+          <p class="checkin__error" role="alert">{{ errorMessage() }}</p>
+        }
+      </div>
+    } @else {
+      <!-- Idle empty state -->
+      <div class="checkin__empty" data-testid="checkin-empty">
+        <div class="checkin__empty-icon" aria-hidden="true">
+          <i class="ph-duotone ph-clock"></i>
+        </div>
+        <h2 class="checkin__empty-title">Нет активной пары</h2>
+        <p class="checkin__empty-text">
+          Отметка станет доступна за 5 минут до начала следующего занятия.
+        </p>
+
+        @if (nextPlanned) {
+          <div class="checkin__next-hint" data-testid="checkin-next-hint">
+            <span class="checkin__next-label">Следующая пара</span>
+            <span class="checkin__next-subject">
+              {{ (getSubjectName$(nextPlanned.subjectId) | async) ?? 'Предмет' }}
+            </span>
+            <span class="checkin__next-time">
+              начало в {{ formatTime(nextPlanned.startTime) }}
+            </span>
+          </div>
+        } @else {
+          <p class="checkin__no-more">На сегодня пар больше нет</p>
+        }
+      </div>
+    }
+  </div>
+</section>

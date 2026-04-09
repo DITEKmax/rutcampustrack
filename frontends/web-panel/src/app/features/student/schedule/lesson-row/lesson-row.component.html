@@ -1,0 +1,69 @@
+<button
+  type="button"
+  class="lesson-row"
+  [ngClass]="{
+    'lesson-row--active': isActive,
+    'lesson-row--cancelled': isCancelled,
+    'lesson-row--expanded': expanded
+  }"
+  [attr.aria-expanded]="expanded"
+  [attr.aria-controls]="expanded ? 'lesson-detail-' + lesson.id : null"
+  [attr.data-lesson-id]="lesson.id"
+  (click)="onClick()"
+>
+  <div class="lesson-row__rail" aria-hidden="true">
+    <span class="lesson-row__time lesson-row__time--start">{{ startLabel }}</span>
+    <span class="lesson-row__dot"></span>
+    <span class="lesson-row__time lesson-row__time--end">{{ endLabel }}</span>
+  </div>
+
+  <div class="lesson-row__body">
+    <div class="lesson-row__head">
+      <h3 class="lesson-row__subject">{{ subjectName }}</h3>
+      <span [class]="statusChipClass">{{ statusLabel }}</span>
+    </div>
+    <p class="lesson-row__meta">
+      <i class="ph ph-map-pin" aria-hidden="true"></i>
+      <span>Ауд. {{ lesson.room }}</span>
+    </p>
+  </div>
+</button>
+
+@if (expanded) {
+  <div
+    class="lesson-row__detail"
+    [attr.id]="'lesson-detail-' + lesson.id"
+    role="region"
+  >
+    <dl class="lesson-row__detail-list">
+      <div>
+        <dt>Номер пары</dt>
+        <dd>{{ lesson.lessonNumber }}</dd>
+      </div>
+      <div>
+        <dt>Тип</dt>
+        <dd>{{ lessonTypeLabel }}</dd>
+      </div>
+      <div>
+        <dt>Аудитория</dt>
+        <dd>{{ lesson.room }}</dd>
+      </div>
+      <div>
+        <dt>Длительность</dt>
+        <dd>{{ startLabel }} — {{ endLabel }}</dd>
+      </div>
+      @if (lesson.teacherId) {
+        <div>
+          <dt>Преподаватель</dt>
+          <dd>ID {{ lesson.teacherId }}</dd>
+        </div>
+      }
+      @if (lesson.cancelReason) {
+        <div>
+          <dt>Причина отмены</dt>
+          <dd>{{ lesson.cancelReason }}</dd>
+        </div>
+      }
+    </dl>
+  </div>
+}

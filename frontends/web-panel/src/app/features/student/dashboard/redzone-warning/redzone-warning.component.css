@@ -1,0 +1,25 @@
+:host { display: block; }
+
+.redzone-warning {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--accent-warning) 10%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent-warning) 25%, transparent);
+  color: var(--accent-warning);
+}
+.redzone-warning i {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.redzone-warning__text {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  line-height: var(--leading-body);
+}
+.redzone-warning__text strong {
+  color: var(--accent-warning);
+}

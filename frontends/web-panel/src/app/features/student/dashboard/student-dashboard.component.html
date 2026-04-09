@@ -1,0 +1,78 @@
+<section class="dashboard student-dashboard page-stack" [@routeFade]>
+  <!-- Greeting hero -->
+  <header class="dashboard__hero">
+    <div class="dashboard__greeting">
+      <p class="dashboard__eyebrow">
+        <span class="dashboard__pulse" aria-hidden="true"></span>
+        Студент
+      </p>
+      <h2 class="dashboard__title">{{ greeting() }}</h2>
+      <p class="dashboard__subtitle">{{ dateLabel() }}</p>
+    </div>
+    <div class="dashboard__clock" aria-hidden="true">
+      <span class="dashboard__clock-value">{{ timeLabel() }}</span>
+      <span class="dashboard__clock-label">по Москве</span>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="dashboard__error" role="alert">
+      <i class="ph ph-warning-circle" aria-hidden="true"></i>
+      {{ error() }}
+    </div>
+  } @else if (loading()) {
+    <div class="dashboard__skeleton-row" aria-busy="true" aria-label="Загрузка…">
+      <div class="dashboard-skeleton"></div>
+      <div class="dashboard-skeleton"></div>
+    </div>
+  } @else {
+    <!-- Next lesson card -->
+    <app-next-lesson-card
+      [lesson]="nextLesson()"
+      [subjectName]="(getSubjectName$(nextLesson()?.subjectId) | async) ?? 'Предмет'"
+    />
+
+    <!-- Today's schedule summary -->
+    <section class="dashboard-today">
+      <h3 class="dashboard-today__title">Расписание на сегодня</h3>
+      @if (todaySorted().length === 0) {
+        <p class="dashboard-today__empty">Сегодня пар нет</p>
+      } @else {
+        <div class="dashboard-today__row">
+          @for (lesson of todaySorted(); track lesson.id) {
+            <div
+              class="dashboard-today-chip"
+              [class.dashboard-today-chip--active]="lesson.status === 'ACTIVE'"
+              [class.dashboard-today-chip--cancelled]="lesson.status === 'CANCELLED'"
+            >
+              <span class="dashboard-today-chip__time">{{ formatTime(lesson.startTime) }}</span>
+              <span
+                class="dashboard-today-chip__dot"
+                [attr.data-status]="lesson.status"
+                aria-hidden="true"
+              ></span>
+              <span class="dashboard-today-chip__name">
+                {{ (getSubjectName$(lesson.subjectId) | async) ?? 'Предмет' }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Red-zone warnings -->
+    @if (redZoneSubjects().length > 0) {
+      <section class="dashboard-redzone">
+        <h3 class="dashboard-redzone__title">Внимание к посещаемости</h3>
+        <div class="dashboard-redzone__list">
+          @for (subject of redZoneSubjects(); track subject.subjectId) {
+            <app-redzone-warning
+              [subjectName]="subject.subjectName"
+              [percentage]="subject.percentage"
+            />
+          }
+        </div>
+      </section>
+    }
+  }
+</section>

@@ -43,9 +43,7 @@ import type { HomeworkItem } from '../../shared/student-schedule.types';
         [checked]="item.completed"
         [disabled]="pending"
         (change)="onToggle()"
-        [attr.aria-label]="item.completed
-          ? 'Снять отметку с задания \'' + item.title + '\''
-          : 'Отметить задание \'' + item.title + '\' выполненным'">
+        [attr.aria-label]="toggleAriaLabel">
       </mat-checkbox>
 
       <!-- Content -->
@@ -143,6 +141,12 @@ export class HomeworkItemComponent {
   @Input({ required: true }) item!: HomeworkItem;
   @Input() pending = false;
   @Output() toggleComplete = new EventEmitter<number>();
+
+  get toggleAriaLabel(): string {
+    return this.item.completed
+      ? `Снять отметку с задания "${this.item.title}"`
+      : `Отметить задание "${this.item.title}" выполненным`;
+  }
 
   onToggle(): void {
     this.toggleComplete.emit(this.item.id);

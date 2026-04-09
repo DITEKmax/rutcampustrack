@@ -188,6 +188,34 @@ export class SidebarComponent implements OnInit {
       roles: ['STUDENT'],
       isHeadman: true,
     },
+    {
+      label: 'Журнал',
+      icon: 'ph-table',
+      route: '/headman/journal',
+      roles: ['STUDENT'],
+      isHeadman: true,
+    },
+    {
+      label: 'Пропуски',
+      icon: 'ph-file-text',
+      route: '/headman/excuses',
+      roles: ['STUDENT'],
+      isHeadman: true,
+    },
+    {
+      label: 'Запросы отметки',
+      icon: 'ph-clock-countdown',
+      route: '/headman/late-checkin',
+      roles: ['STUDENT'],
+      isHeadman: true,
+    },
+    {
+      label: 'Статистика',
+      icon: 'ph-chart-bar',
+      route: '/headman/stats',
+      roles: ['STUDENT'],
+      isHeadman: true,
+    },
   ];
 
   readonly filteredPrimaryItems = computed(() => {

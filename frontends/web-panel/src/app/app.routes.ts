@@ -198,6 +198,42 @@ export const routes: Routes = [
               ),
             data: { title: 'Предметы', eyebrow: 'Староста' },
           },
+          {
+            path: 'journal',
+            canActivate: [headmanGuard],
+            loadComponent: () =>
+              import('./features/headman/journal/headman-journal-page.component').then(
+                m => m.HeadmanJournalPageComponent,
+              ),
+            data: { title: 'Журнал', eyebrow: 'Староста' },
+          },
+          {
+            path: 'excuses',
+            canActivate: [headmanGuard],
+            loadComponent: () =>
+              import('./features/headman/excuses/headman-excuses.component').then(
+                m => m.HeadmanExcusesComponent,
+              ),
+            data: { title: 'Пропуски', eyebrow: 'Староста' },
+          },
+          {
+            path: 'late-checkin',
+            canActivate: [headmanGuard],
+            loadComponent: () =>
+              import('./features/headman/late-checkin/headman-late-checkin.component').then(
+                m => m.HeadmanLateCheckinComponent,
+              ),
+            data: { title: 'Запросы отметки', eyebrow: 'Староста' },
+          },
+          {
+            path: 'stats',
+            canActivate: [headmanGuard],
+            loadComponent: () =>
+              import('./features/headman/stats/headman-stats.component').then(
+                m => m.HeadmanStatsComponent,
+              ),
+            data: { title: 'Статистика', eyebrow: 'Староста' },
+          },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],
       },

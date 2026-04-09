@@ -12,6 +12,7 @@ export interface JournalStudentRow {
 }
 
 export interface JournalCell {
+  lessonId?: number;  // Phase 55: headman marking support (D-01); optional — teacher grid ignores
   date: string;
   lessonNumber: number;
   status: 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled';

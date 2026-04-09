@@ -165,7 +165,7 @@ export const routes: Routes = [
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],
       },
-      // Headman routes (D-07 — placeholder Phase 50, real в Phase 54-55)
+      // Headman routes (D-07 — Phase 54)
       {
         path: 'headman',
         canActivate: [headmanGuard],
@@ -173,11 +173,30 @@ export const routes: Routes = [
         children: [
           {
             path: 'dashboard',
+            canActivate: [headmanGuard],
             loadComponent: () =>
-              import('./features/headman/headman-placeholder/headman-placeholder.component').then(
-                m => m.HeadmanPlaceholderComponent,
+              import('./features/headman/dashboard/headman-dashboard.component').then(
+                m => m.HeadmanDashboardComponent,
               ),
             data: { title: 'Кабинет старосты', eyebrow: 'Староста' },
+          },
+          {
+            path: 'group',
+            canActivate: [headmanGuard],
+            loadComponent: () =>
+              import('./features/headman/group/headman-group.component').then(
+                m => m.HeadmanGroupComponent,
+              ),
+            data: { title: 'Группа', eyebrow: 'Староста' },
+          },
+          {
+            path: 'subjects',
+            canActivate: [headmanGuard],
+            loadComponent: () =>
+              import('./features/headman/subjects/headman-subjects.component').then(
+                m => m.HeadmanSubjectsComponent,
+              ),
+            data: { title: 'Предметы', eyebrow: 'Староста' },
           },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],

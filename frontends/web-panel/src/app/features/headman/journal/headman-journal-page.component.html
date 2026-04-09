@@ -1,0 +1,73 @@
+<div class="page-header">
+  <h1>Журнал посещаемости</h1>
+  <span class="page-header__eyebrow">Староста</span>
+</div>
+
+<div class="page-card">
+  <div class="page-filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Предмет</mat-label>
+      <mat-select
+        [ngModel]="selectedSubjectId()"
+        (ngModelChange)="onSubjectChange($event)"
+        placeholder="Выберите предмет"
+      >
+        @for (s of subjects(); track s.id) {
+          <mat-option [value]="s.id">{{ s.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Начало</mat-label>
+      <input
+        matInput
+        type="date"
+        [ngModel]="dateFrom()"
+        (ngModelChange)="dateFrom.set($event)"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Конец</mat-label>
+      <input
+        matInput
+        type="date"
+        [ngModel]="dateTo()"
+        (ngModelChange)="dateTo.set($event)"
+      />
+    </mat-form-field>
+
+    <button
+      class="btn-brand"
+      (click)="loadJournal()"
+      [disabled]="!selectedSubjectId()"
+    >
+      Применить
+    </button>
+  </div>
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" aria-label="Загрузка журнала"></mat-progress-bar>
+  }
+
+  @if (error()) {
+    <div class="page-error" role="alert">
+      <i class="ph ph-warning-circle"></i>
+      {{ error() }}
+    </div>
+  } @else if (!journalData()) {
+    <div class="page-empty" role="status" aria-live="polite">
+      <div class="page-empty__icon"><i class="ph ph-table"></i></div>
+      <p class="page-empty__title">Выберите предмет</p>
+      <p class="page-empty__text">
+        Выберите предмет из выпадающего списка, чтобы загрузить журнал.
+      </p>
+    </div>
+  } @else {
+    <app-headman-journal-grid
+      [journalData]="journalData()!"
+      [loading]="loading()"
+    ></app-headman-journal-grid>
+  }
+</div>

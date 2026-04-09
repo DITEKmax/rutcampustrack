@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
 status: executing
-stopped_at: Roadmap created — ROADMAP.md written (Phases 49-57), REQUIREMENTS.md traceability populated (45/45), STATE.md updated
-last_updated: "2026-04-08T21:28:45.235Z"
-last_activity: 2026-04-08
+stopped_at: "Phase 50 context gathered (discuss mode): 10 decisions across 4 areas"
+last_updated: "2026-04-09T01:22:50.388Z"
+last_activity: 2026-04-09
 progress:
   total_phases: 9
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 2
+  total_plans: 8
+  completed_plans: 8
   percent: 100
 ---
 
@@ -22,17 +22,17 @@ v9.0 Frontend Unification — Single Login & Role-Based Web Clients
 
 ## Current Position
 
-Phase: 50
+Phase: 51
 Plan: Not started
-Status: Executing Phase 49
-Last activity: 2026-04-08
+Status: Executing Phase 50
+Last activity: 2026-04-09
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-08)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** Phase 49 — nginx-routing-landing-dead-link-fix
+**Current focus:** Phase 50 — basehref-migration-unified-login
 
 ## Roadmap Summary
 
@@ -89,6 +89,6 @@ Phases 49 and 50 are CRITICAL-PATH and must complete before Blocks B (51-53), C 
 
 ## Session Continuity
 
-Last session: 2026-04-08T23:30:00.000Z
-Stopped at: Roadmap created — ROADMAP.md written (Phases 49-57), REQUIREMENTS.md traceability populated (45/45), STATE.md updated
+Last session: 2026-04-08T21:50:03.734Z
+Stopped at: Phase 50 context gathered (discuss mode): 10 decisions across 4 areas
 Next action: /gsd-plan-phase 49

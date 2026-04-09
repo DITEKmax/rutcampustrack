@@ -131,7 +131,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 **Milestone Goal:** Fix critical post-v8.0 production frontend bugs and deliver full web cabinets for STUDENT and HEADMAN roles, unified under a single `/login` entry point. Extend React PWA to HEADMAN. Move landing to `/presentation/`.
 
 - [x] **Phase 49: Nginx Routing + Landing Dead Link Fix** — CRITICAL-PATH: redirect root to `/login`, surface landing at `/presentation/`, patch three broken Telegram links (completed 2026-04-08)
-- [ ] **Phase 50: baseHref Migration + Unified /login** — CRITICAL-PATH: migrate Angular web-panel `baseHref` to `/`, wire role-based routing and new guards for STUDENT/HEADMAN
+- [x] **Phase 50: baseHref Migration + Unified /login** — CRITICAL-PATH: migrate Angular web-panel `baseHref` to `/`, wire role-based routing and new guards for STUDENT/HEADMAN (completed 2026-04-09)
 - [ ] **Phase 51: Student Web Cabinet — Shell + Schedule + Check-in** — New Angular routes `/student/dashboard`, `/student/schedule`, `/student/checkin` with STOMP real-time status
 - [ ] **Phase 52: Student Web Cabinet — Homework + Stats + Notifications + Profile** — Angular routes `/student/homework`, `/student/stats`, `/student/notifications`, `/student/profile`
 - [ ] **Phase 53: Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner** — Angular routes `/student/excuses`, `/student/late-checkin`; non-intrusive PWA install banner
@@ -166,7 +166,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 **Success Criteria** (what must be TRUE):
   1. An ADMIN logging in at `/login` is routed to `/admin/dashboard`; a TEACHER to `/teacher/dashboard`; a plain STUDENT to `/student/dashboard`; a STUDENT with `is_headman=true` to `/headman/dashboard`
   2. `AuthService.currentUser()` signal exposes `role: 'ADMIN' | 'TEACHER' | 'STUDENT'` and `isHeadman: boolean` parsed directly from JWT claims without any additional API call
-  3. Visiting `/headman/dashboard` as a plain STUDENT (not headman) is blocked by `headmanGuard` and redirects to `/login`
+  3. Visiting `/headman/dashboard` as a plain STUDENT (not headman) is blocked by `headmanGuard` and redirects to `/student/dashboard` (via `AuthService.resolveDashboardFor`, per D-09 — authenticated users should land on their own dashboard, not `/login`)
   4. Visiting `/student/schedule` as a headman user succeeds — headman passes `studentGuard`
   5. The logout action on any dashboard clears tokens, calls the server token revoke endpoint, and redirects to `/login`
   6. All 129 existing web-panel vitest tests pass after the `baseHref` migration (`ng test --watch=false` exits with 0 failures)
@@ -178,7 +178,13 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
   - Placeholder lazy-loaded shells for `/student/*` and `/headman/*` registered now — actual components arrive in Phases 51-55
   - HEADMAN is NOT a UserRole enum value; it is `is_headman` boolean claim only
   - Risk: grep for `ruttrack.site/admin` in all docs and landing before editing to avoid broken links
-**Plans**: TBD
+**Plans**: 6 plans
+- [x] 50-01-PLAN.md — AuthService расширение: AuthUser interface + resolveDashboardFor + JWT claim parsing (AUTH-v9-02, 03)
+- [x] 50-02-PLAN.md — Новые guards: studentGuard, headmanGuard, guestGuard + unit specs (AUTH-v9-04, 05)
+- [x] 50-03-PLAN.md — Placeholder components + app.routes.ts регистрация 3 маршрутов (INFRA-v9-04, AUTH-v9-04, 05)
+- [x] 50-04-PLAN.md — login.component.ts + role.guard.ts → resolveDashboardFor (AUTH-v9-01, 02, 03, 06)
+- [x] 50-05-PLAN.md — angular.json baseHref / + prod nginx catch-all + landing footer fix (INFRA-v9-04)
+- [x] 50-06-PLAN.md — Full vitest regression + production build + Human UAT (AUTH-v9-07)
 **UI hint**: yes
 
 ### Phase 51: Student Web Cabinet — Shell + Schedule + Check-in
@@ -312,7 +318,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 | 33-40 | v7.0 | 16/16 | Complete | 2026-04-07 |
 | 41-48 | v8.0 | 11/11 | Complete | 2026-04-08 |
 | 49. Nginx Routing + Landing Dead Link Fix | v9.0 | 2/2 | Complete    | 2026-04-08 |
-| 50. baseHref Migration + Unified /login | v9.0 | 0/TBD | Not started | - |
+| 50. baseHref Migration + Unified /login | v9.0 | 6/6 | Complete    | 2026-04-09 |
 | 51. Student Web Cabinet — Shell + Schedule + Check-in | v9.0 | 0/TBD | Not started | - |
 | 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 0/TBD | Not started | - |
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 0/TBD | Not started | - |

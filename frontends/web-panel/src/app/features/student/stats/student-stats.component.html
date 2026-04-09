@@ -1,0 +1,49 @@
+<div class="page-stack" [@routeFade]>
+  <header class="page-header">
+    <p class="page-header__eyebrow">Студент</p>
+    <h1 class="page-header__title">Статистика посещаемости</h1>
+    <p class="page-header__subtitle">Процент присутствия по предметам и общий показатель.</p>
+  </header>
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  @if (!loading() && error()) {
+    <div class="page-error" role="alert">
+      <i class="ph-warning-circle ph-fill"></i>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error() && stats()) {
+    <!-- Overall summary card -->
+    @if (stats()!.overall) {
+      <app-student-overall-card
+        [stats]="stats()!.overall"
+        [threshold]="threshold()">
+      </app-student-overall-card>
+    }
+
+    <!-- Empty state -->
+    @if (stats()!.subjects.length === 0) {
+      <div class="page-empty">
+        <i class="ph-chart-line ph-duotone"></i>
+        <h2>Данных пока нет</h2>
+        <p>Данные о посещаемости появятся после первых занятий семестра.</p>
+      </div>
+    }
+
+    <!-- Subject charts grid -->
+    @if (stats()!.subjects.length > 0) {
+      <div class="stats-grid">
+        @for (subject of stats()!.subjects; track subject.subjectId) {
+          <app-student-subject-chart
+            [stat]="subject"
+            [threshold]="threshold()">
+          </app-student-subject-chart>
+        }
+      </div>
+    }
+  }
+</div>

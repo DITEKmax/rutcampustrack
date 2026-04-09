@@ -273,7 +273,36 @@ class ReportServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // Test 8: Regular student (not headman) gets AccessDeniedException (D-05)
+    // Test 8: getJournal cells include lessonId (Phase 55 D-01)
+    // -------------------------------------------------------------------------
+
+    @Test
+    void getJournal_cellIncludesLessonId() {
+        Long knownLessonId = 42L;
+        AttendanceRecord recordWithKnownLesson = new AttendanceRecord(
+                knownLessonId, USER_ID, GROUP_ID, SUBJECT_ID_1,
+                LocalDate.of(2026, 4, 1), 1, AttendanceStatus.PRESENT, AttendanceSource.STUDENT_GEO
+        );
+
+        GroupMembersResponse members = GroupMembersResponse.newBuilder()
+                .addStudents(StudentInfo.newBuilder().setUserId(USER_ID).setDisplayName("Student A").build())
+                .build();
+        when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(members);
+        when(attendanceReadPort.findByGroupAndSubject(anyLong(), anyLong(), any(), any()))
+                .thenReturn(List.of(recordWithKnownLesson));
+
+        var response = reportService.getJournal(GROUP_ID, SUBJECT_ID_1,
+                LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30));
+
+        assertThat(response.getStudents()).hasSize(1);
+        var cells = response.getStudents().get(0).getRecords();
+        assertThat(cells).hasSize(1);
+        assertThat(cells.get(0).getLessonId()).isNotNull();
+        assertThat(cells.get(0).getLessonId()).isEqualTo(knownLessonId);
+    }
+
+    // -------------------------------------------------------------------------
+    // Test 9: Regular student (not headman) gets AccessDeniedException (D-05)
     // -------------------------------------------------------------------------
 
     @Test

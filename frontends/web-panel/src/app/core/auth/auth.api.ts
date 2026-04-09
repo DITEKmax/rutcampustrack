@@ -23,4 +23,8 @@ export class AuthApi {
   logout(refreshToken: string): Observable<void> {
     return this.http.post<void>('/api/auth/logout', { refreshToken });
   }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.post<void>('/api/auth/change-password', { currentPassword, newPassword });
+  }
 }

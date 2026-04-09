@@ -105,3 +105,26 @@ export interface PagedResponse<T> {
   _embedded?: Record<string, T[]>;
   page?: { totalElements: number; totalPages: number; size: number; number: number };
 }
+
+/** Homework assignment as returned by academic-service GET /api/academic/homeworks */
+export interface HomeworkItem {
+  id: number;
+  title: string;
+  description: string | null;
+  link: string | null;
+  subjectId: number;
+  groupId: number;
+  semesterId: number;
+  publishedBy: number;
+  completed: boolean;
+  createdAt: string; // ISO-8601
+}
+
+/** In-session notification log entry built from STOMP envelopes */
+export interface NotificationItem {
+  id: string;           // crypto.randomUUID() at receive time
+  type: string;         // STOMP envelope type field (e.g. 'lesson.started')
+  payload: Record<string, unknown>;
+  receivedAt: Date;
+  read: boolean;        // false until user visits /student/notifications
+}

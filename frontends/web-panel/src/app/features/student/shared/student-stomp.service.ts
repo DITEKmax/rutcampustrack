@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { Observable, Subject } from 'rxjs';
@@ -6,6 +6,9 @@ import type {
   AttendanceMarkedPayload,
   StompEnvelope,
 } from './student-schedule.types';
+import { StudentNotificationBadgeService } from './student-notification-badge.service';
+
+const STORED_TYPES = ['lesson.started', 'lesson.cancelled', 'homework.published', 'homework.updated', 'attendance.marked'];
 
 /**
  * STOMP subscription service for the student cabinet.
@@ -49,9 +52,14 @@ export class StudentStompService {
   private client: Client | null = null;
   private currentGroupId: number | null = null;
   private readonly markedSubject = new Subject<AttendanceMarkedPayload>();
+  private readonly onAnySubject = new Subject<StompEnvelope<Record<string, unknown>>>();
+  private readonly badgeService = inject(StudentNotificationBadgeService);
 
   /** Reactive stream of attendance.marked payloads. */
   readonly marked$: Observable<AttendanceMarkedPayload> = this.markedSubject.asObservable();
+
+  /** Reactive stream of ALL STOMP envelopes from the group topic. */
+  readonly onAnyEvent$: Observable<StompEnvelope<Record<string, unknown>>> = this.onAnySubject.asObservable();
 
   /**
    * Connect to /api/ws for a given group. Idempotent per (groupId).
@@ -74,9 +82,11 @@ export class StudentStompService {
       onConnect: () => {
         this.client?.subscribe(`/topic/group/${groupId}`, message => {
           try {
-            const envelope = JSON.parse(message.body) as StompEnvelope<AttendanceMarkedPayload>;
+            const envelope = JSON.parse(message.body) as StompEnvelope<Record<string, unknown>>;
+            this.onAnySubject.next(envelope);
+            if (STORED_TYPES.includes(envelope.type)) { this.badgeService.increment(); }
             if (envelope.type === 'attendance.marked') {
-              this.markedSubject.next(envelope.payload);
+              this.markedSubject.next(envelope.payload as unknown as AttendanceMarkedPayload);
             }
           } catch {
             // Malformed frame — drop silently. Never echo frame body to console.

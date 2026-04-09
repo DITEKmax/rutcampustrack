@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import type {
   CheckinRequest,
   CheckinResponse,
+  HomeworkItem,
   LessonResponse,
   PagedResponse,
   ResolvedThresholdResponse,
@@ -75,5 +76,40 @@ export class StudentApiService {
    */
   checkin(coords: CheckinRequest): Observable<CheckinResponse> {
     return this.http.post<CheckinResponse>('/api/attendance/checkin', coords);
+  }
+
+  /** Fetch homeworks for the student's group in the given semester. */
+  getHomeworks(groupId: number, semesterId: number): Observable<HomeworkItem[]> {
+    const params = new HttpParams()
+      .set('groupId', String(groupId))
+      .set('semesterId', String(semesterId))
+      .set('size', '50');
+    return this.http
+      .get<PagedResponse<HomeworkItem>>('/api/academic/homeworks', { params })
+      .pipe(map(resp => resp._embedded?.['homeworkResponseList'] ?? []));
+  }
+
+  /** Mark a homework item as complete for the authenticated student. */
+  markHomeworkComplete(id: number): Observable<void> {
+    return this.http.post<void>(`/api/academic/homeworks/${id}/complete`, {});
+  }
+
+  /** Remove the completion mark for a homework item. */
+  unmarkHomeworkComplete(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/academic/homeworks/${id}/complete`);
+  }
+
+  /** Fetch all semesters and return the ID of the currently active one, or null. */
+  getActiveSemesterId(): Observable<number | null> {
+    const params = new HttpParams().set('size', '100');
+    return this.http
+      .get<PagedResponse<{ id: number; active: boolean }>>('/api/academic/semesters', { params })
+      .pipe(
+        map(resp => {
+          const list = resp._embedded?.['semesterResponseList'] ?? [];
+          const active = list.find(s => s.active);
+          return active?.id ?? null;
+        }),
+      );
   }
 }

@@ -128,3 +128,30 @@ export interface NotificationItem {
   receivedAt: Date;
   read: boolean;        // false until user visits /student/notifications
 }
+
+/** Attendance record returned by GET /api/attendance/reports/student/records */
+export interface AttendanceRecord {
+  lessonId: number;
+  subjectId: number;
+  lessonDate: string;      // YYYY-MM-DD
+  lessonNumber: number;
+  status: string;          // 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled'
+  symbol: string;          // 'б' | 'н' | 'у' | 'сп' | '--'
+  source: string;          // 'manual' | 'auto' | 'checkin'
+}
+
+export type ExcuseTicketStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+
+export interface ExcuseTicket {
+  id: number;
+  createdAt: string;         // ISO-8601
+  subjectNames: string[];
+  status: ExcuseTicketStatus;
+  lessonIds: number[];
+}
+
+export interface ExcuseSubmitRequest {
+  lessonIds: number[];
+  comment: string | null;
+  // files отправляются через FormData отдельно
+}

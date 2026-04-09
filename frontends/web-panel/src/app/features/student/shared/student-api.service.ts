@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, catchError, map, of, throwError } from 'rxjs';
 import type {
+  AttendanceRecord,
   CheckinRequest,
   CheckinResponse,
   HomeworkItem,
@@ -109,6 +110,71 @@ export class StudentApiService {
           const list = resp._embedded?.['semesterResponseList'] ?? [];
           const active = list.find(s => s.active);
           return active?.id ?? null;
+        }),
+      );
+  }
+
+  /**
+   * Fetch the student's attendance records (all lessons with status).
+   * Backend: GET /api/attendance/reports/student/records
+   * HATEOAS embedded key: attendanceRecordEntryList (defensive fallback uses Object.values).
+   */
+  getStudentRecords(subjectId?: number): Observable<AttendanceRecord[]> {
+    let params = new HttpParams();
+    if (subjectId != null) params = params.set('subjectId', String(subjectId));
+    return this.http
+      .get<PagedResponse<AttendanceRecord>>(
+        '/api/attendance/reports/student/records',
+        { params },
+      )
+      .pipe(
+        map(resp => {
+          const embedded = resp._embedded;
+          if (!embedded) return [];
+          // Defensive: try known key first, then first array value
+          return (
+            embedded['attendanceRecordEntryList'] ??
+            (Object.values(embedded)[0] as AttendanceRecord[]) ??
+            []
+          );
+        }),
+      );
+  }
+
+  /**
+   * Submit an excuse ticket with optional file attachments.
+   * Backend endpoint (POST /api/attendance/excuses) is deferred from v5.0.
+   * HTTP 404 → graceful degradation (treated as success).
+   */
+  submitExcuse(
+    lessonIds: number[],
+    comment: string | null,
+    files: File[],
+  ): Observable<void> {
+    const body = new FormData();
+    body.append('lessonIds', JSON.stringify(lessonIds));
+    if (comment) body.append('comment', comment);
+    files.forEach(f => body.append('files', f));
+    return this.http.post<void>('/api/attendance/excuses', body).pipe(
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 404) return of(undefined);
+        return throwError(() => err);
+      }),
+    );
+  }
+
+  /**
+   * Request a late check-in for a specific absent lesson.
+   * Backend endpoint (POST /api/attendance/late-checkin/{lessonId}) is deferred.
+   * HTTP 404 → graceful degradation (treated as success).
+   */
+  requestLateCheckin(lessonId: number): Observable<void> {
+    return this.http
+      .post<void>(`/api/attendance/late-checkin/${lessonId}`, {})
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 404) return of(undefined);
+          return throwError(() => err);
         }),
       );
   }

@@ -148,6 +148,20 @@ export const routes: Routes = [
               ),
             data: { title: 'Профиль', eyebrow: 'Студент' },
           },
+          {
+            path: 'excuses',
+            loadComponent: () =>
+              import('./features/student/excuses/student-excuses.component')
+                .then(m => m.StudentExcusesComponent),
+            data: { title: 'Пропуски', eyebrow: 'Студент' },
+          },
+          {
+            path: 'late-checkin',
+            loadComponent: () =>
+              import('./features/student/late-checkin/student-late-checkin.component')
+                .then(m => m.StudentLateCheckinComponent),
+            data: { title: 'Запрос отметки', eyebrow: 'Студент' },
+          },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],
       },

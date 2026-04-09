@@ -153,6 +153,18 @@ export class SidebarComponent implements OnInit {
       route: '/student/profile',
       roles: ['STUDENT'],
     },
+    {
+      label: 'Пропуски',
+      icon: 'ph-file-text',
+      route: '/student/excuses',
+      roles: ['STUDENT'],
+    },
+    {
+      label: 'Запрос отметки',
+      icon: 'ph-clock-countdown',
+      route: '/student/late-checkin',
+      roles: ['STUDENT'],
+    },
   ];
 
   readonly filteredPrimaryItems = computed(() => {

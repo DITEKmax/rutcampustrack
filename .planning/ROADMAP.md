@@ -133,7 +133,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 - [x] **Phase 49: Nginx Routing + Landing Dead Link Fix** — CRITICAL-PATH: redirect root to `/login`, surface landing at `/presentation/`, patch three broken Telegram links (completed 2026-04-08)
 - [x] **Phase 50: baseHref Migration + Unified /login** — CRITICAL-PATH: migrate Angular web-panel `baseHref` to `/`, wire role-based routing and new guards for STUDENT/HEADMAN (completed 2026-04-09)
 - [x] **Phase 51: Student Web Cabinet — Shell + Schedule + Check-in** — New Angular routes `/student/dashboard`, `/student/schedule`, `/student/checkin` with STOMP real-time status (completed 2026-04-09)
-- [ ] **Phase 52: Student Web Cabinet — Homework + Stats + Notifications + Profile** — Angular routes `/student/homework`, `/student/stats`, `/student/notifications`, `/student/profile`
+- [x] **Phase 52: Student Web Cabinet — Homework + Stats + Notifications + Profile** — Angular routes `/student/homework`, `/student/stats`, `/student/notifications`, `/student/profile` (completed 2026-04-09)
 - [ ] **Phase 53: Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner** — Angular routes `/student/excuses`, `/student/late-checkin`; non-intrusive PWA install banner
 - [ ] **Phase 54: Headman Web Cabinet — Group Management + Subjects** — Backend WPAN-13 fix (headman @RequireRole relaxation), then `/headman/dashboard`, `/headman/group`, `/headman/subjects`
 - [ ] **Phase 55: Headman Web Cabinet — Attendance Management + Stats** — Angular routes `/headman/journal`, `/headman/excuses`, `/headman/late-checkin`, `/headman/stats`
@@ -223,10 +223,10 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
   - Password change endpoint: verify in auth-service contract (likely `PATCH /api/auth/password` or similar)
 **Plans**: 4 plans
 Plans:
-- [ ] 52-01-PLAN.md — Shared foundation: 4 routes + sidebar nav items + STOMP extension + notification badge service + homework/password API methods (STU-WEB-04, STU-WEB-05, STU-WEB-06, STU-WEB-09)
-- [ ] 52-02-PLAN.md — /student/homework: HomeworkItemComponent + StudentHomeworkComponent with optimistic toggle (STU-WEB-04)
-- [ ] 52-03-PLAN.md — /student/stats: StudentStatsComponent + StudentSubjectChartComponent + StudentOverallCardComponent with ng2-charts (STU-WEB-05)
-- [ ] 52-04-PLAN.md — /student/notifications: STOMP log + sessionStorage; /student/profile: identity card + password change form (STU-WEB-06, STU-WEB-09)
+- [x] 52-01-PLAN.md — Shared foundation: 4 routes + sidebar nav items + STOMP extension + notification badge service + homework/password API methods (STU-WEB-04, STU-WEB-05, STU-WEB-06, STU-WEB-09)
+- [x] 52-02-PLAN.md — /student/homework: HomeworkItemComponent + StudentHomeworkComponent with optimistic toggle (STU-WEB-04)
+- [x] 52-03-PLAN.md — /student/stats: StudentStatsComponent + StudentSubjectChartComponent + StudentOverallCardComponent with ng2-charts (STU-WEB-05)
+- [x] 52-04-PLAN.md — /student/notifications: STOMP log + sessionStorage; /student/profile: identity card + password change form (STU-WEB-06, STU-WEB-09)
 **UI hint**: yes
 
 ### Phase 53: Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner
@@ -329,7 +329,7 @@ Plans:
 | 49. Nginx Routing + Landing Dead Link Fix | v9.0 | 2/2 | Complete    | 2026-04-08 |
 | 50. baseHref Migration + Unified /login | v9.0 | 6/6 | Complete    | 2026-04-09 |
 | 51. Student Web Cabinet — Shell + Schedule + Check-in | v9.0 | 4/4 | Complete    | 2026-04-09 |
-| 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 0/4 | Not started | - |
+| 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 4/4 | Complete   | 2026-04-09 |
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 0/TBD | Not started | - |
 | 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 0/TBD | Not started | - |
 | 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 0/TBD | Not started | - |

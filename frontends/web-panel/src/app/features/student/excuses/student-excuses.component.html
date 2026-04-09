@@ -1,0 +1,48 @@
+<div class="page-stack" @routeFade>
+  <div class="page-header">
+    <div>
+      <p class="page-header__eyebrow">Студент</p>
+      <h1 class="page-header__title">Пропуски</h1>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn-brand" (click)="openExcuseForm()">
+        <i class="ph ph-plus"></i>
+        Подать тикет
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="page-card">
+      <div class="skeleton-row" *ngFor="let i of [1,2,3]"></div>
+    </div>
+  } @else if (tickets().length === 0) {
+    <div class="page-empty">
+      <i class="ph-duotone ph-file-text page-empty__icon"></i>
+      <h2 class="page-empty__heading">Нет тикетов о пропуске</h2>
+      <p class="page-empty__body">Подайте первый тикет, если пропустили занятие по уважительной причине</p>
+    </div>
+  } @else {
+    <div class="page-card page-card--flush">
+      <div class="excuse-table" role="table" aria-label="Тикеты о пропусках">
+        <div class="excuse-table__header" role="row">
+          <span role="columnheader">Дата</span>
+          <span role="columnheader">Предметы</span>
+          <span role="columnheader">Статус</span>
+        </div>
+        @for (ticket of tickets(); track ticket.id) {
+          <div class="excuse-table__row" role="row">
+            <span class="excuse-date" role="cell">{{ ticket.createdAt | date:'dd.MM.yyyy' }}</span>
+            <span class="excuse-subjects" role="cell">{{ ticket.subjectNames.join(', ') }}</span>
+            <span
+              class="status-chip"
+              [class]="'status-chip--' + ticket.status"
+              [attr.aria-label]="statusLabels[ticket.status]"
+              role="cell"
+            >{{ statusLabels[ticket.status] }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

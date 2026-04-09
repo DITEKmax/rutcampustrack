@@ -5,6 +5,7 @@ import type {
   AttendanceRecord,
   CheckinRequest,
   CheckinResponse,
+  ExcuseTicket,
   HomeworkItem,
   LessonResponse,
   PagedResponse,
@@ -139,6 +140,30 @@ export class StudentApiService {
           );
         }),
       );
+  }
+
+  /**
+   * Fetch excuse tickets for the authenticated student.
+   * Backend endpoint (GET /api/attendance/excuses) is deferred from v5.0.
+   * HTTP 404 → graceful degradation (empty array).
+   */
+  getExcuseTickets(): Observable<ExcuseTicket[]> {
+    return this.http.get<any>('/api/attendance/excuses').pipe(
+      map(resp => {
+        if (Array.isArray(resp)) return resp as ExcuseTicket[];
+        const embedded = resp?._embedded;
+        if (!embedded) return [];
+        return (
+          (embedded['excuseTicketList'] as ExcuseTicket[]) ??
+          (Object.values(embedded)[0] as ExcuseTicket[]) ??
+          []
+        );
+      }),
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 404) return of([]);
+        return throwError(() => err);
+      }),
+    );
   }
 
   /**

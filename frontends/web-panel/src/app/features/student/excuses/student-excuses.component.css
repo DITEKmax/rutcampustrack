@@ -1,0 +1,82 @@
+.excuse-table {
+  width: 100%;
+}
+
+.excuse-table__header {
+  display: grid;
+  grid-template-columns: 120px 1fr 140px;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.excuse-table__row {
+  display: grid;
+  grid-template-columns: 120px 1fr 140px;
+  padding: var(--space-4);
+  min-height: 52px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: var(--space-4);
+}
+
+.excuse-table__row:last-child {
+  border-bottom: none;
+}
+
+.excuse-date {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.excuse-subjects {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.status-chip--pending {
+  background-color: color-mix(in srgb, var(--accent-warning) 15%, transparent);
+  color: var(--accent-warning);
+  border: 1px solid var(--accent-warning);
+}
+
+.status-chip--approved {
+  background-color: color-mix(in srgb, var(--accent-info) 15%, transparent);
+  color: var(--accent-info);
+  border: 1px solid var(--accent-info);
+}
+
+.status-chip--rejected {
+  background-color: color-mix(in srgb, var(--accent-danger) 15%, transparent);
+  color: var(--accent-danger);
+  border: 1px solid var(--accent-danger);
+}
+
+.status-chip--cancelled {
+  background-color: color-mix(in srgb, var(--text-muted) 15%, transparent);
+  color: var(--text-muted);
+  border: 1px solid var(--border-default);
+}
+
+.skeleton-row {
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  margin-bottom: var(--space-2);
+  animation: dashboard-shimmer 1.5s infinite;
+}
+
+@media (max-width: 600px) {
+  .excuse-table__header,
+  .excuse-table__row {
+    grid-template-columns: 1fr 140px;
+  }
+  .excuse-date {
+    display: none;
+  }
+}

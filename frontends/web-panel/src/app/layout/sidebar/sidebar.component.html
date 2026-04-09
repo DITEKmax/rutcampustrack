@@ -76,7 +76,11 @@
           <div class="sidebar__user-meta">
             <span class="sidebar__user-id">ID {{ user.id }}</span>
             <span class="sidebar__user-role">
-              {{ user.role === 'ADMIN' ? 'Администратор' : 'Преподаватель' }}
+              @switch (user.role) {
+                @case ('ADMIN') { Администратор }
+                @case ('TEACHER') { Преподаватель }
+                @case ('STUDENT') { Студент }
+              }
             </span>
           </div>
         </div>

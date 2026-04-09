@@ -71,6 +71,12 @@ export class SidebarComponent implements OnInit {
       route: '/admin/dashboard',
       roles: ['ADMIN'],
     },
+    {
+      label: 'Главная',
+      icon: 'ph-squares-four',
+      route: '/student/dashboard',
+      roles: ['STUDENT'],
+    },
   ];
 
   /** Secondary nav — work pages under each section. */
@@ -106,6 +112,19 @@ export class SidebarComponent implements OnInit {
       icon: 'ph-calendar',
       route: '/admin/semesters',
       roles: ['ADMIN'],
+    },
+    // Student items
+    {
+      label: 'Расписание',
+      icon: 'ph-calendar-dots',
+      route: '/student/schedule',
+      roles: ['STUDENT'],
+    },
+    {
+      label: 'Отметиться',
+      icon: 'ph-map-pin',
+      route: '/student/checkin',
+      roles: ['STUDENT'],
     },
   ];
 

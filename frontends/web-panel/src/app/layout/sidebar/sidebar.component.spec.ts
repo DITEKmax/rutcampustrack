@@ -91,7 +91,7 @@ describe('SidebarComponent', () => {
     expect(screen.queryByText('Журнал посещаемости')).toBeNull();
   });
 
-  it('renders no nav items for plain STUDENT role (placeholder phase — D-06)', async () => {
+  it('renders filtered nav items for plain STUDENT role (Phase 51 — STU-WEB-01..03)', async () => {
     const studentUser: AuthUser = { id: 3, role: 'STUDENT', isHeadman: false, groupId: 5 };
     const authServiceMock = makeAuthServiceMock(studentUser);
 
@@ -105,7 +105,13 @@ describe('SidebarComponent', () => {
       ],
     });
 
-    // Per D-06: no sidebar entries for STUDENT in Phase 50
+    // STUDENT should see three nav items (Главная primary, Расписание + Отметиться secondary)
+    expect(screen.getByText('Главная')).toBeTruthy();
+    expect(screen.getByText('Расписание')).toBeTruthy();
+    expect(screen.getByText('Отметиться')).toBeTruthy();
+    // Role chip reads "Студент"
+    expect(screen.getByText('Студент')).toBeTruthy();
+    // Teacher/Admin items must NOT leak into STUDENT view
     expect(screen.queryByText('Журнал посещаемости')).toBeNull();
     expect(screen.queryByText('Пользователи')).toBeNull();
     expect(screen.queryByText('Группы')).toBeNull();

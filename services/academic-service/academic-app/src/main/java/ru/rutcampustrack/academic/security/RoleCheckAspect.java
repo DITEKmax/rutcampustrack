@@ -28,7 +28,9 @@ public class RoleCheckAspect {
     public Object checkRole(ProceedingJoinPoint pjp, RequireRole requireRole) throws Throwable {
         UserRole[] required = requireRole.value();
         UserRole actual = requestContext.getRole();
-        if (actual == null || !Arrays.asList(required).contains(actual)) {
+        boolean headmanBypass = requestContext.isHeadman()
+                && Arrays.asList(required).contains(UserRole.STUDENT);
+        if (actual == null || (!Arrays.asList(required).contains(actual) && !headmanBypass)) {
             throw new AccessDeniedException("Required role: " + Arrays.toString(required));
         }
         return pjp.proceed();

@@ -45,7 +45,12 @@ v8.0 shipped (2026-04-08). Full production-ready system: 5 backend services, 4 f
 
 **Latest milestone:** v8.0 CI/CD, Deployment & Documentation shipped 2026-04-08 (8 phases, 11 plans, 26/26 requirements).
 
-**v9.0 progress:** Phase 50 complete (2026-04-09) — `baseHref` migrated `/admin/` → `/`, unified `/login` entry point for all 4 roles (ADMIN/TEACHER/STUDENT/STUDENT+headman), `AuthService.resolveDashboardFor()` introduced as single source of truth for post-login redirects, three new functional guards (`studentGuard`/`headmanGuard`/`guestGuard`), placeholder routes for `/student/*` + `/headman/*` ready for Phases 51-55, prod nginx rebuilt with catch-all `location /` serving the web-panel SPA. Vitest suite 162/162 passed (+33 above v8.0 baseline). Human UAT approved 2026-04-09 after deploy hotfix `b391fb9` (deploy.yml now auto-reloads nginx + smokes `/login` to prevent stale-config incidents). 16/33 v9.0 requirements satisfied; Phase 51 (student web cabinet — shell + schedule + check-in) is the next milestone target.
+**v9.0 progress:** Phases 50-51 complete (2026-04-09).
+
+- **Phase 50:** `baseHref` migrated `/admin/` → `/`, unified `/login` entry point for all 4 roles (ADMIN/TEACHER/STUDENT/STUDENT+headman), `AuthService.resolveDashboardFor()` as single source of truth for post-login redirects, three new functional guards (`studentGuard`/`headmanGuard`/`guestGuard`), placeholder routes for `/student/*` + `/headman/*`, prod nginx rebuilt with catch-all `location /` serving the web-panel SPA. Human UAT approved after deploy hotfix `b391fb9` (deploy.yml now auto-reloads nginx + smokes `/login`).
+- **Phase 51:** Student web cabinet shell + three core pages shipped in Angular 19 web-panel — 4 plans, 9 commits, 91 new vitest specs. Foundation (51-01) installed `@stomp/stompjs@^7.3.0` + `sockjs-client@^1.6.1`, built shared `StudentApiService` / `SubjectCacheService` / `StudentStompService`, wired real routes `/student/{dashboard,schedule,checkin}` replacing Phase 50 placeholders, extended sidebar with STUDENT nav + "Студент" chip. Schedule page (51-02) delivers signal-driven week nav + 6 day-tabs + metro-style LessonRow + @angular/animations routeFade/daySlide. Check-in page (51-03) is a 6-state discriminated-union state machine (idle/ready/gps_pending/submitting/confirmed/error) with GPS capture, HTTP POST `/api/attendance/checkin`, and STOMP auto-confirm on matching `attendance.marked`. Dashboard page (51-04) renders greeting hero + today chip row + NextLessonCard + RedzoneWarning amber banners below attendance threshold. Vitest suite **253/253 green** (+91 above Phase 50 baseline), dev + prod builds exit 0, all 8 T-51-13..20 threat mitigations honored (GPS never logged, token passed as lazy factory, STOMP user_id verified against JWT claim, no `innerHTML`/`bypassSecurityTrust*`). 19/33 v9.0 requirements satisfied.
+
+12 human UAT items persisted in `51-HUMAN-UAT.md` (visual appearance, animations, real-time STOMP propagation, browser geolocation dialogs, OS-level prefers-reduced-motion) — surface in `/gsd-progress` and `/gsd-audit-uat` until validated in a live browser via `/gsd-verify-work 51`. Phase 52 (student web cabinet — homework + stats + notifications + profile) is the next milestone target.
 
 ## Shipped Milestones
 
@@ -338,4 +343,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-09 after Phase 50 completion (baseHref migration + unified /login + role-based guards)*
+*Last updated: 2026-04-09 after Phase 51 completion (student web cabinet shell + schedule + check-in + dashboard, 253/253 vitest, human UAT pending)*

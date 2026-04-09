@@ -132,7 +132,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 
 - [x] **Phase 49: Nginx Routing + Landing Dead Link Fix** — CRITICAL-PATH: redirect root to `/login`, surface landing at `/presentation/`, patch three broken Telegram links (completed 2026-04-08)
 - [x] **Phase 50: baseHref Migration + Unified /login** — CRITICAL-PATH: migrate Angular web-panel `baseHref` to `/`, wire role-based routing and new guards for STUDENT/HEADMAN (completed 2026-04-09)
-- [ ] **Phase 51: Student Web Cabinet — Shell + Schedule + Check-in** — New Angular routes `/student/dashboard`, `/student/schedule`, `/student/checkin` with STOMP real-time status
+- [x] **Phase 51: Student Web Cabinet — Shell + Schedule + Check-in** — New Angular routes `/student/dashboard`, `/student/schedule`, `/student/checkin` with STOMP real-time status (completed 2026-04-09)
 - [ ] **Phase 52: Student Web Cabinet — Homework + Stats + Notifications + Profile** — Angular routes `/student/homework`, `/student/stats`, `/student/notifications`, `/student/profile`
 - [ ] **Phase 53: Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner** — Angular routes `/student/excuses`, `/student/late-checkin`; non-intrusive PWA install banner
 - [ ] **Phase 54: Headman Web Cabinet — Group Management + Subjects** — Backend WPAN-13 fix (headman @RequireRole relaxation), then `/headman/dashboard`, `/headman/group`, `/headman/subjects`
@@ -201,7 +201,11 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
   - STOMP WebSocket: same pattern as PWA (`/api/ws?token=...`, subscribe to `/topic/group/{groupId}`)
   - Angular Material components; `@angular/animations` for route transitions; Phosphor Icons `regular` weight per design-decisions.md §1
   - Web cabinet is online-first — do NOT add Service Worker or offline caching here
-**Plans**: TBD
+**Plans**: 4 plans (Wave 1: 51-01 foundation; Wave 2: 51-02 schedule, 51-03 checkin, 51-04 dashboard — parallel)
+- [x] 51-01-foundation-shell-stomp-PLAN.md — STOMP deps + shared student domain services + empty-shell components + routes + sidebar nav (STU-WEB-01..03)
+- [x] 51-02-schedule-page-PLAN.md — /student/schedule: week nav, day tabs, lesson list with expand, animations (STU-WEB-02)
+- [x] 51-03-checkin-page-PLAN.md — /student/checkin: active lesson hero, GPS capture, STOMP real-time confirmation (STU-WEB-03)
+- [x] 51-04-dashboard-page-PLAN.md — /student/dashboard: greeting hero, today chips, NextLessonCard, red-zone warnings (STU-WEB-01)
 **UI hint**: yes
 
 ### Phase 52: Student Web Cabinet — Homework + Stats + Notifications + Profile
@@ -319,7 +323,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 | 41-48 | v8.0 | 11/11 | Complete | 2026-04-08 |
 | 49. Nginx Routing + Landing Dead Link Fix | v9.0 | 2/2 | Complete    | 2026-04-08 |
 | 50. baseHref Migration + Unified /login | v9.0 | 6/6 | Complete    | 2026-04-09 |
-| 51. Student Web Cabinet — Shell + Schedule + Check-in | v9.0 | 0/TBD | Not started | - |
+| 51. Student Web Cabinet — Shell + Schedule + Check-in | v9.0 | 4/4 | Complete    | 2026-04-09 |
 | 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 0/TBD | Not started | - |
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 0/TBD | Not started | - |
 | 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 0/TBD | Not started | - |

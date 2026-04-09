@@ -86,7 +86,7 @@ export const routes: Routes = [
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],
       },
-      // Student routes (D-07 — placeholder Phase 50, real в Phase 51-53)
+      // Student routes — Phase 51 (STU-WEB-01..03)
       {
         path: 'student',
         canActivate: [studentGuard],
@@ -95,18 +95,26 @@ export const routes: Routes = [
           {
             path: 'dashboard',
             loadComponent: () =>
-              import('./features/student/student-placeholder/student-placeholder.component').then(
-                m => m.StudentPlaceholderComponent,
+              import('./features/student/dashboard/student-dashboard.component').then(
+                m => m.StudentDashboardComponent,
               ),
-            data: { title: 'Личный кабинет', eyebrow: 'Студент' },
+            data: { title: 'Главная', eyebrow: 'Студент' },
           },
           {
             path: 'schedule',
             loadComponent: () =>
-              import('./features/student/student-placeholder/student-placeholder.component').then(
-                m => m.StudentPlaceholderComponent,
+              import('./features/student/schedule/student-schedule.component').then(
+                m => m.StudentScheduleComponent,
               ),
             data: { title: 'Расписание', eyebrow: 'Студент' },
+          },
+          {
+            path: 'checkin',
+            loadComponent: () =>
+              import('./features/student/checkin/student-checkin.component').then(
+                m => m.StudentCheckinComponent,
+              ),
+            data: { title: 'Отметиться', eyebrow: 'Студент' },
           },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],

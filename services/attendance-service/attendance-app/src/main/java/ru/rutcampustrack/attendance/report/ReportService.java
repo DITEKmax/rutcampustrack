@@ -132,6 +132,7 @@ public class ReportService {
                     List<JournalCell> cells = records.stream()
                             .filter(r -> r.userId().equals(uid))
                             .map(r -> new JournalCell(
+                                    r.lessonId(),                       // Phase 55 D-01: required by headman cell-click marking
                                     r.lessonDate().toString(),
                                     r.lessonNumber(),
                                     r.status().name().toLowerCase(),

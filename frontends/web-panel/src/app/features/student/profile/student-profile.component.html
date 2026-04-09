@@ -1,0 +1,118 @@
+<div class="page-stack" [@routeFade]>
+  <header class="page-header">
+    <p class="page-header__eyebrow">Студент</p>
+    <h1 class="page-header__title">Профиль</h1>
+  </header>
+
+  <!-- Identity card -->
+  <div class="identity-card">
+    <div class="identity-card__avatar">{{ avatarInitials() }}</div>
+    <div class="identity-card__info">
+      <span class="identity-card__role">Студент</span>
+      <span class="identity-card__id" aria-label="Идентификатор пользователя">
+        ID {{ currentUser()?.id }}
+      </span>
+      @if (currentUser()?.groupId) {
+        <span class="identity-card__group">
+          <span class="identity-card__group-label">ГРУППА</span>
+          <span class="identity-card__group-value">{{ currentUser()!.groupId }}</span>
+        </span>
+      }
+      <span class="identity-card__platform-badge">Web Cabinet</span>
+    </div>
+  </div>
+
+  <!-- Password change form -->
+  <div class="password-card">
+    <h2 class="password-card__heading">Изменить пароль</h2>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <!-- Current password -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Текущий пароль</mat-label>
+        <input
+          matInput
+          [type]="showCurrentPassword() ? 'text' : 'password'"
+          formControlName="currentPassword"
+          autocomplete="current-password"
+          [attr.aria-invalid]="form.get('currentPassword')?.hasError('wrongPassword') || null">
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          [attr.aria-label]="showCurrentPassword() ? 'Скрыть пароль' : 'Показать пароль'"
+          (click)="toggleCurrentPasswordVisibility()">
+          <i [class]="showCurrentPassword() ? 'ph-eye-slash' : 'ph-eye'"></i>
+        </button>
+        @if (form.get('currentPassword')?.hasError('wrongPassword')) {
+          <mat-error aria-live="assertive">Неверный текущий пароль.</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- New password -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Новый пароль</mat-label>
+        <input
+          matInput
+          [type]="showNewPassword() ? 'text' : 'password'"
+          formControlName="newPassword"
+          autocomplete="new-password">
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          [attr.aria-label]="showNewPassword() ? 'Скрыть пароль' : 'Показать пароль'"
+          (click)="toggleNewPasswordVisibility()">
+          <i [class]="showNewPassword() ? 'ph-eye-slash' : 'ph-eye'"></i>
+        </button>
+      </mat-form-field>
+
+      <!-- Validation hints -->
+      <ul class="password-hints" role="list">
+        <li role="listitem" [attr.aria-label]="'Минимум 8 символов: ' + (hintMinLength() ? 'выполнено' : 'не выполнено')">
+          <i [class]="hintMinLength() ? 'ph-check ph-fill hint-met' : 'ph-circle hint-unmet'"></i>
+          <span>Минимум 8 символов</span>
+        </li>
+        <li role="listitem" [attr.aria-label]="'Хотя бы одна заглавная буква: ' + (hintUppercase() ? 'выполнено' : 'не выполнено')">
+          <i [class]="hintUppercase() ? 'ph-check ph-fill hint-met' : 'ph-circle hint-unmet'"></i>
+          <span>Хотя бы одна заглавная буква</span>
+        </li>
+        <li role="listitem" [attr.aria-label]="'Хотя бы одна цифра: ' + (hintDigit() ? 'выполнено' : 'не выполнено')">
+          <i [class]="hintDigit() ? 'ph-check ph-fill hint-met' : 'ph-circle hint-unmet'"></i>
+          <span>Хотя бы одна цифра</span>
+        </li>
+      </ul>
+
+      <!-- API error banner -->
+      @if (apiError()) {
+        <div class="error-banner" role="alert" aria-live="assertive">
+          <i class="ph-warning-circle ph-fill"></i>
+          <span>{{ apiError() }}</span>
+        </div>
+      }
+
+      <!-- Success banner -->
+      @if (successVisible()) {
+        <div class="success-banner" [@toastSlide] role="status" aria-live="polite">
+          <i class="ph-check-circle ph-fill"></i>
+          <span>Пароль успешно изменён</span>
+        </div>
+      }
+
+      <!-- Submit -->
+      <button
+        mat-flat-button
+        type="submit"
+        class="submit-btn"
+        [disabled]="form.invalid || submitting()"
+        [attr.aria-disabled]="form.invalid || submitting()">
+        @if (submitting()) {
+          <mat-spinner diameter="16" strokeWidth="2"></mat-spinner>
+          <span>Сохраняем…</span>
+        } @else {
+          <span>Сохранить пароль</span>
+        }
+      </button>
+    </form>
+  </div>
+</div>

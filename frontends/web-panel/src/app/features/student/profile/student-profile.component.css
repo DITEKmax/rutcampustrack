@@ -1,0 +1,150 @@
+.identity-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4, 16px);
+  background: radial-gradient(
+    ellipse at 15% 20%,
+    color-mix(in oklab, var(--accent-primary) 16%, transparent),
+    transparent 55%
+  ), var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6, 32px);
+  margin-bottom: var(--space-5, 24px);
+}
+
+.identity-card__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-2xl, 16px);
+  background: var(--gradient-brand, linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)));
+  box-shadow: var(--glow-primary, 0 0 20px color-mix(in oklab, var(--accent-primary) 40%, transparent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.identity-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+}
+
+.identity-card__role {
+  font-size: var(--text-base);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: var(--leading-heading);
+}
+
+.identity-card__id {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.identity-card__group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+}
+
+.identity-card__group-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.identity-card__group-value {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.identity-card__platform-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-xs);
+  color: var(--accent-secondary);
+  background: color-mix(in oklab, var(--accent-secondary) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent-secondary) 25%, transparent);
+  border-radius: var(--radius-full, 9999px);
+  padding: 2px 10px;
+  width: fit-content;
+}
+
+.password-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6, 32px);
+}
+
+.password-card__heading {
+  font-size: var(--text-base);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  margin-bottom: var(--space-4, 16px);
+}
+
+.full-width { width: 100%; margin-bottom: var(--space-4, 16px); }
+
+.password-hints {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-4, 16px) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+}
+
+.password-hints li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.hint-met { color: var(--status-present, var(--accent-primary)); }
+.hint-unmet { color: var(--text-muted); }
+
+.submit-btn {
+  width: 100%;
+  min-height: 48px;
+  background: var(--accent-primary) !important;
+  color: var(--accent-primary-contrast, #0A0E17) !important;
+  border-radius: var(--radius-full, 9999px) !important;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 8px);
+}
+
+.error-banner, .success-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3, 12px);
+}
+
+.error-banner {
+  background: color-mix(in oklab, var(--accent-danger) 12%, transparent);
+  color: var(--accent-danger);
+  border: 1px solid color-mix(in oklab, var(--accent-danger) 25%, transparent);
+}
+
+.success-banner {
+  background: color-mix(in oklab, var(--status-present, var(--accent-primary)) 12%, transparent);
+  color: var(--status-present, var(--accent-primary));
+  border: 1px solid color-mix(in oklab, var(--status-present, var(--accent-primary)) 25%, transparent);
+}

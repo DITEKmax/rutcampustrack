@@ -135,7 +135,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 - [x] **Phase 51: Student Web Cabinet — Shell + Schedule + Check-in** — New Angular routes `/student/dashboard`, `/student/schedule`, `/student/checkin` with STOMP real-time status (completed 2026-04-09)
 - [x] **Phase 52: Student Web Cabinet — Homework + Stats + Notifications + Profile** — Angular routes `/student/homework`, `/student/stats`, `/student/notifications`, `/student/profile` (completed 2026-04-09)
 - [x] **Phase 53: Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner** — Angular routes `/student/excuses`, `/student/late-checkin`; non-intrusive PWA install banner (completed 2026-04-09)
-- [ ] **Phase 54: Headman Web Cabinet — Group Management + Subjects** — Backend WPAN-13 fix (headman @RequireRole relaxation), then `/headman/dashboard`, `/headman/group`, `/headman/subjects`
+- [x] **Phase 54: Headman Web Cabinet — Group Management + Subjects** — Backend WPAN-13 fix (headman @RequireRole relaxation), then `/headman/dashboard`, `/headman/group`, `/headman/subjects` (completed 2026-04-09)
 - [ ] **Phase 55: Headman Web Cabinet — Attendance Management + Stats** — Angular routes `/headman/journal`, `/headman/excuses`, `/headman/late-checkin`, `/headman/stats`
 - [ ] **Phase 56: PWA Headman Mode** — React PWA HEADMAN branch: "Группа" BottomNav tab, all headman features mobile-first, SW cache extension, 63 existing tests kept passing
 - [ ] **Phase 57: Landing Presentation Mode + Documentation** — GSAP animated system overview, HEADMAN role section, all docs sync
@@ -258,11 +258,11 @@ Plans:
   - This phase depends on Phase 50 (guards and routes exist) but can be parallelized in implementation with Phases 51-53 since it touches different Angular feature modules
 **Plans**: 5 plans
 Plans:
-- [ ] 54-01-PLAN.md — Backend: RoleCheckAspect headman bypass fix (WPAN-13) + GET /academic/users/teachers endpoint (HEAD-WEB-01, HEAD-WEB-03, HEAD-WEB-04)
-- [ ] 54-02-PLAN.md — Angular: app.routes.ts headman routes + sidebar NavItem extension + HeadmanApiService (HEAD-WEB-01..04)
-- [ ] 54-03-PLAN.md — Angular: /headman/dashboard — forkJoin stats + today lesson card (HEAD-WEB-02)
-- [ ] 54-04-PLAN.md — Angular: /headman/group — student list + assistant CRUD dialogs (HEAD-WEB-03)
-- [ ] 54-05-PLAN.md — Angular: /headman/subjects — subject CRUD + teacher select dialog (HEAD-WEB-04)
+- [x] 54-01-PLAN.md — Backend: RoleCheckAspect headman bypass fix (WPAN-13) + GET /academic/users/teachers endpoint (HEAD-WEB-01, HEAD-WEB-03, HEAD-WEB-04)
+- [x] 54-02-PLAN.md — Angular: app.routes.ts headman routes + sidebar NavItem extension + HeadmanApiService (HEAD-WEB-01..04)
+- [x] 54-03-PLAN.md — Angular: /headman/dashboard — forkJoin stats + today lesson card (HEAD-WEB-02)
+- [x] 54-04-PLAN.md — Angular: /headman/group — student list + assistant CRUD dialogs (HEAD-WEB-03)
+- [x] 54-05-PLAN.md — Angular: /headman/subjects — subject CRUD + teacher select dialog (HEAD-WEB-04)
 **UI hint**: yes
 
 ### Phase 55: Headman Web Cabinet — Attendance Management + Stats
@@ -337,7 +337,7 @@ Plans:
 | 51. Student Web Cabinet — Shell + Schedule + Check-in | v9.0 | 4/4 | Complete    | 2026-04-09 |
 | 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 4/4 | Complete   | 2026-04-09 |
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 4/4 | Complete   | 2026-04-09 |
-| 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 0/TBD | Not started | - |
+| 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 5/5 | Complete   | 2026-04-09 |
 | 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 0/TBD | Not started | - |
 | 56. PWA Headman Mode | v9.0 | 0/TBD | Not started | - |
 | 57. Landing Presentation Mode + Documentation | v9.0 | 0/TBD | Not started | - |

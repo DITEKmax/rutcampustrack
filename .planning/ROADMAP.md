@@ -136,7 +136,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 - [x] **Phase 52: Student Web Cabinet — Homework + Stats + Notifications + Profile** — Angular routes `/student/homework`, `/student/stats`, `/student/notifications`, `/student/profile` (completed 2026-04-09)
 - [x] **Phase 53: Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner** — Angular routes `/student/excuses`, `/student/late-checkin`; non-intrusive PWA install banner (completed 2026-04-09)
 - [x] **Phase 54: Headman Web Cabinet — Group Management + Subjects** — Backend WPAN-13 fix (headman @RequireRole relaxation), then `/headman/dashboard`, `/headman/group`, `/headman/subjects` (completed 2026-04-09)
-- [ ] **Phase 55: Headman Web Cabinet — Attendance Management + Stats** — Angular routes `/headman/journal`, `/headman/excuses`, `/headman/late-checkin`, `/headman/stats`
+- [x] **Phase 55: Headman Web Cabinet — Attendance Management + Stats** — Angular routes `/headman/journal`, `/headman/excuses`, `/headman/late-checkin`, `/headman/stats` (completed 2026-04-09)
 - [ ] **Phase 56: PWA Headman Mode** — React PWA HEADMAN branch: "Группа" BottomNav tab, all headman features mobile-first, SW cache extension, 63 existing tests kept passing
 - [ ] **Phase 57: Landing Presentation Mode + Documentation** — GSAP animated system overview, HEADMAN role section, all docs sync
 
@@ -338,6 +338,6 @@ Plans:
 | 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 4/4 | Complete   | 2026-04-09 |
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 4/4 | Complete   | 2026-04-09 |
 | 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 5/5 | Complete   | 2026-04-09 |
-| 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 0/5 | Not started | - |
+| 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 5/5 | Complete   | 2026-04-09 |
 | 56. PWA Headman Mode | v9.0 | 0/TBD | Not started | - |
 | 57. Landing Presentation Mode + Documentation | v9.0 | 0/TBD | Not started | - |

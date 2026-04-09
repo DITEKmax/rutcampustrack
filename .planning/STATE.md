@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
 status: executing
-stopped_at: Phase 54 plans complete (5 plans, 2 waves)
-last_updated: "2026-04-09T19:51:26.630Z"
-last_activity: 2026-04-09 -- Phase 54 execution started
+stopped_at: Phase 55 complete — verified 2026-04-10
+last_updated: "2026-04-10T00:45:00.000Z"
+last_activity: 2026-04-10 -- Phase 55 verified (human_needed — visual checks required)
 progress:
   total_phases: 9
-  completed_phases: 5
-  total_plans: 25
-  completed_plans: 20
-  percent: 80
+  completed_phases: 7
+  total_plans: 30
+  completed_plans: 30
+  percent: 94
 ---
 
 # Project State
@@ -22,30 +22,30 @@ v9.0 Frontend Unification — Single Login & Role-Based Web Clients
 
 ## Current Position
 
-Phase: 54 (Headman Web Cabinet) — EXECUTING
-Plan: 1 of 5
-Plans: 4/4
-Status: Executing Phase 54
-Last activity: 2026-04-09 -- Phase 54 execution started
+Phase: 56 (PWA Headman Mode) — NEXT
+Plan: —
+Plans: 0/TBD
+Status: Phase 55 complete. Ready for Phase 56.
+Last activity: 2026-04-10 -- Phase 55 verified (human_needed — visual checks required for excuses/late-checkin degradation, journal cell click, stats threshold edit)
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-08)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** Phase 54 — Headman Web Cabinet
+**Current focus:** Phase 56 — PWA Headman Mode
 
 ## Roadmap Summary
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 49 | Nginx Routing + Landing Dead Link Fix | INFRA-v9-01..03, 05..07; LAND-v9-01, 03 | Not started |
-| 50 | baseHref Migration + Unified /login | INFRA-v9-04; AUTH-v9-01..07 | Not started |
-| 51 | Student Web Cabinet — Shell + Schedule + Check-in | STU-WEB-01..03 | Not started |
-| 52 | Student Web Cabinet — Homework + Stats + Notifications + Profile | STU-WEB-04..06, 09 | Not started |
-| 53 | Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | STU-WEB-07, 08, 10 | Not started |
-| 54 | Headman Web Cabinet — Group Management + Subjects | HEAD-WEB-01..04 | Not started |
-| 55 | Headman Web Cabinet — Attendance Management + Stats | HEAD-WEB-05..08 | Not started |
+| 49 | Nginx Routing + Landing Dead Link Fix | INFRA-v9-01..03, 05..07; LAND-v9-01, 03 | Complete |
+| 50 | baseHref Migration + Unified /login | INFRA-v9-04; AUTH-v9-01..07 | Complete |
+| 51 | Student Web Cabinet — Shell + Schedule + Check-in | STU-WEB-01..03 | Complete |
+| 52 | Student Web Cabinet — Homework + Stats + Notifications + Profile | STU-WEB-04..06, 09 | Complete |
+| 53 | Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | STU-WEB-07, 08, 10 | Complete |
+| 54 | Headman Web Cabinet — Group Management + Subjects | HEAD-WEB-01..04 | Complete |
+| 55 | Headman Web Cabinet — Attendance Management + Stats | HEAD-WEB-05..08 | Complete |
 | 56 | PWA Headman Mode | PWA-HEAD-01..04 | Not started |
 | 57 | Landing Presentation Mode + Documentation | LAND-v9-02, 04, 05; DOCS-v9-01..04 | Not started |
 
@@ -75,21 +75,22 @@ See PROJECT.md Key Decisions table for full history.
 - **headmanGuard:** `role === 'STUDENT' && isHeadman === true`. Headman also passes `studentGuard`.
 - **WPAN-13 fix approach:** Extend `@RequireRole` AOP aspect in academic-service to allow headman-scoped assistant operations when `X-Is-Headman: true` AND target group matches `X-Group-Id`. No new UserRole enum value.
 - **PWA stays separate:** React PWA in `frontends/pwa/` is NOT merged into Angular. HEADMAN features added as new `features/headman/` directory within existing React project.
+- **Phase 55 decision:** Excuse/late-checkin approval UI deferred to future phase (backend endpoint not yet implemented). Graceful degradation shells shipped per CONTEXT.md + ROADMAP Notes.
 
 ### Blockers/Concerns
 
 - **baseHref migration risk:** `/admin/` → `/` may break external links. Phase 50 must grep for `ruttrack.site/admin` references before editing.
-- **129 web-panel vitest tests:** Must continue passing through Phase 50 refactor (AUTH-v9-07).
+- **297 web-panel vitest tests:** All passing after Phase 55 (verified 2026-04-10). Must continue passing through Phase 56+ (was 129, grew to 297).
 - **63 PWA vitest tests:** Must continue passing through Phase 56 HEADMAN feature addition (PWA-HEAD-03).
-- **Excuse / late-checkin backend:** Publishers for `excuse.requested`, `late_checkin.requested` still deferred from v5.0. STU-WEB-07, 08, HEAD-WEB-06, 07 implement UI with graceful degradation.
+- **Excuse / late-checkin backend:** Publishers for `excuse.requested`, `late_checkin.requested` still deferred from v5.0. HEAD-WEB-06, 07 implement UI with graceful degradation.
 - **CI/CD pipeline:** No modifications to `.github/workflows/*.yml` (INFRA-v9-06).
 
 ### Critical Path
 
-Phases 49 and 50 are CRITICAL-PATH and must complete before Blocks B (51-53), C (54-55), and D (56). Phase 57 (docs) is always last.
+Phases 49 and 50 are CRITICAL-PATH and completed. Phases 51-55 (Blocks B and C) are complete. Phase 56 (Block D) is next.
 
 ## Session Continuity
 
-Last session: 2026-04-09T19:49:53.724Z
-Stopped at: Phase 54 plans complete (5 plans, 2 waves)
-Next action: /gsd-plan-phase 49
+Last session: 2026-04-10T00:45:00.000Z
+Stopped at: Phase 55 verified — human visual checks pending (non-blocking for next phase)
+Next action: /gsd-plan-phase 56

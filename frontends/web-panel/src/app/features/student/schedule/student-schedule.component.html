@@ -1,0 +1,98 @@
+<section class="page-stack schedule" [@routeFade]>
+  <header class="page-header">
+    <div class="page-header__title">
+      <h2>Расписание</h2>
+      <p class="page-header__subtitle">Неделя занятий вашей группы</p>
+    </div>
+  </header>
+
+  <!-- Week navigation strip -->
+  <nav class="schedule__weeknav" aria-label="Навигация по неделям">
+    <button
+      type="button"
+      class="schedule__weeknav-btn"
+      (click)="prevWeek()"
+      aria-label="Предыдущая неделя"
+    >
+      <i class="ph ph-caret-left" aria-hidden="true"></i>
+    </button>
+    <div class="schedule__weeknav-label">
+      <span class="schedule__weeknav-eyebrow">Неделя</span>
+      <span class="schedule__weeknav-range">{{ weekLabel() }}</span>
+    </div>
+    <button
+      type="button"
+      class="schedule__weeknav-btn"
+      (click)="nextWeek()"
+      aria-label="Следующая неделя"
+    >
+      <i class="ph ph-caret-right" aria-hidden="true"></i>
+    </button>
+  </nav>
+
+  <!-- Day tabs -->
+  <div class="schedule__days" role="tablist" aria-label="День недели">
+    @for (label of dayLabels; track label; let i = $index) {
+      <button
+        type="button"
+        role="tab"
+        class="schedule__day"
+        [class.schedule__day--selected]="selectedDayIndex() === i"
+        [attr.aria-selected]="selectedDayIndex() === i"
+        (click)="selectDay(i)"
+      >
+        {{ label }}
+      </button>
+    }
+  </div>
+
+  <!-- Lesson list -->
+  <div
+    class="schedule__list"
+    role="tabpanel"
+    [attr.aria-busy]="loading() ? 'true' : null"
+  >
+    @if (loading()) {
+      <div class="schedule-skeleton" aria-hidden="true"></div>
+      <div class="schedule-skeleton" aria-hidden="true"></div>
+      <div class="schedule-skeleton" aria-hidden="true"></div>
+      <div class="schedule-skeleton" aria-hidden="true"></div>
+    } @else if (error()) {
+      <div class="schedule__error" role="alert">
+        <i class="ph ph-warning-circle" aria-hidden="true"></i>
+        <span>{{ error() }}</span>
+      </div>
+    } @else if (dayLessons().length === 0) {
+      <div class="schedule__empty">
+        <div class="schedule__empty-icon" aria-hidden="true">
+          <i class="ph ph-calendar-blank"></i>
+        </div>
+        <h3 class="schedule__empty-title">Занятий нет</h3>
+        <p class="schedule__empty-text">В этот день пар не запланировано.</p>
+      </div>
+    } @else {
+      <div [@daySlide]="selectedDayIndex()" class="schedule__day-list">
+        @for (lesson of dayLessons(); track lesson.id) {
+          <app-lesson-row
+            [lesson]="lesson"
+            [subjectName]="(getSubjectName$(lesson.subjectId) | async) ?? 'Предмет'"
+            [expanded]="expandedLessonId() === lesson.id"
+            (toggle)="toggleLesson($event)"
+          />
+        }
+      </div>
+    }
+  </div>
+
+  <!-- "Сегодня" floating pill -->
+  @if (!isCurrentWeek()) {
+    <button
+      type="button"
+      class="schedule__today-pill"
+      (click)="jumpToToday()"
+    >
+      <i class="ph ph-calendar-blank" aria-hidden="true"></i>
+      Сегодня
+    </button>
+  }
+</section>

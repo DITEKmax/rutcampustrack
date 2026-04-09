@@ -256,7 +256,13 @@ Plans:
   - WPAN-13 backend fix is a prerequisite within this phase: the `@RequireRole(STUDENT)` AOP aspect in academic-service must be extended to permit headman-scoped assistant operations when `X-Is-Headman: true` AND the target group matches `X-Group-Id`; no new UserRole enum value is added
   - Assistant CRUD service and repository already exist in `services/academic-service/academic-app/.../assistant/` — only authorization check changes
   - This phase depends on Phase 50 (guards and routes exist) but can be parallelized in implementation with Phases 51-53 since it touches different Angular feature modules
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 54-01-PLAN.md — Backend: RoleCheckAspect headman bypass fix (WPAN-13) + GET /academic/users/teachers endpoint (HEAD-WEB-01, HEAD-WEB-03, HEAD-WEB-04)
+- [ ] 54-02-PLAN.md — Angular: app.routes.ts headman routes + sidebar NavItem extension + HeadmanApiService (HEAD-WEB-01..04)
+- [ ] 54-03-PLAN.md — Angular: /headman/dashboard — forkJoin stats + today lesson card (HEAD-WEB-02)
+- [ ] 54-04-PLAN.md — Angular: /headman/group — student list + assistant CRUD dialogs (HEAD-WEB-03)
+- [ ] 54-05-PLAN.md — Angular: /headman/subjects — subject CRUD + teacher select dialog (HEAD-WEB-04)
 **UI hint**: yes
 
 ### Phase 55: Headman Web Cabinet — Attendance Management + Stats

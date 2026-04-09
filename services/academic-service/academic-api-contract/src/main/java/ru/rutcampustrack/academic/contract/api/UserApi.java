@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -115,4 +116,9 @@ public interface UserApi {
     })
     @GetMapping("/me")
     ResponseEntity<EntityModel<UserResponse>> getMe();
+
+    @Operation(summary = "Список преподавателей (без постраничной разбивки)", description = "Возвращает всех активных преподавателей. Доступно студентам (для выбора преподавателя предмета).")
+    @ApiResponse(responseCode = "200", description = "Список преподавателей")
+    @GetMapping("/teachers")
+    ResponseEntity<CollectionModel<EntityModel<UserResponse>>> listTeachers();
 }

@@ -33,6 +33,7 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Business logic for User domain: CRUD, login generation, BCrypt password,
@@ -113,6 +114,10 @@ public class UserService {
             return userRepository.findByRole(roleFilter.name().toLowerCase(), pageable);
         }
         return userRepository.findAll(pageable);
+    }
+
+    public List<User> listTeachers() {
+        return userRepository.findByRole("teacher", Pageable.ofSize(500)).getContent();
     }
 
     @CacheEvict(value = "users", key = "#id")

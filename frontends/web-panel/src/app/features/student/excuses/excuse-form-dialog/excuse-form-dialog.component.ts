@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  ReactiveFormsModule, FormBuilder, FormGroup, Validators,
+  ReactiveFormsModule, FormBuilder, FormGroup, FormControl, Validators,
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -55,6 +55,7 @@ export class ExcuseFormDialogComponent {
   readonly validationError = signal<string | null>(null);
 
   readonly commentForm: FormGroup;
+  get commentControl(): FormControl { return this.commentForm.get('comment') as FormControl; }
 
   constructor(
     @Inject(MAT_DIALOG_DATA) data: { lessons: AttendanceRecord[] },

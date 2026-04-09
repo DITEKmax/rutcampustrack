@@ -3,6 +3,7 @@ package ru.rutcampustrack.academic.user;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,8 @@ import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.security.RequireRole;
+
+import java.util.List;
 
 import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 import static ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT;
@@ -95,5 +98,15 @@ public class UserController implements UserApi {
     public ResponseEntity<EntityModel<UserResponse>> getMe() {
         User user = userService.getMe();
         return ResponseEntity.ok(userAssembler.toModel(user));
+    }
+
+    @Override
+    @RequireRole({STUDENT})
+    public ResponseEntity<CollectionModel<EntityModel<UserResponse>>> listTeachers() {
+        List<User> teachers = userService.listTeachers();
+        List<EntityModel<UserResponse>> models = teachers.stream()
+                .map(userAssembler::toModel)
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(models));
     }
 }

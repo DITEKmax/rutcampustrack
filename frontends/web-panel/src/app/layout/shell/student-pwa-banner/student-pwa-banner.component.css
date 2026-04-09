@@ -1,0 +1,68 @@
+.pwa-banner {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--accent-primary);
+  padding: var(--space-2) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.pwa-banner__icon {
+  font-size: 24px;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.pwa-banner__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pwa-banner__title {
+  font-size: var(--text-sm);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+/* Compact variant for banner CTA */
+.btn-brand--sm {
+  padding: 8px 16px;
+  min-height: 36px;
+  font-size: var(--text-sm);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.pwa-banner__dismiss {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms ease;
+  flex-shrink: 0;
+}
+
+.pwa-banner__dismiss:hover {
+  color: var(--text-secondary);
+}
+
+.pwa-banner__dismiss:active {
+  transform: scale(0.92);
+}
+
+.pwa-banner__dismiss:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}

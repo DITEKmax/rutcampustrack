@@ -117,9 +117,9 @@
 :root {
   /* --- Typography: font families --- */
   /* Primary display: Clash Display. Fallback chain uses General Sans -> system. */
-  --font-display: "Clash Display", "General Sans", "Geist Variable", system-ui, -apple-system, sans-serif;
-  --font-heading: "General Sans", "Geist Variable", system-ui, -apple-system, sans-serif;
-  --font-sans: "DM Sans", "Geist Variable", system-ui, -apple-system, sans-serif;
+  --font-display: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-heading: "Inter Variable", "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: "DM Sans Variable", "DM Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* --- Typography: scale --- */

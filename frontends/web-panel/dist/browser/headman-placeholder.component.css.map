@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;8b43bfe2c9780015288cd5070f8b494d127e53b50ae53032ae0702e87678db3e;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/headman/headman-placeholder/headman-placeholder.component.ts"],
+  "sourcesContent": ["\n    .placeholder-wrap {\n      display: flex;\n      justify-content: center;\n      padding: 48px 16px;\n    }\n    .placeholder-card {\n      max-width: 480px;\n      width: 100%;\n      text-align: center;\n      padding: 32px;\n    }\n    .placeholder-text {\n      color: var(--mat-sys-on-surface-variant);\n      margin: 0;\n    }\n  "],
+  "mappings": ";AACI,CAAC;AACC,WAAS;AACT,mBAAiB;AACjB,WAAS,KAAK;AAChB;AACA,CAAC;AACC,aAAW;AACX,SAAO;AACP,cAAY;AACZ,WAAS;AACX;AACA,CAAC;AACC,SAAO,IAAI;AACX,UAAQ;AACV;",
+  "names": []
+}

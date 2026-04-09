@@ -1,22 +1,25 @@
 /*
  * RutCampusTrack — Brand font imports
  * ==========================================================================
- * Google Fonts + Fontshare. Loaded with font-display: swap so text is
- * visible during font fetch. Each app should import this ONCE at the top
- * of its global stylesheet (before tokens.css).
+ * Local @fontsource packages — no external CDN requests, works with strict CSP.
  *
  * Roles per brandbook section 3:
- *   Clash Display  — H1–H2, hero numbers (600, 700)
- *   General Sans   — H3–H5, card headings (500, 600)
- *   DM Sans        — body text (400, 500)
- *   JetBrains Mono — codes, IDs, data cells (400)
- *
- * Clash Display + General Sans are hosted on Fontshare (not Google Fonts).
+ *   Plus Jakarta Sans  — H1–H2, hero numbers (replaces Clash Display) — 600, 700
+ *   Inter              — H3–H5, card headings (replaces General Sans) — 500, 600
+ *   DM Sans            — body text — 400, 500
+ *   JetBrains Mono     — codes, IDs, data cells — 400, 500
  * ==========================================================================
  */
 
-/* Clash Display + General Sans (Fontshare) */
-@import url("https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=general-sans@500,600&display=swap");
+/* Plus Jakarta Sans (replaces Clash Display) */
+@import "@fontsource-variable/plus-jakarta-sans/wght.css";
 
-/* DM Sans + JetBrains Mono (Google Fonts) */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap");
+/* Inter (replaces General Sans) */
+@import "@fontsource-variable/inter/wght.css";
+
+/* DM Sans */
+@import "@fontsource-variable/dm-sans/wght.css";
+
+/* JetBrains Mono */
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";

@@ -2,5 +2,6 @@
   "workflow": {
     "_auto_chain_active": false
   },
-  "response_language": "ru"
+  "response_language": "ru",
+  "model_profile": "budget"
 }

@@ -170,3 +170,22 @@
 .sidebar--collapsed .sidebar__footer-btn { justify-content: center; padding: 10px 0; }
 .sidebar__footer-btn:hover { background: color-mix(in oklab, var(--text-primary) 5%, transparent); color: var(--text-primary); }
 .sidebar__collapse-btn:hover .ph-caret-left { color: var(--accent-primary); }
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  background: var(--accent-primary);
+  color: var(--accent-primary-contrast, #0A0E17);
+  border-radius: var(--radius-full, 9999px);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+}

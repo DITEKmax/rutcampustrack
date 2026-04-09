@@ -10,6 +10,7 @@ import {
 import { AuthService } from '../../core/auth/auth.service';
 import { AuthApi } from '../../core/auth/auth.api';
 import { ThemeService } from '../../core/theme/theme.service';
+import { StudentNotificationBadgeService } from '../../features/student/shared/student-notification-badge.service';
 
 /**
  * Sidebar navigation for the authenticated shell.
@@ -56,6 +57,8 @@ export class SidebarComponent implements OnInit {
 
   collapsed = signal(false);
   currentUser = this.authService.currentUser;
+  readonly notificationBadge = inject(StudentNotificationBadgeService);
+  readonly unreadCount = this.notificationBadge.unreadCount;
 
   /** Primary nav (dashboards) — always shown first when role matches. */
   readonly primaryItems: NavItem[] = [
@@ -124,6 +127,30 @@ export class SidebarComponent implements OnInit {
       label: 'Отметиться',
       icon: 'ph-map-pin',
       route: '/student/checkin',
+      roles: ['STUDENT'],
+    },
+    {
+      label: 'Домашние задания',
+      icon: 'ph-notebook',
+      route: '/student/homework',
+      roles: ['STUDENT'],
+    },
+    {
+      label: 'Статистика',
+      icon: 'ph-chart-bar',
+      route: '/student/stats',
+      roles: ['STUDENT'],
+    },
+    {
+      label: 'Уведомления',
+      icon: 'ph-bell',
+      route: '/student/notifications',
+      roles: ['STUDENT'],
+    },
+    {
+      label: 'Профиль',
+      icon: 'ph-user-circle',
+      route: '/student/profile',
       roles: ['STUDENT'],
     },
   ];

@@ -116,6 +116,38 @@ export const routes: Routes = [
               ),
             data: { title: 'Отметиться', eyebrow: 'Студент' },
           },
+          {
+            path: 'homework',
+            loadComponent: () =>
+              import('./features/student/homework/student-homework.component').then(
+                m => m.StudentHomeworkComponent,
+              ),
+            data: { title: 'Домашние задания', eyebrow: 'Студент' },
+          },
+          {
+            path: 'stats',
+            loadComponent: () =>
+              import('./features/student/stats/student-stats.component').then(
+                m => m.StudentStatsComponent,
+              ),
+            data: { title: 'Статистика', eyebrow: 'Студент' },
+          },
+          {
+            path: 'notifications',
+            loadComponent: () =>
+              import('./features/student/notifications/student-notifications.component').then(
+                m => m.StudentNotificationsComponent,
+              ),
+            data: { title: 'Уведомления', eyebrow: 'Студент' },
+          },
+          {
+            path: 'profile',
+            loadComponent: () =>
+              import('./features/student/profile/student-profile.component').then(
+                m => m.StudentProfileComponent,
+              ),
+            data: { title: 'Профиль', eyebrow: 'Студент' },
+          },
           { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         ],
       },

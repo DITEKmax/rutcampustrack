@@ -128,4 +128,56 @@ export class HeadmanApiService {
   listTeachers(): Observable<any> {
     return this.http.get('/api/academic/users/teachers');
   }
+
+  // Attendance & Stats
+
+  /**
+   * Fetch the attendance journal for the headman's group and a specific subject.
+   * Endpoint: GET /api/attendance/reports/journal?groupId=X&subjectId=Y&dateFrom=Z&dateTo=W
+   * Per D-05: same endpoint as teacher journal (JournalApiService.getJournal).
+   */
+  getJournal(groupId: number, subjectId: number, dateFrom: string, dateTo: string): Observable<any> {
+    return this.http.get('/api/attendance/reports/journal', {
+      params: new HttpParams()
+        .set('groupId', groupId)
+        .set('subjectId', subjectId)
+        .set('dateFrom', dateFrom)
+        .set('dateTo', dateTo),
+    });
+  }
+
+  /**
+   * Mark or update attendance status for a student on a specific lesson.
+   * Endpoint: PUT /api/attendance/lessons/{lessonId}/students/{userId}
+   * Body: { status: AttendanceStatus string }
+   * Per D-05: status must be one of: present, absent, excused, free_attendance
+   * (MarkingService.ALLOWED_STATUSES excludes cancelled — do not send cancelled).
+   */
+  markAttendance(lessonId: number, userId: number, status: string): Observable<any> {
+    return this.http.put(`/api/attendance/lessons/${lessonId}/students/${userId}`, { status });
+  }
+
+  /**
+   * Resolve the effective red-zone threshold for a group+subject combination.
+   * Endpoint: GET /api/academic/thresholds/resolve?groupId=X&subjectId=Y
+   * Returns: { minPercentage: number, level: string, sourceId: number }
+   * Per D-11.
+   */
+  resolveThreshold(groupId: number, subjectId: number): Observable<any> {
+    return this.http.get('/api/academic/thresholds/resolve', {
+      params: new HttpParams().set('groupId', groupId).set('subjectId', subjectId),
+    });
+  }
+
+  /**
+   * Set the per-subject red-zone threshold for the headman's group.
+   * Endpoint: PUT /api/academic/thresholds/subject?subjectId=Y
+   * Body: { minPercentage: number } (integer 0-100)
+   * Per D-11.
+   */
+  setSubjectThreshold(subjectId: number, minPercentage: number): Observable<any> {
+    return this.http.put('/api/academic/thresholds/subject', { minPercentage }, {
+      params: new HttpParams().set('subjectId', subjectId),
+    });
+  }
 }

@@ -167,4 +167,32 @@ jobs:
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans
             sleep 30
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans
+
+            # --- Reload main nginx after git pull (Phase 50.1 fix) ---
+            # rct-nginx bind-mounts ./nginx/conf.d as read-only volume. git pull
+            # updates files on disk, but the nginx process keeps the old config
+            # in memory until SIGHUP. Without this reload, config changes only
+            # take effect after the 6-hour internal sleep loop in compose command.
+            # See Phase 50 incident: catch-all `location /` was on disk but not in
+            # memory, causing /login to return mini-app HTML instead of web-panel.
+            echo "--- Reloading rct-nginx config ---"
+            docker exec rct-nginx nginx -t
+            docker exec rct-nginx nginx -s reload
+            sleep 2
+
+            # --- Smoke test: verify /login returns web-panel Angular HTML ---
+            # Phase 50 invariant: /login MUST be served by web-panel-nginx
+            # (Angular SPA, ~19KB) and NOT by mini-app/pwa/landing.
+            # If Content-Length is suspiciously small (<5000 bytes), the catch-all
+            # location / is misrouted — fail the deployment immediately.
+            echo "--- Smoke test: GET /login ---"
+            LOGIN_SIZE=$(curl -s -o /dev/null -w "%{size_download}" https://ruttrack.site/login)
+            echo "GET /login returned $LOGIN_SIZE bytes"
+            if [ "$LOGIN_SIZE" -lt 5000 ]; then
+              echo "FATAL: /login returned $LOGIN_SIZE bytes — expected web-panel Angular HTML (~19KB)"
+              echo "This usually means nginx routing is misconfigured or web-panel-nginx is unhealthy."
+              exit 1
+            fi
+            echo "✓ Smoke test passed: /login is served by web-panel"
+
             docker logout ghcr.io

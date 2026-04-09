@@ -369,7 +369,10 @@ services:
       api-gateway:
         condition: service_healthy
     restart: unless-stopped
-    command: "/bin/sh -c 'while :; do sleep 6h; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    # Background loop reloads nginx every 5 minutes as a safety net for cases
+    # when deploy.yml's explicit `nginx -s reload` step is skipped or fails.
+    # Primary reload path is GitHub Actions deploy.yml after git pull.
+    command: "/bin/sh -c 'while :; do sleep 5m; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
   certbot:
     image: certbot/certbot

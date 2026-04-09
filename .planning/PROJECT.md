@@ -45,7 +45,7 @@ v8.0 shipped (2026-04-08). Full production-ready system: 5 backend services, 4 f
 
 **Latest milestone:** v8.0 CI/CD, Deployment & Documentation shipped 2026-04-08 (8 phases, 11 plans, 26/26 requirements).
 
-**v9.0 progress:** Phase 49 complete (2026-04-08) — nginx root redirects to `/login`, landing moved to `/presentation/`, PWA moved to `/app/`, dead `t.me/` links replaced with `/login`. Critical-path routing fix landed; Phase 50 (`baseHref` migration + unified `/login`) unblocked. 8/33 v9.0 requirements satisfied offline; 8 HUMAN-UAT items pending live-host verification.
+**v9.0 progress:** Phase 50 complete (2026-04-09) — `baseHref` migrated `/admin/` → `/`, unified `/login` entry point for all 4 roles (ADMIN/TEACHER/STUDENT/STUDENT+headman), `AuthService.resolveDashboardFor()` introduced as single source of truth for post-login redirects, three new functional guards (`studentGuard`/`headmanGuard`/`guestGuard`), placeholder routes for `/student/*` + `/headman/*` ready for Phases 51-55, prod nginx rebuilt with catch-all `location /` serving the web-panel SPA. Vitest suite 162/162 passed (+33 above v8.0 baseline). Human UAT approved 2026-04-09 after deploy hotfix `b391fb9` (deploy.yml now auto-reloads nginx + smokes `/login` to prevent stale-config incidents). 16/33 v9.0 requirements satisfied; Phase 51 (student web cabinet — shell + schedule + check-in) is the next milestone target.
 
 ## Shipped Milestones
 
@@ -192,6 +192,15 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - [ ] WS-07: Live broker-level group isolation verification
 - [ ] WPAN-13: Headman assistant management (blocked — backend @RequireRole(STUDENT) on assistant endpoints)
 
+### Recently Validated (v9.0)
+- ✓ INFRA-v9-01..03: nginx root `/` 301 → `/login`, landing moved to `/presentation/`, PWA moved to `/app/` — v9.0 Phase 49
+- ✓ LAND-v9-01: dead `t.me/` links on landing replaced with `/login` CTA — v9.0 Phase 49
+- ✓ INFRA-v9-04: web-panel `baseHref` migrated `/admin/` → `/`, prod nginx rebuilt with catch-all `location /` serving web-panel SPA — v9.0 Phase 50
+- ✓ AUTH-v9-01..03: `AuthService` extended with STUDENT role + `isHeadman` claim from JWT, `resolveDashboardFor()` single source of truth for post-login redirects — v9.0 Phase 50
+- ✓ AUTH-v9-04..05: `headmanGuard` blocks plain STUDENT, `studentGuard` passes headman, both functional `CanActivateFn` — v9.0 Phase 50
+- ✓ AUTH-v9-06: `guestGuard` redirects already-authenticated users away from `/login` to their role dashboard — v9.0 Phase 50
+- ✓ AUTH-v9-07: vitest regression suite 162/162 green (+33 above v8.0 baseline of 129) — v9.0 Phase 50
+
 ### Recently Validated (v8.0)
 - ✓ MON-01..02: Spring Boot Actuator health/info on all 4 Java services, production-safe config — v8.0
 - ✓ DOCK-01..04: Multi-stage Dockerfiles for all 11 services (5 Java + 1 Python + 4 frontend + notification-web) — v8.0
@@ -329,4 +338,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-09 after Phase 49 completion (nginx routing + landing dead-link fix)*
+*Last updated: 2026-04-09 after Phase 50 completion (baseHref migration + unified /login + role-based guards)*

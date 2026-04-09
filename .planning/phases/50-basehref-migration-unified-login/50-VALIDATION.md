@@ -48,9 +48,9 @@ created: 2026-04-09
 | 04-T1   | 04   | 3    | AUTH-v9-02 | T-50-16 | role.guard.ts fallback использует resolveDashboardFor, STUDENT/headman покрыты | unit TDD | cd frontends/web-panel && npx vitest run --reporter=dot src/app/core/auth/auth.guard.spec.ts | yes | green |
 | 04-T2   | 04   | 3    | AUTH-v9-01, AUTH-v9-02, AUTH-v9-03 | T-50-15 | login.component.ts использует resolveDashboardFor + navigateByUrl, 4 role редиректа | unit TDD | cd frontends/web-panel && npx vitest run --reporter=dot | yes | green |
 | 05-T1   | 05   | 4    | INFRA-v9-04 | T-50-21 | angular.json baseHref: / в обоих местах + landing footer replaces /admin/ с /login | build + grep | cd frontends/web-panel && npx ng build --configuration production && grep -c 'base href="/"' dist/browser/index.html | yes | green |
-| 05-T2   | 05   | 4    | INFRA-v9-04 | T-50-19, T-50-20, T-50-22 | Prod nginx: /admin/ удалён, catch-all / добавлен в конец, /login 301 сохранён, prefix-match порядок соблюдён | grep + manual curl после deploy | Manual: curl -I https://ruttrack.site/ -> 301 /login; curl -I https://ruttrack.site/login -> 200 | manual | pending-UAT |
+| 05-T2   | 05   | 4    | INFRA-v9-04 | T-50-19, T-50-20, T-50-22 | Prod nginx: /admin/ удалён, catch-all / добавлен в конец, /login 301 сохранён, prefix-match порядок соблюдён | grep + manual curl после deploy | Manual: curl -I https://ruttrack.site/ -> 301 /login; curl -I https://ruttrack.site/login -> 200 | manual | green |
 | 06-T1   | 06   | 5    | AUTH-v9-07 | — | Full suite regression + prod build | unit regression | cd frontends/web-panel && npx vitest run | yes | green |
-| 06-T2   | 06   | 5    | AUTH-v9-01..07, INFRA-v9-04 | — | Human UAT — 6 ROADMAP criteria | manual UAT | Human | manual | pending-UAT |
+| 06-T2   | 06   | 5    | AUTH-v9-01..07, INFRA-v9-04 | — | Human UAT — 6 ROADMAP criteria | manual UAT | Human | manual | green |
 
 *Status: pending | green | red | flaky | pending-UAT (manual, awaiting human checkpoint)*
 
@@ -116,4 +116,4 @@ created: 2026-04-09
 - [x] Feedback latency < 30s
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending — ждёт human UAT checkpoint (Task 2 of Plan 06)
+**Approval:** approved 2026-04-09 by maksd (after deploy hotfix b391fb9)

@@ -1,0 +1,110 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { of, throwError } from 'rxjs';
+import { signal } from '@angular/core';
+import { HeadmanJournalPageComponent } from './headman-journal-page.component';
+import { HeadmanApiService } from '../shared/headman-api.service';
+import { AuthService } from '../../../core/auth/auth.service';
+
+describe('HeadmanJournalPageComponent', () => {
+  let fixture: ComponentFixture<HeadmanJournalPageComponent>;
+  let component: HeadmanJournalPageComponent;
+
+  const mockSubjectsResponse = {
+    _embedded: {
+      subjectResponseList: [
+        { id: 1, name: 'Математика' },
+        { id: 2, name: 'Физика' },
+      ],
+    },
+    page: { totalElements: 2, totalPages: 1, size: 100, number: 0 },
+  };
+
+  const mockJournalResponse = {
+    groupId: 5,
+    subjectId: 1,
+    dates: ['2026-04-01'],
+    students: [
+      {
+        userId: 10,
+        displayName: 'Иванов Иван',
+        records: [
+          { lessonId: 42, date: '2026-04-01', lessonNumber: 1, status: 'present', symbol: 'б' },
+        ],
+      },
+    ],
+  };
+
+  let headmanApiMock: Partial<HeadmanApiService>;
+  let authServiceMock: { currentUser: ReturnType<typeof signal> };
+
+  beforeEach(() => {
+    headmanApiMock = {
+      listSubjects: vi.fn().mockReturnValue(of(mockSubjectsResponse)),
+      getJournal: vi.fn().mockReturnValue(of(mockJournalResponse)),
+    };
+    authServiceMock = {
+      currentUser: signal({ id: 1, role: 'STUDENT', isHeadman: true, groupId: 5 }),
+    };
+
+    TestBed.configureTestingModule({
+      imports: [HeadmanJournalPageComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideAnimationsAsync(),
+        { provide: HeadmanApiService, useValue: headmanApiMock },
+        { provide: AuthService, useValue: authServiceMock },
+      ],
+    });
+
+    fixture = TestBed.createComponent(HeadmanJournalPageComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('renders subject MatSelect on init', () => {
+    const select = fixture.nativeElement.querySelector('mat-select');
+    expect(select).toBeTruthy();
+  });
+
+  it('"Применить" button is disabled when no subject is selected', () => {
+    const button = fixture.nativeElement.querySelector('button.btn-brand');
+    expect(button).toBeTruthy();
+    expect(button.disabled).toBe(true);
+  });
+
+  it('shows page-empty state when no journalData is loaded', () => {
+    const empty = fixture.nativeElement.querySelector('.page-empty');
+    expect(empty).toBeTruthy();
+  });
+
+  it('calls getJournal after selecting subject and clicking Применить', async () => {
+    component.selectedSubjectId.set(1);
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('button.btn-brand');
+    button.click();
+    fixture.detectChanges();
+
+    expect(headmanApiMock.getJournal).toHaveBeenCalledWith(5, 1, expect.any(String), expect.any(String));
+  });
+
+  it('shows page-error on getJournal error', async () => {
+    (headmanApiMock.getJournal as ReturnType<typeof vi.fn>).mockReturnValue(
+      throwError(() => new Error('Network error'))
+    );
+    component.selectedSubjectId.set(1);
+    fixture.detectChanges();
+
+    component.loadJournal();
+    fixture.detectChanges();
+
+    const errorEl = fixture.nativeElement.querySelector('.page-error');
+    expect(errorEl).toBeTruthy();
+    expect(errorEl.textContent).toContain('Не удалось загрузить данные');
+  });
+});

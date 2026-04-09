@@ -221,7 +221,12 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
   - ng2-charts is already installed in web-panel (used by teacher stats in Phase 39) — reuse without reinstalling
   - Notification log can source from STOMP incoming messages buffered in an Angular signal for the session, or from a backend log endpoint if one exists
   - Password change endpoint: verify in auth-service contract (likely `PATCH /api/auth/password` or similar)
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 52-01-PLAN.md — Shared foundation: 4 routes + sidebar nav items + STOMP extension + notification badge service + homework/password API methods (STU-WEB-04, STU-WEB-05, STU-WEB-06, STU-WEB-09)
+- [ ] 52-02-PLAN.md — /student/homework: HomeworkItemComponent + StudentHomeworkComponent with optimistic toggle (STU-WEB-04)
+- [ ] 52-03-PLAN.md — /student/stats: StudentStatsComponent + StudentSubjectChartComponent + StudentOverallCardComponent with ng2-charts (STU-WEB-05)
+- [ ] 52-04-PLAN.md — /student/notifications: STOMP log + sessionStorage; /student/profile: identity card + password change form (STU-WEB-06, STU-WEB-09)
 **UI hint**: yes
 
 ### Phase 53: Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner
@@ -324,7 +329,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 | 49. Nginx Routing + Landing Dead Link Fix | v9.0 | 2/2 | Complete    | 2026-04-08 |
 | 50. baseHref Migration + Unified /login | v9.0 | 6/6 | Complete    | 2026-04-09 |
 | 51. Student Web Cabinet — Shell + Schedule + Check-in | v9.0 | 4/4 | Complete    | 2026-04-09 |
-| 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 0/TBD | Not started | - |
+| 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 0/4 | Not started | - |
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 0/TBD | Not started | - |
 | 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 0/TBD | Not started | - |
 | 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 0/TBD | Not started | - |

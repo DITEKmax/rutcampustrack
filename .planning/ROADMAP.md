@@ -330,7 +330,7 @@ Plans:
 | 50. baseHref Migration + Unified /login | v9.0 | 6/6 | Complete    | 2026-04-09 |
 | 51. Student Web Cabinet — Shell + Schedule + Check-in | v9.0 | 4/4 | Complete    | 2026-04-09 |
 | 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 4/4 | Complete   | 2026-04-09 |
-| 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 0/TBD | Not started | - |
+| 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 0/4 | Not started | - |
 | 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 0/TBD | Not started | - |
 | 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 0/TBD | Not started | - |
 | 56. PWA Headman Mode | v9.0 | 0/TBD | Not started | - |

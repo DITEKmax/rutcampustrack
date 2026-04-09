@@ -69,6 +69,32 @@
     }
   </ul>
 
+  <!-- Headman section (Старостат) — only visible when isHeadman === true -->
+  @if (filteredHeadmanNavItems().length > 0) {
+    @if (!collapsed()) {
+      <p class="sidebar__section">Старостат</p>
+    } @else {
+      <div class="sidebar__section-divider" aria-hidden="true"></div>
+    }
+    <ul class="sidebar__nav">
+      @for (item of filteredHeadmanNavItems(); track item.route) {
+        <li>
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="sidebar__link--active"
+            class="sidebar__link"
+            [title]="item.label"
+          >
+            <i [class]="item.icon" class="ph sidebar__icon" aria-hidden="true"></i>
+            @if (!collapsed()) {
+              <span class="sidebar__label">{{ item.label }}</span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  }
+
   <!-- Spacer -->
   <div class="sidebar__spacer"></div>
 

@@ -26,6 +26,7 @@ interface NavItem {
   icon: string; // Phosphor icon class name
   route: string;
   roles: ('TEACHER' | 'ADMIN' | 'STUDENT')[];
+  isHeadman?: boolean; // if true, only shown when currentUser().isHeadman === true
 }
 
 @Component({
@@ -165,6 +166,28 @@ export class SidebarComponent implements OnInit {
       route: '/student/late-checkin',
       roles: ['STUDENT'],
     },
+    // Headman items (Старостат section) — shown only when isHeadman === true
+    {
+      label: 'Кабинет старосты',
+      icon: 'ph-crown-simple',
+      route: '/headman/dashboard',
+      roles: ['STUDENT'],
+      isHeadman: true,
+    },
+    {
+      label: 'Группа',
+      icon: 'ph-users-three',
+      route: '/headman/group',
+      roles: ['STUDENT'],
+      isHeadman: true,
+    },
+    {
+      label: 'Предметы',
+      icon: 'ph-books',
+      route: '/headman/subjects',
+      roles: ['STUDENT'],
+      isHeadman: true,
+    },
   ];
 
   readonly filteredPrimaryItems = computed(() => {
@@ -173,10 +196,22 @@ export class SidebarComponent implements OnInit {
     return this.primaryItems.filter((item) => item.roles.includes(user.role));
   });
 
+  /** Non-headman secondary nav items — work pages for the user's role. */
   readonly filteredNavItems = computed(() => {
     const user = this.currentUser();
     if (!user) return [];
-    return this.allNavItems.filter((item) => item.roles.includes(user.role));
+    return this.allNavItems
+      .filter((item) => item.roles.includes(user.role))
+      .filter((item) => !item.isHeadman);
+  });
+
+  /** Headman-only nav items (Старостат section) — shown only when isHeadman === true. */
+  readonly filteredHeadmanNavItems = computed(() => {
+    const user = this.currentUser();
+    if (!user || !user.isHeadman) return [];
+    return this.allNavItems.filter(
+      (item) => item.roles.includes(user.role) && item.isHeadman === true,
+    );
   });
 
   readonly sectionLabel = computed(() => {

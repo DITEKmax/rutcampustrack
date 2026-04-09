@@ -3,7 +3,9 @@ phase: 50-basehref-migration-unified-login
 plan: 06
 subsystem: web-panel
 tags: [vitest, ng-build, regression, uat, phase-gate, web-panel]
-status: awaiting-human-uat
+status: complete
+human_uat_completion: 2026-04-09
+human_uat_approver: maksd
 
 # Dependency graph
 requires:
@@ -48,35 +50,34 @@ key-decisions:
   - "Ran vitest + ng build directly in the main repo checkout rather than base-syncing the entire web-panel source tree into the worktree. The main repo is already at HEAD 2887a71 with all Plans 01-05 landed; synchronising source into the worktree would duplicate commits without value. The worktree only carries the planning artefacts (.planning/phases/50-*) which this plan actually edits."
   - "Created this SUMMARY.md with explicit status: awaiting-human-uat so that the file persists the automated completion while the ROADMAP marking + final sign-off are deferred until after the human checkpoint resolves. No STATE/ROADMAP updates made in this pass — per orchestrator instructions."
 
-requirements-completed-automated: [AUTH-v9-07]
-requirements-pending-human-uat: [AUTH-v9-01, AUTH-v9-02, AUTH-v9-03, AUTH-v9-04, AUTH-v9-05, AUTH-v9-06, INFRA-v9-04]
+requirements-completed: [AUTH-v9-01, AUTH-v9-02, AUTH-v9-03, AUTH-v9-04, AUTH-v9-05, AUTH-v9-06, AUTH-v9-07, INFRA-v9-04]
 
 # Metrics
 duration: ~15min
-completed: 2026-04-09 (automated portion)
-human-uat-completion: pending
+completed: 2026-04-09
+human-uat-completion: 2026-04-09
 ---
 
 # Phase 50 Plan 06: Full Vitest Regression + Production Build + Human UAT Gate Summary
 
-**Ran the full vitest suite and a production Angular build against the final state of Phase 50 code, filled in the per-task verification map in `50-VALIDATION.md`, and paused at the blocking human-verify checkpoint for the 6 ROADMAP success criteria. Automated portion complete; awaiting human UAT sign-off to finalize Phase 50.**
+**Ran the full vitest suite (162/162 green) and a production Angular build against the final state of Phase 50 code, filled in the per-task verification map in `50-VALIDATION.md`, and resolved the Phase 50 human-verify checkpoint after a deploy hot-fix (b391fb9) restored production nginx config. All 6 ROADMAP success criteria approved by maksd on 2026-04-09.**
 
-## Status: AWAITING HUMAN UAT
+## Status: COMPLETE
 
 Task 1 (automated) — **COMPLETE**
-Task 2 (human-verify) — **BLOCKED ON HUMAN**
+Task 2 (human-verify) — **APPROVED 2026-04-09 by maksd** (after deploy hot-fix b391fb9)
 
-The human operator must work through the 6 ROADMAP success criteria (replicated in the Plan 50-06 `<how-to-verify>` section) against the deployed environment and respond either `approved` (phase 50 may close) or with a description of failures (executor will be re-spawned to fix).
+All 6 ROADMAP success criteria verified on production. See `## Human UAT — Resolution` below and `50-HUMAN-UAT.md` for the per-criterion record.
 
 ## Performance
 
 - **Duration (automated portion):** ~15 min
 - **Started:** 2026-04-09T03:00:00Z
 - **Automated portion completed:** 2026-04-09T03:15:00Z
-- **Human UAT:** pending
+- **Human UAT completed:** 2026-04-09 by maksd (after deploy hot-fix b391fb9)
 - **Tasks:** 2 (1 automated, 1 human-verify)
 - **Files modified:** 1 (`50-VALIDATION.md`)
-- **Files created:** 1 (this SUMMARY)
+- **Files created:** 2 (this SUMMARY, `50-HUMAN-UAT.md`)
 
 ## Accomplishments (Automated Portion)
 
@@ -236,6 +237,19 @@ Landing footer visual check: open `https://ruttrack.site/presentation/`, scroll 
 - **/gsd-complete-phase:** may be run to finalize STATE.md, update ROADMAP.md (5/6 -> 6/6, status Complete, completion date 2026-04-09), mark all 8 Phase 50 requirements complete, and commit the metadata. Only after human UAT says `approved`.
 - **Phase 51 (Student Web Cabinet — Shell + Schedule + Check-in):** unblocked by Phase 50 completion. `/student/dashboard`, `/student/schedule` routes exist (placeholders); Phase 51 replaces placeholder components with real shells.
 
+## Human UAT — Resolution
+
+UAT performed on 2026-04-09 by user maksd. Initial run failed because the production nginx process was running stale config (the bind-mounted ./nginx/conf.d/default.conf was updated by `git pull` but nginx never received SIGHUP). After `docker exec rct-nginx nginx -s reload` was applied manually on the VPS, all 4 ROADMAP success criteria verified successfully:
+
+1. ADMIN → /admin/dashboard ✓
+2. TEACHER → /teacher/dashboard ✓
+3. plain STUDENT → /student/dashboard (placeholder visible) ✓
+4. headman STUDENT → /headman/dashboard (placeholder visible) ✓
+5. headmanGuard blocks plain STUDENT, redirects to /student/dashboard ✓
+6. studentGuard passes headman to /student/schedule ✓
+
+The deploy workflow auto-reload + smoke test fix landed in commit b391fb9 to prevent the same issue from recurring on future config migrations. See 50-HUMAN-UAT.md for full UAT details.
+
 ## Self-Check: PASSED (automated portion)
 
 - Files created/modified verified in git status and filesystem:
@@ -252,4 +266,5 @@ Landing footer visual check: open `https://ruttrack.site/presentation/`, scroll 
 *Phase: 50-basehref-migration-unified-login*
 *Plan: 06*
 *Automated portion completed: 2026-04-09*
-*Phase completion: pending human UAT*
+*Human UAT completed: 2026-04-09 by maksd (after deploy hot-fix b391fb9)*
+*Status: COMPLETE*

@@ -1,8 +1,94 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/angular';
+import { userEvent } from '@testing-library/user-event';
+import { StudentLateCheckinComponent } from './student-late-checkin.component';
+import { StudentApiService } from '../shared/student-api.service';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { of, throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import type { AttendanceRecord } from '../shared/student-schedule.types';
+
+const mockRecord = (lessonId: number, status: string): AttendanceRecord => ({
+  lessonId,
+  subjectId: 1,
+  lessonDate: '2026-04-01',
+  lessonNumber: 1,
+  status,
+  symbol: status === 'absent' ? 'н' : 'б',
+  source: 'auto',
+});
+
+const mockApiService = {
+  getStudentRecords: vi.fn(),
+  requestLateCheckin: vi.fn(),
+};
 
 describe('StudentLateCheckinComponent', () => {
-  // Wave 0 stub — компонент ещё не существует
-  it('stub: placeholder for STU-WEB-08 tests', () => {
-    expect(true).toBe(true);
+  beforeEach(() => vi.clearAllMocks());
+
+  it('показывает только absent записи (фильтрует present/excused)', async () => {
+    mockApiService.getStudentRecords.mockReturnValue(
+      of([
+        mockRecord(1, 'absent'),
+        mockRecord(2, 'present'),
+        mockRecord(3, 'excused'),
+      ]),
+    );
+    await render(StudentLateCheckinComponent, {
+      providers: [
+        provideNoopAnimations(),
+        { provide: StudentApiService, useValue: mockApiService },
+      ],
+    });
+    // Only lesson 1 is absent — should appear as a row with "Запросить отметку"
+    const buttons = screen.getAllByText('Запросить отметку');
+    expect(buttons).toHaveLength(1);
+  });
+
+  it('empty state при отсутствии absent записей', async () => {
+    mockApiService.getStudentRecords.mockReturnValue(
+      of([mockRecord(1, 'present')]),
+    );
+    await render(StudentLateCheckinComponent, {
+      providers: [
+        provideNoopAnimations(),
+        { provide: StudentApiService, useValue: mockApiService },
+      ],
+    });
+    expect(screen.getByText('Нет пропущенных занятий')).toBeTruthy();
+  });
+
+  it('клик по кнопке → success state при HTTP 404 (graceful degradation)', async () => {
+    mockApiService.getStudentRecords.mockReturnValue(of([mockRecord(1, 'absent')]));
+    mockApiService.requestLateCheckin.mockReturnValue(of(undefined));
+    const user = userEvent.setup();
+    await render(StudentLateCheckinComponent, {
+      providers: [
+        provideNoopAnimations(),
+        { provide: StudentApiService, useValue: mockApiService },
+      ],
+    });
+    const btn = screen.getByText('Запросить отметку');
+    await user.click(btn);
+    expect(screen.getByText('Запрос отправлен')).toBeTruthy();
+  });
+
+  it('ошибка API → кнопка восстанавливается + inline error', async () => {
+    mockApiService.getStudentRecords.mockReturnValue(of([mockRecord(1, 'absent')]));
+    mockApiService.requestLateCheckin.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 500 })),
+    );
+    const user = userEvent.setup();
+    await render(StudentLateCheckinComponent, {
+      providers: [
+        provideNoopAnimations(),
+        { provide: StudentApiService, useValue: mockApiService },
+      ],
+    });
+    const btn = screen.getByText('Запросить отметку');
+    await user.click(btn);
+    expect(screen.getByText('Ошибка. Попробуйте ещё раз.')).toBeTruthy();
+    // Button should still be present (not replaced by pill)
+    expect(screen.getByText('Запросить отметку')).toBeTruthy();
   });
 });

@@ -338,6 +338,6 @@ Plans:
 | 52. Student Web Cabinet — Homework + Stats + Notifications + Profile | v9.0 | 4/4 | Complete   | 2026-04-09 |
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 4/4 | Complete   | 2026-04-09 |
 | 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 5/5 | Complete   | 2026-04-09 |
-| 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 0/TBD | Not started | - |
+| 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 0/5 | Not started | - |
 | 56. PWA Headman Mode | v9.0 | 0/TBD | Not started | - |
 | 57. Landing Presentation Mode + Documentation | v9.0 | 0/TBD | Not started | - |

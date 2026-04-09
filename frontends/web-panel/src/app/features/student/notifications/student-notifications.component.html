@@ -1,0 +1,28 @@
+<div class="page-stack" [@routeFade]>
+  <header class="page-header">
+    <p class="page-header__eyebrow">Студент</p>
+    <h1 class="page-header__title">Уведомления</h1>
+  </header>
+
+  @if (items().length === 0) {
+    <div class="page-empty">
+      <i class="ph-bell-slash ph-duotone"></i>
+      <h2>Уведомлений нет</h2>
+      <p>Здесь будут появляться уведомления о занятиях, заданиях и посещаемости.</p>
+    </div>
+  }
+
+  @if (items().length > 0) {
+    @if (allRead()) {
+      <div class="all-read-pill">
+        <i class="ph-check-circle ph-fill"></i>
+        <span>Все прочитано</span>
+      </div>
+    }
+    <div class="notifications-list" role="list">
+      @for (item of sortedItems(); track item.id) {
+        <app-notification-item [item]="item"></app-notification-item>
+      }
+    </div>
+  }
+</div>

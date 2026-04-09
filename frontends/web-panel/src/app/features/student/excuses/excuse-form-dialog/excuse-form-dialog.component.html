@@ -1,0 +1,124 @@
+<h2 mat-dialog-title>Новый тикет о пропуске</h2>
+
+<mat-dialog-content class="dialog-body">
+
+  <!-- Lesson selection -->
+  <section class="form-section">
+    <h3 class="form-section__label">Выберите занятия</h3>
+    <div class="lesson-list" role="list" aria-label="Список занятий для выбора">
+      @if (recentLessons.length === 0) {
+        <p class="form-hint">Нет занятий за последние 30 дней</p>
+      }
+      @for (lesson of recentLessons; track lesson.lessonId) {
+        <label class="lesson-row" role="listitem">
+          <mat-checkbox
+            [checked]="isSelected(lesson.lessonId)"
+            (change)="toggleLesson(lesson.lessonId)"
+            [aria-label]="lesson.lessonDate + ' занятие ' + lesson.lessonNumber"
+          />
+          <span class="lesson-row__subject">Занятие {{ lesson.lessonNumber }}</span>
+          <span class="lesson-row__date">{{ lesson.lessonDate }}</span>
+        </label>
+      }
+    </div>
+    @if (validationError()) {
+      <p class="form-error" role="alert">{{ validationError() }}</p>
+    }
+  </section>
+
+  <!-- File upload -->
+  <section class="form-section">
+    <h3 class="form-section__label">Прикрепите файлы <span class="form-hint-inline">(необязательно)</span></h3>
+    <div
+      class="drop-zone"
+      [class.drop-zone--active]="dragOver()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()"
+      (keydown.enter)="fileInput.click()"
+      role="button"
+      tabindex="0"
+      aria-label="Загрузка файлов"
+    >
+      <i class="ph ph-upload-simple drop-zone__icon"></i>
+      <span class="drop-zone__text">Перетащите файлы или нажмите для выбора</span>
+      <input
+        #fileInput
+        type="file"
+        multiple
+        accept="image/*,application/pdf,.doc,.docx"
+        style="display:none"
+        (change)="onFileInputChange($event)"
+      />
+    </div>
+
+    @if (fileErrors().length > 0) {
+      <div class="file-errors" role="alert">
+        @for (err of fileErrors(); track err) {
+          <p class="form-error">{{ err }}</p>
+        }
+      </div>
+    }
+
+    @if (files().length > 0) {
+      <ul class="file-list" aria-label="Прикреплённые файлы">
+        @for (file of files(); track file.name; let i = $index) {
+          <li class="file-chip">
+            <i class="ph ph-file file-chip__icon"></i>
+            <span class="file-chip__name" [title]="file.name">{{ file.name | slice:0:24 }}</span>
+            <span class="file-chip__size">{{ formatFileSize(file.size) }}</span>
+            <button
+              class="file-chip__remove"
+              type="button"
+              [attr.aria-label]="'Удалить ' + file.name"
+              (click)="removeFile(i)"
+            >
+              <i class="ph ph-x"></i>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <!-- Comment -->
+  <section class="form-section">
+    <h3 class="form-section__label">Комментарий <span class="form-hint-inline">(необязательно)</span></h3>
+    <mat-form-field appearance="outline" class="full-width">
+      <textarea
+        matInput
+        [formControl]="commentForm.controls['comment']"
+        rows="3"
+        maxlength="500"
+        placeholder="Укажите причину пропуска"
+      ></textarea>
+    </mat-form-field>
+  </section>
+
+  @if (submitError()) {
+    <div class="page-error" role="alert">
+      <i class="ph ph-warning-circle"></i>
+      {{ submitError() }}
+    </div>
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" (click)="cancel()" [disabled]="submitting()">
+    Не подавать
+  </button>
+  <button
+    class="btn-brand"
+    type="button"
+    (click)="submit()"
+    [disabled]="submitting()"
+    [attr.aria-busy]="submitting()"
+  >
+    @if (submitting()) {
+      <span class="btn-spinner"></span>
+    }
+    Подать тикет
+  </button>
+</mat-dialog-actions>

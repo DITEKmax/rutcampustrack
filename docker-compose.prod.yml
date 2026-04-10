@@ -410,8 +410,8 @@ services:
       - ./infra/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
       - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
       - grafana-data:/var/lib/grafana
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     networks:
       - private_net
     depends_on:

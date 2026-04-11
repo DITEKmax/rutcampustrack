@@ -1,0 +1,145 @@
+/* ==========================================================================
+ * User dialog — form layout and created-user result panel
+ * ========================================================================== */
+
+/* Override Material dialog surface to match design system */
+:host {
+  --mdc-dialog-container-color: var(--bg-elevated);
+  --mat-dialog-content-padding: 0 24px;
+}
+
+.ud-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+}
+
+/* Two-column row for ФИО + Роль */
+.ud-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 480px) {
+  .ud-row { grid-template-columns: 1fr; }
+}
+
+.ud-field,
+.ud-field-full {
+  width: 100%;
+}
+
+/* Override Material form-field internals to use design tokens */
+.ud-form mat-form-field {
+  --mdc-outlined-text-field-container-shape: var(--radius-md);
+  --mdc-outlined-text-field-outline-color: var(--border-default);
+  --mdc-outlined-text-field-hover-outline-color: var(--border-accent);
+  --mdc-outlined-text-field-focus-outline-color: var(--accent-primary);
+  --mdc-outlined-text-field-input-text-color: var(--text-primary);
+  --mdc-outlined-text-field-label-text-color: var(--text-secondary);
+  --mdc-outlined-text-field-focus-label-text-color: var(--accent-primary);
+  --mat-select-trigger-text-color: var(--text-primary);
+  --mat-option-label-text-color: var(--text-primary);
+  --mat-select-panel-background-color: var(--bg-elevated);
+}
+
+/* Hint text */
+.ud-hint {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: calc(-1 * var(--space-2)) 0 0;
+  padding-left: 2px;
+}
+
+/* Error banner */
+.ud-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb, var(--accent-danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-danger) 28%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--accent-danger);
+  font-size: 0.875rem;
+}
+
+.ud-error i { font-size: 18px; }
+
+/* ==========================================================================
+ * Created-user result panel
+ * ========================================================================== */
+.ud-created {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) 0 var(--space-2);
+  text-align: center;
+}
+
+.ud-created__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: color-mix(in oklab, var(--accent-primary) 15%, transparent);
+  border: 1px solid var(--border-accent);
+  display: grid;
+  place-items: center;
+  color: var(--accent-primary);
+}
+
+.ud-created__icon i { font-size: 30px; }
+
+.ud-created__title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.ud-created__creds {
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.ud-created__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  gap: var(--space-4);
+}
+
+.ud-created__row + .ud-created__row {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ud-created__label {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.ud-created__value {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  color: var(--accent-primary);
+  background: color-mix(in oklab, var(--accent-primary) 10%, transparent);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  word-break: break-all;
+  text-align: right;
+}
+
+.ud-created__hint {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: 0;
+}

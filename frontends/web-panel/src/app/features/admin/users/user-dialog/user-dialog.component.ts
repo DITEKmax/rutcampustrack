@@ -13,6 +13,7 @@ import type {
   CreateUserRequest,
   GroupResponse,
   PatchUserRequest,
+  UserCreatedResponse,
   UserResponse,
   UserRole,
 } from '../../shared/types';
@@ -37,6 +38,7 @@ export interface UserDialogData {
     MatCheckboxModule,
   ],
   templateUrl: './user-dialog.component.html',
+  styleUrl: './user-dialog.component.css',
 })
 export class UserDialogComponent {
   private readonly adminApi = inject(AdminApiService);
@@ -45,6 +47,8 @@ export class UserDialogComponent {
 
   readonly saving = signal(false);
   readonly apiError = signal(false);
+  /** После успешного создания — здесь хранится ответ с initialPassword */
+  readonly createdUser = signal<UserCreatedResponse | null>(null);
 
   readonly form = new FormGroup({
     displayName: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2)] }),
@@ -81,12 +85,15 @@ export class UserDialogComponent {
         displayName: raw.displayName,
         role: raw.role as UserRole,
       };
-      if (raw.groupId != null) req.groupId = raw.groupId;
-      if (raw.employeeNumber) req.employeeNumber = raw.employeeNumber;
+      // Группа только для студентов
+      if (raw.role === 'student' && raw.groupId != null) req.groupId = raw.groupId;
+      // Табельный номер только для преподавателей
+      if (raw.role === 'teacher' && raw.employeeNumber) req.employeeNumber = raw.employeeNumber;
 
       this.adminApi.createUser(req).subscribe({
         next: result => {
-          this.dialogRef.close(result);
+          this.saving.set(false);
+          this.createdUser.set(result);
         },
         error: () => {
           this.apiError.set(true);

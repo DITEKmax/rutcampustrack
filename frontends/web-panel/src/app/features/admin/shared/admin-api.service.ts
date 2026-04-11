@@ -30,7 +30,7 @@ export class AdminApiService {
     let httpParams = new HttpParams();
     if (params.page != null) httpParams = httpParams.set('page', params.page);
     if (params.size != null) httpParams = httpParams.set('size', params.size);
-    if (params.role) httpParams = httpParams.set('role', params.role);
+    if (params.role) httpParams = httpParams.set('role', params.role.toUpperCase());
     if (params.status) httpParams = httpParams.set('status', params.status);
     if (params.search) httpParams = httpParams.set('search', params.search);
 

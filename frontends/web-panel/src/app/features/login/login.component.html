@@ -1,39 +1,92 @@
-<div class="flex items-center justify-center min-h-screen bg-[var(--mat-sys-surface)]">
-  <mat-card class="w-full max-w-[400px] p-8">
-    <mat-card-header>
-      <mat-card-title class="text-[28px] font-normal leading-[1.2] mb-6">
-        Добро пожаловать
-      </mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Логин</mat-label>
-          <input matInput formControlName="login" autocomplete="username" />
-        </mat-form-field>
+<div class="login-page">
+  <div class="login-card">
+    <!-- Логотип / бренд -->
+    <div class="login-brand">
+      <div class="login-brand__icon">
+        <i class="ph-duotone ph-graduation-cap" aria-hidden="true"></i>
+      </div>
+      <div>
+        <h1 class="login-brand__title">RutCampusTrack</h1>
+        <p class="login-brand__subtitle">Система учёта посещаемости РУТ МИИТ</p>
+      </div>
+    </div>
 
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Пароль</mat-label>
-          <input matInput type="password" formControlName="password" autocomplete="current-password" />
-        </mat-form-field>
+    <!-- Переключатель режима входа -->
+    <div class="login-tabs">
+      <button type="button" class="login-tab" [class.login-tab--active]="mode === 'password'" (click)="setMode('password')">
+        <i class="ph ph-lock-simple" aria-hidden="true"></i>
+        Пароль
+      </button>
+      <button type="button" class="login-tab" [class.login-tab--active]="mode === 'otp'" (click)="setMode('otp')">
+        <i class="ph ph-telegram-logo" aria-hidden="true"></i>
+        OTP через Telegram
+      </button>
+    </div>
+
+    <!-- Форма входа по паролю -->
+    @if (mode === 'password') {
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+        <div class="login-field">
+          <label class="login-label" for="login-input">Логин</label>
+          <input
+            id="login-input"
+            class="login-input"
+            formControlName="login"
+            autocomplete="username"
+            placeholder="student00001"
+            [class.login-input--error]="form.get('login')?.invalid && form.get('login')?.touched"
+          />
+        </div>
+
+        <div class="login-field">
+          <label class="login-label" for="password-input">Пароль</label>
+          <input
+            id="password-input"
+            class="login-input"
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            placeholder="••••••••"
+            [class.login-input--error]="form.get('password')?.invalid && form.get('password')?.touched"
+          />
+        </div>
 
         @if (errorMessage) {
-          <div class="text-sm text-[var(--mat-sys-error)] mt-1">
+          <div class="login-error" role="alert">
+            <i class="ph ph-warning-circle" aria-hidden="true"></i>
             {{ errorMessage }}
           </div>
         }
 
-        <button mat-flat-button color="primary" type="submit"
-                [disabled]="form.invalid || loading"
-                class="w-full h-12 mt-2">
+        <button type="submit" class="login-submit" [disabled]="form.invalid || loading">
           @if (loading) {
-            <mat-spinner diameter="20" class="inline-block mr-2"></mat-spinner>
+            <span class="login-spinner" aria-hidden="true"></span>
             Вход...
           } @else {
             Войти
           }
         </button>
       </form>
-    </mat-card-content>
-  </mat-card>
+    }
+
+    <!-- OTP-вход через Telegram (информационный блок) -->
+    @if (mode === 'otp') {
+      <div class="login-otp-info">
+        <div class="login-otp-info__icon">
+          <i class="ph-duotone ph-telegram-logo" aria-hidden="true"></i>
+        </div>
+        <h3 class="login-otp-info__title">Вход через Telegram</h3>
+        <p class="login-otp-info__text">
+          Этот способ входа доступен через Telegram-бота. Напишите боту
+          <strong>/login</strong> — он запросит одноразовый код и выполнит вход автоматически.
+        </p>
+        <p class="login-otp-info__text">
+          Для веб-панели администратора рекомендуется вход по паролю.
+        </p>
+        <button type="button" class="login-submit login-submit--secondary" (click)="setMode('password')">
+          Вернуться к входу по паролю
+        </button>
+      </div>
+    }
+  </div>
 </div>

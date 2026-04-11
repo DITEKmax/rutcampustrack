@@ -5,71 +5,111 @@
 }
 
 <mat-dialog-content>
-  <form [formGroup]="form" class="flex flex-col gap-4">
-    <mat-form-field>
-      <mat-label>ФИО</mat-label>
-      <input matInput formControlName="displayName" />
-      @if (form.get('displayName')?.hasError('required')) {
-        <mat-error>ФИО обязательно</mat-error>
-      }
-    </mat-form-field>
+  <!-- Результат после создания: показываем логин и пароль -->
+  @if (createdUser()) {
+    <div class="ud-created">
+      <div class="ud-created__icon">
+        <i class="ph-duotone ph-check-circle" aria-hidden="true"></i>
+      </div>
+      <p class="ud-created__title">Пользователь создан</p>
+      <div class="ud-created__creds">
+        <div class="ud-created__row">
+          <span class="ud-created__label">Логин</span>
+          <code class="ud-created__value">{{ createdUser()!.login }}</code>
+        </div>
+        <div class="ud-created__row">
+          <span class="ud-created__label">Временный пароль</span>
+          <code class="ud-created__value">{{ createdUser()!.initialPassword }}</code>
+        </div>
+      </div>
+      <p class="ud-created__hint">Сохраните пароль — после первого входа он будет сброшен.</p>
+    </div>
+  }
 
-    <mat-form-field>
-      <mat-label>Роль</mat-label>
-      <mat-select formControlName="role">
-        <mat-option value="admin">Админ</mat-option>
-        <mat-option value="teacher">Преподаватель</mat-option>
-        <mat-option value="student">Студент</mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    @if (data.mode === 'create') {
-      <p class="text-sm opacity-60 -mt-2">Логин будет сгенерирован автоматически</p>
-    } @else {
-      <mat-form-field>
-        <mat-label>Логин</mat-label>
-        <input matInput [value]="data.user!.login" readonly />
-      </mat-form-field>
-    }
-
-    @if (form.get('role')?.value === 'student' || form.get('role')?.value === 'teacher') {
-      <mat-form-field>
-        <mat-label>Группа</mat-label>
-        <mat-select formControlName="groupId">
-          <mat-option [value]="null">—</mat-option>
-          @for (g of data.groups; track g.id) {
-            <mat-option [value]="g.id">{{ g.name }}</mat-option>
+  <!-- Форма создания/редактирования -->
+  @if (!createdUser()) {
+    <form [formGroup]="form" class="ud-form">
+      <div class="ud-row">
+        <mat-form-field class="ud-field">
+          <mat-label>ФИО</mat-label>
+          <input matInput formControlName="displayName" placeholder="Иванов Иван Иванович" />
+          @if (form.get('displayName')?.hasError('required')) {
+            <mat-error>ФИО обязательно</mat-error>
           }
-        </mat-select>
-      </mat-form-field>
-    }
+          @if (form.get('displayName')?.hasError('minlength')) {
+            <mat-error>Минимум 2 символа</mat-error>
+          }
+        </mat-form-field>
 
-    @if (form.get('role')?.value === 'teacher') {
-      <mat-form-field>
-        <mat-label>Табельный номер</mat-label>
-        <input matInput formControlName="employeeNumber" />
-      </mat-form-field>
-    }
+        <mat-form-field class="ud-field">
+          <mat-label>Роль</mat-label>
+          <mat-select formControlName="role">
+            <mat-option value="admin">Администратор</mat-option>
+            <mat-option value="teacher">Преподаватель</mat-option>
+            <mat-option value="student">Студент</mat-option>
+          </mat-select>
+          @if (form.get('role')?.hasError('required')) {
+            <mat-error>Выберите роль</mat-error>
+          }
+        </mat-form-field>
+      </div>
 
-    @if (form.get('role')?.value === 'student') {
-      <mat-checkbox formControlName="isHeadman">Является старостой</mat-checkbox>
-    }
+      @if (data.mode === 'create') {
+        <p class="ud-hint">Логин будет сгенерирован автоматически</p>
+      } @else {
+        <mat-form-field class="ud-field-full">
+          <mat-label>Логин</mat-label>
+          <input matInput [value]="data.user!.login" readonly />
+        </mat-form-field>
+      }
 
-    @if (apiError()) {
-      <p class="text-sm text-[var(--mat-sys-error)] mt-2">
-        Не удалось сохранить. Проверьте данные и попробуйте снова.
-      </p>
-    }
-  </form>
+      <!-- Группа только для студентов -->
+      @if (form.get('role')?.value === 'student') {
+        <mat-form-field class="ud-field-full">
+          <mat-label>Учебная группа</mat-label>
+          <mat-select formControlName="groupId">
+            <mat-option [value]="null">— не назначена —</mat-option>
+            @for (g of data.groups; track g.id) {
+              <mat-option [value]="g.id">{{ g.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
+      <!-- Поля только для преподавателя -->
+      @if (form.get('role')?.value === 'teacher') {
+        <mat-form-field class="ud-field-full">
+          <mat-label>Табельный номер</mat-label>
+          <input matInput formControlName="employeeNumber" placeholder="Т-00001" />
+          <mat-hint>Необязательно — можно добавить позже</mat-hint>
+        </mat-form-field>
+      }
+
+      @if (form.get('role')?.value === 'student') {
+        <mat-checkbox formControlName="isHeadman">Является старостой группы</mat-checkbox>
+      }
+
+      @if (apiError()) {
+        <div class="ud-error">
+          <i class="ph ph-warning-circle" aria-hidden="true"></i>
+          Не удалось сохранить. Проверьте данные и попробуйте снова.
+        </div>
+      }
+    </form>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Отмена</button>
-  <button mat-flat-button color="primary" (click)="save()" [disabled]="saving()">
-    @if (data.mode === 'create') {
-      Создать пользователя
-    } @else {
-      Сохранить изменения
-    }
-  </button>
+  @if (createdUser()) {
+    <button mat-flat-button color="primary" mat-dialog-close>Готово</button>
+  } @else {
+    <button mat-button mat-dialog-close>Отмена</button>
+    <button mat-flat-button color="primary" (click)="save()" [disabled]="saving()">
+      @if (data.mode === 'create') {
+        Создать пользователя
+      } @else {
+        Сохранить изменения
+      }
+    </button>
+  }
 </mat-dialog-actions>

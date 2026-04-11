@@ -132,11 +132,13 @@ export class UsersPageComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.snackBar.open(`Пользователь создан. Логин: ${result.login}`, undefined, {
+      // result — это UserCreatedResponse (диалог закрывается через mat-dialog-close без аргумента
+      // после показа экрана с паролем), поэтому перезагружаем всегда при любом закрытии кроме отмены
+      this.loadUsers();
+      if (result?.login) {
+        this.snackBar.open(`Пользователь создан: ${result.login}`, undefined, {
           duration: 4000,
         });
-        this.loadUsers();
       }
     });
   }

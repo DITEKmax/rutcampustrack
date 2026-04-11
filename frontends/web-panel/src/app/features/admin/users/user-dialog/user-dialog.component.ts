@@ -94,6 +94,7 @@ export class UserDialogComponent {
         next: result => {
           this.saving.set(false);
           this.createdUser.set(result);
+          this.dialogRef.close(result);
         },
         error: () => {
           this.apiError.set(true);

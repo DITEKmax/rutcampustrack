@@ -58,7 +58,7 @@ describe('AdminApiService', () => {
 
     const req = httpMock.expectOne(r =>
       r.url === '/api/academic/users' &&
-      r.params.get('role') === 'student' &&
+      r.params.get('role') === 'STUDENT' &&
       r.params.get('status') === 'active',
     );
     expect(req.request.method).toBe('GET');

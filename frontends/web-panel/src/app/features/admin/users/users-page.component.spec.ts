@@ -102,6 +102,9 @@ describe('UsersPageComponent', () => {
         data: expect.objectContaining({ mode: 'create' }),
       }),
     );
+
+    // openCreateDialog always calls loadUsers() after dialog closes
+    httpMock.expectOne(req => req.url === '/api/academic/users').flush(mockUsersResponse);
   });
 
   it('restoreUser calls patchUser with status active', () => {

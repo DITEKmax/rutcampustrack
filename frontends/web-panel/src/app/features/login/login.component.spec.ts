@@ -316,7 +316,7 @@ describe('LoginComponent', () => {
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'teacher00001');
     await user.type(screen.getByLabelText(/пароль/i), 'password123');
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('button', { name: /войти/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/вход\.\.\./i)).toBeTruthy();

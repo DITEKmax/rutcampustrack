@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +42,8 @@ public class User {
     private String middleName;
 
     /** Composed full name for display/log purposes. Не хранится в БД. */
+    @JsonIgnore
+    @Transient
     public String getDisplayName() {
         StringBuilder sb = new StringBuilder(lastName).append(' ').append(firstName);
         if (middleName != null && !middleName.isBlank()) {

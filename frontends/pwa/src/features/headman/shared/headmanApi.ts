@@ -1,0 +1,291 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiClient } from '@/shared/lib/axios'
+import type {
+  GroupMember,
+  Subject,
+  Teacher,
+  JournalCell,
+  ResolvedThreshold,
+  TodayLesson,
+  PendingExcuse,
+  PendingLateCheckin,
+} from './types'
+import type { AttendanceStatus } from './types'
+
+// ─── GET queries ─────────────────────────────────────────────────────────────
+
+export function useGroupMembers(page = 0, size = 50) {
+  return useQuery<GroupMember[]>({
+    queryKey: ['groupMembers', page, size],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/academic/groups/my/members', {
+        params: { page, size },
+      })
+      return data._embedded?.userResponseList ?? []
+    },
+    staleTime: 5 * 60 * 1000, // 5 min
+  })
+}
+
+export function useGroupSubjects(page = 0, size = 100) {
+  return useQuery<Subject[]>({
+    queryKey: ['groupSubjects', page, size],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/academic/subjects', {
+        params: { page, size },
+      })
+      return data._embedded?.subjectResponseList ?? []
+    },
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  })
+}
+
+export function useGroupTeachers(groupId: number) {
+  return useQuery<Teacher[]>({
+    queryKey: ['groupTeachers', groupId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/academic/groups/${groupId}/teachers`)
+      return data ?? []
+    },
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    enabled: !!groupId,
+  })
+}
+
+export function useJournal(
+  groupId: number,
+  subjectId: number,
+  dateFrom: string,
+  dateTo: string,
+) {
+  return useQuery<JournalCell[]>({
+    queryKey: ['journal', groupId, subjectId, dateFrom, dateTo],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/attendance/reports/journal', {
+        params: { groupId, subjectId, dateFrom, dateTo },
+      })
+      return data._embedded?.journalCellList ?? []
+    },
+    staleTime: 5 * 60 * 1000, // 5 min
+    enabled: !!groupId && !!subjectId,
+  })
+}
+
+export function useResolveThreshold(groupId: number, subjectId: number) {
+  return useQuery<ResolvedThreshold>({
+    queryKey: ['threshold', groupId, subjectId],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/academic/thresholds/resolve', {
+        params: { groupId, subjectId },
+      })
+      return data
+    },
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    enabled: !!groupId && !!subjectId,
+  })
+}
+
+export function useTodayLesson(groupId: number) {
+  return useQuery<TodayLesson | null>({
+    queryKey: ['todayLesson', groupId],
+    queryFn: async () => {
+      const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+      const { data } = await apiClient.get(`/schedule/groups/${groupId}/lessons`, {
+        params: { dateFrom: today, dateTo: today, size: 1 },
+      })
+      const lessons = data._embedded?.lessonResponseList ?? []
+      if (lessons.length === 0) return null
+      const first = lessons[0]
+      return {
+        lessonId: first.id,
+        subjectName: first.subjectName ?? '',
+        startsAt: first.startsAt ?? '',
+        endsAt: first.endsAt ?? '',
+        room: first.room,
+      } as TodayLesson
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: !!groupId,
+  })
+}
+
+export function usePendingExcuses(groupId: number) {
+  return useQuery<PendingExcuse[]>({
+    queryKey: ['pendingExcuses', groupId],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get('/attendance/excuses/pending', {
+          params: { groupId },
+        })
+        return data._embedded?.pendingExcuseList ?? data ?? []
+      } catch (err: unknown) {
+        // Graceful degradation per D-10: 404 means endpoint not yet implemented
+        const status = (err as { response?: { status?: number } })?.response?.status
+        if (status === 404) return []
+        throw err
+      }
+    },
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+    enabled: !!groupId,
+  })
+}
+
+export function usePendingLateCheckins(groupId: number) {
+  return useQuery<PendingLateCheckin[]>({
+    queryKey: ['pendingLateCheckins', groupId],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get('/attendance/late-checkins/pending', {
+          params: { groupId },
+        })
+        return data._embedded?.pendingLateCheckinList ?? data ?? []
+      } catch (err: unknown) {
+        // Graceful degradation per D-10: 404 means endpoint not yet implemented
+        const status = (err as { response?: { status?: number } })?.response?.status
+        if (status === 404) return []
+        throw err
+      }
+    },
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+    enabled: !!groupId,
+  })
+}
+
+// ─── Mutations ───────────────────────────────────────────────────────────────
+
+export function useMarkAttendance() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      lessonId,
+      userId,
+      status,
+    }: {
+      lessonId: number
+      userId: number
+      status: AttendanceStatus
+    }) => {
+      const { data } = await apiClient.put(
+        `/attendance/lessons/${lessonId}/students/${userId}`,
+        { status },
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['journal'] })
+    },
+  })
+}
+
+export function useSetSubjectThreshold() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      subjectId,
+      minPercentage,
+    }: {
+      subjectId: number
+      minPercentage: number
+    }) => {
+      const { data } = await apiClient.put(
+        '/academic/thresholds/subject',
+        { minPercentage },
+        { params: { subjectId } },
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['threshold'] })
+    },
+  })
+}
+
+export function useCreateSubject() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: { name: string; teacherId?: number | null }) => {
+      const { data } = await apiClient.post('/academic/subjects', body)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupSubjects'] })
+    },
+  })
+}
+
+export function useUpdateSubject() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      id,
+      body,
+    }: {
+      id: number
+      body: { name: string; teacherId?: number | null }
+    }) => {
+      const { data } = await apiClient.put(`/academic/subjects/${id}`, body)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupSubjects'] })
+    },
+  })
+}
+
+export function useDeleteSubject() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await apiClient.delete(`/academic/subjects/${id}`)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupSubjects'] })
+    },
+  })
+}
+
+export function useCreateAssistant() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: { studentId: number; permissions: string[] }) => {
+      const { data } = await apiClient.post('/academic/assistants', body)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupMembers'] })
+    },
+  })
+}
+
+export function useDeleteAssistant() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await apiClient.delete(`/academic/assistants/${id}`)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupMembers'] })
+    },
+  })
+}
+
+// ─── Error mapping ───────────────────────────────────────────────────────────
+
+export function mapHeadmanApiError(status: number): string {
+  switch (status) {
+    case 403:
+      return 'У вас нет прав на эту операцию'
+    case 404:
+      return 'Ресурс не найден (функция может быть в разработке)'
+    case 422:
+      return 'Некорректные данные'
+    case 429:
+      return 'Слишком много запросов. Подождите'
+    default:
+      return 'Ошибка сервера. Попробуйте ещё раз'
+  }
+}

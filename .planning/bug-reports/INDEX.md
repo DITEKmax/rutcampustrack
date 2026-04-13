@@ -4,7 +4,7 @@
 
 ## Open
 
-_(пусто — добавляйте по мере нахождения)_
+- [BUG-001](./BUG-001-web-panel-specs-stale-displayName/report.md) — web-panel `.spec.ts` используют устаревшее `displayName` вместо split-ФИО (minor, web-panel)
 
 ## In progress
 

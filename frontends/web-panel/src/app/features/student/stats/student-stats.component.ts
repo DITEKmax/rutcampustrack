@@ -10,6 +10,7 @@ import { StudentApiService } from '../shared/student-api.service';
 import type { StudentStatsResponse } from '../shared/student-schedule.types';
 import { StudentSubjectChartComponent } from './student-subject-chart/student-subject-chart.component';
 import { StudentOverallCardComponent } from './student-overall-card/student-overall-card.component';
+import { formatLoadError } from '../shared/format-load-error';
 
 @Component({
   selector: 'app-student-stats',
@@ -49,8 +50,9 @@ export class StudentStatsComponent implements OnInit {
         this.threshold.set(thresholdResp.percentage);
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set('Не удалось загрузить статистику. Попробуйте позже.');
+      error: (err) => {
+        console.error('[student-stats] failed to load', err);
+        this.error.set(formatLoadError(err, 'Не удалось загрузить статистику.'));
         this.loading.set(false);
       },
     });

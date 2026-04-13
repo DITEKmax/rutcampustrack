@@ -51,33 +51,42 @@ export class StudentNotificationsComponent implements OnInit {
     // Reset badge
     this.badgeService.reset();
 
-    // Subscribe to new STOMP events (for items arriving while on this page)
+    // BUG-008: до этого фикса страница могла «не открываться», если onAnyEvent$
+    // бросал ошибку (нет STOMP-соединения). Защищаемся от таких ошибок и не валим
+    // компонент целиком — пустой список без новых событий лучше чёрного экрана.
     this.stompService.onAnyEvent$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(envelope => {
-        if (!STORED_TYPES.includes(envelope.type)) return;
-        const newItem: NotificationItem = {
-          id: crypto.randomUUID(),
-          type: envelope.type,
-          payload: envelope.payload,
-          receivedAt: new Date(),
-          read: true, // already on the page — immediately read
-        };
-        this.items.update(list => {
-          const updated = [newItem, ...list];
-          return updated.length > MAX_ITEMS ? updated.slice(0, MAX_ITEMS) : updated;
-        });
-        this.persistToStorage();
+      .subscribe({
+        next: envelope => {
+          if (!STORED_TYPES.includes(envelope.type)) return;
+          const newItem: NotificationItem = {
+            id: crypto.randomUUID(),
+            type: envelope.type,
+            payload: envelope.payload,
+            receivedAt: new Date(),
+            read: true, // already on the page — immediately read
+          };
+          this.items.update(list => {
+            const updated = [newItem, ...list];
+            return updated.length > MAX_ITEMS ? updated.slice(0, MAX_ITEMS) : updated;
+          });
+          this.persistToStorage();
+        },
+        error: err => {
+          console.error('[student-notifications] STOMP stream error', err);
+        },
       });
   }
 
   private loadFromStorage(): NotificationItem[] {
     try {
+      if (typeof sessionStorage === 'undefined') return [];
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw) as Array<NotificationItem & { receivedAt: string }>;
       return parsed.map(i => ({ ...i, receivedAt: new Date(i.receivedAt) }));
-    } catch {
+    } catch (e) {
+      console.warn('[student-notifications] failed to read sessionStorage', e);
       return [];
     }
   }

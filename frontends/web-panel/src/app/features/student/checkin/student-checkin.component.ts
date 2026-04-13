@@ -17,6 +17,7 @@ import { SubjectCacheService } from '../shared/subject-cache.service';
 import { StudentStompService } from '../shared/student-stomp.service';
 import type { LessonResponse } from '../shared/student-schedule.types';
 import { mapCheckinError, GPS_DENIED_MESSAGE } from './checkin-error-mapper';
+import { formatLoadError } from '../shared/format-load-error';
 
 /**
  * Discriminated union capturing the six visible states of the check-in
@@ -140,16 +141,23 @@ export class StudentCheckinComponent implements OnInit, OnDestroy {
     // STOMP connect — pass a lazy getter so the component never reads
     // the token directly (T-51-20 mitigation).
     this.stomp.connect(groupId, () => this.auth.accessToken());
+    // BUG-008: оборачиваем подписку в next/error, чтобы STOMP-ошибка не
+    // обрушивала компонент целиком (страница «не открывается»).
     this.stomp.marked$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(payload => {
-        const active = this.activeLesson();
-        if (active && payload.lesson_id === active.id) {
-          this.attendeeCount.update(n => n + 1);
-          if (user && payload.user_id === user.id) {
-            this.state.set({ kind: 'confirmed' });
+      .subscribe({
+        next: payload => {
+          const active = this.activeLesson();
+          if (active && payload.lesson_id === active.id) {
+            this.attendeeCount.update(n => n + 1);
+            if (user && payload.user_id === user.id) {
+              this.state.set({ kind: 'confirmed' });
+            }
           }
-        }
+        },
+        error: err => {
+          console.error('[student-checkin] STOMP subscription error', err);
+        },
       });
   }
 
@@ -167,10 +175,9 @@ export class StudentCheckinComponent implements OnInit, OnDestroy {
         this.state.set(active ? { kind: 'ready' } : { kind: 'idle' });
         this.loading.set(false);
       },
-      error: () => {
-        this.fetchError.set(
-          'Не удалось загрузить данные. Проверьте подключение и обновите страницу.',
-        );
+      error: err => {
+        console.error('[student-checkin] failed to load lessons', err);
+        this.fetchError.set(formatLoadError(err, 'Не удалось загрузить данные.'));
         this.loading.set(false);
       },
     });

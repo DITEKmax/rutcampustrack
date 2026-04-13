@@ -21,6 +21,7 @@ import type {
 } from '../shared/student-schedule.types';
 import { NextLessonCardComponent } from './next-lesson-card/next-lesson-card.component';
 import { RedzoneWarningComponent } from './redzone-warning/redzone-warning.component';
+import { formatLoadError } from '../shared/format-load-error';
 
 function todayDateString(): string {
   const d = new Date();
@@ -165,10 +166,10 @@ export class StudentDashboardComponent implements OnInit {
         this.threshold.set(threshold);
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set(
-          'Не удалось загрузить данные. Проверьте подключение и обновите страницу.',
-        );
+      error: (err) => {
+        // BUG-008: ранее съедали ошибку — так невозможно понять, какой запрос упал на проде.
+        console.error('[student-dashboard] failed to load data', err);
+        this.error.set(formatLoadError(err, 'Не удалось загрузить данные.'));
         this.loading.set(false);
       },
     });

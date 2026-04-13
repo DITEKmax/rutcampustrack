@@ -2,11 +2,11 @@
   <div class="login-card">
     <!-- Логотип / бренд -->
     <div class="login-brand">
-      <div class="login-brand__icon">
-        <i class="ph-duotone ph-graduation-cap" aria-hidden="true"></i>
+      <div class="login-brand__icon" aria-hidden="true">
+        <img src="logo.svg" alt="" class="login-brand__logo" />
       </div>
       <div>
-        <h1 class="login-brand__title">RutCampusTrack</h1>
+        <h1 class="login-brand__title">RutTrack</h1>
         <p class="login-brand__subtitle">Система учёта посещаемости РУТ МИИТ</p>
       </div>
     </div>
@@ -40,15 +40,27 @@
 
         <div class="login-field">
           <label class="login-label" for="password-input">Пароль</label>
-          <input
-            id="password-input"
-            class="login-input"
-            type="password"
-            formControlName="password"
-            autocomplete="current-password"
-            placeholder="••••••••"
-            [class.login-input--error]="form.get('password')?.invalid && form.get('password')?.touched"
-          />
+          <div class="login-password">
+            <input
+              id="password-input"
+              class="login-input login-input--password"
+              [type]="passwordVisible ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              [class.login-input--error]="form.get('password')?.invalid && form.get('password')?.touched"
+            />
+            <button
+              type="button"
+              class="login-password__toggle"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="passwordVisible ? 'Скрыть пароль' : 'Показать пароль'"
+              [attr.aria-pressed]="passwordVisible"
+              tabindex="0"
+            >
+              <i class="ph" [class.ph-eye]="!passwordVisible" [class.ph-eye-slash]="passwordVisible" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
 
         @if (errorMessage) {

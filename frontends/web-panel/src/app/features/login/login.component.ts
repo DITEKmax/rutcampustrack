@@ -26,10 +26,15 @@ export class LoginComponent {
 
   loading = false;
   errorMessage = '';
+  passwordVisible = false;
 
   setMode(m: 'password' | 'otp'): void {
     this.mode = m;
     this.errorMessage = '';
+  }
+
+  togglePasswordVisibility(): void {
+    this.passwordVisible = !this.passwordVisible;
   }
 
   onSubmit(): void {

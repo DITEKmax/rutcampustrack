@@ -9,6 +9,34 @@
   justify-content: center;
   background: var(--bg-primary);
   padding: var(--space-5);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Subtle animated brand gradient backdrop (BUG-003).
+   Uses brand palette tokens; respects prefers-reduced-motion below. */
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: -25%;
+  z-index: -1;
+  background:
+    radial-gradient(45% 45% at 20% 30%, color-mix(in oklab, var(--accent-primary) 22%, transparent) 0%, transparent 70%),
+    radial-gradient(40% 40% at 80% 70%, color-mix(in oklab, var(--accent-secondary) 22%, transparent) 0%, transparent 70%),
+    radial-gradient(35% 35% at 60% 20%, color-mix(in oklab, var(--accent-info, var(--accent-secondary)) 18%, transparent) 0%, transparent 70%);
+  filter: blur(40px);
+  animation: login-bg-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes login-bg-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(2%, -3%, 0) scale(1.05); }
+  100% { transform: translate3d(-2%, 3%, 0) scale(1.02); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-page::before { animation: none; }
 }
 
 .login-card {
@@ -35,12 +63,17 @@
   width: 48px;
   height: 48px;
   border-radius: var(--radius-md);
-  background: color-mix(in oklab, var(--accent-primary) 15%, transparent);
-  border: 1px solid var(--border-accent);
   display: grid;
   place-items: center;
-  color: var(--accent-primary);
   flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: var(--glow-primary, none);
+}
+
+.login-brand__logo {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .login-brand__icon i { font-size: 26px; }
@@ -157,6 +190,43 @@
   font-size: 1.25rem;
   text-align: center;
 }
+
+/* Password field with eye toggle (BUG-003) */
+.login-password {
+  position: relative;
+  display: block;
+}
+
+.login-input--password {
+  padding-right: 44px;
+}
+
+.login-password__toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm, 6px);
+  transition: color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out);
+}
+
+.login-password__toggle:hover { color: var(--text-primary); }
+.login-password__toggle:focus-visible {
+  outline: none;
+  color: var(--accent-primary);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent-primary) 40%, transparent);
+}
+
+.login-password__toggle i { font-size: 18px; }
 
 /* Error message */
 .login-error {

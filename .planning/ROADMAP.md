@@ -295,7 +295,14 @@ Plans:
   - New headman features go in `frontends/pwa/src/features/headman/` — do NOT modify existing student feature components
   - Framer Motion `AnimatePresence` for BottomNav tab transition; BottomNav already conditionally renders tabs — add `{isHeadman && <HeadmanTab />}`
   - Add `PWAHeadmanRole.test.tsx` covering headman-specific behavior (new tests, not replacement)
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 56-01-PLAN.md — Auth isHeadman extension + BottomNav useTabs hook + PWAHeadmanRole test (PWA-HEAD-01, PWA-HEAD-03)
+- [ ] 56-02-PLAN.md — headmanApi service module + types + GroupHub 7-card page + router with 8 lazy routes + placeholder detail pages (PWA-HEAD-02)
+- [ ] 56-03-PLAN.md — Overview + StudentsList + SubjectsList with assistant/subject CRUD modals (PWA-HEAD-02)
+- [ ] 56-04-PLAN.md — SegmentedControl primitive + JournalStudentRow optimistic UI + JournalPage 2-step flow (PWA-HEAD-02)
+- [ ] 56-05-PLAN.md — Excuses/LateCheckin graceful-degradation + StatsPage per-subject cards with threshold editor (PWA-HEAD-02)
+- [ ] 56-06-PLAN.md — sw.ts Workbox StaleWhileRevalidate for headman endpoints + URL matcher unit tests (PWA-HEAD-04)
 **UI hint**: yes
 
 ### Phase 57: Landing Presentation Mode + Documentation
@@ -339,5 +346,5 @@ Plans:
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 4/4 | Complete   | 2026-04-09 |
 | 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 5/5 | Complete   | 2026-04-09 |
 | 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 5/5 | Complete   | 2026-04-09 |
-| 56. PWA Headman Mode | v9.0 | 0/TBD | Not started | - |
+| 56. PWA Headman Mode | v9.0 | 0/6 | Not started | - |
 | 57. Landing Presentation Mode + Documentation | v9.0 | 0/TBD | Not started | - |

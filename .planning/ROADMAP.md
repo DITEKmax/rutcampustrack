@@ -327,11 +327,43 @@ Plans:
 - [x] 57-03-PLAN.md — Responsive/dark/reduced-motion UAT + docs/phase-57-report.md (LAND-v9-04, LAND-v9-02, DOCS-v9-01)
 **UI hint**: yes
 
+### Phase 58: Admin Functionality — BUG-006 Fixes
+**Goal**: Закрыть все 7 пунктов BUG-006 — серверный поиск пользователей, человеческие сообщения об ошибках при создании, обязательный Telegram ID для студентов, отображение init password в таблице, единое поле «Название группы» (миграция V8), автопромоция курсов (новый scheduled job + V9), валидация семестров (V10 EXCLUDE constraint).
+**Depends on**: Phase 57; bug-fix session 2026-04-13/14 (Фазы A и B уже закоммичены, нужны их артефакты — initialPassword в UserResponse, avatar_id миграция).
+**Source**: `.planning/bug-reports/BUG-006-admin/report.md` (с секцией «Ответы автора»), seed-документы в `.planning/milestones/v9.0-phases/58-admin-bug-006-fixes/`.
+**Success Criteria** (детально см. 58-RESEARCH.md AC-1..AC-10):
+  1. Поиск пользователей возвращает только релевантных по login/ФИО/telegramId (case-insensitive)
+  2. Backend возвращает 409 + RFC7807 ProblemDetail с `field`-указателем при unique-нарушениях
+  3. Создание STUDENT без Telegram ID отбивается на backend и frontend
+  4. ADMIN видит начальный пароль в таблице пользователей пока тот не сменён
+  5. Группа имеет одно поле name (формат `XXXx-NNN`); поле code удалено из контракта/entity/UI/тестов
+  6. Scheduled job promote корректно переводит группы на следующий курс за 14 дней до осеннего семестра; выпускные курсы архивируются
+  7. Семестры: запрет создания в прошлом / пересекающихся; запрет редактирования завершённых
+**Notes**: Самая рискованная подзадача — миграция `groups.code → name` (V8). В прод-БД только тестовые группы, миграция допустима.
+**Plans**: 7 рекомендуемых планов (см. 58-RESEARCH.md execution_plan_seed)
+**UI hint**: yes (admin диалоги groups/users/semesters)
+
+### Phase 59: Excuse Tickets Backend
+**Goal**: Реализовать полностью отсутствующий backend для тикетов о пропуске занятий: REST API в attendance-service, MongoDB persistence, RabbitMQ event publishing (бот уже слушает `excuse.requested`), каскад на attendance статус при approve, gRPC LessonsByIds в schedule-service, обновлённые student/headman UI с настоящими вызовами вместо graceful-degradation.
+**Depends on**: ничего из текущих фаз (Mongo + RabbitMQ + gRPC уже подняты v4.0/v5.0).
+**Source**: `.planning/bug-reports/BUG-008-student+pwa/excuses-backend-spec.md` (с правками автора), seed-документы в `.planning/milestones/v9.0-phases/59-excuses-backend/`.
+**Success Criteria** (детально см. 59-RESEARCH.md AC-1..AC-12):
+  1. STUDENT создаёт тикет с указанием причины (ExcuseType) и lessonIds; статус pending; event `excuse.requested` опубликован
+  2. Один lessonId — только в одном активном тикете
+  3. Староста не подаёт тикет (создаёт записи через журнал); запрет на одобрение собственного тикета
+  4. Approve каскадирует на attendance — записи становятся `excused` или `free_attendance`
+  5. notification-bot получает оба event-а (`excuse.requested` уже работает; `excuse.decided` — добавляется)
+  6. Frontend student имеет dropdown причины и реальный submit; frontend headman имеет работающие approve/reject
+  7. gRPC `schedule.GetLessonsByIds` реализован для валидации lessonIds
+**Notes**: Файлы (вложения через Telegram) явно out of scope — отдельной фазой позже. Контракт-тест с notification-bot обязателен.
+**Plans**: 9 рекомендуемых планов (см. 59-RESEARCH.md execution_plan_seed)
+**UI hint**: yes (student excuses dialog + headman excuses page)
+
 ---
 
 ## Progress
 
-**Execution Order:** 49 → 50 → 51 → 52 → 53 → 54 → 55 → 56 → 57
+**Execution Order:** 49 → 50 → 51 → 52 → 53 → 54 → 55 → 56 → 57 → 58 → 59 (58 и 59 параллельно при наличии мощностей)
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|

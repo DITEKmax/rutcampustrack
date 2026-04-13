@@ -200,7 +200,8 @@ describe('StatsPage', () => {
     } as any)
 
     renderPage()
-    expect(screen.getByText('75%')).toBeInTheDocument()
+    // Group avg = 75%, single student also 75% — both render; assert presence
+    expect(screen.getAllByText('75%').length).toBeGreaterThanOrEqual(1)
   })
 
   it('Test 6: editing threshold and clicking Save triggers useSetSubjectThreshold.mutate with { subjectId, minPercentage }', async () => {

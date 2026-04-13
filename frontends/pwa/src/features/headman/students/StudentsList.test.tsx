@@ -72,15 +72,18 @@ describe('StudentsList', () => {
 
   it('Test 1: renders list of all group members with full names', () => {
     renderStudentsList()
-    expect(screen.getByText('Иванов Иван Иванович')).toBeInTheDocument()
-    expect(screen.getByText('Петров Пётр Петрович')).toBeInTheDocument()
-    expect(screen.getByText('Сидоров Сидор Сидорович')).toBeInTheDocument()
+    // Иванов — headman, appears once in main list only
+    expect(screen.getAllByText('Иванов Иван Иванович').length).toBeGreaterThanOrEqual(1)
+    // Петров — assistant, appears in main list AND assistants section
+    expect(screen.getAllByText('Петров Пётр Петрович').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Сидоров Сидор Сидорович').length).toBeGreaterThanOrEqual(1)
   })
 
   it('Test 2: renders "Староста" badge for isHeadman=true and "Помощник" badge for isAssistant=true', () => {
     renderStudentsList()
-    expect(screen.getByText('Староста')).toBeInTheDocument()
-    expect(screen.getByText('Помощник')).toBeInTheDocument()
+    // Badges may appear in both main list and assistants sub-section
+    expect(screen.getAllByText('Староста').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Помощник').length).toBeGreaterThanOrEqual(1)
   })
 
   it('Test 3: clicking floating "+" button opens AddAssistantModal', () => {
@@ -119,6 +122,7 @@ describe('StudentsList', () => {
     await waitFor(() => {
       expect(mutateFn).toHaveBeenCalledWith(
         expect.objectContaining({ studentId: 3 }),
+        expect.anything(),
       )
     })
   })

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { SegmentedControl } from '@/shared/components/SegmentedControl'
 import { useMarkAttendance } from '@/features/headman/shared/headmanApi'
@@ -19,17 +19,23 @@ export function JournalStudentRow({
 }: JournalStudentRowProps) {
   const [status, setStatus] = useState<AttendanceStatus>(initialStatus)
   const [showError, setShowError] = useState(false)
-  const { mutate } = useMarkAttendance()
+  const { mutate, isPending } = useMarkAttendance()
+  // Track pre-optimistic value via ref so the rollback after a failed mutation
+  // does not capture an already-optimistic value from a rapidly queued second tap.
+  const previousRef = useRef<AttendanceStatus>(initialStatus)
 
   const handleChange = (newStatus: AttendanceStatus) => {
-    const previous = status
+    // Ignore rapid re-taps while a previous mutation is still pending to avoid
+    // server/UI desync (see WR-06).
+    if (isPending) return
+    previousRef.current = status
     setStatus(newStatus) // optimistic update
     setShowError(false)
     mutate(
       { lessonId, userId: studentId, status: newStatus },
       {
         onError: () => {
-          setStatus(previous) // revert
+          setStatus(previousRef.current) // revert to pre-optimistic value
           setShowError(true)
           setTimeout(() => setShowError(false), 2000)
         },
@@ -46,6 +52,7 @@ export function JournalStudentRow({
       <SegmentedControl
         value={status}
         onValueChange={handleChange}
+        disabled={isPending}
         ariaLabel={`Посещение — ${studentName}`}
       />
       <AnimatePresence>

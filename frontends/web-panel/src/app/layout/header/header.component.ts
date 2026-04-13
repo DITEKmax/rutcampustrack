@@ -1,8 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeToggleComponent } from '../../core/theme/theme-toggle.component';
+import { ProfileService } from '../../core/profile/profile.service';
+import { ProfileDialogComponent } from '../../core/profile/profile-dialog.component';
+import { AvatarComponent } from '../../core/profile/avatar.component';
 
 /**
  * RutCampusTrack — Shell Header
@@ -16,15 +20,37 @@ import { ThemeToggleComponent } from '../../core/theme/theme-toggle.component';
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ThemeToggleComponent],
+  imports: [ThemeToggleComponent, MatDialogModule, AvatarComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
 })
 export class HeaderComponent {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly profileService = inject(ProfileService);
+  private readonly dialog = inject(MatDialog);
 
   readonly currentUser = this.auth.currentUser;
+  readonly profile = this.profileService.profile;
+  readonly profileInitials = this.profileService.initials;
+  readonly profileDisplayName = this.profileService.displayName;
+
+  constructor() {
+    if (this.auth.isAuthenticated()) this.profileService.load();
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => this.updateTitleFromRoute());
+    this.updateTitleFromRoute();
+  }
+
+  openProfile(): void {
+    this.profileService.load();
+    this.dialog.open(ProfileDialogComponent, {
+      width: '560px',
+      panelClass: 'profile-dialog-panel',
+      autoFocus: false,
+    });
+  }
 
   /** Page title + eyebrow derived from the currently activated route's `data`. */
   private readonly routeState = signal<{ title: string; eyebrow: string }>({
@@ -38,28 +64,26 @@ export class HeaderComponent {
   readonly roleLabel = computed(() => {
     const user = this.currentUser();
     if (!user) return '';
-    return user.role === 'ADMIN' ? 'Администратор' : 'Преподаватель';
+    if (user.role === 'ADMIN') return 'Администратор';
+    if (user.role === 'TEACHER') return 'Преподаватель';
+    return user.isHeadman ? 'Староста' : 'Студент';
   });
 
   readonly roleChipClass = computed(() => {
     const user = this.currentUser();
     if (!user) return 'role-chip';
-    return user.role === 'ADMIN' ? 'role-chip role-chip--admin' : 'role-chip role-chip--teacher';
+    const suffix =
+      user.role === 'ADMIN' ? 'admin' :
+      user.role === 'TEACHER' ? 'teacher' : 'student';
+    return `role-chip role-chip--${suffix}`;
   });
 
   readonly userInitial = computed(() => {
+    const fromProfile = this.profileInitials();
+    if (fromProfile) return fromProfile;
     const user = this.currentUser();
-    if (!user) return '?';
-    return String(user.id).slice(0, 2).toUpperCase();
+    return user ? user.role[0] : '?';
   });
-
-  constructor() {
-    this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
-      .subscribe(() => this.updateTitleFromRoute());
-    // Initial resolution (in case the first event fired before subscription).
-    this.updateTitleFromRoute();
-  }
 
   private updateTitleFromRoute(): void {
     let route = this.router.routerState.snapshot.root;

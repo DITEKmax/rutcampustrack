@@ -102,27 +102,27 @@
   <div class="sidebar__footer">
     @if (currentUser(); as user) {
       @if (!collapsed()) {
-        <div class="sidebar__user">
-          <span class="sidebar__user-avatar" aria-hidden="true">
-            {{ (user.id + '').slice(0, 2).toUpperCase() }}
-          </span>
+        <button type="button" class="sidebar__user sidebar__user--button"
+                (click)="openProfile()" aria-label="Открыть профиль">
+          <app-avatar [avatarId]="profile()?.avatarId" [initials]="profileInitials() || '?'" [size]="36" />
           <div class="sidebar__user-meta">
-            <span class="sidebar__user-id">ID {{ user.id }}</span>
+            <span class="sidebar__user-name">{{ profileDisplayName() || profile()?.login || '—' }}</span>
             <span class="sidebar__user-role">
               @switch (user.role) {
                 @case ('ADMIN') { Администратор }
                 @case ('TEACHER') { Преподаватель }
-                @case ('STUDENT') { Студент }
+                @case ('STUDENT') { {{ user.isHeadman ? 'Староста' : 'Студент' }} }
               }
             </span>
           </div>
-        </div>
+        </button>
       } @else {
-        <div class="sidebar__user sidebar__user--collapsed" [title]="'ID ' + user.id">
-          <span class="sidebar__user-avatar" aria-hidden="true">
-            {{ (user.id + '').slice(0, 2).toUpperCase() }}
-          </span>
-        </div>
+        <button type="button" class="sidebar__user sidebar__user--collapsed sidebar__user--button"
+                (click)="openProfile()"
+                [title]="profileDisplayName() || 'Профиль'"
+                aria-label="Открыть профиль">
+          <app-avatar [avatarId]="profile()?.avatarId" [initials]="profileInitials() || '?'" [size]="36" />
+        </button>
       }
     }
 

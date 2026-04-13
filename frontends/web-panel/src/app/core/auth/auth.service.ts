@@ -1,7 +1,8 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthApi } from './auth.api';
+import { ProfileService } from '../profile/profile.service';
 
 export interface AuthUser {
   id: number;
@@ -12,6 +13,7 @@ export interface AuthUser {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly profileService = inject(ProfileService);
   private readonly _accessToken = signal<string | null>(null);
   private readonly _refreshToken = signal<string | null>(null);
 
@@ -47,6 +49,7 @@ export class AuthService {
   clearTokens(): void {
     this._accessToken.set(null);
     this._refreshToken.set(null);
+    this.profileService.clear();
   }
 
   async logout(authApi: AuthApi, router: Router): Promise<void> {

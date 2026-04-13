@@ -1,0 +1,124 @@
+<div class="profile-dialog">
+  <header class="profile-dialog__header">
+    <div class="profile-dialog__hero">
+      <app-avatar [avatarId]="selectedAvatarId()" [initials]="initials()" [size]="72" />
+      <div class="profile-dialog__hero-meta">
+        <h2 class="profile-dialog__name">{{ displayName() || '—' }}</h2>
+        <p class="profile-dialog__login">{{ profile()?.login }}</p>
+      </div>
+    </div>
+    <button type="button" class="profile-dialog__close" (click)="close()" aria-label="Закрыть">
+      <i class="ph ph-x" aria-hidden="true"></i>
+    </button>
+  </header>
+
+  <section class="profile-dialog__section">
+    <h3 class="profile-dialog__title">Аватар</h3>
+    <p class="profile-dialog__hint">Выберите пресет или оставьте инициалы по умолчанию.</p>
+
+    <div class="profile-dialog__grid">
+      <button type="button"
+              class="preset-btn"
+              [class.preset-btn--active]="selectedAvatarId() === null"
+              (click)="selectPreset(null)"
+              aria-label="Инициалы">
+        <span class="preset-btn__initials">{{ initials() }}</span>
+      </button>
+      @for (p of presets; track p.id) {
+        <button type="button"
+                class="preset-btn"
+                [class.preset-btn--active]="selectedAvatarId() === p.id"
+                (click)="selectPreset(p.id)"
+                [attr.aria-label]="p.label"
+                [title]="p.label"
+                [style.background]="p.gradient">
+          <i [class]="p.icon" aria-hidden="true"></i>
+        </button>
+      }
+    </div>
+
+    @if (avatarError()) {
+      <div class="profile-dialog__error" role="alert">
+        <i class="ph ph-warning-circle" aria-hidden="true"></i> {{ avatarError() }}
+      </div>
+    }
+
+    <div class="profile-dialog__actions">
+      <button type="button"
+              class="btn-brand"
+              [disabled]="avatarSaving() || selectedAvatarId() === (profile()?.avatarId ?? null)"
+              (click)="saveAvatar()">
+        @if (avatarSaving()) { <span class="btn-spinner" aria-hidden="true"></span> Сохраняем… }
+        @else { Сохранить аватар }
+      </button>
+      @if (avatarSaved()) {
+        <span class="profile-dialog__success" role="status">
+          <i class="ph-fill ph-check-circle" aria-hidden="true"></i> Аватар сохранён
+        </span>
+      }
+    </div>
+  </section>
+
+  <section class="profile-dialog__section">
+    <h3 class="profile-dialog__title">Сменить пароль</h3>
+
+    <form [formGroup]="form" (ngSubmit)="changePassword()" class="password-form" novalidate>
+      <label class="profile-field">
+        <span class="profile-field__label">Текущий пароль</span>
+        <span class="profile-field__input">
+          <input [type]="showCurrent() ? 'text' : 'password'"
+                 formControlName="currentPassword"
+                 autocomplete="current-password" />
+          <button type="button" class="profile-field__toggle" (click)="toggleCurrent()"
+                  [attr.aria-label]="showCurrent() ? 'Скрыть пароль' : 'Показать пароль'">
+            <i class="ph" [class.ph-eye]="!showCurrent()" [class.ph-eye-slash]="showCurrent()"></i>
+          </button>
+        </span>
+      </label>
+
+      <label class="profile-field">
+        <span class="profile-field__label">Новый пароль</span>
+        <span class="profile-field__input">
+          <input [type]="showNew() ? 'text' : 'password'"
+                 formControlName="newPassword"
+                 autocomplete="new-password" />
+          <button type="button" class="profile-field__toggle" (click)="toggleNew()"
+                  [attr.aria-label]="showNew() ? 'Скрыть пароль' : 'Показать пароль'">
+            <i class="ph" [class.ph-eye]="!showNew()" [class.ph-eye-slash]="showNew()"></i>
+          </button>
+        </span>
+      </label>
+
+      <ul class="password-hints" role="list">
+        <li [class.met]="hintMin()">
+          <i class="ph" [class.ph-check]="hintMin()" [class.ph-circle]="!hintMin()" aria-hidden="true"></i>
+          Минимум 8 символов
+        </li>
+        <li [class.met]="hintUpper()">
+          <i class="ph" [class.ph-check]="hintUpper()" [class.ph-circle]="!hintUpper()" aria-hidden="true"></i>
+          Хотя бы одна заглавная буква
+        </li>
+        <li [class.met]="hintDigit()">
+          <i class="ph" [class.ph-check]="hintDigit()" [class.ph-circle]="!hintDigit()" aria-hidden="true"></i>
+          Хотя бы одна цифра
+        </li>
+      </ul>
+
+      @if (passwordError()) {
+        <div class="profile-dialog__error" role="alert">
+          <i class="ph ph-warning-circle" aria-hidden="true"></i> {{ passwordError() }}
+        </div>
+      }
+      @if (passwordSaved()) {
+        <div class="profile-dialog__success" role="status">
+          <i class="ph-fill ph-check-circle" aria-hidden="true"></i> Пароль успешно изменён
+        </div>
+      }
+
+      <button type="submit" class="btn-brand" [disabled]="form.invalid || passwordSaving()">
+        @if (passwordSaving()) { <span class="btn-spinner" aria-hidden="true"></span> Сохраняем… }
+        @else { Сохранить пароль }
+      </button>
+    </form>
+  </section>
+</div>

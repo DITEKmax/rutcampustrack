@@ -7,10 +7,14 @@ import {
   style,
   animate,
 } from '@angular/animations';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../core/auth/auth.service';
 import { AuthApi } from '../../core/auth/auth.api';
 import { ThemeService } from '../../core/theme/theme.service';
 import { StudentNotificationBadgeService } from '../../features/student/shared/student-notification-badge.service';
+import { ProfileService } from '../../core/profile/profile.service';
+import { ProfileDialogComponent } from '../../core/profile/profile-dialog.component';
+import { AvatarComponent } from '../../core/profile/avatar.component';
 
 /**
  * Sidebar navigation for the authenticated shell.
@@ -32,7 +36,7 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, MatDialogModule, AvatarComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css',
   animations: [
@@ -60,6 +64,11 @@ export class SidebarComponent implements OnInit {
   currentUser = this.authService.currentUser;
   readonly notificationBadge = inject(StudentNotificationBadgeService);
   readonly unreadCount = this.notificationBadge.unreadCount;
+  private readonly profileService = inject(ProfileService);
+  private readonly dialog = inject(MatDialog);
+  readonly profile = this.profileService.profile;
+  readonly profileInitials = this.profileService.initials;
+  readonly profileDisplayName = this.profileService.displayName;
 
   /** Primary nav (dashboards) — always shown first when role matches. */
   readonly primaryItems: NavItem[] = [
@@ -259,6 +268,18 @@ export class SidebarComponent implements OnInit {
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       this.collapsed.set(true);
     }
+
+    // BUG-004: lazy-load профиля для аватара/ФИО.
+    if (this.authService.isAuthenticated()) this.profileService.load();
+  }
+
+  openProfile(): void {
+    this.profileService.load();
+    this.dialog.open(ProfileDialogComponent, {
+      width: '560px',
+      panelClass: 'profile-dialog-panel',
+      autoFocus: false,
+    });
   }
 
   toggleCollapse(): void {

@@ -139,8 +139,26 @@
   border-radius: var(--radius-md);
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
+  transition: border-color var(--duration-base) var(--ease-out),
+              background-color var(--duration-base) var(--ease-out);
 }
 .sidebar__user--collapsed { justify-content: center; padding: var(--space-2); }
+
+.sidebar__user--button {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+}
+.sidebar__user--button:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-elevated);
+}
+.sidebar__user--button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent-primary) 45%, transparent);
+}
 
 .sidebar__user-avatar {
   width: 34px; height: 34px;
@@ -161,6 +179,14 @@
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   color: var(--text-muted);
+}
+.sidebar__user-name {
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 160px;
 }
 .sidebar__user-role {
   font-family: var(--font-heading);

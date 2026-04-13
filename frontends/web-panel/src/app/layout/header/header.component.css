@@ -67,11 +67,21 @@
   border: 1px solid var(--border-subtle);
   transition:
     border-color var(--duration-base) var(--ease-out),
-    background-color var(--duration-slow) var(--ease-out);
+    background-color var(--duration-slow) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
-.user-chip:hover {
-  border-color: var(--border-accent);
+.user-chip--button {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.user-chip:hover { border-color: var(--border-accent); }
+.user-chip--button:hover { transform: translateY(-1px); }
+.user-chip--button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-primary) 35%, transparent);
 }
 
 @media (min-width: 768px) {
@@ -80,6 +90,7 @@
   }
 }
 
+/* Avatar tile is now rendered by <app-avatar>; keep legacy class for SSR fallback. */
 .user-chip__avatar {
   width: 32px;
   height: 32px;
@@ -93,6 +104,8 @@
   background: var(--gradient-brand);
   box-shadow: var(--glow-primary);
 }
+
+.user-chip app-avatar { line-height: 0; }
 
 .user-chip__meta {
   display: flex;

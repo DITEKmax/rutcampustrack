@@ -19,7 +19,9 @@ CREATE TABLE users (
     id                  BIGSERIAL PRIMARY KEY,
     login               VARCHAR(32) NOT NULL UNIQUE,
     password_hash       VARCHAR(255),
-    display_name        VARCHAR(255) NOT NULL,
+    last_name           VARCHAR(128) NOT NULL,
+    first_name          VARCHAR(128) NOT NULL,
+    middle_name         VARCHAR(128),
     email               VARCHAR(255) UNIQUE,
     phone               VARCHAR(20),
     telegram_id         BIGINT UNIQUE,
@@ -39,6 +41,7 @@ CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_group ON users(group_id);
 CREATE INDEX idx_users_telegram ON users(telegram_id);
 CREATE INDEX idx_users_employee_number ON users(employee_number);
+CREATE INDEX idx_users_last_name ON users(last_name);
 
 -- Student group history
 CREATE TABLE student_group_history (

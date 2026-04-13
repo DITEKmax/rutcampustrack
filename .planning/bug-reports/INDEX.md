@@ -12,6 +12,7 @@
 - [BUG-006](./BUG-006-admin/report.md) — admin: поиск, ошибка создания пользователей, Telegram ID, единое имя группы, правила семестров (major, web-panel/admin)
 - [BUG-007](./BUG-007-teacher/report.md) — teacher журнал: кнопка поиска не выровнена с фильтрами (cosmetic, web-panel/teacher)
 - [BUG-008](./BUG-008-student+pwa/report.md) — PWA белый экран, неработающие student/headman страницы, UI-баги форм (blocker+cosmetic, pwa/web-panel)
+  - [excuses-backend-spec.md](./BUG-008-student+pwa/excuses-backend-spec.md) — задел: backend для тикетов о пропуске (отдельная GSD-фаза)
 - [BUG-009](./BUG-009-add%20kafka/report.md) — добавить ELK для сборки логов + Telegram-алерты + heartbeat бота (major, infra)
 
 ## In progress

@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
-import type { ReactNode } from 'react'
 
 // Mock axios — same pattern as AuthProvider tests
 vi.mock('@/shared/lib/axios', () => ({

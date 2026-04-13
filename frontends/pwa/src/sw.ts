@@ -1,5 +1,10 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute } from 'workbox-precaching'
+import { registerRoute } from 'workbox-routing'
+import { StaleWhileRevalidate } from 'workbox-strategies'
+import { ExpirationPlugin } from 'workbox-expiration'
+import { CacheableResponsePlugin } from 'workbox-cacheable-response'
+import { isHeadmanApiRequest } from './sw-runtime-cache'
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -74,3 +79,23 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(promiseChain)
 })
+
+// ──────────────────────────────────────────────────────────────
+// Phase 56: Runtime caching for headman GET endpoints (PWA-HEAD-04)
+// Strategy: Stale-While-Revalidate
+// Cache: headman-api-cache-v1 (24h TTL, 100 entries max, GET-only, 200-only)
+// ──────────────────────────────────────────────────────────────
+
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && isHeadmanApiRequest(url),
+  new StaleWhileRevalidate({
+    cacheName: 'headman-api-cache-v1',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [200] }),
+      new ExpirationPlugin({
+        maxAgeSeconds: 86400,      // 24 hours
+        maxEntries: 100,
+      }),
+    ],
+  })
+)

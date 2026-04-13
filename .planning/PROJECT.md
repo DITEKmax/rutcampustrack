@@ -52,6 +52,8 @@ v8.0 shipped (2026-04-08). Full production-ready system: 5 backend services, 4 f
 
 12 human UAT items persisted in `51-HUMAN-UAT.md` (visual appearance, animations, real-time STOMP propagation, browser geolocation dialogs, OS-level prefers-reduced-motion) — surface in `/gsd-progress` and `/gsd-audit-uat` until validated in a live browser via `/gsd-verify-work 51`. Phase 52 (student web cabinet — homework + stats + notifications + profile) is the next milestone target.
 
+**Status:** v9.0 ship-ready after Phase 57. Будет перемещён в Shipped Milestones при следующем `/gsd-close-milestone v9.0`.
+
 ## Shipped Milestones
 
 <details>
@@ -205,6 +207,8 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 - ✓ AUTH-v9-04..05: `headmanGuard` blocks plain STUDENT, `studentGuard` passes headman, both functional `CanActivateFn` — v9.0 Phase 50
 - ✓ AUTH-v9-06: `guestGuard` redirects already-authenticated users away from `/login` to their role dashboard — v9.0 Phase 50
 - ✓ AUTH-v9-07: vitest regression suite 162/162 green (+33 above v8.0 baseline of 129) — v9.0 Phase 50
+- ✓ INFRA-v9-04, AUTH-v9-01..07, STU-WEB-01..10, HEAD-WEB-01..08, PWA-HEAD-01..04: завершены в фазах 50-56 (см. ROADMAP)
+- ✓ LAND-v9-02, LAND-v9-04, LAND-v9-05, DOCS-v9-01..04: завершены в Phase 57 — landing GSAP-секция «Как работает система», 4 роли описаны включая HEADMAN, документация синхронизирована
 
 ### Recently Validated (v8.0)
 - ✓ MON-01..02: Spring Boot Actuator health/info on all 4 Java services, production-safe config — v8.0

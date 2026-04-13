@@ -29,6 +29,9 @@ const ExcusesPage = lazy(() => import('./features/headman/excuses/ExcusesPage').
 const LateCheckinPage = lazy(() => import('./features/headman/late-checkin/LateCheckinPage').then(m => ({ default: m.LateCheckinPage })))
 const StatsPage = lazy(() => import('./features/headman/stats/StatsPage').then(m => ({ default: m.StatsPage })))
 
+// BUG-008: PWA proxied под /app/ в проде (см. nginx default.conf).
+// basename должен совпадать с base из vite.config.ts, иначе createBrowserRouter
+// будет видеть «/app/login» как unmatched route и рендерить пустоту → белый экран.
 const router = createBrowserRouter([
   {
     path: '/login',
@@ -87,7 +90,7 @@ const router = createBrowserRouter([
       { path: 'group/stats', element: <Suspense fallback={<LoadingSpinner />}><StatsPage /></Suspense> },
     ],
   },
-])
+], { basename: '/app' })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

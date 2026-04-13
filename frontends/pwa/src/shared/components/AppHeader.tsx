@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router'
 import { ThemeToggle } from '@/shared/theme/ThemeToggle'
+import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt'
 import { cn } from '@/lib/utils'
 
 /**
@@ -33,6 +34,7 @@ function matchTitle(pathname: string): string {
 export function AppHeader() {
   const { pathname } = useLocation()
   const title = matchTitle(pathname)
+  const { canInstall, triggerInstall } = useInstallPrompt()
 
   return (
     <header
@@ -78,7 +80,25 @@ export function AppHeader() {
         </p>
       </div>
 
-      <ThemeToggle compact />
+      <div className="flex items-center gap-2">
+        {canInstall && (
+          <button
+            type="button"
+            onClick={() => { void triggerInstall() }}
+            className={cn(
+              'inline-flex items-center gap-1 rounded-full px-3 h-8',
+              'text-xs font-semibold',
+              'bg-[var(--accent-primary)] text-[var(--accent-primary-contrast)]',
+              'shadow-[var(--glow-primary)] transition-transform active:scale-95',
+            )}
+            aria-label="Установить приложение"
+          >
+            <i className="ph ph-download-simple text-base" aria-hidden="true" />
+            Установить
+          </button>
+        )}
+        <ThemeToggle compact />
+      </div>
     </header>
   )
 }

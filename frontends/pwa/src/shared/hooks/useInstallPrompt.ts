@@ -1,26 +1,50 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
+/**
+ * BUG-008: useInstallPrompt
+ * - На Android Chrome ловит beforeinstallprompt; canInstall становится true → UI показывает кнопку.
+ * - На iOS Safari события нет (см. IOSOnboardingOverlay для отдельного flow).
+ * - Если приложение уже установлено (display-mode: standalone), не показываем повторно.
+ *
+ * Возвращает state-флаг (а не ref-функцию), иначе React не перерендерит компонент.
+ */
 export function useInstallPrompt() {
-  const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [installed, setInstalled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia?.('(display-mode: standalone)').matches === true
+  })
 
   useEffect(() => {
-    const handler = (e: BeforeInstallPromptEvent) => {
+    const onPrompt = (e: Event) => {
       e.preventDefault()
-      deferredPrompt.current = e
+      setDeferredPrompt(e as BeforeInstallPromptEvent)
     }
-    window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+    const onInstalled = () => {
+      setInstalled(true)
+      setDeferredPrompt(null)
+    }
+    window.addEventListener('beforeinstallprompt', onPrompt)
+    window.addEventListener('appinstalled', onInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onPrompt)
+      window.removeEventListener('appinstalled', onInstalled)
+    }
   }, [])
 
   const triggerInstall = useCallback(async () => {
-    if (!deferredPrompt.current) return false
-    deferredPrompt.current.prompt()
-    const { outcome } = await deferredPrompt.current.userChoice
-    deferredPrompt.current = null
+    if (!deferredPrompt) return false
+    await deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    setDeferredPrompt(null)
     return outcome === 'accepted'
-  }, [])
+  }, [deferredPrompt])
 
-  const canInstall = useCallback(() => deferredPrompt.current !== null, [])
-
-  return { triggerInstall, canInstall }
+  return {
+    /** True when the browser has fired beforeinstallprompt and the PWA isn't already installed. */
+    canInstall: !installed && deferredPrompt !== null,
+    /** True if the app already runs as a standalone PWA. */
+    installed,
+    triggerInstall,
+  }
 }

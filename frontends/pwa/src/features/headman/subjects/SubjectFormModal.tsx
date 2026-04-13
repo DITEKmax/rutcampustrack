@@ -46,19 +46,12 @@ export function SubjectFormModal({ open, mode, subject, onClose }: Props) {
   function handleSave() {
     if (!name.trim() || name.trim().length < 2) return
     const body = { name: name.trim(), teacherId: teacherId ? Number(teacherId) : null }
+    const onSuccess = () => handleClose()
 
     if (mode === 'create') {
-      createSubject.mutate(body, {
-        onSuccess: () => {
-          handleClose()
-        },
-      })
+      createSubject.mutate(body, { onSuccess })
     } else if (subject) {
-      updateSubject.mutate({ id: subject.id, body }, {
-        onSuccess: () => {
-          handleClose()
-        },
-      })
+      updateSubject.mutate({ id: subject.id, body }, { onSuccess })
     }
   }
 

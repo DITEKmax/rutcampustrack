@@ -27,7 +27,9 @@ public class UserAssembler implements RepresentationModelAssembler<User, EntityM
         UserCreatedResponse response = new UserCreatedResponse(
                 entity.getId(),
                 entity.getLogin(),
-                entity.getDisplayName(),
+                entity.getLastName(),
+                entity.getFirstName(),
+                entity.getMiddleName(),
                 entity.getRole(),
                 entity.getStatus(),
                 entity.getGroupId(),
@@ -45,7 +47,9 @@ public class UserAssembler implements RepresentationModelAssembler<User, EntityM
         return new UserResponse(
                 entity.getId(),
                 entity.getLogin(),
-                entity.getDisplayName(),
+                entity.getLastName(),
+                entity.getFirstName(),
+                entity.getMiddleName(),
                 entity.getRole(),
                 entity.getStatus(),
                 entity.getGroupId(),

@@ -13,11 +13,11 @@ VALUES ('Spring 2026', '2026-02-01', '2026-06-30', true);
 
 -- Test users (admin, teacher, student)
 -- BCrypt hash of 'password' with cost 10
-INSERT INTO users (login, password_hash, display_name, role, status, is_headman, group_id)
+INSERT INTO users (login, password_hash, last_name, first_name, middle_name, role, status, is_headman, group_id)
 VALUES
-    ('admin',   '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', 'Test Admin',   'admin',   'active', false, NULL),
-    ('teacher', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', 'Test Teacher', 'teacher', 'active', false, NULL),
-    ('student', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', 'Test Student', 'student', 'active', true,  1);
+    ('admin',   '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', 'Администратов', 'Админ',    'Системович',   'admin',   'active', false, NULL),
+    ('teacher', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', 'Преподавателев', 'Учитель',  'Знаниевич',    'teacher', 'active', false, NULL),
+    ('student', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', 'Студентов',     'Студент',  'Староста',     'student', 'active', true,  1);
 
 -- Employee number for teacher
 UPDATE users SET employee_number = 'T00001' WHERE login = 'teacher';

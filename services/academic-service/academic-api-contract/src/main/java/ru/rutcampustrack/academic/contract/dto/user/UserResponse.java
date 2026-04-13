@@ -14,7 +14,9 @@ public class UserResponse extends RepresentationModel<UserResponse> {
 
     private Long id;
     private String login;
-    private String displayName;
+    private String lastName;
+    private String firstName;
+    private String middleName;
     private UserRole role;
     private AccountStatus status;
     private Long groupId;
@@ -25,12 +27,14 @@ public class UserResponse extends RepresentationModel<UserResponse> {
 
     public UserResponse() {}
 
-    public UserResponse(Long id, String login, String displayName, UserRole role,
-                        AccountStatus status, Long groupId, boolean headman,
+    public UserResponse(Long id, String login, String lastName, String firstName, String middleName,
+                        UserRole role, AccountStatus status, Long groupId, boolean headman,
                         String employeeNumber, Long telegramId, OffsetDateTime createdAt) {
         this.id = id;
         this.login = login;
-        this.displayName = displayName;
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.middleName = middleName;
         this.role = role;
         this.status = status;
         this.groupId = groupId;
@@ -46,8 +50,14 @@ public class UserResponse extends RepresentationModel<UserResponse> {
     public String getLogin() { return login; }
     public void setLogin(String login) { this.login = login; }
 
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getMiddleName() { return middleName; }
+    public void setMiddleName(String middleName) { this.middleName = middleName; }
 
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }

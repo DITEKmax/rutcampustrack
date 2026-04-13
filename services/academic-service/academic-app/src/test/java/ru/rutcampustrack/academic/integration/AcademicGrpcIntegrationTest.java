@@ -105,9 +105,9 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         jdbcTemplate.update(
                 "DELETE FROM users WHERE login = 'archived_test'");
         jdbcTemplate.update(
-                "INSERT INTO users (login, password_hash, display_name, role, status, is_headman, password_changed, created_at, updated_at) " +
+                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, password_changed, created_at, updated_at) " +
                 "VALUES ('archived_test', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
-                "'Archived User', 'student', 'archived', false, false, NOW(), NOW())");
+                "'Archived', 'User', 'student', 'archived', false, false, NOW(), NOW())");
         Long id = jdbcTemplate.queryForObject(
                 "SELECT id FROM users WHERE login = 'archived_test'", Long.class);
         archivedUserId = id;
@@ -173,9 +173,9 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         jdbcTemplate.update(
                 "DELETE FROM users WHERE login = 'archived_in_group'");
         jdbcTemplate.update(
-                "INSERT INTO users (login, password_hash, display_name, role, status, is_headman, group_id, password_changed, created_at, updated_at) " +
+                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id, password_changed, created_at, updated_at) " +
                 "VALUES ('archived_in_group', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
-                "'Archived In Group', 'student', 'archived', false, 1, false, NOW(), NOW())");
+                "'Archived', 'InGroup', 'student', 'archived', false, 1, false, NOW(), NOW())");
         Long archivedInGroupId = jdbcTemplate.queryForObject(
                 "SELECT id FROM users WHERE login = 'archived_in_group'", Long.class);
 
@@ -335,7 +335,7 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
 
         assertThat(response.getId()).isEqualTo(TEACHER_ID);
         assertThat(response.getLogin()).isEqualTo("teacher");
-        assertThat(response.getDisplayName()).isEqualTo("Test Teacher");
+        assertThat(response.getDisplayName()).isEqualTo("Преподавателев Учитель Знаниевич");
         assertThat(response.getRole()).isEqualTo("teacher");
         assertThat(response.getStatus()).isEqualTo("active");
     }
@@ -375,10 +375,10 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         // Insert a student with telegram_id, initial_password, and group_id
         jdbcTemplate.update("DELETE FROM users WHERE login = 'bot_test_student'");
         jdbcTemplate.update(
-                "INSERT INTO users (login, password_hash, display_name, role, status, is_headman, group_id, " +
+                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id, " +
                 "telegram_id, initial_password, password_changed, created_at, updated_at) " +
                 "VALUES ('bot_test_student', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
-                "'Bot Test Student', 'student', 'active', false, 1, 987654321, 'initpass123', false, NOW(), NOW())");
+                "'Bot', 'TestStudent', 'student', 'active', false, 1, 987654321, 'initpass123', false, NOW(), NOW())");
 
         UserByTelegramIdRequest request = UserByTelegramIdRequest.newBuilder()
                 .setTelegramId(987654321L)
@@ -388,7 +388,7 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
 
         assertThat(response.getFound()).isTrue();
         assertThat(response.getLogin()).isEqualTo("bot_test_student");
-        assertThat(response.getDisplayName()).isEqualTo("Bot Test Student");
+        assertThat(response.getDisplayName()).isEqualTo("Bot TestStudent");
         assertThat(response.getRole()).isEqualTo("student");
         assertThat(response.getGroupId()).isEqualTo(GROUP_ID);
         assertThat(response.getGroupName()).isEqualTo("IVT-21-1");

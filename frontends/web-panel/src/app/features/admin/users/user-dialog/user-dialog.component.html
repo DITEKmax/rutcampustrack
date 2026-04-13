@@ -31,14 +31,33 @@
     <form [formGroup]="form" class="ud-form">
       <div class="ud-row">
         <mat-form-field class="ud-field">
-          <mat-label>ФИО</mat-label>
-          <input matInput formControlName="displayName" placeholder="Иванов Иван Иванович" />
-          @if (form.get('displayName')?.hasError('required')) {
-            <mat-error>ФИО обязательно</mat-error>
+          <mat-label>Фамилия</mat-label>
+          <input matInput formControlName="lastName" placeholder="Иванов" />
+          @if (form.get('lastName')?.hasError('required')) {
+            <mat-error>Фамилия обязательна</mat-error>
           }
-          @if (form.get('displayName')?.hasError('minlength')) {
+          @if (form.get('lastName')?.hasError('minlength')) {
             <mat-error>Минимум 2 символа</mat-error>
           }
+        </mat-form-field>
+
+        <mat-form-field class="ud-field">
+          <mat-label>Имя</mat-label>
+          <input matInput formControlName="firstName" placeholder="Иван" />
+          @if (form.get('firstName')?.hasError('required')) {
+            <mat-error>Имя обязательно</mat-error>
+          }
+          @if (form.get('firstName')?.hasError('minlength')) {
+            <mat-error>Минимум 2 символа</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="ud-row">
+        <mat-form-field class="ud-field">
+          <mat-label>Отчество</mat-label>
+          <input matInput formControlName="middleName" placeholder="Иванович" />
+          <mat-hint>Необязательно</mat-hint>
         </mat-form-field>
 
         <mat-form-field class="ud-field">

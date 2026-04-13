@@ -142,7 +142,8 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
         long seq = userRepository.nextStudentLoginSeq();
         testUser = new User();
         testUser.setLogin("student" + String.format("%05d", seq));
-        testUser.setDisplayName("Test Student " + seq);
+        testUser.setLastName("Студентов");
+        testUser.setFirstName("Тест" + seq);
         testUser.setPasswordHash("$2a$10$dummy");
         testUser.setRole(UserRole.STUDENT);
         testUser.setStatus(AccountStatus.ACTIVE);

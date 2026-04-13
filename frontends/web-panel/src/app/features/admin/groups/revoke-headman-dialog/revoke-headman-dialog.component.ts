@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 
-import type { GroupResponse, UserResponse } from '../../shared/types';
+import { fullName, type GroupResponse, type UserResponse } from '../../shared/types';
 
 @Component({
   selector: 'app-revoke-headman-dialog',
@@ -11,7 +11,7 @@ import type { GroupResponse, UserResponse } from '../../shared/types';
   template: `
     <h2 mat-dialog-title>Снять старосту?</h2>
     <mat-dialog-content>
-      <p>{{ data.headman.displayName }} будет снят с должности старосты группы {{ data.group.name }}.</p>
+      <p>{{ fullName(data.headman) }} будет снят с должности старосты группы {{ data.group.name }}.</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Отмена</button>
@@ -21,4 +21,5 @@ import type { GroupResponse, UserResponse } from '../../shared/types';
 })
 export class RevokeHeadmanDialogComponent {
   data = inject<{ group: GroupResponse; headman: UserResponse }>(MAT_DIALOG_DATA);
+  readonly fullName = fullName;
 }

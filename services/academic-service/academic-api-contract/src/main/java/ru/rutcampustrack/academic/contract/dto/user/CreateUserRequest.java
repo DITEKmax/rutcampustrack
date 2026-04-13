@@ -11,9 +11,16 @@ import ru.rutcampustrack.academic.contract.enums.UserRole;
  */
 public record CreateUserRequest(
 
-        @NotBlank(message = "Имя пользователя обязательно")
-        @Size(max = 255)
-        String displayName,
+        @NotBlank(message = "Фамилия обязательна")
+        @Size(max = 128)
+        String lastName,
+
+        @NotBlank(message = "Имя обязательно")
+        @Size(max = 128)
+        String firstName,
+
+        @Size(max = 128)
+        String middleName,
 
         @NotNull(message = "Роль обязательна")
         UserRole role,

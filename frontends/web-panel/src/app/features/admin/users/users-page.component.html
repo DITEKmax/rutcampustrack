@@ -75,7 +75,7 @@
 
         <ng-container matColumnDef="displayName">
           <mat-header-cell *matHeaderCellDef>ФИО</mat-header-cell>
-          <mat-cell *matCellDef="let row">{{ row.displayName }}</mat-cell>
+          <mat-cell *matCellDef="let row">{{ row.lastName }} {{ row.firstName }}{{ row.middleName ? ' ' + row.middleName : '' }}</mat-cell>
         </ng-container>
 
         <ng-container matColumnDef="role">

@@ -29,8 +29,25 @@ public class User {
     private String passwordHash;
 
     @Setter
-    @Column(name = "display_name", nullable = false)
-    private String displayName;
+    @Column(name = "last_name", nullable = false, length = 128)
+    private String lastName;
+
+    @Setter
+    @Column(name = "first_name", nullable = false, length = 128)
+    private String firstName;
+
+    @Setter
+    @Column(name = "middle_name", length = 128)
+    private String middleName;
+
+    /** Composed full name for display/log purposes. Не хранится в БД. */
+    public String getDisplayName() {
+        StringBuilder sb = new StringBuilder(lastName).append(' ').append(firstName);
+        if (middleName != null && !middleName.isBlank()) {
+            sb.append(' ').append(middleName);
+        }
+        return sb.toString();
+    }
 
     @Setter
     private String email;

@@ -5,7 +5,9 @@ export type SemesterStatus = 'active' | 'planned' | 'finished';
 export interface UserResponse {
   id: number;
   login: string;
-  displayName: string;
+  lastName: string;
+  firstName: string;
+  middleName: string | null;
   role: UserRole;
   status: AccountStatus;
   groupId: number | null;
@@ -16,7 +18,9 @@ export interface UserResponse {
 }
 
 export interface CreateUserRequest {
-  displayName: string;
+  lastName: string;
+  firstName: string;
+  middleName?: string;
   role: UserRole;
   groupId?: number;
   employeeNumber?: string;
@@ -28,12 +32,20 @@ export interface UserCreatedResponse extends UserResponse {
 }
 
 export interface PatchUserRequest {
-  displayName?: string;
+  lastName?: string;
+  firstName?: string;
+  middleName?: string;
   isHeadman?: boolean;
   groupId?: number;
   employeeNumber?: string;
   telegramId?: number;
   status?: AccountStatus;
+}
+
+/** Composes ФИО из трёх отдельных полей. middleName опционален. */
+export function fullName(u: { lastName: string; firstName: string; middleName?: string | null }): string {
+  const mid = u.middleName ? ` ${u.middleName}` : '';
+  return `${u.lastName} ${u.firstName}${mid}`;
 }
 
 export interface GroupResponse {

@@ -87,7 +87,9 @@ public class UserService {
         // Build user entity
         User user = new User();
         user.setLogin(login);
-        user.setDisplayName(request.displayName());
+        user.setLastName(request.lastName());
+        user.setFirstName(request.firstName());
+        user.setMiddleName(request.middleName());
         user.setPasswordHash(passwordHash);
         user.setRole(request.role());
         user.setStatus(AccountStatus.ACTIVE);
@@ -124,7 +126,9 @@ public class UserService {
     @Transactional
     public User updateUser(Long id, UpdateUserRequest request) {
         User user = findUserById(id);
-        user.setDisplayName(request.displayName());
+        user.setLastName(request.lastName());
+        user.setFirstName(request.firstName());
+        user.setMiddleName(request.middleName());
         user.setRole(request.role());
         user.setGroupId(request.groupId());
         user.setEmployeeNumber(request.employeeNumber());
@@ -138,8 +142,14 @@ public class UserService {
     public User patchUser(Long id, PatchUserRequest request) {
         User user = findUserById(id);
 
-        if (request.displayName() != null) {
-            user.setDisplayName(request.displayName());
+        if (request.lastName() != null) {
+            user.setLastName(request.lastName());
+        }
+        if (request.firstName() != null) {
+            user.setFirstName(request.firstName());
+        }
+        if (request.middleName() != null) {
+            user.setMiddleName(request.middleName());
         }
         if (request.groupId() != null) {
             user.setGroupId(request.groupId());

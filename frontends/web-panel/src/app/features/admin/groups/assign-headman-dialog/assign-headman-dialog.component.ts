@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
-import type { GroupResponse, UserResponse } from '../../shared/types';
+import { fullName, type GroupResponse, type UserResponse } from '../../shared/types';
 
 @Component({
   selector: 'app-assign-headman-dialog',
@@ -18,7 +18,7 @@ import type { GroupResponse, UserResponse } from '../../shared/types';
         <mat-label>Студент</mat-label>
         <mat-select [(value)]="selectedUserId">
           @for (s of data.students; track s.id) {
-            <mat-option [value]="s.id">{{ s.displayName }} ({{ s.login }})</mat-option>
+            <mat-option [value]="s.id">{{ fullName(s) }} ({{ s.login }})</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -33,6 +33,7 @@ export class AssignHeadmanDialogComponent {
   data = inject<{ group: GroupResponse; students: UserResponse[] }>(MAT_DIALOG_DATA);
   private dialogRef = inject(MatDialogRef<AssignHeadmanDialogComponent>);
   selectedUserId: number | null = null;
+  readonly fullName = fullName;
 
   assign(): void {
     this.dialogRef.close(this.selectedUserId);

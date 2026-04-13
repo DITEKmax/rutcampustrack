@@ -65,7 +65,9 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
     void testAdminCreateUser_returnsLoginAndPassword() throws Exception {
         String body = """
                 {
-                  "displayName": "Test Student For Create",
+                  "lastName": "Тестов",
+                  "firstName": "Тест",
+                  "middleName": "Тестович",
                   "role": "STUDENT",
                   "groupId": %d
                 }
@@ -99,7 +101,8 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
     void testAdminCreateUser_validationError_returns400WithFieldErrors() throws Exception {
         String body = """
                 {
-                  "displayName": "",
+                  "lastName": "",
+                  "firstName": "",
                   "role": "STUDENT"
                 }
                 """;
@@ -114,7 +117,7 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.type", containsString("validation")))
                 .andExpect(jsonPath("$.fieldErrors", notNullValue()))
-                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'displayName')]", hasSize(greaterThan(0))));
+                .andExpect(jsonPath("$.fieldErrors[?(@.field == 'lastName')]", hasSize(greaterThan(0))));
     }
 
     // =====================================================================
@@ -126,7 +129,8 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
     void testStudentCannotCreateUser_returns403() throws Exception {
         String body = """
                 {
-                  "displayName": "Another Student",
+                  "lastName": "Другов",
+                  "firstName": "Другой",
                   "role": "STUDENT",
                   "groupId": %d
                 }
@@ -376,8 +380,8 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
 
         // Create a second student to serve as assistant
         Long assistantId = jdbcTemplate.queryForObject(
-                "INSERT INTO users (login, password_hash, display_name, role, status, is_headman, group_id) " +
-                "VALUES ('assistant_test', 'hash', 'Assistant User', 'student', 'active', false, ?) RETURNING id",
+                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id) " +
+                "VALUES ('assistant_test', 'hash', 'Assistant', 'User', 'student', 'active', false, ?) RETURNING id",
                 Long.class, seedGroupId);
 
         // Assign the student as an assistant to the headman's group via native SQL

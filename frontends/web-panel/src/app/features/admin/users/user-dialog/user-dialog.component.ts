@@ -51,7 +51,9 @@ export class UserDialogComponent {
   readonly createdUser = signal<UserCreatedResponse | null>(null);
 
   readonly form = new FormGroup({
-    displayName: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2)] }),
+    lastName: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2)] }),
+    firstName: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2)] }),
+    middleName: new FormControl('', { nonNullable: true }),
     role: new FormControl<UserRole | ''>('', { nonNullable: true, validators: [Validators.required] }),
     groupId: new FormControl<number | null>(null),
     employeeNumber: new FormControl('', { nonNullable: true }),
@@ -62,7 +64,9 @@ export class UserDialogComponent {
     if (this.data.mode === 'edit' && this.data.user) {
       const u = this.data.user;
       this.form.patchValue({
-        displayName: u.displayName,
+        lastName: u.lastName,
+        firstName: u.firstName,
+        middleName: u.middleName ?? '',
         role: u.role,
         groupId: u.groupId,
         isHeadman: u.headman,
@@ -82,9 +86,11 @@ export class UserDialogComponent {
     if (this.data.mode === 'create') {
       const raw = this.form.getRawValue();
       const req: CreateUserRequest = {
-        displayName: raw.displayName,
+        lastName: raw.lastName.trim(),
+        firstName: raw.firstName.trim(),
         role: raw.role as UserRole,
       };
+      if (raw.middleName.trim()) req.middleName = raw.middleName.trim();
       // Группа только для студентов
       if (raw.role === 'student' && raw.groupId != null) req.groupId = raw.groupId;
       // Табельный номер только для преподавателей
@@ -106,7 +112,9 @@ export class UserDialogComponent {
       const req: PatchUserRequest = {};
       const u = this.data.user!;
 
-      if (raw.displayName !== u.displayName) req.displayName = raw.displayName;
+      if (raw.lastName.trim() !== u.lastName) req.lastName = raw.lastName.trim();
+      if (raw.firstName.trim() !== u.firstName) req.firstName = raw.firstName.trim();
+      if (raw.middleName.trim() !== (u.middleName ?? '')) req.middleName = raw.middleName.trim();
       if (raw.groupId !== u.groupId) req.groupId = raw.groupId ?? undefined;
       if (raw.isHeadman !== u.headman) req.isHeadman = raw.isHeadman;
       if (raw.employeeNumber !== (u.employeeNumber ?? '')) req.employeeNumber = raw.employeeNumber;

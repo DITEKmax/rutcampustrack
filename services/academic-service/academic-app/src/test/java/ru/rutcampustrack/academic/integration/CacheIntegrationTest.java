@@ -235,9 +235,9 @@ class CacheIntegrationTest extends AbstractAcademicCacheIntegrationTest {
     void archiveUser_invalidatesUsersCache() {
         // Create a dedicated test user (active student, no group)
         Long testUserId = jdbcTemplate.queryForObject(
-                "INSERT INTO users (login, password_hash, display_name, role, status, is_headman, password_changed, created_at, updated_at) " +
+                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, password_changed, created_at, updated_at) " +
                 "VALUES ('cache_archive_test', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
-                "'Cache Archive Test', 'student', 'active', false, false, NOW(), NOW()) RETURNING id",
+                "'Cache', 'ArchiveTest', 'student', 'active', false, false, NOW(), NOW()) RETURNING id",
                 Long.class);
 
         UserRequest request = UserRequest.newBuilder().setUserId(testUserId).build();
@@ -272,9 +272,9 @@ class CacheIntegrationTest extends AbstractAcademicCacheIntegrationTest {
 
         // Create a dedicated student in group 1 for transfer (not the seed headman student)
         Long transferStudentId = jdbcTemplate.queryForObject(
-                "INSERT INTO users (login, password_hash, display_name, role, status, is_headman, group_id, password_changed, created_at, updated_at) " +
+                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id, password_changed, created_at, updated_at) " +
                 "VALUES ('cache_transfer_test', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
-                "'Cache Transfer Test', 'student', 'active', false, " + GROUP_ID + ", false, NOW(), NOW()) RETURNING id",
+                "'Cache', 'TransferTest', 'student', 'active', false, " + GROUP_ID + ", false, NOW(), NOW()) RETURNING id",
                 Long.class);
 
         GroupMembersRequest req1 = GroupMembersRequest.newBuilder().setGroupId(GROUP_ID).build();

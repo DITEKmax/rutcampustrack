@@ -70,7 +70,7 @@ export function GroupHub() {
   const { data: members, isLoading: membersLoading } = useGroupMembers()
   const { data: subjects, isLoading: subjectsLoading } = useGroupSubjects()
 
-  const isLoading = membersLoading && subjectsLoading
+  const isLoading = membersLoading || subjectsLoading
 
   if (isLoading) {
     return (

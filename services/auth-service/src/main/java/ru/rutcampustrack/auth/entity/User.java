@@ -1,5 +1,6 @@
 package ru.rutcampustrack.auth.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,8 +27,24 @@ public class User {
     @Column(name = "password_hash")
     private String passwordHash;
 
-    @Column(name = "display_name", nullable = false)
-    private String displayName;
+    @Column(name = "last_name", nullable = false, length = 128)
+    private String lastName;
+
+    @Column(name = "first_name", nullable = false, length = 128)
+    private String firstName;
+
+    @Column(name = "middle_name", length = 128)
+    private String middleName;
+
+    @JsonIgnore
+    @Transient
+    public String getDisplayName() {
+        StringBuilder sb = new StringBuilder(lastName).append(' ').append(firstName);
+        if (middleName != null && !middleName.isBlank()) {
+            sb.append(' ').append(middleName);
+        }
+        return sb.toString();
+    }
 
     private String email;
     private String phone;

@@ -6,13 +6,28 @@
   flex-direction: column;
   background: var(--bg-primary);
   border-right: 1px solid var(--border-subtle);
-  overflow: hidden;
+  /* Allow nested nav (especially for headman with many sections) to scroll
+     without forcing the whole viewport to scroll (BUG-008). */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--text-muted) 35%, transparent) transparent;
   position: relative;
   background-image:
     linear-gradient(var(--border-subtle) 1px, transparent 1px),
     linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
   background-size: 64px 64px;
   transition: background-color var(--duration-slow) var(--ease-out), border-color var(--duration-slow) var(--ease-out);
+}
+
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--text-muted) 35%, transparent);
+  border-radius: 3px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--text-muted) 60%, transparent);
 }
 
 .sidebar__brand {

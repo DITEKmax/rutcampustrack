@@ -269,8 +269,23 @@ code, kbd, pre, samp {
 .page-filters {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+/* Inside filters, suppress the subscript wrapper that adds ~24px of phantom
+   space below the input — it makes adjacent buttons appear lower (BUG-007, BUG-008). */
+.page-filters .mat-mdc-form-field-subscript-wrapper { display: none; }
+
+/* Align the action button vertically with the Material form fields (~56px tall). */
+.page-filters .btn-brand,
+.page-filters .btn-secondary,
+.page-filters > button {
+  height: 56px;
+  align-self: stretch;
+  margin-top: 0;
+  white-space: nowrap;
 }
 
 /* Empty / error states living inside a page-card */

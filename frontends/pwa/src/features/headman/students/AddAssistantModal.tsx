@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { X } from '@phosphor-icons/react'
 import { useCreateAssistant, mapHeadmanApiError } from '@/features/headman/shared/headmanApi'
 import type { GroupMember, AssistantPermission } from '@/features/headman/shared/types'

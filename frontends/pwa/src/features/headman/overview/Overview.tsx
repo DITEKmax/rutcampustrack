@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { ArrowLeft, Users, Calendar, FileText, Clock } from '@phosphor-icons/react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import {
   useGroupMembers,

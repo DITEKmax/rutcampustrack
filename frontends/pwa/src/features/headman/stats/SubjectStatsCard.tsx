@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { Check } from '@phosphor-icons/react'
 import { useSetSubjectThreshold, mapHeadmanApiError } from '@/features/headman/shared/headmanApi'
 

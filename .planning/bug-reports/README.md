@@ -1,18 +1,36 @@
-# v9.0 Bug Reports — Ручное тестирование после закрытия milestone
+# Bug Reports — Ручное тестирование
 
-Эта папка — для накопления багов/замечаний, найденных при ручном QA после закрытия v9.0 (2026-04-13). Каждый баг = отдельный `.md` файл + опционально скриншоты/видео рядом.
+Эта папка — для накопления багов/замечаний, найденных при ручном QA (начато после закрытия v9.0, 2026-04-13). Переиспользуется для всех будущих milestone.
+
+Каждый баг = **отдельная папка** `BUG-NNN-краткое-название/` со своим `report.md` и всеми артефактами (скрины, видео, логи) внутри.
 
 ## Как добавлять баги
 
-1. **Имя файла:** `BUG-NNN-короткое-название.md` (NNN — автоинкремент: 001, 002, ...).
-   Пример: `BUG-001-headman-journal-mobile-overflow.md`
+1. **Создай папку:** `BUG-NNN-короткое-название/` (NNN — автоинкремент по `INDEX.md`: 001, 002, ...).
+   Пример: `BUG-001-headman-journal-mobile-overflow/`
 
-2. **Скриншоты/видео:** кладите рядом с `.md` файлом. В имя добавляйте префикс бага.
-   Пример: `BUG-001-01.png`, `BUG-001-before.png`, `BUG-001-console.png`, `BUG-001-reproduce.mp4`
+2. **Внутри папки:**
+   - `report.md` — описание бага (скопировать из `../_TEMPLATE.md`)
+   - любые скриншоты, видео, логи — с произвольными именами
+   - Пример содержимого:
+     ```
+     BUG-001-headman-journal-mobile-overflow/
+     ├── report.md
+     ├── screenshot-mobile.png
+     ├── screenshot-desktop.png
+     ├── console.log
+     └── repro.mp4
+     ```
 
-3. **Шаблон:** копируйте `_TEMPLATE.md` в новый файл и заполняйте. Или создавайте с нуля по структуре ниже.
+3. **Добавь строку в `INDEX.md`** (одна строка на баг).
 
-## Структура каждого bug-report
+4. **Ссылки в `report.md`** — относительные, внутри своей папки:
+   ```markdown
+   ![Mobile overflow](./screenshot-mobile.png)
+   [Console log](./console.log)
+   ```
+
+## Структура report.md
 
 ```markdown
 # BUG-NNN: Краткое название
@@ -39,24 +57,29 @@
 <Что происходит вместо этого>
 
 ## Окружение
-- Браузер/устройство: <Chrome 128 / Safari iOS 17 / Firefox / и т.д.>
-- URL: <https://ruttrack.site/... или file:// ...>
-- Пользователь/роль: <student00001 / headman_assistant / admin / etc>
-- Дата/время: <если применимо>
-- Сеть: <WiFi / 4G / offline — если относится>
+- Браузер/устройство:
+- URL:
+- Пользователь/роль:
+- Дата/время:
+- Сеть:
 
 ## Скриншоты / видео
-- ![BUG-NNN-01](./BUG-NNN-01.png) — <что на скрине>
-- [BUG-NNN-repro.mp4](./BUG-NNN-repro.mp4) — <описание видео>
+- ![screenshot](./screenshot-mobile.png) — <что на скрине>
+- [repro.mp4](./repro.mp4) — <описание видео>
 
 ## Логи / console / network (опционально)
-<Вставить relevant куски из DevTools console / backend logs>
+<куски из DevTools console / backend logs, или ссылка на ./console.log>
 
 ## Проанализированные причины (опционально)
-<Если уже есть догадка — здесь. Если нет — оставить пустым.>
+<Если уже есть догадка>
 
 ## Предполагаемый fix (опционально)
-<Какой файл/компонент править, если понятно>
+<Какой файл/компонент править>
+
+## Fix (заполнить когда status = fixed)
+- Commit(s):
+- Phase/plan:
+- Notes:
 ```
 
 ## Severity guide
@@ -75,18 +98,18 @@ open → in-progress → fixed
        wontfix / duplicate
 ```
 
-Когда баг `fixed`: добавить ссылку на commit(s) в секцию `## Fix` в конце `.md` файла. Не удалять файл — он остаётся как история.
+Когда баг `fixed`: заполнить `## Fix` секцию в `report.md` (commit SHA, phase/plan). Папку НЕ удалять — она остаётся как история.
 
 ## Индекс багов
 
-Ведётся вручную в `INDEX.md` по мере добавления. Каждая запись — одна строка:
+Ведётся вручную в `INDEX.md`. Каждая запись — одна строка:
 
 ```markdown
-- [BUG-001](./BUG-001-название.md) — <одна строка описания> (severity, status)
+- [BUG-001](./BUG-001-headman-journal-mobile-overflow/report.md) — <одна строка описания> (severity, status)
 ```
 
 ## Что НЕ сюда
 
 - Feature requests / enhancements → `/gsd-add-backlog` или `/gsd-note`
-- Security findings (systematic) → будут в отдельной папке `.planning/milestones/v9.0-security-audit/` после `cso` skill запуска
-- UX findings (systematic) → будут в отдельной папке `.planning/milestones/v9.0-ux-audit/` после `ux-audit` skill запуска
+- Security findings (systematic) → `.planning/milestones/v9.0-security-audit/` (после `cso` skill)
+- UX findings (systematic) → `.planning/milestones/v9.0-ux-audit/` (после `ux-audit` skill)

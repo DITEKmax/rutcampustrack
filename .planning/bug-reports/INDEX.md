@@ -22,7 +22,7 @@ _(пусто)_
 
 **Формат строки:**
 ```
-- [BUG-NNN](./BUG-NNN-название.md) — краткое описание (severity, component)
+- [BUG-NNN](./BUG-NNN-название/report.md) — краткое описание (severity, component)
 ```
 
 См. `README.md` для инструкций.

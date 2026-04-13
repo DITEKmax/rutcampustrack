@@ -35,6 +35,15 @@ public class SemesterCacheService {
     }
 
     public Long getActiveSemesterId() {
+        // Lazy refresh: если стартовый @PostConstruct упал (academic-service был недоступен),
+        // подтягиваем семестр по требованию вместо того чтобы возвращать null и валить запрос в 500.
+        if (activeSemesterId == null) {
+            try {
+                refresh();
+            } catch (Exception e) {
+                log.warn("Lazy refresh of active semester failed: {}", e.getMessage());
+            }
+        }
         return activeSemesterId;
     }
 

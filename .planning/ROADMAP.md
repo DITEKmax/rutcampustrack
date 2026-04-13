@@ -138,7 +138,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 - [x] **Phase 54: Headman Web Cabinet — Group Management + Subjects** — Backend WPAN-13 fix (headman @RequireRole relaxation), then `/headman/dashboard`, `/headman/group`, `/headman/subjects` (completed 2026-04-09)
 - [x] **Phase 55: Headman Web Cabinet — Attendance Management + Stats** — Angular routes `/headman/journal`, `/headman/excuses`, `/headman/late-checkin`, `/headman/stats` (completed 2026-04-09)
 - [x] **Phase 56: PWA Headman Mode** — React PWA HEADMAN branch: "Группа" BottomNav tab, all headman features mobile-first, SW cache extension, 63 existing tests kept passing (completed 2026-04-13)
-- [ ] **Phase 57: Landing Presentation Mode + Documentation** — GSAP animated system overview, HEADMAN role section, all docs sync
+- [x] **Phase 57: Landing Presentation Mode + Documentation** — GSAP animated system overview, HEADMAN role section, all docs sync (completed 2026-04-13)
 
 ## Phase Details
 
@@ -320,7 +320,11 @@ Plans:
   - Landing is static HTML — edit `frontends/landing/dist/index.html` (and source if present); revalidate dark mode after GSAP section addition
   - `docs/job-stories.md` additions: JS-STUDENT-WEB-01..10 and JS-HEADMAN-WEB-01..08 for web cabinet stories (documented gap from CONCERNS.md)
   - `.planning/PROJECT.md` v9.0 section: draft the Shipped Milestones entry now so it is ready for the milestone close command
-**Plans**: TBD
+**Plans**: 3 plans (Wave 1: 57-01 landing, 57-02 docs — parallel; Wave 2: 57-03 UAT + report)
+Plans:
+- [x] 57-01-PLAN.md — Landing: GSAP #architecture-flow section + HEADMAN role card update (LAND-v9-02, LAND-v9-05)
+- [x] 57-02-PLAN.md — Docs sync: CLAUDE.md + url-layout.md + job-stories.md + PROJECT.md (DOCS-v9-01..04)
+- [x] 57-03-PLAN.md — Responsive/dark/reduced-motion UAT + docs/phase-57-report.md (LAND-v9-04, LAND-v9-02, DOCS-v9-01)
 **UI hint**: yes
 
 ---
@@ -346,5 +350,5 @@ Plans:
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 4/4 | Complete   | 2026-04-09 |
 | 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 5/5 | Complete   | 2026-04-09 |
 | 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 5/5 | Complete   | 2026-04-09 |
-| 56. PWA Headman Mode | v9.0 | 6/6 | Complete   | 2026-04-13 |
-| 57. Landing Presentation Mode + Documentation | v9.0 | 0/TBD | Not started | - |
+| 56. PWA Headman Mode | v9.0 | 6/6 | Complete    | 2026-04-13 |
+| 57. Landing Presentation Mode + Documentation | v9.0 | 3/3 | Complete   | 2026-04-13 |

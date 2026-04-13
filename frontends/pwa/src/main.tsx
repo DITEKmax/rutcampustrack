@@ -20,6 +20,14 @@ registerSW({ immediate: true })
 const SchedulePage = lazy(() => import('./features/schedule/SchedulePage').then(m => ({ default: m.SchedulePage })))
 const CheckInScreen = lazy(() => import('./features/checkin/CheckInScreen').then(m => ({ default: m.CheckInScreen })))
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'))
+const GroupHub = lazy(() => import('./features/headman/group-hub/GroupHub').then(m => ({ default: m.GroupHub })))
+const Overview = lazy(() => import('./features/headman/overview/Overview').then(m => ({ default: m.Overview })))
+const StudentsList = lazy(() => import('./features/headman/students/StudentsList').then(m => ({ default: m.StudentsList })))
+const SubjectsList = lazy(() => import('./features/headman/subjects/SubjectsList').then(m => ({ default: m.SubjectsList })))
+const JournalPage = lazy(() => import('./features/headman/journal/JournalPage').then(m => ({ default: m.JournalPage })))
+const ExcusesPage = lazy(() => import('./features/headman/excuses/ExcusesPage').then(m => ({ default: m.ExcusesPage })))
+const LateCheckinPage = lazy(() => import('./features/headman/late-checkin/LateCheckinPage').then(m => ({ default: m.LateCheckinPage })))
+const StatsPage = lazy(() => import('./features/headman/stats/StatsPage').then(m => ({ default: m.StatsPage })))
 
 const router = createBrowserRouter([
   {
@@ -69,6 +77,14 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      { path: 'group', element: <Suspense fallback={<LoadingSpinner />}><GroupHub /></Suspense> },
+      { path: 'group/overview', element: <Suspense fallback={<LoadingSpinner />}><Overview /></Suspense> },
+      { path: 'group/students', element: <Suspense fallback={<LoadingSpinner />}><StudentsList /></Suspense> },
+      { path: 'group/subjects', element: <Suspense fallback={<LoadingSpinner />}><SubjectsList /></Suspense> },
+      { path: 'group/journal', element: <Suspense fallback={<LoadingSpinner />}><JournalPage /></Suspense> },
+      { path: 'group/excuses', element: <Suspense fallback={<LoadingSpinner />}><ExcusesPage /></Suspense> },
+      { path: 'group/late-checkin', element: <Suspense fallback={<LoadingSpinner />}><LateCheckinPage /></Suspense> },
+      { path: 'group/stats', element: <Suspense fallback={<LoadingSpinner />}><StatsPage /></Suspense> },
     ],
   },
 ])

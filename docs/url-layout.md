@@ -36,3 +36,38 @@ Landing does not make API calls -- no CORS origin needed.
 - Production domains TBD -- only localhost origins configured in Phase 33.
 - Mini App Vite port (5174) is one above PWA (5173) to avoid conflict.
 - Angular CLI defaults to 4200; web-panel-nginx uses the same port for consistency.
+
+---
+
+## Production Path Routing (v9.0)
+
+Decided: Phase 49-50 (v9.0). Nginx reverse proxy at `https://ruttrack.site`.
+
+| Path | Served By | Requirement | Notes |
+|------|-----------|-------------|-------|
+| `/` | 301 redirect → `/login` | INFRA-v9-01 | Единая точка входа. Корень больше не отдаёт PWA. |
+| `/login` | web-panel SPA (Angular, baseHref `/`) | AUTH-v9-01, INFRA-v9-04 | Login form для всех ролей. |
+| `/admin/*` | web-panel SPA (lazy feature) | — | Роль ADMIN после login. |
+| `/teacher/*` | web-panel SPA (lazy feature) | — | Роль TEACHER. |
+| `/student/*` | web-panel SPA (lazy feature) | AUTH-v9-05 | Роль STUDENT (headman тоже проходит studentGuard). |
+| `/headman/*` | web-panel SPA (lazy feature) | AUTH-v9-04 | STUDENT + is_headman=true (headmanGuard). |
+| `/app/` | PWA (React + Vite, rct-pwa-nginx) | INFRA-v9-03 | Мобильный клиент RutTrack. |
+| `/presentation/` | Landing (static HTML, rct-landing-nginx) | INFRA-v9-02, LAND-v9-01 | Описание проекта; доступ только по прямой ссылке. |
+| `/api/*` | API Gateway (localhost:8080 внутри сети) | — | REST + gRPC (обратный прокси из backend). |
+| `/api/ws` | Notification Web (notification-web:9094) | — | STOMP WebSocket endpoint. |
+
+### Пост-login routing
+
+| Роль | Landing dashboard | Guard |
+|------|-------------------|-------|
+| ADMIN | `/admin/dashboard` | roleGuard(['ADMIN']) |
+| TEACHER | `/teacher/dashboard` | roleGuard(['TEACHER']) |
+| STUDENT (is_headman=false) | `/student/dashboard` | studentGuard |
+| STUDENT (is_headman=true) | `/headman/dashboard` | headmanGuard (+ passes studentGuard) |
+
+Реализация: `AuthService.resolveDashboardFor()` — single source of truth (Phase 50).
+
+### Deprecated paths
+
+- `/landing/` — удалён в Phase 49 (INFRA-v9-02), перенесён в `/presentation/`.
+- Корень `/` больше не отдаёт PWA — PWA теперь на `/app/` (INFRA-v9-01, INFRA-v9-03).

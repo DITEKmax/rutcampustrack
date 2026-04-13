@@ -329,11 +329,11 @@ describe('StudentDashboardComponent', () => {
     fixture.detectChanges();
 
     expect(component.error()).toBe(
-      'Не удалось загрузить данные. Проверьте подключение и обновите страницу.',
+      'Не удалось загрузить данные. Сервер временно недоступен (500).',
     );
     const errorEl = fixture.nativeElement.querySelector('.dashboard__error');
     expect(errorEl?.textContent).toContain(
-      'Не удалось загрузить данные. Проверьте подключение и обновите страницу.',
+      'Не удалось загрузить данные. Сервер временно недоступен (500).',
     );
   });
 });

@@ -4,6 +4,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GroupsPageComponent } from './groups-page.component';
 import type { GroupResponse, UserResponse, PagedResponse } from '../shared/types';
@@ -40,7 +41,7 @@ describe('GroupsPageComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [GroupsPageComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     });
     const fixture = TestBed.createComponent(GroupsPageComponent);
     component = fixture.componentInstance;

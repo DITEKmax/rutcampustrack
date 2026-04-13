@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, Injector, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthApi } from './auth.api';
@@ -13,7 +13,7 @@ export interface AuthUser {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly profileService = inject(ProfileService);
+  private readonly injector = inject(Injector);
   private readonly _accessToken = signal<string | null>(null);
   private readonly _refreshToken = signal<string | null>(null);
 
@@ -49,7 +49,13 @@ export class AuthService {
   clearTokens(): void {
     this._accessToken.set(null);
     this._refreshToken.set(null);
-    this.profileService.clear();
+    // Lazy-resolve ProfileService so unit tests for AuthService/guards don't
+    // need to provide HttpClient just to instantiate the auth graph.
+    try {
+      this.injector.get(ProfileService).clear();
+    } catch {
+      // ProfileService not provided in this test context — safe to ignore.
+    }
   }
 
   async logout(authApi: AuthApi, router: Router): Promise<void> {

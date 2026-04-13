@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { render, screen } from '@testing-library/angular';
 import { SidebarComponent } from './sidebar.component';
@@ -56,6 +58,8 @@ describe('SidebarComponent', () => {
       providers: [
         provideRouter([]),
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: authServiceMock },
         { provide: AuthApi, useValue: mockAuthApi },
         { provide: ThemeService, useValue: mockThemeService },
@@ -78,6 +82,8 @@ describe('SidebarComponent', () => {
       providers: [
         provideRouter([]),
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: authServiceMock },
         { provide: AuthApi, useValue: mockAuthApi },
         { provide: ThemeService, useValue: mockThemeService },
@@ -99,6 +105,8 @@ describe('SidebarComponent', () => {
       providers: [
         provideRouter([]),
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: authServiceMock },
         { provide: AuthApi, useValue: mockAuthApi },
         { provide: ThemeService, useValue: mockThemeService },
@@ -130,6 +138,8 @@ describe('SidebarComponent', () => {
       providers: [
         provideRouter([]),
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: authServiceMock },
         { provide: AuthApi, useValue: mockAuthApi },
         { provide: ThemeService, useValue: mockThemeService },
@@ -154,6 +164,8 @@ describe('SidebarComponent', () => {
       providers: [
         provideRouter([]),
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: authServiceMock },
         { provide: AuthApi, useValue: mockAuthApi },
         { provide: ThemeService, useValue: mockThemeService },

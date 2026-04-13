@@ -59,7 +59,7 @@ describe('LoginComponent', () => {
     });
 
     expect(screen.getByLabelText(/логин/i)).toBeTruthy();
-    expect(screen.getByLabelText(/пароль/i)).toBeTruthy();
+    expect(screen.getByLabelText('Пароль')).toBeTruthy();
   });
 
   it('submit button text is "Войти"', async () => {
@@ -108,7 +108,7 @@ describe('LoginComponent', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'teacher00001');
-    await user.type(screen.getByLabelText(/пароль/i), 'password123');
+    await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
     expect(mockAuthApi.login).toHaveBeenCalledWith({
@@ -138,7 +138,7 @@ describe('LoginComponent', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'teacher00001');
-    await user.type(screen.getByLabelText(/пароль/i), 'password123');
+    await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
     expect(mockAuthService.setTokens).toHaveBeenCalledWith(TEACHER_TOKEN, REFRESH_TOKEN);
@@ -166,7 +166,7 @@ describe('LoginComponent', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'admin');
-    await user.type(screen.getByLabelText(/пароль/i), 'password123');
+    await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/admin/dashboard');
@@ -193,7 +193,7 @@ describe('LoginComponent', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'student00001');
-    await user.type(screen.getByLabelText(/пароль/i), 'password123');
+    await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/student/dashboard');
@@ -220,7 +220,7 @@ describe('LoginComponent', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'headman01');
-    await user.type(screen.getByLabelText(/пароль/i), 'password123');
+    await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/headman/dashboard');
@@ -241,7 +241,7 @@ describe('LoginComponent', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'teacher00001');
-    await user.type(screen.getByLabelText(/пароль/i), 'wrongpassword');
+    await user.type(screen.getByLabelText('Пароль'), 'wrongpassword');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
     await waitFor(() => {
@@ -264,7 +264,7 @@ describe('LoginComponent', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'teacher00001');
-    await user.type(screen.getByLabelText(/пароль/i), 'password123');
+    await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
     await waitFor(() => {
@@ -287,7 +287,7 @@ describe('LoginComponent', () => {
 
     const user = userEvent.setup();
     const loginInput = screen.getByLabelText(/логин/i) as HTMLInputElement;
-    const passwordInput = screen.getByLabelText(/пароль/i) as HTMLInputElement;
+    const passwordInput = screen.getByLabelText('Пароль') as HTMLInputElement;
 
     await user.type(loginInput, 'teacher00001');
     await user.type(passwordInput, 'wrongpassword');
@@ -315,7 +315,7 @@ describe('LoginComponent', () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/логин/i), 'teacher00001');
-    await user.type(screen.getByLabelText(/пароль/i), 'password123');
+    await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
     await waitFor(() => {

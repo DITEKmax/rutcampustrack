@@ -5,6 +5,7 @@ import {
 } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideRouter } from '@angular/router';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
@@ -51,6 +52,7 @@ describe('UsersPageComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideAnimationsAsync(),
+        provideRouter([]),
       ],
     });
     const fixture = TestBed.createComponent(UsersPageComponent);

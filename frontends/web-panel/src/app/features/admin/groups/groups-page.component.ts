@@ -20,6 +20,7 @@ import { fullName, type GroupResponse, type UserResponse } from '../shared/types
 import { GroupDialogComponent, GroupDialogData } from './group-dialog/group-dialog.component';
 import { AssignHeadmanDialogComponent } from './assign-headman-dialog/assign-headman-dialog.component';
 import { RevokeHeadmanDialogComponent } from './revoke-headman-dialog/revoke-headman-dialog.component';
+import { DeleteGroupDialogComponent } from './delete-group-dialog/delete-group-dialog.component';
 
 @Component({
   selector: 'app-groups-page',
@@ -146,6 +147,29 @@ export class GroupsPageComponent implements OnInit {
           });
         }
       });
+    });
+  }
+
+  deleteGroup(group: GroupResponse): void {
+    const studentCount = this.groupStudentCount(group.id);
+    const ref = this.dialog.open(DeleteGroupDialogComponent, {
+      maxWidth: '480px',
+      width: '100%',
+      data: { group, studentCount },
+    });
+    ref.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.adminApi.deleteGroup(group.id).subscribe({
+          next: () => {
+            this.snackBar.open('Группа удалена.', undefined, { duration: 4000 });
+            this.reload();
+          },
+          error: err => {
+            const msg = err?.error?.detail ?? 'Не удалось удалить группу.';
+            this.snackBar.open(msg, undefined, { duration: 6000 });
+          },
+        });
+      }
     });
   }
 

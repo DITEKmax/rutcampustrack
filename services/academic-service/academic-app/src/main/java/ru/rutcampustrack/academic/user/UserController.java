@@ -12,6 +12,7 @@ import ru.rutcampustrack.academic.contract.api.UserApi;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UpdateAvatarRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 import static ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT;
+import static ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER;
 
 /**
  * REST controller implementing UserApi contract.
@@ -50,7 +52,8 @@ public class UserController implements UserApi {
     @RequireRole({ADMIN})
     public ResponseEntity<EntityModel<UserResponse>> getUser(Long id) {
         User user = userService.findUserById(id);
-        return ResponseEntity.ok(userAssembler.toModel(user));
+        // BUG-006: ADMIN видит initialPassword пока пользователь его не сменил.
+        return ResponseEntity.ok(userAssembler.toAdminModel(user));
     }
 
     @Override
@@ -60,7 +63,8 @@ public class UserController implements UserApi {
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler) {
         Page<User> page = userService.listUsers(role, pageable);
-        Page<UserResponse> responsePage = page.map(userAssembler::toResponse);
+        // BUG-006: ADMIN видит initialPassword в выдаче списка.
+        Page<UserResponse> responsePage = page.map(u -> userAssembler.toResponse(u, true));
         return ResponseEntity.ok(assembler.toModel(responsePage,
                 response -> EntityModel.of(response)));
     }
@@ -94,9 +98,16 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @RequireRole({STUDENT})
+    @RequireRole({ADMIN, TEACHER, STUDENT})
     public ResponseEntity<EntityModel<UserResponse>> getMe() {
         User user = userService.getMe();
+        return ResponseEntity.ok(userAssembler.toModel(user));
+    }
+
+    @Override
+    @RequireRole({ADMIN, TEACHER, STUDENT})
+    public ResponseEntity<EntityModel<UserResponse>> updateMyAvatar(UpdateAvatarRequest request) {
+        User user = userService.updateMyAvatar(request.avatarId());
         return ResponseEntity.ok(userAssembler.toModel(user));
     }
 

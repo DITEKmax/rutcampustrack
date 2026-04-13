@@ -33,6 +33,7 @@ CREATE TABLE users (
     group_id            BIGINT REFERENCES groups(id) ON DELETE SET NULL,
     initial_password    VARCHAR(128),
     password_changed    BOOLEAN NOT NULL DEFAULT FALSE,
+    avatar_id           VARCHAR(32),
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

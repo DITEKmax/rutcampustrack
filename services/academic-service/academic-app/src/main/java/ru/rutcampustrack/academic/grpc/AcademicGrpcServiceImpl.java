@@ -270,6 +270,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 .setGroupId(user.getGroupId() != null ? user.getGroupId() : 0L)
                 .setIsHeadman(user.isHeadman())
                 .setTelegramId(user.getTelegramId() != null ? user.getTelegramId() : 0L)
+                .setAvatarId(user.getAvatarId() != null ? user.getAvatarId() : "")
                 .build();
 
         responseObserver.onNext(response);

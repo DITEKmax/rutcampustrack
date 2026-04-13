@@ -44,6 +44,17 @@ public class UserAssembler implements RepresentationModelAssembler<User, EntityM
     }
 
     public UserResponse toResponse(User entity) {
+        return toResponse(entity, false);
+    }
+
+    /**
+     * BUG-006: когда вызывает админ — отдаём plaintext initialPassword пока он не сменён.
+     * BUG-004: avatarId присутствует во всех ответах.
+     */
+    public UserResponse toResponse(User entity, boolean includeInitialPassword) {
+        String initial = (includeInitialPassword && !entity.isPasswordChanged())
+                ? entity.getInitialPassword()
+                : null;
         return new UserResponse(
                 entity.getId(),
                 entity.getLogin(),
@@ -56,7 +67,16 @@ public class UserAssembler implements RepresentationModelAssembler<User, EntityM
                 entity.isHeadman(),
                 entity.getEmployeeNumber(),
                 entity.getTelegramId(),
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                entity.getAvatarId(),
+                initial
         );
+    }
+
+    /** Convenience overload for admin-context list/single endpoints. */
+    public EntityModel<UserResponse> toAdminModel(User entity) {
+        UserResponse response = toResponse(entity, true);
+        return EntityModel.of(response,
+                linkTo(methodOn(UserController.class).getUser(entity.getId())).withSelfRel());
     }
 }

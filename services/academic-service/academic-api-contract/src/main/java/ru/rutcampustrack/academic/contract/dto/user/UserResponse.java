@@ -24,12 +24,27 @@ public class UserResponse extends RepresentationModel<UserResponse> {
     private String employeeNumber;
     private Long telegramId;
     private OffsetDateTime createdAt;
+    /** Preset avatar id (e.g. "avatar_03"). NULL — клиент рисует инициалы (BUG-004). */
+    private String avatarId;
+    /**
+     * Plaintext начального пароля. Возвращается только админам и только пока
+     * пользователь его не сменил (BUG-006). NULL во всех остальных случаях.
+     */
+    private String initialPassword;
 
     public UserResponse() {}
 
     public UserResponse(Long id, String login, String lastName, String firstName, String middleName,
                         UserRole role, AccountStatus status, Long groupId, boolean headman,
                         String employeeNumber, Long telegramId, OffsetDateTime createdAt) {
+        this(id, login, lastName, firstName, middleName, role, status, groupId, headman,
+                employeeNumber, telegramId, createdAt, null, null);
+    }
+
+    public UserResponse(Long id, String login, String lastName, String firstName, String middleName,
+                        UserRole role, AccountStatus status, Long groupId, boolean headman,
+                        String employeeNumber, Long telegramId, OffsetDateTime createdAt,
+                        String avatarId, String initialPassword) {
         this.id = id;
         this.login = login;
         this.lastName = lastName;
@@ -42,6 +57,8 @@ public class UserResponse extends RepresentationModel<UserResponse> {
         this.employeeNumber = employeeNumber;
         this.telegramId = telegramId;
         this.createdAt = createdAt;
+        this.avatarId = avatarId;
+        this.initialPassword = initialPassword;
     }
 
     public Long getId() { return id; }
@@ -79,4 +96,10 @@ public class UserResponse extends RepresentationModel<UserResponse> {
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getAvatarId() { return avatarId; }
+    public void setAvatarId(String avatarId) { this.avatarId = avatarId; }
+
+    public String getInitialPassword() { return initialPassword; }
+    public void setInitialPassword(String initialPassword) { this.initialPassword = initialPassword; }
 }

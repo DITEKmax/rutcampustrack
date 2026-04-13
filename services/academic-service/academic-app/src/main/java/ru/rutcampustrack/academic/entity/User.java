@@ -94,6 +94,11 @@ public class User {
     @Column(name = "password_changed", nullable = false)
     private boolean passwordChanged;
 
+    /** Preset avatar id (e.g. "avatar_03"). NULL = render initials on the client. */
+    @Setter
+    @Column(name = "avatar_id", length = 32)
+    private String avatarId;
+
     @Setter
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

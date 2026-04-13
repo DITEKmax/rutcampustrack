@@ -119,6 +119,8 @@ message UserResponse {
   int64 group_id = 6;
   bool is_headman = 7;
   int64 telegram_id = 8;
+  // Preset avatar id (e.g. "avatar_03"); empty string == not chosen, render initials. BUG-004.
+  string avatar_id = 9;
 }
 
 message SubjectsByIdsRequest {

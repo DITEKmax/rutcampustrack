@@ -98,6 +98,9 @@ public class UserService {
         user.setTelegramId(request.telegramId());
         user.setHeadman(false);
         user.setPasswordChanged(false);
+        // BUG-006: храним plaintext до первой смены пароля чтобы админ мог
+        // переиспользовать его (показать пользователю), пока тот его не сменил.
+        user.setInitialPassword(plainPassword);
         OffsetDateTime now = OffsetDateTime.now();
         user.setCreatedAt(now);
         user.setUpdatedAt(now);
@@ -262,6 +265,24 @@ public class UserService {
         Long userId = requestContext.getUserId();
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+    }
+
+    @Transactional
+    public User updateMyAvatar(String avatarId) {
+        Long userId = requestContext.getUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        // Empty/blank string == clear (render initials).
+        user.setAvatarId(avatarId == null || avatarId.isBlank() ? null : avatarId);
+        user.setUpdatedAt(OffsetDateTime.now());
+        User saved = userRepository.save(user);
+        if (cacheManager != null) {
+            Cache usersCache = cacheManager.getCache("users");
+            if (usersCache != null) {
+                usersCache.evict(userId);
+            }
+        }
+        return saved;
     }
 
     // --- Private helpers ---

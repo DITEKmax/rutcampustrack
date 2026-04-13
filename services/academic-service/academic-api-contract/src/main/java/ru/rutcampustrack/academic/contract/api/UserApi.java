@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
+import ru.rutcampustrack.academic.contract.dto.user.UpdateAvatarRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
@@ -116,6 +117,17 @@ public interface UserApi {
     })
     @GetMapping("/me")
     ResponseEntity<EntityModel<UserResponse>> getMe();
+
+    @Operation(summary = "Сменить аватар текущего пользователя (BUG-004)",
+            description = "Сохраняет идентификатор пресета. Передайте пустой avatarId чтобы сбросить.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Аватар обновлён"),
+            @ApiResponse(responseCode = "400", description = "Неверный avatarId"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+    })
+    @PatchMapping("/me/avatar")
+    ResponseEntity<EntityModel<UserResponse>> updateMyAvatar(
+            @Valid @RequestBody UpdateAvatarRequest request);
 
     @Operation(summary = "Список преподавателей (без постраничной разбивки)", description = "Возвращает всех активных преподавателей. Доступно студентам (для выбора преподавателя предмета).")
     @ApiResponse(responseCode = "200", description = "Список преподавателей")

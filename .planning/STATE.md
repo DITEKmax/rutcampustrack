@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
 status: executing
-stopped_at: Completed 56-06-PLAN.md
-last_updated: "2026-04-13T09:34:08.263Z"
+stopped_at: Completed 56-02-PLAN.md
+last_updated: "2026-04-13T09:44:52.740Z"
 last_activity: 2026-04-13 -- Phase 56 planning complete
 progress:
   total_phases: 9
   completed_phases: 7
   total_plans: 36
-  completed_plans: 32
-  percent: 89
+  completed_plans: 33
+  percent: 92
 ---
 
 # Project State
@@ -69,6 +69,8 @@ See: `.planning/PROJECT.md` (updated 2026-04-08)
 See PROJECT.md Key Decisions table for full history.
 
 - [Phase 56]: Extracted isHeadmanApiRequest into sw-runtime-cache.ts (pure module) for testability without SW context
+- [Phase 56]: Placeholder detail pages (Overview/Students/Subjects/Journal/Excuses/LateCheckin/Stats) are complete replacements for Wave 3, not extension targets
+- [Phase 56]: usePendingExcuses + usePendingLateCheckins use retry:false + catch-404 pattern per D-10 graceful degradation
 
 ### Key v9.0 Architecture Decisions
 
@@ -93,6 +95,6 @@ Phases 49 and 50 are CRITICAL-PATH and completed. Phases 51-55 (Blocks B and C) 
 
 ## Session Continuity
 
-Last session: 2026-04-13T09:34:08.258Z
-Stopped at: Completed 56-06-PLAN.md
+Last session: 2026-04-13T09:44:47.318Z
+Stopped at: Completed 56-02-PLAN.md
 Next action: /gsd-plan-phase 56

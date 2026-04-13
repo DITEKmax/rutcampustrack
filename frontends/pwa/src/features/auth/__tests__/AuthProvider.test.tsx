@@ -57,7 +57,7 @@ describe('AuthProvider', () => {
     })
 
     expect(result.current.isAuthenticated).toBe(true)
-    expect(result.current.user).toEqual({ id: 1, role: 'STUDENT', groupId: 5 })
+    expect(result.current.user).toEqual({ id: 1, role: 'STUDENT', groupId: 5, isHeadman: false })
   })
 
   it('after logout(), returns isAuthenticated=false and calls /auth/logout', async () => {

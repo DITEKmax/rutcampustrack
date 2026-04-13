@@ -14,6 +14,7 @@ export interface AuthUser {
   id: number
   role: string
   groupId?: number
+  isHeadman: boolean  // derived from JWT is_headman claim
 }
 
 export async function loginApi(credentials: LoginRequest): Promise<AccessTokenResponse> {

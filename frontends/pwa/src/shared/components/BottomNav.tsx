@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router'
 import { motion } from 'motion/react'
-import { House, Calendar, Fingerprint, User, type Icon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
+import { useTabs } from './useTabs'
 
 /**
  * RutCampusTrack — Bottom tab bar (brandbook §4.6, §5.4)
@@ -14,21 +14,14 @@ import { cn } from '@/lib/utils'
  * Backdrop blur + translucent surface so content scrolls *behind* the bar
  * instead of stopping at it. All colors flow from Transit Grid tokens via
  * the shadcn bridge configured in index.css.
+ *
+ * Tab list is role-aware: headman users (isHeadman=true) see a 5th "Группа"
+ * tab before "Профиль". Tab array is managed by useTabs() hook.
  */
-interface Tab {
-  to: string
-  icon: Icon
-  label: string
-}
-
-const tabs: Tab[] = [
-  { to: '/home', icon: House, label: 'Главная' },
-  { to: '/schedule', icon: Calendar, label: 'Расписание' },
-  { to: '/checkin', icon: Fingerprint, label: 'Отметка' },
-  { to: '/profile', icon: User, label: 'Профиль' },
-]
 
 export function BottomNav() {
+  const tabs = useTabs()
+
   return (
     <nav
       aria-label="Основная навигация"

@@ -24,7 +24,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-function parseJwt(token: string): { sub: string; role: string; groupId?: number } {
+function parseJwt(token: string): { sub: string; role: string; groupId?: number; is_headman?: boolean } {
   const base64Url = token.split('.')[1]
   const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
   const json = decodeURIComponent(
@@ -42,6 +42,7 @@ function tokenToUser(token: string): AuthUser {
     id: Number(payload.sub),
     role: payload.role,
     groupId: payload.groupId,
+    isHeadman: payload.is_headman ?? false,
   }
 }
 

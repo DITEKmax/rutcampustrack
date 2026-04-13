@@ -41,7 +41,9 @@ describe('UserDialogComponent', () => {
     const component = createComponent({ mode: 'create', groups: [] });
 
     expect(component.data.mode).toBe('create');
-    expect(component.form.get('displayName')!.value).toBe('');
+    expect(component.form.get('lastName')!.value).toBe('');
+    expect(component.form.get('firstName')!.value).toBe('');
+    expect(component.form.get('middleName')!.value).toBe('');
     expect(component.form.get('role')!.value).toBe('');
   });
 
@@ -49,7 +51,9 @@ describe('UserDialogComponent', () => {
     const user: UserResponse = {
       id: 1,
       login: 'student00001',
-      displayName: 'Иванов Иван',
+      lastName: 'Иванов',
+      firstName: 'Иван',
+      middleName: 'Иванович',
       role: 'student',
       status: 'active',
       groupId: 1,
@@ -61,7 +65,9 @@ describe('UserDialogComponent', () => {
 
     const component = createComponent({ mode: 'edit', user, groups: [] });
 
-    expect(component.form.get('displayName')!.value).toBe('Иванов Иван');
+    expect(component.form.get('lastName')!.value).toBe('Иванов');
+    expect(component.form.get('firstName')!.value).toBe('Иван');
+    expect(component.form.get('middleName')!.value).toBe('Иванович');
     expect(component.form.get('role')!.value).toBe('student');
     expect(component.form.get('role')!.disabled).toBe(true);
     expect(component.form.get('groupId')!.value).toBe(1);
@@ -72,7 +78,8 @@ describe('UserDialogComponent', () => {
     const component = createComponent({ mode: 'create', groups: [] });
 
     component.form.patchValue({
-      displayName: 'Петров Пётр',
+      lastName: 'Петров',
+      firstName: 'Пётр',
       role: 'student',
     });
 
@@ -81,14 +88,17 @@ describe('UserDialogComponent', () => {
     const req = httpMock.expectOne('/api/academic/users');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({
-      displayName: 'Петров Пётр',
+      lastName: 'Петров',
+      firstName: 'Пётр',
       role: 'student',
     });
 
     req.flush({
       id: 2,
       login: 'student00002',
-      displayName: 'Петров Пётр',
+      lastName: 'Петров',
+      firstName: 'Пётр',
+      middleName: null,
       role: 'student',
       status: 'active',
       groupId: null,
@@ -102,14 +112,14 @@ describe('UserDialogComponent', () => {
     expect(dialogRefSpy.close).toHaveBeenCalled();
   });
 
-  it('form validation prevents save when displayName is empty', () => {
+  it('form validation prevents save when lastName is empty', () => {
     const component = createComponent({ mode: 'create', groups: [] });
 
-    component.form.patchValue({ role: 'student' });
+    component.form.patchValue({ firstName: 'Пётр', role: 'student' });
     component.save();
 
     httpMock.expectNone('/api/academic/users');
-    expect(component.form.get('displayName')!.hasError('required')).toBe(true);
+    expect(component.form.get('lastName')!.hasError('required')).toBe(true);
   });
 
   it('isHeadman checkbox visible only when role is student', () => {

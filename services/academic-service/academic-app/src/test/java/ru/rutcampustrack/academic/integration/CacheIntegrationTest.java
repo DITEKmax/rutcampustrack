@@ -330,7 +330,7 @@ class CacheIntegrationTest extends AbstractAcademicCacheIntegrationTest {
         // Mutation: patchUser with isHeadman=false (student id=3 is currently headman=true)
         // triggers @CacheEvict(users, key=#id) AND programmatic eviction of groups::1
         // and group_members::1 (per D-10)
-        userService.patchUser(STUDENT_ID, new PatchUserRequest(null, false, null, null, null, null));
+        userService.patchUser(STUDENT_ID, new PatchUserRequest(null, null, null, false, null, null, null, null));
 
         // Both caches must be evicted (keys gone from Redis)
         assertThat(redisTemplate.hasKey(groupKey)).isFalse();

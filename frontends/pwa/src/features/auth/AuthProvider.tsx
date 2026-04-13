@@ -25,7 +25,11 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 function parseJwt(token: string): { sub: string; role: string; groupId?: number; is_headman?: boolean } {
-  const base64Url = token.split('.')[1]
+  const parts = token.split('.')
+  if (parts.length !== 3) {
+    throw new Error('Malformed JWT: expected 3 segments')
+  }
+  const base64Url = parts[1]
   const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
   const json = decodeURIComponent(
     atob(base64)
@@ -38,10 +42,14 @@ function parseJwt(token: string): { sub: string; role: string; groupId?: number;
 
 function tokenToUser(token: string): AuthUser {
   const payload = parseJwt(token)
+  const idNum = Number(payload.sub)
+  if (!Number.isFinite(idNum)) {
+    throw new Error('Invalid JWT: sub is not numeric')
+  }
   return {
-    id: Number(payload.sub),
+    id: idNum,
     role: payload.role,
-    groupId: payload.groupId,
+    groupId: typeof payload.groupId === 'number' ? payload.groupId : undefined,
     isHeadman: payload.is_headman ?? false,
   }
 }

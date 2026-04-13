@@ -11,21 +11,17 @@ export interface Tab {
 export function useTabs(): Tab[] {
   const { user } = useAuth()
   return useMemo(() => {
-    const baseTabs: Tab[] = [
+    // Per D-01: Главная → Расписание → Отметка → [Группа] → Профиль
+    // "Группа" is inserted before Профиль only for headmen.
+    const tabs: Tab[] = [
       { to: '/home', icon: House, label: 'Главная' },
       { to: '/schedule', icon: Calendar, label: 'Расписание' },
       { to: '/checkin', icon: Fingerprint, label: 'Отметка' },
+      ...(user?.isHeadman
+        ? [{ to: '/group', icon: Users, label: 'Группа' } as Tab]
+        : []),
       { to: '/profile', icon: User, label: 'Профиль' },
     ]
-    if (user?.isHeadman) {
-      // Insert Группа before Профиль (per D-01):
-      // Главная → Расписание → Отметка → Группа → Профиль
-      baseTabs.splice(baseTabs.length - 1, 0, {
-        to: '/group',
-        icon: Users,
-        label: 'Группа',
-      })
-    }
-    return baseTabs
+    return tabs
   }, [user?.isHeadman])
 }

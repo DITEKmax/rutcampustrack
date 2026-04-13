@@ -299,7 +299,7 @@ Plans:
 Plans:
 - [x] 56-01-PLAN.md — Auth isHeadman extension + BottomNav useTabs hook + PWAHeadmanRole test (PWA-HEAD-01, PWA-HEAD-03)
 - [x] 56-02-PLAN.md — headmanApi service module + types + GroupHub 7-card page + router with 8 lazy routes + placeholder detail pages (PWA-HEAD-02)
-- [ ] 56-03-PLAN.md — Overview + StudentsList + SubjectsList with assistant/subject CRUD modals (PWA-HEAD-02)
+- [x] 56-03-PLAN.md — Overview + StudentsList + SubjectsList with assistant/subject CRUD modals (PWA-HEAD-02)
 - [ ] 56-04-PLAN.md — SegmentedControl primitive + JournalStudentRow optimistic UI + JournalPage 2-step flow (PWA-HEAD-02)
 - [ ] 56-05-PLAN.md — Excuses/LateCheckin graceful-degradation + StatsPage per-subject cards with threshold editor (PWA-HEAD-02)
 - [x] 56-06-PLAN.md — sw.ts Workbox StaleWhileRevalidate for headman endpoints + URL matcher unit tests (PWA-HEAD-04)
@@ -346,5 +346,5 @@ Plans:
 | 53. Student Web Cabinet — Excuses + Late Check-in + PWA Install Banner | v9.0 | 4/4 | Complete   | 2026-04-09 |
 | 54. Headman Web Cabinet — Group Management + Subjects | v9.0 | 5/5 | Complete   | 2026-04-09 |
 | 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 5/5 | Complete   | 2026-04-09 |
-| 56. PWA Headman Mode | v9.0 | 3/6 | In Progress|  |
+| 56. PWA Headman Mode | v9.0 | 4/6 | In Progress|  |
 | 57. Landing Presentation Mode + Documentation | v9.0 | 0/TBD | Not started | - |

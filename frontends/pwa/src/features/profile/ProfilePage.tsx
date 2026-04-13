@@ -1,10 +1,18 @@
 import { useState } from 'react'
-import { SignOut, Student, Shield, ChalkboardTeacher } from '@phosphor-icons/react'
+import { SignOut, Student, Shield, ChalkboardTeacher, DownloadSimple } from '@phosphor-icons/react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { PushPermissionCard } from '@/features/push/PushPermissionCard'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
+import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt'
+
+// Кнопка установки показывается только на Android. iOS использует IOSOnboardingOverlay,
+// а десктоп уже имеет нативную иконку «Установить» в адресной строке.
+function isAndroid(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /android/i.test(navigator.userAgent)
+}
 
 /**
  * Profile page — identity card, notifications, and logout.
@@ -19,6 +27,8 @@ export default function ProfilePage() {
   const { logout, user } = useAuth()
   const [showConfirm, setShowConfirm] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const { canInstall, triggerInstall } = useInstallPrompt()
+  const showInstallButton = isAndroid() && canInstall
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -122,6 +132,36 @@ export default function ProfilePage() {
 
       {/* Notifications */}
       <PushPermissionCard />
+
+      {/* Install PWA (Android only — iOS uses IOSOnboardingOverlay, desktop uses native browser UI) */}
+      {showInstallButton && (
+        <section
+          className="flex flex-col gap-3 rounded-2xl border p-4"
+          style={{
+            background: 'var(--bg-secondary)',
+            borderColor: 'var(--border-subtle)',
+          }}
+        >
+          <div className="flex flex-col gap-1">
+            <p
+              className="text-sm font-semibold"
+              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
+            >
+              Установить приложение
+            </p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              Добавьте RutTrack на главный экран — открывается как обычное приложение, без браузерной строки.
+            </p>
+          </div>
+          <Button
+            className={cn('min-h-[48px] w-full gap-2 text-sm font-semibold')}
+            onClick={() => triggerInstall()}
+          >
+            <DownloadSimple size={18} weight="bold" aria-hidden="true" />
+            Установить RutTrack
+          </Button>
+        </section>
+      )}
 
       {/* Logout */}
       <section className="flex flex-col gap-3">

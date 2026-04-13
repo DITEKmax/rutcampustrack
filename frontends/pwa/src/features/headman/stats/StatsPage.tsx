@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useReducer } from 'react'
 import { Link } from 'react-router'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { useAuth } from '@/features/auth/AuthProvider'
@@ -68,22 +68,13 @@ function computeStudentStats(cells: JournalCell[]): {
   return { studentRows, groupPercent }
 }
 
-interface SubjectRowProps {
-  subject: Subject
-  groupId: number
-  dateFrom: string
-  dateTo: string
-  statsSink: (stats: SubjectStats) => void
-}
-
 interface SubjectStats {
   subjectId: number
+  subjectName: string
   groupPercent: number
   threshold: number
   studentRows: Array<{ studentId: number; studentName: string; attendancePercent: number }>
   isRedZone: boolean
-  subjectName: string
-  isLoading: boolean
 }
 
 /**
@@ -103,94 +94,93 @@ function sortSubjectsBySeverity(list: SubjectStats[]): SubjectStats[] {
   })
 }
 
-/**
- * Internal data-loader wrapper. Keeps hook order stable per subject by being a
- * distinct component instance. Computes stats + reports them up to parent for
- * global sorting via the `statsSink` callback.
- */
-function SubjectRow({ subject, groupId, dateFrom, dateTo }: SubjectRowProps) {
-  const journalQuery = useJournal(groupId, subject.id, dateFrom, dateTo)
-  const thresholdQuery = useResolveThreshold(groupId, subject.id)
+// ── Stats collection via reducer ─────────────────────────────────────────────
+// Each SubjectStatsCollector instance owns ONE pair of hooks (useJournal +
+// useResolveThreshold) — hook order is stable per component instance, which
+// fixes the Rules-of-Hooks violation from the previous loop-based impl.
 
-  const cells = journalQuery.data ?? []
-  const threshold = thresholdQuery.data?.minPercentage ?? DEFAULT_THRESHOLD
-  const { studentRows, groupPercent } = useMemo(() => computeStudentStats(cells), [cells])
+type StatsAction =
+  | { type: 'set'; subjectId: number; stats: SubjectStats }
+  | { type: 'prune'; keep: Set<number> }
 
-  return (
-    <SubjectStatsCard
-      subjectId={subject.id}
-      groupId={groupId}
-      subjectName={subject.name}
-      groupAttendancePercent={groupPercent}
-      threshold={threshold}
-      studentRows={studentRows}
-    />
-  )
+function statsReducer(
+  state: Record<number, SubjectStats>,
+  action: StatsAction,
+): Record<number, SubjectStats> {
+  switch (action.type) {
+    case 'set': {
+      const prev = state[action.subjectId]
+      if (
+        prev &&
+        prev.groupPercent === action.stats.groupPercent &&
+        prev.threshold === action.stats.threshold &&
+        prev.isRedZone === action.stats.isRedZone &&
+        prev.studentRows.length === action.stats.studentRows.length &&
+        prev.subjectName === action.stats.subjectName
+      ) {
+        return state
+      }
+      return { ...state, [action.subjectId]: action.stats }
+    }
+    case 'prune': {
+      const next: Record<number, SubjectStats> = {}
+      let changed = false
+      for (const [k, v] of Object.entries(state)) {
+        if (action.keep.has(Number(k))) {
+          next[Number(k)] = v
+        } else {
+          changed = true
+        }
+      }
+      return changed ? next : state
+    }
+    default:
+      return state
+  }
 }
 
-/**
- * Two-pass render: first compute stats per subject (each in its own hook-calling
- * child), then render sorted. To keep hook order stable we always call
- * `useJournal`/`useResolveThreshold` for every subject, so we introduce a
- * "planner" subcomponent that computes stats + queues a sorted render below.
- *
- * Practical approach: since hook order per child component is fixed, we can
- * compute and sort entirely from `subjects` + per-child queries using a tiny
- * "collector" pattern implemented with a stable helper that calls hooks in a
- * loop driven by the `subjects` array length (React's Rules of Hooks allow
- * this as long as order does not change within a render). We do this via an
- * internal `SubjectStatsCollector` that calls hooks for every subject and
- * returns the sorted stats array.
- */
-function SubjectStatsCollector({
-  subjects,
-  groupId,
-  dateFrom,
-  dateTo,
-}: {
-  subjects: Subject[]
+interface CollectorProps {
+  subject: Subject
   groupId: number
   dateFrom: string
   dateTo: string
-}) {
-  // Call hooks in a stable order driven by `subjects` length.
-  const stats: SubjectStats[] = []
-  for (const subject of subjects) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const journal = useJournal(groupId, subject.id, dateFrom, dateTo)
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const thr = useResolveThreshold(groupId, subject.id)
-    const cells = journal.data ?? []
-    const threshold = thr.data?.minPercentage ?? DEFAULT_THRESHOLD
-    const { studentRows, groupPercent } = computeStudentStats(cells)
-    stats.push({
+  onStats: (stats: SubjectStats) => void
+}
+
+/**
+ * Headless data-loader: calls both per-subject hooks (stable order, one
+ * instance per subject) and reports computed stats upward via onStats. Does
+ * not render any UI — the parent renders sorted cards.
+ */
+function SubjectStatsCollector({
+  subject,
+  groupId,
+  dateFrom,
+  dateTo,
+  onStats,
+}: CollectorProps) {
+  const journal = useJournal(groupId, subject.id, dateFrom, dateTo)
+  const thr = useResolveThreshold(groupId, subject.id)
+
+  const cells = journal.data ?? []
+  const threshold = thr.data?.minPercentage ?? DEFAULT_THRESHOLD
+  const { studentRows, groupPercent } = useMemo(
+    () => computeStudentStats(cells),
+    [cells],
+  )
+
+  useEffect(() => {
+    onStats({
       subjectId: subject.id,
       subjectName: subject.name,
       groupPercent,
       threshold,
       studentRows,
       isRedZone: groupPercent < threshold,
-      isLoading: journal.isLoading || thr.isLoading,
     })
-  }
+  }, [onStats, subject.id, subject.name, groupPercent, threshold, studentRows])
 
-  const sorted = sortSubjectsBySeverity(stats)
-
-  return (
-    <>
-      {sorted.map((s) => (
-        <SubjectStatsCard
-          key={s.subjectId}
-          subjectId={s.subjectId}
-          groupId={groupId}
-          subjectName={s.subjectName}
-          groupAttendancePercent={s.groupPercent}
-          threshold={s.threshold}
-          studentRows={s.studentRows}
-        />
-      ))}
-    </>
-  )
+  return null
 }
 
 export function StatsPage() {
@@ -199,6 +189,21 @@ export function StatsPage() {
   const subjectsQuery = useGroupSubjects()
   const semesterStart = useMemo(computeSemesterStart, [])
   const semesterEnd = useMemo(todayIso, [])
+
+  const [statsBySubject, dispatch] = useReducer(statsReducer, {})
+
+  const subjects = subjectsQuery.data ?? []
+
+  // Prune entries for subjects that no longer exist (after delete).
+  useEffect(() => {
+    const keep = new Set(subjects.map((s) => s.id))
+    dispatch({ type: 'prune', keep })
+  }, [subjects])
+
+  const handleStats = useMemo(
+    () => (stats: SubjectStats) => dispatch({ type: 'set', subjectId: stats.subjectId, stats }),
+    [],
+  )
 
   if (!groupId) {
     return (
@@ -232,7 +237,6 @@ export function StatsPage() {
     )
   }
 
-  const subjects = subjectsQuery.data ?? []
   if (subjects.length === 0) {
     return (
       <div className="p-6">
@@ -250,21 +254,42 @@ export function StatsPage() {
     )
   }
 
+  const sorted = sortSubjectsBySeverity(
+    subjects
+      .map((s) => statsBySubject[s.id])
+      .filter((x): x is SubjectStats => Boolean(x)),
+  )
+
   return (
     <div className="p-6">
       <Link to="/group" aria-label="Назад" className="inline-flex items-center gap-2 mb-4">
         <ArrowLeft size={20} /> Назад
       </Link>
       <h1 className="text-lg font-semibold mb-4">Статистика</h1>
-      <SubjectStatsCollector
-        subjects={subjects}
-        groupId={groupId}
-        dateFrom={semesterStart}
-        dateTo={semesterEnd}
-      />
+
+      {/* Headless collectors — one per subject, stable hook order. */}
+      {subjects.map((s) => (
+        <SubjectStatsCollector
+          key={s.id}
+          subject={s}
+          groupId={groupId}
+          dateFrom={semesterStart}
+          dateTo={semesterEnd}
+          onStats={handleStats}
+        />
+      ))}
+
+      {sorted.map((s) => (
+        <SubjectStatsCard
+          key={s.subjectId}
+          subjectId={s.subjectId}
+          groupId={groupId}
+          subjectName={s.subjectName}
+          groupAttendancePercent={s.groupPercent}
+          threshold={s.threshold}
+          studentRows={s.studentRows}
+        />
+      ))}
     </div>
   )
 }
-
-// Suppress unused warning for SubjectRow (kept for future per-row refactor)
-void SubjectRow

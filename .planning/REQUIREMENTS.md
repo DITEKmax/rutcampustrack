@@ -60,7 +60,7 @@ Requirements for v9.0 Frontend Unification milestone. Each maps to roadmap phase
 - [ ] **PWA-HEAD-01**: React PWA detects `is_headman=true` claim in JWT and renders an additional "Группа" tab in BottomNav after the existing 4 student tabs
 - [ ] **PWA-HEAD-02**: All headman web cabinet features (HEAD-WEB-02..HEAD-WEB-08) are available in PWA with mobile-first UI (React + Framer Motion, matches existing PWA patterns)
 - [ ] **PWA-HEAD-03**: Existing 63 PWA vitest tests continue to pass after HEADMAN feature addition
-- [ ] **PWA-HEAD-04**: PWA Service Worker cache strategy extended to cover headman endpoints (read-through cache for group members, teachers, subjects)
+- [x] **PWA-HEAD-04**: PWA Service Worker cache strategy extended to cover headman endpoints (read-through cache for group members, teachers, subjects)
 
 ### Landing (Presentation Mode)
 
@@ -161,7 +161,7 @@ Which phases cover which requirements.
 | PWA-HEAD-01 | Phase 56 | Pending |
 | PWA-HEAD-02 | Phase 56 | Pending |
 | PWA-HEAD-03 | Phase 56 | Pending |
-| PWA-HEAD-04 | Phase 56 | Pending |
+| PWA-HEAD-04 | Phase 56 | Complete |
 | LAND-v9-01 | Phase 49 | Pending |
 | LAND-v9-02 | Phase 57 | Pending |
 | LAND-v9-03 | Phase 49 | Pending |

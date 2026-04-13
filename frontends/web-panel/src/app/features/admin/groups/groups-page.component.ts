@@ -15,7 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin } from 'rxjs';
 
 import { AdminApiService } from '../shared/admin-api.service';
-import type { GroupResponse, UserResponse } from '../shared/types';
+import { fullName, type GroupResponse, type UserResponse } from '../shared/types';
 import { GroupDialogComponent, GroupDialogData } from './group-dialog/group-dialog.component';
 import { AssignHeadmanDialogComponent } from './assign-headman-dialog/assign-headman-dialog.component';
 import { RevokeHeadmanDialogComponent } from './revoke-headman-dialog/revoke-headman-dialog.component';
@@ -51,6 +51,11 @@ export class GroupsPageComponent implements OnInit {
 
   groupHeadman(groupId: number): UserResponse | undefined {
     return this.allStudents().find(u => u.groupId === groupId && u.headman === true);
+  }
+
+  groupHeadmanName(groupId: number): string {
+    const h = this.groupHeadman(groupId);
+    return h ? fullName(h) : 'Не назначен';
   }
 
   groupStudentCount(groupId: number): number {

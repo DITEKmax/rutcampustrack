@@ -45,7 +45,7 @@
 
         <ng-container matColumnDef="headman">
           <mat-header-cell *matHeaderCellDef>Староста</mat-header-cell>
-          <mat-cell *matCellDef="let group">{{ groupHeadman(group.id)?.displayName ?? 'Не назначен' }}</mat-cell>
+          <mat-cell *matCellDef="let group">{{ groupHeadmanName(group.id) }}</mat-cell>
         </ng-container>
 
         <ng-container matColumnDef="studentCount">

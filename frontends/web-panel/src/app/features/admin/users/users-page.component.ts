@@ -1,5 +1,6 @@
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -47,6 +48,8 @@ export class UsersPageComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly users = signal<UserResponse[]>([]);
   readonly loading = signal(false);
@@ -67,7 +70,29 @@ export class UsersPageComponent implements OnInit {
       next: groups => this.groups.set(groups),
     });
 
+    // Pre-apply filters and trigger the create dialog from query params (BUG-005 dashboard links).
+    const snapshot = this.route.snapshot.queryParamMap;
+    const initialRole = snapshot.get('role');
+    const initialStatus = snapshot.get('status');
+    const initialAction = snapshot.get('action');
+    if (initialRole) this.roleFilter.set(initialRole);
+    if (initialStatus) this.statusFilter.set(initialStatus);
+
     this.loadUsers();
+
+    if (initialAction === 'create') {
+      // Defer to next microtask so the dialog opens after the page settles.
+      queueMicrotask(() => {
+        this.openCreateDialog(initialRole ?? undefined);
+        // Strip the action param so refresh/back doesn't reopen the dialog.
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { action: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      });
+    }
 
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
@@ -125,10 +150,10 @@ export class UsersPageComponent implements OnInit {
     return this.groups().find(g => g.id === groupId)?.name ?? '—';
   }
 
-  openCreateDialog(): void {
+  openCreateDialog(presetRole?: string): void {
     const dialogRef = this.dialog.open(UserDialogComponent, {
       width: '520px',
-      data: { mode: 'create' as const, groups: this.groups() },
+      data: { mode: 'create' as const, groups: this.groups(), presetRole },
     });
 
     dialogRef.afterClosed().subscribe(result => {

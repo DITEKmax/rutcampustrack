@@ -19,37 +19,45 @@
     </div>
   </header>
 
-  <!-- Stat grid -->
+  <!-- Stat grid (clickable — BUG-005) -->
   <div class="dashboard__grid">
-    <app-stat-card
-      accent="primary"
-      icon="ph-duotone ph-students"
-      [value]="stats()?.totalStudents ?? 0"
-      label="Студентов"
-      [loading]="loading()"
-    />
-    <app-stat-card
-      accent="secondary"
-      icon="ph-duotone ph-chalkboard-teacher"
-      [value]="stats()?.totalTeachers ?? 0"
-      label="Преподавателей"
-      [loading]="loading()"
-    />
-    <app-stat-card
-      accent="warning"
-      icon="ph-duotone ph-users-three"
-      [value]="stats()?.totalGroups ?? 0"
-      label="Групп всего"
-      [loading]="loading()"
-    />
-    <app-stat-card
-      accent="info"
-      icon="ph-duotone ph-buildings"
-      [value]="stats()?.activeGroups ?? 0"
-      label="Активных групп"
-      suffix="{{ activeGroupsPct() ? activeGroupsPct() + '%' : '' }}"
-      [loading]="loading()"
-    />
+    <a routerLink="/admin/users" [queryParams]="{ role: 'student' }" class="dashboard__stat-link" aria-label="Перейти к управлению студентами">
+      <app-stat-card
+        accent="primary"
+        icon="ph-duotone ph-students"
+        [value]="stats()?.totalStudents ?? 0"
+        label="Студентов"
+        [loading]="loading()"
+      />
+    </a>
+    <a routerLink="/admin/users" [queryParams]="{ role: 'teacher' }" class="dashboard__stat-link" aria-label="Перейти к управлению преподавателями">
+      <app-stat-card
+        accent="secondary"
+        icon="ph-duotone ph-chalkboard-teacher"
+        [value]="stats()?.totalTeachers ?? 0"
+        label="Преподавателей"
+        [loading]="loading()"
+      />
+    </a>
+    <a routerLink="/admin/groups" class="dashboard__stat-link" aria-label="Перейти к группам">
+      <app-stat-card
+        accent="warning"
+        icon="ph-duotone ph-users-three"
+        [value]="stats()?.totalGroups ?? 0"
+        label="Групп всего"
+        [loading]="loading()"
+      />
+    </a>
+    <a routerLink="/admin/groups" [queryParams]="{ status: 'active' }" class="dashboard__stat-link" aria-label="Перейти к активным группам">
+      <app-stat-card
+        accent="info"
+        icon="ph-duotone ph-buildings"
+        [value]="stats()?.activeGroups ?? 0"
+        label="Активных групп"
+        suffix="{{ activeGroupsPct() ? activeGroupsPct() + '%' : '' }}"
+        [loading]="loading()"
+      />
+    </a>
   </div>
 
   @if (error()) {
@@ -67,35 +75,35 @@
     </div>
 
     <div class="dashboard__actions">
-      <a routerLink="/admin/users" class="action-card" data-accent="primary">
+      <a routerLink="/admin/users" [queryParams]="{ action: 'create', role: 'teacher' }" class="action-card" data-accent="secondary">
         <div class="action-card__icon" aria-hidden="true">
-          <i class="ph-duotone ph-users"></i>
+          <i class="ph-duotone ph-chalkboard-teacher"></i>
         </div>
         <div class="action-card__body">
-          <h4 class="action-card__title">Пользователи</h4>
-          <p class="action-card__text">Создать, редактировать, архивировать учётные записи</p>
+          <h4 class="action-card__title">Создать преподавателя</h4>
+          <p class="action-card__text">Новая учётная запись преподавателя</p>
         </div>
         <i class="ph ph-arrow-right action-card__arrow" aria-hidden="true"></i>
       </a>
 
-      <a routerLink="/admin/groups" class="action-card" data-accent="warning">
+      <a routerLink="/admin/users" [queryParams]="{ action: 'create', role: 'student' }" class="action-card" data-accent="primary">
+        <div class="action-card__icon" aria-hidden="true">
+          <i class="ph-duotone ph-student"></i>
+        </div>
+        <div class="action-card__body">
+          <h4 class="action-card__title">Создать студента</h4>
+          <p class="action-card__text">Новая учётная запись студента с привязкой к группе</p>
+        </div>
+        <i class="ph ph-arrow-right action-card__arrow" aria-hidden="true"></i>
+      </a>
+
+      <a routerLink="/admin/groups" [queryParams]="{ action: 'create' }" class="action-card" data-accent="warning">
         <div class="action-card__icon" aria-hidden="true">
           <i class="ph-duotone ph-users-three"></i>
         </div>
         <div class="action-card__body">
-          <h4 class="action-card__title">Группы</h4>
-          <p class="action-card__text">Учебные группы и их состав</p>
-        </div>
-        <i class="ph ph-arrow-right action-card__arrow" aria-hidden="true"></i>
-      </a>
-
-      <a routerLink="/admin/semesters" class="action-card" data-accent="info">
-        <div class="action-card__icon" aria-hidden="true">
-          <i class="ph-duotone ph-calendar"></i>
-        </div>
-        <div class="action-card__body">
-          <h4 class="action-card__title">Семестры</h4>
-          <p class="action-card__text">Расписание учебных периодов</p>
+          <h4 class="action-card__title">Создать группу</h4>
+          <p class="action-card__text">Новая учебная группа</p>
         </div>
         <i class="ph ph-arrow-right action-card__arrow" aria-hidden="true"></i>
       </a>

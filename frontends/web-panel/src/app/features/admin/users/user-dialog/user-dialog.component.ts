@@ -22,6 +22,8 @@ export interface UserDialogData {
   mode: 'create' | 'edit';
   user?: UserResponse;
   groups: GroupResponse[];
+  /** Optional preselected role when opened via dashboard quick action (BUG-005). */
+  presetRole?: string;
 }
 
 @Component({
@@ -73,6 +75,11 @@ export class UserDialogComponent {
         employeeNumber: u.employeeNumber ?? '',
       });
       this.form.get('role')!.disable();
+    } else if (this.data.mode === 'create' && this.data.presetRole) {
+      const allowed: UserRole[] = ['student', 'teacher', 'admin'];
+      if ((allowed as string[]).includes(this.data.presetRole)) {
+        this.form.patchValue({ role: this.data.presetRole as UserRole });
+      }
     }
   }
 

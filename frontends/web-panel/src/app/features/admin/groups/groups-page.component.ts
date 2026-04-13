@@ -4,6 +4,7 @@
 // the backend is updated to allow ADMIN role access to assistant management endpoints.
 
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,6 +38,8 @@ export class GroupsPageComponent implements OnInit {
   private readonly adminApi = inject(AdminApiService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   groups = signal<GroupResponse[]>([]);
   allStudents = signal<UserResponse[]>([]);
@@ -47,6 +50,19 @@ export class GroupsPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.reload();
+
+    // Open create dialog when navigated with ?action=create (BUG-005 dashboard quick action).
+    if (this.route.snapshot.queryParamMap.get('action') === 'create') {
+      queueMicrotask(() => {
+        this.openCreateDialog();
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { action: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      });
+    }
   }
 
   groupHeadman(groupId: number): UserResponse | undefined {

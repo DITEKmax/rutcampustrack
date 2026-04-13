@@ -11,8 +11,29 @@ RutCampusTrack — микросервисная система учёта пос
 - **v3.0**: ЗАВЕРШЕНА (Schedule Service) — фазы 10-14, 55 тестов
 - **v4.0**: ЗАВЕРШЕНА (Attendance Service) — фазы 15-19, ~95 тестов
 - **v5.0**: ЗАВЕРШЕНА (Notification Service — Web + Bot) — фазы 20-26, ~128 тестов (20 Java + 108 Python)
-- **v6.0**: В РАБОТЕ (PWA + Web Push) — фазы 27-32, завершены 27-30 (4/6)
+- **v6.0**: ЗАВЕРШЕНА (PWA + Web Push) — фазы 27-32
+- **v7.0**: ЗАВЕРШЕНА (Frontends — Mini App, Web Panel, Landing) — фазы 33-40
+- **v8.0**: ЗАВЕРШЕНА (CI/CD, Deployment & Documentation) — фазы 41-48
+- **v9.0**: В РАБОТЕ (Frontend Unification — Single Login & Role-Based Web Clients) — фазы 49-57, завершается фазой 57
 - Полный план: `.planning/ROADMAP.md`, отчёты: `docs/phase-{N}-report.md`
+
+### URL Layout (v9.0)
+
+Production reverse-proxy nginx на `https://ruttrack.site`:
+
+| Путь | Обслуживает | Назначение |
+|------|-------------|------------|
+| `/` | 301 → `/login` | INFRA-v9-01 — единая точка входа |
+| `/login` | web-panel (Angular SPA, baseHref `/`) | AUTH-v9-01 |
+| `/admin/*` | web-panel lazy feature | роль ADMIN |
+| `/teacher/*` | web-panel lazy feature | роль TEACHER |
+| `/student/*` | web-panel lazy feature | роль STUDENT (включая headman) |
+| `/headman/*` | web-panel lazy feature | STUDENT + `is_headman=true` |
+| `/app/` | PWA (React + Vite) | INFRA-v9-03 — мобильный клиент |
+| `/presentation/` | Landing (static HTML) | INFRA-v9-02 — описание проекта |
+| `/api/*` | API Gateway (proxy pass) | backend REST + STOMP WebSocket |
+
+Полная таблица: `docs/url-layout.md`.
 
 ## Архитектура (кратко)
 

@@ -14,8 +14,7 @@
   isolation: isolate;
 }
 
-/* Subtle animated brand gradient backdrop (BUG-003).
-   Uses brand palette tokens; respects prefers-reduced-motion below. */
+/* Animated brand gradient backdrop (BUG-003) — respects reduced-motion. */
 .login-page::before {
   content: '';
   position: absolute;
@@ -26,15 +25,13 @@
     radial-gradient(40% 40% at 80% 70%, color-mix(in oklab, var(--accent-secondary) 22%, transparent) 0%, transparent 70%),
     radial-gradient(35% 35% at 60% 20%, color-mix(in oklab, var(--accent-info, var(--accent-secondary)) 18%, transparent) 0%, transparent 70%);
   filter: blur(40px);
-  animation: login-bg-drift 18s ease-in-out infinite alternate;
+  animation: login-bg 18s ease-in-out infinite alternate;
 }
-
-@keyframes login-bg-drift {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  50%  { transform: translate3d(2%, -3%, 0) scale(1.05); }
-  100% { transform: translate3d(-2%, 3%, 0) scale(1.02); }
+@keyframes login-bg {
+  0% { transform: translate3d(0,0,0) scale(1); }
+  50% { transform: translate3d(2%,-3%,0) scale(1.05); }
+  100% { transform: translate3d(-2%,3%,0) scale(1.02); }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .login-page::before { animation: none; }
 }

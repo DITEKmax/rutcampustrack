@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.contract.api.GroupApi;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
+import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.entity.Group;
@@ -19,6 +21,7 @@ import ru.rutcampustrack.academic.user.UserAssembler;
 
 import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 import static ru.rutcampustrack.academic.contract.enums.UserRole.STUDENT;
+import static ru.rutcampustrack.academic.contract.enums.UserRole.TEACHER;
 
 /**
  * REST controller implementing GroupApi contract.
@@ -30,13 +33,16 @@ public class GroupController implements GroupApi {
     private final GroupService groupService;
     private final GroupAssembler groupAssembler;
     private final UserAssembler userAssembler;
+    private final GroupPromotionService promotionService;
 
     public GroupController(GroupService groupService,
                            GroupAssembler groupAssembler,
-                           UserAssembler userAssembler) {
+                           UserAssembler userAssembler,
+                           GroupPromotionService promotionService) {
         this.groupService = groupService;
         this.groupAssembler = groupAssembler;
         this.userAssembler = userAssembler;
+        this.promotionService = promotionService;
     }
 
     @Override
@@ -75,6 +81,31 @@ public class GroupController implements GroupApi {
     public ResponseEntity<Void> deleteGroup(Long id) {
         groupService.deleteGroup(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @RequireRole({ADMIN, TEACHER})
+    public ResponseEntity<PagedModel<EntityModel<GroupResponse>>> listGroupsByStatus(
+            GroupStatus status,
+            String search,
+            org.springframework.data.domain.Pageable pageable,
+            PagedResourcesAssembler<GroupResponse> assembler) {
+        Page<Group> page = groupService.listGroups(status, search, pageable);
+        Page<GroupResponse> responsePage = page.map(groupAssembler::toResponse);
+        return ResponseEntity.ok(assembler.toModel(responsePage,
+                response -> EntityModel.of(response)));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<PromotionSummary> promotePreview() {
+        return ResponseEntity.ok(promotionService.preview());
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<PromotionSummary> promote() {
+        return ResponseEntity.ok(promotionService.execute());
     }
 
     @Override

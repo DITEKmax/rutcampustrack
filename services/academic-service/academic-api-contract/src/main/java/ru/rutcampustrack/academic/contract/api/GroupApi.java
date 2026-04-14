@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
+import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
+import ru.rutcampustrack.academic.contract.dto.group.PromotionSummary;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 
@@ -56,6 +58,44 @@ public interface GroupApi {
             @RequestParam(required = false) Boolean active,
             Pageable pageable,
             PagedResourcesAssembler<GroupResponse> assembler);
+
+    /**
+     * 58-06 / BUG-006-6: Список групп с фильтром по жизненному циклу и поиском по имени.
+     *
+     * <p>{@code status=ACTIVE} по умолчанию; {@code search} — ILIKE по name.
+     */
+    @Operation(summary = "Список групп: фильтр по статусу + поиск (ADMIN/TEACHER)")
+    @ApiResponse(responseCode = "200", description = "Список групп")
+    @GetMapping(params = "status")
+    ResponseEntity<PagedModel<EntityModel<GroupResponse>>> listGroupsByStatus(
+            @RequestParam(defaultValue = "ACTIVE") GroupStatus status,
+            @RequestParam(required = false) String search,
+            Pageable pageable,
+            PagedResourcesAssembler<GroupResponse> assembler);
+
+    /**
+     * 58-06 / BUG-006-6: Dry-run промоушена групп. Возвращает {@link PromotionSummary}
+     * с планом (toPromote / toArchive / conflicts), без изменений в БД. ADMIN-only.
+     */
+    @Operation(summary = "Preview промоушена групп (dry-run, ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "План промоушена"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+    })
+    @PostMapping("/promote/preview")
+    ResponseEntity<PromotionSummary> promotePreview();
+
+    /**
+     * 58-06 / BUG-006-6: Выполнить промоушен. Применяет план (per-prefix),
+     * публикует {@code group.renamed} и {@code group.archived} события.
+     */
+    @Operation(summary = "Выполнить промоушен групп (ADMIN). Запускать после preview.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Результат промоушена"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+    })
+    @PostMapping("/promote")
+    ResponseEntity<PromotionSummary> promote();
 
     @Operation(summary = "Полное обновление группы (PUT, ADMIN)")
     @ApiResponses({

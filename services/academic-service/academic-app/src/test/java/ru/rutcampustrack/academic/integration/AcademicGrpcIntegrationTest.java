@@ -126,7 +126,7 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         GroupResponse response = stub.getGroup(request);
 
         assertThat(response.getId()).isEqualTo(GROUP_ID);
-        assertThat(response.getName()).isEqualTo("IVT-21-1");
+        assertThat(response.getName()).isEqualTo("ИВТ-211");
         // 58-04: поле code удалено из GroupResponse (proto reserved 3).
         assertThat(response.getIsActive()).isTrue();
     }
@@ -208,7 +208,7 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
 
         assertThat(response.getSubjectsList()).isNotEmpty();
         assertThat(response.getSubjectsList().get(0).getSubjectName()).isEqualTo("Algorithms");
-        assertThat(response.getSubjectsList().get(0).getGroupName()).isEqualTo("IVT-21-1");
+        assertThat(response.getSubjectsList().get(0).getGroupName()).isEqualTo("ИВТ-211");
         assertThat(response.getSubjectsList().get(0).getSubjectType()).isEqualTo("lecture");
         assertThat(response.getSubjectsList().get(0).getGroupId()).isEqualTo(GROUP_ID);
     }
@@ -391,7 +391,7 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         assertThat(response.getDisplayName()).isEqualTo("Bot TestStudent");
         assertThat(response.getRole()).isEqualTo("student");
         assertThat(response.getGroupId()).isEqualTo(GROUP_ID);
-        assertThat(response.getGroupName()).isEqualTo("IVT-21-1");
+        assertThat(response.getGroupName()).isEqualTo("ИВТ-211");
         assertThat(response.getIsHeadman()).isFalse();
         assertThat(response.getTelegramId()).isEqualTo(987654321L);
         // IMP-11: initial_password no longer returned via gRPC — always empty

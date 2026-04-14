@@ -58,7 +58,12 @@ public final class UserSpecifications {
         };
     }
 
-    /** Exact match по роли. Null → без ограничений. */
+    /**
+     * Exact match по роли. Null → без ограничений.
+     *
+     * <p>PG enum {@code user_role = varchar} поддерживается через операторы в
+     * миграции V11 (CREATE OPERATOR для каждого enum-типа).
+     */
     public static Specification<User> matchesRole(UserRole role) {
         if (role == null) {
             return null;
@@ -66,7 +71,7 @@ public final class UserSpecifications {
         return (root, query, cb) -> cb.equal(root.get("role"), role);
     }
 
-    /** Exact match по статусу. Null → без ограничений. */
+    /** Exact match по статусу. Null → без ограничений. См. {@link #matchesRole} про V11. */
     public static Specification<User> matchesStatus(AccountStatus status) {
         if (status == null) {
             return null;

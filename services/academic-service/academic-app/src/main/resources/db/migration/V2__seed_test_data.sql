@@ -5,7 +5,7 @@
 
 -- Test group
 INSERT INTO groups (name, code, is_active)
-VALUES ('IVT-21-1', 'ivt-21-1', true);
+VALUES ('ИВТ-211', NULL, true);
 
 -- Test semester
 INSERT INTO semesters (name, date_from, date_to, is_active)

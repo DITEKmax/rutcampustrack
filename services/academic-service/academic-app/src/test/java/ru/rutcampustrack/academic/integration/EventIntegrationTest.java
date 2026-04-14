@@ -219,13 +219,22 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
         String queueName = bindTempQueue();
 
         // 58-04: UpdateGroupRequest(name, active). Новое имя должно матчить активный паттерн.
+        // 58-07: при изменении name публикуются ДВА события: group.renamed + group.updated.
+        // Читаем очередь до тех пор, пока не встретим group.updated.
         groupService.updateGroup(groupA.getId(),
                 new UpdateGroupRequest("Тна-" + String.format("%03d", (int) (System.nanoTime() % 1000)), true));
 
-        Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
-        assertThat(message).isNotNull();
+        JsonNode root = null;
+        for (int i = 0; i < 3 && root == null; i++) {
+            Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
+            assertThat(message).isNotNull();
+            JsonNode candidate = objectMapper.readTree(message.getBody());
+            if ("group.updated".equals(candidate.get("event_type").asText())) {
+                root = candidate;
+            }
+        }
+        assertThat(root).as("expected group.updated event to be published").isNotNull();
 
-        JsonNode root = objectMapper.readTree(message.getBody());
         assertThat(root.get("event_type").asText()).isEqualTo("group.updated");
         assertThat(root.get("event_id").asText()).matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
         assertThat(root.get("occurred_at")).isNotNull();

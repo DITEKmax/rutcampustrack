@@ -45,7 +45,9 @@ async def test_start_known_user_first_login():
         )
     )
 
-    await cmd_start(message, academic_client=academic_client)
+    prefs_client = MagicMock()
+    prefs_client.is_enabled = AsyncMock(return_value=True)
+    await cmd_start(message, academic_client=academic_client, prefs_client=prefs_client)
 
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
@@ -69,7 +71,9 @@ async def test_start_known_user_password_changed():
         )
     )
 
-    await cmd_start(message, academic_client=academic_client)
+    prefs_client = MagicMock()
+    prefs_client.is_enabled = AsyncMock(return_value=True)
+    await cmd_start(message, academic_client=academic_client, prefs_client=prefs_client)
 
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
@@ -85,7 +89,9 @@ async def test_start_unknown_user():
     academic_client = MagicMock()
     academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(found=False))
 
-    await cmd_start(message, academic_client=academic_client)
+    prefs_client = MagicMock()
+    prefs_client.is_enabled = AsyncMock(return_value=True)
+    await cmd_start(message, academic_client=academic_client, prefs_client=prefs_client)
 
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
@@ -100,7 +106,9 @@ async def test_start_grpc_error():
     academic_client = MagicMock()
     academic_client.get_user_by_telegram_id = AsyncMock(side_effect=Exception("gRPC connection refused"))
 
-    await cmd_start(message, academic_client=academic_client)
+    prefs_client = MagicMock()
+    prefs_client.is_enabled = AsyncMock(return_value=True)
+    await cmd_start(message, academic_client=academic_client, prefs_client=prefs_client)
 
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]

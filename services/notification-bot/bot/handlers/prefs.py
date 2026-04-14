@@ -3,7 +3,7 @@
 import logging
 
 from aiogram import F, Router
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
 
 logger = logging.getLogger(__name__)
 

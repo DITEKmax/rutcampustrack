@@ -63,9 +63,9 @@
         <mat-form-field class="ud-field">
           <mat-label>Роль</mat-label>
           <mat-select formControlName="role">
-            <mat-option value="admin">Администратор</mat-option>
-            <mat-option value="teacher">Преподаватель</mat-option>
-            <mat-option value="student">Студент</mat-option>
+            <mat-option value="ADMIN">Администратор</mat-option>
+            <mat-option value="TEACHER">Преподаватель</mat-option>
+            <mat-option value="STUDENT">Студент</mat-option>
           </mat-select>
           @if (form.get('role')?.hasError('required')) {
             <mat-error>Выберите роль</mat-error>
@@ -83,7 +83,7 @@
       }
 
       <!-- Группа только для студентов -->
-      @if (form.get('role')?.value === 'student') {
+      @if (form.get('role')?.value === 'STUDENT') {
         <mat-form-field class="ud-field-full">
           <mat-label>Учебная группа</mat-label>
           <mat-select formControlName="groupId">
@@ -96,7 +96,7 @@
       }
 
       <!-- Поля только для преподавателя -->
-      @if (form.get('role')?.value === 'teacher') {
+      @if (form.get('role')?.value === 'TEACHER') {
         <mat-form-field class="ud-field-full">
           <mat-label>Табельный номер</mat-label>
           <input matInput formControlName="employeeNumber" placeholder="Т-00001" />
@@ -116,20 +116,20 @@
           type="number"
           formControlName="telegramId"
           placeholder="123456789"
-          [required]="form.get('role')?.value === 'student'"
+          [required]="form.get('role')?.value === 'STUDENT'"
         />
         @if (form.get('telegramId')?.hasError('required')) {
           <mat-error>Telegram ID обязателен для студента</mat-error>
         } @else if (form.get('telegramId')?.hasError('conflict')) {
           <mat-error>{{ form.get('telegramId')?.errors?.['conflict'] }}</mat-error>
-        } @else if (form.get('role')?.value === 'student') {
+        } @else if (form.get('role')?.value === 'STUDENT') {
           <mat-hint>Без Telegram ID студент не сможет получать уведомления и подтверждать через бота</mat-hint>
         } @else {
           <mat-hint>Необязательно — можно добавить позже</mat-hint>
         }
       </mat-form-field>
 
-      @if (form.get('role')?.value === 'student') {
+      @if (form.get('role')?.value === 'STUDENT') {
         <mat-checkbox formControlName="isHeadman">Является старостой группы</mat-checkbox>
       }
 

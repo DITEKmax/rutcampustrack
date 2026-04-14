@@ -13,7 +13,7 @@ export interface ProfileResponse {
   lastName: string;
   firstName: string;
   middleName: string | null;
-  role: 'admin' | 'teacher' | 'student';
+  role: 'ADMIN' | 'TEACHER' | 'STUDENT';
   status: string;
   groupId: number | null;
   headman: boolean;

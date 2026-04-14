@@ -27,8 +27,8 @@ const ARCHIVED: GroupResponse = {
 };
 
 const STUDENTS: UserResponse[] = [
-  { id: 100, login: 'student00001', lastName: 'Иванов', firstName: 'Иван', middleName: null, role: 'student', status: 'active', groupId: 7, headman: false, employeeNumber: null, telegramId: null, createdAt: '2022-09-01T00:00:00Z' },
-  { id: 101, login: 'student00002', lastName: 'Петров', firstName: 'Пётр', middleName: null, role: 'student', status: 'active', groupId: 99, headman: false, employeeNumber: null, telegramId: null, createdAt: '2022-09-01T00:00:00Z' },
+  { id: 100, login: 'student00001', lastName: 'Иванов', firstName: 'Иван', middleName: null, role: 'STUDENT', status: 'active', groupId: 7, headman: false, employeeNumber: null, telegramId: null, createdAt: '2022-09-01T00:00:00Z' },
+  { id: 101, login: 'student00002', lastName: 'Петров', firstName: 'Пётр', middleName: null, role: 'STUDENT', status: 'active', groupId: 99, headman: false, employeeNumber: null, telegramId: null, createdAt: '2022-09-01T00:00:00Z' },
 ];
 
 function setupTestBed(idParam: string) {

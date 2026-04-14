@@ -92,7 +92,7 @@ export class UsersPageComponent implements OnInit {
     const initialRole = snapshot.get('role');
     const initialStatus = snapshot.get('status');
     const initialAction = snapshot.get('action');
-    if (initialRole) this.roleFilter.set(initialRole);
+    if (initialRole) this.roleFilter.set(initialRole.toUpperCase());
     if (initialStatus) this.statusFilter.set(initialStatus);
 
     this.loadUsers();

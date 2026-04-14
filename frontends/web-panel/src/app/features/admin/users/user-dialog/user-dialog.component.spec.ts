@@ -54,7 +54,7 @@ describe('UserDialogComponent', () => {
       lastName: 'Иванов',
       firstName: 'Иван',
       middleName: 'Иванович',
-      role: 'student',
+      role: 'STUDENT',
       status: 'active',
       groupId: 1,
       headman: true,
@@ -68,7 +68,7 @@ describe('UserDialogComponent', () => {
     expect(component.form.get('lastName')!.value).toBe('Иванов');
     expect(component.form.get('firstName')!.value).toBe('Иван');
     expect(component.form.get('middleName')!.value).toBe('Иванович');
-    expect(component.form.get('role')!.value).toBe('student');
+    expect(component.form.get('role')!.value).toBe('STUDENT');
     expect(component.form.get('role')!.disabled).toBe(true);
     expect(component.form.get('groupId')!.value).toBe(1);
     expect(component.form.get('isHeadman')!.value).toBe(true);
@@ -80,7 +80,7 @@ describe('UserDialogComponent', () => {
     component.form.patchValue({
       lastName: 'Петров',
       firstName: 'Пётр',
-      role: 'student',
+      role: 'STUDENT',
       telegramId: 123456789,
     });
 
@@ -91,7 +91,7 @@ describe('UserDialogComponent', () => {
     expect(req.request.body).toEqual({
       lastName: 'Петров',
       firstName: 'Пётр',
-      role: 'student',
+      role: 'STUDENT',
       telegramId: 123456789,
     });
 
@@ -101,7 +101,7 @@ describe('UserDialogComponent', () => {
       lastName: 'Петров',
       firstName: 'Пётр',
       middleName: null,
-      role: 'student',
+      role: 'STUDENT',
       status: 'active',
       groupId: null,
       headman: false,
@@ -117,7 +117,7 @@ describe('UserDialogComponent', () => {
   it('form validation prevents save when lastName is empty', () => {
     const component = createComponent({ mode: 'create', groups: [] });
 
-    component.form.patchValue({ firstName: 'Пётр', role: 'student' });
+    component.form.patchValue({ firstName: 'Пётр', role: 'STUDENT' });
     component.save();
 
     httpMock.expectNone('/api/academic/users');
@@ -130,7 +130,7 @@ describe('UserDialogComponent', () => {
     component.form.patchValue({
       lastName: 'Петров',
       firstName: 'Пётр',
-      role: 'student',
+      role: 'STUDENT',
       telegramId: 123456789,
     });
   }
@@ -181,7 +181,7 @@ describe('UserDialogComponent', () => {
     component.form.patchValue({
       lastName: 'Учителев',
       firstName: 'Учитель',
-      role: 'teacher',
+      role: 'TEACHER',
       employeeNumber: 'EMP-001',
     });
 
@@ -217,7 +217,7 @@ describe('UserDialogComponent', () => {
     component.form.patchValue({
       lastName: 'Учителев',
       firstName: 'Учитель',
-      role: 'teacher',
+      role: 'TEACHER',
       employeeNumber: 'EMP-001',
     });
 
@@ -241,7 +241,7 @@ describe('UserDialogComponent', () => {
     component.form.patchValue({
       lastName: 'Петров',
       firstName: 'Пётр',
-      role: 'student',
+      role: 'STUDENT',
     });
 
     expect(component.form.get('telegramId')!.hasError('required')).toBe(true);
@@ -254,7 +254,7 @@ describe('UserDialogComponent', () => {
     component.form.patchValue({
       lastName: 'Учителев',
       firstName: 'Учитель',
-      role: 'teacher',
+      role: 'TEACHER',
     });
 
     expect(component.form.get('telegramId')!.hasError('required')).toBe(false);
@@ -267,7 +267,7 @@ describe('UserDialogComponent', () => {
     component.form.patchValue({
       lastName: 'Админ',
       firstName: 'Главный',
-      role: 'admin',
+      role: 'ADMIN',
     });
 
     expect(component.form.get('telegramId')!.hasError('required')).toBe(false);
@@ -280,11 +280,11 @@ describe('UserDialogComponent', () => {
     component.form.patchValue({
       lastName: 'Иванов',
       firstName: 'Иван',
-      role: 'student',
+      role: 'STUDENT',
     });
     expect(component.form.invalid).toBe(true);
 
-    component.form.patchValue({ role: 'teacher' });
+    component.form.patchValue({ role: 'TEACHER' });
     expect(component.form.get('telegramId')!.hasError('required')).toBe(false);
     expect(component.form.valid).toBe(true);
   });
@@ -295,11 +295,11 @@ describe('UserDialogComponent', () => {
     component.form.patchValue({
       lastName: 'Иванов',
       firstName: 'Иван',
-      role: 'teacher',
+      role: 'TEACHER',
     });
     expect(component.form.valid).toBe(true);
 
-    component.form.patchValue({ role: 'student' });
+    component.form.patchValue({ role: 'STUDENT' });
     expect(component.form.get('telegramId')!.hasError('required')).toBe(true);
     expect(component.form.invalid).toBe(true);
 
@@ -324,13 +324,13 @@ describe('UserDialogComponent', () => {
   it('isHeadman checkbox visible only when role is student', () => {
     const component = createComponent({ mode: 'create', groups: [] });
 
-    component.form.patchValue({ role: 'teacher' });
-    // In template: @if (form.get('role')?.value === 'student') shows isHeadman
+    component.form.patchValue({ role: 'TEACHER' });
+    // In template: @if (form.get('role')?.value === 'STUDENT') shows isHeadman
     // We test the form state instead of DOM in unit tests
-    expect(component.form.get('role')!.value).toBe('teacher');
+    expect(component.form.get('role')!.value).toBe('TEACHER');
 
-    component.form.patchValue({ role: 'student' });
-    expect(component.form.get('role')!.value).toBe('student');
+    component.form.patchValue({ role: 'STUDENT' });
+    expect(component.form.get('role')!.value).toBe('STUDENT');
     // isHeadman control exists regardless; visibility is template-only concern
     expect(component.form.get('isHeadman')!.value).toBe(false);
   });

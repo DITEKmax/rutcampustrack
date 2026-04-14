@@ -21,7 +21,7 @@
 
   <!-- Stat grid (clickable — BUG-005) -->
   <div class="dashboard__grid">
-    <a routerLink="/admin/users" [queryParams]="{ role: 'student' }" class="dashboard__stat-link" aria-label="Перейти к управлению студентами">
+    <a routerLink="/admin/users" [queryParams]="{ role: 'STUDENT' }" class="dashboard__stat-link" aria-label="Перейти к управлению студентами">
       <app-stat-card
         accent="primary"
         icon="ph-duotone ph-students"
@@ -30,7 +30,7 @@
         [loading]="loading()"
       />
     </a>
-    <a routerLink="/admin/users" [queryParams]="{ role: 'teacher' }" class="dashboard__stat-link" aria-label="Перейти к управлению преподавателями">
+    <a routerLink="/admin/users" [queryParams]="{ role: 'TEACHER' }" class="dashboard__stat-link" aria-label="Перейти к управлению преподавателями">
       <app-stat-card
         accent="secondary"
         icon="ph-duotone ph-chalkboard-teacher"
@@ -75,7 +75,7 @@
     </div>
 
     <div class="dashboard__actions">
-      <a routerLink="/admin/users" [queryParams]="{ action: 'create', role: 'teacher' }" class="action-card" data-accent="secondary">
+      <a routerLink="/admin/users" [queryParams]="{ action: 'create', role: 'TEACHER' }" class="action-card" data-accent="secondary">
         <div class="action-card__icon" aria-hidden="true">
           <i class="ph-duotone ph-chalkboard-teacher"></i>
         </div>
@@ -86,7 +86,7 @@
         <i class="ph ph-arrow-right action-card__arrow" aria-hidden="true"></i>
       </a>
 
-      <a routerLink="/admin/users" [queryParams]="{ action: 'create', role: 'student' }" class="action-card" data-accent="primary">
+      <a routerLink="/admin/users" [queryParams]="{ action: 'create', role: 'STUDENT' }" class="action-card" data-accent="primary">
         <div class="action-card__icon" aria-hidden="true">
           <i class="ph-duotone ph-student"></i>
         </div>

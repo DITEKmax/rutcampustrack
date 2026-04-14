@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'teacher' | 'student';
+export type UserRole = 'ADMIN' | 'TEACHER' | 'STUDENT';
 export type AccountStatus = 'active' | 'expelled' | 'suspended' | 'archived';
 export type SemesterStatus = 'active' | 'planned' | 'finished';
 

@@ -40,9 +40,9 @@ const MOCK_ARCHIVED_GROUPS: GroupResponse[] = [
 ];
 
 const MOCK_STUDENTS: UserResponse[] = [
-  { id: 10, login: 'student00001', lastName: 'Иванов', firstName: 'Иван', middleName: null, role: 'student', status: 'active', groupId: 1, headman: true, employeeNumber: null, telegramId: null, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 11, login: 'student00002', lastName: 'Петров', firstName: 'Пётр', middleName: null, role: 'student', status: 'active', groupId: 1, headman: false, employeeNumber: null, telegramId: null, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 12, login: 'student00003', lastName: 'Сидорова', firstName: 'Мария', middleName: null, role: 'student', status: 'active', groupId: 2, headman: false, employeeNumber: null, telegramId: null, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 10, login: 'student00001', lastName: 'Иванов', firstName: 'Иван', middleName: null, role: 'STUDENT', status: 'active', groupId: 1, headman: true, employeeNumber: null, telegramId: null, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 11, login: 'student00002', lastName: 'Петров', firstName: 'Пётр', middleName: null, role: 'STUDENT', status: 'active', groupId: 1, headman: false, employeeNumber: null, telegramId: null, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 12, login: 'student00003', lastName: 'Сидорова', firstName: 'Мария', middleName: null, role: 'STUDENT', status: 'active', groupId: 2, headman: false, employeeNumber: null, telegramId: null, createdAt: '2026-01-01T00:00:00Z' },
 ];
 
 describe('GroupsPageComponent', () => {

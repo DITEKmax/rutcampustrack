@@ -100,9 +100,10 @@ export class UserDialogComponent {
       });
       this.form.get('role')!.disable();
     } else if (this.data.mode === 'create' && this.data.presetRole) {
-      const allowed: UserRole[] = ['student', 'teacher', 'admin'];
-      if ((allowed as string[]).includes(this.data.presetRole)) {
-        this.form.patchValue({ role: this.data.presetRole as UserRole });
+      const allowed: UserRole[] = ['STUDENT', 'TEACHER', 'ADMIN'];
+      const preset = this.data.presetRole.toUpperCase();
+      if ((allowed as string[]).includes(preset)) {
+        this.form.patchValue({ role: preset as UserRole });
       }
     }
 
@@ -122,7 +123,7 @@ export class UserDialogComponent {
    */
   private applyTelegramRequiredForRole(role: UserRole | ''): void {
     const tg = this.form.get('telegramId')!;
-    if (role === 'student') {
+    if (role === 'STUDENT') {
       tg.addValidators(Validators.required);
     } else {
       tg.removeValidators(Validators.required);
@@ -146,9 +147,9 @@ export class UserDialogComponent {
       };
       if (raw.middleName.trim()) req.middleName = raw.middleName.trim();
       // Группа только для студентов
-      if (raw.role === 'student' && raw.groupId != null) req.groupId = raw.groupId;
+      if (raw.role === 'STUDENT' && raw.groupId != null) req.groupId = raw.groupId;
       // Табельный номер только для преподавателей
-      if (raw.role === 'teacher' && raw.employeeNumber) req.employeeNumber = raw.employeeNumber;
+      if (raw.role === 'TEACHER' && raw.employeeNumber) req.employeeNumber = raw.employeeNumber;
       // Telegram ID — обязательно для студента (BUG-006-3), опционально иначе
       if (raw.telegramId != null) req.telegramId = raw.telegramId;
 

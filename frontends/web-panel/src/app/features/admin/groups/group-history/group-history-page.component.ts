@@ -47,7 +47,7 @@ export class GroupHistoryPageComponent implements OnInit {
 
     forkJoin({
       group: this.api.getGroup(id).pipe(catchError(() => of(null))),
-      students: this.api.listUsers({ role: 'student', size: 500 }).pipe(
+      students: this.api.listUsers({ role: 'STUDENT', size: 500 }).pipe(
         catchError(() => of({ items: [] as UserResponse[], total: 0 })),
       ),
     }).subscribe(({ group, students }) => {

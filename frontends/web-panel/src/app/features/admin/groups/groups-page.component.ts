@@ -125,7 +125,7 @@ export class GroupsPageComponent implements OnInit {
 
     forkJoin({
       groups: this.adminApi.listGroupsByStatus({ status, search, size: 200 }),
-      students: this.adminApi.listUsers({ role: 'student', size: 500 }),
+      students: this.adminApi.listUsers({ role: 'STUDENT', size: 500 }),
     }).subscribe({
       next: ({ groups, students }) => {
         this.groups.set(groups.items);

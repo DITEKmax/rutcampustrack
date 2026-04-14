@@ -30,7 +30,7 @@ describe('AdminApiService', () => {
 
   it('listUsers() calls GET /api/academic/users with page/size params and extracts _embedded items', () => {
     const mockUser: UserResponse = {
-      id: 1, login: 'student00001', displayName: 'Иванов И.И.', role: 'student',
+      id: 1, login: 'student00001', displayName: 'Иванов И.И.', role: 'STUDENT',
       status: 'active', groupId: 1, headman: false, employeeNumber: null,
       telegramId: null, createdAt: '2026-01-01',
     };
@@ -54,7 +54,7 @@ describe('AdminApiService', () => {
   });
 
   it('listUsers() passes role and status filters as params', () => {
-    service.listUsers({ page: 0, size: 20, role: 'student', status: 'active' }).subscribe();
+    service.listUsers({ page: 0, size: 20, role: 'STUDENT', status: 'active' }).subscribe();
 
     const req = httpMock.expectOne(r =>
       r.url === '/api/academic/users' &&
@@ -69,7 +69,7 @@ describe('AdminApiService', () => {
   });
 
   it('createUser() calls POST /api/academic/users with CreateUserRequest body', () => {
-    const body = { displayName: 'Петров П.П.', role: 'student' as const };
+    const body = { displayName: 'Петров П.П.', role: 'STUDENT' as const };
 
     service.createUser(body).subscribe();
 
@@ -89,7 +89,7 @@ describe('AdminApiService', () => {
     const req = httpMock.expectOne('/api/academic/users/5');
     expect(req.request.method).toBe('PATCH');
     expect(req.request.body).toEqual(body);
-    req.flush({ id: 5, login: 'student00005', displayName: 'Обновлено', role: 'student',
+    req.flush({ id: 5, login: 'student00005', displayName: 'Обновлено', role: 'STUDENT',
       status: 'active', groupId: null, headman: false, employeeNumber: null,
       telegramId: null, createdAt: '2026-01-01' });
   });
@@ -279,12 +279,12 @@ describe('AdminApiService', () => {
 
   it('listStudentsByGroup() calls GET /api/academic/users with role=STUDENT param and filters by groupId', () => {
     const student1 = {
-      id: 1, login: 'student00001', displayName: 'Иванов', role: 'student',
+      id: 1, login: 'student00001', displayName: 'Иванов', role: 'STUDENT',
       status: 'active', groupId: 1, headman: false, employeeNumber: null,
       telegramId: null, createdAt: '2026-01-01',
     };
     const student2 = {
-      id: 2, login: 'student00002', displayName: 'Петров', role: 'student',
+      id: 2, login: 'student00002', displayName: 'Петров', role: 'STUDENT',
       status: 'active', groupId: 2, headman: false, employeeNumber: null,
       telegramId: null, createdAt: '2026-01-01',
     };

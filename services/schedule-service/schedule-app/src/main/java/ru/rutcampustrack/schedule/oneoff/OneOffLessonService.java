@@ -1,11 +1,14 @@
 package ru.rutcampustrack.schedule.oneoff;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.event.OneOffLessonCancelledEvent;
+import ru.rutcampustrack.schedule.event.OneOffLessonCreatedEvent;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
@@ -32,8 +35,11 @@ import java.util.List;
  *  - D-23: semester_id auto-resolved by the date (active semester used; out-of-range rejected).
  *  - UNIQUE(group_id, date, lesson_number) DB constraint → 409 on duplicate.
  *
- * Events (lesson.one_off.created / lesson.one_off.cancelled) are intentionally NOT
- * published here — they land in plan 60-04.
+ * Events (Phase 60-04):
+ *  - lesson.one_off.created: published after successful createOneOffLesson().
+ *  - lesson.one_off.cancelled: published after successful deleteOneOffLesson().
+ * Both are forwarded to RabbitMQ by DomainEventListener on AFTER_COMMIT, so no
+ * message is published if the transaction rolls back.
  */
 @Service
 @Transactional
@@ -43,15 +49,18 @@ public class OneOffLessonService {
     private final ScheduleItemRepository scheduleItemRepository;
     private final AcademicGrpcClient academicGrpcClient;
     private final RequestContext requestContext;
+    private final ApplicationEventPublisher eventPublisher;
 
     public OneOffLessonService(OneOffLessonRepository oneOffLessonRepository,
                                ScheduleItemRepository scheduleItemRepository,
                                AcademicGrpcClient academicGrpcClient,
-                               RequestContext requestContext) {
+                               RequestContext requestContext,
+                               ApplicationEventPublisher eventPublisher) {
         this.oneOffLessonRepository = oneOffLessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.academicGrpcClient = academicGrpcClient;
         this.requestContext = requestContext;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -111,7 +120,19 @@ public class OneOffLessonService {
         oneOff.setLessonNumber(request.lessonNumber());
         oneOff.setClassroom(request.classroom());
         oneOff.setCreatedBy(requestContext.getUserId());
-        return oneOffLessonRepository.save(oneOff);
+        OneOffLesson saved = oneOffLessonRepository.save(oneOff);
+
+        // Phase 60-04: publish lesson.one_off.created (forwarded to RabbitMQ on AFTER_COMMIT).
+        eventPublisher.publishEvent(new OneOffLessonCreatedEvent(
+                this,
+                saved.getId(),
+                saved.getGroupId(),
+                saved.getSubjectId(),
+                saved.getDate(),
+                (int) saved.getLessonNumber(),
+                saved.getClassroom()));
+
+        return saved;
     }
 
     /**
@@ -129,7 +150,18 @@ public class OneOffLessonService {
         OneOffLesson oneOff = oneOffLessonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("OneOffLesson", "id", id));
         requireHeadmanForGroup(oneOff.getGroupId());
+
+        // Snapshot fields before delete so the event carries accurate data.
+        Long groupId = oneOff.getGroupId();
+        Long subjectId = oneOff.getSubjectId();
+        LocalDate date = oneOff.getDate();
+        int lessonNumber = oneOff.getLessonNumber();
+
         oneOffLessonRepository.delete(oneOff);
+
+        // Phase 60-04: publish lesson.one_off.cancelled (forwarded on AFTER_COMMIT).
+        eventPublisher.publishEvent(new OneOffLessonCancelledEvent(
+                this, groupId, subjectId, date, lessonNumber));
     }
 
     /**

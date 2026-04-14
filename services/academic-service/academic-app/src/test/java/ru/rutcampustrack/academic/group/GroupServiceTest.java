@@ -13,10 +13,13 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEvent;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.event.GroupRenamedEvent;
+import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.GroupRepository;
@@ -175,6 +178,72 @@ class GroupServiceTest {
                 });
 
         verify(groupRepository, never()).save(any());
+    }
+
+    // =========================================================================
+    // 58-07 / BUG-006-6 — GroupRenamedEvent публикуется при изменении name
+    // =========================================================================
+
+    private static Group makeActiveGroup(long id, String name) {
+        Group g = new Group();
+        try {
+            Field idField = Group.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(g, id);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+        g.setName(name);
+        g.setActive(true);
+        g.setCreatedAt(OffsetDateTime.now());
+        return g;
+    }
+
+    @Test
+    void updateGroup_nameChanged_publishesGroupRenamedEvent() {
+        Group existing = makeActiveGroup(77L, "УИТ-312");
+        when(groupRepository.findById(77L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.existsByName("УИТ-311")).thenReturn(false);
+        when(groupRepository.save(any(Group.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        groupService.updateGroup(77L, new UpdateGroupRequest("УИТ-311", true));
+
+        ArgumentCaptor<ApplicationEvent> captor = ArgumentCaptor.forClass(ApplicationEvent.class);
+        verify(eventPublisher, org.mockito.Mockito.atLeastOnce()).publishEvent(captor.capture());
+        // Среди опубликованных событий должно быть GroupRenamedEvent с group_id=77
+        assertThat(captor.getAllValues())
+                .anyMatch(ev -> ev instanceof GroupRenamedEvent gre
+                        && ((GroupRenamedEvent.Payload) gre.getPayload()).groupId().equals(77L));
+    }
+
+    @Test
+    void updateGroup_nameUnchanged_doesNotPublishGroupRenamedEvent() {
+        Group existing = makeActiveGroup(78L, "УИТ-312");
+        when(groupRepository.findById(78L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.save(any(Group.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        groupService.updateGroup(78L, new UpdateGroupRequest("УИТ-312", true));
+
+        ArgumentCaptor<ApplicationEvent> captor = ArgumentCaptor.forClass(ApplicationEvent.class);
+        verify(eventPublisher, org.mockito.Mockito.atLeastOnce()).publishEvent(captor.capture());
+        // GroupRenamedEvent НЕ должен быть среди опубликованных (только GroupUpdatedEvent).
+        assertThat(captor.getAllValues()).noneMatch(ev -> ev instanceof GroupRenamedEvent);
+        // GroupUpdatedEvent по-прежнему публикуется (state-change invalidation).
+        assertThat(captor.getAllValues()).anyMatch(ev -> ev instanceof GroupUpdatedEvent);
+    }
+
+    @Test
+    void updateGroup_nameConflictOnRename_throwsConflictAndDoesNotPublish() {
+        Group existing = makeActiveGroup(79L, "УИТ-312");
+        when(groupRepository.findById(79L)).thenReturn(java.util.Optional.of(existing));
+        when(groupRepository.existsByName("УИТ-311")).thenReturn(true);
+
+        assertThatThrownBy(() -> groupService.updateGroup(79L, new UpdateGroupRequest("УИТ-311", true)))
+                .isInstanceOf(ConflictException.class)
+                .satisfies(e -> assertThat(((ConflictException) e).getField()).isEqualTo("name"));
+
+        verify(groupRepository, never()).save(any());
+        verify(eventPublisher, never()).publishEvent(any(Object.class));
     }
 
     @Test

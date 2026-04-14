@@ -13,6 +13,7 @@ import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.event.GroupRenamedEvent;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
@@ -117,8 +118,8 @@ public class GroupService {
             );
         }
         // 58-04: при переименовании проверяем конфликт имени (кроме самой себя).
-        if (!request.name().equals(group.getName())
-                && groupRepository.existsByName(request.name())) {
+        boolean nameChanged = !request.name().equals(group.getName());
+        if (nameChanged && groupRepository.existsByName(request.name())) {
             throw new ConflictException(
                     "name",
                     request.name(),
@@ -128,6 +129,11 @@ public class GroupService {
         group.setName(request.name());
         group.setActive(request.active());
         Group saved = groupRepository.save(group);
+        // 58-07 / BUG-006-6: отдельное событие о переименовании (push/telegram для студентов).
+        // GroupUpdatedEvent продолжает публиковаться для инвалидации кэшей и STOMP-рассылок.
+        if (nameChanged) {
+            eventPublisher.publishEvent(new GroupRenamedEvent(this, saved.getId()));
+        }
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, saved.getId()));
         return saved;
     }

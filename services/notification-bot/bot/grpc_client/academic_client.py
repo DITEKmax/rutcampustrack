@@ -44,6 +44,20 @@ class AcademicGrpcClient:
     def invalidate(self, group_id: int) -> None:
         self._cache.pop(group_id, None)
 
+    async def get_user_by_id(self, user_id: int):
+        """Look up user by internal user_id. Returns UserResponse proto.
+
+        Response fields: .id, .login, .display_name, .role, .status,
+        .group_id, .is_headman, .telegram_id (0 if user never linked Telegram).
+
+        Used by student_alerts.handle_student_alert (59-06) to resolve
+        telegram_id from the excuse.decided payload's user_id.
+        No local caching: fired rarely (on excuse decision), and the bot
+        always wants the freshest telegram_id in case the student just linked.
+        """
+        request = academic_pb2.UserRequest(user_id=user_id)
+        return await self._stub.GetUserById(request, metadata=self._metadata)
+
     async def get_user_by_telegram_id(self, telegram_id: int):
         """Look up user by Telegram ID. Returns UserByTelegramIdResponse proto.
 

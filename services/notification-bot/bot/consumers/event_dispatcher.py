@@ -48,6 +48,7 @@ class EventDispatcher:
         from bot.notifications.lesson_cancelled import handle_lesson_cancelled
         from bot.notifications.lesson_closed import handle_lesson_closed
         from bot.notifications.otp_verified import handle_otp_verified
+        from bot.notifications.student_alerts import handle_student_alert
 
         # Handler registry: event_type -> async callable(event: dict)
         self._handlers: dict[str, Callable[[dict], Awaitable[None]]] = {
@@ -71,6 +72,13 @@ class EventDispatcher:
                 send_queue=self._send_queue,
             ),
             "excuse.requested": lambda event: handle_headman_alert(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
+            # 59-06 / D-28: notify the student when their excuse ticket is decided
+            "excuse.decided": lambda event: handle_student_alert(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,

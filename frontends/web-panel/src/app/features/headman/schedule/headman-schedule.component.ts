@@ -177,7 +177,12 @@ function isoWeekNumber(d: Date): number {
                         <div class="cell-entry"
                              [class.cell-entry--odd]="item.weekType === 'ODD'"
                              [class.cell-entry--even]="item.weekType === 'EVEN'">
-                          <div class="cell-subject">{{ subjectName(item.subjectId) }}</div>
+                          <div class="cell-subject">
+                            {{ subjectName(item.subjectId) }}
+                            @if (subjectTypeShort(item.subjectId); as t) {
+                              <span class="cell-type">· {{ t }}</span>
+                            }
+                          </div>
                           <div class="cell-meta">
                             @if (item.room) { <span>{{ item.room }}</span> }
                             <mat-chip-set>
@@ -236,6 +241,7 @@ function isoWeekNumber(d: Date): number {
     .cell-entry--odd { color: #1b5e20; }
     .cell-entry--even { color: #2e7d32; }
     .cell-subject { font-weight: 600; font-size: 0.9rem; color: #1b5e20; }
+    .cell-type { font-weight: 500; font-size: 0.78rem; color: #2e7d32; opacity: 0.85; }
     .cell-meta { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #2e7d32; }
     .week-chip { font-size: 0.7rem; }
     .current-week-banner {
@@ -375,6 +381,21 @@ export class HeadmanScheduleComponent implements OnInit {
 
   subjectName(subjectId: number): string {
     return this.subjects().find(s => s.id === subjectId)?.name ?? `Предмет #${subjectId}`;
+  }
+
+  /**
+   * Короткая подпись типа занятия для рендера в матрице («лек», «пр», «лаб»).
+   * Возвращает пустую строку если у предмета не указан тип — тогда чип
+   * не рисуется (помогает старосте отличить одноимённые лекции/практики).
+   */
+  subjectTypeShort(subjectId: number): string {
+    const t = this.subjects().find(s => s.id === subjectId)?.type;
+    switch (t) {
+      case 'LECTURE': return 'лек';
+      case 'PRACTICE': return 'пр';
+      case 'LAB': return 'лаб';
+      default: return '';
+    }
   }
 
   weekChip(weekType: string): string {

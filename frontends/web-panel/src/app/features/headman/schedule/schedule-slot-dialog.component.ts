@@ -64,7 +64,12 @@ export interface ScheduleSlotDialogData {
           <mat-label>Предмет</mat-label>
           <mat-select formControlName="subjectId" aria-label="Выберите предмет">
             @for (s of subjects; track s.id) {
-              <mat-option [value]="s.id">{{ s.name }}</mat-option>
+              <mat-option [value]="s.id">
+                {{ s.name }}
+                @if (s.type) {
+                  <span class="subj-type">— {{ subjectTypeLabel(s.type) }}</span>
+                }
+              </mat-option>
             }
           </mat-select>
           @if (subjectsError || (subjects.length === 0 && !subjectsLoading)) {
@@ -126,6 +131,7 @@ export interface ScheduleSlotDialogData {
       background: #ffebee;
     }
     .btn-danger i { margin-right: 4px; }
+    .subj-type { color: var(--text-muted); font-size: 0.85em; margin-left: 4px; }
   `],
 })
 export class ScheduleSlotDialogComponent implements OnInit {
@@ -142,7 +148,7 @@ export class ScheduleSlotDialogComponent implements OnInit {
     weekType: new FormControl<string>('ALL', { nonNullable: true, validators: [Validators.required] }),
   });
 
-  subjects: { id: number; name: string }[] = [];
+  subjects: { id: number; name: string; type?: string }[] = [];
   subjectsLoading = true;
   subjectsError = false;
   submitting = false;
@@ -241,6 +247,15 @@ export class ScheduleSlotDialogComponent implements OnInit {
         },
         error: (err) => this.handleError(err),
       });
+    }
+  }
+
+  subjectTypeLabel(type: string): string {
+    switch (type) {
+      case 'LECTURE': return 'Лекция';
+      case 'PRACTICE': return 'Практика';
+      case 'LAB': return 'Лабораторная';
+      default: return type;
     }
   }
 

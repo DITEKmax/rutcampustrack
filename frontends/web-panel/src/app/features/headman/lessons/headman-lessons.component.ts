@@ -103,7 +103,12 @@ const DEFAULT_RANGE_DAYS = 14;
                     <span class="lesson-time">{{ shortTime(lesson.startTime) }}–{{ shortTime(lesson.endTime) }}</span>
                   </div>
                   <div class="lesson-row__main">
-                    <div class="lesson-subject">{{ subjectName(lesson.subjectId) }}</div>
+                    <div class="lesson-subject">
+                      {{ subjectName(lesson.subjectId) }}
+                      @if (subjectTypeLabel(lesson.subjectId); as t) {
+                        <span class="lesson-type">— {{ t }}</span>
+                      }
+                    </div>
                     <div class="lesson-meta">
                       @if (lesson.room) { <span>{{ lesson.room }}</span> }
                       <span class="status status--{{ statusKey(lesson) }}">{{ statusLabel(lesson) }}</span>
@@ -160,6 +165,7 @@ const DEFAULT_RANGE_DAYS = 14;
     .lesson-num { font-size: 0.75rem; color: var(--text-muted); }
     .lesson-time { font-family: var(--font-mono, monospace); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
     .lesson-subject { font-weight: 600; }
+    .lesson-type { font-weight: 500; color: var(--text-muted); margin-left: 4px; font-size: 0.9em; }
     .lesson-meta {
       display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
       font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;
@@ -266,6 +272,17 @@ export class HeadmanLessonsComponent implements OnInit {
 
   subjectName(id: number): string {
     return this.subjects().find(s => s.id === id)?.name ?? `Предмет #${id}`;
+  }
+
+  /** Полное название типа занятия для рендера рядом с предметом. */
+  subjectTypeLabel(id: number): string {
+    const t = (this.subjects().find(s => s.id === id) as any)?.type;
+    switch (t) {
+      case 'LECTURE': return 'Лекция';
+      case 'PRACTICE': return 'Практика';
+      case 'LAB': return 'Лабораторная';
+      default: return '';
+    }
   }
 
   shortTime(t: string): string {

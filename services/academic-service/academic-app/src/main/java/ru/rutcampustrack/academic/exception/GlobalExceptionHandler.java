@@ -44,7 +44,8 @@ public class GlobalExceptionHandler {
             "users_email_key", "email",
             "users_telegram_id_key", "telegramId",
             "users_employee_number_key", "employeeNumber",
-            "groups_name_key", "name"
+            "groups_name_key", "name",
+            "semesters_no_overlap", "dates"
     );
 
     /** Matches {@code constraint "xxx"} fragment in PG/Hibernate error messages. */
@@ -57,7 +58,8 @@ public class GlobalExceptionHandler {
             "email", "Email уже зарегистрирован",
             "telegramId", "Telegram ID уже привязан к другой учётной записи",
             "employeeNumber", "Табельный номер уже используется",
-            "name", "Название уже используется"
+            "name", "Название уже используется",
+            "dates", "Даты семестра пересекаются с существующим"
     );
 
     @ExceptionHandler(ResourceNotFoundException.class)

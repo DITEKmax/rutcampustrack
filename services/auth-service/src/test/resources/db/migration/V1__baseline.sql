@@ -1,6 +1,8 @@
 -- V1__baseline.sql
 -- Academic Service — начальная схема
 
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'student');
 CREATE TYPE account_status AS ENUM ('active', 'expelled', 'suspended', 'archived');
 CREATE TYPE subject_type AS ENUM ('lecture', 'practice', 'lab');
@@ -74,7 +76,9 @@ CREATE TABLE semesters (
     is_active   BOOLEAN NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT only_one_active_semester
-        EXCLUDE USING btree (is_active WITH =) WHERE (is_active = TRUE)
+        EXCLUDE USING btree (is_active WITH =) WHERE (is_active = TRUE),
+    CONSTRAINT semesters_no_overlap
+        EXCLUDE USING gist (daterange(date_from, date_to, '[]') WITH &&)
 );
 
 -- Subjects

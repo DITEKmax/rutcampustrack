@@ -84,8 +84,7 @@ async def test_message_contains_date_and_subject():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Дискретная математика"))
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Дискретная математика"))
 
     send_queue = MagicMock()
     captured_tasks = []

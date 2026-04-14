@@ -54,8 +54,7 @@ async def test_sends_to_all_group_students():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    academic_client.get_subjects_by_ids = AsyncMock(
-        return_value=_make_subjects_response("Теормех"))
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Теормех"))
 
     send_queue = MagicMock()
     captured_tasks = []

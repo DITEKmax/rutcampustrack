@@ -48,13 +48,7 @@ async def handle_lesson_one_off_created(
             subject_id,
         )
 
-    text = (
-        "📅 Добавлена разовая пара\n\n"
-        f"{subject_name}\n"
-        f"Дата: {date}\n"
-        f"Пара: {lesson_number}-я\n"
-        f"Кабинет: {classroom}"
-    )
+    text = f"📅 Добавлена разовая пара\n\n{subject_name}\nДата: {date}\nПара: {lesson_number}-я\nКабинет: {classroom}"
 
     members = await academic_client.get_group_members(group_id)
     for student in members:

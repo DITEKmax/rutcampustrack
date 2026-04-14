@@ -73,3 +73,24 @@
   - Запрет редактирования завершённых — да.
   - Запрет пересечения дат — да.
 
+## Resolution
+
+**Resolved:** 2026-04-14 в Phase 58 (`docs/phase-58-report.md`).
+
+Все 7 пунктов закрыты через 9 планов + 1 gap-closure:
+- BUG-006-1: серверный поиск (plan 58-01) — `GET /users?search` + UserSpecifications с LIKE-escape
+- BUG-006-2: human-readable 409 (plan 58-02) — ConflictExceptionHandler → RFC 7807
+- BUG-006-3: init password column (plan 58-02, UI) — copy-to-clipboard
+- BUG-006-4: required telegramId для STUDENT (plan 58-03) — `@StudentRequiresTelegram` validator
+- BUG-006-5: единое поле name группы + V8 migration (plan 58-04) — DROP COLUMN code, UNIQUE на name
+- BUG-006-6: автопромоция групп + V9 migration + RabbitMQ events (plans 58-06, 58-07, 58-08) — `POST /groups/promote`, group.renamed/archived
+- BUG-006-7: валидация семестров + V10 migration (plan 58-05) — btree_gist EXCLUDE
+
+Gap-closure plan 58-10: исправлены 4 регрессии от V8/plan 01/plan 07, добавлена V11 migration с PG operators для enum = text.
+
+**Build status at close:** `./gradlew.bat clean build` SUCCESSFUL (91 tasks); web-panel 346/346 tests green.
+
+**Deferred:** UAT live-smoke (13 ручных шагов через браузер) — отложен до следующей сессии, не блокирует closure.
+
+См. acceptance criteria AC-1..AC-10 в `.planning/phases/58-admin-bug-006-fixes/58-VERIFICATION.md`.
+

@@ -7,11 +7,14 @@ import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.schedule.grpc.ActiveLessonRequest;
 import ru.rutcampustrack.schedule.grpc.LessonByIdRequest;
+import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.LessonsByIdsRequest;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsByGroupRequest;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -64,6 +67,26 @@ public class ScheduleGrpcClient {
                             .setDateFrom(dateFrom)
                             .setDateTo(dateTo)
                             .build());
+        } catch (StatusRuntimeException e) {
+            throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
+        }
+    }
+
+    /**
+     * GRPC-04 (D-25): batch-fetch compact lesson info by IDs.
+     * Used by ExcuseService to validate that lessonIds belong to the student's group.
+     * Empty/null input returns an empty list without making a network call.
+     */
+    public List<LessonInfo> getLessonsByIds(List<Long> lessonIds) {
+        if (lessonIds == null || lessonIds.isEmpty()) {
+            return List.of();
+        }
+        try {
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getLessonsByIds(LessonsByIdsRequest.newBuilder()
+                            .addAllLessonIds(lessonIds)
+                            .build())
+                    .getLessonsList();
         } catch (StatusRuntimeException e) {
             throw new ScheduleServiceUnavailableException("Schedule Service unavailable: " + e.getStatus());
         }

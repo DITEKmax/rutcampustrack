@@ -82,14 +82,17 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         // emitted by the service. Name is unique per test run to avoid collisions.
         testQueueName = "excuse.contract-test." + UUID.randomUUID();
         FanoutExchange exchange = new FanoutExchange(EXCHANGE, true, false);
-        Queue queue = QueueBuilder.nonDurable(testQueueName).autoDelete().build();
+        // NOTE: do NOT use autoDelete — receive() opens+closes consumers, and once the last
+        // consumer disconnects an autoDelete queue gets purged by the broker, causing the
+        // next receive() to 404 with AmqpIOException.
+        Queue queue = QueueBuilder.nonDurable(testQueueName).build();
         Binding binding = BindingBuilder.bind(queue).to(exchange);
         amqpAdmin.declareQueue(queue);
         amqpAdmin.declareBinding(binding);
 
-        // Drain anything left over (defensive).
-        //noinspection StatementWithEmptyBody
-        while (rabbitTemplate.receive(testQueueName, 50) != null) { /* drain */ }
+        // Drain anything left over (defensive). purgeQueue is cheaper than a consume loop
+        // and does not depend on channel lifecycles.
+        amqpAdmin.purgeQueue(testQueueName, false);
 
         // JWT / security stub: plain student 100 in group 10.
         Mockito.reset(requestContext, academicGrpcClient);
@@ -162,8 +165,7 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
                 .build();
         ticket = excuseRepository.save(ticket);
         // Drain anything residual (belt-and-braces).
-        //noinspection StatementWithEmptyBody
-        while (rabbitTemplate.receive(testQueueName, 50) != null) { /* drain */ }
+        amqpAdmin.purgeQueue(testQueueName, false);
 
         // Flip caller to headman of the same group (different user).
         Long headmanId = 777L;

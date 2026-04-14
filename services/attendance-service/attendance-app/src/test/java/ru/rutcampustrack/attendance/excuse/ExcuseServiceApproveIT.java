@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 /**
  * Integration test for the D-16 cascade (AC-5).
@@ -163,8 +164,8 @@ class ExcuseServiceApproveIT extends AbstractAttendanceIntegrationTest {
         assertThat(updated.getLessonId()).isEqualTo(41L);
         assertThat(updated.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
         assertThat(updated.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
-        // createdAt preserved, updatedAt advanced
-        assertThat(updated.getCreatedAt()).isEqualTo(past);
+        // createdAt preserved (Mongo truncates to millisecond precision, so compare via isCloseTo)
+        assertThat(updated.getCreatedAt()).isCloseTo(past, within(1, java.time.temporal.ChronoUnit.MILLIS));
         assertThat(updated.getUpdatedAt()).isAfter(past);
     }
 }

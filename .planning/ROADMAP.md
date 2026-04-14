@@ -391,7 +391,7 @@ Plans:
 **Notes**: Backend отмены обычного урока (`POST /api/schedule/lessons/{id}/cancel`) **уже реализован** (Phase 55) — не трогаем, только интегрируем с frontend. Drag-and-drop в UI — out of scope. Помощник старосты (`schedule_manage`) — out of scope.
 **Plans**: 8 планов
 Plans:
-- [ ] 60-01-PLAN.md — academic-service: subjects.group_id + CreateSubjectRequest (teacherIds) + атомарный createSubject
+- [x] 60-01-PLAN.md — academic-service: subjects.group_id + CreateSubjectRequest (teacherIds) + атомарный createSubject
 - [ ] 60-02-PLAN.md — schedule-service: удаление ScheduleItem.teacherId (entity + DTO + Flyway V3) + guard тест
 - [ ] 60-03-PLAN.md — schedule-service: schedule_one_off_lessons (Flyway V4) + REST CRUD endpoints + 409 логика
 - [ ] 60-04-PLAN.md — events: lesson.one_off.created/cancelled JSON Schema + publisher + notification-bot handlers

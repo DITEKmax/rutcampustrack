@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
 status: executing
-stopped_at: Completed Phase 58 — all plans done, UAT deferred
-last_updated: "2026-04-14T10:03:00.000Z"
-last_activity: 2026-04-14 — Phase 58 complete (build green, UAT pending)
+stopped_at: Completed 60-01-PLAN.md
+last_updated: "2026-04-14T20:02:19.345Z"
+last_activity: 2026-04-14
 progress:
-  total_phases: 11
-  completed_phases: 1
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_phases: 12
+  completed_phases: 2
+  total_plans: 27
+  completed_plans: 20
+  percent: 74
 ---
 
 # Project State
@@ -22,8 +22,8 @@ v9.0 Frontend Unification — Single Login & Role-Based Web Clients
 
 ## Current Position
 
-Phase: 57 (landing-presentation-mode-documentation) — EXECUTING
-Plan: 3 of 3
+Phase: 60 (headman-schedule-management) — EXECUTING
+Plan: 2 of 8
 Plans: 0/TBD
 Status: Ready to execute
 Last activity: 2026-04-14
@@ -33,7 +33,7 @@ Last activity: 2026-04-14
 See: `.planning/PROJECT.md` (updated 2026-04-08)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** Phase 57 — landing-presentation-mode-documentation
+**Current focus:** Phase 60 — headman-schedule-management
 
 ## Roadmap Summary
 
@@ -75,6 +75,7 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 56]: SegmentedControl placed in shared/components per D-15 — reusable 5-segment attendance picker with WCAG 40×40 tap target
 - [Phase 56]: JournalPage 2-step flow preserves subject/date in component state (no URL params) — simpler state model for Wave 3 scope
 - [Phase 56]: Plan 56-05: Excuses/LateCheckin pages ship as pure D-10 shells (no API calls) — empty state IS the feature; StatsPage uses SubjectStatsCollector pattern to call per-subject hooks in stable subjects-array order
+- [Phase 60]: Subject.groupId immutable after creation (D-02) — updateSubject rejects cross-group tampering
 
 ### Key v9.0 Architecture Decisions
 
@@ -99,7 +100,7 @@ Phases 49 and 50 are CRITICAL-PATH and completed. Phases 51-55 (Blocks B and C) 
 
 ## Session Continuity
 
-Last session: 2026-04-14T10:03:00.000Z
-Stopped at: Phase 58 completed — all plans done (01-08, gap-closure 10, final-verification 09 with deferred UAT). Backend build зелёный (91 tasks). Frontend 346/346 tests зелёные. V8/V9/V10/V11 миграции применены.
+Last session: 2026-04-14T20:02:19.341Z
+Stopped at: Completed 60-01-PLAN.md
 Next action: /gsd-verifier 58 (после UAT) или /gsd-next для следующей фазы.
 Deferred: UAT checkpoint plan 58-09 Task 2 — 13 ручных шагов через браузер (docs/phase-58-report.md Known limitations).

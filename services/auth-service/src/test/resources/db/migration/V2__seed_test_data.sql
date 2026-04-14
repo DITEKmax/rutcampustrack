@@ -4,8 +4,8 @@
 -- BCrypt hash (cost 10) generated with BCryptPasswordEncoder.encode("password")
 
 -- Test group
-INSERT INTO groups (name, code, is_active)
-VALUES ('IVT-21-1', 'ivt-21-1', true);
+INSERT INTO groups (name, is_active)
+VALUES ('IVT-21-1', true);
 
 -- Test semester
 INSERT INTO semesters (name, date_from, date_to, is_active)

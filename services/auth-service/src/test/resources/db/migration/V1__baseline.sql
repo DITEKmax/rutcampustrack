@@ -8,8 +8,7 @@ CREATE TYPE subject_type AS ENUM ('lecture', 'practice', 'lab');
 -- Groups (создаётся первой, т.к. users ссылается на неё)
 CREATE TABLE groups (
     id          BIGSERIAL PRIMARY KEY,
-    name        VARCHAR(128) NOT NULL,
-    code        VARCHAR(32) UNIQUE,
+    name        VARCHAR(32) NOT NULL UNIQUE,
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

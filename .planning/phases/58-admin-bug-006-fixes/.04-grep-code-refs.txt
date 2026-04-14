@@ -1,0 +1,58 @@
+Pre-migration grep of Group.code references (BUG-006-5, plan 58-04)
+=====================================================================
+
+Date: 2026-04-14
+
+Backend (services/academic-service):
+  academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIntegrationTest.java:114
+    groupA.setCode("TGA-" + System.nanoTime() % 100000);
+  academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIntegrationTest.java:121
+    groupB.setCode("TGB-" + System.nanoTime() % 100000);
+  academic-app/src/test/java/ru/rutcampustrack/academic/integration/EventIntegrationTest.java:222
+    groupService.updateGroup(groupA.getId(), new UpdateGroupRequest("Updated Name A", groupA.getCode(), true));
+  academic-app/src/test/java/ru/rutcampustrack/academic/integration/AcademicGrpcIntegrationTest.java:130
+    assertThat(response.getCode()).isEqualTo("ivt-21-1");
+  academic-app/src/test/java/ru/rutcampustrack/academic/integration/RestApiIntegrationTest.java:53
+    "SELECT id FROM groups WHERE code = 'ivt-21-1'"
+  academic-app/src/test/java/ru/rutcampustrack/academic/integration/EntityMappingIntegrationTest.java:147, 177
+    "SELECT id FROM groups WHERE code = 'ivt-21-1'"
+  academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupAssembler.java:29
+    entity.getCode(),
+  academic-app/src/main/java/ru/rutcampustrack/academic/group/GroupService.java:46-51, 77
+    existsByCode(request.code()); group.setCode(request.code());
+  academic-app/src/main/java/ru/rutcampustrack/academic/grpc/AcademicGrpcServiceImpl.java:55
+    .setCode(group.getCode() != null ? group.getCode() : "")
+  academic-app/src/main/java/ru/rutcampustrack/academic/repository/GroupRepository.java:14-15
+    Optional<Group> findByCode(String code); boolean existsByCode(String code);
+  academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/CreateGroupRequest.java
+    (record field: String code)
+  academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/UpdateGroupRequest.java
+    (record field: String code)
+  academic-api-contract/src/main/java/ru/rutcampustrack/academic/contract/dto/group/GroupResponse.java:23,34-35
+    this.code = code; public String getCode(); public void setCode(...)
+
+Backend (entity + proto):
+  academic-app/src/main/java/ru/rutcampustrack/academic/entity/Group.java:25-26
+    @Column(unique = true, length = 32) private String code;
+  proto/academic.proto:50
+    string code = 3;  (gRPC GroupResponse) — сохраняется для обратной совместимости,
+    сервер отдаёт пустую строку после миграции.
+
+Other backends (schedule, attendance):
+  schedule-app/src/test/java/.../ScheduleItemApiTest.java:82 — gRPC mock .setCode("TG-01")
+  (никаких прямых ссылок на Group.code из Java entity в других сервисах.)
+
+Frontend (frontends/web-panel/src/app/features/admin):
+  shared/types.ts:55-71 — GroupResponse.code, CreateGroupRequest.code, UpdateGroupRequest.code
+  groups/group-dialog/group-dialog.component.ts:42, 54, 64, 67, 72
+  groups/group-dialog/group-dialog.component.html:14-15
+  groups/groups-page.component.html:43
+  groups/groups-page.component.spec.ts:27-28
+  shared/admin-api.service.spec.ts:106, 122, 133
+  users/users-page.component.spec.ts:42 — mock group with code field
+
+Migrations with `code`:
+  academic-service/.../V1__baseline.sql:12 — code VARCHAR(32) UNIQUE
+  academic-service/.../V2__seed_test_data.sql:7-8 — INSERT INTO groups (name, code, is_active)
+  auth-service/src/test/resources/db/migration/V1__baseline.sql:12 (synced)
+  auth-service/src/test/resources/db/migration/V2__seed_test_data.sql:7-8 (synced)

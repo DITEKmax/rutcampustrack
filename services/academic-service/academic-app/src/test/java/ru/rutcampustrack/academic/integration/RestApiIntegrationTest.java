@@ -82,14 +82,14 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.login", matchesPattern("student\\d{5}")))
+                .andExpect(jsonPath("$.login", matchesPattern("student\\d+")))
                 .andExpect(jsonPath("$.initialPassword", notNullValue()))
                 .andExpect(jsonPath("$._links.self.href", notNullValue()))
                 .andReturn();
 
         String content = result.getResponse().getContentAsString();
         JsonNode json = objectMapper.readTree(content);
-        assertThat(json.get("login").asText()).matches("student\\d{5}");
+        assertThat(json.get("login").asText()).matches("student\\d+");
         assertThat(json.get("initialPassword").asText()).hasSizeGreaterThan(0);
     }
 

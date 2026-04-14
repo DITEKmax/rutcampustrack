@@ -44,4 +44,3 @@ class AuthHttpClient:
             resp.raise_for_status()
             data = await resp.json()
             return data["code"]
-

@@ -10,10 +10,11 @@ from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
-from bot.handlers import login_router, start_router, status_router
+from bot.handlers import login_router, prefs_router, start_router, status_router
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.jwt_redis_client import JwtRedisClient
+from bot.services.notification_prefs import NotificationPrefsClient
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.reminder_scheduler import ReminderScheduler
 from bot.services.send_queue import TelegramSendQueue
@@ -101,20 +102,29 @@ async def main() -> None:
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 
+    # Notification on/off prefs (Redis-backed)
+    prefs_client = NotificationPrefsClient(
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
     # Inject dependencies via dp workflow data (Aiogram 3 DI pattern)
     dp["academic_client"] = academic_client
     dp["schedule_client"] = schedule_client
     dp["jwt_redis"] = jwt_redis
     dp["auth_client"] = auth_client
     dp["attendance_client"] = attendance_client
+    dp["prefs_client"] = prefs_client
 
     # Register routers
     dp.include_router(start_router)
     dp.include_router(login_router)
     dp.include_router(status_router)
+    dp.include_router(prefs_router)
 
     # Create send queue and reminder redis client
-    send_queue = TelegramSendQueue()
+    send_queue = TelegramSendQueue(prefs_client=prefs_client)
     send_queue.start()
     redis_client = ReminderRedisClient(
         key_template=config.reminder_key_template,
@@ -171,6 +181,7 @@ async def main() -> None:
         await auth_client.close()
         await attendance_client.close()
         await jwt_redis.close()
+        await prefs_client.close()
         await schedule_client.close()
         await academic_client.close()
 

@@ -19,13 +19,14 @@ class TelegramSendQueue:
     _MAX_TOKENS = 30  # burst ceiling
     _RETRY_DELAYS = [1, 2, 4]  # backoff delays in seconds
 
-    def __init__(self) -> None:
+    def __init__(self, prefs_client=None) -> None:
         self._queue: asyncio.Queue[SendTask] = asyncio.Queue()
         self._tokens: float = self._MAX_TOKENS
         self._last_refill: float = time.monotonic()
         self._worker_task: Optional[asyncio.Task] = None
         self._total_sent: int = 0
         self._total_failed: int = 0
+        self._prefs_client = prefs_client  # NotificationPrefsClient | None
 
     def start(self) -> None:
         self._worker_task = asyncio.create_task(self._worker())
@@ -36,6 +37,10 @@ class TelegramSendQueue:
     async def _worker(self) -> None:
         while True:
             task = await self._queue.get()
+            if self._prefs_client is not None and task.chat_id is not None:
+                if not await self._prefs_client.is_enabled(task.chat_id):
+                    self._queue.task_done()
+                    continue
             await self._consume_token()
             await self._send_with_retry(task)
             self._queue.task_done()

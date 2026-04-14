@@ -242,8 +242,14 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 .setGroupName(groupName)
                 .setIsHeadman(user.isHeadman())
                 .setTelegramId(user.getTelegramId() != null ? user.getTelegramId() : 0L)
-                // IMP-11: initial_password removed from gRPC response — deliver via RabbitMQ event only
-                .setInitialPassword("")
+                // BUG: initial_password нужен боту для одноразовой выдачи в /start.
+                // Возвращаем только пока пароль не сменён — после смены поле NULL в БД.
+                // Дополнительной утечки нет: тот же пароль уже виден ADMIN-у через REST
+                // /users (BUG-006), а gRPC канал защищён shared secret (IMP-09).
+                .setInitialPassword(
+                        !user.isPasswordChanged() && user.getInitialPassword() != null
+                                ? user.getInitialPassword()
+                                : "")
                 .setPasswordChanged(user.isPasswordChanged())
                 .build();
 

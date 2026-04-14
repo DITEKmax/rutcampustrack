@@ -4,22 +4,27 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
+from bot.handlers.prefs import main_keyboard
+
 logger = logging.getLogger(__name__)
 
 start_router = Router()
 
 
 @start_router.message(Command("start"))
-async def cmd_start(message: Message, academic_client) -> None:
+async def cmd_start(message: Message, academic_client, prefs_client) -> None:
     """Handle /start command — account linking (D-02, D-03)."""
     telegram_id = message.from_user.id
+    notifications_enabled = await prefs_client.is_enabled(telegram_id)
+    keyboard = main_keyboard(notifications_enabled=notifications_enabled)
     try:
         response = await academic_client.get_user_by_telegram_id(telegram_id)
 
         if not response.found:
             # D-03: unknown telegram_id
             await message.answer(
-                "Ваш Telegram не привязан к системе. Обратитесь к старосте вашей группы для привязки аккаунта."
+                "Ваш Telegram не привязан к системе. Обратитесь к старосте вашей группы для привязки аккаунта.",
+                reply_markup=keyboard,
             )
             return
 
@@ -31,15 +36,17 @@ async def cmd_start(message: Message, academic_client) -> None:
                 f"Ваш логин: {response.login}\n"
                 f"Ваш пароль: {response.initial_password}\n\n"
                 "Используйте эти данные для входа в веб-панель.\n"
-                "После входа смените пароль."
+                "После входа смените пароль.",
+                reply_markup=keyboard,
             )
         else:
             # Password already changed
             await message.answer(
-                f"Добро пожаловать, {response.display_name}!\n\nЛогин: {response.login}\nГруппа: {response.group_name}"
+                f"Добро пожаловать, {response.display_name}!\n\nЛогин: {response.login}\nГруппа: {response.group_name}",
+                reply_markup=keyboard,
             )
 
     except Exception:
         # D-14: service unavailability
         logger.warning("Academic gRPC unavailable for /start", exc_info=True)
-        await message.answer("Сервис временно недоступен. Попробуйте позже.")
+        await message.answer("Сервис временно недоступен. Попробуйте позже.", reply_markup=keyboard)

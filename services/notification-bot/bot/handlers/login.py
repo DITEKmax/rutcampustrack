@@ -1,11 +1,13 @@
 import logging
 
 import aiohttp
-from aiogram import Router
+from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
+
+from bot.handlers.prefs import LOGIN_LABEL
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +19,7 @@ class LoginStates(StatesGroup):
 
 
 @login_router.message(Command("login"))
+@login_router.message(F.text == LOGIN_LABEL)
 async def cmd_login(message: Message, state: FSMContext, auth_client, jwt_redis) -> None:
     """Handle /login command — request OTP (D-05, D-06)."""
     telegram_id = message.from_user.id

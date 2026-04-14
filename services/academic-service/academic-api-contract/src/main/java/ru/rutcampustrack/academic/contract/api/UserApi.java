@@ -1,6 +1,7 @@
 package ru.rutcampustrack.academic.contract.api;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +28,7 @@ import ru.rutcampustrack.academic.contract.dto.user.UpdateAvatarRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
+import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 
 /**
@@ -57,11 +59,17 @@ public interface UserApi {
     @GetMapping("/{id}")
     ResponseEntity<EntityModel<UserResponse>> getUser(@PathVariable Long id);
 
-    @Operation(summary = "Список пользователей", description = "Постраничный список с фильтром по роли. Только ADMIN.")
+    @Operation(
+            summary = "Список пользователей",
+            description = "Постраничный список с опциональным поиском и фильтрами. Только ADMIN. " +
+                    "Пример: /academic/users?search=иван&role=STUDENT&page=0&size=20")
     @ApiResponse(responseCode = "200", description = "Список пользователей")
     @GetMapping
     ResponseEntity<PagedModel<EntityModel<UserResponse>>> listUsers(
+            @Parameter(description = "Case-insensitive поиск по login / ФИО / telegramId (contains). BUG-006-1.")
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) UserRole role,
+            @RequestParam(required = false) AccountStatus status,
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler);
 

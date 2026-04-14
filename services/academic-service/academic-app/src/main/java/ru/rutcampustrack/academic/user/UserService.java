@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import ru.rutcampustrack.academic.entity.StudentGroupHistory;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
+import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
@@ -78,6 +80,25 @@ public class UserService {
         // Generate login based on role
         String login = generateLogin(request.role());
 
+        // BUG-006-2 / D-07: Pre-check unique fields before save to surface
+        // field-specific 409 Conflict responses. The DataIntegrityViolation
+        // handler is kept as a race-condition backstop (T-58-02-02).
+        if (userRepository.existsByLogin(login)) {
+            throw new ConflictException("login", login,
+                    "Логин уже используется. Выберите другой");
+        }
+        if (request.telegramId() != null
+                && userRepository.existsByTelegramId(request.telegramId())) {
+            throw new ConflictException("telegramId", request.telegramId(),
+                    "Telegram ID уже привязан к другой учётной записи");
+        }
+        if (request.employeeNumber() != null
+                && !request.employeeNumber().isBlank()
+                && userRepository.existsByEmployeeNumber(request.employeeNumber())) {
+            throw new ConflictException("employeeNumber", request.employeeNumber(),
+                    "Табельный номер уже используется");
+        }
+
         // Generate random plain-text password
         String plainPassword = generatePassword();
 
@@ -114,11 +135,25 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
     }
 
+    /**
+     * Unified list: case-insensitive search по login/ФИО/telegramId (BUG-006-1)
+     * + опциональные фильтры role/status через JPA Specification API (D-02).
+     * Пустые параметры → без ограничений (backward compatible).
+     */
+    public Page<User> listUsers(String search,
+                                UserRole roleFilter,
+                                AccountStatus statusFilter,
+                                Pageable pageable) {
+        Specification<User> spec = Specification
+                .where(UserSpecifications.matchesSearch(search))
+                .and(UserSpecifications.matchesRole(roleFilter))
+                .and(UserSpecifications.matchesStatus(statusFilter));
+        return userRepository.findAll(spec, pageable);
+    }
+
+    /** Backward-compatible overload for internal callers (e.g. gRPC service). */
     public Page<User> listUsers(UserRole roleFilter, Pageable pageable) {
-        if (roleFilter != null) {
-            return userRepository.findByRole(roleFilter.name().toLowerCase(), pageable);
-        }
-        return userRepository.findAll(pageable);
+        return listUsers(null, roleFilter, null, pageable);
     }
 
     public List<User> listTeachers() {

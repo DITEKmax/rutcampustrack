@@ -33,8 +33,27 @@ public record ErrorResponse(
         Instant timestamp,
 
         @Schema(description = "Ошибки валидации полей (только для 400)")
-        List<FieldError> fieldErrors
+        List<FieldError> fieldErrors,
+
+        @Schema(description = "Имя поля DTO, вызвавшего конфликт (только для 409, BUG-006-2)",
+                example = "login")
+        String field
 ) {
+
+    /**
+     * Backward-compatible 7-arg constructor — used by legacy call sites that do
+     * not produce a conflict-field value. Delegates to the canonical 8-arg
+     * constructor with {@code field=null}.
+     */
+    public ErrorResponse(int status,
+                         String type,
+                         String title,
+                         String detail,
+                         String instance,
+                         Instant timestamp,
+                         List<FieldError> fieldErrors) {
+        this(status, type, title, detail, instance, timestamp, fieldErrors, null);
+    }
 
     public record FieldError(
 

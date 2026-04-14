@@ -16,6 +16,7 @@ import ru.rutcampustrack.academic.contract.dto.user.UpdateAvatarRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
+import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.security.RequireRole;
@@ -59,10 +60,12 @@ public class UserController implements UserApi {
     @Override
     @RequireRole({ADMIN})
     public ResponseEntity<PagedModel<EntityModel<UserResponse>>> listUsers(
+            String search,
             UserRole role,
+            AccountStatus status,
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler) {
-        Page<User> page = userService.listUsers(role, pageable);
+        Page<User> page = userService.listUsers(search, role, status, pageable);
         // BUG-006: ADMIN видит initialPassword в выдаче списка.
         Page<UserResponse> responsePage = page.map(u -> userAssembler.toResponse(u, true));
         return ResponseEntity.ok(assembler.toModel(responsePage,

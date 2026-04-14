@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
 status: executing
-stopped_at: Completed 60-03-PLAN.md
-last_updated: "2026-04-14T20:27:13.436Z"
+stopped_at: Completed 60-04-PLAN.md
+last_updated: "2026-04-14T20:37:56.750Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 12
   completed_phases: 2
   total_plans: 27
-  completed_plans: 22
-  percent: 81
+  completed_plans: 23
+  percent: 85
 ---
 
 # Project State
@@ -23,7 +23,7 @@ v9.0 Frontend Unification — Single Login & Role-Based Web Clients
 ## Current Position
 
 Phase: 60 (headman-schedule-management) — EXECUTING
-Plan: 4 of 8
+Plan: 5 of 8
 Plans: 0/TBD
 Status: Ready to execute
 Last activity: 2026-04-14
@@ -79,6 +79,7 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 60]: ScheduleItem.teacherId removed end-to-end (D-16); proto field marked reserved 5 for wire-compat
 - [Phase 60]: existsActiveTemplateSlot: native SQL с CAST(:weekType AS week_type) — JPA varchar несовместим с PG custom enum (v2.0 V5 convention)
 - [Phase 60]: One-off lesson semester_id резолвится по активному семестру; дата вне [date_from..date_to] → 409 ConflictException (MVP D-23, gRPC getSemesterByDate отложен)
+- [Phase 60]: One-off lesson events published via DomainEvent + AFTER_COMMIT; notification-bot pushes entire group (D-18, headman included) with gRPC subject-name fallback
 
 ### Key v9.0 Architecture Decisions
 
@@ -103,7 +104,7 @@ Phases 49 and 50 are CRITICAL-PATH and completed. Phases 51-55 (Blocks B and C) 
 
 ## Session Continuity
 
-Last session: 2026-04-14T20:27:13.432Z
-Stopped at: Completed 60-03-PLAN.md
+Last session: 2026-04-14T20:37:56.746Z
+Stopped at: Completed 60-04-PLAN.md
 Next action: /gsd-verifier 58 (после UAT) или /gsd-next для следующей фазы.
 Deferred: UAT checkpoint plan 58-09 Task 2 — 13 ручных шагов через браузер (docs/phase-58-report.md Known limitations).

@@ -16,6 +16,8 @@ import ru.rutcampustrack.academic.grpc.SubjectsByIdsRequest;
 import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsRequest;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
+import ru.rutcampustrack.academic.grpc.UserRequest;
+import ru.rutcampustrack.academic.grpc.UserResponse;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 
@@ -91,6 +93,27 @@ public class AcademicGrpcClient {
                             .setSemesterId(semesterId)
                             .build());
         } catch (StatusRuntimeException e) {
+            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+        }
+    }
+
+    /**
+     * D-26: fetch user's display name for excuse-ticket snapshot.
+     * Returns "Студент #userId" fallback if the user is not found to avoid blocking
+     * ticket creation on transient academic-service outages.
+     */
+    public String getUserDisplayName(Long userId) {
+        try {
+            UserResponse response = stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getUserById(UserRequest.newBuilder()
+                            .setUserId(userId)
+                            .build());
+            String name = response.getDisplayName();
+            return (name == null || name.isBlank()) ? ("Студент #" + userId) : name;
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
+                throw new ResourceNotFoundException("User", "id", userId);
+            }
             throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
         }
     }

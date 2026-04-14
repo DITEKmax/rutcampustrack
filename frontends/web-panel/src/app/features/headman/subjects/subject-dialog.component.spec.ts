@@ -9,9 +9,9 @@ import { SubjectDialogComponent, SubjectDialogData } from './subject-dialog.comp
 import { HeadmanApiService } from '../shared/headman-api.service';
 
 const TEACHERS = [
-  { id: 1, fullName: 'Иванов И.И.', lastName: 'Иванов' },
-  { id: 2, fullName: 'Петров П.П.', lastName: 'Петров' },
-  { id: 3, fullName: 'Сидоров С.С.', lastName: 'Сидоров' },
+  { id: 1, fullName: 'Иванов Иван Иванович', lastName: 'Иванов', employeeNumber: '00001' },
+  { id: 2, fullName: 'Петров Пётр Петрович', lastName: 'Петров', employeeNumber: '00002' },
+  { id: 3, fullName: 'Сидоров Семён Семёнович', lastName: 'Сидоров', employeeNumber: '00003' },
 ];
 
 function makeApi(overrides: Partial<HeadmanApiService> = {}): HeadmanApiService {
@@ -173,6 +173,18 @@ describe('SubjectDialogComponent', () => {
       // Sorted by lastName with ru-collator (Иванов, Петров, Сидоров)
       expect(component.teachers[0].id).toBe(1);
       expect(component.teachers[2].id).toBe(3);
+    });
+
+    it('teacherLabel renders ФИО + табельный номер to disambiguate однофамильцев', () => {
+      const { component } = setup({ mode: 'create' });
+      expect(component.teacherLabel(component.teachers[0])).toBe(
+        'Иванов Иван Иванович (таб. № 00001)',
+      );
+    });
+
+    it('teacherLabel falls back to fullName when employeeNumber missing', () => {
+      const { component } = setup({ mode: 'create' });
+      expect(component.teacherLabel({ fullName: 'Без Номера' })).toBe('Без Номера');
     });
   });
 });

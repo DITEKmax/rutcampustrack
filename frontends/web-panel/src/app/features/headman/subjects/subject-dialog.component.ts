@@ -89,7 +89,7 @@ export interface SubjectDialogData {
                       aria-label="Выберите преподавателей"
                       [disabled]="teachersLoading || teachersError || teachers.length === 0">
             @for (t of teachers; track t.id) {
-              <mat-option [value]="t.id">{{ t.lastName ?? t.fullName }}</mat-option>
+              <mat-option [value]="t.id">{{ teacherLabel(t) }}</mat-option>
             }
           </mat-select>
           @if (teachersError || (teachers.length === 0 && !teachersLoading)) {
@@ -181,6 +181,12 @@ export class SubjectDialogComponent implements OnInit {
         this.teachersError = true;
       },
     });
+  }
+
+  teacherLabel(t: any): string {
+    const fio = t?.fullName ?? t?.lastName ?? '';
+    const num = t?.employeeNumber;
+    return num ? `${fio} (таб. № ${num})` : fio;
   }
 
   onSubmit(): void {

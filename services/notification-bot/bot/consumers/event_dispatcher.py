@@ -38,6 +38,8 @@ class EventDispatcher:
 
         # Import handlers here to avoid circular imports at module level
         from bot.notifications.attendance_marked import handle_attendance_marked
+        from bot.notifications.group_archived import handle_group_archived
+        from bot.notifications.group_renamed import handle_group_renamed
         from bot.notifications.headman_alerts import handle_headman_alert
         from bot.notifications.homework import handle_homework
         from bot.notifications.lesson_cancelled import handle_lesson_cancelled
@@ -88,6 +90,19 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 redis_client=self._redis_client,
+            ),
+            # 58-07 / BUG-006-6: notify students when group is renamed / archived
+            "group.renamed": lambda event: handle_group_renamed(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
+            "group.archived": lambda event: handle_group_archived(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
             ),
         }
 

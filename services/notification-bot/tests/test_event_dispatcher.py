@@ -137,7 +137,7 @@ async def test_dispatch_routes_attendance_marked():
 
 @pytest.mark.asyncio
 async def test_dispatcher_has_eight_event_types():
-    """EventDispatcher._handlers contains exactly 8 registered event types."""
+    """EventDispatcher._handlers contains all registered event types (10 after 58-07)."""
     dispatcher = _make_dispatcher()
     expected_types = {
         "lesson.started",
@@ -148,8 +148,35 @@ async def test_dispatcher_has_eight_event_types():
         "late_checkin.requested",
         "lesson.closed",
         "attendance.marked",
+        # 58-07 / BUG-006-6
+        "group.renamed",
+        "group.archived",
     }
     assert set(dispatcher._handlers.keys()) == expected_types
+
+
+@pytest.mark.asyncio
+async def test_dispatch_routes_group_renamed():
+    """dispatch calls the handler registered for group.renamed."""
+    mock_handler = AsyncMock()
+    dispatcher = _make_dispatcher(handlers_override={"group.renamed": mock_handler})
+
+    event = {"event_type": "group.renamed", "payload": {"group_id": 42}}
+    await dispatcher.dispatch(event)
+
+    mock_handler.assert_called_once_with(event)
+
+
+@pytest.mark.asyncio
+async def test_dispatch_routes_group_archived():
+    """dispatch calls the handler registered for group.archived."""
+    mock_handler = AsyncMock()
+    dispatcher = _make_dispatcher(handlers_override={"group.archived": mock_handler})
+
+    event = {"event_type": "group.archived", "payload": {"group_id": 77}}
+    await dispatcher.dispatch(event)
+
+    mock_handler.assert_called_once_with(event)
 
 
 @pytest.mark.asyncio

@@ -20,6 +20,15 @@ class AcademicGrpcClient:
         self._metadata = (("x-grpc-secret", grpc_secret),) if grpc_secret else ()
         self._cache: dict[int, tuple[float, list[Any]]] = {}
 
+    async def get_group(self, group_id: int) -> Any:
+        """Resolve group info by ID. Returns GroupResponse proto (.id, .name, .is_active).
+
+        Used by group.renamed / group.archived notification handlers (58-07).
+        No local caching: the handler fires rarely and needs fresh name after rename.
+        """
+        request = academic_pb2.GroupRequest(group_id=group_id)
+        return await self._stub.GetGroup(request, metadata=self._metadata)
+
     async def get_group_members(self, group_id: int) -> list[Any]:
         now = time.monotonic()
         if group_id in self._cache:

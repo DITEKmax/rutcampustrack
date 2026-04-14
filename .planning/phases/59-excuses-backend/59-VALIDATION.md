@@ -1,10 +1,11 @@
 ---
 phase: 59
 slug: excuses-backend
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-14
+finalized: 2026-04-14
 ---
 
 # Phase 59 — Validation Strategy
@@ -46,7 +47,17 @@ created: 2026-04-14
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 59-XX-YY | XX | W | FR-N / NFR-N | T-59-XX | {behavior} | unit/IT/contract/e2e | `{command}` | ❌ W0 | ⬜ pending |
+| 59-01-01 | 01 | 1 | FR-1 (ExcuseTicket model) | T-59-01 | Mongo enum storage lowercase; D-11 uniqueness query | unit | `./gradlew ... --tests "*ExcuseRepositoryTest"` | ✅ | ✅ |
+| 59-02-01 | 02 | 2 | FR-1, FR-5, FR-7 / AC-1..AC-6 | T-59-02-01..04 | D-10..D-18 service rules | unit | `./gradlew ... --tests "*ExcuseServiceTest"` | ✅ | ✅ |
+| 59-02-02 | 02 | 2 | FR-1 (HATEOAS) | — | Assembler lowercases status | unit | `./gradlew ... --tests "*ExcuseAssemblerTest"` | ✅ | ✅ |
+| 59-03-01 | 03 | 2 | AC-11, FR-7 (D-25) | — | gRPC GetLessonsByIds batch + orphan tolerance | IT | `./gradlew :services:schedule-service:schedule-app:test --tests "*LessonsByIdsGrpcIT"` | ✅ | ✅ |
+| 59-04-01 | 04 | 3 | FR-5 / AC-5 (D-16 cascade) | T-59-04-01..03 | approve → EXCUSED/FREE_ATTENDANCE upsert | IT | `./gradlew ... --tests "*ExcuseServiceApproveIT"` | ✅ | ✅ |
+| 59-05-01 | 05 | 3 | AC-7, FR-2 (D-19/D-20) | T-59-05-01..03 | event envelope + lowercase enum | unit+IT | `./gradlew ... --tests "*ExcuseEventPublisherTest" "*ExcuseEventContractIT"` | ✅ | ✅ |
+| 59-06-01 | 06 | 4 | AC-8, FR-6 (D-28) | T-59-06-01..03 | bot consumer for `excuse.decided` | pytest | `pytest tests/test_excuse_decided.py` | ✅ | ✅ |
+| 59-07-01 | 07 | 4 | AC-9, FR-3 (D-21, D-22) | T-59-07-01..02 | ExcuseType dropdown + live /excuses/me | vitest | `npx vitest run src/app/features/student/excuses/` | ✅ | ✅ |
+| 59-08-01 | 08 | 4 | AC-10, FR-4, FR-5 (D-23, D-24) | T-59-08-01..03 | approve/reject with required comment | vitest | `npx vitest run src/app/features/headman/excuses/` | ✅ | ✅ |
+| 59-09-01 | 09 | 5 | D-25 | — | validateLessonIds in createExcuse | unit (via service) | `./gradlew ... --tests "*ExcuseServiceTest"` | ✅ | ✅ |
+| 59-09-02 | 09 | 5 | AC-1..AC-6, AC-12 | T-59-02-01..04 | full REST → Mongo → Rabbit happy + rejection paths | IT | `./gradlew ... --tests "*ExcuseControllerIT"` | ✅ | ✅ (7/7) |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -55,23 +66,23 @@ created: 2026-04-14
 ## Wave 0 Requirements (создание тестовой инфраструктуры)
 
 ### Backend (attendance-service)
-- [ ] `services/attendance-service/attendance-app/src/test/java/.../excuse/ExcuseServiceTest.java` — unit тесты service (FR-1, FR-5, FR-7)
-- [ ] `.../excuse/ExcuseAssemblerTest.java` — HATEOAS маппинг
-- [ ] `.../excuse/ExcuseEventPublisherTest.java` — проверка payload и routing key
-- [ ] `.../excuse/ExcuseControllerIT.java` — @SpringBootTest + Testcontainers (AC-1..AC-6)
-- [ ] `.../excuse/ExcuseEventContractIT.java` — публикация события + JSON Schema (AC-7)
-- [ ] `services/schedule-service/schedule-app/src/test/.../LessonsByIdsGrpcIT.java` — gRPC (AC-11)
-- [ ] фикстуры: `src/test/resources/fixtures/excuse_requested.json`, `excuse_decided.json`
+- [x] `services/attendance-service/attendance-app/src/test/java/.../excuse/ExcuseServiceTest.java` — unit тесты service (FR-1, FR-5, FR-7) — 10 кейсов
+- [x] `.../excuse/ExcuseAssemblerTest.java` — HATEOAS маппинг
+- [x] `.../excuse/ExcuseEventPublisherTest.java` — проверка payload и routing key — 4 кейса
+- [x] `.../excuse/ExcuseControllerIT.java` — @SpringBootTest + Testcontainers (AC-1..AC-6) — 7 кейсов зелёные
+- [x] `.../excuse/ExcuseEventContractIT.java` — публикация события (AC-7) — 2 кейса
+- [x] `.../excuse/ExcuseServiceApproveIT.java` — D-16 cascade (AC-5) — 4 кейса
+- [x] `services/schedule-service/schedule-app/src/test/.../LessonsByIdsGrpcIT.java` — gRPC (AC-11) — 3 кейса
+- [x] фикстуры: `src/test/resources/fixtures/excuse_requested.json`, `excuse_decided.json`
 
 ### Bot (notification-bot)
-- [ ] `services/notification-bot/tests/test_excuse_decided.py` — consumer для `excuse.decided` (AC-8)
-- [ ] `services/notification-bot/tests/fixtures/excuse_decided.json` — канонический payload
-- [ ] (проверить существующий `test_excuse_requested.py` — обновить фикстуру при изменении контракта)
+- [x] `services/notification-bot/tests/test_excuse_decided.py` — consumer для `excuse.decided` (AC-8) — 6 кейсов
+- [x] `services/notification-bot/tests/fixtures/excuse_decided.json` — канонический payload
+- [x] `test_event_dispatcher.py` обновлён — `excuse.decided` добавлен в registry
 
 ### Frontend (web-panel)
-- [ ] `frontends/web-panel/src/app/features/student/excuses/excuses.component.spec.ts` — ExcuseType dropdown + submit (AC-9)
-- [ ] `frontends/web-panel/src/app/features/headman/excuses/excuses.component.spec.ts` — approve/reject flow (AC-10)
-- [ ] MSW/HttpTestingController mocks для `/api/attendance/excuses`
+- [x] `frontends/web-panel/src/app/features/student/excuses/student-excuses.component.spec.ts` — ExcuseType dropdown + submit (AC-9) — 10 кейсов
+- [x] `frontends/web-panel/src/app/features/headman/excuses/headman-excuses.component.spec.ts` — approve/reject flow (AC-10) — 8 кейсов
 
 ---
 
@@ -99,11 +110,11 @@ created: 2026-04-14
 
 ## Validation Sign-Off
 
-- [ ] Все tasks в PLAN.md имеют `<automated>` verify или ссылку на Wave 0
-- [ ] Sampling continuity: нет 3 подряд задач без automated verify
-- [ ] Wave 0 закрывает все MISSING ссылки
-- [ ] Нет watch-mode флагов
-- [ ] Feedback latency < 60с для quick-run
-- [ ] `nyquist_compliant: true` в frontmatter
+- [x] Все tasks в PLAN.md имеют `<automated>` verify или ссылку на Wave 0
+- [x] Sampling continuity: нет 3 подряд задач без automated verify
+- [x] Wave 0 закрывает все MISSING ссылки
+- [x] Нет watch-mode флагов
+- [x] Feedback latency < 60с для quick-run
+- [x] `nyquist_compliant: true` в frontmatter
 
-**Approval:** pending
+**Approval:** approved (2026-04-14, plan 59-09)

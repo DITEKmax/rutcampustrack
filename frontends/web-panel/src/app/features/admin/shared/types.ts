@@ -15,6 +15,10 @@ export interface UserResponse {
   employeeNumber: string | null;
   telegramId: number | null;
   createdAt: string;
+  /** BUG-006-4: начальный пароль, видимый ADMIN-у пока пользователь его не сменил. null/undefined = скрыт. */
+  initialPassword?: string | null;
+  /** BUG-006-4: флаг смены пароля пользователем (после первой смены initialPassword уходит в null). */
+  passwordChanged?: boolean;
 }
 
 export interface CreateUserRequest {

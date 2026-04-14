@@ -109,6 +109,90 @@ describe('UsersPageComponent', () => {
     httpMock.expectOne(req => req.url === '/api/academic/users').flush(mockUsersResponse);
   });
 
+  // --- BUG-006-4: колонка «Начальный пароль» ---
+
+  it('shows initialPassword column only when at least one user exposes a password', () => {
+    flushInitialRequests();
+    // Loaded list has no initialPassword → column hidden, displayedColumns excludes it.
+    expect(component.showInitialPasswordColumn()).toBe(false);
+    expect(component.displayedColumns()).not.toContain('initialPassword');
+
+    // Re-load the list with a user that has initialPassword exposed.
+    const responseWithPassword = {
+      _embedded: {
+        users: [
+          {
+            ...mockUsersResponse._embedded.users[0],
+            initialPassword: 'Temp1234XY',
+            passwordChanged: false,
+          },
+        ],
+      },
+      page: mockUsersResponse.page,
+    };
+    component.loadUsers();
+    httpMock.expectOne(req => req.url === '/api/academic/users').flush(responseWithPassword);
+
+    expect(component.showInitialPasswordColumn()).toBe(true);
+    expect(component.displayedColumns()).toContain('initialPassword');
+    expect(component.users()[0].initialPassword).toBe('Temp1234XY');
+  });
+
+  it('hides column when every user has passwordChanged=true (no initialPassword)', () => {
+    flushInitialRequests();
+
+    const responseWithoutPasswords = {
+      _embedded: {
+        users: [
+          { ...mockUsersResponse._embedded.users[0], initialPassword: null, passwordChanged: true },
+        ],
+      },
+      page: mockUsersResponse.page,
+    };
+    component.loadUsers();
+    httpMock.expectOne(req => req.url === '/api/academic/users').flush(responseWithoutPasswords);
+
+    expect(component.showInitialPasswordColumn()).toBe(false);
+    expect(component.displayedColumns()).not.toContain('initialPassword');
+  });
+
+  it('copyPassword invokes navigator.clipboard.writeText and surfaces a success snackbar', async () => {
+    flushInitialRequests();
+
+    const writeTextSpy = vi.fn().mockResolvedValue(undefined);
+    // Override clipboard only for the duration of this test.
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: writeTextSpy },
+    });
+
+    const snackBar = (component as any).snackBar as { open: (...a: unknown[]) => unknown };
+    const snackSpy = vi.spyOn(snackBar, 'open');
+
+    component.copyPassword('Temp1234XY');
+    // Flush the promise returned by writeText.
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(writeTextSpy).toHaveBeenCalledWith('Temp1234XY');
+    expect(snackSpy).toHaveBeenCalledWith(
+      'Начальный пароль скопирован',
+      undefined,
+      expect.objectContaining({ duration: 2500 }),
+    );
+
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: originalClipboard });
+  });
+
+  it('copyPassword is a no-op when called with an empty string', () => {
+    flushInitialRequests();
+    const snackBar = (component as any).snackBar as { open: (...a: unknown[]) => unknown };
+    const snackSpy = vi.spyOn(snackBar, 'open');
+    component.copyPassword('');
+    expect(snackSpy).not.toHaveBeenCalled();
+  });
+
   it('restoreUser calls patchUser with status active', () => {
     flushInitialRequests();
 

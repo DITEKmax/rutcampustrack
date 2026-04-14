@@ -97,6 +97,29 @@
           </mat-cell>
         </ng-container>
 
+        @if (showInitialPasswordColumn()) {
+          <ng-container matColumnDef="initialPassword">
+            <mat-header-cell *matHeaderCellDef>Начальный пароль</mat-header-cell>
+            <mat-cell *matCellDef="let row">
+              @if (row.initialPassword) {
+                <span class="init-password__wrap">
+                  <code class="init-password">{{ row.initialPassword }}</code>
+                  <button
+                    mat-icon-button
+                    matTooltip="Скопировать"
+                    aria-label="Скопировать начальный пароль"
+                    (click)="copyPassword(row.initialPassword); $event.stopPropagation()"
+                  >
+                    <i class="ph ph-copy" aria-hidden="true"></i>
+                  </button>
+                </span>
+              } @else {
+                <span class="init-password__muted">—</span>
+              }
+            </mat-cell>
+          </ng-container>
+        }
+
         <ng-container matColumnDef="actions">
           <mat-header-cell *matHeaderCellDef></mat-header-cell>
           <mat-cell *matCellDef="let row">
@@ -115,9 +138,9 @@
           </mat-cell>
         </ng-container>
 
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-header-row *matHeaderRowDef="displayedColumns()"></mat-header-row>
         <mat-row
-          *matRowDef="let row; columns: displayedColumns"
+          *matRowDef="let row; columns: displayedColumns()"
           [class.opacity-60]="row.status === 'archived'"
         ></mat-row>
       </mat-table>

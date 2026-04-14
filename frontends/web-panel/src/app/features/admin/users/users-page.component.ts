@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -42,6 +42,7 @@ import { ArchiveUserDialogComponent } from './archive-user-dialog/archive-user-d
     StatusChipComponent,
   ],
   templateUrl: './users-page.component.html',
+  styleUrls: ['./users-page.component.scss'],
 })
 export class UsersPageComponent implements OnInit {
   private readonly adminApi = inject(AdminApiService);
@@ -63,7 +64,23 @@ export class UsersPageComponent implements OnInit {
   readonly roleFilter = signal<string>('');
   readonly statusFilter = signal<string>('');
 
-  readonly displayedColumns = ['login', 'displayName', 'role', 'group', 'status', 'actions'];
+  /**
+   * BUG-006-4 / D-14: колонка «Начальный пароль» показывается только если
+   * хотя бы у одного пользователя в текущей выдаче есть видимый initialPassword
+   * (backend отдаёт его только пока {@code passwordChanged = false}).
+   */
+  readonly showInitialPasswordColumn = computed(() =>
+    this.users().some(u => !!u.initialPassword),
+  );
+
+  readonly displayedColumns = computed<string[]>(() => {
+    const base = ['login', 'displayName', 'role', 'group', 'status'];
+    if (this.showInitialPasswordColumn()) {
+      base.push('initialPassword');
+    }
+    base.push('actions');
+    return base;
+  });
 
   ngOnInit(): void {
     this.adminApi.listGroups().subscribe({
@@ -202,6 +219,29 @@ export class UsersPageComponent implements OnInit {
         });
       }
     });
+  }
+
+  /**
+   * BUG-006-4 / T-58-02-04: копирует начальный пароль в буфер обмена.
+   * Вызывается только по user-gesture (click), поэтому clipboard API
+   * всегда доступен; ошибки (например SecurityError в устаревших браузерах)
+   * сообщаем пользователю через snackbar без утечек пароля в логи.
+   */
+  copyPassword(password: string): void {
+    if (!password) return;
+    const clipboard = typeof navigator !== 'undefined' ? navigator.clipboard : undefined;
+    if (!clipboard) {
+      this.snackBar.open('Буфер обмена недоступен в этом браузере', undefined, { duration: 3000 });
+      return;
+    }
+    clipboard.writeText(password).then(
+      () => {
+        this.snackBar.open('Начальный пароль скопирован', undefined, { duration: 2500 });
+      },
+      () => {
+        this.snackBar.open('Не удалось скопировать пароль', undefined, { duration: 3000 });
+      },
+    );
   }
 
   restoreUser(user: UserResponse): void {

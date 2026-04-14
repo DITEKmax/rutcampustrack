@@ -1,6 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import {
+  ExcuseTicket,
+  ExcuseTicketStatus,
+  PagedExcuseResponse,
+} from '../excuses/excuse.types';
 
 /**
  * Shared HttpClient wrapper for all headman-cabinet REST calls.
@@ -57,6 +63,57 @@ export class HeadmanApiService {
   getPendingExcuses(): Observable<any> {
     return this.http.get('/api/academic/headman/excuses', {
       params: new HttpParams().set('status', 'pending'),
+    });
+  }
+
+  /**
+   * Fetch excuse tickets for the headman's group (Phase 59, D-23).
+   * Endpoint: GET /api/attendance/excuses/group/{groupId}?status=...&size=50
+   * Returns unwrapped ExcuseTicket[] (extracts _embedded.excuseTicketList).
+   * 403/404 → empty list (graceful degradation while backend rolls out).
+   * Other errors propagate.
+   */
+  getGroupExcuses(groupId: number, status?: ExcuseTicketStatus | string): Observable<ExcuseTicket[]> {
+    let params = new HttpParams().set('size', '50');
+    if (status) {
+      params = params.set('status', status);
+    }
+    return this.http
+      .get<PagedExcuseResponse>(`/api/attendance/excuses/group/${groupId}`, { params })
+      .pipe(
+        map(resp => resp?._embedded?.excuseTicketList ?? []),
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 403 || err.status === 404) {
+            return of([] as ExcuseTicket[]);
+          }
+          return throwError(() => err);
+        }),
+      );
+  }
+
+  /**
+   * Approve an excuse ticket (Phase 59, D-23).
+   * Endpoint: PATCH /api/attendance/excuses/{id}/status
+   * Body: { status: 'approved', decisionComment?: string | null }
+   * Backend cascades approval onto attendance records (D-16).
+   */
+  approveExcuse(id: string, decisionComment?: string | null): Observable<void> {
+    return this.http.patch<void>(`/api/attendance/excuses/${id}/status`, {
+      status: 'approved',
+      decisionComment: decisionComment ?? null,
+    });
+  }
+
+  /**
+   * Reject an excuse ticket (Phase 59, D-24).
+   * Endpoint: PATCH /api/attendance/excuses/{id}/status
+   * Body: { status: 'rejected', decisionComment: string }
+   * decisionComment is required on rejection (enforced in caller).
+   */
+  rejectExcuse(id: string, decisionComment: string): Observable<void> {
+    return this.http.patch<void>(`/api/attendance/excuses/${id}/status`, {
+      status: 'rejected',
+      decisionComment,
     });
   }
 

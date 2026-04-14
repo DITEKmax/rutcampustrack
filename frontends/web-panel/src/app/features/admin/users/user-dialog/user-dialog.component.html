@@ -108,6 +108,27 @@
         </mat-form-field>
       }
 
+      <!-- Telegram ID: required для student, опционально иначе (BUG-006-3) -->
+      <mat-form-field class="ud-field-full">
+        <mat-label>Telegram ID</mat-label>
+        <input
+          matInput
+          type="number"
+          formControlName="telegramId"
+          placeholder="123456789"
+          [required]="form.get('role')?.value === 'student'"
+        />
+        @if (form.get('telegramId')?.hasError('required')) {
+          <mat-error>Telegram ID обязателен для студента</mat-error>
+        } @else if (form.get('telegramId')?.hasError('conflict')) {
+          <mat-error>{{ form.get('telegramId')?.errors?.['conflict'] }}</mat-error>
+        } @else if (form.get('role')?.value === 'student') {
+          <mat-hint>Без Telegram ID студент не сможет получать уведомления и подтверждать через бота</mat-hint>
+        } @else {
+          <mat-hint>Необязательно — можно добавить позже</mat-hint>
+        }
+      </mat-form-field>
+
       @if (form.get('role')?.value === 'student') {
         <mat-checkbox formControlName="isHeadman">Является старостой группы</mat-checkbox>
       }

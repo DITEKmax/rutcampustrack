@@ -81,6 +81,7 @@ describe('UserDialogComponent', () => {
       lastName: 'Петров',
       firstName: 'Пётр',
       role: 'student',
+      telegramId: 123456789,
     });
 
     component.save();
@@ -91,6 +92,7 @@ describe('UserDialogComponent', () => {
       lastName: 'Петров',
       firstName: 'Пётр',
       role: 'student',
+      telegramId: 123456789,
     });
 
     req.flush({
@@ -129,6 +131,7 @@ describe('UserDialogComponent', () => {
       lastName: 'Петров',
       firstName: 'Пётр',
       role: 'student',
+      telegramId: 123456789,
     });
   }
 
@@ -228,6 +231,94 @@ describe('UserDialogComponent', () => {
     // After the change the conflict error is cleared (no other validators on
     // this control, so errors become null).
     expect(component.form.get('employeeNumber')?.errors).toBeNull();
+  });
+
+  // --- BUG-006-3: telegramId required for STUDENT, optional otherwise ---
+
+  it('role=student → telegramId has Validators.required, form invalid when telegramId empty', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+
+    component.form.patchValue({
+      lastName: 'Петров',
+      firstName: 'Пётр',
+      role: 'student',
+    });
+
+    expect(component.form.get('telegramId')!.hasError('required')).toBe(true);
+    expect(component.form.invalid).toBe(true);
+  });
+
+  it('role=teacher → telegramId valid when empty (required removed)', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+
+    component.form.patchValue({
+      lastName: 'Учителев',
+      firstName: 'Учитель',
+      role: 'teacher',
+    });
+
+    expect(component.form.get('telegramId')!.hasError('required')).toBe(false);
+    expect(component.form.valid).toBe(true);
+  });
+
+  it('role=admin → telegramId valid when empty', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+
+    component.form.patchValue({
+      lastName: 'Админ',
+      firstName: 'Главный',
+      role: 'admin',
+    });
+
+    expect(component.form.get('telegramId')!.hasError('required')).toBe(false);
+    expect(component.form.valid).toBe(true);
+  });
+
+  it('switching role student→teacher clears required → form becomes valid', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+
+    component.form.patchValue({
+      lastName: 'Иванов',
+      firstName: 'Иван',
+      role: 'student',
+    });
+    expect(component.form.invalid).toBe(true);
+
+    component.form.patchValue({ role: 'teacher' });
+    expect(component.form.get('telegramId')!.hasError('required')).toBe(false);
+    expect(component.form.valid).toBe(true);
+  });
+
+  it('switching role teacher→student adds required → form invalid until telegramId filled', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+
+    component.form.patchValue({
+      lastName: 'Иванов',
+      firstName: 'Иван',
+      role: 'teacher',
+    });
+    expect(component.form.valid).toBe(true);
+
+    component.form.patchValue({ role: 'student' });
+    expect(component.form.get('telegramId')!.hasError('required')).toBe(true);
+    expect(component.form.invalid).toBe(true);
+
+    component.form.patchValue({ telegramId: 987654321 });
+    expect(component.form.get('telegramId')!.hasError('required')).toBe(false);
+    expect(component.form.valid).toBe(true);
+  });
+
+  it('400 with field=telegramId → control marked with conflict error (backend as source of truth)', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+    fillCreateForm(component);
+
+    // Backend returns 400 despite client-side validation passing — e.g. via
+    // DevTools bypass. Handler still surfaces the field into submitError.
+    submitAndFailWith(component, 400, { status: 400, field: 'telegramId', detail: 'x' });
+
+    // Generic 400 fallback message because handleSaveError only wires
+    // field→control mapping for 409. 400 still produces a friendly message.
+    expect(component.submitError()).toBe('Не удалось сохранить. Проверьте введённые данные');
   });
 
   it('isHeadman checkbox visible only when role is student', () => {

@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -78,6 +79,9 @@ export class UserDialogComponent {
     role: new FormControl<UserRole | ''>('', { nonNullable: true, validators: [Validators.required] }),
     groupId: new FormControl<number | null>(null),
     employeeNumber: new FormControl('', { nonNullable: true }),
+    // BUG-006-3: optional by default; `Validators.required` is toggled by
+    // `role.valueChanges` below — required for STUDENT, optional otherwise.
+    telegramId: new FormControl<number | null>(null),
     isHeadman: new FormControl(false, { nonNullable: true }),
   });
 
@@ -92,6 +96,7 @@ export class UserDialogComponent {
         groupId: u.groupId,
         isHeadman: u.headman,
         employeeNumber: u.employeeNumber ?? '',
+        telegramId: u.telegramId ?? null,
       });
       this.form.get('role')!.disable();
     } else if (this.data.mode === 'create' && this.data.presetRole) {
@@ -100,6 +105,29 @@ export class UserDialogComponent {
         this.form.patchValue({ role: this.data.presetRole as UserRole });
       }
     }
+
+    // BUG-006-3 / D-08..D-11: telegramId is required when role=student and
+    // optional otherwise. React to role changes and apply once at startup to
+    // cover edit mode + presetRole flow.
+    const roleCtrl = this.form.get('role')!;
+    roleCtrl.valueChanges
+      .pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .subscribe(role => this.applyTelegramRequiredForRole(role as UserRole | ''));
+    this.applyTelegramRequiredForRole(roleCtrl.value as UserRole | '');
+  }
+
+  /**
+   * Toggles {@link Validators.required} on the telegramId control based on
+   * the active role. Called on init and on every role change.
+   */
+  private applyTelegramRequiredForRole(role: UserRole | ''): void {
+    const tg = this.form.get('telegramId')!;
+    if (role === 'student') {
+      tg.addValidators(Validators.required);
+    } else {
+      tg.removeValidators(Validators.required);
+    }
+    tg.updateValueAndValidity({ emitEvent: false });
   }
 
   save(): void {
@@ -121,6 +149,8 @@ export class UserDialogComponent {
       if (raw.role === 'student' && raw.groupId != null) req.groupId = raw.groupId;
       // Табельный номер только для преподавателей
       if (raw.role === 'teacher' && raw.employeeNumber) req.employeeNumber = raw.employeeNumber;
+      // Telegram ID — обязательно для студента (BUG-006-3), опционально иначе
+      if (raw.telegramId != null) req.telegramId = raw.telegramId;
 
       this.adminApi.createUser(req).subscribe({
         next: result => {
@@ -144,6 +174,9 @@ export class UserDialogComponent {
       if (raw.groupId !== u.groupId) req.groupId = raw.groupId ?? undefined;
       if (raw.isHeadman !== u.headman) req.isHeadman = raw.isHeadman;
       if (raw.employeeNumber !== (u.employeeNumber ?? '')) req.employeeNumber = raw.employeeNumber;
+      if (raw.telegramId !== (u.telegramId ?? null)) {
+        req.telegramId = raw.telegramId ?? undefined;
+      }
 
       this.adminApi.patchUser(u.id, req).subscribe({
         next: () => {

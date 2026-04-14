@@ -263,4 +263,107 @@ export class HeadmanApiService {
       params: new HttpParams().set('subjectId', subjectId),
     });
   }
+
+  // Schedule management (Plan 60-07 — /headman/schedule page)
+
+  /**
+   * List all semesters (paged). Headman page uses this to pick the active one.
+   * Endpoint: GET /api/academic/semesters?size=200
+   */
+  listSemesters(): Observable<any> {
+    return this.http.get('/api/academic/semesters', {
+      params: new HttpParams().set('size', '200'),
+    });
+  }
+
+  /**
+   * Load schedule template (ScheduleItem list) for a given group + semester.
+   * Endpoint: GET /api/schedule/items?groupId=X&semesterId=Y
+   * Backend contract `ScheduleItemApi` (Plan 60-02) — returns PagedModel.
+   */
+  getGroupScheduleItems(groupId: number, semesterId: number): Observable<any> {
+    return this.http.get('/api/schedule/items', {
+      params: new HttpParams()
+        .set('groupId', groupId)
+        .set('semesterId', semesterId)
+        .set('size', '200'),
+    });
+  }
+
+  /**
+   * Create a schedule template slot (HEADMAN only — own group).
+   * Endpoint: POST /api/schedule/items
+   */
+  createScheduleItem(body: {
+    groupId: number;
+    subjectId: number;
+    semesterId: number;
+    dayOfWeek: number;
+    lessonNumber: number;
+    startTime: string;
+    endTime: string;
+    weekType: string;
+    room?: string;
+  }): Observable<any> {
+    return this.http.post('/api/schedule/items', body);
+  }
+
+  /**
+   * Full-update a template slot (HEADMAN only — own group).
+   * Endpoint: PUT /api/schedule/items/{id}
+   */
+  updateScheduleItem(id: number, body: {
+    subjectId: number;
+    dayOfWeek: number;
+    lessonNumber: number;
+    startTime: string;
+    endTime: string;
+    weekType: string;
+    room?: string;
+  }): Observable<any> {
+    return this.http.put(`/api/schedule/items/${id}`, body);
+  }
+
+  /** Soft-delete (deactivate) a template slot. */
+  deleteScheduleItem(id: number): Observable<any> {
+    return this.http.delete(`/api/schedule/items/${id}`);
+  }
+
+  /**
+   * Create a one-off lesson for a specific date (Plan 60-03).
+   * Endpoint: POST /api/schedule/one-off-lessons
+   * 409 if a template slot is active on that (date, lessonNumber) — see D-09.
+   */
+  createOneOffLesson(body: {
+    groupId: number;
+    subjectId: number;
+    date: string;
+    lessonNumber: number;
+    classroom?: string;
+  }): Observable<any> {
+    return this.http.post('/api/schedule/one-off-lessons', body);
+  }
+
+  /** Delete a one-off lesson (D-22 — any date). */
+  deleteOneOffLesson(id: number): Observable<any> {
+    return this.http.delete(`/api/schedule/one-off-lessons/${id}`);
+  }
+
+  /** List one-off lessons for a group within [dateFrom..dateTo]. */
+  getOneOffLessons(groupId: number, dateFrom: string, dateTo: string): Observable<any> {
+    return this.http.get('/api/schedule/one-off-lessons', {
+      params: new HttpParams()
+        .set('groupId', groupId)
+        .set('dateFrom', dateFrom)
+        .set('dateTo', dateTo),
+    });
+  }
+
+  /**
+   * Cancel a concrete lesson on a specific date (D-20 — existing endpoint).
+   * Endpoint: POST /api/schedule/lessons/{id}/cancel
+   */
+  cancelLesson(lessonId: number, reason: string): Observable<any> {
+    return this.http.post(`/api/schedule/lessons/${lessonId}/cancel`, { reason });
+  }
 }

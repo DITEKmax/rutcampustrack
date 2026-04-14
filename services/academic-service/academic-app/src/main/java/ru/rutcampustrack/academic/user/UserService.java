@@ -77,6 +77,11 @@ public class UserService {
 
     @Transactional
     public EntityModel<UserCreatedResponse> createUser(CreateUserRequest request) {
+        // BUG-006-3 / D-08..D-11: STUDENT role requires telegramId (staroste/boto
+        // notifications won't work without it). TEACHER/ADMIN keep it optional.
+        // Guard runs before any repo access so it's cheap and deterministic.
+        validateTelegramForRole(request);
+
         // Generate login based on role
         String login = generateLogin(request.role());
 
@@ -321,6 +326,20 @@ public class UserService {
     }
 
     // --- Private helpers ---
+
+    /**
+     * BUG-006-3 / D-08..D-11: enforces that {@code telegramId} is present for
+     * {@link UserRole#STUDENT} accounts. Teacher/admin accounts keep the field
+     * optional. A telegramId of {@code 0} is normalised to "missing" — some
+     * clients submit zero instead of null.
+     */
+    private void validateTelegramForRole(CreateUserRequest request) {
+        if (request.role() == UserRole.STUDENT
+                && (request.telegramId() == null || request.telegramId() == 0L)) {
+            throw new BadRequestException("telegramId",
+                    "Telegram ID обязателен для студента");
+        }
+    }
 
     private String generateLogin(UserRole role) {
         if (role == UserRole.STUDENT) {

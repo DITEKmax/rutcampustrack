@@ -100,7 +100,8 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 request.getRequestURI(),
                 Instant.now(),
-                null
+                null,
+                ex.getField()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }

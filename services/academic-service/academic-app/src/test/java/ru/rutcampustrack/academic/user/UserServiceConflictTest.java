@@ -43,9 +43,11 @@ class UserServiceConflictTest {
     private UserService service;
 
     private CreateUserRequest studentRequest() {
+        // telegramId is mandatory for STUDENT since BUG-006-3; use a placeholder
+        // value so this fixture exercises the happy path.
         return new CreateUserRequest(
                 "Иванов", "Иван", "Иванович",
-                UserRole.STUDENT, 1L, null, null
+                UserRole.STUDENT, 1L, null, 123456789L
         );
     }
 

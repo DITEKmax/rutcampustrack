@@ -92,6 +92,7 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         Subject subject = new Subject();
         subject.setName("Algorithms");
         subject.setType(SubjectType.LECTURE);
+        subject.setGroupId(GROUP_ID); // Phase 60-01 V12: subjects.group_id NOT NULL
         subject = subjectRepository.save(subject);
         subjectId = subject.getId();
 

@@ -126,6 +126,7 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
         testSubject = new Subject();
         testSubject.setName("Test Subject " + System.nanoTime());
         testSubject.setType(SubjectType.LECTURE);
+        testSubject.setGroupId(groupA.getId()); // Phase 60-01 V12: subjects.group_id NOT NULL
         testSubject = subjectRepository.save(testSubject);
 
         // Create a semester for homework tests (inactive, so it doesn't conflict with exclusion constraint)
@@ -181,17 +182,17 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
             userRepository.deleteById(testUser.getId());
         }
 
-        // Remove test groups
+        // Remove test subject FIRST (Phase 60-01 V12: subjects.group_id FK to groups)
+        if (testSubject != null && testSubject.getId() != null) {
+            subjectRepository.deleteById(testSubject.getId());
+        }
+
+        // Remove test groups after subjects (FK dependency via subjects.group_id)
         if (groupA != null && groupA.getId() != null) {
             groupRepository.deleteById(groupA.getId());
         }
         if (groupB != null && groupB.getId() != null) {
             groupRepository.deleteById(groupB.getId());
-        }
-
-        // Remove test subject
-        if (testSubject != null && testSubject.getId() != null) {
-            subjectRepository.deleteById(testSubject.getId());
         }
 
         // Remove test semester (only if it was not deleted during test)
@@ -248,6 +249,12 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
     void deleteGroup_publishesGroupUpdatedEvent() throws Exception {
         String queueName = bindTempQueue();
         Long deletedGroupId = groupA.getId();
+
+        // Phase 60-01 V12: subjects.group_id FK — нужно удалить testSubject перед группой.
+        if (testSubject != null && testSubject.getId() != null) {
+            subjectRepository.deleteById(testSubject.getId());
+            testSubject = null; // чтобы AfterEach не пытался удалить повторно
+        }
 
         groupService.deleteGroup(groupA.getId());
         groupA = null; // prevent @AfterEach from trying to delete again

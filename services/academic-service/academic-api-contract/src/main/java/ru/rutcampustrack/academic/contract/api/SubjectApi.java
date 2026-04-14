@@ -46,7 +46,7 @@ public interface SubjectApi {
     @GetMapping("/{id}")
     ResponseEntity<EntityModel<SubjectResponse>> getSubject(@PathVariable Long id);
 
-    @Operation(summary = "Список предметов")
+    @Operation(summary = "Список предметов (HEADMAN — только своя группа, ADMIN — все)")
     @ApiResponse(responseCode = "200", description = "Список предметов")
     @GetMapping
     ResponseEntity<PagedModel<EntityModel<SubjectResponse>>> listSubjects(
@@ -74,4 +74,27 @@ public interface SubjectApi {
     })
     @DeleteMapping("/{id}")
     ResponseEntity<Void> deleteSubject(@PathVariable Long id);
+
+    // =========================================================================
+    // Phase 60-01 / D-19: управление преподавателями существующего предмета
+    // =========================================================================
+
+    @Operation(summary = "Добавить преподавателя к предмету (HEADMAN/ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Преподаватель добавлен"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Предмет не найден"),
+            @ApiResponse(responseCode = "409", description = "Преподаватель уже назначен")
+    })
+    @PostMapping("/{id}/teachers/{teacherId}")
+    ResponseEntity<Void> addTeacher(@PathVariable Long id, @PathVariable Long teacherId);
+
+    @Operation(summary = "Удалить преподавателя из предмета (HEADMAN/ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Преподаватель удалён"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Назначение не найдено")
+    })
+    @DeleteMapping("/{id}/teachers/{teacherId}")
+    ResponseEntity<Void> removeTeacher(@PathVariable Long id, @PathVariable Long teacherId);
 }

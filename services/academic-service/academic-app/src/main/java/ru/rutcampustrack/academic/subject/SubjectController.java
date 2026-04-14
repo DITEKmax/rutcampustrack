@@ -64,4 +64,18 @@ public class SubjectController implements SubjectApi {
         subjectService.deleteSubject(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<Void> addTeacher(Long id, Long teacherId) {
+        subjectService.addTeacher(id, teacherId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<Void> removeTeacher(Long id, Long teacherId) {
+        subjectService.removeTeacher(id, teacherId);
+        return ResponseEntity.noContent().build();
+    }
 }

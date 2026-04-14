@@ -428,9 +428,10 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
     @Order(10)
     void testHomeworkCompletionToggle() throws Exception {
         // Create a subject first
+        // Phase 60-01 V12: subjects.group_id NOT NULL — используем seedGroupId
         Long subjectId = jdbcTemplate.queryForObject(
-                "INSERT INTO subjects (name, type) VALUES ('Integration Test Subject', 'lecture') RETURNING id",
-                Long.class);
+                "INSERT INTO subjects (name, type, group_id) VALUES ('Integration Test Subject', 'lecture', ?) RETURNING id",
+                Long.class, seedGroupId);
 
         // Deactivate existing active semester to avoid constraint issues
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");

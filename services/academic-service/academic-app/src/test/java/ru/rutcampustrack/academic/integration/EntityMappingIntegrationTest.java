@@ -177,9 +177,10 @@ class EntityMappingIntegrationTest extends AbstractAcademicIntegrationTest {
             "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
 
         // Create a subject for this test
+        // Phase 60-01 V12: subjects.group_id NOT NULL
         Long subjectId = jdbcTemplate.queryForObject(
-            "INSERT INTO subjects (name, type) VALUES ('Test Subject', 'lecture') RETURNING id",
-            Long.class
+            "INSERT INTO subjects (name, type, group_id) VALUES ('Test Subject', 'lecture', ?) RETURNING id",
+            Long.class, groupId
         );
 
         // Global threshold (null, null) = 70%

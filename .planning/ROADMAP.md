@@ -372,6 +372,37 @@ Plans:
 
 ---
 
+### Phase 60: Headman Schedule Management
+**Goal**: Починить модель `Subject` (добавить `group_id`, атомарно создавать N преподавателей через `TeacherSubjectGroup` при создании предмета), удалить `ScheduleItem.teacherId`, ввести таблицу `schedule_one_off_lessons` с CRUD для роли HEADMAN, events `lesson.one_off.created/cancelled` с каскадным удалением attendance, и построить UI `/headman/schedule` (матрица дни×слоты с диалогами для редактирования шаблона + разовые правки на конкретную дату).
+**Depends on**: Phase 54 (Headman Web Cabinet — Subjects) — уже завершена. Параллельна Phase 59.
+**Source**: `.planning/phases/60-headman-schedule-management/60-CONTEXT.md` (discuss-phase 2026-04-14, все Q-01..Q-08 закрыты; D-01..D-23 зафиксированы).
+**Success Criteria** (what must be TRUE):
+  1. POST `/api/academic/subjects` атомарно создаёт запись в `subjects` (с `group_id` старосты) и N записей в `teacher_subject_groups` для текущего семестра; при сбое — вся транзакция откатывается
+  2. `subjects.group_id` — `NOT NULL` (Flyway-миграция удаляет существующие тестовые записи и добавляет колонку + FK)
+  3. `ScheduleItem.teacherId` удалён из entity, DTO, БД (Flyway); препод видит журнал через JOIN `ScheduleItem × TeacherSubjectGroup WHERE TSG.teacher_id = :me`
+  4. Таблица `schedule_one_off_lessons {id, group_id, subject_id, semester_id, date, lesson_number, classroom, created_by, created_at}` с UNIQUE `(group_id, date, lesson_number)` и `semester_id NOT NULL` (lookup по `date`)
+  5. HEADMAN CRUD endpoints для one-off lesson: POST (создание, 409 при конфликте с шаблоном или дублем), DELETE (на любую дату, включая прошедшие)
+  6. Events `lesson.one_off.created` + `lesson.one_off.cancelled` опубликованы в RabbitMQ, JSON Schemas в `event-schemas/`; notification-bot и notification-web подписаны
+  7. attendance-service при получении `lesson.one_off.cancelled` **каскадно удаляет** `lesson` + attendance marks + excuses для `(group_id, date, lesson_number)`
+  8. attendance-service read-path (генерация `lessons` на дату) **сливает** `ScheduleItem` + `schedule_one_off_lessons` — для журнала/статистики разовая пара неотличима от обычной
+  9. Push студентам группы (включая старосту) при создании/отмене разовой пары — через existing notification-bot flow
+  10. Страница `/headman/schedule` — матрица дни×слоты, клик по ячейке открывает диалог (subject из каталога группы + classroom + WeekType, без выбора препода), кнопка «Добавить разовую пару» + «Отменить пару на дату X» (использует существующий `POST /api/schedule/lessons/{id}/cancel`)
+  11. Guard на стороне schedule-service проверяет `groupId` ресурса против группы старосты через `RequestContext` (консистентно с subject management); staroста не может править чужие группы (403)
+**Notes**: Backend отмены обычного урока (`POST /api/schedule/lessons/{id}/cancel`) **уже реализован** (Phase 55) — не трогаем, только интегрируем с frontend. Drag-and-drop в UI — out of scope. Помощник старосты (`schedule_manage`) — out of scope.
+**Plans**: 8 планов
+Plans:
+- [ ] 60-01-PLAN.md — academic-service: subjects.group_id + CreateSubjectRequest (teacherIds) + атомарный createSubject
+- [ ] 60-02-PLAN.md — schedule-service: удаление ScheduleItem.teacherId (entity + DTO + Flyway V3) + guard тест
+- [ ] 60-03-PLAN.md — schedule-service: schedule_one_off_lessons (Flyway V4) + REST CRUD endpoints + 409 логика
+- [ ] 60-04-PLAN.md — events: lesson.one_off.created/cancelled JSON Schema + publisher + notification-bot handlers
+- [ ] 60-05-PLAN.md — attendance-service: cascade delete при lesson.one_off.cancelled + read-path merge
+- [ ] 60-06-PLAN.md — web-panel: subject-dialog multi-select teachers + type поле
+- [ ] 60-07-PLAN.md — web-panel: /headman/schedule матрица + диалоги + checkpoint:human-verify
+- [ ] 60-08-PLAN.md — full build regression + phase-60-report.md
+**UI hint**: yes (`/headman/schedule` + обновление `/headman/subjects`)
+
+---
+
 ## Progress
 
 **Execution Order:** 49 → 50 → 51 → 52 → 53 → 54 → 55 → 56 → 57 → 58 → 59 (58 и 59 параллельно при наличии мощностей)

@@ -4,7 +4,7 @@
 
 .excuse-table__header {
   display: grid;
-  grid-template-columns: 120px 1fr 140px;
+  grid-template-columns: 120px 1fr 80px 140px;
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-xs);
   font-weight: 600;
@@ -16,7 +16,7 @@
 
 .excuse-table__row {
   display: grid;
-  grid-template-columns: 120px 1fr 140px;
+  grid-template-columns: 120px 1fr 80px 140px;
   padding: var(--space-4);
   min-height: 52px;
   align-items: center;
@@ -39,10 +39,24 @@
   color: var(--text-primary);
 }
 
+.status-chip--submitted,
 .status-chip--pending {
   background-color: color-mix(in srgb, var(--accent-warning) 15%, transparent);
   color: var(--accent-warning);
   border: 1px solid var(--accent-warning);
+}
+
+.status-chip--draft {
+  background-color: color-mix(in srgb, var(--text-muted) 15%, transparent);
+  color: var(--text-muted);
+  border: 1px solid var(--border-default);
+}
+
+.excuse-count {
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  text-align: center;
 }
 
 .status-chip--approved {
@@ -74,7 +88,7 @@
 @media (max-width: 600px) {
   .excuse-table__header,
   .excuse-table__row {
-    grid-template-columns: 1fr 140px;
+    grid-template-columns: 1fr 60px 140px;
   }
   .excuse-date {
     display: none;

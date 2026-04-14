@@ -6,7 +6,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { StudentApiService } from '../shared/student-api.service';
-import type { ExcuseTicket, ExcuseTicketStatus } from '../shared/student-schedule.types';
+import type { ExcuseTicket, ExcuseTicketStatus, ExcuseType } from '../shared/student-schedule.types';
+import { EXCUSE_TYPE_LABELS } from '../shared/student-schedule.types';
 import { ExcuseFormDialogComponent } from './excuse-form-dialog/excuse-form-dialog.component';
 
 @Component({
@@ -35,11 +36,17 @@ export class StudentExcusesComponent implements OnInit {
   readonly tickets = signal<ExcuseTicket[]>([]);
 
   readonly statusLabels: Record<ExcuseTicketStatus, string> = {
-    pending: 'На рассмотрении',
+    draft: 'Черновик',
+    submitted: 'На рассмотрении',
     approved: 'Одобрено',
     rejected: 'Отклонено',
-    cancelled: 'Отменено',
   };
+
+  readonly excuseTypeLabels = EXCUSE_TYPE_LABELS;
+
+  labelForExcuseType(type: ExcuseType): string {
+    return this.excuseTypeLabels[type] ?? type;
+  }
 
   ngOnInit(): void {
     this.loadTickets();

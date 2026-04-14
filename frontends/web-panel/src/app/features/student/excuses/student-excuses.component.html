@@ -27,13 +27,15 @@
       <div class="excuse-table" role="table" aria-label="Тикеты о пропусках">
         <div class="excuse-table__header" role="row">
           <span role="columnheader">Дата</span>
-          <span role="columnheader">Предметы</span>
+          <span role="columnheader">Причина</span>
+          <span role="columnheader">Занятий</span>
           <span role="columnheader">Статус</span>
         </div>
         @for (ticket of tickets(); track ticket.id) {
           <div class="excuse-table__row" role="row">
             <span class="excuse-date" role="cell">{{ ticket.createdAt | date:'dd.MM.yyyy' }}</span>
-            <span class="excuse-subjects" role="cell">{{ ticket.subjectNames.join(', ') }}</span>
+            <span class="excuse-subjects" role="cell">{{ labelForExcuseType(ticket.excuseType) }}</span>
+            <span class="excuse-count" role="cell">{{ ticket.lessonIds.length }}</span>
             <span
               class="status-chip"
               [class]="'status-chip--' + ticket.status"

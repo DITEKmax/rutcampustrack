@@ -21,65 +21,22 @@
         </label>
       }
     </div>
-    @if (validationError()) {
-      <p class="form-error" role="alert">{{ validationError() }}</p>
-    }
   </section>
 
-  <!-- File upload -->
+  <!-- Excuse type dropdown (D-21) -->
   <section class="form-section">
-    <h3 class="form-section__label">Прикрепите файлы <span class="form-hint-inline">(необязательно)</span></h3>
-    <div
-      class="drop-zone"
-      [class.drop-zone--active]="dragOver()"
-      (dragover)="onDragOver($event)"
-      (dragleave)="onDragLeave()"
-      (drop)="onDrop($event)"
-      (click)="fileInput.click()"
-      (keydown.enter)="fileInput.click()"
-      role="button"
-      tabindex="0"
-      aria-label="Загрузка файлов"
-    >
-      <i class="ph ph-upload-simple drop-zone__icon"></i>
-      <span class="drop-zone__text">Перетащите файлы или нажмите для выбора</span>
-      <input
-        #fileInput
-        type="file"
-        multiple
-        accept="image/*,application/pdf,.doc,.docx"
-        style="display:none"
-        (change)="onFileInputChange($event)"
-      />
-    </div>
-
-    @if (fileErrors().length > 0) {
-      <div class="file-errors" role="alert">
-        @for (err of fileErrors(); track err) {
-          <p class="form-error">{{ err }}</p>
+    <h3 class="form-section__label">Причина пропуска</h3>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-select
+        [formControl]="excuseTypeControl"
+        placeholder="Выберите причину"
+        aria-label="Причина пропуска"
+      >
+        @for (type of excuseTypes; track type) {
+          <mat-option [value]="type">{{ excuseTypeLabels[type] }}</mat-option>
         }
-      </div>
-    }
-
-    @if (files().length > 0) {
-      <ul class="file-list" aria-label="Прикреплённые файлы">
-        @for (file of files(); track file.name; let i = $index) {
-          <li class="file-chip">
-            <i class="ph ph-file file-chip__icon"></i>
-            <span class="file-chip__name" [title]="file.name">{{ file.name | slice:0:24 }}</span>
-            <span class="file-chip__size">{{ formatFileSize(file.size) }}</span>
-            <button
-              class="file-chip__remove"
-              type="button"
-              [attr.aria-label]="'Удалить ' + file.name"
-              (click)="removeFile(i)"
-            >
-              <i class="ph ph-x"></i>
-            </button>
-          </li>
-        }
-      </ul>
-    }
+      </mat-select>
+    </mat-form-field>
   </section>
 
   <!-- Comment -->
@@ -90,11 +47,15 @@
         matInput
         [formControl]="commentControl"
         rows="3"
-        maxlength="500"
-        placeholder="Укажите причину пропуска"
+        maxlength="1000"
+        placeholder="Укажите дополнительные обстоятельства"
       ></textarea>
     </mat-form-field>
   </section>
+
+  @if (validationError()) {
+    <p class="form-error" role="alert">{{ validationError() }}</p>
+  }
 
   @if (submitError()) {
     <div class="page-error" role="alert">

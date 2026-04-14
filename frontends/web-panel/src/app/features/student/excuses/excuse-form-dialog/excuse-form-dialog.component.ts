@@ -9,16 +9,24 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { StudentApiService } from '../../shared/student-api.service';
-import type { AttendanceRecord } from '../../shared/student-schedule.types';
+import type { AttendanceRecord, ExcuseType } from '../../shared/student-schedule.types';
+import { EXCUSE_TYPE_LABELS } from '../../shared/student-schedule.types';
 
-// File size / count limits — T-53-02-01 mitigation
-// Note: backend MUST also validate file type/size when endpoint is activated.
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
-const MAX_FILE_COUNT = 5;
-
+/**
+ * Student-side dialog for creating an excuse ticket (D-21, D-22).
+ *
+ * Scope (Phase 59-07):
+ *  - Dropdown «Причина пропуска» with 6 ExcuseType values (Russian labels)
+ *  - Checkbox list of last-30-days lessons for lesson selection
+ *  - Optional comment (max 1000 chars — backend validation)
+ *  - JSON submit via StudentApiService.submitExcuse(ids, excuseType, comment)
+ *
+ * Out of scope (D-03): file attachments — deferred to future Telegram flow.
+ */
 @Component({
   selector: 'app-excuse-form-dialog',
   standalone: true,
@@ -30,6 +38,7 @@ const MAX_FILE_COUNT = 5;
     MatCheckboxModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatButtonModule,
   ],
   templateUrl: './excuse-form-dialog.component.html',
@@ -47,28 +56,29 @@ export class ExcuseFormDialogComponent {
   readonly recentLessons: AttendanceRecord[];
 
   readonly selectedLessonIds = signal<Set<number>>(new Set());
-  readonly files = signal<File[]>([]);
-  readonly fileErrors = signal<string[]>([]);
-  readonly dragOver = signal(false);
   readonly submitting = signal(false);
   readonly submitError = signal<string | null>(null);
   readonly validationError = signal<string | null>(null);
 
-  readonly commentForm: FormGroup;
-  get commentControl(): FormControl { return this.commentForm.get('comment') as FormControl; }
+  readonly excuseTypeLabels = EXCUSE_TYPE_LABELS;
+  readonly excuseTypes = Object.keys(EXCUSE_TYPE_LABELS) as ExcuseType[];
+
+  readonly form: FormGroup;
+  get excuseTypeControl(): FormControl { return this.form.get('excuseType') as FormControl; }
+  get commentControl(): FormControl { return this.form.get('comment') as FormControl; }
 
   constructor(
     @Inject(MAT_DIALOG_DATA) data: { lessons: AttendanceRecord[] },
   ) {
     this.lessons = data.lessons ?? [];
-    // Last 30 days
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 30);
     this.recentLessons = this.lessons.filter(
       l => new Date(l.lessonDate) >= cutoff,
     );
-    this.commentForm = this.fb.group({
-      comment: ['', [Validators.maxLength(500)]],
+    this.form = this.fb.group({
+      excuseType: [null, [Validators.required]],
+      comment: ['', [Validators.maxLength(1000)]],
     });
   }
 
@@ -86,68 +96,23 @@ export class ExcuseFormDialogComponent {
     return this.selectedLessonIds().has(lessonId);
   }
 
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.dragOver.set(true);
-  }
-
-  onDragLeave(): void {
-    this.dragOver.set(false);
-  }
-
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.dragOver.set(false);
-    const dropped = Array.from(event.dataTransfer?.files ?? []);
-    this.addFiles(dropped);
-  }
-
-  onFileInputChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.addFiles(Array.from(input.files ?? []));
-    // Reset input so same file can be re-selected
-    input.value = '';
-  }
-
-  private addFiles(newFiles: File[]): void {
-    const errors: string[] = [];
-    const valid: File[] = [];
-    for (const f of newFiles) {
-      if (f.size > MAX_FILE_SIZE_BYTES) {
-        errors.push(`"${f.name}": Файл превышает 10 МБ`);
-        continue;
-      }
-      valid.push(f);
-    }
-    const combined = [...this.files(), ...valid].slice(0, MAX_FILE_COUNT);
-    this.files.set(combined);
-    this.fileErrors.set(errors);
-  }
-
-  removeFile(index: number): void {
-    this.files.update(arr => arr.filter((_, i) => i !== index));
-  }
-
-  formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} Б`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} КБ`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
-  }
-
   submit(): void {
     const ids = Array.from(this.selectedLessonIds());
     if (ids.length === 0) {
       this.validationError.set('Выберите хотя бы одно занятие');
       return;
     }
+    const excuseType = this.excuseTypeControl.value as ExcuseType | null;
+    if (!excuseType) {
+      this.validationError.set('Выберите причину пропуска');
+      return;
+    }
 
     this.submitting.set(true);
     this.submitError.set(null);
-    const comment = this.commentForm.value['comment']?.trim() || null;
+    const comment = (this.commentControl.value as string)?.trim() || null;
 
-    // submitExcuse converts HTTP 404 → of(undefined) (graceful degradation).
-    // HTTP 5xx propagates to error() handler below.
-    this.apiService.submitExcuse(ids, comment, this.files()).subscribe({
+    this.apiService.submitExcuse(ids, excuseType, comment).subscribe({
       next: () => {
         this.submitting.set(false);
         this.dialogRef.close(true);

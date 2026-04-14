@@ -2,6 +2,7 @@ package ru.rutcampustrack.attendance.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.mongodb.client.result.DeleteResult;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -85,6 +86,27 @@ public class LessonEventService {
         bulkOps.execute();
         log.info("lesson.closed: lessonId={}, processed {} students for auto-absent",
                 lessonId, members.getStudentsCount());
+    }
+
+    /**
+     * D-22 / AC-08: cascade-delete attendance docs when a one-off lesson is cancelled.
+     * <p>
+     * Match key is the natural tuple {@code (group_id, lesson_date, lesson_number)} —
+     * attendance-service does not track a separate {@code one_off_lesson_id}, so this
+     * key is sufficient to identify all attendance rows belonging to the cancelled slot.
+     * <p>
+     * Idempotent: MongoDB {@code remove} on a non-matching filter returns
+     * {@code deletedCount=0} without throwing, so duplicate event delivery is safe.
+     */
+    public void processOneOffLessonCancelled(Long groupId, LocalDate date, Integer lessonNumber) {
+        Query filter = Query.query(
+                Criteria.where("group_id").is(groupId)
+                        .and("lesson_date").is(date)
+                        .and("lesson_number").is(lessonNumber)
+        );
+        DeleteResult result = mongoTemplate.remove(filter, AttendanceDocument.class);
+        log.info("lesson.one_off.cancelled: groupId={}, date={}, lessonNumber={}, deletedCount={}",
+                groupId, date, lessonNumber, result.getDeletedCount());
     }
 
     public void processLessonCancelled(Long lessonId) {

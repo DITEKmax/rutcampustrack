@@ -6,6 +6,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 /**
@@ -34,10 +35,11 @@ public class EventConsumer {
         }
         log.debug("Received event: {}", eventType);
         switch (eventType) {
-            case "lesson.started"    -> handleLessonStarted(envelope);
-            case "lesson.closed"     -> handleLessonClosed(envelope);
-            case "lesson.cancelled"  -> handleLessonCancelled(envelope);
-            case "semester.archived" -> handleSemesterArchived(envelope);
+            case "lesson.started"          -> handleLessonStarted(envelope);
+            case "lesson.closed"           -> handleLessonClosed(envelope);
+            case "lesson.cancelled"        -> handleLessonCancelled(envelope);
+            case "lesson.one_off.cancelled" -> handleOneOffLessonCancelled(envelope);
+            case "semester.archived"       -> handleSemesterArchived(envelope);
             default -> log.debug("Ignoring unknown event type: {}", eventType);
         }
     }
@@ -62,6 +64,26 @@ public class EventConsumer {
         if (payload == null) return;
         Long lessonId = extractLong(payload, "lesson_id");
         lessonEventService.processLessonCancelled(lessonId);
+    }
+
+    /**
+     * D-22 / AC-08: cascade-delete attendance docs for a cancelled one-off lesson.
+     * Natural key: {@code (group_id, lesson_date, lesson_number)}.
+     * Idempotent — repeated delivery yields 0 deletes without exception.
+     */
+    private void handleOneOffLessonCancelled(Map<String, Object> envelope) {
+        Map<String, Object> payload = extractPayload(envelope);
+        if (payload == null) return;
+        Long groupId = extractLong(payload, "group_id");
+        String dateStr = (String) payload.get("date");
+        Object lessonNumberRaw = payload.get("lesson_number");
+        if (groupId == null || dateStr == null || lessonNumberRaw == null) {
+            log.warn("lesson.one_off.cancelled: missing required fields, ignoring: {}", payload);
+            return;
+        }
+        LocalDate date = LocalDate.parse(dateStr);
+        Integer lessonNumber = ((Number) lessonNumberRaw).intValue();
+        lessonEventService.processOneOffLessonCancelled(groupId, date, lessonNumber);
     }
 
     private void handleSemesterArchived(Map<String, Object> envelope) {

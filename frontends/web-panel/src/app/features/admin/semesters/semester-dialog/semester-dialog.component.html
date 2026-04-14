@@ -1,5 +1,8 @@
 <h2 mat-dialog-title>{{ isEdit ? 'Редактировать семестр' : 'Новый семестр' }}</h2>
 <mat-dialog-content>
+  @if (readOnlyWarning()) {
+    <div class="warning" role="alert">{{ readOnlyWarning() }}</div>
+  }
   <form [formGroup]="form" class="flex flex-col gap-4">
     <mat-form-field class="w-full">
       <mat-label>Название</mat-label>
@@ -11,11 +14,14 @@
 
     <mat-form-field class="w-full">
       <mat-label>Дата начала</mat-label>
-      <input matInput [matDatepicker]="pickerFrom" formControlName="dateFrom">
+      <input matInput [matDatepicker]="pickerFrom" [min]="minDate()" formControlName="dateFrom">
       <mat-datepicker-toggle matIconSuffix [for]="pickerFrom"></mat-datepicker-toggle>
       <mat-datepicker #pickerFrom></mat-datepicker>
       @if (form.controls.dateFrom.hasError('required')) {
         <mat-error>Обязательное поле</mat-error>
+      }
+      @if (form.controls.dateFrom.hasError('matDatepickerMin')) {
+        <mat-error>Нельзя создать семестр в прошлом</mat-error>
       }
     </mat-form-field>
 
@@ -31,11 +37,22 @@
         <mat-error>Дата окончания должна быть позже даты начала</mat-error>
       }
     </mat-form-field>
+
+    @if (form.hasError('overlap') && !form.pending) {
+      <div class="overlap-error" role="alert">
+        Пересекается с семестром: {{ form.errors?.['overlap'] }}
+      </div>
+    }
+    @if (submitError()) {
+      <div class="submit-error" role="alert">{{ submitError() }}</div>
+    }
   </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Отмена</button>
-  <button mat-flat-button color="primary" [disabled]="form.invalid || saving" (click)="save()">
+  <button mat-flat-button color="primary"
+          [disabled]="form.invalid || form.pending || saving || form.disabled"
+          (click)="save()">
     {{ isEdit ? 'Сохранить изменения' : 'Создать семестр' }}
   </button>
 </mat-dialog-actions>

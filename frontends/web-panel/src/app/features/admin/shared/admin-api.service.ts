@@ -110,6 +110,23 @@ export class AdminApiService {
     return this.http.patch<void>(`/api/academic/semesters/${id}/activate`, null);
   }
 
+  /**
+   * BUG-006-7 / plan 58-05: проверка пересечения дат семестра.
+   * Используется async-валидатором semester-dialog до submit.
+   */
+  checkSemesterOverlap(
+    from: string,
+    to: string,
+    excludeId?: number,
+  ): Observable<{ overlaps: boolean; conflictingName?: string | null }> {
+    let params = new HttpParams().set('from', from).set('to', to);
+    if (excludeId != null) params = params.set('excludeId', excludeId);
+    return this.http.get<{ overlaps: boolean; conflictingName?: string | null }>(
+      '/api/academic/semesters/overlap',
+      { params },
+    );
+  }
+
   getDashboardStats(): Observable<DashboardStatsResponse> {
     return this.http.get<DashboardStatsResponse>('/api/academic/dashboard/stats');
   }

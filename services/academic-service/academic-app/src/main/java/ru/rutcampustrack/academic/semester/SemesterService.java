@@ -16,6 +16,10 @@ import ru.rutcampustrack.academic.event.SemesterArchivedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 
+import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
+import ru.rutcampustrack.academic.exception.ConflictException;
+
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
@@ -42,6 +46,9 @@ public class SemesterService {
 
     @Transactional
     public Semester createSemester(CreateSemesterRequest request) {
+        validateDates(request.dateFrom(), request.dateTo(), true);
+        checkOverlapOrThrow(request.dateFrom(), request.dateTo(), null);
+
         Semester semester = new Semester();
         semester.setName(request.name());
         semester.setDateFrom(request.dateFrom());
@@ -63,10 +70,52 @@ public class SemesterService {
     @Transactional
     public Semester updateSemester(Long id, UpdateSemesterRequest request) {
         Semester semester = findSemesterById(id);
+
+        // BUG-006-7: запрещаем редактировать завершённый семестр.
+        if (semester.getDateTo().isBefore(LocalDate.now())) {
+            throw new ConflictException("status", id,
+                    "Нельзя редактировать завершённый семестр");
+        }
+
+        validateDates(request.dateFrom(), request.dateTo(), false);
+        checkOverlapOrThrow(request.dateFrom(), request.dateTo(), id);
+
         semester.setName(request.name());
         semester.setDateFrom(request.dateFrom());
         semester.setDateTo(request.dateTo());
         return semesterRepository.save(semester);
+    }
+
+    /**
+     * Check overlap without mutation — used by async validator on the admin
+     * panel semester-dialog (BUG-006-7).
+     */
+    public OverlapCheckResponse checkOverlap(LocalDate from, LocalDate to, Long excludeId) {
+        return semesterRepository.findFirstOverlapping(from, to, excludeId)
+                .map(s -> new OverlapCheckResponse(true, s.getName()))
+                .orElse(new OverlapCheckResponse(false, null));
+    }
+
+    /**
+     * Structured pre-check for date sanity. On create we additionally enforce
+     * {@code dateFrom >= today} per BUG-006-7; on update we allow the existing
+     * past-starting semester to be renamed as long as {@code dateTo >= today}
+     * (handled separately in {@link #updateSemester}).
+     */
+    private void validateDates(LocalDate from, LocalDate to, boolean requireFutureStart) {
+        if (requireFutureStart && from.isBefore(LocalDate.now())) {
+            throw new BadRequestException("dateFrom", "Нельзя создать семестр в прошлом");
+        }
+        if (to.isBefore(from)) {
+            throw new BadRequestException("dateTo", "Дата окончания раньше даты начала");
+        }
+    }
+
+    private void checkOverlapOrThrow(LocalDate from, LocalDate to, Long excludeId) {
+        semesterRepository.findFirstOverlapping(from, to, excludeId).ifPresent(conflict -> {
+            throw new ConflictException("dates", conflict.getId(),
+                    "Даты пересекаются с семестром \"" + conflict.getName() + "\"");
+        });
     }
 
     /**

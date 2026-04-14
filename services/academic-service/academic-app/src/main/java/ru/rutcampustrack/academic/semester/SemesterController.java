@@ -10,10 +10,13 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.contract.api.SemesterApi;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
+import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.security.RequireRole;
+
+import java.time.LocalDate;
 
 import static ru.rutcampustrack.academic.contract.enums.UserRole.ADMIN;
 
@@ -75,5 +78,11 @@ public class SemesterController implements SemesterApi {
     public ResponseEntity<EntityModel<SemesterResponse>> activateSemester(Long id) {
         Semester semester = semesterService.activateSemester(id);
         return ResponseEntity.ok(semesterAssembler.toModel(semester));
+    }
+
+    @Override
+    @RequireRole({ADMIN})
+    public ResponseEntity<OverlapCheckResponse> checkOverlap(LocalDate from, LocalDate to, Long excludeId) {
+        return ResponseEntity.ok(semesterService.checkOverlap(from, to, excludeId));
     }
 }

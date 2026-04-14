@@ -238,11 +238,13 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
         // Create a semester to try to delete
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
 
+        // BUG-006-7 / plan 58-05: dateFrom must be >= today AND must not overlap
+        // any existing semester (V10 EXCLUDE gist). Use a far-future empty window.
         String createBody = """
                 {
-                  "name": "Fall 2025 Test",
-                  "dateFrom": "2025-09-01",
-                  "dateTo": "2026-01-31"
+                  "name": "Fall 2035 Test",
+                  "dateFrom": "2035-09-01",
+                  "dateTo": "2036-01-31"
                 }
                 """;
 
@@ -432,10 +434,14 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
         // Deactivate existing active semester to avoid constraint issues
         jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
 
-        // Create a semester for homework
+        // Create a semester for homework.
+        // Plan 58-05 / V10 semesters_no_overlap EXCLUDE: the date range must not
+        // overlap any semester previously created in this test class (@Order 4
+        // leaves two 2027 semesters in place; @Order 5 leaves a 2035-2036 one).
+        // Use a far-future window that is guaranteed empty.
         Long semesterId = jdbcTemplate.queryForObject(
                 "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) " +
-                "VALUES ('HW Test Semester', '2027-02-01', '2027-06-30', false, NOW()) RETURNING id",
+                "VALUES ('HW Test Semester', '2040-02-01', '2040-06-30', false, NOW()) RETURNING id",
                 Long.class);
 
         // Create homework as headman via native SQL (avoid headman permission check)

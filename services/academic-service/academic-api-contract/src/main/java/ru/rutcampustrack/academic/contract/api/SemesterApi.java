@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.semester.CreateSemesterRequest;
 import ru.rutcampustrack.academic.contract.dto.semester.DeleteSemesterRequest;
+import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.SemesterResponse;
 import ru.rutcampustrack.academic.contract.dto.semester.UpdateSemesterRequest;
+
+import java.time.LocalDate;
 
 /**
  * REST API contract for academic semester management.
@@ -87,4 +92,16 @@ public interface SemesterApi {
     })
     @PatchMapping("/{id}/activate")
     ResponseEntity<EntityModel<SemesterResponse>> activateSemester(@PathVariable Long id);
+
+    @Operation(summary = "Проверка пересечения дат семестра (ADMIN)",
+            description = "Используется frontend async-валидатором semester-dialog для предварительной проверки дат перед сабмитом.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Результат проверки"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа")
+    })
+    @GetMapping("/overlap")
+    ResponseEntity<OverlapCheckResponse> checkOverlap(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) Long excludeId);
 }

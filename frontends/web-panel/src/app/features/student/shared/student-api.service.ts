@@ -6,6 +6,7 @@ import type {
   CheckinRequest,
   CheckinResponse,
   ExcuseTicket,
+  ExcuseType,
   HomeworkItem,
   LessonResponse,
   PagedResponse,
@@ -143,43 +144,46 @@ export class StudentApiService {
   }
 
   /**
-   * Fetch excuse tickets for the authenticated student.
-   * Backend endpoint (GET /api/attendance/excuses) is deferred from v5.0.
-   * HTTP 404 → graceful degradation (empty array).
+   * Fetch excuse tickets for the authenticated student (D-05, D-22).
+   * Backend endpoint: GET /api/attendance/excuses/me (live since Phase 59-02).
+   * HATEOAS embedded key: excuseTicketResponseList (defensive fallback uses Object.values).
+   * HTTP 404 → graceful degradation (empty array) — should not occur in normal operation.
    */
   getExcuseTickets(): Observable<ExcuseTicket[]> {
-    return this.http.get<any>('/api/attendance/excuses').pipe(
-      map(resp => {
-        if (Array.isArray(resp)) return resp as ExcuseTicket[];
-        const embedded = resp?._embedded;
-        if (!embedded) return [];
-        return (
-          (embedded['excuseTicketList'] as ExcuseTicket[]) ??
-          (Object.values(embedded)[0] as ExcuseTicket[]) ??
-          []
-        );
-      }),
-      catchError((err: HttpErrorResponse) => {
-        if (err.status === 404) return of([]);
-        return throwError(() => err);
-      }),
-    );
+    const params = new HttpParams().set('page', '0').set('size', '20');
+    return this.http
+      .get<any>('/api/attendance/excuses/me', { params })
+      .pipe(
+        map(resp => {
+          if (Array.isArray(resp)) return resp as ExcuseTicket[];
+          const embedded = resp?._embedded;
+          if (!embedded) return [];
+          return (
+            (embedded['excuseTicketResponseList'] as ExcuseTicket[]) ??
+            (embedded['excuseTicketList'] as ExcuseTicket[]) ??
+            (Object.values(embedded)[0] as ExcuseTicket[]) ??
+            []
+          );
+        }),
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 404) return of([]);
+          return throwError(() => err);
+        }),
+      );
   }
 
   /**
-   * Submit an excuse ticket with optional file attachments.
-   * Backend endpoint (POST /api/attendance/excuses) is deferred from v5.0.
-   * HTTP 404 → graceful degradation (treated as success).
+   * Submit an excuse ticket (D-04, D-21).
+   * Backend endpoint: POST /api/attendance/excuses — expects JSON body.
+   * File attachments are OUT OF SCOPE for Phase 59 (D-03 — Telegram flow later).
+   * HTTP 404 → graceful degradation (treated as success); other errors propagate.
    */
   submitExcuse(
     lessonIds: number[],
+    excuseType: ExcuseType,
     comment: string | null,
-    files: File[],
   ): Observable<void> {
-    const body = new FormData();
-    body.append('lessonIds', JSON.stringify(lessonIds));
-    if (comment) body.append('comment', comment);
-    files.forEach(f => body.append('files', f));
+    const body = { lessonIds, excuseType, comment };
     return this.http.post<void>('/api/attendance/excuses', body).pipe(
       catchError((err: HttpErrorResponse) => {
         if (err.status === 404) return of(undefined);

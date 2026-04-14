@@ -140,18 +140,52 @@ export interface AttendanceRecord {
   source: string;          // 'manual' | 'auto' | 'checkin'
 }
 
-export type ExcuseTicketStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+/**
+ * Excuse ticket types — aligned with backend contract (Phase 59-01).
+ *
+ * Source of truth: `services/attendance-service/attendance-api-contract/.../enums/`
+ *   - ExcuseType: ILLNESS | SUMMONS | UNIVERSITY_ORDER | EXEMPTION | FREE_ATTENDANCE | OTHER
+ *   - ExcuseTicketStatus: DRAFT | SUBMITTED | APPROVED | REJECTED
+ * Both are stored/returned lowercase in Mongo and JSON (per INFRA-02 convention).
+ */
+export type ExcuseType =
+  | 'illness'
+  | 'summons'
+  | 'university_order'
+  | 'exemption'
+  | 'free_attendance'
+  | 'other';
+
+export type ExcuseTicketStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface ExcuseTicket {
-  id: number;
-  createdAt: string;         // ISO-8601
-  subjectNames: string[];
-  status: ExcuseTicketStatus;
+  id: string;                     // Mongo ObjectId string
+  studentId: number;
+  groupId: number;
+  studentName: string;
   lessonIds: number[];
+  excuseType: ExcuseType;
+  comment: string | null;
+  status: ExcuseTicketStatus;
+  decisionBy: number | null;
+  decisionComment: string | null;
+  decisionAt: string | null;      // ISO-8601
+  createdAt: string;              // ISO-8601
+  updatedAt: string;              // ISO-8601
 }
 
 export interface ExcuseSubmitRequest {
   lessonIds: number[];
+  excuseType: ExcuseType;
   comment: string | null;
-  // files отправляются через FormData отдельно
 }
+
+/** Russian labels for ExcuseType — used in dropdowns and ticket lists (D-21). */
+export const EXCUSE_TYPE_LABELS: Record<ExcuseType, string> = {
+  illness: 'Болезнь',
+  summons: 'Повестка',
+  university_order: 'Приказ университета',
+  exemption: 'Освобождение',
+  free_attendance: 'Свободное посещение',
+  other: 'Другое',
+};

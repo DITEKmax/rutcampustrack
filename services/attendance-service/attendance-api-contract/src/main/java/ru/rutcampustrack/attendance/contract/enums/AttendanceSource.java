@@ -4,5 +4,6 @@ public enum AttendanceSource {
     STUDENT_GEO,
     HEADMAN,
     AUTO_SCHEDULER,
-    LATE_CHECKIN;
+    LATE_CHECKIN,
+    HEADMAN_EXCUSE;
 }

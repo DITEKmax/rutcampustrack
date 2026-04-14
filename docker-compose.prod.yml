@@ -117,6 +117,10 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: "5672"
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_KEY_DIR: /keys
       TMA_BOT_TOKEN: ${TMA_BOT_TOKEN}
     volumes:
@@ -129,6 +133,8 @@ services:
       postgres-academic:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:

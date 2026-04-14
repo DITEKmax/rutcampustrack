@@ -1,12 +1,13 @@
 package ru.rutcampustrack.attendance.excuse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
 import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
@@ -14,6 +15,7 @@ import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 
 import java.time.Instant;
 import java.util.List;
@@ -41,13 +43,16 @@ public class ExcuseService {
     private final ExcuseRepository excuseRepository;
     private final RequestContext requestContext;
     private final AcademicGrpcClient academicGrpcClient;
+    private final AttendanceWritePort attendanceWritePort;
 
     public ExcuseService(ExcuseRepository excuseRepository,
                          RequestContext requestContext,
-                         AcademicGrpcClient academicGrpcClient) {
+                         AcademicGrpcClient academicGrpcClient,
+                         AttendanceWritePort attendanceWritePort) {
         this.excuseRepository = excuseRepository;
         this.requestContext = requestContext;
         this.academicGrpcClient = academicGrpcClient;
+        this.attendanceWritePort = attendanceWritePort;
     }
 
     /**
@@ -190,6 +195,36 @@ public class ExcuseService {
         ticket.setDecisionAt(now);
         ticket.setUpdatedAt(now);
 
-        return excuseRepository.save(ticket);
+        ExcuseTicket saved = excuseRepository.save(ticket);
+
+        // D-16: on APPROVED, cascade to attendance documents (EXCUSED or FREE_ATTENDANCE)
+        if (newStatus == ExcuseTicketStatus.APPROVED) {
+            AttendanceStatus attendanceStatus = mapExcuseTypeToAttendanceStatus(saved.getExcuseType());
+            for (Long lessonId : saved.getLessonIds()) {
+                attendanceWritePort.mark(
+                        saved.getStudentId(),
+                        lessonId,
+                        saved.getGroupId(),
+                        attendanceStatus);
+            }
+        }
+
+        return saved;
+    }
+
+    /**
+     * D-16: map an {@link ExcuseType} to the corresponding {@link AttendanceStatus}
+     * used when cascading an approved ticket onto attendance documents.
+     *
+     * <ul>
+     *   <li>{@code FREE_ATTENDANCE} → {@code FREE_ATTENDANCE}</li>
+     *   <li>everything else (ILLNESS, SUMMONS, UNIVERSITY_ORDER, EXEMPTION, OTHER) → {@code EXCUSED}</li>
+     * </ul>
+     */
+    private AttendanceStatus mapExcuseTypeToAttendanceStatus(ExcuseType excuseType) {
+        if (excuseType == ExcuseType.FREE_ATTENDANCE) {
+            return AttendanceStatus.FREE_ATTENDANCE;
+        }
+        return AttendanceStatus.EXCUSED;
     }
 }

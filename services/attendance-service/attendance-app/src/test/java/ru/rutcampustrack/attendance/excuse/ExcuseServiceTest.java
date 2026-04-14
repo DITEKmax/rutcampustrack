@@ -18,6 +18,7 @@ import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 
 import java.time.Instant;
 import java.util.List;
@@ -52,6 +53,9 @@ class ExcuseServiceTest {
 
     @Mock
     private AcademicGrpcClient academicGrpcClient;
+
+    @Mock
+    private AttendanceWritePort attendanceWritePort;
 
     @InjectMocks
     private ExcuseService excuseService;
@@ -258,6 +262,8 @@ class ExcuseServiceTest {
                 .id("t9")
                 .studentId(STUDENT_ID)
                 .groupId(GROUP_ID)
+                .lessonIds(List.of(1L, 2L))
+                .excuseType(ExcuseType.ILLNESS)
                 .status(ExcuseTicketStatus.SUBMITTED)
                 .createdAt(Instant.now())
                 .build();
@@ -274,5 +280,10 @@ class ExcuseServiceTest {
         assertThat(result.getDecisionAt()).isNotNull();
         assertThat(result.getUpdatedAt()).isNotNull();
         verify(excuseRepository).save(submitted);
+        // D-16 cascade: one mark() per lessonId with EXCUSED status (ILLNESS → EXCUSED)
+        verify(attendanceWritePort).mark(STUDENT_ID, 1L, GROUP_ID,
+                ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED);
+        verify(attendanceWritePort).mark(STUDENT_ID, 2L, GROUP_ID,
+                ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED);
     }
 }

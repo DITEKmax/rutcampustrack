@@ -8,6 +8,8 @@ import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 
 import java.util.List;
 
@@ -27,7 +29,11 @@ public class MongoConvertersConfig {
                 new AttendanceStatusWriter(),
                 new AttendanceStatusReader(),
                 new AttendanceSourceWriter(),
-                new AttendanceSourceReader()
+                new AttendanceSourceReader(),
+                new ExcuseTypeWriter(),
+                new ExcuseTypeReader(),
+                new ExcuseTicketStatusWriter(),
+                new ExcuseTicketStatusReader()
         ));
     }
 
@@ -60,6 +66,40 @@ public class MongoConvertersConfig {
         @Override
         public AttendanceSource convert(String source) {
             return AttendanceSource.valueOf(source.toUpperCase());
+        }
+    }
+
+    // Phase 59: ExcuseType and ExcuseTicketStatus converters (D-02, lowercase in Mongo)
+
+    @WritingConverter
+    static class ExcuseTypeWriter implements Converter<ExcuseType, String> {
+        @Override
+        public String convert(ExcuseType source) {
+            return source.name().toLowerCase();
+        }
+    }
+
+    @ReadingConverter
+    static class ExcuseTypeReader implements Converter<String, ExcuseType> {
+        @Override
+        public ExcuseType convert(String source) {
+            return ExcuseType.valueOf(source.toUpperCase());
+        }
+    }
+
+    @WritingConverter
+    static class ExcuseTicketStatusWriter implements Converter<ExcuseTicketStatus, String> {
+        @Override
+        public String convert(ExcuseTicketStatus source) {
+            return source.name().toLowerCase();
+        }
+    }
+
+    @ReadingConverter
+    static class ExcuseTicketStatusReader implements Converter<String, ExcuseTicketStatus> {
+        @Override
+        public ExcuseTicketStatus convert(String source) {
+            return ExcuseTicketStatus.valueOf(source.toUpperCase());
         }
     }
 }

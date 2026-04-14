@@ -1,0 +1,76 @@
+.group-history {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+  }
+
+  &__year {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 1.1rem;
+  }
+
+  &__badge {
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    background: #e5e7eb;
+    color: #374151;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  &__meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin: 0;
+
+    dt {
+      font-size: 0.8rem;
+      color: rgba(0, 0, 0, 0.6);
+      margin-bottom: 0.25rem;
+    }
+
+    dd {
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+
+  &__section {
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+    }
+  }
+
+  &__empty {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  &__students {
+    margin: 0;
+    padding-left: 1.25rem;
+    line-height: 1.7;
+  }
+
+  &__link-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+}

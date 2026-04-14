@@ -1,0 +1,94 @@
+<div class="page-stack">
+  <header class="page-header">
+    <div class="page-header__title">
+      <a routerLink="/admin/groups" class="page-header__back">
+        <i class="ph ph-arrow-left" aria-hidden="true"></i>
+        К списку групп
+      </a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  @if (notFound()) {
+    <div class="page-card">
+      <div class="page-empty">
+        <div class="page-empty__icon" aria-hidden="true">
+          <i class="ph-duotone ph-smiley-x-eyes"></i>
+        </div>
+        <h3 class="page-empty__title">Группа не найдена</h3>
+        <p class="page-empty__text">Возможно, группа была удалена.</p>
+      </div>
+    </div>
+  }
+
+  @if (!loading() && !notFound() && group(); as g) {
+    <div class="page-card group-history">
+      <div class="group-history__head">
+        <h1 class="group-history__name">{{ activeName() }}</h1>
+        @if (graduationYear(); as year) {
+          <span class="group-history__year">выпуск {{ year }}</span>
+        }
+        <span class="group-history__badge">Архив</span>
+      </div>
+
+      <dl class="group-history__meta">
+        <div>
+          <dt>Полное название</dt>
+          <dd>{{ g.name }}</dd>
+        </div>
+        @if (g.archivedAt) {
+          <div>
+            <dt>Архивирована</dt>
+            <dd>{{ g.archivedAt | date:'dd.MM.yyyy HH:mm' }}</dd>
+          </div>
+        }
+        <div>
+          <dt>Создана</dt>
+          <dd>{{ g.createdAt | date:'dd.MM.yyyy' }}</dd>
+        </div>
+        <div>
+          <dt>Студентов</dt>
+          <dd>{{ students().length }}</dd>
+        </div>
+      </dl>
+
+      <section class="group-history__section">
+        <h2>Студенты</h2>
+        @if (students().length === 0) {
+          <p class="group-history__empty">Нет студентов, закреплённых за этой группой.</p>
+        } @else {
+          <ul class="group-history__students">
+            @for (s of students(); track s.id) {
+              <li>{{ displayName(s) }}</li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="group-history__section group-history__links">
+        <h2>Связанные разделы</h2>
+        <div class="group-history__link-row">
+          <a
+            mat-stroked-button
+            [routerLink]="['/admin/dashboard']"
+            [queryParams]="{ groupId: g.id }"
+            data-testid="journal-link">
+            <i class="ph ph-clipboard-text" aria-hidden="true"></i>
+            Журнал группы
+          </a>
+          <a
+            mat-stroked-button
+            [routerLink]="['/admin/dashboard']"
+            [queryParams]="{ groupId: g.id, view: 'attendance' }"
+            data-testid="attendance-link">
+            <i class="ph ph-chart-bar" aria-hidden="true"></i>
+            Посещаемость
+          </a>
+        </div>
+      </section>
+    </div>
+  }
+</div>

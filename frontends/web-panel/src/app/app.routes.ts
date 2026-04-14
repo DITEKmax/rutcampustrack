@@ -78,6 +78,15 @@ export const routes: Routes = [
             data: { title: 'Группы', eyebrow: 'Администратор' },
           },
           {
+            // BUG-006-6 / plan 58-08: read-only история архивной группы.
+            path: 'groups/:id/history',
+            loadComponent: () =>
+              import('./features/admin/groups/group-history/group-history-page.component').then(
+                m => m.GroupHistoryPageComponent,
+              ),
+            data: { title: 'История группы', eyebrow: 'Администратор' },
+          },
+          {
             path: 'semesters',
             loadComponent: () =>
               import('./features/admin/semesters/semesters-page.component').then(m => m.SemestersPageComponent),

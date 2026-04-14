@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 
 import java.util.List;
@@ -34,19 +33,25 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, Long
      * @param weekType      computed parity of the target date (ODD or EVEN — ALL is invalid here)
      * @param semesterId    semester id the one-off will be anchored to
      */
-    @Query("""
-            SELECT COUNT(si) > 0 FROM ScheduleItem si
-             WHERE si.groupId = :groupId
-               AND si.lessonNumber = :lessonNumber
-               AND si.dayOfWeek = :dayOfWeek
-               AND si.semesterId = :semesterId
-               AND si.isActive = true
-               AND (si.weekType = ru.rutcampustrack.schedule.contract.enums.WeekType.ALL
-                    OR si.weekType = :weekType)
-            """)
+    /**
+     * Native query — `week_type` column is a PostgreSQL custom enum, so JPA-sent
+     * varchar must be CAST explicitly (project V5 decision).
+     */
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1 FROM schedule_items
+                 WHERE group_id = :groupId
+                   AND lesson_number = :lessonNumber
+                   AND day_of_week = :dayOfWeek
+                   AND semester_id = :semesterId
+                   AND is_active = true
+                   AND (week_type = 'all'::week_type
+                        OR week_type = CAST(:weekType AS week_type))
+            )
+            """, nativeQuery = true)
     boolean existsActiveTemplateSlot(@Param("groupId") Long groupId,
                                      @Param("lessonNumber") Short lessonNumber,
                                      @Param("dayOfWeek") Short dayOfWeek,
-                                     @Param("weekType") WeekType weekType,
+                                     @Param("weekType") String weekType,
                                      @Param("semesterId") Long semesterId);
 }

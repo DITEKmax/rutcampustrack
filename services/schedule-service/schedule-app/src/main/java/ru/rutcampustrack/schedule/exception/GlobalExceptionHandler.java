@@ -74,10 +74,28 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex,
                                                                HttpServletRequest request) {
+        String message = ex.getMessage() != null && ex.getMessage().contains("uq_one_off_slot")
+                ? "Разовая пара на этот слот уже существует"
+                : ex.getMessage();
         ErrorResponse body = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
                 PROBLEM_BASE + "conflict",
                 "Data conflict",
+                message,
+                request.getRequestURI(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex,
+                                                          HttpServletRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                PROBLEM_BASE + "conflict",
+                "Conflict",
                 ex.getMessage(),
                 request.getRequestURI(),
                 Instant.now(),

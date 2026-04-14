@@ -164,8 +164,16 @@ public class ScheduleItemService {
     }
 
     /**
-     * Soft-deletes a schedule template (sets is_active = false).
-     * Never physically deletes — consistent with project-wide soft delete convention (D-07).
+     * Soft-deletes a schedule template (sets is_active = false) AND removes
+     * its future PLANNED lessons from the calendar so the headman doesn't see
+     * a deleted slot still occupying dates in `/headman/lessons` view.
+     *
+     * Past lessons (date < today) are kept untouched — they may already carry
+     * attendance records; an explicit `cancelLesson` per-date is required to
+     * change their status (HEADMAN can cancel CLOSED lessons since LSSN fix).
+     *
+     * Never physically deletes the ScheduleItem row — consistent with
+     * project-wide soft delete convention (D-07).
      */
     public void deleteScheduleItem(Long id) {
         ScheduleItem existing = scheduleItemRepository.findById(id)
@@ -173,5 +181,9 @@ public class ScheduleItemService {
         requireHeadmanForGroup(existing.getGroupId());
         existing.setActive(false);
         scheduleItemRepository.save(existing);
+        // Cascade: drop future PLANNED lessons for this slot so they disappear
+        // from the lessons view immediately (Bug: «удалил из матрицы — осталось
+        // в "Парах на 2 недели"»).
+        lessonGenerationService.deletePlannedLessonsFromToday(existing.getId());
     }
 }

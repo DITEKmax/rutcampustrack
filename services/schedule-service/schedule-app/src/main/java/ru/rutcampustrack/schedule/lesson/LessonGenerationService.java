@@ -148,6 +148,20 @@ public class LessonGenerationService {
         lessonRepository.saveAll(lessons);
     }
 
+    /**
+     * Deletes all PLANNED lessons for a schedule item starting from today.
+     * Called by ScheduleItemService.deleteScheduleItem so that disabling a
+     * template also clears future planned occurrences from the calendar
+     * (Bug: «удалил из матрицы — осталось в "Парах на 2 недели"»).
+     *
+     * Past lessons are intentionally preserved — they may carry attendance.
+     */
+    @Transactional
+    public void deletePlannedLessonsFromToday(Long scheduleItemId) {
+        LocalDate today = LocalDate.now(clock);
+        lessonRepository.deletePlannedFromDate(scheduleItemId, today);
+    }
+
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------

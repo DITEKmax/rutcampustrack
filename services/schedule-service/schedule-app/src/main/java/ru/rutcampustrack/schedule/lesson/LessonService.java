@@ -82,15 +82,21 @@ public class LessonService {
     }
 
     /**
-     * Cancels a planned lesson with a required reason (LSSN-04, D-13).
-     * Only PLANNED lessons can be cancelled — throws 422 for any other status.
+     * Cancels a lesson with a required reason (LSSN-04, D-13).
+     *
+     * Allowed source statuses: PLANNED, ACTIVE, CLOSED.
+     * The CLOSED transition lets HEADMAN/ADMIN ретроспективно отменить уже
+     * прошедшую пару — например, чтобы заменить её другой и проставить
+     * посещаемость задним числом (UX-требование старосты).
+     *
+     * Cancelled lessons can be restored via {@link #restoreLesson(Long)}.
      */
     public LessonWithItem cancelLesson(Long lessonId, CancelLessonRequest request) {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
         Lesson lesson = lwi.lesson();
-        if (lesson.getStatus() != LessonStatus.PLANNED) {
+        if (lesson.getStatus() == LessonStatus.CANCELLED) {
             throw new InvalidLessonStateException(
-                    "Only planned lessons can be cancelled, current status: " + lesson.getStatus());
+                    "Lesson is already cancelled");
         }
         lesson.setStatus(LessonStatus.CANCELLED);
         lesson.setCancelReason(request.reason());
@@ -102,9 +108,11 @@ public class LessonService {
     }
 
     /**
-     * Restores a cancelled lesson back to planned (LSSN-05, D-14).
+     * Restores a cancelled lesson (LSSN-05, D-14).
      * Only CANCELLED lessons can be restored — throws 422 for any other status.
-     * Clears cancel_reason on restore.
+     * Restored lesson goes back to PLANNED; the LessonStatusTransitionJob
+     * will re-promote it to ACTIVE/CLOSED on the next tick if its time has
+     * already passed. Clears cancel_reason on restore.
      */
     public LessonWithItem restoreLesson(Long lessonId) {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);

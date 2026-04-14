@@ -37,13 +37,13 @@ import java.util.List;
 @RequestMapping("/schedule")
 public interface LessonApi {
 
-    @Operation(summary = "Отменить урок (HEADMAN/ADMIN)")
+    @Operation(summary = "Отменить урок (HEADMAN/ADMIN). Допускается отмена PLANNED/ACTIVE/CLOSED.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Урок отменён"),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
             @ApiResponse(responseCode = "404", description = "Урок не найден"),
-            @ApiResponse(responseCode = "422", description = "Недопустимый переход статуса")
+            @ApiResponse(responseCode = "422", description = "Урок уже отменён")
     })
     @PatchMapping("/lessons/{id}/cancel")
     ResponseEntity<EntityModel<LessonResponse>> cancelLesson(

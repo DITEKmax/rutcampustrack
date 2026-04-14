@@ -113,13 +113,14 @@ const DEFAULT_RANGE_DAYS = 14;
                     </div>
                   </div>
                   <div class="lesson-row__actions">
-                    @if (!isCancelled(lesson) && !isClosed(lesson)) {
+                    @if (!isCancelled(lesson)) {
                       <button class="btn-stroke btn-stroke--danger" type="button"
                               [disabled]="busy() === lesson.id"
+                              [title]="isClosed(lesson) ? 'Отменить уже прошедшую пару (для исторических данных)' : 'Отменить пару'"
                               (click)="onCancel(lesson)">
                         <i class="ph ph-x-circle"></i> Отменить
                       </button>
-                    } @else if (isCancelled(lesson)) {
+                    } @else {
                       <button class="btn-stroke" type="button"
                               [disabled]="busy() === lesson.id"
                               (click)="onRestore(lesson)">

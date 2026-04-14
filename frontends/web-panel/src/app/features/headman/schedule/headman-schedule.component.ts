@@ -35,6 +35,23 @@ interface Subject {
 const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 const SLOTS = [1, 2, 3, 4, 5, 6, 7, 8];
 
+/**
+ * Сетка пар РУТ МИИТ. Используется только для подписи слотов в матрице —
+ * фактическое время хранится в БД на каждом ScheduleItem (при создании
+ * староста соглашается с дефолтом из ScheduleSlotDialog, который тоже
+ * берётся отсюда).
+ */
+const SLOT_TIMES: Record<number, string> = {
+  1: '08:30–09:50',
+  2: '10:05–11:25',
+  3: '11:40–13:00',
+  4: '13:45–15:05',
+  5: '15:20–16:40',
+  6: '16:55–18:15',
+  7: '18:30–19:50',
+  8: '20:00–21:20',
+};
+
 /** Russian label for week type. */
 function weekTypeLabel(weekType: string): string {
   switch (weekType) {
@@ -145,7 +162,10 @@ function isoWeekNumber(d: Date): number {
             </div>
             @for (slot of slots; track slot) {
               <div class="matrix-row">
-                <div class="matrix-slot">{{ slot }}</div>
+                <div class="matrix-slot">
+                  <span class="matrix-slot__num">{{ slot }}</span>
+                  <span class="matrix-slot__time">{{ slotTime(slot) }}</span>
+                </div>
                 @for (d of dayLabels; track d; let dayIdx = $index) {
                   <div class="matrix-cell"
                        [class.matrix-cell--occupied]="cellsAt(dayIdx, slot).length > 0"
@@ -180,10 +200,23 @@ function isoWeekNumber(d: Date): number {
   `,
   styles: [`
     .schedule-matrix { display: flex; flex-direction: column; gap: 4px; padding: 8px; }
-    .matrix-header, .matrix-row { display: grid; grid-template-columns: 60px repeat(6, 1fr); gap: 4px; }
-    .matrix-corner, .matrix-day, .matrix-slot { font-weight: 600; padding: 8px; text-align: center; }
+    .matrix-header, .matrix-row { display: grid; grid-template-columns: 110px repeat(6, 1fr); gap: 4px; }
+    .matrix-corner, .matrix-day { font-weight: 600; padding: 8px; text-align: center; }
     .matrix-day { background: var(--bg-secondary, #f5f5f5); border-radius: 4px; }
-    .matrix-slot { background: var(--bg-secondary, #f5f5f5); border-radius: 4px; }
+    .matrix-slot {
+      background: var(--bg-secondary, #f5f5f5);
+      border-radius: 4px;
+      padding: 8px 6px;
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .matrix-slot__num { font-weight: 700; font-size: 0.95rem; }
+    .matrix-slot__time {
+      font-family: var(--font-mono, monospace);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
     .matrix-cell {
       min-height: 72px; padding: 6px; border-radius: 6px;
       background: var(--bg-elevated, #fafafa); cursor: pointer;
@@ -346,6 +379,11 @@ export class HeadmanScheduleComponent implements OnInit {
 
   weekChip(weekType: string): string {
     return weekTypeLabel(weekType);
+  }
+
+  /** Подпись слота слева в матрице: «1 пара / 08:30–09:50». */
+  slotTime(slot: number): string {
+    return SLOT_TIMES[slot] ?? '';
   }
 
   onCellClick(dayIdx: number, slot: number): void {

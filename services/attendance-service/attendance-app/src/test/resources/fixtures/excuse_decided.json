@@ -1,0 +1,14 @@
+{
+  "event_type": "excuse.decided",
+  "event_id": "22222222-2222-2222-2222-222222222222",
+  "occurred_at": "2026-04-14T13:00:00Z",
+  "payload": {
+    "ticket_id": "65f0a1b2c3d4e5f6a7b8c9d0",
+    "student_id": 100,
+    "user_id": 100,
+    "decision_by": 777,
+    "status": "approved",
+    "decision_comment": "справка предоставлена",
+    "decided_at": "2026-04-14T13:00:00Z"
+  }
+}

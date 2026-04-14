@@ -176,7 +176,11 @@ function isoWeekNumber(d: Date): number {
                       @for (item of cellsAt(dayIdx, slot); track item.id) {
                         <div class="cell-entry"
                              [class.cell-entry--odd]="item.weekType === 'ODD'"
-                             [class.cell-entry--even]="item.weekType === 'EVEN'">
+                             [class.cell-entry--even]="item.weekType === 'EVEN'"
+                             (click)="onEditEntry(item, $event)"
+                             role="button"
+                             tabindex="0"
+                             [attr.aria-label]="'Редактировать ' + subjectName(item.subjectId)">
                           <div class="cell-subject">
                             {{ subjectName(item.subjectId) }}
                             @if (subjectTypeShort(item.subjectId); as t) {
@@ -190,6 +194,16 @@ function isoWeekNumber(d: Date): number {
                             </mat-chip-set>
                           </div>
                         </div>
+                      }
+                      <!-- Кнопка «+» — добавить ещё один слот в эту же ячейку
+                           (например ODD-пара рядом с EVEN-парой). Скрывается
+                           когда уже стоит ALL — туда добавлять нечего. -->
+                      @if (canAddMore(dayIdx, slot)) {
+                        <button type="button" class="cell-add-btn"
+                                (click)="onAddInCell(dayIdx, slot, $event)"
+                                aria-label="Добавить ещё пару в эту ячейку">
+                          <i class="ph ph-plus"></i> Добавить пару на другую неделю
+                        </button>
                       }
                     } @else {
                       <i class="ph ph-plus"></i>
@@ -236,8 +250,23 @@ function isoWeekNumber(d: Date): number {
       border-color: #66bb6a;
     }
     .matrix-cell--occupied:hover { background: #d7eed9; }
-    .cell-entry { padding: 2px 4px; border-radius: 4px; }
+    .cell-entry { padding: 2px 4px; border-radius: 4px; cursor: pointer; }
+    .cell-entry:hover { background: rgba(255,255,255,0.4); }
     .cell-entry + .cell-entry { border-top: 1px dashed #a5d6a7; padding-top: 4px; margin-top: 2px; }
+    .cell-add-btn {
+      margin-top: 4px;
+      width: 100%;
+      padding: 4px 6px;
+      border: 1px dashed #66bb6a;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.45);
+      color: #2e7d32;
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .cell-add-btn:hover { background: #fff; }
+    .cell-add-btn i { font-size: 0.85rem; }
     .cell-entry--odd { color: #1b5e20; }
     .cell-entry--even { color: #2e7d32; }
     .cell-subject { font-weight: 600; font-size: 0.9rem; color: #1b5e20; }
@@ -362,6 +391,22 @@ export class HeadmanScheduleComponent implements OnInit {
   }
 
   /**
+   * Можно ли в этой ячейке создать ещё один слот.
+   * - Пустая → false (для пустой и так есть основная клик-зона).
+   * - Уже есть ALL → false (ALL покрывает обе недели).
+   * - Уже есть ODD И EVEN → false (обе недели заняты).
+   * - В остальных случаях — true.
+   */
+  canAddMore(dayIdx: number, slot: number): boolean {
+    const items = this.cellsAt(dayIdx, slot);
+    if (items.length === 0) return false;
+    if (items.some(i => i.weekType === 'ALL')) return false;
+    const hasOdd = items.some(i => i.weekType === 'ODD');
+    const hasEven = items.some(i => i.weekType === 'EVEN');
+    return !(hasOdd && hasEven);
+  }
+
+  /**
    * Идёт ли сейчас нечётная учебная неделя.
    *
    * В РУТ МИИТ чётность учебной недели совпадает с чётностью её ISO-номера
@@ -408,17 +453,50 @@ export class HeadmanScheduleComponent implements OnInit {
   }
 
   onCellClick(dayIdx: number, slot: number): void {
-    const item = this.cellAt(dayIdx, slot);
+    const items = this.cellsAt(dayIdx, slot);
     const g = this.groupId();
     const s = this.semesterId();
     if (!g || !s) return;
+    // Пустая клетка → создаём.
+    if (items.length === 0) {
+      this.openSlotDialog({ mode: 'create', groupId: g, semesterId: s, dayOfWeek: dayIdx + 1, lessonNumber: slot });
+      return;
+    }
+    // Один слот → сразу edit (старое поведение).
+    if (items.length === 1) {
+      this.openSlotDialog({ mode: 'edit', groupId: g, semesterId: s, item: items[0] });
+      return;
+    }
+    // Несколько слотов (ODD+EVEN, или ALL+что-то ещё): нечего гадать —
+    // редактируем первый. Чтобы добавить ещё один, староста использует
+    // отдельный клик по «+» под ячейкой.
+    this.openSlotDialog({ mode: 'edit', groupId: g, semesterId: s, item: items[0] });
+  }
+
+  /** Кнопка-«+» под занятой ячейкой — открыть create-диалог. */
+  onAddInCell(dayIdx: number, slot: number, ev: MouseEvent): void {
+    ev.stopPropagation();
+    const g = this.groupId();
+    const s = this.semesterId();
+    if (!g || !s) return;
+    this.openSlotDialog({ mode: 'create', groupId: g, semesterId: s, dayOfWeek: dayIdx + 1, lessonNumber: slot });
+  }
+
+  /** Клик по конкретному слоту в многослойной ячейке. */
+  onEditEntry(item: ScheduleItem, ev: MouseEvent): void {
+    ev.stopPropagation();
+    const g = this.groupId();
+    const s = this.semesterId();
+    if (!g || !s) return;
+    this.openSlotDialog({ mode: 'edit', groupId: g, semesterId: s, item });
+  }
+
+  private openSlotDialog(data: any): void {
     const ref = this.dialog.open(ScheduleSlotDialogComponent, {
       width: '480px',
       maxWidth: '95vw',
-      ariaLabel: item ? 'Редактировать слот' : 'Новый слот',
-      data: item
-        ? { mode: 'edit', groupId: g, semesterId: s, item }
-        : { mode: 'create', groupId: g, semesterId: s, dayOfWeek: dayIdx + 1, lessonNumber: slot },
+      ariaLabel: data.mode === 'edit' ? 'Редактировать слот' : 'Новый слот',
+      data,
     });
     ref.afterClosed().subscribe(result => { if (result) this.loadSchedule(); });
   }

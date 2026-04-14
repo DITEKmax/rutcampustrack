@@ -3,6 +3,7 @@ package ru.rutcampustrack.academic.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
@@ -10,13 +11,31 @@ import ru.rutcampustrack.academic.entity.User;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
     Optional<User> findByLogin(String login);
 
     Optional<User> findByTelegramId(Long telegramId);
 
     Optional<User> findByEmployeeNumber(String employeeNumber);
+
+    // --- Existence checks for conflict pre-validation (BUG-006-2, D-07). ---
+    // Use native queries to bypass the @SQLRestriction filter on User — a user
+    // archived yesterday still owns the login/email/telegramId/employeeNumber
+    // until admin explicitly reactivates/purges, so duplicate creation must
+    // 409 regardless of the archived flag.
+
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM users WHERE login = :login)", nativeQuery = true)
+    boolean existsByLogin(@Param("login") String login);
+
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM users WHERE email = :email)", nativeQuery = true)
+    boolean existsByEmail(@Param("email") String email);
+
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM users WHERE telegram_id = :telegramId)", nativeQuery = true)
+    boolean existsByTelegramId(@Param("telegramId") Long telegramId);
+
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM users WHERE employee_number = :employeeNumber)", nativeQuery = true)
+    boolean existsByEmployeeNumber(@Param("employeeNumber") String employeeNumber);
 
     List<User> findByGroupId(Long groupId);
     Page<User> findByGroupId(Long groupId, Pageable pageable);

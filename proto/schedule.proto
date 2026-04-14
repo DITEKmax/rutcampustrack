@@ -15,6 +15,9 @@ service ScheduleGrpcService {
 
   // Получить все пары группы за период
   rpc GetLessonsByGroup (LessonsByGroupRequest) returns (LessonsResponse);
+
+  // Получить компактную информацию о парах по списку ID (для валидации в excuse-сервисе)
+  rpc GetLessonsByIds (LessonsByIdsRequest) returns (LessonsByIdsResponse);
 }
 
 message ActiveLessonRequest {
@@ -50,4 +53,19 @@ message LessonResponse {
 
 message LessonsResponse {
   repeated LessonResponse lessons = 1;
+}
+
+message LessonsByIdsRequest {
+  repeated int64 lesson_ids = 1;
+}
+
+message LessonsByIdsResponse {
+  repeated LessonInfo lessons = 1;
+}
+
+message LessonInfo {
+  int64 lesson_id = 1;
+  int64 group_id = 2;
+  int64 subject_id = 3;
+  string starts_at = 4;  // ISO datetime (date + "T" + start_time)
 }

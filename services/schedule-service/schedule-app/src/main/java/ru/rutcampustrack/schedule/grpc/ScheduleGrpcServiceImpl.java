@@ -113,6 +113,57 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         responseObserver.onCompleted();
     }
 
+    /**
+     * GRPC-04: Get compact lesson info by a list of lesson IDs.
+     * Used by Attendance Service (excuse flow) to validate that lessonIds
+     * belong to the student's group (D-25). Returns empty list for an empty
+     * request or when no lessons are found. Lessons whose ScheduleItem is
+     * missing are skipped silently.
+     */
+    @Override
+    public void getLessonsByIds(LessonsByIdsRequest request,
+                                StreamObserver<LessonsByIdsResponse> responseObserver) {
+        List<Long> ids = request.getLessonIdsList();
+
+        if (ids.isEmpty()) {
+            responseObserver.onNext(LessonsByIdsResponse.newBuilder().build());
+            responseObserver.onCompleted();
+            return;
+        }
+
+        List<Lesson> lessons = lessonRepository.findAllById(ids);
+
+        if (lessons.isEmpty()) {
+            responseObserver.onNext(LessonsByIdsResponse.newBuilder().build());
+            responseObserver.onCompleted();
+            return;
+        }
+
+        List<Long> scheduleItemIds = lessons.stream()
+                .map(Lesson::getScheduleItemId)
+                .distinct()
+                .toList();
+
+        Map<Long, ScheduleItem> itemById = scheduleItemRepository.findAllById(scheduleItemIds).stream()
+                .collect(Collectors.toMap(ScheduleItem::getId, i -> i));
+
+        List<LessonInfo> infos = lessons.stream()
+                .filter(l -> itemById.containsKey(l.getScheduleItemId()))
+                .map(l -> {
+                    ScheduleItem item = itemById.get(l.getScheduleItemId());
+                    return LessonInfo.newBuilder()
+                            .setLessonId(l.getId())
+                            .setGroupId(item.getGroupId())
+                            .setSubjectId(item.getSubjectId())
+                            .setStartsAt(l.getDate().toString() + "T" + item.getStartTime().toString())
+                            .build();
+                })
+                .toList();
+
+        responseObserver.onNext(LessonsByIdsResponse.newBuilder().addAllLessons(infos).build());
+        responseObserver.onCompleted();
+    }
+
     private LessonResponse buildResponse(Lesson lesson, ScheduleItem item) {
         return LessonResponse.newBuilder()
                 .setId(lesson.getId())

@@ -2,23 +2,30 @@
 <mat-dialog-content>
   <form [formGroup]="form" class="flex flex-col gap-4">
     <mat-form-field class="w-full">
-      <mat-label>Название</mat-label>
-      <input matInput formControlName="name" maxlength="50">
+      <mat-label>Название группы</mat-label>
+      <input matInput
+             formControlName="name"
+             placeholder="УИТ-311"
+             maxlength="8"
+             required>
+      <mat-hint>Формат: ХХ(х)-NNN (пример УИТ-311)</mat-hint>
       @if (form.controls.name.hasError('required')) {
-        <mat-error>Обязательное поле</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field class="w-full">
-      <mat-label>Код</mat-label>
-      <input matInput formControlName="code" maxlength="20">
-      @if (form.controls.code.hasError('required')) {
-        <mat-error>Обязательное поле</mat-error>
+        <mat-error>Название обязательно</mat-error>
+      } @else if (form.controls.name.hasError('pattern')) {
+        <mat-error>Неверный формат. Пример: УИТ-311</mat-error>
+      } @else if (form.controls.name.hasError('conflict')) {
+        <mat-error>{{ form.controls.name.errors?.['conflict'] }}</mat-error>
       }
     </mat-form-field>
 
     @if (isEdit) {
       <mat-slide-toggle formControlName="active">Активна</mat-slide-toggle>
+    }
+
+    @if (submitError()) {
+      <div class="gd-submit-error" role="alert">
+        {{ submitError() }}
+      </div>
     }
   </form>
 </mat-dialog-content>

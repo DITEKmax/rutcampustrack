@@ -103,7 +103,7 @@ describe('AdminApiService', () => {
   });
 
   it('listGroups() calls GET /api/academic/groups?size=200 and extracts _embedded items', () => {
-    const mockGroup = { id: 1, name: 'ИТ-21', code: 'IT21', active: true, createdAt: '2026-01-01' };
+    const mockGroup = { id: 1, name: 'ИТ-21', active: true, createdAt: '2026-01-01' };
     let result: any[] = [];
 
     service.listGroups().subscribe(g => (result = g));
@@ -119,7 +119,7 @@ describe('AdminApiService', () => {
   });
 
   it('createGroup() calls POST /api/academic/groups', () => {
-    const body = { name: 'ИТ-22', code: 'IT22' };
+    const body = { name: 'ИТ-22' };
 
     service.createGroup(body).subscribe();
 
@@ -130,7 +130,7 @@ describe('AdminApiService', () => {
   });
 
   it('updateGroup() calls PUT /api/academic/groups/{id}', () => {
-    const body = { name: 'ИТ-22', code: 'IT22', active: true };
+    const body = { name: 'ИТ-22', active: true };
 
     service.updateGroup(2, body).subscribe();
 

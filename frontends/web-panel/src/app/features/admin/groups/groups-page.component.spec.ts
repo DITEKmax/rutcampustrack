@@ -24,8 +24,8 @@ function mockUsersResponse(users: UserResponse[]): PagedResponse<UserResponse> {
 }
 
 const MOCK_GROUPS: GroupResponse[] = [
-  { id: 1, name: 'ИБ-211', code: 'IB-211', active: true, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 2, name: 'ПМ-221', code: 'PM-221', active: true, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 1, name: 'ИБ-211', active: true, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 2, name: 'ПМ-221', active: true, createdAt: '2026-01-01T00:00:00Z' },
 ];
 
 const MOCK_STUDENTS: UserResponse[] = [

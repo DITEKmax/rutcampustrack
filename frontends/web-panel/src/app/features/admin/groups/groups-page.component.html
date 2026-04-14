@@ -40,7 +40,7 @@
       <mat-table [dataSource]="groups()">
         <ng-container matColumnDef="name">
           <mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
-          <mat-cell *matCellDef="let group">{{ group.name }} ({{ group.code }})</mat-cell>
+          <mat-cell *matCellDef="let group">{{ group.name }}</mat-cell>
         </ng-container>
 
         <ng-container matColumnDef="headman">

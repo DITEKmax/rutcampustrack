@@ -55,19 +55,16 @@ export function fullName(u: { lastName: string; firstName: string; middleName?: 
 export interface GroupResponse {
   id: number;
   name: string;
-  code: string;
   active: boolean;
   createdAt: string;
 }
 
 export interface CreateGroupRequest {
   name: string;
-  code: string;
 }
 
 export interface UpdateGroupRequest {
   name: string;
-  code: string;
   active: boolean;
 }
 

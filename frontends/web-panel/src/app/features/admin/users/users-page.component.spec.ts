@@ -39,7 +39,7 @@ describe('UsersPageComponent', () => {
   const mockGroupsResponse = {
     _embedded: {
       groups: [
-        { id: 1, name: 'ИВТ-101', code: 'IVT101', active: true, createdAt: '2026-01-01T00:00:00Z' },
+        { id: 1, name: 'ИВТ-101', active: true, createdAt: '2026-01-01T00:00:00Z' },
       ],
     },
     page: { totalElements: 1, totalPages: 1, size: 200, number: 0 },

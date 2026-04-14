@@ -17,8 +17,10 @@ import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
+import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
 import java.time.Instant;
 import java.util.List;
@@ -60,6 +62,9 @@ class ExcuseServiceTest {
     @Mock
     private ExcuseEventPublisher excuseEventPublisher;
 
+    @Mock
+    private ScheduleGrpcClient scheduleGrpcClient;
+
     @InjectMocks
     private ExcuseService excuseService;
 
@@ -77,6 +82,17 @@ class ExcuseServiceTest {
         lenient().when(requestContext.getGroupId()).thenReturn(GROUP_ID);
         lenient().when(requestContext.isHeadman()).thenReturn(false);
         lenient().when(academicGrpcClient.getUserDisplayName(anyLong())).thenReturn("Иванов Иван");
+        // D-25: by default return LessonInfo matching the requested ids + student's group,
+        // so the validateLessonIds() check passes. Per-test overrides are still allowed.
+        lenient().when(scheduleGrpcClient.getLessonsByIds(anyList())).thenAnswer(inv -> {
+            List<Long> ids = inv.getArgument(0);
+            return ids.stream()
+                    .map(id -> LessonInfo.newBuilder()
+                            .setLessonId(id)
+                            .setGroupId(GROUP_ID)
+                            .build())
+                    .toList();
+        });
         lenient().when(excuseRepository.save(any(ExcuseTicket.class)))
                 .thenAnswer(inv -> {
                     ExcuseTicket t = inv.getArgument(0);

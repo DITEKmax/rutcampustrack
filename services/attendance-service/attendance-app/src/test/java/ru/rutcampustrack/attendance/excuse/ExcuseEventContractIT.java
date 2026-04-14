@@ -21,12 +21,14 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
@@ -95,6 +97,16 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         when(requestContext.getGroupId()).thenReturn(10L);
         when(requestContext.isHeadman()).thenReturn(false);
         when(academicGrpcClient.getUserDisplayName(anyLong())).thenReturn("Иванов Иван");
+        // D-25: return matching LessonInfo for every requested id in group 10.
+        when(scheduleGrpcClient.getLessonsByIds(anyList())).thenAnswer(inv -> {
+            List<Long> ids = inv.getArgument(0);
+            return ids.stream()
+                    .map(id -> LessonInfo.newBuilder()
+                            .setLessonId(id)
+                            .setGroupId(10L)
+                            .build())
+                    .toList();
+        });
     }
 
     @Test

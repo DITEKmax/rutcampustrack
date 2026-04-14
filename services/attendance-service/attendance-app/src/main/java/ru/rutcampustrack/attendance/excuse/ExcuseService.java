@@ -14,11 +14,16 @@ import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
+import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Business logic for excuse tickets (Phase 59, Wave 2).
@@ -47,17 +52,20 @@ public class ExcuseService {
     private final AcademicGrpcClient academicGrpcClient;
     private final AttendanceWritePort attendanceWritePort;
     private final ExcuseEventPublisher excuseEventPublisher;
+    private final ScheduleGrpcClient scheduleGrpcClient;
 
     public ExcuseService(ExcuseRepository excuseRepository,
                          RequestContext requestContext,
                          AcademicGrpcClient academicGrpcClient,
                          AttendanceWritePort attendanceWritePort,
-                         ExcuseEventPublisher excuseEventPublisher) {
+                         ExcuseEventPublisher excuseEventPublisher,
+                         ScheduleGrpcClient scheduleGrpcClient) {
         this.excuseRepository = excuseRepository;
         this.requestContext = requestContext;
         this.academicGrpcClient = academicGrpcClient;
         this.attendanceWritePort = attendanceWritePort;
         this.excuseEventPublisher = excuseEventPublisher;
+        this.scheduleGrpcClient = scheduleGrpcClient;
     }
 
     /**
@@ -88,6 +96,9 @@ public class ExcuseService {
             throw new ConflictException(
                     "На один из выбранных уроков уже существует активный тикет");
         }
+
+        // D-25: validate that every lessonId exists and belongs to the student's group
+        validateLessonIds(request.lessonIds());
 
         // D-26: snapshot studentName via gRPC
         String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());
@@ -240,5 +251,32 @@ public class ExcuseService {
             return AttendanceStatus.FREE_ATTENDANCE;
         }
         return AttendanceStatus.EXCUSED;
+    }
+
+    /**
+     * D-25: validate that every requested lessonId exists in schedule-service and
+     * belongs to the caller's group. Uses the batch gRPC {@code GetLessonsByIds}
+     * method shipped in plan 59-03.
+     *
+     * @throws BadRequestException if any id is unknown or belongs to another group
+     */
+    private void validateLessonIds(List<Long> lessonIds) {
+        List<LessonInfo> lessons = scheduleGrpcClient.getLessonsByIds(lessonIds);
+        Set<Long> returnedIds = new HashSet<>();
+        for (LessonInfo lesson : lessons) {
+            returnedIds.add(lesson.getLessonId());
+        }
+        for (Long requestedId : lessonIds) {
+            if (!returnedIds.contains(requestedId)) {
+                throw new BadRequestException("Урок с id=" + requestedId + " не найден");
+            }
+        }
+        Long studentGroupId = requestContext.getGroupId();
+        for (LessonInfo lesson : lessons) {
+            if (!Objects.equals(lesson.getGroupId(), studentGroupId)) {
+                throw new BadRequestException(
+                        "Урок с id=" + lesson.getLessonId() + " не принадлежит вашей группе");
+            }
+        }
     }
 }

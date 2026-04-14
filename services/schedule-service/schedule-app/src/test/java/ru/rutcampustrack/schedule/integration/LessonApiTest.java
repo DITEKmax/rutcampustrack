@@ -124,14 +124,46 @@ class LessonApiTest extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void cancelLesson_activeLesson_returns422() throws Exception {
+    void cancelLesson_activeLesson_succeeds() throws Exception {
+        // After UX request: HEADMAN/ADMIN can cancel ACTIVE/CLOSED lessons too,
+        // not only PLANNED. The only forbidden source state is CANCELLED itself.
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.ACTIVE, LocalDate.of(2026, 4, 1));
 
         mockMvc.perform(withHeadmanHeaders(
                 patch("/schedule/lessons/" + lesson.getId() + "/cancel")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("reason", "Trying to cancel active")))
+                        .content(objectMapper.writeValueAsString(Map.of("reason", "Cancel running lesson")))
+        ))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CANCELLED")));
+    }
+
+    @Test
+    void cancelLesson_closedLesson_succeeds() throws Exception {
+        // CLOSED lessons can be retroactively cancelled so headman can correct
+        // historical attendance records (UX requirement).
+        ScheduleItem item = createScheduleItem();
+        Lesson lesson = createLesson(item.getId(), LessonStatus.CLOSED, LocalDate.of(2026, 3, 1));
+
+        mockMvc.perform(withHeadmanHeaders(
+                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("reason", "Replaced retroactively")))
+        ))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CANCELLED")));
+    }
+
+    @Test
+    void cancelLesson_alreadyCancelled_returns422() throws Exception {
+        ScheduleItem item = createScheduleItem();
+        Lesson lesson = createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 1));
+
+        mockMvc.perform(withHeadmanHeaders(
+                patch("/schedule/lessons/" + lesson.getId() + "/cancel")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("reason", "Double cancel")))
         ))
                 .andExpect(status().isUnprocessableEntity());
     }

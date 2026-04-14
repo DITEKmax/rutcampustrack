@@ -205,6 +205,13 @@ export class SidebarComponent implements OnInit {
       isHeadman: true,
     },
     {
+      label: 'Пары на 2 недели',
+      icon: 'ph-calendar-x',
+      route: '/headman/lessons',
+      roles: ['STUDENT'],
+      isHeadman: true,
+    },
+    {
       label: 'Журнал',
       icon: 'ph-table',
       route: '/headman/journal',

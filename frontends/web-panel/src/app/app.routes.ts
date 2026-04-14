@@ -226,6 +226,15 @@ export const routes: Routes = [
             data: { title: 'Расписание', eyebrow: 'Староста' },
           },
           {
+            path: 'lessons',
+            canActivate: [headmanGuard],
+            loadComponent: () =>
+              import('./features/headman/lessons/headman-lessons.component').then(
+                m => m.HeadmanLessonsComponent,
+              ),
+            data: { title: 'Пары на 2 недели', eyebrow: 'Староста' },
+          },
+          {
             path: 'excuses',
             canActivate: [headmanGuard],
             loadComponent: () =>

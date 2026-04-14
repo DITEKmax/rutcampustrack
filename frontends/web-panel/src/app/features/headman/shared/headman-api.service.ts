@@ -360,10 +360,38 @@ export class HeadmanApiService {
   }
 
   /**
-   * Cancel a concrete lesson on a specific date (D-20 — existing endpoint).
-   * Endpoint: POST /api/schedule/lessons/{id}/cancel
+   * Cancel a concrete lesson on a specific date.
+   * Endpoint: PATCH /api/schedule/lessons/{id}/cancel
+   * Body: { reason: string } (NotBlank, max 512)
    */
   cancelLesson(lessonId: number, reason: string): Observable<any> {
-    return this.http.post(`/api/schedule/lessons/${lessonId}/cancel`, { reason });
+    return this.http.patch(`/api/schedule/lessons/${lessonId}/cancel`, { reason });
+  }
+
+  /**
+   * Restore a previously cancelled lesson.
+   * Endpoint: PATCH /api/schedule/lessons/{id}/restore
+   */
+  restoreLesson(lessonId: number): Observable<any> {
+    return this.http.patch(`/api/schedule/lessons/${lessonId}/restore`, {});
+  }
+
+  /**
+   * List concrete lessons for a group within [dateFrom..dateTo] (inclusive).
+   * Endpoint: GET /api/schedule/groups/{groupId}/lessons
+   * Optional `status` filter: planned|active|closed|cancelled (lowercase per project convention).
+   */
+  getGroupLessons(
+    groupId: number,
+    dateFrom: string,
+    dateTo: string,
+    status?: string,
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('dateFrom', dateFrom)
+      .set('dateTo', dateTo)
+      .set('size', '500');
+    if (status) params = params.set('status', status);
+    return this.http.get(`/api/schedule/groups/${groupId}/lessons`, { params });
   }
 }

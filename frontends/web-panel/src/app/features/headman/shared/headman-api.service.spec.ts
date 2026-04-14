@@ -259,12 +259,41 @@ describe('HeadmanApiService', () => {
   });
 
   describe('cancelLesson', () => {
-    it('calls POST /api/schedule/lessons/{id}/cancel with reason', () => {
+    it('calls PATCH /api/schedule/lessons/{id}/cancel with reason', () => {
       service.cancelLesson(77, 'Болезнь преподавателя').subscribe();
       const req = httpMock.expectOne('/api/schedule/lessons/77/cancel');
-      expect(req.request.method).toBe('POST');
+      expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual({ reason: 'Болезнь преподавателя' });
       req.flush(null);
+    });
+  });
+
+  describe('restoreLesson', () => {
+    it('calls PATCH /api/schedule/lessons/{id}/restore', () => {
+      service.restoreLesson(77).subscribe();
+      const req = httpMock.expectOne('/api/schedule/lessons/77/restore');
+      expect(req.request.method).toBe('PATCH');
+      req.flush(null);
+    });
+  });
+
+  describe('getGroupLessons', () => {
+    it('calls GET /api/schedule/groups/{groupId}/lessons with date range', () => {
+      service.getGroupLessons(5, '2026-04-15', '2026-04-29').subscribe();
+      const req = httpMock.expectOne(r =>
+        r.url === '/api/schedule/groups/5/lessons'
+        && r.params.get('dateFrom') === '2026-04-15'
+        && r.params.get('dateTo') === '2026-04-29'
+        && r.params.get('size') === '500',
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush({ _embedded: { lessonResponseList: [] } });
+    });
+
+    it('passes optional status filter when provided', () => {
+      service.getGroupLessons(5, '2026-04-15', '2026-04-29', 'planned').subscribe();
+      const req = httpMock.expectOne(r => r.params.get('status') === 'planned');
+      req.flush({ _embedded: { lessonResponseList: [] } });
     });
   });
 

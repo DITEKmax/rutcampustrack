@@ -1,0 +1,1 @@
+import{Ia as n,ba as e}from"./chunk-EKCILEIC.js";var a=class t{_count=n(0);unreadCount=this._count.asReadonly();increment(){this._count.update(o=>o+1)}reset(){this._count.set(0)}static \u0275fac=function(r){return new(r||t)};static \u0275prov=e({token:t,factory:t.\u0275fac,providedIn:"root"})};export{a};

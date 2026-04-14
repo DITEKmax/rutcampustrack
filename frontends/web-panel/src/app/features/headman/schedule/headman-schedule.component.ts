@@ -54,6 +54,21 @@ function mondayOf(d: Date): Date {
 }
 
 /**
+ * ISO 8601 week number (1..53). Это «номер недели в году», по которому
+ * считается чётность учебной недели в РУТ МИИТ: чётный номер недели — чётная
+ * неделя, нечётный — нечётная. См. ГОСТ ISO 8601-2001.
+ */
+function isoWeekNumber(d: Date): number {
+  const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (target.getUTCDay() + 6) % 7; // 0=Mon..6=Sun
+  target.setUTCDate(target.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+  const firstThursdayDayNum = (firstThursday.getUTCDay() + 6) % 7;
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstThursdayDayNum + 3);
+  return 1 + Math.round((target.getTime() - firstThursday.getTime()) / (7 * 24 * 3600 * 1000));
+}
+
+/**
  * Headman schedule page — `/headman/schedule`.
  *
  * Реализует AC-11: матрица дни×слоты с шаблоном активного семестра для
@@ -117,8 +132,9 @@ function mondayOf(d: Date): Date {
         <div class="page-card page-card--flush">
           <div class="current-week-banner" [class.current-week-banner--odd]="currentWeekIsOdd()">
             <i class="ph ph-calendar-check"></i>
-            Сейчас идёт <strong>{{ currentWeekIsOdd() ? '2-я (нечётная)' : '1-я (чётная)' }}</strong>
-            учебная неделя
+            Сейчас <strong>{{ currentWeekNumber() }}-я неделя года</strong> —
+            <strong>{{ currentWeekIsOdd() ? '2-я (нечётная)' : '1-я (чётная)' }}</strong>
+            учебная
           </div>
           <div class="schedule-matrix">
             <div class="matrix-header">
@@ -307,21 +323,21 @@ export class HeadmanScheduleComponent implements OnInit {
   }
 
   /**
-   * Идёт ли сейчас нечётная неделя относительно начала семестра.
-   * Используется в баннере над матрицей. Если данные семестра не загружены,
-   * считаем неделю чётной (=1-я по соглашению пользователя).
+   * Идёт ли сейчас нечётная учебная неделя.
+   *
+   * В РУТ МИИТ чётность учебной недели совпадает с чётностью её ISO-номера
+   * (week-of-year). Например: ISO неделя №16 = чётная (1-я по соглашению
+   * пользователя), №17 = нечётная (2-я). Привязки к dateFrom семестра нет.
+   *
+   * @returns true если ISO-номер текущей недели нечётный.
    */
   currentWeekIsOdd(): boolean {
-    const start = this.semesterDateFrom();
-    if (!start) return false;
-    const startDate = new Date(start);
-    if (Number.isNaN(startDate.getTime())) return false;
-    const startMonday = mondayOf(startDate);
-    const todayMonday = mondayOf(new Date());
-    const weekDelta = Math.round((todayMonday.getTime() - startMonday.getTime()) / (7 * 24 * 3600 * 1000));
-    const firstIsOdd = this.semesterFirstWeekIsOdd();
-    const currentIsOdd = (weekDelta % 2 === 0) ? firstIsOdd : !firstIsOdd;
-    return currentIsOdd;
+    return isoWeekNumber(new Date()) % 2 === 1;
+  }
+
+  /** ISO-номер текущей недели (1..53) — для отображения в баннере. */
+  currentWeekNumber(): number {
+    return isoWeekNumber(new Date());
   }
 
   subjectName(subjectId: number): string {

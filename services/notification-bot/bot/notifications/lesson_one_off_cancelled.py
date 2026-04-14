@@ -1,4 +1,4 @@
-"""Handler for lesson.one_off.cancelled events — notifies group students when a headman deletes a one-off lesson (Phase 60-04, D-22)."""
+"""Handler for lesson.one_off.cancelled — notify group students on headman delete (Phase 60-04, D-22)."""
 
 import logging
 

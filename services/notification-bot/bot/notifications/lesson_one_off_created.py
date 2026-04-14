@@ -1,4 +1,4 @@
-"""Handler for lesson.one_off.created events — notifies all group students (D-18) when a headman adds a one-off lesson (Phase 60-04)."""
+"""Handler for lesson.one_off.created — notify group students on headman add (Phase 60-04, D-18)."""
 
 import logging
 

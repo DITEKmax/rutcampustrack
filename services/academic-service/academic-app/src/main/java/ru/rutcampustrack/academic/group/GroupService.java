@@ -8,11 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.group.GroupStatus;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
+import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
@@ -30,15 +32,18 @@ public class GroupService {
     private final UserRepository userRepository;
     private final RequestContext requestContext;
     private final ApplicationEventPublisher eventPublisher;
+    private final GroupNameParser nameParser;
 
     public GroupService(GroupRepository groupRepository,
                         UserRepository userRepository,
                         RequestContext requestContext,
-                        ApplicationEventPublisher eventPublisher) {
+                        ApplicationEventPublisher eventPublisher,
+                        GroupNameParser nameParser) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.requestContext = requestContext;
         this.eventPublisher = eventPublisher;
+        this.nameParser = nameParser;
     }
 
     @Transactional
@@ -51,6 +56,18 @@ public class GroupService {
                     "name",
                     request.name(),
                     "Группа с таким названием уже существует"
+            );
+        }
+        // 58-06 / BUG-006-6: запретить создание группы с неизвестным типом программы
+        // (средняя цифра). Парсинг уже выполнен @Pattern на CreateGroupRequest, поэтому
+        // здесь пользуемся чистой логикой без повторной валидации формата.
+        try {
+            GroupNameParser.ParsedName parsed = nameParser.parse(request.name());
+            ProgramType.fromDigit(parsed.type());
+        } catch (UnknownProgramTypeException e) {
+            throw new BadRequestException(
+                    "name",
+                    "Неизвестный тип программы (цифра " + e.getDigit() + ")"
             );
         }
         Group group = new Group();
@@ -72,6 +89,16 @@ public class GroupService {
         return groupRepository.findAll(pageable);
     }
 
+    /**
+     * 58-06 / BUG-006-6: фильтр по статусу жизненного цикла + ILIKE по name.
+     */
+    public Page<Group> listGroups(GroupStatus status, String search, Pageable pageable) {
+        return groupRepository.findAll(
+                GroupSpecifications.statusAndSearch(status, search),
+                pageable
+        );
+    }
+
     @Caching(evict = {
         @CacheEvict(value = "groups", key = "#id"),
         @CacheEvict(value = "group_members", key = "#id")
@@ -79,6 +106,16 @@ public class GroupService {
     @Transactional
     public Group updateGroup(Long id, UpdateGroupRequest request) {
         Group group = findGroupById(id);
+        // 58-06 / BUG-006-6: архивные группы неизменяемы — запрет редактирования.
+        // Сервис архивации сам снимает is_active и ставит archived_at; PUT не должен
+        // позволять админу «вернуть» группу в активный пул или переименовать её.
+        if (!group.isActive()) {
+            throw new ConflictException(
+                    "archived",
+                    group.getId(),
+                    "Нельзя редактировать архивную группу"
+            );
+        }
         // 58-04: при переименовании проверяем конфликт имени (кроме самой себя).
         if (!request.name().equals(group.getName())
                 && groupRepository.existsByName(request.name())) {

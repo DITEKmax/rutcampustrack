@@ -10,12 +10,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
@@ -48,6 +50,9 @@ class GroupServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private RequestContext requestContext;
     @Mock private ApplicationEventPublisher eventPublisher;
+    // 58-06: real parser, чтобы GroupService.createGroup мог извлечь тип программы
+    // без мокирования чистой логики.
+    @Spy private GroupNameParser nameParser = new GroupNameParser();
 
     @InjectMocks private GroupService groupService;
 
@@ -147,6 +152,55 @@ class GroupServiceTest {
                     ConflictException ce = (ConflictException) e;
                     assertThat(ce.getField()).isEqualTo("name");
                     assertThat(ce.getMessage()).contains("уже существует");
+                });
+
+        verify(groupRepository, never()).save(any());
+    }
+
+    // =========================================================================
+    // 58-06 / BUG-006-6 — ProgramType guard + archived guard
+    // =========================================================================
+
+    @Test
+    void createGroup_unknownProgramType_throwsBadRequestWithFieldName() {
+        // УИТ-351 — middle digit 5 не зарегистрирован в ProgramType.
+        when(groupRepository.existsByName("УИТ-351")).thenReturn(false);
+
+        assertThatThrownBy(() -> groupService.createGroup(new CreateGroupRequest("УИТ-351")))
+                .isInstanceOf(BadRequestException.class)
+                .satisfies(e -> {
+                    BadRequestException be = (BadRequestException) e;
+                    assertThat(be.getField()).isEqualTo("name");
+                    assertThat(be.getMessage()).contains("Неизвестный тип программы").contains("5");
+                });
+
+        verify(groupRepository, never()).save(any());
+    }
+
+    @Test
+    void updateGroup_archivedGroup_throwsConflict() {
+        // Архивная группа (is_active=false) — PUT блокирован.
+        Group archived = new Group();
+        // reflection: id + active setter
+        try {
+            Field idField = Group.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(archived, 42L);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+        archived.setName("УИТ-411 (выпуск 2026)");
+        archived.setActive(false);
+        archived.setCreatedAt(OffsetDateTime.now());
+
+        when(groupRepository.findById(42L)).thenReturn(java.util.Optional.of(archived));
+
+        assertThatThrownBy(() -> groupService.updateGroup(42L, new UpdateGroupRequest("УИТ-211", true)))
+                .isInstanceOf(ConflictException.class)
+                .satisfies(e -> {
+                    ConflictException ce = (ConflictException) e;
+                    assertThat(ce.getField()).isEqualTo("archived");
+                    assertThat(ce.getMessage()).contains("архивную");
                 });
 
         verify(groupRepository, never()).save(any());

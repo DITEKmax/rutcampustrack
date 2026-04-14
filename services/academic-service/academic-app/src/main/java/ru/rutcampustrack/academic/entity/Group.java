@@ -48,4 +48,12 @@ public class Group {
     @Setter
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
+
+    /**
+     * Заполняется сервисом архивации (BUG-006-6 / план 58-06) одновременно с {@code is_active=false}.
+     * {@code NULL} для активных групп и исторических записей, созданных до V9.
+     */
+    @Setter
+    @Column(name = "archived_at")
+    private OffsetDateTime archivedAt;
 }

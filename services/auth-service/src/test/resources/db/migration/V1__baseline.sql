@@ -12,8 +12,10 @@ CREATE TABLE groups (
     id          BIGSERIAL PRIMARY KEY,
     name        VARCHAR(32) NOT NULL UNIQUE,
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMPTZ NULL
 );
+CREATE INDEX idx_groups_is_active ON groups(is_active) WHERE is_active = true;
 
 -- Users
 CREATE TABLE users (

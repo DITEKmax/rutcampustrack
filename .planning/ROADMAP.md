@@ -357,7 +357,17 @@ Plans:
   6. Frontend student имеет dropdown причины и реальный submit; frontend headman имеет работающие approve/reject
   7. gRPC `schedule.GetLessonsByIds` реализован для валидации lessonIds
 **Notes**: Файлы (вложения через Telegram) явно out of scope — отдельной фазой позже. Контракт-тест с notification-bot обязателен.
-**Plans**: 9 рекомендуемых планов (см. 59-RESEARCH.md execution_plan_seed)
+**Plans**: 9 планов
+Plans:
+- [ ] 59-01-PLAN.md — Доменный слой: ExcuseTicket (MongoDB) + API контракт (ExcuseApi + DTO)
+- [ ] 59-02-PLAN.md — ExcuseService (бизнес-логика + security) + ExcuseController + ExcuseAssembler
+- [ ] 59-03-PLAN.md — gRPC GetLessonsByIds: расширение proto + schedule-service impl + attendance клиент
+- [ ] 59-04-PLAN.md — AttendanceWritePort + каскад на attendance при approve тикета
+- [ ] 59-05-PLAN.md — RabbitMQ event publisher (excuse.requested + excuse.decided) + контракт-тест
+- [ ] 59-06-PLAN.md — notification-bot: handler excuse.decided + pytest тесты
+- [ ] 59-07-PLAN.md — Frontend student: ExcuseType dropdown + реальный submit + список тикетов
+- [ ] 59-08-PLAN.md — Frontend headman: полная реализация approve/reject страницы
+- [ ] 59-09-PLAN.md — Финальная интеграция: gRPC валидация в ExcuseService + ExcuseControllerIT + регрессия
 **UI hint**: yes (student excuses dialog + headman excuses page)
 
 ---

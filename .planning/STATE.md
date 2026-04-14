@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
 status: executing
-stopped_at: Completed 60-01-PLAN.md
-last_updated: "2026-04-14T20:02:19.345Z"
+stopped_at: Completed 60-02-PLAN.md
+last_updated: "2026-04-14T20:15:32.276Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 12
   completed_phases: 2
   total_plans: 27
-  completed_plans: 20
-  percent: 74
+  completed_plans: 21
+  percent: 78
 ---
 
 # Project State
@@ -23,7 +23,7 @@ v9.0 Frontend Unification — Single Login & Role-Based Web Clients
 ## Current Position
 
 Phase: 60 (headman-schedule-management) — EXECUTING
-Plan: 2 of 8
+Plan: 3 of 8
 Plans: 0/TBD
 Status: Ready to execute
 Last activity: 2026-04-14
@@ -76,6 +76,7 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 56]: JournalPage 2-step flow preserves subject/date in component state (no URL params) — simpler state model for Wave 3 scope
 - [Phase 56]: Plan 56-05: Excuses/LateCheckin pages ship as pure D-10 shells (no API calls) — empty state IS the feature; StatsPage uses SubjectStatsCollector pattern to call per-subject hooks in stable subjects-array order
 - [Phase 60]: Subject.groupId immutable after creation (D-02) — updateSubject rejects cross-group tampering
+- [Phase 60]: ScheduleItem.teacherId removed end-to-end (D-16); proto field marked reserved 5 for wire-compat
 
 ### Key v9.0 Architecture Decisions
 
@@ -100,7 +101,7 @@ Phases 49 and 50 are CRITICAL-PATH and completed. Phases 51-55 (Blocks B and C) 
 
 ## Session Continuity
 
-Last session: 2026-04-14T20:02:19.341Z
-Stopped at: Completed 60-01-PLAN.md
+Last session: 2026-04-14T20:15:32.272Z
+Stopped at: Completed 60-02-PLAN.md
 Next action: /gsd-verifier 58 (после UAT) или /gsd-next для следующей фазы.
 Deferred: UAT checkpoint plan 58-09 Task 2 — 13 ручных шагов через браузер (docs/phase-58-report.md Known limitations).

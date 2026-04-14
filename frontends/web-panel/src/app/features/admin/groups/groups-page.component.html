@@ -7,76 +7,169 @@
       </p>
     </div>
     <div class="page-header__actions">
-      <button type="button" class="btn-brand" (click)="openCreateDialog()">
-        <i class="ph ph-plus" aria-hidden="true"></i>
-        Создать группу
-      </button>
+      @if (status() === 'ACTIVE') {
+        <button type="button" class="btn-brand" (click)="openCreateDialog()">
+          <i class="ph ph-plus" aria-hidden="true"></i>
+          Создать группу
+        </button>
+        <button
+          type="button"
+          class="btn-brand btn-brand--ghost"
+          data-testid="promote-button"
+          (click)="openPromotionDialog()">
+          <i class="ph ph-arrow-circle-up" aria-hidden="true"></i>
+          Перевести группы на следующий курс
+        </button>
+      }
     </div>
   </header>
 
-  @if (loading()) {
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-  }
+  <mat-tab-group
+    animationDuration="0ms"
+    [selectedIndex]="status() === 'ARCHIVED' ? 1 : 0"
+    (selectedIndexChange)="onTabChange($event)">
 
-  @if (error()) {
-    <div class="page-error" role="alert">
-      <i class="ph ph-warning-circle" aria-hidden="true"></i>
-      {{ error() }}
-    </div>
-  }
+    <mat-tab label="Активные">
+      <div class="groups-tab">
+        <mat-form-field appearance="outline" class="groups-search">
+          <mat-label>Поиск</mat-label>
+          <input matInput [formControl]="searchControl" placeholder="Название группы" autocomplete="off">
+        </mat-form-field>
 
-  @if (groups().length === 0 && !loading()) {
-    <div class="page-card">
-      <div class="page-empty">
-        <div class="page-empty__icon" aria-hidden="true">
-          <i class="ph-duotone ph-users-three"></i>
-        </div>
-        <h3 class="page-empty__title">Групп нет</h3>
-        <p class="page-empty__text">Создайте первую учебную группу через кнопку выше.</p>
+        @if (loading()) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+        @if (error()) {
+          <div class="page-error" role="alert">
+            <i class="ph ph-warning-circle" aria-hidden="true"></i>
+            {{ error() }}
+          </div>
+        }
+
+        @if (groups().length === 0 && !loading()) {
+          <div class="page-card">
+            <div class="page-empty">
+              <div class="page-empty__icon" aria-hidden="true">
+                <i class="ph-duotone ph-users-three"></i>
+              </div>
+              <h3 class="page-empty__title">Групп нет</h3>
+              <p class="page-empty__text">Создайте первую учебную группу через кнопку выше.</p>
+            </div>
+          </div>
+        } @else {
+          <div class="page-card page-card--flush">
+            <mat-table [dataSource]="groups()">
+              <ng-container matColumnDef="name">
+                <mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
+                <mat-cell *matCellDef="let group">
+                  <span class="group-badge group-badge--active" aria-hidden="true"></span>
+                  {{ group.name }}
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="headman">
+                <mat-header-cell *matHeaderCellDef>Староста</mat-header-cell>
+                <mat-cell *matCellDef="let group">{{ groupHeadmanName(group.id) }}</mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="studentCount">
+                <mat-header-cell *matHeaderCellDef>Студентов</mat-header-cell>
+                <mat-cell *matCellDef="let group">{{ groupStudentCount(group.id) }}</mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                <mat-cell *matCellDef="let group">
+                  <button mat-icon-button matTooltip="Редактировать" aria-label="Редактировать" (click)="openEditDialog(group)">
+                    <i class="ph ph-pencil-simple" aria-hidden="true"></i>
+                  </button>
+                  @if (groupHeadman(group.id)) {
+                    <button mat-icon-button matTooltip="Снять старосту" aria-label="Снять старосту" (click)="revokeHeadman(group)">
+                      <i class="ph ph-crown-cross" aria-hidden="true"></i>
+                    </button>
+                  } @else {
+                    <button mat-icon-button matTooltip="Назначить старосту" aria-label="Назначить старосту" (click)="assignHeadman(group)">
+                      <i class="ph ph-crown" aria-hidden="true"></i>
+                    </button>
+                  }
+                  <button mat-icon-button matTooltip="Удалить группу" aria-label="Удалить группу" (click)="deleteGroup(group)">
+                    <i class="ph ph-trash" aria-hidden="true"></i>
+                  </button>
+                </mat-cell>
+              </ng-container>
+
+              <mat-header-row *matHeaderRowDef="activeColumns"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: activeColumns;"></mat-row>
+            </mat-table>
+          </div>
+        }
       </div>
-    </div>
-  } @else {
-    <div class="page-card page-card--flush">
-      <mat-table [dataSource]="groups()">
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
-          <mat-cell *matCellDef="let group">{{ group.name }}</mat-cell>
-        </ng-container>
+    </mat-tab>
 
-        <ng-container matColumnDef="headman">
-          <mat-header-cell *matHeaderCellDef>Староста</mat-header-cell>
-          <mat-cell *matCellDef="let group">{{ groupHeadmanName(group.id) }}</mat-cell>
-        </ng-container>
+    <mat-tab label="Архив">
+      <div class="groups-tab">
+        <mat-form-field appearance="outline" class="groups-search">
+          <mat-label>Поиск в архиве</mat-label>
+          <input matInput [formControl]="searchControl" placeholder="Например УИТ" autocomplete="off">
+        </mat-form-field>
 
-        <ng-container matColumnDef="studentCount">
-          <mat-header-cell *matHeaderCellDef>Студентов</mat-header-cell>
-          <mat-cell *matCellDef="let group">{{ groupStudentCount(group.id) }}</mat-cell>
-        </ng-container>
+        @if (loading()) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+        @if (error()) {
+          <div class="page-error" role="alert">
+            <i class="ph ph-warning-circle" aria-hidden="true"></i>
+            {{ error() }}
+          </div>
+        }
 
-        <ng-container matColumnDef="actions">
-          <mat-header-cell *matHeaderCellDef></mat-header-cell>
-          <mat-cell *matCellDef="let group">
-            <button mat-icon-button matTooltip="Редактировать" aria-label="Редактировать" (click)="openEditDialog(group)">
-              <i class="ph ph-pencil-simple" aria-hidden="true"></i>
-            </button>
-            @if (groupHeadman(group.id)) {
-              <button mat-icon-button matTooltip="Снять старосту" aria-label="Снять старосту" (click)="revokeHeadman(group)">
-                <i class="ph ph-crown-cross" aria-hidden="true"></i>
-              </button>
-            } @else {
-              <button mat-icon-button matTooltip="Назначить старосту" aria-label="Назначить старосту" (click)="assignHeadman(group)">
-                <i class="ph ph-crown" aria-hidden="true"></i>
-              </button>
-            }
-            <button mat-icon-button matTooltip="Удалить группу" aria-label="Удалить группу" (click)="deleteGroup(group)">
-              <i class="ph ph-trash" aria-hidden="true"></i>
-            </button>
-          </mat-cell>
-        </ng-container>
+        @if (groups().length === 0 && !loading()) {
+          <div class="page-card">
+            <div class="page-empty">
+              <div class="page-empty__icon" aria-hidden="true">
+                <i class="ph-duotone ph-archive"></i>
+              </div>
+              <h3 class="page-empty__title">Архив пуст</h3>
+              <p class="page-empty__text">Архивные группы появятся после перевода выпускных курсов.</p>
+            </div>
+          </div>
+        } @else {
+          <div class="page-card page-card--flush">
+            <mat-table [dataSource]="groups()">
+              <ng-container matColumnDef="name">
+                <mat-header-cell *matHeaderCellDef>Название</mat-header-cell>
+                <mat-cell *matCellDef="let group">
+                  <span class="group-badge group-badge--archived" aria-hidden="true"></span>
+                  {{ group.name }}
+                </mat-cell>
+              </ng-container>
 
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-      </mat-table>
-    </div>
-  }
+              <ng-container matColumnDef="archivedAt">
+                <mat-header-cell *matHeaderCellDef>Архивирована</mat-header-cell>
+                <mat-cell *matCellDef="let group">
+                  {{ group.archivedAt ? (group.archivedAt | date:'dd.MM.yyyy') : '—' }}
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                <mat-cell *matCellDef="let group">
+                  <button
+                    mat-stroked-button
+                    data-testid="history-button"
+                    (click)="openHistory(group)">
+                    <i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i>
+                    История
+                  </button>
+                </mat-cell>
+              </ng-container>
+
+              <mat-header-row *matHeaderRowDef="archivedColumns"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: archivedColumns;"></mat-row>
+            </mat-table>
+          </div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
 </div>

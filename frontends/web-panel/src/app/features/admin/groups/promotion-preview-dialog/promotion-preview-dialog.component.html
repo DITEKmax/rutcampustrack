@@ -1,0 +1,99 @@
+<h2 mat-dialog-title>Перевод групп на следующий курс</h2>
+
+<mat-dialog-content class="ppd">
+  @if (phase() === 'loading') {
+    <div class="ppd__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span>Анализируем активные группы…</span>
+    </div>
+  }
+
+  @if (phase() === 'error') {
+    <div class="ppd__error" role="alert">
+      <i class="ph ph-warning-circle" aria-hidden="true"></i>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (phase() === 'preview' && summary(); as s) {
+    @if (isEmpty() && s.conflicts.length === 0) {
+      <p class="ppd__empty" data-testid="empty-state">Нет групп для перевода.</p>
+    }
+
+    @if (s.toPromote.length > 0) {
+      <section class="ppd__section" data-testid="promote-section">
+        <h3>Будут переименованы ({{ s.toPromote.length }})</h3>
+        <ul>
+          @for (item of s.toPromote; track item.id) {
+            <li><span class="ppd__from">{{ item.from }}</span> → <strong>{{ item.to }}</strong></li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (s.toArchive.length > 0) {
+      <section class="ppd__section" data-testid="archive-section">
+        <h3>Будут архивированы ({{ s.toArchive.length }})</h3>
+        <ul>
+          @for (item of s.toArchive; track item.id) {
+            <li>{{ item.from }}</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (s.conflicts.length > 0) {
+      <section class="ppd__section ppd__section--warn" data-testid="conflicts-section">
+        <h3>Конфликты ({{ s.conflicts.length }})</h3>
+        <p class="ppd__warn-hint">Эти префиксы не будут затронуты. Остальные — будут.</p>
+        <ul>
+          @for (c of s.conflicts; track c.prefix) {
+            <li><strong>{{ c.prefix }}</strong>: {{ c.message }}</li>
+          }
+        </ul>
+      </section>
+    }
+  }
+
+  @if (phase() === 'executing') {
+    <div class="ppd__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span>Выполняем перевод…</span>
+    </div>
+  }
+
+  @if (phase() === 'done' && result(); as r) {
+    <div class="ppd__done" data-testid="done-state">
+      <h3>Готово</h3>
+      <p>
+        Переименовано: <strong>{{ r.toPromote.length }}</strong>,
+        Архивировано: <strong>{{ r.toArchive.length }}</strong>,
+        Конфликтов: <strong>{{ r.conflicts.length }}</strong>.
+      </p>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @if (phase() === 'preview') {
+    <button mat-button data-testid="cancel-button" (click)="cancel()">Отмена</button>
+    <button
+      mat-raised-button
+      color="primary"
+      data-testid="confirm-button"
+      [disabled]="isEmpty()"
+      (click)="confirm()">
+      Подтвердить
+    </button>
+  } @else if (phase() === 'executing') {
+    <button mat-button disabled>Отмена</button>
+    <button mat-raised-button color="primary" disabled>Выполняется…</button>
+  } @else if (phase() === 'done') {
+    <button mat-raised-button color="primary" data-testid="close-button" (click)="close()">
+      Закрыть
+    </button>
+  } @else if (phase() === 'error') {
+    <button mat-button (click)="cancel()">Закрыть</button>
+    <button mat-raised-button color="primary" (click)="loadPreview()">Повторить</button>
+  }
+</mat-dialog-actions>

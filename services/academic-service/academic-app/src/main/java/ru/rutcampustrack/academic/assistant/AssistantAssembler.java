@@ -24,8 +24,9 @@ public class AssistantAssembler implements RepresentationModelAssembler<HeadmanA
 
     @Override
     public EntityModel<AssistantResponse> toModel(HeadmanAssistant assistant) {
-        String studentName = userRepository.findById(assistant.getStudentId())
-                .map(u -> u.getDisplayName()).orElse("Unknown");
+        var userOpt = userRepository.findById(assistant.getStudentId());
+        String studentName = userOpt.map(u -> u.getDisplayName()).orElse("Unknown");
+        String login = userOpt.map(u -> u.getLogin()).orElse(null);
 
         List<AssistantPermission> permissions = Arrays.stream(assistant.getPermissions())
                 .map(s -> AssistantPermission.valueOf(s.toUpperCase()))
@@ -35,6 +36,8 @@ public class AssistantAssembler implements RepresentationModelAssembler<HeadmanA
         response.setId(assistant.getId());
         response.setStudentId(assistant.getStudentId());
         response.setStudentName(studentName);
+        response.setFullName(studentName);
+        response.setLogin(login);
         response.setGroupId(assistant.getGroupId());
         response.setPermissions(permissions);
         response.setActive(assistant.isActive());

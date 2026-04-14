@@ -14,6 +14,8 @@ public class AssistantResponse extends RepresentationModel<AssistantResponse> {
     private Long id;
     private Long studentId;
     private String studentName;
+    private String fullName;
+    private String login;
     private Long groupId;
     private List<AssistantPermission> permissions;
     private boolean active;
@@ -28,6 +30,7 @@ public class AssistantResponse extends RepresentationModel<AssistantResponse> {
         this.id = id;
         this.studentId = studentId;
         this.studentName = studentName;
+        this.fullName = studentName;
         this.groupId = groupId;
         this.permissions = permissions;
         this.active = active;
@@ -43,6 +46,12 @@ public class AssistantResponse extends RepresentationModel<AssistantResponse> {
 
     public String getStudentName() { return studentName; }
     public void setStudentName(String studentName) { this.studentName = studentName; }
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public String getLogin() { return login; }
+    public void setLogin(String login) { this.login = login; }
 
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }

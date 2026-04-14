@@ -102,4 +102,19 @@ public class UserResponse extends RepresentationModel<UserResponse> {
 
     public String getInitialPassword() { return initialPassword; }
     public void setInitialPassword(String initialPassword) { this.initialPassword = initialPassword; }
+
+    /** Computed ФИО для UI-списков (сериализуется как поле fullName). */
+    public String getFullName() {
+        StringBuilder sb = new StringBuilder();
+        if (lastName != null) sb.append(lastName);
+        if (firstName != null) {
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(firstName);
+        }
+        if (middleName != null && !middleName.isBlank()) {
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(middleName);
+        }
+        return sb.length() == 0 ? null : sb.toString();
+    }
 }

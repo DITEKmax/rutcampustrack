@@ -133,15 +133,19 @@ export class SubjectDialogComponent implements OnInit {
   ngOnInit(): void {
     this.headmanApi.listTeachers().subscribe({
       next: (resp) => {
-        // CollectionModel wraps items in _embedded; use defensive unwrap pattern
         const embedded = resp?._embedded;
+        let list: any[];
         if (embedded) {
-          this.teachers = (Object.values(embedded)[0] as any[]) ?? [];
+          list = (Object.values(embedded)[0] as any[]) ?? [];
         } else if (Array.isArray(resp)) {
-          this.teachers = resp;
+          list = resp;
         } else {
-          this.teachers = [];
+          list = [];
         }
+        const collator = new Intl.Collator('ru', { sensitivity: 'base' });
+        this.teachers = list.slice().sort((a, b) =>
+          collator.compare(a?.lastName ?? a?.fullName ?? '', b?.lastName ?? b?.fullName ?? '')
+        );
         this.teachersLoading = false;
       },
       error: () => {

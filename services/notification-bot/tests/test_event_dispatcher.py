@@ -157,6 +157,9 @@ async def test_dispatcher_has_eight_event_types():
         "group.archived",
         # OTP login flow cleanup
         "otp.verified",
+        # 60-04: headman one-off lesson add/remove
+        "lesson.one_off.created",
+        "lesson.one_off.cancelled",
     }
     assert set(dispatcher._handlers.keys()) == expected_types
 

@@ -47,6 +47,8 @@ class EventDispatcher:
         from bot.notifications.homework import handle_homework
         from bot.notifications.lesson_cancelled import handle_lesson_cancelled
         from bot.notifications.lesson_closed import handle_lesson_closed
+        from bot.notifications.lesson_one_off_cancelled import handle_lesson_one_off_cancelled
+        from bot.notifications.lesson_one_off_created import handle_lesson_one_off_created
         from bot.notifications.otp_verified import handle_otp_verified
         from bot.notifications.student_alerts import handle_student_alert
 
@@ -54,6 +56,19 @@ class EventDispatcher:
         self._handlers: dict[str, Callable[[dict], Awaitable[None]]] = {
             "lesson.started": lambda event: self._handle_lesson_started_with_scheduling(event),
             "lesson.cancelled": lambda event: handle_lesson_cancelled(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
+            # 60-04: one-off lesson added/removed by a headman
+            "lesson.one_off.created": lambda event: handle_lesson_one_off_created(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
+            "lesson.one_off.cancelled": lambda event: handle_lesson_one_off_cancelled(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,

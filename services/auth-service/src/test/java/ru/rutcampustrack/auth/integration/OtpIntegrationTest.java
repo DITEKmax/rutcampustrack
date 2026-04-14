@@ -11,6 +11,7 @@ import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.OtpCodeResponse;
 import ru.rutcampustrack.auth.dto.OtpRequest;
+import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 
@@ -36,6 +37,8 @@ class OtpIntegrationTest extends AbstractIntegrationTest {
         if (attemptKeys != null && !attemptKeys.isEmpty()) redisTemplate.delete(attemptKeys);
         Set<String> sentKeys = redisTemplate.keys("otp_sent:*");
         if (sentKeys != null && !sentKeys.isEmpty()) redisTemplate.delete(sentKeys);
+        Set<String> codeKeys = redisTemplate.keys("otp_code:*");
+        if (codeKeys != null && !codeKeys.isEmpty()) redisTemplate.delete(codeKeys);
     }
 
     @Test
@@ -85,6 +88,34 @@ class OtpIntegrationTest extends AbstractIntegrationTest {
         OtpVerifyRequest verifyRequest = new OtpVerifyRequest(123456789L, "000000");
         ResponseEntity<String> verifyResponse = restTemplate.postForEntity(
                 "/auth/otp/verify", verifyRequest, String.class);
+
+        assertThat(verifyResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void otpVerifyByCode_withCorrectCode_returnsTokenPair() {
+        // Request OTP
+        OtpRequest otpRequest = new OtpRequest(123456789L);
+        ResponseEntity<OtpCodeResponse> requestResponse = restTemplate.postForEntity(
+                "/auth/otp/request", otpRequest, OtpCodeResponse.class);
+        String code = requestResponse.getBody().code();
+
+        // Verify by code only (no telegram_id)
+        OtpVerifyByCodeRequest verifyRequest = new OtpVerifyByCodeRequest(code);
+        ResponseEntity<TokenResponse> verifyResponse = restTemplate.postForEntity(
+                "/auth/otp/verify-by-code", verifyRequest, TokenResponse.class);
+
+        assertThat(verifyResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(verifyResponse.getBody()).isNotNull();
+        assertThat(verifyResponse.getBody().accessToken()).isNotBlank();
+        assertThat(verifyResponse.getBody().refreshToken()).isNotBlank();
+    }
+
+    @Test
+    void otpVerifyByCode_withUnknownCode_returns401() {
+        OtpVerifyByCodeRequest verifyRequest = new OtpVerifyByCodeRequest("000000");
+        ResponseEntity<String> verifyResponse = restTemplate.postForEntity(
+                "/auth/otp/verify-by-code", verifyRequest, String.class);
 
         assertThat(verifyResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }

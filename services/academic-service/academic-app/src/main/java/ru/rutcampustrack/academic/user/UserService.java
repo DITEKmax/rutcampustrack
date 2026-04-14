@@ -344,14 +344,14 @@ public class UserService {
     private String generateLogin(UserRole role) {
         if (role == UserRole.STUDENT) {
             long seq = userRepository.nextStudentLoginSeq();
-            return String.format("student%05d", seq);
+            return "student" + seq;
         } else if (role == UserRole.TEACHER) {
             long seq = userRepository.nextTeacherLoginSeq();
-            return String.format("teacher%05d", seq);
+            return "teacher" + seq;
         } else {
             // ADMIN — use teacher sequence with "admin" prefix
             long seq = userRepository.nextTeacherLoginSeq();
-            return String.format("admin%05d", seq);
+            return "admin" + seq;
         }
     }
 

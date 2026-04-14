@@ -24,6 +24,10 @@ export class LoginComponent {
     password: ['', Validators.required],
   });
 
+  otpForm = this.fb.group({
+    code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
+  });
+
   loading = false;
   errorMessage = '';
   passwordVisible = false;
@@ -57,6 +61,34 @@ export class LoginComponent {
         this.errorMessage = err.status === 401
           ? 'Неверный логин или пароль. Проверьте данные и попробуйте снова.'
           : 'Не удалось подключиться к серверу. Проверьте соединение.';
+      },
+    });
+  }
+
+  onSubmitOtp(): void {
+    if (this.otpForm.invalid) return;
+    this.loading = true;
+    this.errorMessage = '';
+    this.otpForm.disable();
+
+    const code = this.otpForm.getRawValue().code!;
+    this.authApi.verifyOtpByCode(code).subscribe({
+      next: (tokens) => {
+        this.authService.setTokens(tokens.accessToken, tokens.refreshToken);
+        const target = this.authService.resolveDashboardFor(this.authService.currentUser());
+        this.router.navigateByUrl(target);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.otpForm.enable();
+        this.otpForm.patchValue({ code: '' });
+        if (err.status === 401) {
+          this.errorMessage = 'Код неверный или истёк. Запросите новый через бота.';
+        } else if (err.status === 429) {
+          this.errorMessage = 'Слишком много попыток. Подождите немного и попробуйте снова.';
+        } else {
+          this.errorMessage = 'Не удалось подключиться к серверу. Проверьте соединение.';
+        }
       },
     });
   }

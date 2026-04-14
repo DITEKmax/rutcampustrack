@@ -16,6 +16,10 @@ export class AuthApi {
     return this.http.post<TokenResponse>('/api/auth/login', credentials);
   }
 
+  verifyOtpByCode(code: string): Observable<TokenResponse> {
+    return this.http.post<TokenResponse>('/api/auth/otp/verify-by-code', { code });
+  }
+
   refresh(refreshToken: string): Observable<TokenResponse> {
     return this.http.post<TokenResponse>('/api/auth/refresh', { refreshToken });
   }

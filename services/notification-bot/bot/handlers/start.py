@@ -33,17 +33,21 @@ async def cmd_start(message: Message, academic_client, prefs_client) -> None:
             # First login — show credentials
             await message.answer(
                 f"Добро пожаловать, {response.display_name}!\n\n"
-                f"Ваш логин: {response.login}\n"
-                f"Ваш пароль: {response.initial_password}\n\n"
+                f"Ваш логин: <code>{response.login}</code>\n"
+                f"Ваш пароль: <code>{response.initial_password}</code>\n\n"
                 "Используйте эти данные для входа в веб-панель.\n"
                 "После входа смените пароль.",
                 reply_markup=keyboard,
+                parse_mode="HTML",
             )
         else:
             # Password already changed
             await message.answer(
-                f"Добро пожаловать, {response.display_name}!\n\nЛогин: {response.login}\nГруппа: {response.group_name}",
+                f"Добро пожаловать, {response.display_name}!\n\n"
+                f"Логин: <code>{response.login}</code>\n"
+                f"Группа: {response.group_name}",
                 reply_markup=keyboard,
+                parse_mode="HTML",
             )
 
     except Exception:

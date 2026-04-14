@@ -33,7 +33,7 @@
             class="login-input"
             formControlName="login"
             autocomplete="username"
-            placeholder="student00001"
+            placeholder="student1"
             [class.login-input--error]="form.get('login')?.invalid && form.get('login')?.touched"
           />
         </div>
@@ -81,24 +81,44 @@
       </form>
     }
 
-    <!-- OTP-вход через Telegram (информационный блок) -->
+    <!-- OTP-вход через Telegram -->
     @if (mode === 'otp') {
-      <div class="login-otp-info">
-        <div class="login-otp-info__icon">
-          <i class="ph-duotone ph-telegram-logo" aria-hidden="true"></i>
+      <form [formGroup]="otpForm" (ngSubmit)="onSubmitOtp()" class="login-form">
+        <p class="login-otp-info__text">
+          Откройте Telegram-бота и отправьте команду <strong>/login</strong> —
+          бот пришлёт 6-значный код. Введите его ниже.
+        </p>
+
+        <div class="login-field">
+          <label class="login-label" for="otp-code-input">Код из Telegram</label>
+          <input
+            id="otp-code-input"
+            class="login-input login-input--mono"
+            formControlName="code"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="6"
+            placeholder="123456"
+            [class.login-input--error]="otpForm.get('code')?.invalid && otpForm.get('code')?.touched"
+          />
         </div>
-        <h3 class="login-otp-info__title">Вход через Telegram</h3>
-        <p class="login-otp-info__text">
-          Этот способ входа доступен через Telegram-бота. Напишите боту
-          <strong>/login</strong> — он запросит одноразовый код и выполнит вход автоматически.
-        </p>
-        <p class="login-otp-info__text">
-          Для веб-панели администратора рекомендуется вход по паролю.
-        </p>
-        <button type="button" class="login-submit login-submit--secondary" (click)="setMode('password')">
-          Вернуться к входу по паролю
+
+        @if (errorMessage) {
+          <div class="login-error" role="alert">
+            <i class="ph ph-warning-circle" aria-hidden="true"></i>
+            {{ errorMessage }}
+          </div>
+        }
+
+        <button type="submit" class="login-submit" [disabled]="otpForm.invalid || loading">
+          @if (loading) {
+            <span class="login-spinner" aria-hidden="true"></span>
+            Вход...
+          } @else {
+            Войти
+          }
         </button>
-      </div>
+      </form>
     }
   </div>
 </div>

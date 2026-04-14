@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.config.OtpProperties;
 import ru.rutcampustrack.auth.dto.OtpRequest;
+import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.entity.User;
@@ -61,12 +62,30 @@ public class OtpService {
             throw new OtpRateLimitException("Too many OTP requests. Try again later");
         }
 
-        // Generate 6-digit code
-        String code = String.format("%06d", secureRandom.nextInt(1_000_000));
+        // Generate 6-digit code, retry on collision with another live OTP
+        String code;
+        Duration ttl = Duration.ofSeconds(otpProperties.ttlSeconds());
+        int collisionRetries = 5;
+        while (true) {
+            code = String.format("%06d", secureRandom.nextInt(1_000_000));
+            Boolean reserved = redisTemplate.opsForValue()
+                    .setIfAbsent("otp_code:" + code, telegramId.toString(), ttl);
+            if (Boolean.TRUE.equals(reserved)) {
+                break;
+            }
+            if (--collisionRetries <= 0) {
+                throw new OtpRateLimitException("Could not allocate unique code, please retry");
+            }
+        }
 
-        // Store OTP code with TTL
-        redisTemplate.opsForValue().set("otp:" + telegramId, code,
-                Duration.ofSeconds(otpProperties.ttlSeconds()));
+        // Drop previous code mapping for this user (if any) before overwriting forward index
+        String previousCode = redisTemplate.opsForValue().get("otp:" + telegramId);
+        if (previousCode != null) {
+            redisTemplate.delete("otp_code:" + previousCode);
+        }
+
+        // Store OTP code with TTL (forward index)
+        redisTemplate.opsForValue().set("otp:" + telegramId, code, ttl);
 
         // Set resend cooldown
         redisTemplate.opsForValue().set("otp_sent:" + telegramId, "1",
@@ -113,8 +132,33 @@ public class OtpService {
             throw new OtpExpiredException();
         }
 
+        return issueTokens(user, telegramId, request.code());
+    }
+
+    public TokenResponse verifyOtpByCode(OtpVerifyByCodeRequest request) {
+        String code = request.code();
+
+        String telegramIdStr = redisTemplate.opsForValue().get("otp_code:" + code);
+        if (telegramIdStr == null) {
+            throw new OtpExpiredException();
+        }
+
+        Long telegramId = Long.valueOf(telegramIdStr);
+
+        User user = userRepository.findByTelegramId(telegramId)
+                .orElseThrow(InvalidCredentialsException::new);
+
+        if (user.getStatus() != AccountStatus.ACTIVE) {
+            throw new InvalidCredentialsException();
+        }
+
+        return issueTokens(user, telegramId, code);
+    }
+
+    private TokenResponse issueTokens(User user, Long telegramId, String code) {
         // Clean up all OTP-related Redis keys
         redisTemplate.delete("otp:" + telegramId);
+        redisTemplate.delete("otp_code:" + code);
         redisTemplate.delete("otp_attempts:" + telegramId);
         redisTemplate.delete("otp_sent:" + telegramId);
         redisTemplate.delete("otp_verify_attempts:" + telegramId);

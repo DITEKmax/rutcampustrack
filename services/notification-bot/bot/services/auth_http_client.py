@@ -45,14 +45,3 @@ class AuthHttpClient:
             data = await resp.json()
             return data["code"]
 
-    async def verify_otp(self, telegram_id: int, code: str) -> dict:
-        """Verify OTP code. Returns {"accessToken": ..., "refreshToken": ..., "expiresIn": ...}.
-
-        Raises aiohttp.ClientResponseError on 401 (invalid/expired code).
-        """
-        async with self._session.post(
-            "/auth/otp/verify",
-            json={"telegramId": telegram_id, "code": code},
-        ) as resp:
-            resp.raise_for_status()
-            return await resp.json()

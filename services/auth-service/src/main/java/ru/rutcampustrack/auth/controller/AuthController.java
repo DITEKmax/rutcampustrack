@@ -11,6 +11,7 @@ import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.OtpCodeResponse;
 import ru.rutcampustrack.auth.dto.OtpRequest;
+import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.PublicKeyResponse;
 import ru.rutcampustrack.auth.dto.RefreshRequest;
@@ -81,6 +82,16 @@ public class AuthController {
     @PostMapping("/otp/verify")
     public ResponseEntity<TokenResponse> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
         return ResponseEntity.ok(otpService.verifyOtp(request));
+    }
+
+    @Operation(summary = "Verify OTP code without telegram ID",
+               description = "Verify OTP code by reverse lookup (code → telegramId). Used by web-panel "
+                       + "where the user only enters the 6-digit code received in Telegram bot.")
+    @ApiResponse(responseCode = "200", description = "OTP verified, JWT pair returned")
+    @ApiResponse(responseCode = "401", description = "Invalid or expired OTP code")
+    @PostMapping("/otp/verify-by-code")
+    public ResponseEntity<TokenResponse> verifyOtpByCode(@Valid @RequestBody OtpVerifyByCodeRequest request) {
+        return ResponseEntity.ok(otpService.verifyOtpByCode(request));
     }
 
     @Operation(summary = "Authenticate via Telegram Mini App",

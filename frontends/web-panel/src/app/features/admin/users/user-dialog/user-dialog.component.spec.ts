@@ -122,6 +122,114 @@ describe('UserDialogComponent', () => {
     expect(component.form.get('lastName')!.hasError('required')).toBe(true);
   });
 
+  // --- BUG-006-2: field-specific 409 messages ---
+
+  function fillCreateForm(component: UserDialogComponent): void {
+    component.form.patchValue({
+      lastName: 'Петров',
+      firstName: 'Пётр',
+      role: 'student',
+    });
+  }
+
+  function submitAndFailWith(
+    component: UserDialogComponent,
+    status: number,
+    body: Record<string, unknown> | null,
+  ): void {
+    component.save();
+    const req = httpMock.expectOne('/api/academic/users');
+    req.flush(body, { status, statusText: status === 409 ? 'Conflict' : 'Error' });
+  }
+
+  it('409 with field=login → submitError (login автогенерируется, control отсутствует)', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+    fillCreateForm(component);
+
+    submitAndFailWith(component, 409, { status: 409, field: 'login', detail: 'x' });
+
+    // В этой форме нет control-а login (логин генерирует backend), поэтому
+    // только submitError покрывает сценарий коллизии логинов — пользователь
+    // увидит баннер и поймёт, что нужно перезапустить создание.
+    expect(component.submitError()).toBe('Логин уже используется. Выберите другой');
+    expect(component.form.get('login')).toBeNull();
+  });
+
+  it('409 with field=email → submitError Email уже зарегистрирован', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+    fillCreateForm(component);
+
+    submitAndFailWith(component, 409, { status: 409, field: 'email', detail: 'x' });
+
+    expect(component.submitError()).toBe('Email уже зарегистрирован');
+  });
+
+  it('409 with field=telegramId → submitError Telegram ID…', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+    fillCreateForm(component);
+
+    submitAndFailWith(component, 409, { status: 409, field: 'telegramId', detail: 'x' });
+
+    expect(component.submitError()).toBe('Telegram ID уже привязан к другой учётной записи');
+  });
+
+  it('409 with field=employeeNumber → submitError Табельный номер…', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+    component.form.patchValue({
+      lastName: 'Учителев',
+      firstName: 'Учитель',
+      role: 'teacher',
+      employeeNumber: 'EMP-001',
+    });
+
+    submitAndFailWith(component, 409, { status: 409, field: 'employeeNumber', detail: 'x' });
+
+    expect(component.submitError()).toBe('Табельный номер уже используется');
+    expect(component.form.get('employeeNumber')?.errors?.['conflict']).toBe(
+      'Табельный номер уже используется',
+    );
+  });
+
+  it('500 or other error without field → generic submitError (не field-specific)', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+    fillCreateForm(component);
+
+    submitAndFailWith(component, 500, { status: 500 });
+
+    expect(component.submitError()).toBe('Ошибка сервера. Попробуйте ещё раз');
+    expect(component.form.get('login')?.errors?.['conflict']).toBeUndefined();
+  });
+
+  it('400 without field → generic 4xx fallback message', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+    fillCreateForm(component);
+
+    submitAndFailWith(component, 400, { status: 400 });
+
+    expect(component.submitError()).toBe('Не удалось сохранить. Проверьте введённые данные');
+  });
+
+  it('changing the offending control clears the conflict error for retry', () => {
+    const component = createComponent({ mode: 'create', groups: [] });
+    component.form.patchValue({
+      lastName: 'Учителев',
+      firstName: 'Учитель',
+      role: 'teacher',
+      employeeNumber: 'EMP-001',
+    });
+
+    submitAndFailWith(component, 409, { status: 409, field: 'employeeNumber', detail: 'x' });
+    expect(component.form.get('employeeNumber')?.errors?.['conflict']).toBe(
+      'Табельный номер уже используется',
+    );
+
+    component.form.get('employeeNumber')!.setValue('EMP-002');
+
+    // After the change the conflict error is cleared (no other validators on
+    // this control, so errors become null).
+    expect(component.form.get('employeeNumber')?.errors).toBeNull();
+  });
+
   it('isHeadman checkbox visible only when role is student', () => {
     const component = createComponent({ mode: 'create', groups: [] });
 

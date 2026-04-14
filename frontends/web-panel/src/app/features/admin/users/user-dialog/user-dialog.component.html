@@ -100,7 +100,11 @@
         <mat-form-field class="ud-field-full">
           <mat-label>Табельный номер</mat-label>
           <input matInput formControlName="employeeNumber" placeholder="Т-00001" />
-          <mat-hint>Необязательно — можно добавить позже</mat-hint>
+          @if (form.get('employeeNumber')?.hasError('conflict')) {
+            <mat-error>{{ form.get('employeeNumber')?.errors?.['conflict'] }}</mat-error>
+          } @else {
+            <mat-hint>Необязательно — можно добавить позже</mat-hint>
+          }
         </mat-form-field>
       }
 
@@ -108,8 +112,13 @@
         <mat-checkbox formControlName="isHeadman">Является старостой группы</mat-checkbox>
       }
 
-      @if (apiError()) {
-        <div class="ud-error">
+      @if (submitError()) {
+        <div class="ud-error" role="alert">
+          <i class="ph ph-warning-circle" aria-hidden="true"></i>
+          {{ submitError() }}
+        </div>
+      } @else if (apiError()) {
+        <div class="ud-error" role="alert">
           <i class="ph ph-warning-circle" aria-hidden="true"></i>
           Не удалось сохранить. Проверьте данные и попробуйте снова.
         </div>

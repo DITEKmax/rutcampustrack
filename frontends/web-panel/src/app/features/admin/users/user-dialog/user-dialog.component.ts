@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -49,8 +50,26 @@ export class UserDialogComponent {
 
   readonly saving = signal(false);
   readonly apiError = signal(false);
+  /**
+   * BUG-006-2 / AC-3: human-readable сообщение для текущей попытки сохранения.
+   * null — ошибки нет; иначе покажет в template под формой (перекрывает
+   * generic apiError-баннер, если тот выставлен).
+   */
+  readonly submitError = signal<string | null>(null);
   /** После успешного создания — здесь хранится ответ с initialPassword */
   readonly createdUser = signal<UserCreatedResponse | null>(null);
+
+  /**
+   * BUG-006-2: map backend field-names → localized сообщение. Ключи совпадают
+   * с payload {@code ProblemDetail.field} из {@code GlobalExceptionHandler}.
+   */
+  private static readonly FIELD_MESSAGES: Record<string, string> = {
+    login: 'Логин уже используется. Выберите другой',
+    email: 'Email уже зарегистрирован',
+    telegramId: 'Telegram ID уже привязан к другой учётной записи',
+    employeeNumber: 'Табельный номер уже используется',
+    name: 'Название уже используется',
+  };
 
   readonly form = new FormGroup({
     lastName: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2)] }),
@@ -109,8 +128,8 @@ export class UserDialogComponent {
           this.createdUser.set(result);
           this.dialogRef.close(result);
         },
-        error: () => {
-          this.apiError.set(true);
+        error: (err: HttpErrorResponse) => {
+          this.handleSaveError(err);
           this.saving.set(false);
         },
       });
@@ -130,11 +149,54 @@ export class UserDialogComponent {
         next: () => {
           this.dialogRef.close(true);
         },
-        error: () => {
-          this.apiError.set(true);
+        error: (err: HttpErrorResponse) => {
+          this.handleSaveError(err);
           this.saving.set(false);
         },
       });
     }
+  }
+
+  /**
+   * BUG-006-2 / AC-3: translates HTTP error into field-level + form-level UI
+   * state. 409 с payload {@code field} → маркирует конкретный control и
+   * сохраняет локализованное сообщение в {@link submitError}. Остальные
+   * ошибки — generic fallback.
+   */
+  private handleSaveError(err: HttpErrorResponse): void {
+    const status = err.status;
+    const field = (err.error && typeof err.error === 'object' && typeof err.error.field === 'string')
+      ? err.error.field as string
+      : null;
+
+    if (status === 409 && field) {
+      const msg = UserDialogComponent.FIELD_MESSAGES[field]
+        ?? `Поле «${field}» уже используется`;
+      const control = this.form.get(field);
+      if (control) {
+        control.setErrors({ ...(control.errors ?? {}), conflict: msg });
+        control.markAsTouched();
+        // Clear the field-level conflict on the next change so the user can
+        // retry without stale validation state.
+        const sub = control.valueChanges.subscribe(() => {
+          const errors = control.errors;
+          if (errors && 'conflict' in errors) {
+            const { conflict: _conflict, ...rest } = errors;
+            control.setErrors(Object.keys(rest).length > 0 ? rest : null);
+          }
+          sub.unsubscribe();
+        });
+      }
+      this.submitError.set(msg);
+      this.apiError.set(false);
+      return;
+    }
+
+    if (status >= 400 && status < 500) {
+      this.submitError.set('Не удалось сохранить. Проверьте введённые данные');
+    } else {
+      this.submitError.set('Ошибка сервера. Попробуйте ещё раз');
+    }
+    this.apiError.set(true);
   }
 }

@@ -94,26 +94,56 @@ describe('HeadmanApiService', () => {
   });
 
   describe('createSubject', () => {
-    it('calls POST /api/academic/subjects with body', () => {
-      const body = { name: 'Математика', teacherId: 3 };
+    it('calls POST /api/academic/subjects with {name, type, teacherIds[]}', () => {
+      const body = { name: 'Математика', type: 'LECTURE', teacherIds: [3, 5] };
       service.createSubject(body).subscribe();
 
       const req = httpMock.expectOne('/api/academic/subjects');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(body);
-      req.flush({ id: 10, name: 'Математика', teacherId: 3 });
+      req.flush({ id: 10, name: 'Математика', type: 'LECTURE', teacherIds: [3, 5] });
+    });
+
+    it('accepts empty teacherIds array', () => {
+      const body = { name: 'Физика', type: 'PRACTICE', teacherIds: [] };
+      service.createSubject(body).subscribe();
+
+      const req = httpMock.expectOne('/api/academic/subjects');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(body);
+      req.flush({ id: 11, name: 'Физика', type: 'PRACTICE', teacherIds: [] });
     });
   });
 
   describe('updateSubject', () => {
-    it('calls PUT /api/academic/subjects/{id} with body', () => {
-      const body = { name: 'Физика', teacherId: 4 };
+    it('calls PUT /api/academic/subjects/{id} with {name, type, teacherIds[]}', () => {
+      const body = { name: 'Физика', type: 'LAB', teacherIds: [4] };
       service.updateSubject(10, body).subscribe();
 
       const req = httpMock.expectOne('/api/academic/subjects/10');
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(body);
-      req.flush({ id: 10, name: 'Физика', teacherId: 4 });
+      req.flush({ id: 10, name: 'Физика', type: 'LAB', teacherIds: [4] });
+    });
+  });
+
+  describe('addTeacherToSubject', () => {
+    it('calls POST /api/academic/subjects/{id}/teachers/{teacherId}', () => {
+      service.addTeacherToSubject(10, 3).subscribe();
+
+      const req = httpMock.expectOne('/api/academic/subjects/10/teachers/3');
+      expect(req.request.method).toBe('POST');
+      req.flush(null);
+    });
+  });
+
+  describe('removeTeacherFromSubject', () => {
+    it('calls DELETE /api/academic/subjects/{id}/teachers/{teacherId}', () => {
+      service.removeTeacherFromSubject(10, 3).subscribe();
+
+      const req = httpMock.expectOne('/api/academic/subjects/10/teachers/3');
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
     });
   });
 

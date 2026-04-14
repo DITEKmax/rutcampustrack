@@ -164,19 +164,45 @@ export class HeadmanApiService {
     });
   }
 
-  /** Create a new subject with optional teacher assignment. */
-  createSubject(body: { name: string; teacherId?: number | null }): Observable<any> {
+  /**
+   * Create a new subject with a list of teachers.
+   * Backend (Plan 60-01) atomically creates 1 `subjects` row + N `teacher_subject_groups`.
+   * `teacherIds` may be empty (subject without teachers is allowed).
+   * `type` is required: LECTURE / PRACTICE / LAB.
+   */
+  createSubject(body: { name: string; type: string; teacherIds: number[] }): Observable<any> {
     return this.http.post('/api/academic/subjects', body);
   }
 
-  /** Full-update a subject (PUT = full replacement). */
-  updateSubject(id: number, body: { name: string; teacherId?: number | null }): Observable<any> {
+  /**
+   * Full-update a subject (PUT = full replacement).
+   * `teacherIds[]` replaces the current teacher assignments for the current semester.
+   */
+  updateSubject(id: number, body: { name: string; type: string; teacherIds: number[] }): Observable<any> {
     return this.http.put(`/api/academic/subjects/${id}`, body);
   }
 
   /** Delete a subject by ID. */
   deleteSubject(id: number): Observable<any> {
     return this.http.delete(`/api/academic/subjects/${id}`);
+  }
+
+  /**
+   * Add a single teacher to an existing subject (Plan 60-01 endpoint).
+   * Endpoint: POST /api/academic/subjects/{subjectId}/teachers/{teacherId}
+   * 201 on success, 409 if already assigned.
+   */
+  addTeacherToSubject(subjectId: number, teacherId: number): Observable<void> {
+    return this.http.post<void>(`/api/academic/subjects/${subjectId}/teachers/${teacherId}`, {});
+  }
+
+  /**
+   * Remove a teacher assignment from an existing subject (Plan 60-01 endpoint).
+   * Endpoint: DELETE /api/academic/subjects/{subjectId}/teachers/{teacherId}
+   * 204 on success, 404 if no assignment exists.
+   */
+  removeTeacherFromSubject(subjectId: number, teacherId: number): Observable<void> {
+    return this.http.delete<void>(`/api/academic/subjects/${subjectId}/teachers/${teacherId}`);
   }
 
   // Teacher listing

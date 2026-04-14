@@ -25,8 +25,16 @@ export interface SubjectDialogData {
  * Create mode: empty form, heading "Новый предмет", button "Создать предмет"
  * Edit mode: pre-populated form, heading "Редактировать предмет", button "Сохранить предмет"
  *
- * Teacher select loads from GET /api/academic/users/teachers (listTeachers).
- * Handles empty/error teacher list with "Преподаватели не найдены" hint.
+ * Form fields (D-02, D-19):
+ * - `name` — subject name (required, max 120 chars)
+ * - `type` — required enum: LECTURE / PRACTICE / LAB
+ * - `teacherIds` — multi-select list of teacher IDs (may be empty — subject
+ *   without teachers is allowed per backend Plan 60-01 contract).
+ *
+ * All assigned teachers are equal read-only observers (D-15) — there is no
+ * "primary" teacher. Teacher select loads from GET /api/academic/users/teachers
+ * (listTeachers). Handles empty/error teacher list with "Преподаватели не
+ * найдены" hint.
  */
 @Component({
   selector: 'app-subject-dialog',
@@ -60,20 +68,37 @@ export interface SubjectDialogData {
           </mat-error>
         </mat-form-field>
 
-        <!-- Teacher select -->
+        <!-- Subject type (D-02) -->
+        <mat-form-field appearance="outline" style="width:100%; margin-bottom: var(--space-4)">
+          <mat-label>Тип занятия</mat-label>
+          <mat-select formControlName="type" aria-label="Выберите тип занятия">
+            <mat-option value="LECTURE">Лекция</mat-option>
+            <mat-option value="PRACTICE">Практика</mat-option>
+            <mat-option value="LAB">Лабораторная</mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.get('type')?.hasError('required')">
+            Обязательное поле
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Teacher multi-select (D-19) -->
         <mat-form-field appearance="outline" style="width:100%">
-          <mat-label>Преподаватель</mat-label>
-          <mat-select formControlName="teacherId"
-                      aria-label="Выберите преподавателя"
+          <mat-label>Преподаватели</mat-label>
+          <mat-select formControlName="teacherIds"
+                      multiple
+                      aria-label="Выберите преподавателей"
                       [disabled]="teachersLoading || teachersError || teachers.length === 0">
-            <mat-option [value]="null">Не назначен</mat-option>
             @for (t of teachers; track t.id) {
-              <mat-option [value]="t.id">{{ t.fullName }}</mat-option>
+              <mat-option [value]="t.id">{{ t.lastName ?? t.fullName }}</mat-option>
             }
           </mat-select>
           @if (teachersError || (teachers.length === 0 && !teachersLoading)) {
             <mat-hint>
               Преподаватели не найдены. Обратитесь к администратору.
+            </mat-hint>
+          } @else {
+            <mat-hint>
+              Можно выбрать нескольких; все — равноправные наблюдатели.
             </mat-hint>
           }
         </mat-form-field>
@@ -110,8 +135,9 @@ export class SubjectDialogComponent implements OnInit {
   readonly isEdit: boolean;
 
   form = new FormGroup({
-    name: new FormControl('', [Validators.required, Validators.maxLength(120)]),
-    teacherId: new FormControl<number | null>(null),
+    name: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(120)] }),
+    type: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    teacherIds: new FormControl<number[]>([], { nonNullable: true }),
   });
 
   teachers: any[] = [];
@@ -125,7 +151,8 @@ export class SubjectDialogComponent implements OnInit {
     if (this.isEdit && this.data.subject) {
       this.form.patchValue({
         name: this.data.subject.name,
-        teacherId: this.data.subject.teacherId ?? this.data.subject.teacher?.id ?? null,
+        type: this.data.subject.type ?? '',
+        teacherIds: this.data.subject.teacherIds ?? [],
       });
     }
   }
@@ -165,7 +192,8 @@ export class SubjectDialogComponent implements OnInit {
     this.apiError = null;
     const body = {
       name: this.form.value.name!,
-      teacherId: this.form.value.teacherId ?? null,
+      type: this.form.value.type!,
+      teacherIds: this.form.value.teacherIds ?? [],
     };
     const call = this.isEdit
       ? this.headmanApi.updateSubject(this.data.subject!.id, body)

@@ -28,7 +28,9 @@ import java.util.concurrent.CompletableFuture;
 public class WebPushDeliveryService {
 
     private static final Set<String> PUSH_EVENT_TYPES = Set.of(
-            "lesson.started", "lesson.cancelled", "homework.published"
+            "lesson.started", "lesson.cancelled", "homework.published",
+            // 58-07 / BUG-006-6: уведомляем студентов о переименовании/архивации группы.
+            "group.renamed", "group.archived"
     );
 
     private final PushSubscriptionRepository repository;
@@ -112,6 +114,8 @@ public class WebPushDeliveryService {
             case "lesson.started" -> "Пара началась";
             case "lesson.cancelled" -> "Пара отменена";
             case "homework.published" -> "Новое ДЗ";
+            case "group.renamed" -> "Группа переименована";
+            case "group.archived" -> "Группа архивирована";
             default -> "Уведомление";
         };
     }
@@ -125,6 +129,8 @@ public class WebPushDeliveryService {
                 String title = (String) payload.getOrDefault("title", "");
                 yield subjectName + ": " + title;
             }
+            case "group.renamed" -> "Ваша группа получила новое название. Откройте приложение для подробностей.";
+            case "group.archived" -> "Группа архивирована (выпуск). Поздравляем!";
             default -> "";
         };
     }

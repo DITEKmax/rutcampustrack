@@ -139,6 +139,52 @@ class WebPushDeliveryServiceTest {
         assertThat(payloadStr).contains("Физика");
     }
 
+    // --- 58-07 / BUG-006-6: group.renamed / group.archived ---
+
+    @Test
+    void shouldPush_groupRenamed_isTrue() {
+        assertThat(service.shouldPush("group.renamed")).isTrue();
+    }
+
+    @Test
+    void shouldPush_groupArchived_isTrue() {
+        assertThat(service.shouldPush("group.archived")).isTrue();
+    }
+
+    @Test
+    void sendToGroup_groupRenamed_buildsTitleAndBody() throws Exception {
+        PushSubscriptionDocument sub = sub(1L, "https://push.example.com/gr");
+        when(repository.findAllByGroupId(11L)).thenReturn(List.of(sub));
+
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
+
+        CompletableFuture<Void> result = service.sendToGroup(11L, "group.renamed",
+                Map.of("group_id", 11));
+        result.join();
+
+        String payloadStr = new String(payloadCaptor.getValue());
+        assertThat(payloadStr).contains("Группа переименована");
+        assertThat(payloadStr).contains("новое название");
+    }
+
+    @Test
+    void sendToGroup_groupArchived_buildsTitleAndBody() throws Exception {
+        PushSubscriptionDocument sub = sub(1L, "https://push.example.com/ga");
+        when(repository.findAllByGroupId(22L)).thenReturn(List.of(sub));
+
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
+
+        CompletableFuture<Void> result = service.sendToGroup(22L, "group.archived",
+                Map.of("group_id", 22));
+        result.join();
+
+        String payloadStr = new String(payloadCaptor.getValue());
+        assertThat(payloadStr).contains("Группа архивирована");
+        assertThat(payloadStr).contains("выпуск");
+    }
+
     // Test 7: homework.published payload has correct title and body
     @Test
     void sendToGroup_homeworkPublished_buildsTitleAndBody() throws Exception {

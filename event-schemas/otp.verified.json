@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "otp.verified",
+  "description": "OTP-код успешно использован пользователем для входа в веб-панель. Генерируется Auth Service. Потребляется notification-bot для очистки Telegram-сообщений с кодом.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "otp.verified" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["telegram_id"],
+      "properties": {
+        "telegram_id": { "type": "integer" }
+      }
+    }
+  }
+}

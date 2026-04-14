@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     # Mini App URL for inline check-in button
     mini_app_url: str = "https://t.me/RutTrackBot/checkin"
 
+    # OTP lifetime in seconds — mirrors OtpProperties.ttlSeconds in auth-service.
+    # Used as TTL for otp_msgs:{telegram_id} Redis entries and for the deferred
+    # message cleanup task scheduled by /login.
+    otp_ttl_seconds: int = 300
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 

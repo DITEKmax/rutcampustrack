@@ -7,6 +7,7 @@ from aiogram import Bot
 
 from bot.config import Settings
 from bot.grpc_client.academic_client import AcademicGrpcClient
+from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.send_queue import TelegramSendQueue
 
@@ -27,6 +28,7 @@ class EventDispatcher:
         send_queue: TelegramSendQueue,
         redis_client: ReminderRedisClient,
         config: Settings,
+        otp_tracker: OtpMessageTracker,
         reminder_scheduler=None,  # Optional — injected by __main__.py (Plan 25-02)
     ) -> None:
         self._bot = bot
@@ -34,6 +36,7 @@ class EventDispatcher:
         self._send_queue = send_queue
         self._redis_client = redis_client
         self._config = config
+        self._otp_tracker = otp_tracker
         self._reminder_scheduler = reminder_scheduler
 
         # Import handlers here to avoid circular imports at module level
@@ -44,6 +47,7 @@ class EventDispatcher:
         from bot.notifications.homework import handle_homework
         from bot.notifications.lesson_cancelled import handle_lesson_cancelled
         from bot.notifications.lesson_closed import handle_lesson_closed
+        from bot.notifications.otp_verified import handle_otp_verified
 
         # Handler registry: event_type -> async callable(event: dict)
         self._handlers: dict[str, Callable[[dict], Awaitable[None]]] = {
@@ -103,6 +107,12 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+            ),
+            # OTP login cleanup: remove code + request messages when user logs in
+            "otp.verified": lambda event: handle_otp_verified(
+                event,
+                bot=self._bot,
+                tracker=self._otp_tracker,
             ),
         }
 

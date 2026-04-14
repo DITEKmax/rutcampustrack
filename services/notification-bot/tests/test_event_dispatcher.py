@@ -16,6 +16,7 @@ def _make_dispatcher(handlers_override=None, reminder_scheduler=None):
     redis_client = MagicMock()
     config = MagicMock(spec=Settings)
     config.mini_app_url = "https://t.me/RutTrackBot/checkin"
+    otp_tracker = MagicMock()
 
     dispatcher = EventDispatcher(
         bot=bot,
@@ -23,6 +24,7 @@ def _make_dispatcher(handlers_override=None, reminder_scheduler=None):
         send_queue=send_queue,
         redis_client=redis_client,
         config=config,
+        otp_tracker=otp_tracker,
         reminder_scheduler=reminder_scheduler,
     )
     if handlers_override:
@@ -137,7 +139,7 @@ async def test_dispatch_routes_attendance_marked():
 
 @pytest.mark.asyncio
 async def test_dispatcher_has_eight_event_types():
-    """EventDispatcher._handlers contains all registered event types (10 after 58-07)."""
+    """EventDispatcher._handlers contains all registered event types."""
     dispatcher = _make_dispatcher()
     expected_types = {
         "lesson.started",
@@ -151,8 +153,22 @@ async def test_dispatcher_has_eight_event_types():
         # 58-07 / BUG-006-6
         "group.renamed",
         "group.archived",
+        # OTP login flow cleanup
+        "otp.verified",
     }
     assert set(dispatcher._handlers.keys()) == expected_types
+
+
+@pytest.mark.asyncio
+async def test_dispatch_routes_otp_verified():
+    """dispatch invokes the handler registered for otp.verified."""
+    mock_handler = AsyncMock()
+    dispatcher = _make_dispatcher(handlers_override={"otp.verified": mock_handler})
+
+    event = {"event_type": "otp.verified", "payload": {"telegram_id": 42}}
+    await dispatcher.dispatch(event)
+
+    mock_handler.assert_called_once_with(event)
 
 
 @pytest.mark.asyncio

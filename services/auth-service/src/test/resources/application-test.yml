@@ -10,6 +10,15 @@ spring:
   web:
     resources:
       add-mappings: false
+  autoconfigure:
+    # No RabbitMQ in tests — publisher beans aren't needed and health probe would fail.
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+management:
+  health:
+    rabbit:
+      enabled: false
 
 jwt:
   key-dir: ${java.io.tmpdir}/rct-test-keys

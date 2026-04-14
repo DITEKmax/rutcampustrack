@@ -15,6 +15,7 @@ from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.jwt_redis_client import JwtRedisClient
 from bot.services.notification_prefs import NotificationPrefsClient
+from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.reminder_scheduler import ReminderScheduler
 from bot.services.send_queue import TelegramSendQueue
@@ -109,6 +110,14 @@ async def main() -> None:
         password=config.redis_password,
     )
 
+    # OTP message tracker — shared between /login handler and otp.verified consumer
+    otp_tracker = OtpMessageTracker(
+        ttl_seconds=config.otp_ttl_seconds,
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
     # Inject dependencies via dp workflow data (Aiogram 3 DI pattern)
     dp["academic_client"] = academic_client
     dp["schedule_client"] = schedule_client
@@ -116,6 +125,7 @@ async def main() -> None:
     dp["auth_client"] = auth_client
     dp["attendance_client"] = attendance_client
     dp["prefs_client"] = prefs_client
+    dp["otp_tracker"] = otp_tracker
 
     # Register routers
     dp.include_router(start_router)
@@ -149,6 +159,7 @@ async def main() -> None:
         send_queue=send_queue,
         redis_client=redis_client,
         config=config,
+        otp_tracker=otp_tracker,
         reminder_scheduler=reminder_scheduler,
     )
 
@@ -178,6 +189,7 @@ async def main() -> None:
                 task.cancel()
         await send_queue.shutdown()
         await redis_client.close()
+        await otp_tracker.close()
         await auth_client.close()
         await attendance_client.close()
         await jwt_redis.close()

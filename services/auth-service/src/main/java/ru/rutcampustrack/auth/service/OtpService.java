@@ -1,5 +1,6 @@
 package ru.rutcampustrack.auth.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.auth.config.JwtProperties;
@@ -10,6 +11,7 @@ import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.entity.enums.AccountStatus;
+import ru.rutcampustrack.auth.event.OtpVerifiedEvent;
 import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
 import ru.rutcampustrack.auth.exception.OtpExpiredException;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
@@ -27,18 +29,21 @@ public class OtpService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
+    private final ApplicationEventPublisher eventPublisher;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public OtpService(StringRedisTemplate redisTemplate,
                       OtpProperties otpProperties,
                       UserRepository userRepository,
                       JwtService jwtService,
-                      JwtProperties jwtProperties) {
+                      JwtProperties jwtProperties,
+                      ApplicationEventPublisher eventPublisher) {
         this.redisTemplate = redisTemplate;
         this.otpProperties = otpProperties;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.jwtProperties = jwtProperties;
+        this.eventPublisher = eventPublisher;
     }
 
     public String requestOtp(OtpRequest request) {
@@ -170,6 +175,12 @@ public class OtpService {
 
         redisTemplate.opsForValue().set("refresh:" + user.getId() + ":" + jti, "valid",
                 Duration.ofSeconds(jwtProperties.refreshTokenExpiration()));
+
+        // Notify notification-bot that OTP was consumed — triggers removal of
+        // Telegram messages with the code and the preceding user request.
+        if (telegramId != null) {
+            eventPublisher.publishEvent(new OtpVerifiedEvent(this, telegramId));
+        }
 
         return new TokenResponse(accessToken, refreshToken, jwtProperties.accessTokenExpiration());
     }

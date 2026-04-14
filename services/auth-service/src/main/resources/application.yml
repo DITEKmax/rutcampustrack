@@ -11,6 +11,12 @@ spring:
       port: 6379
       password: ${REDIS_PASSWORD:rct_dev_pass}
 
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:rct_user}
+    password: ${SPRING_RABBITMQ_PASSWORD:rct_dev_pass}
+
   datasource:
     url: jdbc:postgresql://postgres-academic:5432/academic_db
     username: rct_user

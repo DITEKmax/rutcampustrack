@@ -13,9 +13,17 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { SubjectDialogComponent } from './subject-dialog.component';
 import { DeleteSubjectDialogComponent } from './delete-subject-dialog.component';
+
+const SUBJECT_TYPE_LABELS: Record<string, string> = {
+  LECTURE: 'Лекция',
+  PRACTICE: 'Практика',
+  LAB: 'Лабораторная',
+};
 
 /**
  * Headman subjects page — `/headman/subjects`.
@@ -95,11 +103,21 @@ import { DeleteSubjectDialogComponent } from './delete-subject-dialog.component'
                 <span class="subject-name">{{ s.name }}</span>
               </td>
             </ng-container>
-            <ng-container matColumnDef="teacher">
-              <th mat-header-cell *matHeaderCellDef>Преподаватель</th>
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>Тип</th>
               <td mat-cell *matCellDef="let s">
-                @if (s.teacherName || s.teacher?.fullName) {
-                  <span>{{ s.teacherName ?? s.teacher?.fullName }}</span>
+                @if (s.type) {
+                  <span class="type-chip">{{ subjectTypeLabel(s.type) }}</span>
+                } @else {
+                  <span class="no-teacher">—</span>
+                }
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="teacher">
+              <th mat-header-cell *matHeaderCellDef>Преподаватели</th>
+              <td mat-cell *matCellDef="let s">
+                @if (teacherNames(s).length > 0) {
+                  <span>{{ teacherNames(s).join(', ') }}</span>
                 } @else {
                   <span class="no-teacher">Не назначен</span>
                 }
@@ -120,8 +138,8 @@ import { DeleteSubjectDialogComponent } from './delete-subject-dialog.component'
                 </button>
               </td>
             </ng-container>
-            <tr mat-header-row *matHeaderRowDef="['name','teacher','actions']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['name','teacher','actions']"></tr>
+            <tr mat-header-row *matHeaderRowDef="['name','type','teacher','actions']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['name','type','teacher','actions']"></tr>
           </table>
         }
       </div>
@@ -131,6 +149,15 @@ import { DeleteSubjectDialogComponent } from './delete-subject-dialog.component'
     .no-teacher {
       font-style: italic;
       color: var(--text-muted);
+    }
+    .type-chip {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--bg-secondary, #f0f0f0);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 500;
     }
 
     .skeleton-row {
@@ -156,6 +183,7 @@ export class HeadmanSubjectsComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly subjects = signal<any[]>([]);
+  readonly teachersById = signal<Map<number, any>>(new Map());
 
   ngOnInit(): void {
     this.loadSubjects();
@@ -164,9 +192,23 @@ export class HeadmanSubjectsComponent implements OnInit {
   loadSubjects(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.headmanApi.listSubjects().subscribe({
-      next: (resp) => {
-        this.subjects.set(Object.values(resp?._embedded ?? {})[0] as any[] ?? []);
+    forkJoin({
+      subjects: this.headmanApi.listSubjects(),
+      teachers: this.headmanApi.listTeachers().pipe(catchError(() => of(null))),
+    }).subscribe({
+      next: ({ subjects, teachers }) => {
+        const subjList = (Object.values((subjects as any)?._embedded ?? {})[0] as any[]) ?? [];
+        this.subjects.set(subjList);
+
+        const tList = teachers
+          ? ((Object.values((teachers as any)?._embedded ?? {})[0] as any[]) ?? [])
+          : [];
+        const map = new Map<number, any>();
+        for (const t of tList) {
+          if (t?.id != null) map.set(t.id, t);
+        }
+        this.teachersById.set(map);
+
         this.loading.set(false);
       },
       error: () => {
@@ -174,6 +216,21 @@ export class HeadmanSubjectsComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  /** Map subject.teacherIds[] → отображаемые ФИО (фолбэк на lastName). */
+  teacherNames(subject: any): string[] {
+    const ids: number[] = subject?.teacherIds ?? [];
+    if (!ids.length) return [];
+    const map = this.teachersById();
+    return ids
+      .map(id => map.get(id))
+      .filter(Boolean)
+      .map(t => t.fullName ?? t.lastName ?? `#${t.id}`);
+  }
+
+  subjectTypeLabel(type: string): string {
+    return SUBJECT_TYPE_LABELS[type] ?? type;
   }
 
   openCreateDialog(): void {

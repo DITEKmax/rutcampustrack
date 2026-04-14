@@ -218,10 +218,9 @@ export class HeadmanDashboardComponent implements OnInit {
     forkJoin([
       this.headmanApi.getGroupMembers(0, 1),
       this.headmanApi.getTodayLessons(groupId).pipe(catchError(() => of(null))),
-      this.headmanApi.getPendingExcuses().pipe(catchError(() => of(null))),
-      this.headmanApi.getPendingLateCheckins().pipe(catchError(() => of(null))),
+      this.headmanApi.getGroupExcuses(groupId, 'pending').pipe(catchError(() => of([] as any[]))),
     ]).subscribe({
-      next: ([members, lessons, excuses, lateCheckins]) => {
+      next: ([members, lessons, excuses]) => {
         this.memberCount.set((members as any)?.page?.totalElements ?? 0);
 
         // Find first active or planned lesson from today's embedded list
@@ -231,8 +230,9 @@ export class HeadmanDashboardComponent implements OnInit {
           : [];
         this.todayLesson.set(lessonList[0] ?? null);
 
-        this.pendingExcuses.set((excuses as any)?.page?.totalElements ?? 0);
-        this.pendingLateCheckins.set((lateCheckins as any)?.page?.totalElements ?? 0);
+        this.pendingExcuses.set(Array.isArray(excuses) ? excuses.length : 0);
+        // Late check-in workflow not implemented yet (deferred backend) — show 0.
+        this.pendingLateCheckins.set(0);
         this.loading.set(false);
       },
       error: () => {

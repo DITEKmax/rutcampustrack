@@ -32,8 +32,26 @@ interface Subject {
   type?: string;
 }
 
-const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт'];
+const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 const SLOTS = [1, 2, 3, 4, 5, 6, 7, 8];
+
+/** Russian label for week type. */
+function weekTypeLabel(weekType: string): string {
+  switch (weekType) {
+    case 'ODD': return '2-я (нечёт)';
+    case 'EVEN': return '1-я (чёт)';
+    default: return 'Каждую';
+  }
+}
+
+/** Returns Monday 00:00 of the week containing `d` (local time). */
+function mondayOf(d: Date): Date {
+  const m = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dow = m.getDay(); // 0=Sun..6=Sat
+  const diff = (dow + 6) % 7; // distance back to Monday
+  m.setDate(m.getDate() - diff);
+  return m;
+}
 
 /**
  * Headman schedule page — `/headman/schedule`.
@@ -97,6 +115,11 @@ const SLOTS = [1, 2, 3, 4, 5, 6, 7, 8];
         </div>
       } @else {
         <div class="page-card page-card--flush">
+          <div class="current-week-banner" [class.current-week-banner--odd]="currentWeekIsOdd()">
+            <i class="ph ph-calendar-check"></i>
+            Сейчас идёт <strong>{{ currentWeekIsOdd() ? '2-я (нечётная)' : '1-я (чётная)' }}</strong>
+            учебная неделя
+          </div>
           <div class="schedule-matrix">
             <div class="matrix-header">
               <div class="matrix-corner">Пара</div>
@@ -109,17 +132,24 @@ const SLOTS = [1, 2, 3, 4, 5, 6, 7, 8];
                 <div class="matrix-slot">{{ slot }}</div>
                 @for (d of dayLabels; track d; let dayIdx = $index) {
                   <div class="matrix-cell"
-                       [class.matrix-cell--empty]="!cellAt(dayIdx, slot)"
+                       [class.matrix-cell--occupied]="cellsAt(dayIdx, slot).length > 0"
+                       [class.matrix-cell--empty]="cellsAt(dayIdx, slot).length === 0"
                        (click)="onCellClick(dayIdx, slot)"
-                       [attr.aria-label]="cellAt(dayIdx, slot) ? 'Редактировать слот' : 'Создать слот'">
-                    @if (cellAt(dayIdx, slot); as item) {
-                      <div class="cell-subject">{{ subjectName(item.subjectId) }}</div>
-                      <div class="cell-meta">
-                        @if (item.room) { <span>{{ item.room }}</span> }
-                        <mat-chip-set>
-                          <mat-chip class="week-chip">{{ weekChip(item.weekType) }}</mat-chip>
-                        </mat-chip-set>
-                      </div>
+                       [attr.aria-label]="cellsAt(dayIdx, slot).length ? 'Редактировать слот' : 'Создать слот'">
+                    @if (cellsAt(dayIdx, slot).length > 0) {
+                      @for (item of cellsAt(dayIdx, slot); track item.id) {
+                        <div class="cell-entry"
+                             [class.cell-entry--odd]="item.weekType === 'ODD'"
+                             [class.cell-entry--even]="item.weekType === 'EVEN'">
+                          <div class="cell-subject">{{ subjectName(item.subjectId) }}</div>
+                          <div class="cell-meta">
+                            @if (item.room) { <span>{{ item.room }}</span> }
+                            <mat-chip-set>
+                              <mat-chip class="week-chip">{{ weekChip(item.weekType) }}</mat-chip>
+                            </mat-chip-set>
+                          </div>
+                        </div>
+                      }
                     } @else {
                       <i class="ph ph-plus"></i>
                     }
@@ -134,21 +164,41 @@ const SLOTS = [1, 2, 3, 4, 5, 6, 7, 8];
   `,
   styles: [`
     .schedule-matrix { display: flex; flex-direction: column; gap: 4px; padding: 8px; }
-    .matrix-header, .matrix-row { display: grid; grid-template-columns: 60px repeat(5, 1fr); gap: 4px; }
+    .matrix-header, .matrix-row { display: grid; grid-template-columns: 60px repeat(6, 1fr); gap: 4px; }
     .matrix-corner, .matrix-day, .matrix-slot { font-weight: 600; padding: 8px; text-align: center; }
     .matrix-day { background: var(--bg-secondary, #f5f5f5); border-radius: 4px; }
     .matrix-slot { background: var(--bg-secondary, #f5f5f5); border-radius: 4px; }
     .matrix-cell {
-      min-height: 72px; padding: 8px; border-radius: 6px;
+      min-height: 72px; padding: 6px; border-radius: 6px;
       background: var(--bg-elevated, #fafafa); cursor: pointer;
       display: flex; flex-direction: column; justify-content: center; gap: 4px;
-      transition: background 150ms ease;
+      transition: background 150ms ease, border-color 150ms ease;
+      border: 1px solid transparent;
     }
     .matrix-cell:hover { background: var(--bg-hover, #eee); }
     .matrix-cell--empty { opacity: 0.5; text-align: center; }
-    .cell-subject { font-weight: 600; font-size: 0.9rem; }
-    .cell-meta { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted); }
+    .matrix-cell--occupied {
+      background: #e8f5e9;
+      border-color: #66bb6a;
+    }
+    .matrix-cell--occupied:hover { background: #d7eed9; }
+    .cell-entry { padding: 2px 4px; border-radius: 4px; }
+    .cell-entry + .cell-entry { border-top: 1px dashed #a5d6a7; padding-top: 4px; margin-top: 2px; }
+    .cell-entry--odd { color: #1b5e20; }
+    .cell-entry--even { color: #2e7d32; }
+    .cell-subject { font-weight: 600; font-size: 0.9rem; color: #1b5e20; }
+    .cell-meta { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #2e7d32; }
     .week-chip { font-size: 0.7rem; }
+    .current-week-banner {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; margin: 8px 8px 0; border-radius: 8px;
+      background: #fff8e1; color: #6d4c00;
+      font-size: 0.9rem;
+    }
+    .current-week-banner i { font-size: 1.1rem; }
+    .current-week-banner--odd {
+      background: #e1f5fe; color: #01579b;
+    }
   `],
 })
 export class HeadmanScheduleComponent implements OnInit {
@@ -166,6 +216,8 @@ export class HeadmanScheduleComponent implements OnInit {
   readonly subjects = signal<Subject[]>([]);
   readonly groupId = signal<number | null>(null);
   readonly semesterId = signal<number | null>(null);
+  readonly semesterDateFrom = signal<string | null>(null);
+  readonly semesterFirstWeekIsOdd = signal<boolean>(false);
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
@@ -194,6 +246,9 @@ export class HeadmanScheduleComponent implements OnInit {
           return;
         }
         this.semesterId.set(active.id);
+        this.semesterDateFrom.set(active.dateFrom ?? null);
+        const fwt = (active.firstWeekType ?? 'ODD').toUpperCase();
+        this.semesterFirstWeekIsOdd.set(fwt !== 'EVEN');
         this.loadSchedule();
       },
       error: () => {
@@ -240,10 +295,33 @@ export class HeadmanScheduleComponent implements OnInit {
     });
   }
 
-  /** Ячейка для дня (0..4 = Пн..Пт, mapped to dayOfWeek=1..5) и слота. */
+  /** Ячейка для дня (0..5 = Пн..Сб, mapped to dayOfWeek=1..6) и слота. */
   cellAt(dayIdx: number, slot: number): ScheduleItem | null {
+    return this.cellsAt(dayIdx, slot)[0] ?? null;
+  }
+
+  /** Все слоты в ячейке — может быть несколько (например ODD + EVEN). */
+  cellsAt(dayIdx: number, slot: number): ScheduleItem[] {
     const dayOfWeek = dayIdx + 1;
-    return this.items().find(i => i.dayOfWeek === dayOfWeek && i.lessonNumber === slot) ?? null;
+    return this.items().filter(i => i.dayOfWeek === dayOfWeek && i.lessonNumber === slot);
+  }
+
+  /**
+   * Идёт ли сейчас нечётная неделя относительно начала семестра.
+   * Используется в баннере над матрицей. Если данные семестра не загружены,
+   * считаем неделю чётной (=1-я по соглашению пользователя).
+   */
+  currentWeekIsOdd(): boolean {
+    const start = this.semesterDateFrom();
+    if (!start) return false;
+    const startDate = new Date(start);
+    if (Number.isNaN(startDate.getTime())) return false;
+    const startMonday = mondayOf(startDate);
+    const todayMonday = mondayOf(new Date());
+    const weekDelta = Math.round((todayMonday.getTime() - startMonday.getTime()) / (7 * 24 * 3600 * 1000));
+    const firstIsOdd = this.semesterFirstWeekIsOdd();
+    const currentIsOdd = (weekDelta % 2 === 0) ? firstIsOdd : !firstIsOdd;
+    return currentIsOdd;
   }
 
   subjectName(subjectId: number): string {
@@ -251,11 +329,7 @@ export class HeadmanScheduleComponent implements OnInit {
   }
 
   weekChip(weekType: string): string {
-    switch (weekType) {
-      case 'ODD': return 'Нечёт';
-      case 'EVEN': return 'Чёт';
-      default: return 'Все';
-    }
+    return weekTypeLabel(weekType);
   }
 
   onCellClick(dayIdx: number, slot: number): void {

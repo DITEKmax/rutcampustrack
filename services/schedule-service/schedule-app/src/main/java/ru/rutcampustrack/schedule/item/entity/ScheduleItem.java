@@ -38,9 +38,8 @@ public class ScheduleItem {
     @Column(name = "subject_id", nullable = false)
     private Long subjectId;
 
-    @Setter
-    @Column(name = "teacher_id", nullable = false)
-    private Long teacherId;
+    // D-16: teacherId удалён. Препод видит журнал через JOIN с TeacherSubjectGroup
+    // (ScheduleItem × TSG WHERE TSG.teacher_id = :me). На слоте преподавателя нет.
 
     @Setter
     @Column(name = "semester_id", nullable = false)

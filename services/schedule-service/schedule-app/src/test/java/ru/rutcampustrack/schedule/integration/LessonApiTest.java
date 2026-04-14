@@ -65,7 +65,6 @@ class LessonApiTest extends AbstractScheduleIntegrationTest {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(GROUP_ID);
         item.setSubjectId(100L);
-        item.setTeacherId(200L);
         item.setSemesterId(10L);
         item.setDayOfWeek((short) 1);
         item.setLessonNumber((short) 1);

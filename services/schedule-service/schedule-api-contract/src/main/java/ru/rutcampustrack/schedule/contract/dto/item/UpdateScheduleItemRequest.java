@@ -12,14 +12,14 @@ import java.time.LocalTime;
  * Request DTO for full update (PUT) of a schedule template item.
  * Excludes groupId and semesterId — these are immutable after creation (D-09).
  * No Lombok — contract modules use plain Java records.
+ * <p>
+ * D-16: teacherId removed. Teacher access to journals is resolved via JOIN
+ * ScheduleItem × TeacherSubjectGroup, not by slot-level teacher assignment.
  */
 public record UpdateScheduleItemRequest(
 
         @NotNull
         Long subjectId,
-
-        @NotNull
-        Long teacherId,
 
         @NotNull @Min(1) @Max(7)
         Short dayOfWeek,

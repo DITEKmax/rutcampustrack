@@ -38,7 +38,6 @@ class LessonCancelEventTest extends AbstractScheduleIntegrationTest {
 
     private static final Long GROUP_ID = 10L;
     private static final Long SUBJECT_ID = 200L;
-    private static final Long TEACHER_ID = 300L;
     private static final Long USER_ID = 999L;
 
     @Autowired
@@ -96,7 +95,6 @@ class LessonCancelEventTest extends AbstractScheduleIntegrationTest {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(GROUP_ID);
         item.setSubjectId(SUBJECT_ID);
-        item.setTeacherId(TEACHER_ID);
         item.setSemesterId(1L);
         item.setDayOfWeek((short) 5);
         item.setLessonNumber((short) 2);

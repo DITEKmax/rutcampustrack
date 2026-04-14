@@ -240,7 +240,6 @@ class LessonStatusTransitionJobTest extends AbstractScheduleIntegrationTest {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(1L);
         item.setSubjectId(100L);
-        item.setTeacherId(200L);
         item.setSemesterId(1L);
         item.setDayOfWeek((short) 5);  // Friday (2026-04-03 is a Friday)
         item.setLessonNumber((short) 1);

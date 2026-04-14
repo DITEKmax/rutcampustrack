@@ -10,13 +10,15 @@ import java.time.OffsetDateTime;
  * Response DTO for schedule template items with HATEOAS links.
  * Extends RepresentationModel for HATEOAS Level 3 compliance.
  * No Lombok — contract modules use plain Java classes with explicit constructors and getters.
+ * <p>
+ * D-16: teacherId removed. Teacher access to journals is resolved via JOIN
+ * ScheduleItem × TeacherSubjectGroup, not by slot-level teacher assignment.
  */
 public class ScheduleItemResponse extends RepresentationModel<ScheduleItemResponse> {
 
     private Long id;
     private Long groupId;
     private Long subjectId;
-    private Long teacherId;
     private Long semesterId;
     private Short dayOfWeek;
     private Short lessonNumber;
@@ -29,14 +31,13 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
 
     public ScheduleItemResponse() {}
 
-    public ScheduleItemResponse(Long id, Long groupId, Long subjectId, Long teacherId,
+    public ScheduleItemResponse(Long id, Long groupId, Long subjectId,
                                  Long semesterId, Short dayOfWeek, Short lessonNumber,
                                  LocalTime startTime, LocalTime endTime, WeekType weekType,
                                  String room, boolean active, OffsetDateTime createdAt) {
         this.id = id;
         this.groupId = groupId;
         this.subjectId = subjectId;
-        this.teacherId = teacherId;
         this.semesterId = semesterId;
         this.dayOfWeek = dayOfWeek;
         this.lessonNumber = lessonNumber;
@@ -58,10 +59,6 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
 
     public Long getSubjectId() {
         return subjectId;
-    }
-
-    public Long getTeacherId() {
-        return teacherId;
     }
 
     public Long getSemesterId() {

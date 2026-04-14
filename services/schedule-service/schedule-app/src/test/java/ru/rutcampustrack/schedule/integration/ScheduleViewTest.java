@@ -58,7 +58,6 @@ class ScheduleViewTest extends AbstractScheduleIntegrationTest {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(GROUP_ID);
         item.setSubjectId(100L);
-        item.setTeacherId(200L);
         item.setSemesterId(10L);
         item.setDayOfWeek((short) 1);
         item.setLessonNumber((short) 1);
@@ -125,7 +124,6 @@ class ScheduleViewTest extends AbstractScheduleIntegrationTest {
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].id", notNullValue()))
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].groupId", is(GROUP_ID.intValue())))
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].subjectId", is(100)))
-                .andExpect(jsonPath("$._embedded.lessonResponseList[0].teacherId", is(200)))
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].room", is("A-101")))
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].status", notNullValue()))
                 .andExpect(jsonPath("$._embedded.lessonResponseList[0].dayOfWeek", is(1)))

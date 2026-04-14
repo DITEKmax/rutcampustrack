@@ -23,7 +23,6 @@ public class ScheduleItemAssembler {
                 item.getId(),
                 item.getGroupId(),
                 item.getSubjectId(),
-                item.getTeacherId(),
                 item.getSemesterId(),
                 item.getDayOfWeek(),
                 item.getLessonNumber(),

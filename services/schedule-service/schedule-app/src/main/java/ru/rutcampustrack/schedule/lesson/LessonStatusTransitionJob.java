@@ -64,7 +64,7 @@ public class LessonStatusTransitionJob {
                             "ScheduleItem not found for lesson " + lesson.getId()));
             eventPublisher.publishEvent(new LessonStartedEvent(this,
                     lesson.getId(), item.getGroupId(), item.getSubjectId(),
-                    item.getTeacherId(), item.getLessonNumber(),
+                    item.getLessonNumber(),
                     item.getStartTime(), item.getEndTime(), item.getRoom()));
         }
         lessonRepository.saveAll(toActivate);

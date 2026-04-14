@@ -133,7 +133,6 @@ class LessonsByIdsGrpcIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(groupId);
         item.setSubjectId(subjectId);
-        item.setTeacherId(1L);
         item.setSemesterId(1L);
         item.setDayOfWeek((short) 1);
         item.setLessonNumber(lessonNumber);

@@ -156,7 +156,7 @@ class ScheduleGrpcServiceImplTest extends AbstractScheduleIntegrationTest {
         assertThat(response.getId()).isEqualTo(lesson.getId());
         assertThat(response.getGroupId()).isEqualTo(200L);
         assertThat(response.getSubjectId()).isEqualTo(1L);
-        assertThat(response.getTeacherId()).isEqualTo(1L);
+        // D-16: teacher_id is reserved in schedule.proto — no getter generated
         assertThat(response.getDate()).isEqualTo("2026-04-05");
         assertThat(response.getLessonNumber()).isEqualTo(3);
         assertThat(response.getStatus()).isEqualTo("planned");
@@ -255,7 +255,6 @@ class ScheduleGrpcServiceImplTest extends AbstractScheduleIntegrationTest {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(groupId);
         item.setSubjectId(1L);
-        item.setTeacherId(1L);
         item.setSemesterId(semesterId);
         item.setDayOfWeek((short) 1);
         item.setLessonNumber(lessonNumber);

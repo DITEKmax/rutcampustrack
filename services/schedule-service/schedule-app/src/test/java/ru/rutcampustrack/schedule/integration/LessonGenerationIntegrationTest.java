@@ -53,7 +53,6 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
     private static final Long GROUP_ID = 2L;
     private static final Long SEMESTER_ID = 10L;
     private static final Long SUBJECT_ID = 101L;
-    private static final Long TEACHER_ID = 201L;
     private static final Long USER_ID = 43L;
 
     // Short 3-week semester: Feb 2 (Mon) to Feb 22 (Sun) 2026
@@ -111,7 +110,7 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
 
     private String createRequestJson(short dayOfWeek, WeekType weekType) throws Exception {
         return objectMapper.writeValueAsString(new CreateScheduleItemRequest(
-                GROUP_ID, SUBJECT_ID, TEACHER_ID, SEMESTER_ID,
+                GROUP_ID, SUBJECT_ID, SEMESTER_ID,
                 dayOfWeek, (short) 1,
                 LocalTime.of(8, 30), LocalTime.of(10, 0),
                 weekType, "A-101"
@@ -120,7 +119,7 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
 
     private String updateRequestJson(short dayOfWeek, WeekType weekType, String room) throws Exception {
         return objectMapper.writeValueAsString(new UpdateScheduleItemRequest(
-                SUBJECT_ID, TEACHER_ID,
+                SUBJECT_ID,
                 dayOfWeek, (short) 1,
                 LocalTime.of(8, 30), LocalTime.of(10, 0),
                 weekType, room
@@ -303,7 +302,6 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(GROUP_ID);
         item.setSubjectId(SUBJECT_ID);
-        item.setTeacherId(TEACHER_ID);
         item.setSemesterId(SEMESTER_ID);
         item.setDayOfWeek((short) 1);
         item.setLessonNumber((short) 1);

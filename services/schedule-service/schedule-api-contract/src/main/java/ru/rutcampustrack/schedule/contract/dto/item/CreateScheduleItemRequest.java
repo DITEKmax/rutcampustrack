@@ -11,6 +11,9 @@ import java.time.LocalTime;
 /**
  * Request DTO for creating a schedule template item.
  * No Lombok — contract modules use plain Java records.
+ * <p>
+ * D-16: teacherId removed. Teacher access to journals is resolved via JOIN
+ * ScheduleItem × TeacherSubjectGroup, not by slot-level teacher assignment.
  */
 public record CreateScheduleItemRequest(
 
@@ -19,9 +22,6 @@ public record CreateScheduleItemRequest(
 
         @NotNull
         Long subjectId,
-
-        @NotNull
-        Long teacherId,
 
         @NotNull
         Long semesterId,

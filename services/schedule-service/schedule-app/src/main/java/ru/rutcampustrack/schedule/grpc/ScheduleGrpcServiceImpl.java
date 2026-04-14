@@ -170,7 +170,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .setScheduleItemId(lesson.getScheduleItemId())
                 .setGroupId(item.getGroupId())
                 .setSubjectId(item.getSubjectId())
-                .setTeacherId(item.getTeacherId())
+                // D-16: teacher_id is reserved in schedule.proto — no setter generated
                 .setDate(lesson.getDate().toString())
                 .setLessonNumber(item.getLessonNumber())
                 .setStartTime(item.getStartTime().toString())

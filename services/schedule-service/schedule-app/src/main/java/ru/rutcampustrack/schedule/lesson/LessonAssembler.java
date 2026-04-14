@@ -31,7 +31,6 @@ public class LessonAssembler {
                 l.getScheduleItemId(),
                 si.getGroupId(),
                 si.getSubjectId(),
-                si.getTeacherId(),
                 l.getDate(),
                 l.getStatus(),
                 si.getDayOfWeek(),

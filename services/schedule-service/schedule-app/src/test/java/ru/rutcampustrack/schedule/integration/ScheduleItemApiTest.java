@@ -43,7 +43,6 @@ class ScheduleItemApiTest extends AbstractScheduleIntegrationTest {
     private static final Long GROUP_ID = 1L;
     private static final Long SEMESTER_ID = 10L;
     private static final Long SUBJECT_ID = 100L;
-    private static final Long TEACHER_ID = 200L;
     private static final Long USER_ID = 42L;
 
     @MockitoBean
@@ -116,7 +115,7 @@ class ScheduleItemApiTest extends AbstractScheduleIntegrationTest {
 
     private String createRequestJson() throws Exception {
         return objectMapper.writeValueAsString(new CreateScheduleItemRequest(
-                GROUP_ID, SUBJECT_ID, TEACHER_ID, SEMESTER_ID,
+                GROUP_ID, SUBJECT_ID, SEMESTER_ID,
                 (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0),
                 WeekType.ALL, "A-101"
         ));
@@ -128,7 +127,6 @@ class ScheduleItemApiTest extends AbstractScheduleIntegrationTest {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(GROUP_ID);
         item.setSubjectId(SUBJECT_ID);
-        item.setTeacherId(TEACHER_ID);
         item.setSemesterId(SEMESTER_ID);
         item.setDayOfWeek((short) 1);
         item.setLessonNumber((short) lessonNumberCounter++);
@@ -185,7 +183,7 @@ class ScheduleItemApiTest extends AbstractScheduleIntegrationTest {
 
         String updateJson = objectMapper.writeValueAsString(
                 new ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest(
-                        SUBJECT_ID, TEACHER_ID,
+                        SUBJECT_ID,
                         (short) 2, (short) 2,
                         LocalTime.of(10, 10), LocalTime.of(11, 40),
                         WeekType.ALL, "B-202"
@@ -251,7 +249,7 @@ class ScheduleItemApiTest extends AbstractScheduleIntegrationTest {
     @Test
     void createTemplate_invalidGroupId_returns404() throws Exception {
         String requestJson = objectMapper.writeValueAsString(new CreateScheduleItemRequest(
-                999L, SUBJECT_ID, TEACHER_ID, SEMESTER_ID,
+                999L, SUBJECT_ID, SEMESTER_ID,
                 (short) 1, (short) 1, LocalTime.of(8, 30), LocalTime.of(10, 0),
                 WeekType.ALL, "A-101"
         ));

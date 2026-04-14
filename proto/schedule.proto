@@ -41,7 +41,10 @@ message LessonResponse {
   int64 schedule_item_id = 2;
   int64 group_id = 3;
   int64 subject_id = 4;
-  int64 teacher_id = 5;
+  // D-16: teacher_id removed. Teacher access resolved via JOIN
+  // ScheduleItem × TeacherSubjectGroup (teacher is not bound to a slot).
+  reserved 5;
+  reserved "teacher_id";
   string date = 6;
   int32 lesson_number = 7;
   string start_time = 8;

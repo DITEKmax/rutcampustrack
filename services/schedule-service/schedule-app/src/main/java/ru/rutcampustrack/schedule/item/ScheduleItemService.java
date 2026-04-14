@@ -80,7 +80,6 @@ public class ScheduleItemService {
         ScheduleItem item = new ScheduleItem();
         item.setGroupId(request.groupId());
         item.setSubjectId(request.subjectId());
-        item.setTeacherId(request.teacherId());
         item.setSemesterId(request.semesterId());
         item.setDayOfWeek(request.dayOfWeek());
         item.setLessonNumber(request.lessonNumber());
@@ -139,7 +138,6 @@ public class ScheduleItemService {
                 || !Objects.equals(existing.getLessonNumber(), request.lessonNumber());
 
         existing.setSubjectId(request.subjectId());
-        existing.setTeacherId(request.teacherId());
         existing.setDayOfWeek(request.dayOfWeek());
         existing.setLessonNumber(request.lessonNumber());
         existing.setStartTime(request.startTime());

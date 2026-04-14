@@ -12,6 +12,9 @@ import java.time.OffsetDateTime;
  * Response DTO for lesson view — combines fields from both Lesson and ScheduleItem (VIEW-02, D-16).
  * Extends RepresentationModel for HATEOAS Level 3 compliance.
  * No Lombok — contract modules use plain Java classes with explicit constructors and getters.
+ * <p>
+ * D-16: teacherId removed. Teacher access to journals is resolved via JOIN
+ * ScheduleItem × TeacherSubjectGroup, not by slot-level teacher assignment.
  */
 public class LessonResponse extends RepresentationModel<LessonResponse> {
 
@@ -19,7 +22,6 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
     private Long scheduleItemId;
     private Long groupId;
     private Long subjectId;
-    private Long teacherId;
     private LocalDate date;
     private LessonStatus status;
     private Short dayOfWeek;
@@ -35,7 +37,7 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
     public LessonResponse() {}
 
     public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
-                           Long teacherId, LocalDate date, LessonStatus status,
+                           LocalDate date, LessonStatus status,
                            Short dayOfWeek, Short lessonNumber, LocalTime startTime,
                            LocalTime endTime, WeekType weekType, String room,
                            boolean geoBlocked, String cancelReason, OffsetDateTime createdAt) {
@@ -43,7 +45,6 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
         this.scheduleItemId = scheduleItemId;
         this.groupId = groupId;
         this.subjectId = subjectId;
-        this.teacherId = teacherId;
         this.date = date;
         this.status = status;
         this.dayOfWeek = dayOfWeek;
@@ -71,10 +72,6 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
 
     public Long getSubjectId() {
         return subjectId;
-    }
-
-    public Long getTeacherId() {
-        return teacherId;
     }
 
     public LocalDate getDate() {

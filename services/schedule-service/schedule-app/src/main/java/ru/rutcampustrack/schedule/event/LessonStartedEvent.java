@@ -9,6 +9,10 @@ import java.time.LocalTime;
  * Matches event-schemas/lesson.started.json contract.
  * <p>
  * Published by the cron job (Plan 02) when start_time is reached.
+ * <p>
+ * D-16: teacher_id removed. Downstream consumers (notification-bot, notification-service,
+ * attendance-service) never read it. Teacher journal access goes through
+ * ScheduleItem × TeacherSubjectGroup JOIN, not through the event payload.
  */
 public class LessonStartedEvent extends DomainEvent {
 
@@ -16,7 +20,6 @@ public class LessonStartedEvent extends DomainEvent {
             @JsonProperty("lesson_id") Long lessonId,
             @JsonProperty("group_id") Long groupId,
             @JsonProperty("subject_id") Long subjectId,
-            @JsonProperty("teacher_id") Long teacherId,
             @JsonProperty("lesson_number") Short lessonNumber,
             @JsonProperty("start_time") String startTime,
             @JsonProperty("end_time") String endTime,
@@ -24,10 +27,10 @@ public class LessonStartedEvent extends DomainEvent {
     ) {}
 
     public LessonStartedEvent(Object source, Long lessonId, Long groupId, Long subjectId,
-                               Long teacherId, Short lessonNumber,
+                               Short lessonNumber,
                                LocalTime startTime, LocalTime endTime, String room) {
         super(source, "lesson.started",
-                new Payload(lessonId, groupId, subjectId, teacherId, lessonNumber,
+                new Payload(lessonId, groupId, subjectId, lessonNumber,
                         startTime.toString(), endTime.toString(), room));
     }
 }

@@ -14,7 +14,7 @@ RutCampusTrack — микросервисная система учёта пос
 - **v6.0**: ЗАВЕРШЕНА (PWA + Web Push) — фазы 27-32
 - **v7.0**: ЗАВЕРШЕНА (Frontends — Mini App, Web Panel, Landing) — фазы 33-40
 - **v8.0**: ЗАВЕРШЕНА (CI/CD, Deployment & Documentation) — фазы 41-48
-- **v9.0**: В РАБОТЕ (Frontend Unification — Single Login & Role-Based Web Clients) — фазы 49-57 + Phase 58 (BUG-006 Admin Fixes) completed 2026-04-14
+- **v9.0**: В РАБОТЕ (Frontend Unification — Single Login & Role-Based Web Clients) — фазы 49-57 + Phase 58 (BUG-006 Admin Fixes) completed 2026-04-14 + Phase 59 (Excuse Tickets Backend) completed 2026-04-14 + Phase 60 (Headman Schedule Management) completed 2026-04-14
 - Полный план: `.planning/ROADMAP.md`, отчёты: `docs/phase-{N}-report.md`
 
 ### URL Layout (v9.0)

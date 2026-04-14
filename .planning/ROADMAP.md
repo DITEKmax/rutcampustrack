@@ -398,7 +398,7 @@ Plans:
 - [x] 60-05-PLAN.md — attendance-service: cascade delete при lesson.one_off.cancelled + read-path merge
 - [x] 60-06-PLAN.md — web-panel: subject-dialog multi-select teachers + type поле
 - [x] 60-07-PLAN.md — web-panel: /headman/schedule матрица + диалоги + checkpoint:human-verify
-- [ ] 60-08-PLAN.md — full build regression + phase-60-report.md
+- [x] 60-08-PLAN.md — full build regression + phase-60-report.md
 **UI hint**: yes (`/headman/schedule` + обновление `/headman/subjects`)
 
 ---

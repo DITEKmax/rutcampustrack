@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "group.archived",
+  "description": "Группа архивирована (промоушен выпускного курса — 4 курс → архив с суффиксом «(выпуск YYYY)», либо ручная архивация). Генерируется Academic Service. Минимальный payload (D-01): consumers вызывают gRPC AcademicGrpcService.GetGroup для актуального имени и is_active=false.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "group.archived" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["group_id"],
+      "properties": {
+        "group_id": { "type": "integer" }
+      }
+    }
+  }
+}

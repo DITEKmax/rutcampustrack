@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "group.renamed",
+  "description": "Группа переименована (ручное редактирование админом или автопромоушен на следующий курс). Генерируется Academic Service. Минимальный payload (D-01): consumers вызывают gRPC AcademicGrpcService.GetGroup для актуального имени.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "group.renamed" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["group_id"],
+      "properties": {
+        "group_id": { "type": "integer" }
+      }
+    }
+  }
+}

@@ -11,6 +11,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     List<Group> findByIsActive(boolean isActive);
     Page<Group> findByIsActive(boolean isActive, Pageable pageable);
     long countByIsActive(boolean isActive);
-    Optional<Group> findByCode(String code);
-    boolean existsByCode(String code);
+    Optional<Group> findByName(String name);
+    boolean existsByName(String name);
 }

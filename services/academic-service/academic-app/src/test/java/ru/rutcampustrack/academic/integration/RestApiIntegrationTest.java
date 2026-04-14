@@ -50,7 +50,7 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
         seedStudentId = jdbcTemplate.queryForObject(
                 "SELECT id FROM users WHERE login = 'student'", Long.class);
         seedGroupId = jdbcTemplate.queryForObject(
-                "SELECT id FROM groups WHERE code = 'ivt-21-1'", Long.class);
+                "SELECT id FROM groups WHERE name = 'IVT-21-1'", Long.class);
         seedAdminId = jdbcTemplate.queryForObject(
                 "SELECT id FROM users WHERE login = 'admin'", Long.class);
     }

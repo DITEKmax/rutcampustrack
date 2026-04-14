@@ -144,7 +144,7 @@ class EntityMappingIntegrationTest extends AbstractAcademicIntegrationTest {
         Long adminId = jdbcTemplate.queryForObject(
             "SELECT id FROM users WHERE login = 'admin'", Long.class);
         Long groupId = jdbcTemplate.queryForObject(
-            "SELECT id FROM groups WHERE code = 'ivt-21-1'", Long.class);
+            "SELECT id FROM groups WHERE name = 'IVT-21-1'", Long.class);
 
         // Insert HeadmanAssistant via native query to avoid @SQLRestriction issues
         // (student is active, so we can also use repository but native ensures isolation)
@@ -174,7 +174,7 @@ class EntityMappingIntegrationTest extends AbstractAcademicIntegrationTest {
         Long adminId = jdbcTemplate.queryForObject(
             "SELECT id FROM users WHERE login = 'admin'", Long.class);
         Long groupId = jdbcTemplate.queryForObject(
-            "SELECT id FROM groups WHERE code = 'ivt-21-1'", Long.class);
+            "SELECT id FROM groups WHERE name = 'IVT-21-1'", Long.class);
 
         // Create a subject for this test
         Long subjectId = jdbcTemplate.queryForObject(

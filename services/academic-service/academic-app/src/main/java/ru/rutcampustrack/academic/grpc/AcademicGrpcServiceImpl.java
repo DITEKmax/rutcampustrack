@@ -52,7 +52,6 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
         GroupResponse response = GroupResponse.newBuilder()
                 .setId(group.getId())
                 .setName(group.getName())
-                .setCode(group.getCode() != null ? group.getCode() : "")
                 .setIsActive(group.isActive())
                 .build();
 

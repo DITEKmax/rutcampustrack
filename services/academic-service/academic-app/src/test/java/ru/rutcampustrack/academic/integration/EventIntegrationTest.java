@@ -109,16 +109,15 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
     @BeforeEach
     void setUpTestEntities() {
         // Create two groups for use across tests
+        // 58-04: Entity Group.name @Pattern ^[А-ЯЁ][А-ЯЁа-яё]{1,3}-\d{3}$ + UNIQUE → собираем уникальное активное имя.
         groupA = new Group();
-        groupA.setName("Test Group A " + System.nanoTime());
-        groupA.setCode("TGA-" + System.nanoTime() % 100000);
+        groupA.setName("Тга-" + String.format("%03d", (int) (System.nanoTime() % 1000)));
         groupA.setActive(true);
         groupA.setCreatedAt(OffsetDateTime.now());
         groupA = groupRepository.save(groupA);
 
         groupB = new Group();
-        groupB.setName("Test Group B " + System.nanoTime());
-        groupB.setCode("TGB-" + System.nanoTime() % 100000);
+        groupB.setName("Тгб-" + String.format("%03d", (int) ((System.nanoTime() + 1) % 1000)));
         groupB.setActive(true);
         groupB.setCreatedAt(OffsetDateTime.now());
         groupB = groupRepository.save(groupB);
@@ -219,7 +218,9 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
     void updateGroup_publishesGroupUpdatedEvent() throws Exception {
         String queueName = bindTempQueue();
 
-        groupService.updateGroup(groupA.getId(), new UpdateGroupRequest("Updated Name A", groupA.getCode(), true));
+        // 58-04: UpdateGroupRequest(name, active). Новое имя должно матчить активный паттерн.
+        groupService.updateGroup(groupA.getId(),
+                new UpdateGroupRequest("Тна-" + String.format("%03d", (int) (System.nanoTime() % 1000)), true));
 
         Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
         assertThat(message).isNotNull();

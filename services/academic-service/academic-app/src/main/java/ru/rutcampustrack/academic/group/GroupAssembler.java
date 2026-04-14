@@ -26,7 +26,6 @@ public class GroupAssembler implements RepresentationModelAssembler<Group, Entit
         return new GroupResponse(
                 entity.getId(),
                 entity.getName(),
-                entity.getCode(),
                 entity.isActive(),
                 entity.getCreatedAt()
         );

@@ -6,21 +6,21 @@ import java.time.OffsetDateTime;
 
 /**
  * Response DTO for a student group with HATEOAS links.
+ *
+ * <p>BUG-006-5: поле {@code code} удалено, {@code name} — единственный идентификатор.
  */
 public class GroupResponse extends RepresentationModel<GroupResponse> {
 
     private Long id;
     private String name;
-    private String code;
     private boolean active;
     private OffsetDateTime createdAt;
 
     public GroupResponse() {}
 
-    public GroupResponse(Long id, String name, String code, boolean active, OffsetDateTime createdAt) {
+    public GroupResponse(Long id, String name, boolean active, OffsetDateTime createdAt) {
         this.id = id;
         this.name = name;
-        this.code = code;
         this.active = active;
         this.createdAt = createdAt;
     }
@@ -30,9 +30,6 @@ public class GroupResponse extends RepresentationModel<GroupResponse> {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
 
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }

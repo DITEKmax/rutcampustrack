@@ -43,12 +43,18 @@ public class GroupService {
 
     @Transactional
     public Group createGroup(CreateGroupRequest request) {
-        if (groupRepository.existsByCode(request.code())) {
-            throw new ConflictException("Группа с кодом '" + request.code() + "' уже существует");
+        // BUG-006-2 / 58-04: explicit pre-check per Plan 02 pattern — ConflictException несёт field=name,
+        // frontend отрисует сообщение FIELD_MESSAGES.name. DB-level fallback — в GlobalExceptionHandler
+        // через constraint groups_name_key.
+        if (groupRepository.existsByName(request.name())) {
+            throw new ConflictException(
+                    "name",
+                    request.name(),
+                    "Группа с таким названием уже существует"
+            );
         }
         Group group = new Group();
         group.setName(request.name());
-        group.setCode(request.code());
         group.setActive(true);
         group.setCreatedAt(OffsetDateTime.now());
         return groupRepository.save(group);
@@ -73,8 +79,16 @@ public class GroupService {
     @Transactional
     public Group updateGroup(Long id, UpdateGroupRequest request) {
         Group group = findGroupById(id);
+        // 58-04: при переименовании проверяем конфликт имени (кроме самой себя).
+        if (!request.name().equals(group.getName())
+                && groupRepository.existsByName(request.name())) {
+            throw new ConflictException(
+                    "name",
+                    request.name(),
+                    "Группа с таким названием уже существует"
+            );
+        }
         group.setName(request.name());
-        group.setCode(request.code());
         group.setActive(request.active());
         Group saved = groupRepository.save(group);
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, saved.getId()));

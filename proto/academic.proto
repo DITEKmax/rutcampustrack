@@ -47,7 +47,9 @@ message GroupRequest {
 message GroupResponse {
   int64 id = 1;
   string name = 2;
-  string code = 3;
+  // field 3 reserved (previously `string code` — removed in BUG-006-5 / план 58-04)
+  reserved 3;
+  reserved "code";
   bool is_active = 4;
 }
 

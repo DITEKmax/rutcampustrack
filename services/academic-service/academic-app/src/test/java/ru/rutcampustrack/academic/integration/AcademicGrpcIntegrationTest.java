@@ -127,7 +127,7 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
 
         assertThat(response.getId()).isEqualTo(GROUP_ID);
         assertThat(response.getName()).isEqualTo("IVT-21-1");
-        assertThat(response.getCode()).isEqualTo("ivt-21-1");
+        // 58-04: поле code удалено из GroupResponse (proto reserved 3).
         assertThat(response.getIsActive()).isTrue();
     }
 

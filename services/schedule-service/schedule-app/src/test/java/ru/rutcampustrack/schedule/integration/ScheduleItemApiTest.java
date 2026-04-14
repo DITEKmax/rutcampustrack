@@ -79,7 +79,7 @@ class ScheduleItemApiTest extends AbstractScheduleIntegrationTest {
                 .thenReturn(GroupResponse.newBuilder()
                         .setId(GROUP_ID)
                         .setName("Test Group")
-                        .setCode("TG-01")
+                        // 58-04: proto field `code` удалён (reserved 3).
                         .setIsActive(true)
                         .build());
         when(academicGrpcClient.getActiveSemester()).thenReturn(MOCK_SEMESTER);

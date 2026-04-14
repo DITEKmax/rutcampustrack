@@ -14,6 +14,8 @@ import type {
   UpdateSemesterRequest,
   DashboardStatsResponse,
   PagedResponse,
+  GroupStatus,
+  PromotionSummary,
 } from './types';
 
 @Injectable({ providedIn: 'root' })
@@ -68,6 +70,46 @@ export class AdminApiService {
       .pipe(
         map(res => (Object.values(res._embedded ?? {})[0] ?? []) as GroupResponse[]),
       );
+  }
+
+  /**
+   * BUG-006-6 / plan 58-08: listGroupsByStatus — GET /groups?status=ACTIVE|ARCHIVED|ALL&search=...
+   * Возвращает плоский массив (как listGroups), с поддержкой ILIKE-поиска и lifecycle-фильтра.
+   */
+  listGroupsByStatus(params: {
+    status: GroupStatus;
+    search?: string;
+    page?: number;
+    size?: number;
+  }): Observable<{ items: GroupResponse[]; total: number }> {
+    let httpParams = new HttpParams().set('status', params.status);
+    if (params.search) httpParams = httpParams.set('search', params.search);
+    httpParams = httpParams.set('page', params.page ?? 0);
+    httpParams = httpParams.set('size', params.size ?? 200);
+
+    return this.http
+      .get<PagedResponse<GroupResponse>>('/api/academic/groups', { params: httpParams })
+      .pipe(
+        map(res => ({
+          items: (Object.values(res._embedded ?? {})[0] ?? []) as GroupResponse[],
+          total: res.page?.totalElements ?? 0,
+        })),
+      );
+  }
+
+  /** BUG-006-6 / plan 58-08: POST /groups/promote/preview — сухой прогон, без записи. */
+  promotePreview(): Observable<PromotionSummary> {
+    return this.http.post<PromotionSummary>('/api/academic/groups/promote/preview', {});
+  }
+
+  /** BUG-006-6 / plan 58-08: POST /groups/promote — выполнение перевода (ADMIN). */
+  promote(): Observable<PromotionSummary> {
+    return this.http.post<PromotionSummary>('/api/academic/groups/promote', {});
+  }
+
+  /** BUG-006-6 / plan 58-08: GET /groups/{id} — одна группа (для страницы истории). */
+  getGroup(id: number): Observable<GroupResponse> {
+    return this.http.get<GroupResponse>(`/api/academic/groups/${id}`);
   }
 
   createGroup(req: CreateGroupRequest): Observable<GroupResponse> {

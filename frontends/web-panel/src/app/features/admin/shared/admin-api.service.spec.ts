@@ -188,6 +188,95 @@ describe('AdminApiService', () => {
     expect(result).toEqual(mockStats);
   });
 
+  // BUG-006-6 / plan 58-08 tests
+
+  it('listGroupsByStatus() calls GET /api/academic/groups with status=ACTIVE filter', () => {
+    const mockGroup = { id: 1, name: 'УИТ-311', active: true, createdAt: '2026-01-01T00:00:00Z' };
+    let result: any;
+
+    service.listGroupsByStatus({ status: 'ACTIVE' }).subscribe(r => (result = r));
+
+    const req = httpMock.expectOne(r =>
+      r.url === '/api/academic/groups' &&
+      r.params.get('status') === 'ACTIVE',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      _embedded: { groupResponseList: [mockGroup] },
+      page: { totalElements: 1, totalPages: 1, size: 200, number: 0 },
+    });
+
+    expect(result.items).toEqual([mockGroup]);
+    expect(result.total).toBe(1);
+  });
+
+  it('listGroupsByStatus() passes status=ARCHIVED and search params', () => {
+    service
+      .listGroupsByStatus({ status: 'ARCHIVED', search: 'УИТ' })
+      .subscribe();
+
+    const req = httpMock.expectOne(r =>
+      r.url === '/api/academic/groups' &&
+      r.params.get('status') === 'ARCHIVED' &&
+      r.params.get('search') === 'УИТ',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      _embedded: { groupResponseList: [] },
+      page: { totalElements: 0, totalPages: 0, size: 200, number: 0 },
+    });
+  });
+
+  it('promotePreview() calls POST /api/academic/groups/promote/preview with empty body', () => {
+    const summary = { toPromote: [], toArchive: [], conflicts: [], dryRun: true, executed: false };
+    let result: any;
+
+    service.promotePreview().subscribe(r => (result = r));
+
+    const req = httpMock.expectOne('/api/academic/groups/promote/preview');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush(summary);
+
+    expect(result).toEqual(summary);
+  });
+
+  it('promote() calls POST /api/academic/groups/promote with empty body', () => {
+    const summary = {
+      toPromote: [{ id: 1, from: 'УИТ-111', to: 'УИТ-211', action: 'PROMOTE' }],
+      toArchive: [],
+      conflicts: [],
+      dryRun: false,
+      executed: true,
+    };
+    let result: any;
+
+    service.promote().subscribe(r => (result = r));
+
+    const req = httpMock.expectOne('/api/academic/groups/promote');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush(summary);
+
+    expect(result).toEqual(summary);
+  });
+
+  it('getGroup() calls GET /api/academic/groups/{id}', () => {
+    const group = {
+      id: 7, name: 'УИТ-411 (выпуск 2026)', active: false,
+      createdAt: '2022-09-01T00:00:00Z', archivedAt: '2026-06-15T00:00:00Z',
+    };
+    let result: any;
+
+    service.getGroup(7).subscribe(g => (result = g));
+
+    const req = httpMock.expectOne('/api/academic/groups/7');
+    expect(req.request.method).toBe('GET');
+    req.flush(group);
+
+    expect(result).toEqual(group);
+  });
+
   it('listStudentsByGroup() calls GET /api/academic/users with role=STUDENT param and filters by groupId', () => {
     const student1 = {
       id: 1, login: 'student00001', displayName: 'Иванов', role: 'student',

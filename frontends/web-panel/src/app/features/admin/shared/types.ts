@@ -57,6 +57,36 @@ export interface GroupResponse {
   name: string;
   active: boolean;
   createdAt: string;
+  /** BUG-006-6 / plan 58-06: момент архивации (ISO); null у активных групп. */
+  archivedAt?: string | null;
+}
+
+/** BUG-006-6 / plan 58-08: lifecycle-фильтр для GET /groups?status=... */
+export type GroupStatus = 'ACTIVE' | 'ARCHIVED' | 'ALL';
+
+/** BUG-006-6 / plan 58-08: строка preview для перевода групп. */
+export interface PromotionPreviewItem {
+  id: number;
+  from: string;
+  to?: string | null;
+  action: 'PROMOTE' | 'ARCHIVE';
+}
+
+/** BUG-006-6 / plan 58-08: конфликт на уровне одного префикса (из PromotionSummary). */
+export interface PrefixConflict {
+  prefix: string;
+  reason: 'name_conflict' | 'unknown_type' | 'parse_error';
+  message: string;
+  groupIds: number[];
+}
+
+/** BUG-006-6 / plan 58-08: ответ POST /groups/promote[/preview]. */
+export interface PromotionSummary {
+  toPromote: PromotionPreviewItem[];
+  toArchive: PromotionPreviewItem[];
+  conflicts: PrefixConflict[];
+  dryRun: boolean;
+  executed: boolean;
 }
 
 export interface CreateGroupRequest {

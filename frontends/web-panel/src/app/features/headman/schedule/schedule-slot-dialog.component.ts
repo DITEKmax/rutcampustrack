@@ -94,16 +94,39 @@ export interface ScheduleSlotDialogData {
         }
       </form>
     </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-stroked-button type="button" [mat-dialog-close]="false">Отмена</button>
+    <mat-dialog-actions align="end" class="dialog-actions">
+      @if (isEdit) {
+        <button mat-stroked-button type="button"
+                class="btn-danger"
+                [disabled]="submitting || deleting"
+                (click)="onDelete()"
+                aria-label="Удалить слот из расписания">
+          @if (deleting) { <mat-spinner diameter="16"></mat-spinner> }
+          <i class="ph ph-trash"></i> Удалить
+        </button>
+        <span class="dialog-actions__spacer"></span>
+      }
+      <button mat-stroked-button type="button" [mat-dialog-close]="false" [disabled]="submitting || deleting">Отмена</button>
       <button class="btn-brand" type="button"
-              [disabled]="submitting || form.invalid"
+              [disabled]="submitting || deleting || form.invalid"
               (click)="onSubmit()">
         @if (submitting) { <mat-spinner diameter="16"></mat-spinner> }
         {{ isEdit ? 'Сохранить' : 'Создать' }}
       </button>
     </mat-dialog-actions>
   `,
+  styles: [`
+    .dialog-actions { gap: 8px; }
+    .dialog-actions__spacer { flex: 1; }
+    .btn-danger {
+      color: #c62828;
+      border-color: #ef9a9a !important;
+    }
+    .btn-danger:hover:not([disabled]) {
+      background: #ffebee;
+    }
+    .btn-danger i { margin-right: 4px; }
+  `],
 })
 export class ScheduleSlotDialogComponent implements OnInit {
   private readonly headmanApi = inject(HeadmanApiService);
@@ -123,6 +146,7 @@ export class ScheduleSlotDialogComponent implements OnInit {
   subjectsLoading = true;
   subjectsError = false;
   submitting = false;
+  deleting = false;
   apiError: string | null = null;
 
   constructor() {
@@ -218,6 +242,34 @@ export class ScheduleSlotDialogComponent implements OnInit {
         error: (err) => this.handleError(err),
       });
     }
+  }
+
+  onDelete(): void {
+    if (!this.isEdit || !this.data.item) return;
+    const ok = window.confirm(
+      'Удалить этот слот из расписания на оставшиеся недели семестра?\n' +
+      'Это действие нельзя отменить через интерфейс.',
+    );
+    if (!ok) return;
+    this.deleting = true;
+    this.apiError = null;
+    this.headmanApi.deleteScheduleItem(this.data.item.id).subscribe({
+      next: () => {
+        this.deleting = false;
+        this.snackBar.open('Слот удалён.', undefined, { duration: 4000 });
+        this.dialogRef.close(true);
+      },
+      error: (err) => {
+        this.deleting = false;
+        if (err?.status === 403) {
+          this.apiError = 'Недостаточно прав для удаления этой пары.';
+        } else if (err?.status === 404) {
+          this.apiError = 'Слот уже удалён.';
+        } else {
+          this.apiError = 'Не удалось удалить слот. Попробуйте ещё раз.';
+        }
+      },
+    });
   }
 
   private handleError(err: any): void {

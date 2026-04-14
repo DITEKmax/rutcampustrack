@@ -57,6 +57,9 @@ class ExcuseServiceTest {
     @Mock
     private AttendanceWritePort attendanceWritePort;
 
+    @Mock
+    private ExcuseEventPublisher excuseEventPublisher;
+
     @InjectMocks
     private ExcuseService excuseService;
 
@@ -103,6 +106,8 @@ class ExcuseServiceTest {
         assertThat(saved.getCreatedAt()).isNotNull();
         assertThat(saved.getUpdatedAt()).isNotNull();
         verify(excuseRepository).save(any(ExcuseTicket.class));
+        // 59-05: event publisher invoked after save
+        verify(excuseEventPublisher).publishRequested(saved);
     }
 
     // ---------------------------------------------------------------------
@@ -285,5 +290,7 @@ class ExcuseServiceTest {
                 ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED);
         verify(attendanceWritePort).mark(STUDENT_ID, 2L, GROUP_ID,
                 ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED);
+        // 59-05: publishDecided must fire AFTER cascade, before return
+        verify(excuseEventPublisher).publishDecided(result);
     }
 }

@@ -30,9 +30,11 @@ import java.util.List;
  * - D-14: read access restricted to owner or headman of same group
  * - D-18: status decision is final — no re-approval/re-rejection
  *
- * Cascade on approval (D-16) is delegated to plan 59-04 via AttendanceWritePort.
- * Event publishing (D-19, D-20) is delegated to plan 59-05 via ExcuseEventPublisher.
- * Both are injected as optional (required=false) so this service compiles in isolation.
+ * Cascade on approval (D-16) via AttendanceWritePort (plan 59-04).
+ * Event publishing (D-19, D-20) via ExcuseEventPublisher (plan 59-05):
+ *   - excuse.requested after createExcuse save
+ *   - excuse.decided  after updateStatus save + cascade (order matters — journal
+ *     consistency requires the cascade to complete before downstream observers).
  */
 @Service
 public class ExcuseService {
@@ -44,15 +46,18 @@ public class ExcuseService {
     private final RequestContext requestContext;
     private final AcademicGrpcClient academicGrpcClient;
     private final AttendanceWritePort attendanceWritePort;
+    private final ExcuseEventPublisher excuseEventPublisher;
 
     public ExcuseService(ExcuseRepository excuseRepository,
                          RequestContext requestContext,
                          AcademicGrpcClient academicGrpcClient,
-                         AttendanceWritePort attendanceWritePort) {
+                         AttendanceWritePort attendanceWritePort,
+                         ExcuseEventPublisher excuseEventPublisher) {
         this.excuseRepository = excuseRepository;
         this.requestContext = requestContext;
         this.academicGrpcClient = academicGrpcClient;
         this.attendanceWritePort = attendanceWritePort;
+        this.excuseEventPublisher = excuseEventPublisher;
     }
 
     /**
@@ -100,7 +105,12 @@ public class ExcuseService {
                 .updatedAt(now)
                 .build();
 
-        return excuseRepository.save(ticket);
+        ExcuseTicket saved = excuseRepository.save(ticket);
+
+        // D-19 / D-27: publish excuse.requested after save — notification-bot listens.
+        excuseEventPublisher.publishRequested(saved);
+
+        return saved;
     }
 
     /**
@@ -208,6 +218,10 @@ public class ExcuseService {
                         attendanceStatus);
             }
         }
+
+        // D-20 / D-28: publish excuse.decided AFTER cascade, BEFORE return — journal
+        // consistency requires the cascade to land before any consumer observes the decision.
+        excuseEventPublisher.publishDecided(saved);
 
         return saved;
     }

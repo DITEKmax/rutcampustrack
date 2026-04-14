@@ -25,6 +25,10 @@ public class Subject {
     @Column(nullable = false)
     private SubjectType type;
 
+    @Setter
+    @Column(name = "group_id", nullable = false)
+    private Long groupId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

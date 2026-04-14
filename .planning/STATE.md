@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
 status: executing
-stopped_at: Completed 60-05-PLAN.md
-last_updated: "2026-04-14T21:08:55.690Z"
+stopped_at: Completed 60-06-PLAN.md
+last_updated: "2026-04-14T21:14:25.358Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 12
   completed_phases: 2
   total_plans: 27
-  completed_plans: 24
-  percent: 89
+  completed_plans: 25
+  percent: 93
 ---
 
 # Project State
@@ -23,7 +23,7 @@ v9.0 Frontend Unification — Single Login & Role-Based Web Clients
 ## Current Position
 
 Phase: 60 (headman-schedule-management) — EXECUTING
-Plan: 6 of 8
+Plan: 7 of 8
 Plans: 0/TBD
 Status: Ready to execute
 Last activity: 2026-04-14
@@ -82,6 +82,7 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 60]: One-off lesson events published via DomainEvent + AFTER_COMMIT; notification-bot pushes entire group (D-18, headman included) with gRPC subject-name fallback
 - [Phase 60]: attendance-service cascade delete (lesson.one_off.cancelled) использует natural key (group_id, lesson_date, lesson_number); idempotency через MongoDB remove → deletedCount=0
 - [Phase 60]: Read-path merge one-off + template (AC-09) отложен на 60-09 — требует нового proto-метода в schedule-service
+- [Phase 60]: Phase 60-06: Angular subject dialog — multi-select teacherIds[] + required type (LECTURE/PRACTICE/LAB) per D-02+D-19
 
 ### Key v9.0 Architecture Decisions
 
@@ -106,7 +107,7 @@ Phases 49 and 50 are CRITICAL-PATH and completed. Phases 51-55 (Blocks B and C) 
 
 ## Session Continuity
 
-Last session: 2026-04-14T21:08:55.686Z
-Stopped at: Completed 60-05-PLAN.md
+Last session: 2026-04-14T21:14:21.127Z
+Stopped at: Completed 60-06-PLAN.md
 Next action: /gsd-verifier 58 (после UAT) или /gsd-next для следующей фазы.
 Deferred: UAT checkpoint plan 58-09 Task 2 — 13 ручных шагов через браузер (docs/phase-58-report.md Known limitations).

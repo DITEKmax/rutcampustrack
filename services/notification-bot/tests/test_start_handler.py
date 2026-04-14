@@ -51,7 +51,7 @@ async def test_start_known_user_first_login():
 
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
-    assert "Ваш пароль: pass123" in text
+    assert "Ваш пароль: <code>pass123</code>" in text
     assert "student00001" in text
     assert "Иван Иванов" in text
 

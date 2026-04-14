@@ -393,7 +393,7 @@ Plans:
 Plans:
 - [x] 60-01-PLAN.md — academic-service: subjects.group_id + CreateSubjectRequest (teacherIds) + атомарный createSubject
 - [x] 60-02-PLAN.md — schedule-service: удаление ScheduleItem.teacherId (entity + DTO + Flyway V3) + guard тест
-- [ ] 60-03-PLAN.md — schedule-service: schedule_one_off_lessons (Flyway V4) + REST CRUD endpoints + 409 логика
+- [x] 60-03-PLAN.md — schedule-service: schedule_one_off_lessons (Flyway V4) + REST CRUD endpoints + 409 логика
 - [ ] 60-04-PLAN.md — events: lesson.one_off.created/cancelled JSON Schema + publisher + notification-bot handlers
 - [ ] 60-05-PLAN.md — attendance-service: cascade delete при lesson.one_off.cancelled + read-path merge
 - [ ] 60-06-PLAN.md — web-panel: subject-dialog multi-select teachers + type поле

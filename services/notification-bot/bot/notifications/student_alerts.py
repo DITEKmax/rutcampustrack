@@ -51,10 +51,7 @@ async def handle_student_alert(
             text += f"\n\nКомментарий: {decision_comment}"
     elif status == "rejected":
         comment_line = decision_comment if decision_comment else "без комментария"
-        text = (
-            "❌ Ваш запрос на уважительную причину отклонён."
-            f"\n\nКомментарий: {comment_line}"
-        )
+        text = f"❌ Ваш запрос на уважительную причину отклонён.\n\nКомментарий: {comment_line}"
     else:
         logger.debug(
             "handle_student_alert called with unexpected status=%s event_type=%s",
@@ -86,9 +83,7 @@ async def handle_student_alert(
 
     await send_queue.put(
         SendTask(
-            coroutine_factory=lambda chat=telegram_id, t=text: bot.send_message(
-                chat_id=chat, text=t
-            ),
+            coroutine_factory=lambda chat=telegram_id, t=text: bot.send_message(chat_id=chat, text=t),
             user_id=user_id,
             chat_id=telegram_id,
         )

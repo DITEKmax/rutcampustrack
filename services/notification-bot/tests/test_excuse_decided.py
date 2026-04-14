@@ -50,9 +50,7 @@ async def test_approved_event_sends_ru_message_to_student():
     academic_client.get_user_by_id = AsyncMock(return_value=_make_user(telegram_id=55555))
     send_queue, captured = _capturing_send_queue()
 
-    await handle_student_alert(
-        event, bot=bot, academic_client=academic_client, send_queue=send_queue
-    )
+    await handle_student_alert(event, bot=bot, academic_client=academic_client, send_queue=send_queue)
 
     assert len(captured) == 1
     task = captured[0]
@@ -90,9 +88,7 @@ async def test_rejected_event_sends_ru_message_with_comment():
     academic_client.get_user_by_id = AsyncMock(return_value=_make_user(telegram_id=9999))
     send_queue, captured = _capturing_send_queue()
 
-    await handle_student_alert(
-        event, bot=bot, academic_client=academic_client, send_queue=send_queue
-    )
+    await handle_student_alert(event, bot=bot, academic_client=academic_client, send_queue=send_queue)
 
     assert len(captured) == 1
     await captured[0].coroutine_factory()
@@ -122,9 +118,7 @@ async def test_rejected_event_without_comment_falls_back_to_default():
     academic_client.get_user_by_id = AsyncMock(return_value=_make_user(telegram_id=123))
     send_queue, captured = _capturing_send_queue()
 
-    await handle_student_alert(
-        event, bot=bot, academic_client=academic_client, send_queue=send_queue
-    )
+    await handle_student_alert(event, bot=bot, academic_client=academic_client, send_queue=send_queue)
 
     assert len(captured) == 1
     await captured[0].coroutine_factory()
@@ -147,9 +141,7 @@ async def test_missing_user_id_skips_send_gracefully():
     academic_client.get_user_by_id = AsyncMock()
     send_queue, captured = _capturing_send_queue()
 
-    await handle_student_alert(
-        event, bot=bot, academic_client=academic_client, send_queue=send_queue
-    )
+    await handle_student_alert(event, bot=bot, academic_client=academic_client, send_queue=send_queue)
 
     assert captured == []
     bot.send_message.assert_not_called()
@@ -170,9 +162,7 @@ async def test_unknown_status_skips_send():
     academic_client.get_user_by_id = AsyncMock()
     send_queue, captured = _capturing_send_queue()
 
-    await handle_student_alert(
-        event, bot=bot, academic_client=academic_client, send_queue=send_queue
-    )
+    await handle_student_alert(event, bot=bot, academic_client=academic_client, send_queue=send_queue)
 
     assert captured == []
     academic_client.get_user_by_id.assert_not_called()
@@ -192,9 +182,7 @@ async def test_student_without_telegram_id_skips_send():
     academic_client.get_user_by_id = AsyncMock(return_value=_make_user(telegram_id=0))
     send_queue, captured = _capturing_send_queue()
 
-    await handle_student_alert(
-        event, bot=bot, academic_client=academic_client, send_queue=send_queue
-    )
+    await handle_student_alert(event, bot=bot, academic_client=academic_client, send_queue=send_queue)
 
     assert captured == []
     bot.send_message.assert_not_called()

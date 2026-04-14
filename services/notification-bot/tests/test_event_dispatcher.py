@@ -147,6 +147,8 @@ async def test_dispatcher_has_eight_event_types():
         "homework.published",
         "homework.updated",
         "excuse.requested",
+        # 59-06 / D-28: student notification on excuse decision
+        "excuse.decided",
         "late_checkin.requested",
         "lesson.closed",
         "attendance.marked",

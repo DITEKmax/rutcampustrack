@@ -8,6 +8,14 @@ import { isHeadmanApiRequest } from './sw-runtime-cache'
 
 declare const self: ServiceWorkerGlobalScope
 
+// Activate new SW immediately on update — users get fresh code without
+// having to close every tab. Combined with registerType:'autoUpdate' in
+// vite.config.ts this makes PWA self-updating on each navigation.
+self.skipWaiting()
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim())
+})
+
 precacheAndRoute(self.__WB_MANIFEST)
 
 function getUrlForEventType(eventType: string): string {

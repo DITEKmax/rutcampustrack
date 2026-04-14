@@ -11,11 +11,8 @@ import { AppShell } from './shared/components/AppShell'
 import { IOSOnboardingOverlay } from './features/auth/IOSOnboardingOverlay'
 import { LoadingSpinner } from './shared/components/LoadingSpinner'
 import { StompProvider } from './features/checkin/StompProvider'
-import { registerSW } from 'virtual:pwa-register'
+import { UpdateBanner } from './shared/components/UpdateBanner'
 import './index.css'
-
-// Auto-update SW when new version available
-registerSW({ immediate: true })
 
 const SchedulePage = lazy(() => import('./features/schedule/SchedulePage').then(m => ({ default: m.SchedulePage })))
 const CheckInScreen = lazy(() => import('./features/checkin/CheckInScreen').then(m => ({ default: m.CheckInScreen })))
@@ -99,6 +96,7 @@ createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <IOSOnboardingOverlay />
           <RouterProvider router={router} />
+          <UpdateBanner />
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

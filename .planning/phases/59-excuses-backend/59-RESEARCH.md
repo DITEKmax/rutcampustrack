@@ -247,3 +247,263 @@ service ScheduleService {
 Порядок: 59-01 → 59-02 → 59-03 → 59-04 → 59-05 параллельно с 59-06 → 59-07 параллельно с 59-08 → 59-09.
 
 </execution_plan_seed>
+
+---
+
+## Validation Architecture
+
+### Test Framework & Infrastructure
+
+| Property | Value |
+|----------|-------|
+| Backend Test Framework | JUnit 5 + Mockito + Spring Test + Testcontainers (MongoDB, RabbitMQ) |
+| Backend Config File | `services/attendance-service/attendance-app/build.gradle.kts` (test dependencies) |
+| Test Base Class | `AbstractAttendanceIntegrationTest` (Testcontainers setup) |
+| Quick Unit Run | `./gradlew :services:attendance-service:attendance-app:test --tests "*ExcuseServiceTest"` |
+| Full Backend Suite | `./gradlew :services:attendance-service:attendance-app:test` |
+| Bot Test Framework | pytest + pytest-asyncio + pytest-mock |
+| Bot Quick Run | `cd services/notification-bot && pytest tests/test_excuse_decided.py -v` |
+| Full Bot Suite | `cd services/notification-bot && pytest tests/ -v` |
+| Frontend Test Framework | Vitest + Angular Testing Module |
+| Frontend Quick Run | `cd frontends/web-panel && npm test -- --run --reporter=verbose excuse` |
+| Full Frontend Suite | `cd frontends/web-panel && npm test -- --run` |
+
+### Phase AC → Test Coverage Mapping
+
+| AC ID | Behavior | Test Type | Automated Command | File Exists? |
+|-------|----------|-----------|-------------------|-------------|
+| AC-1 | STUDENT создаёт тикет → 201 + response | Integration | `./gradlew :services:attendance-service:attendance-app:test --tests "*ExcuseControllerIT.test_create_returns_201"` | ❌ Wave 0 |
+| AC-2 | Дубликат lessonId → 409 Conflict | Integration | `./gradlew :services:attendance-service:attendance-app:test --tests "*ExcuseControllerIT.test_duplicate_lesson_returns_409"` | ❌ Wave 0 |
+| AC-3 | Headman создаёт → 409 | Integration | `./gradlew :services:attendance-service:attendance-app:test --tests "*ExcuseControllerIT.test_headman_create_returns_409"` | ❌ Wave 0 |
+| AC-4 | Чужой тикет → 403 | Integration | `./gradlew :services:attendance-service:attendance-app:test --tests "*ExcuseControllerIT.test_other_student_ticket_returns_403"` | ❌ Wave 0 |
+| AC-5 | Approve каскадирует на attendance | Integration | `./gradlew :services:attendance-service:attendance-app:test --tests "*ExcuseServiceIT.test_approve_cascades_to_attendance"` | ❌ Wave 0 |
+| AC-6 | Headman не может approve свой | Integration | `./gradlew :services:attendance-service:attendance-app:test --tests "*ExcuseControllerIT.test_headman_self_approve_returns_409"` | ❌ Wave 0 |
+| AC-7 | RabbitMQ event valid (JSON schema) | Contract | `./gradlew :services:attendance-service:attendance-app:test --tests "*ExcuseEventContractTest"` | ❌ Wave 0 |
+| AC-8 | Bot handler `excuse.decided` | Unit + Integration | `cd services/notification-bot && pytest tests/test_excuse_decided.py -v` | ❌ Wave 0 |
+| AC-9 | Frontend form + dropdown + list | Unit + Component | `cd frontends/web-panel && npm test -- --run --reporter=verbose excuse` | ❌ Wave 0 |
+| AC-10 | Headman approve/reject UI works | E2E/Manual | Protractor/Cypress scenario or UAT | Manual (WAI-05) |
+| AC-11 | gRPC LessonsByIds works | Contract | `./gradlew :services:schedule-service:schedule-app:test --tests "*LessonsByIdsTest"` | ❌ Wave 0 |
+| AC-12 | All tests green | Smoke | `./gradlew :services:attendance-service:attendance-app:test && cd services/notification-bot && pytest tests/ && cd frontends/web-panel && npm test -- --run` | ❌ End of phase |
+
+### Input Domain Sampling (Nyquist Levels)
+
+#### Endpoint: `POST /excuses` (Create)
+
+**Input dimensions to sample:**
+
+| Dimension | Values | Sample (Equivalence Classes) | Test AC |
+|-----------|--------|------|---------|
+| **Role** | STUDENT, TEACHER, ADMIN, HEADMAN | STUDENT (plain), STUDENT+headman | AC-1, AC-3 |
+| **Ownership** | own student, other student, headman trying as self | own only | AC-1; other → 403 (AC-4 variant) |
+| **lessonIds validity** | all valid + same group, mix valid/invalid, all invalid, empty list, null | all valid, all invalid, one invalid in list, empty | AC-1, AC-11 |
+| **Group mismatch** | lessonIds from own group, from other group | own group, other group | AC-11 |
+| **ExcuseType enum** | ILLNESS, SUMMONS, UNIVERSITY_ORDER, EXEMPTION, FREE_ATTENDANCE, OTHER, invalid | all 6 valid values, one invalid | AC-1, AC-9 |
+| **comment field** | null, "", short (10 chars), max (1000 chars), over-max (1001) | null, 1000, 1001 | AC-1 |
+| **Active ticket on lessonId** | first ticket, duplicate (exists pending/approved), rejected (allowed) | first → 201, duplicate → 409, after rejected → 201 | AC-2, AC-1 |
+| **Headman flag** | true, false | true → 409, false → 201 | AC-3 |
+
+**Boundary conditions to test:**
+
+- 1 lessonId vs 100+ lessonIds (batch create)
+- Lesson in past, today, future (D-10 allows all)
+- Comment exactly 1000 chars + 1 (boundary)
+- Concurrent creates on same lessonId (race condition)
+
+#### Endpoint: `GET /excuses/me` (List Own)
+
+**Input dimensions:**
+
+| Dimension | Values | Sample |
+|-----------|--------|--------|
+| **Role** | STUDENT, headman (is_headman=true) | Both |
+| **Status filter** | all, pending, approved, rejected | Sample: all, pending |
+| **Pagination** | page 0, mid-range, out-of-range | 0, 1, 999 |
+| **Sort order** | createdAt asc/desc | createdAt desc (spec) |
+
+#### Endpoint: `PATCH /excuses/{id}/status` (Approve/Reject)
+
+**Input dimensions:**
+
+| Dimension | Values | Sample |
+|-----------|--------|--------|
+| **Decision** | APPROVED, REJECTED | Both |
+| **decisionComment** | null, "", short, max (1000), over-max | null (allowed), 1000 |
+| **Ticket status pre-change** | pending, approved, rejected | pending → 201, already approved → 409 |
+| **Caller role** | headman (is_headman=true), plain student, other group headman | headman of same group, other group → 403, plain student → 403 |
+| **Ticket ownership (self-approve)** | different student, same student | headman ≠ creator → 200, headman == creator → 409 |
+| **Cascade to attendance required** | status=APPROVED; check all lessonIds have AttendanceRecord updated | All lessonIds → excused or free_attendance |
+
+### Failure Modes & Resilience Tests
+
+| Failure Scenario | Trigger | Expected Behavior | Test Type |
+|------------------|---------|-------------------|-----------|
+| RabbitMQ down during `excuse.requested` publish | Mock RabbitMQ exception on publish | Transactional: Mongo write rolls back OR outbox queues locally, retried | Integration (RabbitMQ container fails) |
+| Mongo write succeeds, event publish fails | Exception after Mongo insert | Ticket created; event retry logic (outbox polling) retries async | Integration |
+| gRPC schedule.LessonsByIds times out | Schedule service not responding | 504 Gateway Timeout OR fallback validation | Integration (mock gRPC timeout) |
+| Concurrent creates for same (studentId, lessonId) pair | 2+ requests arrive simultaneously | Only 1 succeeds; other gets 409 (unique index or distributed lock) | Integration (concurrent threads) |
+| Approve while attendance already marked as present | Attempt to cascade to excused when status ≠ absent | Overwrite with excused (idempotent) OR preserve if already set (depends on business rule) | Integration |
+| gRPC schedule returns lessons from different group | Validation passes but lesson belongs to other group | Catch at validation step; return 400 Bad Request | Integration |
+
+### Event Contract Verification
+
+**RabbitMQ event `excuse.requested` (AC-7):**
+
+1. **Schema match**: Read `notification-bot/tests/fixtures/excuse_requested.json` and validate backend publishes identical structure
+   ```json
+   {
+     "type": "excuse.requested",
+     "ticketId": "<ObjectId>",
+     "studentId": <long>,
+     "studentName": "<string>",
+     "groupId": <long>,
+     "lessonIds": [<long>, ...],
+     "excuseType": "<lowercase>",
+     "comment": "<string|null>",
+     "createdAt": "<ISO-8601>"
+   }
+   ```
+
+2. **Test implementation** (`ExcuseEventContractTest.java`):
+   - Create ExcuseTicket via API
+   - Capture event from RabbitMQ test queue
+   - Parse JSON; compare against fixture schema
+   - Verify all fields populated (no null where required)
+
+3. **Validation**: All ExcuseType enum values appear in events (sample one event per type)
+
+**RabbitMQ event `excuse.decided` (AC-8):**
+
+1. **Schema**:
+   ```json
+   {
+     "type": "excuse.decided",
+     "ticketId": "<ObjectId>",
+     "studentId": <long>,
+     "decisionBy": <long>,
+     "status": "<approved|rejected>",
+     "decisionComment": "<string>",
+     "decidedAt": "<ISO-8601>"
+   }
+   ```
+
+2. **Bot handler test** (`test_excuse_decided.py`):
+   - Mock RabbitMQ consumer receives event
+   - Handler parses and calls `send_student_alert()`
+   - Verify bot sends Telegram message with correct decision + decisionComment
+
+### Invariants to Verify (Branch Coverage & State Checks)
+
+| Invariant | How Verified | Coverage Target |
+|-----------|--------------|-----------------|
+| One active ticket per (studentId, lessonId) | Query DB after create; only 1 with status PENDING/APPROVED | ≥ 80% branch coverage on duplicate check logic |
+| Only own tickets visible to STUDENT | Query via GET /me; verify returned tickets have studentId == JWT.sub | 100% of visibility checks |
+| Cascade atomicity: status + AttendanceRecord | Transactional test: Mongo write fails → both rollback; RabbitMQ fails → outbox mechanism | ≥ 80% |
+| Event ↔ DB consistency | Outbox pattern verified: event published IFF Mongo doc inserted (or vice versa) | All happy-path + failure paths |
+| Headman can't self-approve | Test (headman=123 creates ticket, tries to approve as 123) → 409 | 100% of self-check logic |
+| All ExcuseType enum values exercised | Unit test iterates all 6 enum values; assert each serializes/deserializes | 100% enum coverage |
+| AttendanceStatus mapping (excuseType → status) | Unit test: ILLNESS → EXCUSED, FREE_ATTENDANCE → FREE_ATTENDANCE, others → EXCUSED | 100% of mapping logic |
+
+### Test Decomposition by Wave
+
+**Wave 0 (Unit + Fast Integration, < 5 min):**
+- `ExcuseServiceTest` — CRUD logic without DB
+  - Create validation: comment length, lessonIds empty check, role check
+  - Duplicate lessonId detection (mocked repo)
+  - Enum serialization / deserialization
+  - Cascade logic: mock AttendanceWritePort, verify mark() calls
+  
+- `ExcuseAssemblerTest` — DTO ↔ Entity mapping
+  
+- `ExcuseEventPublisherTest` — event JSON structure (mock RabbitTemplate)
+
+- `frontend/student/excuses.component.spec.ts`:
+  - ExcuseType dropdown renders all 6 values
+  - Form submission calls submitExcuse() with correct payload
+  - List displays own tickets (mock API response)
+
+**Wave 1 (Integration, TestContainers, ~10 min):**
+- `ExcuseControllerIT` — full request/response cycle (real MongoDB, RabbitMQ container)
+  - AC-1: POST → 201
+  - AC-2: Duplicate → 409
+  - AC-3: Headman create → 409
+  - AC-4: Other student GET → 403
+  - AC-5: PATCH approve → cascades, attendances updated
+  - AC-6: Self-approve → 409
+
+- `ExcuseEventContractTest` — RabbitMQ event JSON schema validation (real exchange)
+
+- `schedule-service LessonsByIdsIT` — gRPC endpoint test (AC-11)
+
+- `frontend/student/excuses.component.it.ts` (if time allows):
+  - HTTP calls to real mock backend
+  - List update after create
+
+**Wave 2 (Bot Integration, ~5 min):**
+- `pytest test_excuse_decided.py` — bot consumer integration
+  - Mock RabbitMQ event received
+  - Handler parses and sends Telegram alert
+  - Verify message content
+
+**Wave 3 (E2E/Smoke, ~10 min):**
+- Manual UAT: STUDENT creates → HEADMAN approves → STUDENT sees status → Telegram alerts received
+- Regression check: existing attendance tests still green
+
+### Performance Gating
+
+| Requirement | Metric | Sampling Method | Gate |
+|-------------|--------|-----------------|------|
+| NFR-3 (p95 ≤ 200 ms) | Latency POST /excuses | Load test 100 rqs/sec for 10s; measure p95 | p95 ≤ 200 ms |
+| Database query optimization | Index usage | EXPLAIN plan on duplicate-check query | All queries use indexes on (studentId, status, lessonIds) |
+
+### Regression Checks (Existing Features)
+
+After implementing excuse tickets:
+
+- [ ] `./gradlew :services:attendance-service:attendance-app:test` — all existing tests pass (CheckinServiceTest, LessonEventServiceTest, etc.)
+- [ ] `./gradlew :services:schedule-service:schedule-app:test` — proto extension doesn't break existing gRPC rpcs
+- [ ] `cd services/notification-bot && pytest tests/` — existing headman_alerts test + attendance_marked test still pass
+- [ ] `cd frontends/web-panel && npm test -- --run` — 129 existing vitest tests pass without modification
+- [ ] `cd frontends/pwa && npm test -- --run` — 63 existing PWA tests pass
+
+### Security & Compliance Checks
+
+| Check | Test | Method |
+|-------|------|--------|
+| Role-based access control | Unauthenticated, TEACHER, ADMIN access → 403 | Integration test with @RequireRole validation |
+| Data isolation by group | Headman of group A cannot see group B tickets | Query DB; assert returned tickets all have groupId == own |
+| XSS prevention (comment field) | Store `<script>alert('xss')</script>`; render in UI → escaped | Frontend component test: `textContent` check, not `innerHTML` |
+| MongoDB injection | Pass `{"$ne": null}` in comment → treated as string, not operator | Verify Mongo doc has literal string in DB |
+| Sensitive data in RabbitMQ events | Check event payloads don't contain JWT tokens, passwords, chat_ids | Code review + event capture in integration test |
+
+### Test Data & Fixtures
+
+**Backend (Java Testcontainers):**
+- `TestData.java` — factory methods for ExcuseTicket, Student, Group, Lesson
+- MongoDB indexes auto-created by Testcontainers fixture
+- RabbitMQ exchange/queue declared in test setup
+
+**Bot (Python pytest):**
+- `tests/fixtures/excuse_requested.json` — canonical event schema
+- `conftest.py` — async event loop, mock bot, redis client
+
+**Frontend (Vitest):**
+- Mock `StudentApiService.submitExcuse()`, `getExcuseTickets()` responses
+- Mock JWT claim: `role=STUDENT, is_headman=false/true, group_id=1`
+
+---
+
+## Metadata
+
+**Validation Confidence:** HIGH
+- Existing Testcontainers infrastructure in place (CheckinIntegrationTest precedent)
+- Event-driven patterns established (RabbitMQ + bot integration proven in v5.0)
+- Role-based access control patterns well-tested in existing layers
+- Test durations estimated conservatively; actual may be faster
+
+**Sampling Rationale:**
+- Input dimensions selected to cover decision boundaries (role, ownership, enum values)
+- Failure modes address infrastructure risks (RabbitMQ, gRPC, race conditions)
+- Invariant tests ensure domain rules (unique active ticket, isolation, atomicity)
+- Contract tests guarantee bot integration (D-27 requirement)
+
+**Valid Until:** 2026-05-14 (30 days — stable microservice architecture)

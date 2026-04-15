@@ -150,6 +150,7 @@ async def test_dispatcher_has_eight_event_types():
         # 59-06 / D-28: student notification on excuse decision
         "excuse.decided",
         "late_checkin.requested",
+        "late_checkin.decided",
         "lesson.closed",
         "attendance.marked",
         # 58-07 / BUG-006-6

@@ -13,7 +13,7 @@ the attendance-service is authoritative.
 
 import logging
 
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
 logger = logging.getLogger(__name__)

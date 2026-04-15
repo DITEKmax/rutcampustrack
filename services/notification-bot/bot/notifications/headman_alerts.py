@@ -64,10 +64,12 @@ async def handle_headman_alert(
         request_id = payload.get("request_id")
         if request_id:
             reply_markup = InlineKeyboardMarkup(
-                inline_keyboard=[[
-                    InlineKeyboardButton(text="✅ Подтвердить", callback_data=f"lcr:approve:{request_id}"),
-                    InlineKeyboardButton(text="❌ Отклонить", callback_data=f"lcr:reject:{request_id}"),
-                ]]
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(text="✅ Подтвердить", callback_data=f"lcr:approve:{request_id}"),
+                        InlineKeyboardButton(text="❌ Отклонить", callback_data=f"lcr:reject:{request_id}"),
+                    ]
+                ]
             )
         else:
             logger.warning("late_checkin.requested missing request_id, sending without buttons")

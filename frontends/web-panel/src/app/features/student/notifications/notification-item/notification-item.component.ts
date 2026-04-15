@@ -62,6 +62,12 @@ export class NotificationItemComponent {
       case 'homework.published': return 'Новое задание';
       case 'homework.updated': return 'Задание обновлено';
       case 'attendance.marked': return 'Посещаемость подтверждена';
+      case 'late_checkin.decided': return this.isApproved
+        ? 'Отметка подтверждена'
+        : 'Отметка отклонена';
+      case 'excuse.decided': return this.isApproved
+        ? 'Уваж. причина одобрена'
+        : 'Уваж. причина отклонена';
       default: return 'Уведомление';
     }
   }
@@ -73,6 +79,9 @@ export class NotificationItemComponent {
       case 'homework.published': return 'ph-notebook ph-fill';
       case 'homework.updated': return 'ph-pencil-simple ph-fill';
       case 'attendance.marked': return 'ph-check-circle ph-fill';
+      case 'late_checkin.decided':
+      case 'excuse.decided':
+        return this.isApproved ? 'ph-check-circle ph-fill' : 'ph-x-circle ph-fill';
       default: return 'ph-bell';
     }
   }
@@ -84,6 +93,9 @@ export class NotificationItemComponent {
       case 'homework.published': return 'icon-secondary';
       case 'homework.updated': return 'icon-warning';
       case 'attendance.marked': return 'icon-primary';
+      case 'late_checkin.decided':
+      case 'excuse.decided':
+        return this.isApproved ? 'icon-primary' : 'icon-warning';
       default: return 'icon-muted';
     }
   }
@@ -92,14 +104,31 @@ export class NotificationItemComponent {
     const p = this.item.payload;
     const subjectName = (p['subject_name'] ?? p['subjectName'] ?? 'Пара') as string;
     const title = (p['title'] ?? '') as string;
+    const lessonNumber = p['lesson_number'] ?? p['lessonNumber'];
+    const lessonDate = (p['lesson_date'] ?? p['lessonDate'] ?? '') as string;
     switch (this.item.type) {
       case 'lesson.started': return `${subjectName} — отметьтесь!`;
       case 'lesson.cancelled': return `${subjectName} — пара отменена`;
       case 'homework.published': return `Новое ДЗ по ${subjectName}: ${title}`;
       case 'homework.updated': return `ДЗ по ${subjectName} обновлено: ${title}`;
       case 'attendance.marked': return '';
+      case 'late_checkin.decided': {
+        const suffix = this.isApproved ? 'принята' : 'отклонена';
+        const lessonPart = lessonNumber ? ` — пара №${lessonNumber}` : '';
+        const datePart = lessonDate ? ` (${lessonDate})` : '';
+        return `${subjectName}${lessonPart}: староста ${suffix}${datePart}`;
+      }
+      case 'excuse.decided': {
+        const suffix = this.isApproved ? 'одобрил' : 'отклонил';
+        return `Староста ${suffix} заявку об уважительной причине`;
+      }
       default: return '';
     }
+  }
+
+  private get isApproved(): boolean {
+    const raw = this.item.payload['status'];
+    return typeof raw === 'string' && raw.toLowerCase() === 'approved';
   }
 
   get relativeTime(): string {

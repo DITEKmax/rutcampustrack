@@ -78,6 +78,7 @@
             [subjectName]="(getSubjectName$(lesson.subjectId) | async) ?? 'Предмет'"
             [expanded]="expandedLessonId() === lesson.id"
             [personalStatus]="personalStatusFor(lesson.id)"
+            [personalSource]="personalSourceFor(lesson.id)"
             [lateCheckinSent]="isLateCheckinSent(lesson.id)"
             [lateCheckinPending]="isLateCheckinPending(lesson.id)"
             [lateCheckinError]="getLateCheckinError(lesson.id)"

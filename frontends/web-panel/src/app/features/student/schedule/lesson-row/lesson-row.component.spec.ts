@@ -117,6 +117,20 @@ describe('LessonRowComponent', () => {
     expect(toggle).not.toHaveBeenCalled();
   });
 
+  it('shows "+" instead of "б" when present lesson came from late_checkin source', async () => {
+    await render(LessonRowComponent, {
+      providers: [provideNoopAnimations()],
+      componentInputs: {
+        lesson: baseLesson,
+        subjectName: 'Математика',
+        personalStatus: 'present',
+        personalSource: 'late_checkin',
+      },
+    });
+    const chip = screen.getByText('+');
+    expect(chip.className).toContain('status-chip--present');
+  });
+
   it('uses a personal attendance status chip when personalStatus is provided', async () => {
     await render(LessonRowComponent, {
       providers: [provideNoopAnimations()],

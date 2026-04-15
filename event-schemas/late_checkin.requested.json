@@ -16,7 +16,10 @@
         "group_id": { "type": "integer" },
         "lesson_id": { "type": "integer" },
         "student_name": { "type": "string" },
-        "lesson_date": { "type": "string", "format": "date" }
+        "lesson_date": { "type": "string", "format": "date" },
+        "lesson_number": { "type": "integer" },
+        "subject_id": { "type": "integer" },
+        "subject_name": { "type": "string" }
       }
     }
   }

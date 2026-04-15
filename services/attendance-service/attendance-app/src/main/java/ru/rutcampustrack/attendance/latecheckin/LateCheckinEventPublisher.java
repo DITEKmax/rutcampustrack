@@ -35,7 +35,13 @@ public class LateCheckinEventPublisher {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void publishRequested(LateCheckinRequest request, LocalDate lessonDate) {
+    public void publishRequested(
+            LateCheckinRequest request,
+            LocalDate lessonDate,
+            Integer lessonNumber,
+            Long subjectId,
+            String subjectName
+    ) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("request_id", request.getId());
         payload.put("user_id", request.getStudentId());
@@ -43,11 +49,20 @@ public class LateCheckinEventPublisher {
         payload.put("lesson_id", request.getLessonId());
         payload.put("student_name", request.getStudentName());
         payload.put("lesson_date", lessonDate != null ? lessonDate.toString() : null);
+        payload.put("lesson_number", lessonNumber);
+        payload.put("subject_id", subjectId);
+        payload.put("subject_name", subjectName);
 
         rabbitTemplate.convertAndSend(EXCHANGE, "", buildEnvelope(EVENT_REQUESTED, payload));
     }
 
-    public void publishDecided(LateCheckinRequest request) {
+    public void publishDecided(
+            LateCheckinRequest request,
+            LocalDate lessonDate,
+            Integer lessonNumber,
+            Long subjectId,
+            String subjectName
+    ) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("request_id", request.getId());
         payload.put("user_id", request.getStudentId());
@@ -58,6 +73,10 @@ public class LateCheckinEventPublisher {
                 request.getStatus() != null ? request.getStatus().name().toLowerCase() : null);
         payload.put("decided_at",
                 request.getDecisionAt() != null ? request.getDecisionAt().toString() : null);
+        payload.put("lesson_date", lessonDate != null ? lessonDate.toString() : null);
+        payload.put("lesson_number", lessonNumber);
+        payload.put("subject_id", subjectId);
+        payload.put("subject_name", subjectName);
 
         rabbitTemplate.convertAndSend(EXCHANGE, "", buildEnvelope(EVENT_DECIDED, payload));
     }

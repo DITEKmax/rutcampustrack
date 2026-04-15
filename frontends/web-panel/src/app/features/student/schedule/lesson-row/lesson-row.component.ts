@@ -41,6 +41,7 @@ export class LessonRowComponent {
   @Input({ required: true }) lesson!: LessonResponse;
   @Input() subjectName = 'Предмет';
   @Input() personalStatus: AttendanceStatus | null = null;
+  @Input() personalSource: string | null = null;
   @Input() expanded = false;
   @Input() lateCheckinSent = false;
   @Input() lateCheckinPending = false;
@@ -74,7 +75,10 @@ export class LessonRowComponent {
   }
 
   get statusLabel(): string {
-    if (this.personalStatus === 'present') return 'б';
+    if (this.personalStatus === 'present') {
+      const src = (this.personalSource ?? '').toLowerCase();
+      return src === 'late_checkin' ? '+' : 'б';
+    }
     if (this.personalStatus === 'absent') return 'н';
     if (this.personalStatus === 'excused') return 'у';
     if (this.personalStatus === 'free_attendance') return 'сп';

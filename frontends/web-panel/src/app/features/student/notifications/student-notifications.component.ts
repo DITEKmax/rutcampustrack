@@ -4,14 +4,30 @@ import {
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { AuthService } from '../../../core/auth/auth.service';
 import { StudentStompService } from '../shared/student-stomp.service';
 import { StudentNotificationBadgeService } from '../shared/student-notification-badge.service';
 import type { NotificationItem } from '../shared/student-schedule.types';
 import { NotificationItemComponent } from './notification-item/notification-item.component';
 
+/**
+ * Events that carry a user_id and MUST only be stored if that id matches
+ * the current user. Prevents showing "your excuse was approved" to
+ * everyone in the group when the broker fans out via /topic/group/{id}.
+ */
+const USER_SCOPED_TYPES = new Set(['late_checkin.decided', 'excuse.decided']);
+
 const STORAGE_KEY = 'rct-notifications';
 const MAX_ITEMS = 100;
-const STORED_TYPES = ['lesson.started', 'lesson.cancelled', 'homework.published', 'homework.updated', 'attendance.marked'];
+const STORED_TYPES = [
+  'lesson.started',
+  'lesson.cancelled',
+  'homework.published',
+  'homework.updated',
+  'attendance.marked',
+  'late_checkin.decided',
+  'excuse.decided',
+];
 
 @Component({
   selector: 'app-student-notifications',
@@ -32,6 +48,7 @@ const STORED_TYPES = ['lesson.started', 'lesson.cancelled', 'homework.published'
 export class StudentNotificationsComponent implements OnInit {
   private readonly stompService = inject(StudentStompService);
   private readonly badgeService = inject(StudentNotificationBadgeService);
+  private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly items = signal<NotificationItem[]>(this.loadFromStorage());
@@ -59,6 +76,11 @@ export class StudentNotificationsComponent implements OnInit {
       .subscribe({
         next: envelope => {
           if (!STORED_TYPES.includes(envelope.type)) return;
+          if (USER_SCOPED_TYPES.has(envelope.type)) {
+            const currentUserId = this.auth.currentUser()?.id;
+            const payloadUserId = envelope.payload?.['user_id'];
+            if (currentUserId == null || payloadUserId !== currentUserId) return;
+          }
           const newItem: NotificationItem = {
             id: crypto.randomUUID(),
             type: envelope.type,

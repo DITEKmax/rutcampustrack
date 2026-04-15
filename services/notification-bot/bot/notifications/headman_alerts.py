@@ -58,6 +58,12 @@ async def handle_headman_alert(
         text = f"Запрос у.п.\n\nСтудент: {student_name}\nТип: {excuse_type_label}"
     elif event_type == "late_checkin.requested":
         text = f"Запрос подтверждения присутствия\n\nСтудент: {student_name}"
+        subject_name = payload.get("subject_name")
+        if subject_name:
+            text += f"\nПредмет: {subject_name}"
+        lesson_number = payload.get("lesson_number")
+        if lesson_number:
+            text += f"\nПара: №{lesson_number}"
         lesson_date = payload.get("lesson_date")
         if lesson_date:
             text += f"\nДата: {lesson_date}"

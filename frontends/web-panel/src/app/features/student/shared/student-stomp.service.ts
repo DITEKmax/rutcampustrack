@@ -8,7 +8,15 @@ import type {
 } from './student-schedule.types';
 import { StudentNotificationBadgeService } from './student-notification-badge.service';
 
-const STORED_TYPES = ['lesson.started', 'lesson.cancelled', 'homework.published', 'homework.updated', 'attendance.marked'];
+const STORED_TYPES = [
+  'lesson.started',
+  'lesson.cancelled',
+  'homework.published',
+  'homework.updated',
+  'attendance.marked',
+  'late_checkin.decided',
+  'excuse.decided',
+];
 
 /**
  * STOMP subscription service for the student cabinet.

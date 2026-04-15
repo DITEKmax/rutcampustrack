@@ -39,7 +39,10 @@
 
               @for (record of group.records; track record.lessonId) {
                 <div class="checkin-table__row" role="row">
-                  <span class="cell-lesson" role="cell">Занятие {{ record.lessonNumber }}</span>
+                  <div class="cell-lesson" role="cell">
+                    <span class="cell-lesson__subject">{{ (getSubjectName$(record.subjectId) | async) ?? 'Предмет' }}</span>
+                    <span class="cell-lesson__meta">Пара №{{ record.lessonNumber }}</span>
+                  </div>
                   <span
                     class="status-chip status-chip--absent"
                     [attr.aria-label]="'Статус: пропущено'"

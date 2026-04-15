@@ -4,6 +4,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { StudentApiService } from '../shared/student-api.service';
+import { SubjectCacheService } from '../shared/subject-cache.service';
 import type { AttendanceRecord } from '../shared/student-schedule.types';
 
 interface DayGroup {
@@ -44,6 +45,12 @@ function formatDayLabel(isoDate: string): string {
 })
 export class StudentLateCheckinComponent implements OnInit {
   private readonly apiService = inject(StudentApiService);
+  private readonly subjectCache = inject(SubjectCacheService);
+
+  /** Observable subject-name for the async pipe. */
+  getSubjectName$(subjectId: number) {
+    return this.subjectCache.getName(subjectId);
+  }
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);

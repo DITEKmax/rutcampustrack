@@ -49,6 +49,9 @@ def _make_late_checkin_event(
     lesson_id: int = 101,
     student_name: str = None,
     lesson_date: str = None,
+    subject_name: str = None,
+    lesson_number: int = None,
+    request_id: str = None,
 ):
     payload = {
         "user_id": user_id,
@@ -59,6 +62,12 @@ def _make_late_checkin_event(
         payload["student_name"] = student_name
     if lesson_date is not None:
         payload["lesson_date"] = lesson_date
+    if subject_name is not None:
+        payload["subject_name"] = subject_name
+    if lesson_number is not None:
+        payload["lesson_number"] = lesson_number
+    if request_id is not None:
+        payload["request_id"] = request_id
     return {
         "event_type": "late_checkin.requested",
         "payload": payload,
@@ -205,6 +214,49 @@ async def test_late_checkin_text_contains_student_name_from_payload():
     assert "Василий Васильев" in text
     # lesson_date should be present
     assert "2024-03-15" in text
+
+
+@pytest.mark.asyncio
+async def test_late_checkin_text_contains_subject_and_lesson_number():
+    """late_checkin.requested shows subject_name and lesson_number when payload provides them."""
+    members = [
+        _make_member(user_id=1, telegram_id=111, is_headman=False),
+        _make_member(user_id=2, telegram_id=222, is_headman=True, display_name="Старостин"),
+    ]
+
+    bot = MagicMock()
+    bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+
+    academic_client = MagicMock()
+    academic_client.get_group_members = AsyncMock(return_value=members)
+
+    captured_tasks = []
+    send_queue = MagicMock()
+
+    async def capture_put(task):
+        captured_tasks.append(task)
+
+    send_queue.put = capture_put
+
+    await handle_headman_alert(
+        _make_late_checkin_event(
+            user_id=1,
+            student_name="Василий Васильев",
+            lesson_date="2024-03-15",
+            subject_name="Математический анализ",
+            lesson_number=3,
+        ),
+        bot=bot,
+        academic_client=academic_client,
+        send_queue=send_queue,
+    )
+
+    assert len(captured_tasks) == 1
+    await captured_tasks[0].coroutine_factory()
+
+    text = bot.send_message.call_args.kwargs.get("text", "")
+    assert "Математический анализ" in text
+    assert "№3" in text
 
 
 @pytest.mark.asyncio

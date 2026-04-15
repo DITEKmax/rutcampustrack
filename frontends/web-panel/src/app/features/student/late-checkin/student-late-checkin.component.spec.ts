@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 import { StudentLateCheckinComponent } from './student-late-checkin.component';
 import { StudentApiService } from '../shared/student-api.service';
+import { SubjectCacheService } from '../shared/subject-cache.service';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -23,6 +24,10 @@ const mockApiService = {
   requestLateCheckin: vi.fn(),
 };
 
+const mockSubjectCache = {
+  getName: vi.fn(() => of('Математика')),
+};
+
 describe('StudentLateCheckinComponent', () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -38,6 +43,7 @@ describe('StudentLateCheckinComponent', () => {
       providers: [
         provideNoopAnimations(),
         { provide: StudentApiService, useValue: mockApiService },
+        { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],
     });
     // Only lesson 1 is absent — should appear as a row with "Запросить отметку"
@@ -53,6 +59,7 @@ describe('StudentLateCheckinComponent', () => {
       providers: [
         provideNoopAnimations(),
         { provide: StudentApiService, useValue: mockApiService },
+        { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],
     });
     expect(screen.getByText('Нет пропущенных занятий')).toBeTruthy();
@@ -66,6 +73,7 @@ describe('StudentLateCheckinComponent', () => {
       providers: [
         provideNoopAnimations(),
         { provide: StudentApiService, useValue: mockApiService },
+        { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],
     });
     const btn = screen.getByText('Запросить отметку');
@@ -85,6 +93,7 @@ describe('StudentLateCheckinComponent', () => {
       providers: [
         provideNoopAnimations(),
         { provide: StudentApiService, useValue: mockApiService },
+        { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],
     });
     // Two day-group headings
@@ -103,6 +112,7 @@ describe('StudentLateCheckinComponent', () => {
       providers: [
         provideNoopAnimations(),
         { provide: StudentApiService, useValue: mockApiService },
+        { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],
     });
     const btn = screen.getByText('Запросить отметку');

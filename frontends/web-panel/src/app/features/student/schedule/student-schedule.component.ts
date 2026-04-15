@@ -28,6 +28,11 @@ import type {
   AttendanceStatus,
   LessonResponse,
 } from '../shared/student-schedule.types';
+
+export interface PersonalLessonState {
+  status: AttendanceStatus;
+  source: string;
+}
 import { LessonRowComponent } from './lesson-row/lesson-row.component';
 import { ExcuseFormDialogComponent } from '../excuses/excuse-form-dialog/excuse-form-dialog.component';
 import {
@@ -107,7 +112,7 @@ export class StudentScheduleComponent implements OnInit {
   readonly currentWeekStart = signal<Date>(getMonday(new Date()));
   readonly selectedDayIndex = signal<number>(getTodayDayIndex());
   readonly lessons = signal<LessonResponse[]>([]);
-  readonly personalStatusByLessonId = signal<Map<number, AttendanceStatus>>(new Map());
+  readonly personalStateByLessonId = signal<Map<number, PersonalLessonState>>(new Map());
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
   readonly expandedLessonId = signal<number | null>(null);
@@ -159,19 +164,19 @@ export class StudentScheduleComponent implements OnInit {
       .subscribe({
         next: ({ lessons, records }) => {
           this.lessons.set(lessons);
-          const map = new Map<number, AttendanceStatus>();
+          const map = new Map<number, PersonalLessonState>();
           for (const r of records) {
             if (r.status === 'present' || r.status === 'absent'
                 || r.status === 'excused' || r.status === 'free_attendance') {
-              map.set(r.lessonId, r.status);
+              map.set(r.lessonId, { status: r.status, source: r.source });
             }
           }
-          this.personalStatusByLessonId.set(map);
+          this.personalStateByLessonId.set(map);
           this.loading.set(false);
         },
         error: () => {
           this.lessons.set([]);
-          this.personalStatusByLessonId.set(new Map());
+          this.personalStateByLessonId.set(new Map());
           this.error.set('Не удалось загрузить расписание. Попробуйте позже.');
           this.loading.set(false);
         },
@@ -179,7 +184,11 @@ export class StudentScheduleComponent implements OnInit {
   }
 
   personalStatusFor(lessonId: number): AttendanceStatus | null {
-    return this.personalStatusByLessonId().get(lessonId) ?? null;
+    return this.personalStateByLessonId().get(lessonId)?.status ?? null;
+  }
+
+  personalSourceFor(lessonId: number): string | null {
+    return this.personalStateByLessonId().get(lessonId)?.source ?? null;
   }
 
   isLateCheckinSent(lessonId: number): boolean {

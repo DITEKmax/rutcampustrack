@@ -18,7 +18,11 @@
         "lesson_id": { "type": "integer" },
         "decision_by": { "type": ["integer", "null"], "description": "Telegram user_id старосты, принявшего решение" },
         "status": { "enum": ["approved", "rejected"] },
-        "decided_at": { "type": "string", "format": "date-time" }
+        "decided_at": { "type": "string", "format": "date-time" },
+        "lesson_date": { "type": "string", "format": "date" },
+        "lesson_number": { "type": "integer" },
+        "subject_id": { "type": "integer" },
+        "subject_name": { "type": "string" }
       }
     }
   }

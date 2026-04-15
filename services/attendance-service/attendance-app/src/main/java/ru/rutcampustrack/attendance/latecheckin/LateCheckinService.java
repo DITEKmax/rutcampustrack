@@ -111,7 +111,16 @@ public class LateCheckinService {
         LateCheckinRequest saved = repository.save(request);
 
         LocalDate lessonDate = lesson.getDate() == null ? null : LocalDate.parse(lesson.getDate());
-        eventPublisher.publishRequested(saved, lessonDate);
+        String subjectName = academicGrpcClient
+                .getSubjectsByIds(java.util.List.of(lesson.getSubjectId()))
+                .get(lesson.getSubjectId());
+        eventPublisher.publishRequested(
+                saved,
+                lessonDate,
+                lesson.getLessonNumber(),
+                lesson.getSubjectId(),
+                subjectName
+        );
 
         return saved;
     }
@@ -150,6 +159,17 @@ public class LateCheckinService {
                     AttendanceSource.LATE_CHECKIN);
         }
 
-        eventPublisher.publishDecided(saved);
+        LessonResponse lesson = scheduleGrpcClient.getLessonById(saved.getLessonId());
+        LocalDate lessonDate = lesson.getDate() == null ? null : LocalDate.parse(lesson.getDate());
+        String subjectName = academicGrpcClient
+                .getSubjectsByIds(java.util.List.of(lesson.getSubjectId()))
+                .get(lesson.getSubjectId());
+        eventPublisher.publishDecided(
+                saved,
+                lessonDate,
+                lesson.getLessonNumber(),
+                lesson.getSubjectId(),
+                subjectName
+        );
     }
 }

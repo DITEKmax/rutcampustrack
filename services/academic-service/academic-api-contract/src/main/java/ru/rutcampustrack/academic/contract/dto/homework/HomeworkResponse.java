@@ -2,11 +2,15 @@ package ru.rutcampustrack.academic.contract.dto.homework;
 
 import org.springframework.hateoas.RepresentationModel;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 /**
  * Response DTO for a homework assignment with HATEOAS links.
  * The {@code completed} flag is per-student, derived from HomeworkCompletion records.
+ *
+ * <p>Phase 61 / D-01: {@code lessonDate} + {@code lessonNumber} определяют пару, к которой
+ * привязано задание. Привязка фиксируется при create и не редактируется (см. D-04/D-05).
  */
 public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
 
@@ -21,12 +25,15 @@ public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
     /** Per-student completion flag populated from HomeworkCompletion table. */
     private boolean completed;
     private OffsetDateTime createdAt;
+    private LocalDate lessonDate;
+    private Integer lessonNumber;
 
     public HomeworkResponse() {}
 
     public HomeworkResponse(Long id, String title, String description, String link,
                             Long subjectId, Long groupId, Long semesterId,
-                            Long publishedBy, boolean completed, OffsetDateTime createdAt) {
+                            Long publishedBy, boolean completed, OffsetDateTime createdAt,
+                            LocalDate lessonDate, Integer lessonNumber) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -37,6 +44,8 @@ public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
         this.publishedBy = publishedBy;
         this.completed = completed;
         this.createdAt = createdAt;
+        this.lessonDate = lessonDate;
+        this.lessonNumber = lessonNumber;
     }
 
     public Long getId() { return id; }
@@ -68,4 +77,10 @@ public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDate getLessonDate() { return lessonDate; }
+    public void setLessonDate(LocalDate lessonDate) { this.lessonDate = lessonDate; }
+
+    public Integer getLessonNumber() { return lessonNumber; }
+    public void setLessonNumber(Integer lessonNumber) { this.lessonNumber = lessonNumber; }
 }

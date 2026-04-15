@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -25,9 +27,13 @@ public class Homework {
     @Column(name = "semester_id", nullable = false)
     private Long semesterId;
 
-    @Setter
-    @Column(name = "lesson_id")
-    private Long lessonId;
+    /** Phase 61 / D-01: календарная дата пары, к которой привязано ДЗ. */
+    @Column(name = "lesson_date", nullable = false)
+    private LocalDate lessonDate;
+
+    /** Phase 61 / D-01: номер пары в дне (1..8). */
+    @Column(name = "lesson_number", nullable = false)
+    private Integer lessonNumber;
 
     @Setter
     @Column(nullable = false, length = 500)
@@ -52,7 +58,8 @@ public class Homework {
     private OffsetDateTime updatedAt;
 
     public Homework(Long groupId, Long subjectId, Long semesterId,
-                    String title, String description, String link, Long publishedBy) {
+                    String title, String description, String link, Long publishedBy,
+                    LocalDate lessonDate, Integer lessonNumber) {
         this.groupId = groupId;
         this.subjectId = subjectId;
         this.semesterId = semesterId;
@@ -60,6 +67,8 @@ public class Homework {
         this.description = description;
         this.link = link;
         this.publishedBy = publishedBy;
+        this.lessonDate = lessonDate;
+        this.lessonNumber = lessonNumber;
     }
 
     @PrePersist

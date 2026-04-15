@@ -359,7 +359,8 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
 
         homeworkService.createHomework(new CreateHomeworkRequest(
                 "HW Title", "description", null,
-                testSubject.getId(), groupA.getId(), testSemester.getId()
+                testSubject.getId(), groupA.getId(), testSemester.getId(),
+                java.time.LocalDate.now().plusDays(1), 1
         ));
 
         Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
@@ -384,7 +385,8 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
         // Save a homework directly via repository to bypass permission checks for setup
         Homework homework = new Homework(
                 groupA.getId(), testSubject.getId(), testSemester.getId(),
-                "Original Title", "description", null, testUser.getId()
+                "Original Title", "description", null, testUser.getId(),
+                java.time.LocalDate.now().plusDays(1), 1
         );
         homework = homeworkRepository.save(homework);
 

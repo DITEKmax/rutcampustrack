@@ -32,6 +32,8 @@ public class HomeworkAssembler implements RepresentationModelAssembler<Homework,
         response.setPublishedBy(homework.getPublishedBy());
         response.setCompleted(completed);
         response.setCreatedAt(homework.getCreatedAt());
+        response.setLessonDate(homework.getLessonDate());
+        response.setLessonNumber(homework.getLessonNumber());
 
         return EntityModel.of(response,
                 linkTo(methodOn(HomeworkController.class).getHomework(homework.getId())).withSelfRel()

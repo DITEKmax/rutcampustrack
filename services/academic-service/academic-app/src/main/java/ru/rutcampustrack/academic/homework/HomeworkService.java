@@ -71,7 +71,8 @@ public class HomeworkService {
         Homework homework = new Homework(
                 request.groupId(), request.subjectId(), request.semesterId(),
                 request.title(), request.description(), request.link(),
-                requestContext.getUserId()
+                requestContext.getUserId(),
+                request.lessonDate(), request.lessonNumber()
         );
         Homework saved = homeworkRepository.save(homework);
         eventPublisher.publishEvent(new HomeworkPublishedEvent(

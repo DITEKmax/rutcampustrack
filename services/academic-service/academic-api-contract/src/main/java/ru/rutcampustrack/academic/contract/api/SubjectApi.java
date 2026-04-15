@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.SubjectResponse;
 import ru.rutcampustrack.academic.contract.dto.subject.UpdateSubjectRequest;
@@ -65,15 +66,19 @@ public interface SubjectApi {
             @PathVariable Long id,
             @Valid @RequestBody UpdateSubjectRequest request);
 
-    @Operation(summary = "Удалить предмет (HEADMAN/ADMIN)")
+    @Operation(summary = "Удалить предмет (HEADMAN/ADMIN)",
+            description = "Если у предмета есть уроки с историей посещаемости, " +
+                    "возвращается 409 со счётчиками в extras. Повторный запрос " +
+                    "с force=true пропускает pre-check и удаляет данные каскадно.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Предмет удалён"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
             @ApiResponse(responseCode = "404", description = "Предмет не найден"),
-            @ApiResponse(responseCode = "409", description = "Предмет используется в расписании")
+            @ApiResponse(responseCode = "409", description = "Предмет используется в расписании (есть посещаемость)")
     })
     @DeleteMapping("/{id}")
-    ResponseEntity<Void> deleteSubject(@PathVariable Long id);
+    ResponseEntity<Void> deleteSubject(@PathVariable Long id,
+                                        @RequestParam(name = "force", defaultValue = "false") boolean force);
 
     // =========================================================================
     // Phase 60-01 / D-19: управление преподавателями существующего предмета

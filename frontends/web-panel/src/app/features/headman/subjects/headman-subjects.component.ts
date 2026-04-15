@@ -257,24 +257,53 @@ export class HeadmanSubjectsComponent implements OnInit {
 
   openDeleteDialog(subject: any): void {
     const ref = this.dialog.open(DeleteSubjectDialogComponent, {
-      data: { subjectName: subject.name },
+      data: { subjectName: subject.name, cascade: null },
       ariaLabel: 'Подтверждение удаления',
     });
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
-      this.headmanApi.deleteSubject(subject.id).subscribe({
-        next: () => {
-          this.snackBar.open('Предмет удалён.', undefined, { duration: 4000 });
-          this.loadSubjects();
-        },
-        error: (err) => {
-          if (err.status === 409) {
-            this.snackBar.open('Нельзя удалить предмет с записями посещаемости.', undefined, { duration: 6000 });
-          } else {
-            this.snackBar.open('Не удалось удалить предмет.', undefined, { duration: 6000 });
-          }
-        },
-      });
+      this.attemptDelete(subject, false);
+    });
+  }
+
+  /**
+   * Пытается удалить предмет. На 409 с extras — открывает второй диалог с
+   * предупреждением о потере данных посещаемости. Если староста подтверждает,
+   * повторный вызов уходит с force=true.
+   */
+  private attemptDelete(subject: any, force: boolean): void {
+    this.headmanApi.deleteSubject(subject.id, force).subscribe({
+      next: () => {
+        this.snackBar.open('Предмет удалён.', undefined, { duration: 4000 });
+        this.loadSubjects();
+      },
+      error: (err) => {
+        const extras = err?.error?.extras;
+        if (err.status === 409 && extras && typeof extras === 'object') {
+          const ref = this.dialog.open(DeleteSubjectDialogComponent, {
+            data: {
+              subjectName: subject.name,
+              cascade: {
+                scheduleItemsCount: Number(extras.scheduleItemsCount ?? 0),
+                oneOffLessonsCount: Number(extras.oneOffLessonsCount ?? 0),
+                nonPlannedLessonsCount: Number(extras.nonPlannedLessonsCount ?? 0),
+                totalLessonsCount: Number(extras.totalLessonsCount ?? 0),
+              },
+            },
+            width: '520px',
+            ariaLabel: 'Подтверждение удаления с данными посещаемости',
+          });
+          ref.afterClosed().subscribe(confirmed => {
+            if (confirmed) this.attemptDelete(subject, true);
+          });
+          return;
+        }
+        if (err.status === 409) {
+          this.snackBar.open('Нельзя удалить предмет с записями посещаемости.', undefined, { duration: 6000 });
+          return;
+        }
+        this.snackBar.open('Не удалось удалить предмет.', undefined, { duration: 6000 });
+      },
     });
   }
 }

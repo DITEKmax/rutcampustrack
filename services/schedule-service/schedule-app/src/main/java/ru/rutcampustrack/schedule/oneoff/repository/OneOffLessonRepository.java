@@ -14,4 +14,9 @@ public interface OneOffLessonRepository extends JpaRepository<OneOffLesson, Long
     boolean existsByGroupIdAndDateAndLessonNumber(Long groupId, LocalDate date, Short lessonNumber);
 
     Optional<OneOffLesson> findByGroupIdAndDateAndLessonNumber(Long groupId, LocalDate date, Short lessonNumber);
+
+    /** Used by subject.deleted cascade — returns all one-off rows for subject. */
+    List<OneOffLesson> findBySubjectId(Long subjectId);
+
+    long countBySubjectId(Long subjectId);
 }

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Стандартный формат ошибки по RFC 7807 Problem Details.
@@ -37,13 +38,17 @@ public record ErrorResponse(
 
         @Schema(description = "Имя поля DTO, вызвавшего конфликт (только для 409, BUG-006-2)",
                 example = "login")
-        String field
+        String field,
+
+        @Schema(description = "Дополнительные данные для клиента (например, счётчики каскадного удаления)",
+                example = "{\"scheduleItemsCount\":3,\"nonPlannedLessonsCount\":12}")
+        Map<String, Object> extras
 ) {
 
     /**
      * Backward-compatible 7-arg constructor — used by legacy call sites that do
-     * not produce a conflict-field value. Delegates to the canonical 8-arg
-     * constructor with {@code field=null}.
+     * not produce a conflict-field value. Delegates to the canonical 9-arg
+     * constructor with {@code field=null, extras=null}.
      */
     public ErrorResponse(int status,
                          String type,
@@ -52,7 +57,22 @@ public record ErrorResponse(
                          String instance,
                          Instant timestamp,
                          List<FieldError> fieldErrors) {
-        this(status, type, title, detail, instance, timestamp, fieldErrors, null);
+        this(status, type, title, detail, instance, timestamp, fieldErrors, null, null);
+    }
+
+    /**
+     * Backward-compatible 8-arg constructor — preserves {@code field} while
+     * leaving {@code extras=null}. Existing handlers keep compiling unchanged.
+     */
+    public ErrorResponse(int status,
+                         String type,
+                         String title,
+                         String detail,
+                         String instance,
+                         Instant timestamp,
+                         List<FieldError> fieldErrors,
+                         String field) {
+        this(status, type, title, detail, instance, timestamp, fieldErrors, field, null);
     }
 
     public record FieldError(

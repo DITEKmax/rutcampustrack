@@ -15,6 +15,7 @@ public class ConflictException extends RuntimeException {
 
     private final String field;
     private final Object value;
+    private final java.util.Map<String, Object> extras;
 
     /**
      * Legacy constructor — no field information. Prefer the 3-arg overload.
@@ -23,6 +24,7 @@ public class ConflictException extends RuntimeException {
         super(message);
         this.field = null;
         this.value = null;
+        this.extras = null;
     }
 
     /**
@@ -38,6 +40,19 @@ public class ConflictException extends RuntimeException {
         super(message);
         this.field = field;
         this.value = value;
+        this.extras = null;
+    }
+
+    /**
+     * Conflict with extras map — surfaced in RFC 7807 body as {@code extras}
+     * so the frontend can render counts, IDs, or structured context. Used by
+     * cascading-delete pre-checks (e.g. SubjectService.deleteSubject).
+     */
+    public ConflictException(String message, java.util.Map<String, Object> extras) {
+        super(message);
+        this.field = null;
+        this.value = null;
+        this.extras = extras;
     }
 
     public String getField() {
@@ -46,5 +61,9 @@ public class ConflictException extends RuntimeException {
 
     public Object getValue() {
         return value;
+    }
+
+    public java.util.Map<String, Object> getExtras() {
+        return extras;
     }
 }

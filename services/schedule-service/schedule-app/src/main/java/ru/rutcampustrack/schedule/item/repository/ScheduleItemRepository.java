@@ -54,4 +54,13 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, Long
                                      @Param("dayOfWeek") Short dayOfWeek,
                                      @Param("weekType") String weekType,
                                      @Param("semesterId") Long semesterId);
+
+    /**
+     * All schedule items referencing the given subject, regardless of is_active.
+     * Used by the subject.deleted cascade to collect schedule_item ids for
+     * child-lesson cleanup and physical removal.
+     */
+    List<ScheduleItem> findBySubjectId(Long subjectId);
+
+    long countBySubjectIdAndIsActiveTrue(Long subjectId);
 }

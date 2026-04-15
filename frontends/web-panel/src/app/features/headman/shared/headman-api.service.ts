@@ -171,9 +171,15 @@ export class HeadmanApiService {
     return this.http.put(`/api/academic/subjects/${id}`, body);
   }
 
-  /** Delete a subject by ID. */
-  deleteSubject(id: number): Observable<any> {
-    return this.http.delete(`/api/academic/subjects/${id}`);
+  /**
+   * Delete a subject by ID. Без force — backend вернёт 409 с `extras`
+   * (счётчики касающихся lessons), если удаление может потерять посещаемость.
+   * С `force=true` pre-check пропускается и каскад идёт до конца.
+   */
+  deleteSubject(id: number, force = false): Observable<any> {
+    let params = new HttpParams();
+    if (force) params = params.set('force', 'true');
+    return this.http.delete(`/api/academic/subjects/${id}`, { params });
   }
 
   /**

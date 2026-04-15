@@ -1,7 +1,12 @@
 package ru.rutcampustrack.schedule.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.FanoutExchange;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -27,6 +32,43 @@ public class RabbitConfig {
     @Bean
     public FanoutExchange scheduleEventsExchange() {
         return new FanoutExchange("rut-uit.events", true, false);
+    }
+
+    /**
+     * DLQ infrastructure for schedule-service consumer. Mirrors attendance-service
+     * pattern — poison messages land in a dedicated queue instead of blocking
+     * main consumer.
+     */
+    @Bean
+    public DirectExchange scheduleDlqExchange() {
+        return new DirectExchange("rut-uit.events.dlq", true, false);
+    }
+
+    @Bean
+    public Queue scheduleEventsQueue() {
+        return QueueBuilder.durable("schedule-service.events")
+                .withArgument("x-dead-letter-exchange", "rut-uit.events.dlq")
+                .withArgument("x-dead-letter-routing-key", "schedule-service.events.dlq")
+                .build();
+    }
+
+    @Bean
+    public Queue scheduleDlqQueue() {
+        return QueueBuilder.durable("schedule-service.events.dlq").build();
+    }
+
+    @Bean
+    public Binding scheduleQueueBinding(FanoutExchange scheduleEventsExchange,
+                                         Queue scheduleEventsQueue) {
+        return BindingBuilder.bind(scheduleEventsQueue).to(scheduleEventsExchange);
+    }
+
+    @Bean
+    public Binding scheduleDlqBinding(DirectExchange scheduleDlqExchange,
+                                       Queue scheduleDlqQueue) {
+        return BindingBuilder.bind(scheduleDlqQueue)
+                .to(scheduleDlqExchange)
+                .with("schedule-service.events.dlq");
     }
 
     @Bean

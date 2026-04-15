@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.subject;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -10,16 +11,21 @@ import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.TeacherSubjectGroup;
+import ru.rutcampustrack.academic.event.SubjectDeletedEvent;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
 import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -29,15 +35,21 @@ public class SubjectService {
     private final TeacherSubjectGroupRepository tsgRepository;
     private final SemesterRepository semesterRepository;
     private final RequestContext requestContext;
+    private final ScheduleGrpcClient scheduleGrpcClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     public SubjectService(SubjectRepository subjectRepository,
                           TeacherSubjectGroupRepository tsgRepository,
                           SemesterRepository semesterRepository,
-                          RequestContext requestContext) {
+                          RequestContext requestContext,
+                          ScheduleGrpcClient scheduleGrpcClient,
+                          ApplicationEventPublisher eventPublisher) {
         this.subjectRepository = subjectRepository;
         this.tsgRepository = tsgRepository;
         this.semesterRepository = semesterRepository;
         this.requestContext = requestContext;
+        this.scheduleGrpcClient = scheduleGrpcClient;
+        this.eventPublisher = eventPublisher;
     }
 
     private void requireHeadman() {
@@ -127,12 +139,41 @@ public class SubjectService {
         return subjectRepository.save(subject);
     }
 
+    /**
+     * Удаляет предмет старостой. Pre-check через schedule-service:
+     * если есть lessons вне статуса PLANNED (т.е. возможна потеря посещаемости),
+     * возвращается 409 с {@code extras}-счётчиками. Клиент может повторить с
+     * {@code force=true}, тогда pre-check пропускается и каскад идёт полностью.
+     *
+     * <p>Каскад: удаляем TSG → удаляем Subject → публикуем {@code subject.deleted}
+     * → schedule-service слушает и дропает schedule_items + one-off → это
+     * триггерит {@code lesson.deleted} → attendance-service чистит docs.
+     */
     @Transactional
-    public void deleteSubject(Long id) {
+    public void deleteSubject(Long id, boolean force) {
         Long groupId = requireHeadmanGroupId();
         Subject subject = getSubject(id);
         assertSubjectBelongsToHeadmanGroup(subject, groupId);
+
+        if (!force) {
+            CountSubjectReferencesResponse refs =
+                    scheduleGrpcClient.countSubjectReferences(id);
+            if (refs.getNonPlannedLessonsCount() > 0) {
+                Map<String, Object> extras = new LinkedHashMap<>();
+                extras.put("scheduleItemsCount", refs.getScheduleItemsCount());
+                extras.put("oneOffLessonsCount", refs.getOneOffLessonsCount());
+                extras.put("nonPlannedLessonsCount", refs.getNonPlannedLessonsCount());
+                extras.put("totalLessonsCount", refs.getTotalLessonsCount());
+                throw new ConflictException(
+                        "У предмета есть уроки с историей посещаемости. " +
+                        "Сохраните скриншоты данных и подтвердите удаление.",
+                        extras);
+            }
+        }
+
+        tsgRepository.deleteBySubjectId(id);
         subjectRepository.delete(subject);
+        eventPublisher.publishEvent(new SubjectDeletedEvent(this, id));
     }
 
     /**

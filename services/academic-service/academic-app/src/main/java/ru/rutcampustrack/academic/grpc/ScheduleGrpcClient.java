@@ -5,6 +5,8 @@ import io.grpc.StatusRuntimeException;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
+import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesRequest;
+import ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.ResolveLessonRequest;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
@@ -42,6 +44,25 @@ public class ScheduleGrpcClient {
             if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
                 return Optional.empty();
             }
+            throw new ScheduleServiceUnavailableException(
+                    "Не удалось связаться с schedule-service: " + e.getStatus(), e);
+        }
+    }
+
+    /**
+     * Pre-check перед удалением Subject: узнаём, сколько объектов расписания
+     * ссылаются на него. Если {@code non_planned_lessons_count > 0} — есть
+     * посещаемость, SubjectService вернёт 409 без force=true.
+     *
+     * <p>Любая ошибка gRPC → {@link ScheduleServiceUnavailableException} (503).
+     */
+    public CountSubjectReferencesResponse countSubjectReferences(Long subjectId) {
+        try {
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .countSubjectReferences(CountSubjectReferencesRequest.newBuilder()
+                            .setSubjectId(subjectId)
+                            .build());
+        } catch (StatusRuntimeException e) {
             throw new ScheduleServiceUnavailableException(
                     "Не удалось связаться с schedule-service: " + e.getStatus(), e);
         }

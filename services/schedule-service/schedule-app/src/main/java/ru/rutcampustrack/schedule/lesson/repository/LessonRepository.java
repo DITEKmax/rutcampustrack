@@ -127,4 +127,41 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
         ORDER BY l.date, si.end_time
         """, nativeQuery = true)
     List<Lesson> findActiveDueForClosure(@Param("now") LocalDateTime now);
+
+    /**
+     * Counts lessons whose status is NOT 'planned' (i.e. active/closed/cancelled)
+     * across all schedule_items referencing the given subject_id. Used by
+     * CountSubjectReferences gRPC to decide whether deleting the subject risks
+     * losing attendance data.
+     */
+    @Query(value = """
+        SELECT COUNT(l.id) FROM lessons l
+        JOIN schedule_items si ON si.id = l.schedule_item_id
+        WHERE si.subject_id = :subjectId
+          AND l.status::text <> 'planned'
+        """, nativeQuery = true)
+    long countNonPlannedBySubjectId(@Param("subjectId") Long subjectId);
+
+    /**
+     * Counts all lessons across schedule_items of a subject — used purely for
+     * informing the headman how many rows will be wiped.
+     */
+    @Query(value = """
+        SELECT COUNT(l.id) FROM lessons l
+        JOIN schedule_items si ON si.id = l.schedule_item_id
+        WHERE si.subject_id = :subjectId
+        """, nativeQuery = true)
+    long countAllBySubjectId(@Param("subjectId") Long subjectId);
+
+    /**
+     * Returns the ids of all lessons attached to any schedule_item of the subject.
+     * Used by the subject.deleted cascade to publish lesson.deleted BEFORE
+     * the physical delete (so attendance-service can drop docs via existing path).
+     */
+    @Query(value = """
+        SELECT l.id FROM lessons l
+        JOIN schedule_items si ON si.id = l.schedule_item_id
+        WHERE si.subject_id = :subjectId
+        """, nativeQuery = true)
+    List<Long> findIdsBySubjectId(@Param("subjectId") Long subjectId);
 }

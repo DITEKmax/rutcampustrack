@@ -124,7 +124,8 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 Instant.now(),
                 null,
-                ex.getField()
+                ex.getField(),
+                ex.getExtras()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }

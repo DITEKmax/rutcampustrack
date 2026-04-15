@@ -60,8 +60,8 @@ public class SubjectController implements SubjectApi {
 
     @Override
     @RequireRole({UserRole.STUDENT})
-    public ResponseEntity<Void> deleteSubject(Long id) {
-        subjectService.deleteSubject(id);
+    public ResponseEntity<Void> deleteSubject(Long id, boolean force) {
+        subjectService.deleteSubject(id, force);
         return ResponseEntity.noContent().build();
     }
 

@@ -12,4 +12,5 @@ public interface TeacherSubjectGroupRepository extends JpaRepository<TeacherSubj
         Long teacherId, Long subjectId, Long groupId, Long semesterId);
     void deleteByTeacherIdAndSubjectIdAndGroupIdAndSemesterId(
         Long teacherId, Long subjectId, Long groupId, Long semesterId);
+    long deleteBySubjectId(Long subjectId);
 }

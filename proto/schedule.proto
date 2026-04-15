@@ -23,6 +23,11 @@ service ScheduleGrpcService {
   // Используется academic-service для проверки существования пары перед созданием ДЗ.
   // NOT_FOUND если на дату нет lesson в статусах planned/active/closed.
   rpc ResolveLesson (ResolveLessonRequest) returns (LessonResponse);
+
+  // Подсчёт ссылок на subject в расписании для pre-check удаления Subject.
+  // Используется academic-service в SubjectService.deleteSubject:
+  // если non_planned_lessons_count > 0 → 409 Conflict с предупреждением.
+  rpc CountSubjectReferences (CountSubjectReferencesRequest) returns (CountSubjectReferencesResponse);
 }
 
 message ActiveLessonRequest {
@@ -83,4 +88,22 @@ message LessonInfo {
   int64 group_id = 2;
   int64 subject_id = 3;
   string starts_at = 4;  // ISO datetime (date + "T" + start_time)
+}
+
+message CountSubjectReferencesRequest {
+  int64 subject_id = 1;
+}
+
+message CountSubjectReferencesResponse {
+  // Количество активных (is_active=true) schedule_items с этим subject_id.
+  int64 schedule_items_count = 1;
+  // Количество one-off уроков с этим subject_id (все, независимо от даты).
+  int64 one_off_lessons_count = 2;
+  // Количество lessons со статусом active/closed/cancelled (т.е. не planned)
+  // по активным schedule_items. Если > 0 — возможна потеря посещаемости,
+  // academic-service возвращает 409 без force=true.
+  int64 non_planned_lessons_count = 3;
+  // Количество всех lessons (любой статус) по активным schedule_items +
+  // используется фронтом для информирования старосты.
+  int64 total_lessons_count = 4;
 }

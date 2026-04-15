@@ -7,6 +7,7 @@ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,11 +30,14 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
 
     private final LessonRepository lessonRepository;
     private final ScheduleItemRepository scheduleItemRepository;
+    private final OneOffLessonRepository oneOffLessonRepository;
 
     public ScheduleGrpcServiceImpl(LessonRepository lessonRepository,
-                                   ScheduleItemRepository scheduleItemRepository) {
+                                   ScheduleItemRepository scheduleItemRepository,
+                                   OneOffLessonRepository oneOffLessonRepository) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
+        this.oneOffLessonRepository = oneOffLessonRepository;
     }
 
     /**
@@ -185,6 +189,29 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
 
         responseObserver.onNext(buildResponse(lesson, item));
+        responseObserver.onCompleted();
+    }
+
+    /**
+     * Pre-check удаления Subject: academic-service зовёт этот метод, чтобы понять,
+     * потеряются ли реальные данные посещаемости при каскадном удалении.
+     * Возвращает счётчики — решение о 409 принимает academic.
+     */
+    @Override
+    public void countSubjectReferences(CountSubjectReferencesRequest request,
+                                       StreamObserver<CountSubjectReferencesResponse> responseObserver) {
+        long subjectId = request.getSubjectId();
+        long scheduleItems = scheduleItemRepository.countBySubjectIdAndIsActiveTrue(subjectId);
+        long oneOff = oneOffLessonRepository.countBySubjectId(subjectId);
+        long nonPlanned = lessonRepository.countNonPlannedBySubjectId(subjectId);
+        long total = lessonRepository.countAllBySubjectId(subjectId);
+
+        responseObserver.onNext(CountSubjectReferencesResponse.newBuilder()
+                .setScheduleItemsCount(scheduleItems)
+                .setOneOffLessonsCount(oneOff)
+                .setNonPlannedLessonsCount(nonPlanned)
+                .setTotalLessonsCount(total)
+                .build());
         responseObserver.onCompleted();
     }
 

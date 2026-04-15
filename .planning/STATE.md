@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
 status: executing
-stopped_at: Completed 61-04-PLAN.md
-last_updated: "2026-04-15T13:27:39.950Z"
+stopped_at: Completed 61-05-PLAN.md
+last_updated: "2026-04-15T13:41:24.361Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 13
   completed_phases: 3
   total_plans: 34
-  completed_plans: 31
-  percent: 91
+  completed_plans: 32
+  percent: 94
 ---
 
 # Project State
@@ -23,7 +23,7 @@ v9.0 Frontend Unification — Single Login & Role-Based Web Clients
 ## Current Position
 
 Phase: 61 (headman-homework-management-ui-homeworkapi-controller-homewo) — EXECUTING
-Plan: 5 of 7
+Plan: 6 of 7
 Plans: 0/TBD
 Status: Ready to execute
 Last activity: 2026-04-15
@@ -92,6 +92,7 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 61]: Phase 61-02: ClockConfig переключён с systemUTC на Europe/Moscow (D-03 требует сравнения lesson_date с Moscow-днём)
 - [Phase 61]: Phase 61-03: ADMIN explicitly blocked from homework write (D-06); assistant manage_homework kept for Phase 52 back-compat; author-only guard for update/delete (D-05)
 - [Phase 61]: Phase 61-04: homework events payload extended with lesson_date+lesson_number (D-07); notification-bot handle_homework.updated resolves subject via academic_client с graceful fallback
+- [Phase 61]: Phase 61-05: shared/week-navigator создан с нуля (headman-schedule не имел inline week-nav); Vitest вместо ChromeHeadless; shared/homework-card с feature-agnostic HomeworkCardModel interface для headman+student переиспользования
 
 ### Key v9.0 Architecture Decisions
 
@@ -116,7 +117,7 @@ Phases 49 and 50 are CRITICAL-PATH and completed. Phases 51-55 (Blocks B and C) 
 
 ## Session Continuity
 
-Last session: 2026-04-15T13:27:39.943Z
-Stopped at: Completed 61-04-PLAN.md
+Last session: 2026-04-15T13:41:24.354Z
+Stopped at: Completed 61-05-PLAN.md
 Next action: /gsd-verifier 58 (после UAT) или /gsd-next для следующей фазы.
 Deferred: UAT checkpoint plan 58-09 Task 2 — 13 ручных шагов через браузер (docs/phase-58-report.md Known limitations).

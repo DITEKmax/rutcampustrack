@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;16ceb578ec5b2d1db89f49bb90f39fa168b072d7555cb1182aa1c9315fad841e;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/headman/subjects/subject-dialog.component.ts"],
+  "sourcesContent": ["\n    mat-dialog-content {\n      padding-top: var(--space-4);\n    }\n  "],
+  "mappings": ";AACI;AACE,eAAa,IAAI;AACnB;",
+  "names": []
+}

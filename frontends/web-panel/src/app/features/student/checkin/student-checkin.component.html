@@ -56,6 +56,21 @@
 
         @if (isError()) {
           <p class="checkin__error" role="alert">{{ errorMessage() }}</p>
+          <button
+            type="button"
+            class="checkin__request-headman"
+            [disabled]="requestButtonDisabled()"
+            (click)="onRequestHeadmanClick()"
+          >
+            {{ requestButtonLabel() }}
+          </button>
+        }
+
+        @if (isRequestPending()) {
+          <p class="checkin__pending" role="status">
+            <i class="ph-fill ph-hourglass" aria-hidden="true"></i>
+            Запрос отправлен старосте. Ожидайте ответа в Telegram.
+          </p>
         }
       </div>
     } @else {

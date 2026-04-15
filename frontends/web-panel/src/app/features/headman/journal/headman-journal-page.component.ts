@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -10,8 +11,6 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { catchError, finalize, of } from 'rxjs';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
@@ -26,8 +25,6 @@ import type { JournalResponse } from '../../teacher/journal/types';
     FormsModule,
     MatSelectModule,
     MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
     MatProgressBarModule,
     HeadmanJournalGridComponent,
   ],
@@ -52,20 +49,28 @@ export class HeadmanJournalPageComponent implements OnInit {
   readonly subjects = signal<{ id: number; name: string }[]>([]);
   readonly selectedSubjectId = signal<number | null>(null);
 
-  readonly dateFrom = signal<string>(this.getFirstDayOfMonth());
-  readonly dateTo = signal<string>(this.getToday());
-
   readonly journalData = signal<JournalResponse | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  private getFirstDayOfMonth(): string {
-    const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+  constructor() {
+    effect(() => {
+      const id = this.selectedSubjectId();
+      if (id != null) {
+        this.loadJournal();
+      }
+    });
   }
 
   private getToday(): string {
     return new Date().toISOString().split('T')[0];
+  }
+
+  /** Backend expects an explicit range — use a wide past window; future lessons are excluded by dateTo=today. */
+  private getRangeStart(): string {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 1);
+    return d.toISOString().split('T')[0];
   }
 
   ngOnInit(): void {
@@ -92,9 +97,10 @@ export class HeadmanJournalPageComponent implements OnInit {
 
     this.loading.set(true);
     this.error.set(null);
+    this.journalData.set(null);
 
     this.headmanApi
-      .getJournal(groupId, subjectId, this.dateFrom(), this.dateTo())
+      .getJournal(groupId, subjectId, this.getRangeStart(), this.getToday())
       .pipe(
         catchError(() => {
           this.error.set(

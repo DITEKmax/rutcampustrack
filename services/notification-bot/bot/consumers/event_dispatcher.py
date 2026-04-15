@@ -105,6 +105,12 @@ class EventDispatcher:
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
             ),
+            "late_checkin.decided": lambda event: handle_student_alert(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
             "lesson.closed": lambda event: handle_lesson_closed(
                 event,
                 bot=self._bot,

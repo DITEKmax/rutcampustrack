@@ -33,3 +33,21 @@ export function mapCheckinError(status: number): string {
  */
 export const GPS_DENIED_MESSAGE =
   'Нет доступа к геолокации. Разрешите доступ в настройках браузера и попробуйте снова.';
+
+/**
+ * Map HTTP status → error message for POST /api/attendance/late-checkin/{lessonId}.
+ */
+export function mapRequestHeadmanError(status: number): string {
+  switch (status) {
+    case 403:
+      return 'Старосты отмечают себя через журнал, а не через запрос.';
+    case 404:
+      return 'Занятие не найдено.';
+    case 409:
+      return 'Запрос на эту пару уже отправлен или вы уже отмечены.';
+    case 400:
+      return 'Запрос доступен только во время активной пары.';
+    default:
+      return 'Не удалось отправить запрос старосте. Попробуйте ещё раз.';
+  }
+}

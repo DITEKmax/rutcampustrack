@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.attendance.latecheckin.LateCheckinService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ public class EventConsumer {
 
     private final LessonEventService lessonEventService;
     private final SemesterCacheService semesterCacheService;
+    private final LateCheckinService lateCheckinService;
 
     @RabbitListener(queues = "attendance-service.events")
     public void onEvent(Map<String, Object> envelope) {
@@ -40,6 +42,7 @@ public class EventConsumer {
             case "lesson.cancelled"        -> handleLessonCancelled(envelope);
             case "lesson.one_off.cancelled" -> handleOneOffLessonCancelled(envelope);
             case "semester.archived"       -> handleSemesterArchived(envelope);
+            case "late_checkin.decision"   -> handleLateCheckinDecision(envelope);
             default -> log.debug("Ignoring unknown event type: {}", eventType);
         }
     }
@@ -89,6 +92,24 @@ public class EventConsumer {
     private void handleSemesterArchived(Map<String, Object> envelope) {
         semesterCacheService.refresh();
         log.info("semester.archived: refreshed semester cache");
+    }
+
+    /**
+     * Consumed from notification-bot: headman pressed approve/reject on a late-checkin
+     * request. Payload: {@code request_id} (string), {@code decision_by} (long, telegram user_id),
+     * {@code approved} (bool).
+     */
+    private void handleLateCheckinDecision(Map<String, Object> envelope) {
+        Map<String, Object> payload = extractPayload(envelope);
+        if (payload == null) return;
+        String requestId = (String) payload.get("request_id");
+        Long decisionBy = extractLong(payload, "decision_by");
+        Object approvedRaw = payload.get("approved");
+        if (requestId == null || !(approvedRaw instanceof Boolean)) {
+            log.warn("late_checkin.decision: missing required fields, ignoring: {}", payload);
+            return;
+        }
+        lateCheckinService.applyDecision(requestId, decisionBy, (Boolean) approvedRaw);
     }
 
     @SuppressWarnings("unchecked")

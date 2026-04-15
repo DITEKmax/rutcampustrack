@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "late_checkin.decision",
+  "description": "Староста нажал кнопку одобрения/отклонения в Telegram. Публикуется notification-bot и потребляется Attendance Service для применения решения.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "late_checkin.decision" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["request_id", "approved"],
+      "properties": {
+        "request_id": { "type": "string" },
+        "approved": { "type": "boolean" },
+        "decision_by": { "type": ["integer", "null"], "description": "Telegram user_id старосты (или null, если не удалось определить)" }
+      }
+    }
+  }
+}

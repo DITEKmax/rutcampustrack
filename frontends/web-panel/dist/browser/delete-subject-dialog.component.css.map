@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;198aaea02e1fa9d38442963dfa13f52956c4fb0c546b1e85cc691f1de51a6195;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/headman/subjects/delete-subject-dialog.component.ts"],
+  "sourcesContent": ["\n    .btn-danger {\n      background: var(--accent-danger);\n      color: white;\n    }\n  "],
+  "mappings": ";AACI,CAAC;AACC,cAAY,IAAI;AAChB,SAAO;AACT;",
+  "names": []
+}

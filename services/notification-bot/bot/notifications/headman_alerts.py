@@ -3,6 +3,7 @@
 import logging
 
 from aiogram import Bot
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
@@ -50,6 +51,8 @@ async def handle_headman_alert(
         else:
             student_name = f"Студент #{user_id}"
 
+    reply_markup = None
+
     if event_type == "excuse.requested":
         excuse_type_label = payload.get("excuse_type", "не указан")
         text = f"Запрос у.п.\n\nСтудент: {student_name}\nТип: {excuse_type_label}"
@@ -58,6 +61,16 @@ async def handle_headman_alert(
         lesson_date = payload.get("lesson_date")
         if lesson_date:
             text += f"\nДата: {lesson_date}"
+        request_id = payload.get("request_id")
+        if request_id:
+            reply_markup = InlineKeyboardMarkup(
+                inline_keyboard=[[
+                    InlineKeyboardButton(text="✅ Подтвердить", callback_data=f"lcr:approve:{request_id}"),
+                    InlineKeyboardButton(text="❌ Отклонить", callback_data=f"lcr:reject:{request_id}"),
+                ]]
+            )
+        else:
+            logger.warning("late_checkin.requested missing request_id, sending without buttons")
     else:
         logger.debug("handle_headman_alert called with unexpected event_type: %s", event_type)
         return
@@ -65,7 +78,9 @@ async def handle_headman_alert(
     for headman in headmen:
         await send_queue.put(
             SendTask(
-                coroutine_factory=lambda h=headman: bot.send_message(chat_id=h.telegram_id, text=text),
+                coroutine_factory=lambda h=headman, markup=reply_markup: bot.send_message(
+                    chat_id=h.telegram_id, text=text, reply_markup=markup
+                ),
                 user_id=headman.user_id,
                 chat_id=headman.telegram_id,
             )

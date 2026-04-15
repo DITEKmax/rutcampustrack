@@ -219,6 +219,15 @@ export class HeadmanApiService {
   }
 
   /**
+   * Fetch the attendance entries for a single lesson (weekly-journal page).
+   * Endpoint: GET /api/attendance/reports/lesson/{lessonId}
+   * Returns LessonAttendanceResponse wrapped in EntityModel (payload under .content or flat).
+   */
+  getLessonAttendance(lessonId: number): Observable<any> {
+    return this.http.get(`/api/attendance/reports/lesson/${lessonId}`);
+  }
+
+  /**
    * Mark or update attendance status for a student on a specific lesson.
    * Endpoint: PUT /api/attendance/lessons/{lessonId}/students/{userId}
    * Body: { status: AttendanceStatus string }

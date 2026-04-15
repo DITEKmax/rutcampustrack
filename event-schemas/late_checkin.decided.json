@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "late_checkin.decided",
+  "description": "Староста одобрил или отклонил запрос студента на подтверждение присутствия. Генерируется Attendance Service после обработки решения.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "late_checkin.decided" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["request_id", "user_id", "status"],
+      "properties": {
+        "request_id": { "type": "string" },
+        "user_id": { "type": "integer", "description": "Студент — получатель уведомления об итоге" },
+        "group_id": { "type": "integer" },
+        "lesson_id": { "type": "integer" },
+        "decision_by": { "type": ["integer", "null"], "description": "Telegram user_id старосты, принявшего решение" },
+        "status": { "enum": ["approved", "rejected"] },
+        "decided_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

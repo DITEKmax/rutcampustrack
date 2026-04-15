@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;ec68d14867dcd040a2051198946d02a8b9daadcf687468410d3a1c8870b5de9e;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/teacher/stats/subject-chart/subject-chart.component.ts"],
+  "sourcesContent": ["\n    .chart-card { height: 320px; }\n    .chart-container { height: 240px; position: relative; }\n  "],
+  "mappings": ";AACI,CAAC;AAAa,UAAQ;AAAO;AAC7B,CAAC;AAAkB,UAAQ;AAAO,YAAU;AAAU;",
+  "names": []
+}

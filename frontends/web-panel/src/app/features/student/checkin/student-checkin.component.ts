@@ -16,7 +16,11 @@ import { StudentApiService } from '../shared/student-api.service';
 import { SubjectCacheService } from '../shared/subject-cache.service';
 import { StudentStompService } from '../shared/student-stomp.service';
 import type { LessonResponse } from '../shared/student-schedule.types';
-import { mapCheckinError, GPS_DENIED_MESSAGE } from './checkin-error-mapper';
+import {
+  mapCheckinError,
+  mapRequestHeadmanError,
+  GPS_DENIED_MESSAGE,
+} from './checkin-error-mapper';
 import { formatLoadError } from '../shared/format-load-error';
 
 /**
@@ -29,7 +33,10 @@ export type CheckinState =
   | { kind: 'gps_pending' }
   | { kind: 'submitting' }
   | { kind: 'confirmed' }
-  | { kind: 'error'; message: string };
+  | { kind: 'error'; message: string }
+  | { kind: 'request_submitting' }
+  | { kind: 'request_pending' }
+  | { kind: 'request_error'; message: string };
 
 /** Local YYYY-MM-DD (avoids UTC-rollover off-by-one vs `new Date().toISOString()`). */
 function todayDateString(): string {
@@ -226,6 +233,32 @@ export class StudentCheckinComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Send a "please mark me present" request to the group's headman.
+   * Fires only from `error` / `request_error` states — invalid transitions are ignored.
+   */
+  onRequestHeadmanClick(): void {
+    const current = this.state();
+    if (current.kind !== 'error' && current.kind !== 'request_error') {
+      return;
+    }
+    const active = this.activeLesson();
+    if (!active) {
+      return;
+    }
+    this.state.set({ kind: 'request_submitting' });
+    this.studentApi.requestLateCheckin(active.id).subscribe({
+      next: () => this.state.set({ kind: 'request_pending' }),
+      error: (err: unknown) => {
+        const status = (err as { status?: number } | null)?.status ?? 0;
+        this.state.set({
+          kind: 'request_error',
+          message: mapRequestHeadmanError(status),
+        });
+      },
+    });
+  }
+
   // ── Template helpers ───────────────────────────────────────────────
   isIdle(): boolean {
     return this.state().kind === 'idle';
@@ -243,11 +276,26 @@ export class StudentCheckinComponent implements OnInit, OnDestroy {
     return this.state().kind === 'confirmed';
   }
   isError(): boolean {
-    return this.state().kind === 'error';
+    const k = this.state().kind;
+    return k === 'error' || k === 'request_error';
+  }
+  isRequestSubmitting(): boolean {
+    return this.state().kind === 'request_submitting';
+  }
+  isRequestPending(): boolean {
+    return this.state().kind === 'request_pending';
   }
   errorMessage(): string | null {
     const s = this.state();
-    return s.kind === 'error' ? s.message : null;
+    if (s.kind === 'error') return s.message;
+    if (s.kind === 'request_error') return s.message;
+    return null;
+  }
+  requestButtonLabel(): string {
+    return this.isRequestSubmitting() ? 'Отправляем…' : 'Попросить старосту отметить';
+  }
+  requestButtonDisabled(): boolean {
+    return this.isRequestSubmitting();
   }
   buttonLabel(): string {
     switch (this.state().kind) {

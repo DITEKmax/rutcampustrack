@@ -1,12 +1,14 @@
 package ru.rutcampustrack.attendance.shared.port;
 
+import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 
 /**
- * Write port for cross-domain attendance mutations (D-16 cascade).
+ * Write port for cross-domain attendance mutations.
  *
- * Lives in shared/port/ — has ZERO imports from checkin/ package so the excuse/
- * domain can depend on it without breaking the isolation rule (CLAUDE.md).
+ * Lives in shared/port/ — has ZERO imports from checkin/ package so other
+ * domains (excuse/, latecheckin/) can depend on it without breaking the
+ * isolation rule (CLAUDE.md).
  *
  * Implemented by AttendanceWritePortImpl in checkin/ package.
  */
@@ -14,18 +16,23 @@ public interface AttendanceWritePort {
 
     /**
      * Upsert an attendance record for a student/lesson with the given status.
-     *
-     * Called from the excuse domain upon ticket approval (D-16):
-     * if no document exists for (lessonId, studentId) a new one is created;
-     * otherwise the existing document's status is overwritten.
-     *
-     * The source is always set to {@code AttendanceSource.HEADMAN_EXCUSE}.
-     *
-     * @param studentId the student whose attendance is being marked
-     * @param lessonId  the lesson the student is being excused from
-     * @param groupId   the student's group at the time of the decision
-     *                  (used only when inserting a fresh document — existing docs preserve their groupId)
-     * @param status    target AttendanceStatus (EXCUSED or FREE_ATTENDANCE for the approve cascade)
+     * Convenience overload — equivalent to {@link #mark(Long, Long, Long, AttendanceStatus, AttendanceSource)}
+     * with {@code source = HEADMAN_EXCUSE} (excuse approve cascade, D-16).
      */
     void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status);
+
+    /**
+     * Upsert an attendance record for a student/lesson with explicit source.
+     *
+     * If no document exists for (lessonId, studentId) a fresh document is inserted;
+     * otherwise the existing document's status/source/updatedAt are overwritten.
+     *
+     * @param studentId the student whose attendance is being marked
+     * @param lessonId  the lesson
+     * @param groupId   the student's group (only used when inserting a fresh document)
+     * @param status    target AttendanceStatus (typically PRESENT for late-checkin approve,
+     *                  EXCUSED / FREE_ATTENDANCE for the excuse cascade)
+     * @param source    who/what is claiming this write (LATE_CHECKIN, HEADMAN_EXCUSE, ...)
+     */
+    void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status, AttendanceSource source);
 }

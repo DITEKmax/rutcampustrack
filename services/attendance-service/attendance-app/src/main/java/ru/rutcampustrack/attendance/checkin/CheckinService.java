@@ -19,6 +19,7 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 
@@ -83,7 +84,8 @@ public class CheckinService {
 
         // Step 2: Active lesson (CHKN-02) — ResourceNotFoundException propagates as 404
         Instant now = Instant.now();
-        LessonResponse lesson = scheduleGrpcClient.getActiveLesson(requestContext.getGroupId(), now.toString());
+        String moscowTimestamp = LocalDateTime.ofInstant(now, SERVER_ZONE).toString();
+        LessonResponse lesson = scheduleGrpcClient.getActiveLesson(requestContext.getGroupId(), moscowTimestamp);
 
         // Step 3: Time window (CHKN-03) — 5 min before start to 5 min after end
         if (!isWithinCheckinWindow(lesson, now)) {

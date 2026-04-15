@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/admin/groups/groups-page.component.scss"],
+  "sourcesContent": ["// BUG-006-6 / plan 58-08: groups page with active/archive tabs.\n\n.groups-tab {\n  display: flex;\n  flex-direction: column;\n  gap: 1rem;\n  padding-top: 1rem;\n}\n\n.groups-search {\n  max-width: 360px;\n}\n\n.group-badge {\n  display: inline-block;\n  width: 8px;\n  height: 8px;\n  border-radius: 50%;\n  margin-right: 0.5rem;\n\n  &--active {\n    background-color: #22c55e; // green-500\n  }\n\n  &--archived {\n    background-color: #9ca3af; // gray-400\n  }\n}\n\n.btn-brand--ghost {\n  background: transparent;\n  border: 1px solid rgba(0, 0, 0, 0.16);\n  color: inherit;\n}\n"],
+  "mappings": ";AAEA,CAAA;AACE,WAAA;AACA,kBAAA;AACA,OAAA;AACA,eAAA;;AAGF,CAAA;AACE,aAAA;;AAGF,CAAA;AACE,WAAA;AACA,SAAA;AACA,UAAA;AACA,iBAAA;AACA,gBAAA;;AAEA,CAAA;AACE,oBAAA;;AAGF,CAAA;AACE,oBAAA;;AAIJ,CAAA;AACE,cAAA;AACA,UAAA,IAAA,MAAA,KAAA,CAAA,EAAA,CAAA,EAAA,CAAA,EAAA;AACA,SAAA;;",
+  "names": []
+}

@@ -22,11 +22,11 @@ v9.0 Frontend Unification — Single Login & Role-Based Web Clients
 
 ## Current Position
 
-Phase: 60 (headman-schedule-management) — EXECUTING
-Plan: 8 of 8
+Phase: 61 (headman-homework-management) — DISCUSSED
+Plan: 0 of TBD
 Plans: 0/TBD
-Status: Phase complete — ready for verification
-Last activity: 2026-04-14
+Status: CONTEXT.md created — ready for /gsd-plan-phase 61
+Last activity: 2026-04-15
 
 ## Project Reference
 
@@ -63,6 +63,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-08)
 | v8.0 | CI/CD, Deployment & Documentation | 41-48 | 11 | 2026-04-08 |
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 61 added: Headman Homework Management — UI старосты для создания/редактирования ДЗ группы (бэкенд готов)
 
 ### Decisions
 

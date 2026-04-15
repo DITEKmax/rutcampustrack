@@ -1,0 +1,168 @@
+<div class="page-stack" [@routeFade]>
+  <div class="page-header">
+    <div>
+      <span class="page-eyebrow">Старостат</span>
+      <h1 class="page-title">Журнал посещаемости</h1>
+      <p class="page-subtitle">Отметьте присутствие студентов</p>
+    </div>
+  </div>
+
+  <!-- Week navigation -->
+  <div class="week-nav" role="navigation" aria-label="Навигация по неделям">
+    <button
+      type="button"
+      class="week-nav__btn"
+      (click)="prevWeek()"
+      [disabled]="loading()"
+      aria-label="Предыдущая неделя"
+    >
+      <i class="ph ph-caret-left"></i>
+    </button>
+    <span class="week-nav__range" aria-live="polite">{{ weekRange() }}</span>
+    <button
+      type="button"
+      class="week-nav__btn"
+      (click)="nextWeek()"
+      [disabled]="loading() || isCurrentWeek()"
+      aria-label="Следующая неделя"
+    >
+      <i class="ph ph-caret-right"></i>
+    </button>
+  </div>
+
+  <div class="page-card page-card--flush">
+    @if (loading()) {
+      <div class="loader">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    } @else if (error()) {
+      <div class="page-error"><i class="ph ph-warning-circle"></i> {{ error() }}</div>
+    } @else if (!hasLessons()) {
+      <div class="page-empty">
+        <i class="ph-duotone ph-calendar-blank"></i>
+        <h3>На этой неделе нет занятий</h3>
+        <p>Перейдите к другой неделе, чтобы продолжить работу с журналом.</p>
+      </div>
+    } @else {
+      <div class="grid-wrapper">
+        <table class="journal-table">
+          <thead>
+            <!-- Day headers row -->
+            <tr class="row-day-header">
+              <th class="col-student col-student--head" rowspan="3">Студент</th>
+              @for (day of dayGroups(); track day.date; let last = $last) {
+                <th
+                  class="col-day"
+                  [class.col-day--last]="!last"
+                  [attr.colspan]="day.columns.length * 3"
+                >
+                  <span class="col-day__weekday">{{ day.weekday }}</span>
+                  <span class="col-day__date">{{ day.displayDate }}</span>
+                </th>
+              }
+            </tr>
+            <!-- Subject headers row -->
+            <tr class="row-subject-header">
+              @for (day of dayGroups(); track day.date; let dayLast = $last) {
+                @for (col of day.columns; track col.lessonId; let colLast = $last) {
+                  <th
+                    class="col-subject"
+                    [class.col-subject--day-end]="colLast && !dayLast"
+                    colspan="3"
+                  >
+                    <div class="col-subject__text" [title]="col.subjectName + ' § ' + col.lessonNumber + ' ' + col.startTime">
+                      <span class="col-subject__name">{{ col.subjectName }}</span>
+                      <span class="col-subject__meta">§ {{ col.lessonNumber }} · {{ col.startTime }}</span>
+                    </div>
+                    <div class="bulk-row">
+                      <button
+                        type="button"
+                        class="bulk-btn bulk-btn--present"
+                        (click)="onBulkMark(col, 'present')"
+                        title="Отметить всем +"
+                      >+</button>
+                      <button
+                        type="button"
+                        class="bulk-btn bulk-btn--absent"
+                        (click)="onBulkMark(col, 'absent')"
+                        title="Отметить всем Н"
+                      >Н</button>
+                      <button
+                        type="button"
+                        class="bulk-btn bulk-btn--excused"
+                        (click)="onBulkMark(col, 'excused')"
+                        title="Отметить всем У"
+                      >У</button>
+                    </div>
+                  </th>
+                }
+              }
+            </tr>
+            <!-- Status column headers row (+/Н/У) -->
+            <tr class="row-status-header">
+              @for (day of dayGroups(); track day.date; let dayLast = $last) {
+                @for (col of day.columns; track col.lessonId; let colLast = $last) {
+                  <th class="col-status col-status--plus">+</th>
+                  <th class="col-status">Н</th>
+                  <th
+                    class="col-status"
+                    [class.col-status--day-end]="colLast && !dayLast"
+                  >У</th>
+                }
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (student of sortedStudents(); track student.userId) {
+              <tr class="row-student">
+                <td class="col-student" [title]="student.displayName">{{ student.displayName }}</td>
+                @for (day of dayGroups(); track day.date; let dayLast = $last) {
+                  @for (col of day.columns; track col.lessonId; let colLast = $last) {
+                    @let status = getStatus(col.lessonId, student.userId);
+                    @let saving = isSaving(col.lessonId, student.userId);
+                    @let flashing = isFlashing(col.lessonId, student.userId);
+                    <td class="cell" [class.cell--saving]="saving" [class.cell--flash]="flashing">
+                      <button
+                        type="button"
+                        class="dot dot--present"
+                        [class.dot--active]="status === 'present'"
+                        (click)="onStatusClick(col.lessonId, student.userId, 'present')"
+                        [attr.aria-label]="'Присутствовал — ' + student.displayName"
+                        [attr.aria-pressed]="status === 'present'"
+                      >+</button>
+                    </td>
+                    <td class="cell" [class.cell--saving]="saving" [class.cell--flash]="flashing">
+                      <button
+                        type="button"
+                        class="dot dot--absent"
+                        [class.dot--active]="status === 'absent'"
+                        (click)="onStatusClick(col.lessonId, student.userId, 'absent')"
+                        [attr.aria-label]="'Не был — ' + student.displayName"
+                        [attr.aria-pressed]="status === 'absent'"
+                      >Н</button>
+                    </td>
+                    <td
+                      class="cell"
+                      [class.cell--saving]="saving"
+                      [class.cell--flash]="flashing"
+                      [class.cell--day-end]="colLast && !dayLast"
+                    >
+                      <button
+                        type="button"
+                        class="dot dot--excused"
+                        [class.dot--active]="status === 'excused'"
+                        (click)="onStatusClick(col.lessonId, student.userId, 'excused')"
+                        [attr.aria-label]="'Уважит. причина — ' + student.displayName"
+                        [attr.aria-pressed]="status === 'excused'"
+                      >У</button>
+                    </td>
+                  }
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

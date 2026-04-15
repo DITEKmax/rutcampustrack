@@ -217,6 +217,15 @@ export const routes: Routes = [
             data: { title: 'Журнал', eyebrow: 'Староста' },
           },
           {
+            path: 'weekly-journal',
+            canActivate: [headmanGuard],
+            loadComponent: () =>
+              import('./features/headman/weekly-journal/headman-weekly-journal.component').then(
+                m => m.HeadmanWeeklyJournalComponent,
+              ),
+            data: { title: 'Журнал посещаемости', eyebrow: 'Староста' },
+          },
+          {
             path: 'schedule',
             canActivate: [headmanGuard],
             loadComponent: () =>

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/student/stats/student-stats.component.css"],
+  "sourcesContent": [".stats-grid {\n  display: grid;\n  grid-template-columns: 1fr;\n  gap: var(--space-6, 24px);\n}\n\n@media (min-width: 1024px) {\n  .stats-grid {\n    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));\n  }\n}\n\n@media (prefers-reduced-motion: reduce) {\n  /* Chart animation disabled via component-level prefers-reduced-motion check */\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,WAAS;AACT,yBAAuB;AACvB,OAAK,IAAI,SAAS,EAAE;AACtB;AAEA,OAAO,CAAC,SAAS,EAAE;AACjB,GAPD;AAQG,2BAAuB,OAAO,SAAS,EAAE,OAAO,KAAK,EAAE;AACzD;AACF;AAEA,OAAO,CAAC,sBAAsB,EAAE;AAEhC;",
+  "names": []
+}

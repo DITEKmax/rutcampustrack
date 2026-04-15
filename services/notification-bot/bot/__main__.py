@@ -10,9 +10,10 @@ from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
-from bot.handlers import login_router, prefs_router, start_router, status_router
+from bot.handlers import late_checkin_router, login_router, prefs_router, start_router, status_router
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
+from bot.services.event_publisher import EventPublisher
 from bot.services.jwt_redis_client import JwtRedisClient
 from bot.services.notification_prefs import NotificationPrefsClient
 from bot.services.otp_message_tracker import OtpMessageTracker
@@ -119,6 +120,8 @@ async def main() -> None:
     )
 
     # Inject dependencies via dp workflow data (Aiogram 3 DI pattern)
+    event_publisher = EventPublisher(config.rabbitmq_url)
+
     dp["academic_client"] = academic_client
     dp["schedule_client"] = schedule_client
     dp["jwt_redis"] = jwt_redis
@@ -126,12 +129,14 @@ async def main() -> None:
     dp["attendance_client"] = attendance_client
     dp["prefs_client"] = prefs_client
     dp["otp_tracker"] = otp_tracker
+    dp["event_publisher"] = event_publisher
 
     # Register routers
     dp.include_router(start_router)
     dp.include_router(login_router)
     dp.include_router(status_router)
     dp.include_router(prefs_router)
+    dp.include_router(late_checkin_router)
 
     # Create send queue and reminder redis client
     send_queue = TelegramSendQueue(prefs_client=prefs_client)
@@ -196,6 +201,7 @@ async def main() -> None:
         await prefs_client.close()
         await schedule_client.close()
         await academic_client.close()
+        await event_publisher.close()
 
 
 if __name__ == "__main__":

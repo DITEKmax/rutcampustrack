@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { of, throwError } from 'rxjs';
 import { signal } from '@angular/core';
 import { HeadmanJournalPageComponent } from './headman-journal-page.component';
@@ -32,7 +32,7 @@ describe('HeadmanJournalPageComponent', () => {
         userId: 10,
         displayName: 'Иванов Иван',
         records: [
-          { lessonId: 42, date: '2026-04-01', lessonNumber: 1, status: 'present', symbol: 'б' },
+          { lessonId: 42, date: '2026-04-01', lessonNumber: 1, status: 'present', symbol: '+' },
         ],
       },
     ],
@@ -71,10 +71,9 @@ describe('HeadmanJournalPageComponent', () => {
     expect(select).toBeTruthy();
   });
 
-  it('"Применить" button is disabled when no subject is selected', () => {
-    const button = fixture.nativeElement.querySelector('button.btn-brand');
-    expect(button).toBeTruthy();
-    expect(button.disabled).toBe(true);
+  it('does not render date range inputs', () => {
+    const dateInputs = fixture.nativeElement.querySelectorAll('input[type="date"]');
+    expect(dateInputs.length).toBe(0);
   });
 
   it('shows page-empty state when no journalData is loaded', () => {
@@ -82,25 +81,23 @@ describe('HeadmanJournalPageComponent', () => {
     expect(empty).toBeTruthy();
   });
 
-  it('calls getJournal after selecting subject and clicking Применить', async () => {
+  it('auto-loads journal when a subject is selected (no Apply button)', () => {
     component.selectedSubjectId.set(1);
     fixture.detectChanges();
 
-    const button = fixture.nativeElement.querySelector('button.btn-brand');
-    button.click();
-    fixture.detectChanges();
-
-    expect(headmanApiMock.getJournal).toHaveBeenCalledWith(5, 1, expect.any(String), expect.any(String));
+    expect(headmanApiMock.getJournal).toHaveBeenCalledWith(
+      5,
+      1,
+      expect.any(String),
+      expect.any(String),
+    );
   });
 
-  it('shows page-error on getJournal error', async () => {
+  it('shows page-error when getJournal fails', () => {
     (headmanApiMock.getJournal as ReturnType<typeof vi.fn>).mockReturnValue(
-      throwError(() => new Error('Network error'))
+      throwError(() => new Error('Network error')),
     );
     component.selectedSubjectId.set(1);
-    fixture.detectChanges();
-
-    component.loadJournal();
     fixture.detectChanges();
 
     const errorEl = fixture.nativeElement.querySelector('.page-error');

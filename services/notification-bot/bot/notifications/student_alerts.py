@@ -45,7 +45,15 @@ async def handle_student_alert(
 
     decision_comment = payload.get("decision_comment") or ""
 
-    if status == "approved":
+    if event_type == "late_checkin.decided":
+        if status == "approved":
+            text = "✅ Староста подтвердил ваше присутствие на паре."
+        elif status == "rejected":
+            text = "❌ Староста отклонил запрос на подтверждение присутствия."
+        else:
+            logger.debug("late_checkin.decided with unexpected status=%s", status)
+            return
+    elif status == "approved":
         text = "✅ Ваш запрос на уважительную причину одобрен."
         if decision_comment:
             text += f"\n\nКомментарий: {decision_comment}"

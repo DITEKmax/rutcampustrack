@@ -36,6 +36,16 @@
   scrollbar-gutter: stable;
 }
 
+/* Route-change progress bar — shown while a lazy feature chunk is loading.
+ * Sits directly under the sticky header, 2px tall so it never displaces
+ * layout. Absolute-height keeps the header's offset stable. */
+.shell__route-progress {
+  --mdc-linear-progress-active-indicator-height: 2px;
+  --mdc-linear-progress-track-height: 2px;
+  height: 2px;
+  flex-shrink: 0;
+}
+
 .shell__content {
   max-width: var(--content-max-width, 1280px);
   margin: 0 auto;

@@ -218,70 +218,124 @@ function isoWeekNumber(d: Date): number {
     </div>
   `,
   styles: [`
-    .schedule-matrix { display: flex; flex-direction: column; gap: 4px; padding: 8px; }
+    .schedule-matrix { display: flex; flex-direction: column; gap: 4px; padding: var(--space-3); }
     .matrix-header, .matrix-row { display: grid; grid-template-columns: 110px repeat(6, 1fr); gap: 4px; }
-    .matrix-corner, .matrix-day { font-weight: 600; padding: 8px; text-align: center; }
-    .matrix-day { background: var(--bg-secondary, #f5f5f5); border-radius: 4px; }
+    .matrix-corner, .matrix-day {
+      padding: var(--space-3);
+      text-align: center;
+      font: 500 var(--text-xs)/1 var(--font-mono);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .matrix-day {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+    }
     .matrix-slot {
-      background: var(--bg-secondary, #f5f5f5);
-      border-radius: 4px;
-      padding: 8px 6px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: var(--space-2);
       text-align: center;
       display: flex; flex-direction: column; align-items: center; gap: 2px;
     }
-    .matrix-slot__num { font-weight: 700; font-size: 0.95rem; }
+    .matrix-slot__num {
+      font: 700 0.95rem/1 var(--font-display);
+      color: var(--text-primary);
+    }
     .matrix-slot__time {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-size: 0.72rem;
       color: var(--text-muted);
     }
     .matrix-cell {
-      min-height: 72px; padding: 6px; border-radius: 6px;
-      background: var(--bg-elevated, #fafafa); cursor: pointer;
+      min-height: 72px; padding: var(--space-2);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
       display: flex; flex-direction: column; justify-content: center; gap: 4px;
-      transition: background 150ms ease, border-color 150ms ease;
-      border: 1px solid transparent;
+      transition:
+        background-color var(--duration-base) var(--ease-out),
+        border-color var(--duration-base) var(--ease-out);
     }
-    .matrix-cell:hover { background: var(--bg-hover, #eee); }
-    .matrix-cell--empty { opacity: 0.5; text-align: center; }
+    .matrix-cell:hover {
+      background: var(--bg-elevated);
+      border-color: var(--border-default);
+    }
+    .matrix-cell--empty {
+      opacity: 0.5;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .matrix-cell--empty:hover { opacity: 1; color: var(--accent-primary); }
     .matrix-cell--occupied {
-      background: #e8f5e9;
-      border-color: #66bb6a;
+      background: color-mix(in oklab, var(--accent-primary) 10%, transparent);
+      border-color: color-mix(in oklab, var(--accent-primary) 35%, transparent);
     }
-    .matrix-cell--occupied:hover { background: #d7eed9; }
-    .cell-entry { padding: 2px 4px; border-radius: 4px; cursor: pointer; }
-    .cell-entry:hover { background: rgba(255,255,255,0.4); }
-    .cell-entry + .cell-entry { border-top: 1px dashed #a5d6a7; padding-top: 4px; margin-top: 2px; }
+    .matrix-cell--occupied:hover {
+      background: color-mix(in oklab, var(--accent-primary) 16%, transparent);
+      border-color: color-mix(in oklab, var(--accent-primary) 50%, transparent);
+    }
+    .cell-entry {
+      padding: 2px 4px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background-color var(--duration-base) var(--ease-out);
+    }
+    .cell-entry:hover { background: color-mix(in oklab, var(--accent-primary) 14%, transparent); }
+    .cell-entry + .cell-entry {
+      border-top: 1px dashed color-mix(in oklab, var(--accent-primary) 35%, transparent);
+      padding-top: 4px; margin-top: 2px;
+    }
     .cell-add-btn {
-      margin-top: 4px;
-      width: 100%;
+      margin-top: 4px; width: 100%;
       padding: 4px 6px;
-      border: 1px dashed #66bb6a;
-      border-radius: 4px;
-      background: rgba(255,255,255,0.45);
-      color: #2e7d32;
+      border: 1px dashed color-mix(in oklab, var(--accent-primary) 40%, transparent);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--accent-primary);
+      font-family: var(--font-sans);
       font-size: 0.72rem;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 4px;
+      transition: background-color var(--duration-base) var(--ease-out);
     }
-    .cell-add-btn:hover { background: #fff; }
+    .cell-add-btn:hover { background: color-mix(in oklab, var(--accent-primary) 10%, transparent); }
     .cell-add-btn i { font-size: 0.85rem; }
-    .cell-entry--odd { color: #1b5e20; }
-    .cell-entry--even { color: #2e7d32; }
-    .cell-subject { font-weight: 600; font-size: 0.9rem; color: #1b5e20; }
-    .cell-type { font-weight: 500; font-size: 0.78rem; color: #2e7d32; opacity: 0.85; }
-    .cell-meta { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #2e7d32; }
+    .cell-subject {
+      font: 600 0.875rem/1.3 var(--font-heading);
+      color: var(--text-primary);
+    }
+    .cell-type {
+      font-weight: 500; font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .cell-meta {
+      display: flex; align-items: center; gap: var(--space-2);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
     .week-chip { font-size: 0.7rem; }
     .current-week-banner {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 14px; margin: 8px 8px 0; border-radius: 8px;
-      background: #fff8e1; color: #6d4c00;
-      font-size: 0.9rem;
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      margin: var(--space-3) var(--space-3) 0;
+      border-radius: var(--radius-md);
+      background: color-mix(in oklab, var(--accent-warning) 12%, transparent);
+      border: 1px solid color-mix(in oklab, var(--accent-warning) 28%, transparent);
+      color: var(--accent-warning);
+      font-size: 0.875rem;
     }
+    .current-week-banner strong { color: var(--text-primary); font-weight: 600; }
     .current-week-banner i { font-size: 1.1rem; }
     .current-week-banner--odd {
-      background: #e1f5fe; color: #01579b;
+      background: color-mix(in oklab, var(--accent-secondary) 12%, transparent);
+      border-color: color-mix(in oklab, var(--accent-secondary) 28%, transparent);
+      color: var(--accent-secondary);
     }
   `],
 })

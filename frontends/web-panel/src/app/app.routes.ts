@@ -283,7 +283,14 @@ export const routes: Routes = [
         ],
       },
       { path: '', redirectTo: 'login', pathMatch: 'full' },
+      // Authenticated 404: any unknown path under the shell shows NotFound
+      // instead of silently bouncing the user back to login.
+      {
+        path: '**',
+        loadComponent: () =>
+          import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
+        data: { title: 'Страница не найдена', eyebrow: 'Ошибка' },
+      },
     ],
   },
-  { path: '**', redirectTo: 'login' },
 ];

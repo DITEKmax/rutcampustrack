@@ -110,9 +110,9 @@ const EXTRA_STATUSES: { value: AttendanceStatus; label: string }[] = [
       display: flex; align-items: center; justify-content: center;
     }
     .bulk-btn:hover { background: var(--mat-sys-surface-variant); }
-    .bulk-btn--present { color: #2e7d32; }
-    .bulk-btn--absent  { color: #c62828; }
-    .bulk-btn--excused { color: #f57f17; }
+    .bulk-btn--present { color: var(--status-present); }
+    .bulk-btn--absent  { color: var(--status-absent); }
+    .bulk-btn--excused { color: var(--status-excused); }
     .bulk-more {
       border: none; background: transparent;
       width: 16px; height: 16px; padding: 0;
@@ -148,10 +148,10 @@ const EXTRA_STATUSES: { value: AttendanceStatus; label: string }[] = [
     }
     .status-btn:hover { transform: scale(1.1); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
-    .status-chip--present { background: #2e7d32; color: #fff; }
-    .status-chip--absent { background: #c62828; color: #fff; }
-    .status-chip--excused { background: #f9a825; color: #fff; }
-    .status-chip--free_attendance { background: #1565c0; color: #fff; }
+    .status-chip--present { background: var(--status-present); color: var(--accent-primary-contrast, #fff); }
+    .status-chip--absent { background: var(--status-absent); color: #fff; }
+    .status-chip--excused { background: var(--status-excused); color: #0A0E17; }
+    .status-chip--free_attendance { background: var(--status-free-attendance); color: #fff; }
 
     .status-empty {
       background: transparent;

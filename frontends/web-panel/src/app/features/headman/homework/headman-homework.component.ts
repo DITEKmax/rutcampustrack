@@ -13,8 +13,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { StudentApiService } from '../../student/shared/student-api.service';
 import { SubjectCacheService } from '../../student/shared/subject-cache.service';
@@ -266,12 +268,14 @@ const MONTH_ABBREV = [
       color: var(--accent-secondary, #1976d2);
     }
     .lesson-block__cancelled {
-      padding: 2px 8px;
-      border-radius: 10px;
-      background: #ffebee;
-      color: #c62828;
-      font-size: 0.72rem;
-      font-weight: 500;
+      display: inline-flex; align-items: center;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background: color-mix(in oklab, var(--accent-danger) 14%, transparent);
+      color: var(--accent-danger);
+      border: 1px solid color-mix(in oklab, var(--accent-danger) 30%, transparent);
+      font: 500 0.6875rem/1 var(--font-mono);
+      letter-spacing: 0.04em; text-transform: uppercase;
     }
     .lesson-block__homeworks {
       display: flex;
@@ -307,13 +311,13 @@ const MONTH_ABBREV = [
     .page-empty i { font-size: 2.5rem; color: var(--text-muted, #999); }
     .page-empty h3 { margin: 12px 0 4px; }
     .page-error {
-      padding: 12px 16px;
-      border-radius: var(--radius-md, 8px);
-      background: #ffebee;
-      color: #c62828;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      background: color-mix(in oklab, var(--accent-danger) 12%, transparent);
+      border: 1px solid color-mix(in oklab, var(--accent-danger) 28%, transparent);
+      color: var(--accent-danger);
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      font-size: 0.875rem;
     }
   `],
 })
@@ -324,6 +328,7 @@ export class HeadmanHomeworkComponent implements OnInit {
   private readonly homeworkApi = inject(HeadmanHomeworkApiService);
   private readonly subjectCache = inject(SubjectCacheService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly dialog = inject(MatDialog);
 
   readonly groupId = signal<number | null>(null);
   readonly currentUserId = signal<number | null>(null);
@@ -505,15 +510,29 @@ export class HeadmanHomeworkComponent implements OnInit {
   }
 
   onDeleteHomework(hw: HomeworkResponse): void {
-    if (!confirm(`Удалить задание «${hw.title}»?`)) return;
-    this.homeworkApi
-      .delete(hw.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => this.reload(),
-        error: () => {
-          this.error.set('Не удалось удалить задание. Попробуйте ещё раз.');
+    this.dialog
+      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
+        data: {
+          title: 'Удалить задание?',
+          message: `Задание «${hw.title}» будет удалено без возможности восстановления.`,
+          confirmLabel: 'Удалить',
+          destructive: true,
         },
+        autoFocus: 'first-tabbable',
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((ok) => {
+        if (!ok) return;
+        this.homeworkApi
+          .delete(hw.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => this.reload(),
+            error: () => {
+              this.error.set('Не удалось удалить задание. Попробуйте ещё раз.');
+            },
+          });
       });
   }
 

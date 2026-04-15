@@ -151,13 +151,15 @@ const SUBJECT_TYPE_LABELS: Record<string, string> = {
       color: var(--text-muted);
     }
     .type-chip {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 10px;
-      background: var(--bg-secondary, #f0f0f0);
-      color: var(--text-secondary);
-      font-size: 0.8rem;
-      font-weight: 500;
+      display: inline-flex; align-items: center;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background: color-mix(in oklab, var(--accent-secondary) 14%, transparent);
+      border: 1px solid color-mix(in oklab, var(--accent-secondary) 28%, transparent);
+      color: var(--accent-secondary);
+      font: 500 0.6875rem/1 var(--font-mono);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .skeleton-row {

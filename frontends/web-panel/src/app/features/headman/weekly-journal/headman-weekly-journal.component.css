@@ -188,9 +188,9 @@ thead tr.row-status-header th.col-student--head {
   transition: transform 0.12s ease, background 0.12s ease;
 }
 .bulk-btn:hover { transform: scale(1.12); }
-.bulk-btn--present { color: #2e7d32; }
-.bulk-btn--absent  { color: #c62828; }
-.bulk-btn--excused { color: #b45309; }
+.bulk-btn--present { color: var(--status-present); }
+.bulk-btn--absent  { color: var(--status-absent); }
+.bulk-btn--excused { color: var(--status-excused); }
 
 /* ---- Status sub-header (+/Н/У) ---- */
 .col-status {
@@ -252,12 +252,12 @@ thead tr.row-status-header th.col-student--head {
 
 .dot--active {
   opacity: 1;
-  color: #fff;
+  color: var(--accent-primary-contrast, #fff);
   border-color: transparent;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-sm);
 }
-.dot--present.dot--active { background: #2e7d32; }
-.dot--absent.dot--active  { background: #c62828; }
-.dot--excused.dot--active { background: #f59e0b; }
+.dot--present.dot--active { background: var(--status-present); }
+.dot--absent.dot--active  { background: var(--status-absent); }
+.dot--excused.dot--active { background: var(--status-excused); }
 
 /* ---- Empty / error states inherit page-* from global styles ---- */

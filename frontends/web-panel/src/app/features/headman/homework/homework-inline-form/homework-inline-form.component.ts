@@ -188,13 +188,14 @@ import {
     .hw-form__context-sep { color: var(--text-muted, #999); }
     .hw-form__field { width: 100%; display: block; margin-bottom: 4px; }
     .hw-form__error {
-      margin: 8px 0;
-      padding: 8px 12px;
-      background: #ffebee;
-      color: #c62828;
-      border-radius: var(--radius-md, 8px);
-      font-size: 0.85rem;
-      display: flex; align-items: center; gap: 6px;
+      margin: var(--space-2) 0;
+      padding: var(--space-2) var(--space-3);
+      background: color-mix(in oklab, var(--accent-danger) 12%, transparent);
+      border: 1px solid color-mix(in oklab, var(--accent-danger) 28%, transparent);
+      color: var(--accent-danger);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      display: inline-flex; align-items: center; gap: 6px;
     }
     .hw-form__actions {
       display: flex;

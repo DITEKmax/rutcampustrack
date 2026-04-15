@@ -3,6 +3,13 @@
 
   <div class="shell__column">
     <app-header />
+    @if (navigating()) {
+      <mat-progress-bar
+        class="shell__route-progress"
+        mode="indeterminate"
+        aria-label="Загрузка страницы"
+      />
+    }
     <app-student-pwa-banner />
     <main class="shell__main" tabindex="-1">
       <div class="shell__content">

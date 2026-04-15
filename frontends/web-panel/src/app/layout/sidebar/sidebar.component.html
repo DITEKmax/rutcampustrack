@@ -20,6 +20,8 @@
           <a
             [routerLink]="item.route"
             routerLinkActive="sidebar__link--active"
+            #rlaPrimary="routerLinkActive"
+            [attr.aria-current]="rlaPrimary.isActive ? 'page' : null"
             class="sidebar__link"
             [title]="item.label"
             [attr.aria-label]="collapsed() ? item.label : null"
@@ -50,6 +52,8 @@
         <a
           [routerLink]="item.route"
           routerLinkActive="sidebar__link--active"
+          #rlaSecondary="routerLinkActive"
+          [attr.aria-current]="rlaSecondary.isActive ? 'page' : null"
           class="sidebar__link"
           [title]="item.label"
         >
@@ -82,6 +86,8 @@
           <a
             [routerLink]="item.route"
             routerLinkActive="sidebar__link--active"
+            #rlaHeadman="routerLinkActive"
+            [attr.aria-current]="rlaHeadman.isActive ? 'page' : null"
             class="sidebar__link"
             [title]="item.label"
           >

@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 
 /**
  * Transit Grid statistic widget (brandbook §4.3).
@@ -40,7 +49,7 @@ export type StatAccent = 'primary' | 'secondary' | 'warning' | 'info' | 'danger'
         <div class="stat-card__skeleton stat-card__skeleton--sm" aria-hidden="true"></div>
       } @else {
         <div class="stat-card__value">
-          <span class="stat-card__number">{{ value() }}</span>
+          <span class="stat-card__number" [attr.aria-label]="value()">{{ displayValue() }}</span>
           @if (suffix()) {
             <span class="stat-card__suffix">{{ suffix() }}</span>
           }
@@ -92,6 +101,45 @@ export class StatCardComponent {
   sparkData = input<number[] | null>(null);
   trend = input<number | null>(null);
   suffix = input<string>('');
+
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Animated number surface. Non-numeric values pass through unchanged. */
+  private readonly animated = signal<number>(0);
+  readonly displayValue = computed<string | number>(() => {
+    const raw = this.value();
+    return typeof raw === 'number' ? this.animated() : raw;
+  });
+
+  constructor() {
+    /** CountUp — brandbook §5.3. Runs once per target change, respects
+     * prefers-reduced-motion, cleans up on destroy. */
+    effect(() => {
+      const target = this.value();
+      if (typeof target !== 'number') return;
+      const reduceMotion =
+        typeof window !== 'undefined' &&
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion || target === 0) {
+        this.animated.set(target);
+        return;
+      }
+      const from = this.animated();
+      const delta = target - from;
+      if (delta === 0) return;
+      const duration = 900;
+      const start = performance.now();
+      let frame = 0;
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        this.animated.set(Math.round(from + delta * eased));
+        if (t < 1) frame = requestAnimationFrame(step);
+      };
+      frame = requestAnimationFrame(step);
+      this.destroyRef.onDestroy(() => cancelAnimationFrame(frame));
+    });
+  }
 
   readonly trendPositive = computed(() => (this.trend() ?? 0) >= 0);
   readonly trendLabel = computed(() => {

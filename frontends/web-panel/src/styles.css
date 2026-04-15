@@ -8,6 +8,7 @@
  * ========================================================================== */
 @import "./styles/fonts.css";
 @import "./styles/tokens.css";
+@import "./styles/data-surfaces.css";
 
 /* Tailwind v4 dark mode: both [data-theme="dark"] attribute and legacy .dark
  * class so Angular Material theming and existing status chips continue working.

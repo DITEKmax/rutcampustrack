@@ -203,56 +203,87 @@ import {
   styles: [
     `
       .excuse-card {
-        border: 1px solid var(--color-border, #e5e7eb);
-        border-radius: 8px;
-        padding: 12px 16px;
-        margin-bottom: 10px;
-        background: var(--color-surface, #fff);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4) var(--space-5);
+        margin-bottom: var(--space-3);
+        background: var(--bg-secondary);
+        transition: border-color var(--duration-base) var(--ease-out);
       }
-      .excuse-card--resolved { opacity: 0.85; }
+      .excuse-card:hover { border-color: var(--border-default); }
+      .excuse-card--resolved { opacity: 0.72; }
       .excuse-card__head {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        gap: 12px;
+        gap: var(--space-3);
         flex-wrap: wrap;
       }
-      .excuse-card__student { font-weight: 600; margin-right: 10px; }
+      .excuse-card__student {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-right: var(--space-2);
+      }
       .excuse-card__type {
-        font-size: 0.9em;
-        color: var(--color-text-muted, #64748b);
+        font-size: 0.875rem;
+        color: var(--text-secondary);
       }
       .excuse-card__meta {
-        font-size: 0.85em;
-        color: var(--color-text-muted, #64748b);
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        color: var(--text-muted);
       }
       .excuse-card__comment {
-        margin: 8px 0;
-        color: var(--color-text, #111827);
+        margin: var(--space-2) 0;
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        line-height: 1.5;
       }
       .excuse-card__actions {
         display: flex;
-        gap: 8px;
-        margin-top: 8px;
+        gap: var(--space-2);
+        margin-top: var(--space-2);
         flex-wrap: wrap;
       }
-      .excuse-card__reject { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-      .excuse-card__reject-actions { display: flex; gap: 8px; }
+      .excuse-card__reject { flex: 1; display: flex; flex-direction: column; gap: var(--space-2); }
+      .excuse-card__reject-actions { display: flex; gap: var(--space-2); }
+      /* Status chip — aligns with .pill vocabulary */
       .excuse-card__status {
-        font-size: 0.85em;
-        padding: 2px 8px;
-        border-radius: 999px;
-        background: var(--color-surface-2, #f1f5f9);
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 4px 10px;
+        border-radius: var(--radius-full);
+        font: 500 0.6875rem/1 var(--font-mono);
+        letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+        color: var(--text-secondary);
+        background: color-mix(in oklab, var(--text-muted) 14%, transparent);
+        border: 1px solid color-mix(in oklab, var(--text-muted) 26%, transparent);
       }
-      .excuse-card__status--approved { background: #dcfce7; color: #14532d; }
-      .excuse-card__status--rejected { background: #fee2e2; color: #7f1d1d; }
+      .excuse-card__status--approved {
+        color: var(--accent-primary);
+        background: color-mix(in oklab, var(--accent-primary) 14%, transparent);
+        border-color: color-mix(in oklab, var(--accent-primary) 30%, transparent);
+      }
+      .excuse-card__status--rejected {
+        color: var(--accent-danger);
+        background: color-mix(in oklab, var(--accent-danger) 14%, transparent);
+        border-color: color-mix(in oklab, var(--accent-danger) 30%, transparent);
+      }
       .form-input {
         width: 100%;
-        padding: 6px 10px;
-        border: 1px solid var(--color-border, #e5e7eb);
-        border-radius: 6px;
+        padding: var(--space-2) var(--space-3);
+        border: 1px solid var(--border-default);
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border-radius: var(--radius-md);
+        font: inherit;
+        transition: border-color var(--duration-base) var(--ease-out);
       }
-      .form-error { color: #b91c1c; font-size: 0.85em; margin: 0; }
+      .form-input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: var(--glow-primary);
+      }
+      .form-error { color: var(--accent-danger); font-size: 0.8125rem; margin: 0; }
       .sr-only {
         position: absolute;
         width: 1px; height: 1px;
@@ -261,11 +292,14 @@ import {
         white-space: nowrap; border: 0;
       }
       .page-card__badge {
-        background: var(--color-surface-2, #f1f5f9);
-        padding: 2px 8px;
-        border-radius: 999px;
-        font-size: 0.85em;
-        margin-left: 8px;
+        display: inline-flex; align-items: center;
+        margin-left: var(--space-2);
+        padding: 2px 10px;
+        border-radius: var(--radius-full);
+        background: color-mix(in oklab, var(--text-muted) 16%, transparent);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-secondary);
       }
     `,
   ],

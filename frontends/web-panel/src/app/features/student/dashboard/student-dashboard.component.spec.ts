@@ -178,7 +178,7 @@ describe('StudentDashboardComponent', () => {
   it('renders "Добрый день" at 14:00', () => {
     initAndFlush();
     expect(component.greeting()).toBe('Добрый день');
-    const title = fixture.nativeElement.querySelector('.dashboard__title');
+    const title = fixture.nativeElement.querySelector('.page-hero__title');
     expect(title?.textContent).toContain('Добрый день');
   });
 
@@ -190,7 +190,7 @@ describe('StudentDashboardComponent', () => {
     component = fixture.componentInstance;
     initAndFlush();
     expect(component.greeting()).toBe('Доброе утро');
-    const title = fixture.nativeElement.querySelector('.dashboard__title');
+    const title = fixture.nativeElement.querySelector('.page-hero__title');
     expect(title?.textContent).toContain('Доброе утро');
   });
 
@@ -331,7 +331,7 @@ describe('StudentDashboardComponent', () => {
     expect(component.error()).toBe(
       'Не удалось загрузить данные. Сервер временно недоступен (500).',
     );
-    const errorEl = fixture.nativeElement.querySelector('.dashboard__error');
+    const errorEl = fixture.nativeElement.querySelector('.dashboard-error');
     expect(errorEl?.textContent).toContain(
       'Не удалось загрузить данные. Сервер временно недоступен (500).',
     );

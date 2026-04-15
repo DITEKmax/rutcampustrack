@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
@@ -42,12 +43,14 @@ function setup(apiOverrides: Partial<HeadmanApiService> = {}): {
   component: HeadmanLessonsComponent;
   api: HeadmanApiService;
   snackBar: { open: ReturnType<typeof vi.fn> };
+  dialog: { open: ReturnType<typeof vi.fn> };
 } {
   const api = makeApi(apiOverrides);
   const auth = {
     currentUser: () => ({ id: 1, role: 'STUDENT', isHeadman: true, groupId: 5 }),
   } as unknown as AuthService;
   const snackBar = { open: vi.fn() };
+  const dialog = { open: vi.fn(() => ({ afterClosed: () => of(true) })) };
   TestBed.configureTestingModule({
     imports: [HeadmanLessonsComponent],
     providers: [
@@ -55,11 +58,12 @@ function setup(apiOverrides: Partial<HeadmanApiService> = {}): {
       { provide: HeadmanApiService, useValue: api },
       { provide: AuthService, useValue: auth },
       { provide: MatSnackBar, useValue: snackBar },
+      { provide: MatDialog, useValue: dialog },
     ],
   });
   const fixture = TestBed.createComponent(HeadmanLessonsComponent);
   fixture.detectChanges();
-  return { fixture, component: fixture.componentInstance, api, snackBar };
+  return { fixture, component: fixture.componentInstance, api, snackBar, dialog };
 }
 
 describe('HeadmanLessonsComponent', () => {
@@ -113,14 +117,13 @@ describe('HeadmanLessonsComponent', () => {
     promptSpy.mockRestore();
   });
 
-  it('onRestore confirms and calls restoreLesson, sets status PLANNED', () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    const { component, api } = setup();
+  it('onRestore confirms via dialog and calls restoreLesson, sets status PLANNED', () => {
+    const { component, api, dialog } = setup();
     component.onRestore(LESSONS[1] as any);
+    expect(dialog.open).toHaveBeenCalled();
     expect(api.restoreLesson).toHaveBeenCalledWith(101);
     const updated = component.lessons().find(l => l.id === 101);
     expect(updated?.status).toBe('PLANNED');
-    confirmSpy.mockRestore();
   });
 
   it('shows snackBar with 403 message when cancel returns 403', () => {

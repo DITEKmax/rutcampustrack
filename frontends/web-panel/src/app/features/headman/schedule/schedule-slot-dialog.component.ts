@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import {
   MAT_DIALOG_DATA,
+  MatDialog,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
@@ -13,6 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HeadmanApiService } from '../shared/headman-api.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 export interface ScheduleSlotDialogData {
   mode: 'create' | 'edit';
@@ -124,11 +126,11 @@ export interface ScheduleSlotDialogData {
     .dialog-actions { gap: 8px; }
     .dialog-actions__spacer { flex: 1; }
     .btn-danger {
-      color: #c62828;
-      border-color: #ef9a9a !important;
+      color: var(--accent-danger);
+      border-color: color-mix(in oklab, var(--accent-danger) 40%, transparent) !important;
     }
     .btn-danger:hover:not([disabled]) {
-      background: #ffebee;
+      background: color-mix(in oklab, var(--accent-danger) 12%, transparent);
     }
     .btn-danger i { margin-right: 4px; }
     .subj-type { color: var(--text-muted); font-size: 0.85em; margin-left: 4px; }
@@ -138,6 +140,7 @@ export class ScheduleSlotDialogComponent implements OnInit {
   private readonly headmanApi = inject(HeadmanApiService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialogRef = inject(MatDialogRef<ScheduleSlotDialogComponent>);
+  private readonly dialog = inject(MatDialog);
   readonly data = inject<ScheduleSlotDialogData>(MAT_DIALOG_DATA);
 
   readonly isEdit: boolean;
@@ -261,30 +264,41 @@ export class ScheduleSlotDialogComponent implements OnInit {
 
   onDelete(): void {
     if (!this.isEdit || !this.data.item) return;
-    const ok = window.confirm(
-      'Удалить этот слот из расписания на оставшиеся недели семестра?\n' +
-      'Это действие нельзя отменить через интерфейс.',
-    );
-    if (!ok) return;
-    this.deleting = true;
-    this.apiError = null;
-    this.headmanApi.deleteScheduleItem(this.data.item.id).subscribe({
-      next: () => {
-        this.deleting = false;
-        this.snackBar.open('Слот удалён.', undefined, { duration: 4000 });
-        this.dialogRef.close(true);
-      },
-      error: (err) => {
-        this.deleting = false;
-        if (err?.status === 403) {
-          this.apiError = 'Недостаточно прав для удаления этой пары.';
-        } else if (err?.status === 404) {
-          this.apiError = 'Слот уже удалён.';
-        } else {
-          this.apiError = 'Не удалось удалить слот. Попробуйте ещё раз.';
-        }
-      },
-    });
+    this.dialog
+      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
+        data: {
+          title: 'Удалить слот?',
+          message:
+            'Слот будет удалён из расписания на оставшиеся недели семестра. ' +
+            'Это действие нельзя отменить через интерфейс.',
+          confirmLabel: 'Удалить',
+          destructive: true,
+        },
+        autoFocus: 'first-tabbable',
+      })
+      .afterClosed()
+      .subscribe((ok) => {
+        if (!ok || !this.data.item) return;
+        this.deleting = true;
+        this.apiError = null;
+        this.headmanApi.deleteScheduleItem(this.data.item.id).subscribe({
+          next: () => {
+            this.deleting = false;
+            this.snackBar.open('Слот удалён.', undefined, { duration: 4000 });
+            this.dialogRef.close(true);
+          },
+          error: (err) => {
+            this.deleting = false;
+            if (err?.status === 403) {
+              this.apiError = 'Недостаточно прав для удаления этой пары.';
+            } else if (err?.status === 404) {
+              this.apiError = 'Слот уже удалён.';
+            } else {
+              this.apiError = 'Не удалось удалить слот. Попробуйте ещё раз.';
+            }
+          },
+        });
+      });
   }
 
   private handleError(err: any): void {

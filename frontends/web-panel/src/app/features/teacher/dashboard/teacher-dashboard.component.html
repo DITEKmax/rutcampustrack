@@ -1,26 +1,24 @@
 <section class="dashboard">
-  <!-- Hero -->
-  <header class="dashboard__hero">
-    <div class="dashboard__greeting">
-      <p class="dashboard__eyebrow">
-        <span class="dashboard__pulse" aria-hidden="true"></span>
+  <header class="page-hero">
+    <div class="page-hero__body">
+      <p class="page-hero__eyebrow">
+        <span class="page-hero__pulse" aria-hidden="true"></span>
         Преподаватель · read-only
       </p>
-      <h2 class="dashboard__title">{{ greeting() }}, коллега</h2>
-      <p class="dashboard__subtitle">{{ dateLabel() }}</p>
+      <h2 class="page-hero__title">{{ greeting() }}, коллега</h2>
+      <p class="page-hero__subtitle">{{ dateLabel() }}</p>
     </div>
 
-    <div class="dashboard__clock" aria-hidden="true">
-      <span class="dashboard__clock-value">{{ timeLabel() }}</span>
-      <span class="dashboard__clock-label">по Москве</span>
+    <div class="page-hero__aside" aria-hidden="true">
+      <span class="page-hero__aside-value">{{ timeLabel() }}</span>
+      <span class="page-hero__aside-label">по Москве</span>
     </div>
   </header>
 
-  <!-- Quick access cards -->
   <div class="dashboard__section">
-    <div class="dashboard__section-head">
-      <h3 class="dashboard__section-title">Быстрый доступ</h3>
-      <p class="dashboard__section-sub">Журнал и статистика по вашим группам</p>
+    <div class="section-head">
+      <h3 class="section-head__title">Быстрый доступ</h3>
+      <p class="section-head__sub">Журнал и статистика по вашим группам</p>
     </div>
 
     <div class="dashboard__actions">
@@ -54,21 +52,18 @@
     </div>
   </div>
 
-  <!-- Info panel -->
-  <aside class="dashboard__info">
-    <div class="info-panel">
-      <div class="info-panel__icon" aria-hidden="true">
-        <i class="ph-duotone ph-info"></i>
-      </div>
-      <div class="info-panel__body">
-        <h4 class="info-panel__title">Как работает журнал</h4>
-        <p class="info-panel__text">
-          Студенты отмечаются самостоятельно через Telegram в окне с 5 минут
-          до пары до 5 минут после. Неотметившиеся получают статус «н»
-          автоматически при закрытии пары. Уважительные причины (у, сп)
-          выставляет староста.
-        </p>
-      </div>
+  <aside class="info-panel">
+    <div class="info-panel__icon" aria-hidden="true">
+      <i class="ph-duotone ph-info"></i>
+    </div>
+    <div class="info-panel__body">
+      <h4 class="info-panel__title">Как работает журнал</h4>
+      <p class="info-panel__text">
+        Студенты отмечаются самостоятельно через Telegram в окне с 5 минут
+        до пары до 5 минут после. Неотметившиеся получают статус «н»
+        автоматически при закрытии пары. Уважительные причины (у, сп)
+        выставляет староста.
+      </p>
     </div>
   </aside>
 </section>

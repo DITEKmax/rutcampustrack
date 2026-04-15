@@ -11,8 +11,10 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
 import { addDays, formatDate } from '../../student/schedule/week-utils';
 
 interface Lesson {
@@ -153,55 +155,101 @@ const DEFAULT_RANGE_DAYS = 14;
     .lesson-row {
       display: grid;
       grid-template-columns: 110px 1fr auto;
-      gap: 12px;
+      gap: var(--space-3);
       align-items: center;
-      padding: 10px 12px;
-      border: 1px solid var(--border-subtle, #e0e0e0);
-      border-radius: 8px;
-      background: var(--bg-elevated, #fafafa);
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      transition:
+        border-color var(--duration-base) var(--ease-out),
+        background-color var(--duration-base) var(--ease-out);
     }
-    .lesson-row--cancelled { opacity: 0.6; background: #fafafa; }
+    .lesson-row:hover { background: var(--bg-elevated); border-color: var(--border-default); }
+    .lesson-row--cancelled { opacity: 0.55; }
     .lesson-row__time { display: flex; flex-direction: column; gap: 2px; }
-    .lesson-num { font-size: 0.75rem; color: var(--text-muted); }
-    .lesson-time { font-family: var(--font-mono, monospace); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
-    .lesson-subject { font-weight: 600; }
-    .lesson-type { font-weight: 500; color: var(--text-muted); margin-left: 4px; font-size: 0.9em; }
+    .lesson-num {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .lesson-time {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+    }
+    .lesson-subject { font-weight: 600; color: var(--text-primary); }
+    .lesson-type { font-weight: 500; color: var(--text-muted); margin-left: 4px; font-size: 0.875rem; }
     .lesson-meta {
-      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
-      font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;
+      display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;
+      font-size: 0.8125rem; color: var(--text-secondary); margin-top: 2px;
     }
+    /* Status — shares vocabulary with .pill */
     .status {
-      display: inline-block;
-      padding: 1px 8px;
-      border-radius: 10px;
-      font-size: 0.75rem;
-      font-weight: 500;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font: 500 0.6875rem/1 var(--font-mono);
+      letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
     }
-    .status--planned { background: #e3f2fd; color: #1565c0; }
-    .status--active { background: #e8f5e9; color: #2e7d32; }
-    .status--closed { background: #f5f5f5; color: #616161; }
-    .status--cancelled { background: #ffebee; color: #c62828; }
+    .status--planned {
+      background: color-mix(in oklab, var(--accent-secondary) 14%, transparent);
+      color: var(--accent-secondary);
+      border: 1px solid color-mix(in oklab, var(--accent-secondary) 30%, transparent);
+    }
+    .status--active {
+      background: color-mix(in oklab, var(--accent-primary) 14%, transparent);
+      color: var(--accent-primary);
+      border: 1px solid color-mix(in oklab, var(--accent-primary) 30%, transparent);
+    }
+    .status--closed {
+      background: color-mix(in oklab, var(--text-muted) 14%, transparent);
+      color: var(--text-secondary);
+      border: 1px solid color-mix(in oklab, var(--text-muted) 26%, transparent);
+    }
+    .status--cancelled {
+      background: color-mix(in oklab, var(--accent-danger) 14%, transparent);
+      color: var(--accent-danger);
+      border: 1px solid color-mix(in oklab, var(--accent-danger) 30%, transparent);
+    }
     .cancel-reason { font-style: italic; }
     .btn-stroke {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border-subtle);
+      padding: 6px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-default);
       background: transparent;
+      color: var(--text-primary);
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8125rem;
+      font-family: inherit;
       display: inline-flex; align-items: center; gap: 4px;
-      transition: background 150ms ease;
+      transition:
+        background-color var(--duration-base) var(--ease-out),
+        border-color var(--duration-base) var(--ease-out);
     }
-    .btn-stroke:hover:not([disabled]) { background: var(--bg-hover, #eee); }
+    .btn-stroke:hover:not([disabled]) {
+      background: var(--bg-elevated);
+      border-color: var(--border-accent);
+    }
     .btn-stroke[disabled] { opacity: 0.5; cursor: not-allowed; }
-    .btn-stroke--danger { color: #c62828; border-color: #ef9a9a; }
-    .btn-stroke--danger:hover:not([disabled]) { background: #ffebee; }
+    .btn-stroke--danger {
+      color: var(--accent-danger);
+      border-color: color-mix(in oklab, var(--accent-danger) 35%, transparent);
+    }
+    .btn-stroke--danger:hover:not([disabled]) {
+      background: color-mix(in oklab, var(--accent-danger) 12%, transparent);
+      border-color: color-mix(in oklab, var(--accent-danger) 50%, transparent);
+    }
   `],
 })
 export class HeadmanLessonsComponent implements OnInit {
   private readonly headmanApi = inject(HeadmanApiService);
   private readonly auth = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   readonly rangeDays = DEFAULT_RANGE_DAYS;
 
@@ -347,19 +395,31 @@ export class HeadmanLessonsComponent implements OnInit {
   }
 
   onRestore(lesson: Lesson): void {
-    if (!window.confirm(`Восстановить пару «${this.subjectName(lesson.subjectId)}»?`)) return;
-    this.busy.set(lesson.id);
-    this.headmanApi.restoreLesson(lesson.id).subscribe({
-      next: () => {
-        this.busy.set(null);
-        this.snackBar.open('Пара восстановлена.', undefined, { duration: 3000 });
-        this.applyLocalUpdate(lesson.id, l => ({ ...l, status: 'PLANNED', cancelReason: undefined }));
-      },
-      error: (err) => {
-        this.busy.set(null);
-        this.snackBar.open(this.errorMessage(err, 'Не удалось восстановить пару.'), undefined, { duration: 5000 });
-      },
-    });
+    this.dialog
+      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
+        data: {
+          title: 'Восстановить пару?',
+          message: `Пара «${this.subjectName(lesson.subjectId)}» снова появится в расписании и будет учитываться в статистике.`,
+          confirmLabel: 'Восстановить',
+        },
+        autoFocus: 'first-tabbable',
+      })
+      .afterClosed()
+      .subscribe((ok) => {
+        if (!ok) return;
+        this.busy.set(lesson.id);
+        this.headmanApi.restoreLesson(lesson.id).subscribe({
+          next: () => {
+            this.busy.set(null);
+            this.snackBar.open('Пара восстановлена.', undefined, { duration: 3000 });
+            this.applyLocalUpdate(lesson.id, l => ({ ...l, status: 'PLANNED', cancelReason: undefined }));
+          },
+          error: (err) => {
+            this.busy.set(null);
+            this.snackBar.open(this.errorMessage(err, 'Не удалось восстановить пару.'), undefined, { duration: 5000 });
+          },
+        });
+      });
   }
 
   private applyLocalUpdate(id: number, fn: (l: Lesson) => Lesson): void {

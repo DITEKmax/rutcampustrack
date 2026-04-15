@@ -1,40 +1,39 @@
-<section class="dashboard student-dashboard page-stack" [@routeFade]>
-  <!-- Greeting hero -->
-  <header class="dashboard__hero">
-    <div class="dashboard__greeting">
-      <p class="dashboard__eyebrow">
-        <span class="dashboard__pulse" aria-hidden="true"></span>
+<section class="student-dashboard" [@routeFade]>
+  <header class="page-hero">
+    <div class="page-hero__body">
+      <p class="page-hero__eyebrow">
+        <span class="page-hero__pulse" aria-hidden="true"></span>
         Студент
       </p>
-      <h2 class="dashboard__title">{{ greeting() }}</h2>
-      <p class="dashboard__subtitle">{{ dateLabel() }}</p>
+      <h2 class="page-hero__title">{{ greeting() }}</h2>
+      <p class="page-hero__subtitle">{{ dateLabel() }}</p>
     </div>
-    <div class="dashboard__clock" aria-hidden="true">
-      <span class="dashboard__clock-value">{{ timeLabel() }}</span>
-      <span class="dashboard__clock-label">по Москве</span>
+    <div class="page-hero__aside" aria-hidden="true">
+      <span class="page-hero__aside-value">{{ timeLabel() }}</span>
+      <span class="page-hero__aside-label">по Москве</span>
     </div>
   </header>
 
   @if (error()) {
-    <div class="dashboard__error" role="alert">
+    <div class="dashboard-error" role="alert">
       <i class="ph ph-warning-circle" aria-hidden="true"></i>
       {{ error() }}
     </div>
   } @else if (loading()) {
-    <div class="dashboard__skeleton-row" aria-busy="true" aria-label="Загрузка…">
+    <div class="dashboard-skeleton-row" aria-busy="true" aria-label="Загрузка…">
       <div class="dashboard-skeleton"></div>
       <div class="dashboard-skeleton"></div>
     </div>
   } @else {
-    <!-- Next lesson card -->
     <app-next-lesson-card
       [lesson]="nextLesson()"
       [subjectName]="(getSubjectName$(nextLesson()?.subjectId) | async) ?? 'Предмет'"
     />
 
-    <!-- Today's schedule summary -->
     <section class="dashboard-today">
-      <h3 class="dashboard-today__title">Расписание на сегодня</h3>
+      <div class="section-head">
+        <h3 class="section-head__title">Расписание на сегодня</h3>
+      </div>
       @if (todaySorted().length === 0) {
         <p class="dashboard-today__empty">Сегодня пар нет</p>
       } @else {
@@ -60,10 +59,12 @@
       }
     </section>
 
-    <!-- Red-zone warnings -->
     @if (redZoneSubjects().length > 0) {
       <section class="dashboard-redzone">
-        <h3 class="dashboard-redzone__title">Внимание к посещаемости</h3>
+        <div class="section-head">
+          <h3 class="section-head__title">Внимание к посещаемости</h3>
+          <p class="section-head__sub">Предметы ниже порога посещаемости</p>
+        </div>
         <div class="dashboard-redzone__list">
           @for (subject of redZoneSubjects(); track subject.subjectId) {
             <app-redzone-warning

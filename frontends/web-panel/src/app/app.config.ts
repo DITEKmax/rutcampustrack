@@ -5,9 +5,32 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
-import { Chart, BarController, CategoryScale, LinearScale, BarElement, Legend, Tooltip } from 'chart.js';
+import {
+  Chart,
+  BarController,
+  LineController,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Filler,
+  Legend,
+  Tooltip,
+} from 'chart.js';
 
-Chart.register(BarController, CategoryScale, LinearScale, BarElement, Legend, Tooltip);
+Chart.register(
+  BarController,
+  LineController,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Filler,
+  Legend,
+  Tooltip,
+);
 
 export const appConfig: ApplicationConfig = {
   providers: [

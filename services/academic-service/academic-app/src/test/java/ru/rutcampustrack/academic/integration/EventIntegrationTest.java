@@ -25,6 +25,7 @@ import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.homework.HomeworkService;
 import ru.rutcampustrack.academic.repository.GroupRepository;
@@ -39,8 +40,12 @@ import ru.rutcampustrack.academic.user.UserService;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 /**
@@ -62,6 +67,14 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
 
     @MockitoBean
     private RequestContext requestContext;
+
+    /**
+     * Phase 61-03 / D-04: createHomework теперь вызывает ScheduleGrpcClient.
+     * В интеграционном тесте реального schedule-service нет — мочим клиент,
+     * возвращая LessonResponse с правильным subjectId.
+     */
+    @MockitoBean
+    private ScheduleGrpcClient scheduleGrpcClient;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -159,6 +172,16 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
         when(requestContext.isHeadman()).thenReturn(true);
         when(requestContext.getUserId()).thenReturn(testUser.getId());
         when(requestContext.getGroupId()).thenReturn(groupA.getId());
+
+        // Phase 61-03 / D-04: мок резолва пары — возвращаем LessonResponse с subjectId=testSubject.
+        when(scheduleGrpcClient.resolveLesson(anyLong(), any(), anyInt()))
+                .thenReturn(Optional.of(
+                        ru.rutcampustrack.schedule.grpc.LessonResponse.newBuilder()
+                                .setGroupId(groupA.getId())
+                                .setSubjectId(testSubject.getId())
+                                .setLessonNumber(1)
+                                .setStatus("planned")
+                                .build()));
     }
 
     @AfterEach

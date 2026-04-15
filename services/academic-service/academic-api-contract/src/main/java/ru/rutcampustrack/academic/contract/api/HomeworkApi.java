@@ -29,7 +29,7 @@ import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
 @RequestMapping("/academic/homeworks")
 public interface HomeworkApi {
 
-    @Operation(summary = "Создать домашнее задание (HEADMAN/ADMIN)")
+    @Operation(summary = "Создать домашнее задание (HEADMAN)")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Задание создано"),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
@@ -56,7 +56,7 @@ public interface HomeworkApi {
             Pageable pageable,
             PagedResourcesAssembler<HomeworkResponse> assembler);
 
-    @Operation(summary = "Полное обновление задания (PUT, HEADMAN/ADMIN)")
+    @Operation(summary = "Полное обновление задания (PUT, HEADMAN, только автор)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Задание обновлено"),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
@@ -68,7 +68,7 @@ public interface HomeworkApi {
             @PathVariable Long id,
             @Valid @RequestBody UpdateHomeworkRequest request);
 
-    @Operation(summary = "Удалить задание (HEADMAN/ADMIN)")
+    @Operation(summary = "Удалить задание (HEADMAN, только автор)")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Задание удалено"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),

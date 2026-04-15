@@ -446,10 +446,11 @@ class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
                 "VALUES ('HW Test Semester', '2040-02-01', '2040-06-30', false, NOW()) RETURNING id",
                 Long.class);
 
-        // Create homework as headman via native SQL (avoid headman permission check)
+        // Create homework as headman via native SQL (avoid headman permission check).
+        // Phase 61-02 V13: lesson_date / lesson_number NOT NULL.
         Long homeworkId = jdbcTemplate.queryForObject(
-                "INSERT INTO homeworks (group_id, subject_id, semester_id, title, published_by, created_at, updated_at) " +
-                "VALUES (?, ?, ?, 'Test HW', ?, NOW(), NOW()) RETURNING id",
+                "INSERT INTO homeworks (group_id, subject_id, semester_id, title, published_by, lesson_date, lesson_number, created_at, updated_at) " +
+                "VALUES (?, ?, ?, 'Test HW', ?, '2040-03-01', 1, NOW(), NOW()) RETURNING id",
                 Long.class, seedGroupId, subjectId, semesterId, seedStudentId);
 
         // Mark homework as complete (student)

@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/angular';
 import { StudentExcusesComponent } from './student-excuses.component';
 import { ExcuseFormDialogComponent } from './excuse-form-dialog/excuse-form-dialog.component';
 import { StudentApiService } from '../shared/student-api.service';
+import { SubjectCacheService } from '../shared/subject-cache.service';
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -136,11 +137,14 @@ describe('ExcuseFormDialogComponent', () => {
     vi.clearAllMocks();
   });
 
+  const mockSubjectCache = { getName: vi.fn(() => of('Алгебра')) };
+
   async function renderDialog() {
     return render(ExcuseFormDialogComponent, {
       providers: [
         provideNoopAnimations(),
         { provide: StudentApiService, useValue: mockApiService },
+        { provide: SubjectCacheService, useValue: mockSubjectCache },
         { provide: MatSnackBar, useValue: mockSnackBar },
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: MAT_DIALOG_DATA, useValue: { lessons } },

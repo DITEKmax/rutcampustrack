@@ -36,9 +36,23 @@
 .lesson-list {
   background: var(--bg-surface);
   border-radius: var(--radius-md);
-  max-height: 240px;
+  max-height: 360px;
   overflow-y: auto;
   border: 1px solid var(--border-subtle);
+}
+
+.lesson-day + .lesson-day {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.lesson-day__heading {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .lesson-row {
@@ -54,16 +68,29 @@
   border-bottom: none;
 }
 
+.lesson-row__num {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  min-width: 28px;
+}
+
 .lesson-row__subject {
   flex: 1;
   font-size: var(--text-sm);
   color: var(--text-primary);
 }
 
-.lesson-row__date {
-  font-size: var(--text-xs);
-  font-family: var(--font-mono);
-  color: var(--text-muted);
+.lesson-row__mark {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--accent-danger, #c62828);
+  min-width: 16px;
+  text-align: center;
+}
+
+.lesson-row__mark--excused {
+  color: var(--accent-warning, #c77700);
 }
 
 .drop-zone {

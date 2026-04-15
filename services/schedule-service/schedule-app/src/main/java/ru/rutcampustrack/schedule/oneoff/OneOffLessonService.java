@@ -98,14 +98,14 @@ public class OneOffLessonService {
         Long semesterId = activeSemester.getId();
 
         // D-09: conflict check against active template.
-        short dayOfWeekZeroBased = (short) (date.getDayOfWeek().getValue() - 1); // 0=Mon..6=Sun
+        short dayOfWeekOneBased = (short) date.getDayOfWeek().getValue(); // 1=Mon..7=Sun
         WeekType weekTypeForDate = computeWeekTypeForDate(
                 date,
                 semesterFrom,
                 academicGrpcClient.parseSemesterFirstWeekType(activeSemester));
         boolean hasTemplateConflict = scheduleItemRepository.existsActiveTemplateSlot(
                 request.groupId(), request.lessonNumber(),
-                dayOfWeekZeroBased, weekTypeForDate.name().toLowerCase(), semesterId);
+                dayOfWeekOneBased, weekTypeForDate.name().toLowerCase(), semesterId);
         if (hasTemplateConflict) {
             throw new ConflictException(
                     "Слот занят активной шаблонной парой на эту дату. "

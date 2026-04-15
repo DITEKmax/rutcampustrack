@@ -4,21 +4,29 @@
 
   <!-- Lesson selection -->
   <section class="form-section">
-    <h3 class="form-section__label">Выберите занятия</h3>
-    <div class="lesson-list" role="list" aria-label="Список занятий для выбора">
-      @if (recentLessons.length === 0) {
-        <p class="form-hint">Нет занятий за последние 30 дней</p>
+    <h3 class="form-section__label">Выберите пропущенные занятия</h3>
+    <div class="lesson-list" role="list" aria-label="Список пропусков с начала семестра">
+      @if (!hasRecords()) {
+        <p class="form-hint">Нет пропусков с начала семестра.</p>
       }
-      @for (lesson of recentLessons; track lesson.lessonId) {
-        <label class="lesson-row" role="listitem">
-          <mat-checkbox
-            [checked]="isSelected(lesson.lessonId)"
-            (change)="toggleLesson(lesson.lessonId)"
-            [aria-label]="lesson.lessonDate + ' занятие ' + lesson.lessonNumber"
-          />
-          <span class="lesson-row__subject">Занятие {{ lesson.lessonNumber }}</span>
-          <span class="lesson-row__date">{{ lesson.lessonDate }}</span>
-        </label>
+      @for (day of dayGroups(); track day.date) {
+        <div class="lesson-day">
+          <div class="lesson-day__heading">{{ day.label }}</div>
+          @for (lesson of day.records; track lesson.lessonId) {
+            <label class="lesson-row" role="listitem">
+              <mat-checkbox
+                [checked]="isSelected(lesson.lessonId)"
+                (change)="toggleLesson(lesson.lessonId)"
+                [aria-label]="day.label + ', №' + lesson.lessonNumber + ' ' + subjectName(lesson.subjectId)"
+              />
+              <span class="lesson-row__num">№{{ lesson.lessonNumber }}</span>
+              <span class="lesson-row__subject">{{ subjectName(lesson.subjectId) }}</span>
+              <span class="lesson-row__mark" [class.lesson-row__mark--excused]="lesson.status === 'excused'">
+                {{ statusSymbol(lesson.status) }}
+              </span>
+            </label>
+          }
+        </div>
       }
     </div>
   </section>

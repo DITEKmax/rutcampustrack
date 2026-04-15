@@ -218,7 +218,7 @@ export class HeadmanDashboardComponent implements OnInit {
     forkJoin([
       this.headmanApi.getGroupMembers(0, 1),
       this.headmanApi.getTodayLessons(groupId).pipe(catchError(() => of(null))),
-      this.headmanApi.getGroupExcuses(groupId, 'pending').pipe(catchError(() => of([] as any[]))),
+      this.headmanApi.getGroupExcuses(groupId, 'submitted').pipe(catchError(() => of([] as any[]))),
     ]).subscribe({
       next: ([members, lessons, excuses]) => {
         this.memberCount.set((members as any)?.page?.totalElements ?? 0);

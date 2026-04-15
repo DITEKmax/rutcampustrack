@@ -53,8 +53,8 @@ class LessonGenerationServiceTest {
     private static final LocalDate SEM_START = LocalDate.of(2026, 2, 2);  // Monday
     private static final LocalDate SEM_END   = LocalDate.of(2026, 3, 2);  // Monday
 
-    // dayOfWeek: 0 = Monday (project convention: 0=Mon..5=Sat)
-    private static final short DAY_MONDAY = 0;
+    // dayOfWeek: 1 = Monday (project convention aligned with java.time.DayOfWeek: 1=Mon..7=Sun)
+    private static final short DAY_MONDAY = 1;
 
     @BeforeEach
     void setUp() {
@@ -181,7 +181,7 @@ class LessonGenerationServiceTest {
     // =========================================================================
 
     /**
-     * A 3-day semester (Tue–Thu) with dayOfWeek=0 (Monday) produces empty result.
+     * A 3-day semester (Tue–Thu) with dayOfWeek=1 (Monday) produces empty result.
      */
     @Test
     void computeLessonDates_noMatchingDayInRange_returnsEmpty() {

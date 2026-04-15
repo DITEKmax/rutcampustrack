@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, Inject, inject, signal,
+  ChangeDetectionStrategy, Component, Inject, OnInit, computed, inject, signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -13,19 +13,27 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { StudentApiService } from '../../shared/student-api.service';
+import { SubjectCacheService } from '../../shared/subject-cache.service';
 import type { AttendanceRecord, ExcuseType } from '../../shared/student-schedule.types';
 import { EXCUSE_TYPE_LABELS } from '../../shared/student-schedule.types';
+
+const DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+const MONTH_NAMES = [
+  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+];
+
+interface DayGroup {
+  date: string;
+  label: string;
+  records: AttendanceRecord[];
+}
 
 /**
  * Student-side dialog for creating an excuse ticket (D-21, D-22).
  *
- * Scope (Phase 59-07):
- *  - Dropdown «Причина пропуска» with 6 ExcuseType values (Russian labels)
- *  - Checkbox list of last-30-days lessons for lesson selection
- *  - Optional comment (max 1000 chars — backend validation)
- *  - JSON submit via StudentApiService.submitExcuse(ids, excuseType, comment)
- *
- * Out of scope (D-03): file attachments — deferred to future Telegram flow.
+ * Показывает все пропуски («н» absent + «у» excused) с начала семестра,
+ * сгруппированные по дням, с названием предмета вместо номера занятия.
  */
 @Component({
   selector: 'app-excuse-form-dialog',
@@ -44,16 +52,23 @@ import { EXCUSE_TYPE_LABELS } from '../../shared/student-schedule.types';
   templateUrl: './excuse-form-dialog.component.html',
   styleUrl: './excuse-form-dialog.component.css',
 })
-export class ExcuseFormDialogComponent {
+export class ExcuseFormDialogComponent implements OnInit {
   private readonly apiService = inject(StudentApiService);
+  private readonly subjectCache = inject(SubjectCacheService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly fb = inject(FormBuilder);
   readonly dialogRef = inject(MatDialogRef<ExcuseFormDialogComponent>);
 
   readonly lessons: AttendanceRecord[];
 
-  // Filter to last 30 days for lesson selection
-  readonly recentLessons: AttendanceRecord[];
+  /** Записи «н» (absent) и «у» (excused), отсортированные по дате от начала семестра. */
+  readonly missedRecords: AttendanceRecord[];
+
+  /** Записи, сгруппированные по дню, отсортированные по возрастанию даты. */
+  readonly dayGroups = signal<DayGroup[]>([]);
+
+  /** Словарь subjectId → subject name (заполняется асинхронно). */
+  readonly subjectNames = signal<Record<number, string>>({});
 
   readonly selectedLessonIds = signal<Set<number>>(new Set());
   readonly submitting = signal(false);
@@ -63,6 +78,8 @@ export class ExcuseFormDialogComponent {
   readonly excuseTypeLabels = EXCUSE_TYPE_LABELS;
   readonly excuseTypes = Object.keys(EXCUSE_TYPE_LABELS) as ExcuseType[];
 
+  readonly hasRecords = computed(() => this.dayGroups().length > 0);
+
   readonly form: FormGroup;
   get excuseTypeControl(): FormControl { return this.form.get('excuseType') as FormControl; }
   get commentControl(): FormControl { return this.form.get('comment') as FormControl; }
@@ -71,15 +88,30 @@ export class ExcuseFormDialogComponent {
     @Inject(MAT_DIALOG_DATA) data: { lessons: AttendanceRecord[] },
   ) {
     this.lessons = data.lessons ?? [];
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 30);
-    this.recentLessons = this.lessons.filter(
-      l => new Date(l.lessonDate) >= cutoff,
-    );
+    this.missedRecords = this.lessons
+      .filter(l => l.status === 'absent' || l.status === 'excused')
+      .slice()
+      .sort((a, b) => a.lessonDate.localeCompare(b.lessonDate) || a.lessonNumber - b.lessonNumber);
+
+    this.dayGroups.set(this.groupByDay(this.missedRecords));
+
     this.form = this.fb.group({
       excuseType: [null, [Validators.required]],
       comment: ['', [Validators.maxLength(1000)]],
     });
+  }
+
+  ngOnInit(): void {
+    const uniqueSubjectIds = Array.from(new Set(this.missedRecords.map(r => r.subjectId)));
+    uniqueSubjectIds.forEach(id => {
+      this.subjectCache.getName(id).subscribe(name => {
+        this.subjectNames.update(prev => ({ ...prev, [id]: name }));
+      });
+    });
+  }
+
+  subjectName(subjectId: number): string {
+    return this.subjectNames()[subjectId] ?? 'Предмет';
   }
 
   toggleLesson(lessonId: number): void {
@@ -94,6 +126,12 @@ export class ExcuseFormDialogComponent {
 
   isSelected(lessonId: number): boolean {
     return this.selectedLessonIds().has(lessonId);
+  }
+
+  statusSymbol(status: string): string {
+    if (status === 'absent') return 'н';
+    if (status === 'excused') return 'у';
+    return '';
   }
 
   submit(): void {
@@ -131,5 +169,27 @@ export class ExcuseFormDialogComponent {
 
   cancel(): void {
     this.dialogRef.close(false);
+  }
+
+  private groupByDay(records: AttendanceRecord[]): DayGroup[] {
+    const map = new Map<string, AttendanceRecord[]>();
+    for (const r of records) {
+      const arr = map.get(r.lessonDate) ?? [];
+      arr.push(r);
+      map.set(r.lessonDate, arr);
+    }
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, recs]) => ({
+        date,
+        label: this.dayLabel(date),
+        records: recs.slice().sort((a, b) => a.lessonNumber - b.lessonNumber),
+      }));
+  }
+
+  private dayLabel(date: string): string {
+    const d = new Date(date + 'T00:00:00');
+    const dow = d.getDay();
+    return `${DAY_NAMES[dow]}, ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
   }
 }

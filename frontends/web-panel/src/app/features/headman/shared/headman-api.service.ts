@@ -21,7 +21,6 @@ import {
  * - getGroupMembers         → academic-service  (members of the headman's group)
  * - getTodayLessons         → schedule-service  (lessons for a group on today's date)
  * - getPendingExcuses       → academic-service  (deferred — graceful 404 degradation)
- * - getPendingLateCheckins  → academic-service  (deferred — graceful 404 degradation)
  * - listAssistants          → academic-service  (assistants for a group)
  * - assignAssistant         → academic-service  (assign a student as assistant)
  * - updateAssistantPermissions → academic-service (patch assistant permissions)
@@ -62,7 +61,7 @@ export class HeadmanApiService {
    */
   getPendingExcuses(): Observable<any> {
     return this.http.get('/api/academic/headman/excuses', {
-      params: new HttpParams().set('status', 'pending'),
+      params: new HttpParams().set('status', 'submitted'),
     });
   }
 
@@ -114,16 +113,6 @@ export class HeadmanApiService {
     return this.http.patch<void>(`/api/attendance/excuses/${id}/status`, {
       status: 'rejected',
       decisionComment,
-    });
-  }
-
-  /**
-   * Fetch pending late check-in requests awaiting headman review.
-   * Backend endpoint is deferred from v5.0 — HTTP 404 returns graceful degradation.
-   */
-  getPendingLateCheckins(): Observable<any> {
-    return this.http.get('/api/academic/headman/late-checkins', {
-      params: new HttpParams().set('status', 'pending'),
     });
   }
 

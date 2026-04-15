@@ -46,7 +46,7 @@ public class LessonGenerationService {
      * @param semesterStart    First day of the semester (inclusive)
      * @param semesterEnd      Last day of the semester (inclusive)
      * @param firstWeekType    Parity of the first semester week (ODD or EVEN; ALL is not valid here)
-     * @param dayOfWeek        0=Monday .. 5=Saturday (schedule_items convention)
+     * @param dayOfWeek        1=Monday .. 6=Saturday (schedule_items convention, aligned with java.time.DayOfWeek)
      * @param templateWeekType The schedule item's week type: ALL, ODD, or EVEN
      * @return ordered list of LocalDate occurrences
      */
@@ -57,8 +57,11 @@ public class LessonGenerationService {
             short dayOfWeek,
             WeekType templateWeekType) {
 
-        // Convert 0-indexed dayOfWeek (0=Mon) to java.time.DayOfWeek (1=Mon)
-        DayOfWeek targetJavaDow = DayOfWeek.of(dayOfWeek + 1);
+        // dayOfWeek is aligned with java.time.DayOfWeek (1=Mon..7=Sun).
+        // Legacy rows may still have 0; treat them as Monday for backward compatibility
+        // (V5 migration widened the CHECK to 0..7 without normalising old data).
+        int normalisedDow = dayOfWeek == 0 ? 1 : dayOfWeek;
+        DayOfWeek targetJavaDow = DayOfWeek.of(normalisedDow);
 
         // Anchor: the Monday of the week that contains semesterStart.
         // All week indices are computed relative to this Monday.

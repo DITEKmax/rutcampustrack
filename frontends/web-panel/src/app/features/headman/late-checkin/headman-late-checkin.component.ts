@@ -1,7 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { catchError, of } from 'rxjs';
-import { HeadmanApiService } from '../shared/headman-api.service';
 
 @Component({
   selector: 'app-headman-late-checkin',
@@ -31,13 +29,4 @@ import { HeadmanApiService } from '../shared/headman-api.service';
     </div>
   `,
 })
-export class HeadmanLateCheckinComponent implements OnInit {
-  private readonly headmanApi = inject(HeadmanApiService);
-  lateCheckinData = signal<any>(null);
-
-  ngOnInit(): void {
-    this.headmanApi.getPendingLateCheckins()
-      .pipe(catchError(() => of(null)))
-      .subscribe(data => this.lateCheckinData.set(data));
-  }
-}
+export class HeadmanLateCheckinComponent {}

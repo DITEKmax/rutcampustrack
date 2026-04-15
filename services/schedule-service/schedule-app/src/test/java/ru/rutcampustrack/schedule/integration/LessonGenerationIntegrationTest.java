@@ -40,12 +40,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Uses a short 3-week semester (Feb 2–22, 2026) for predictable lesson counts.
  * Semester starts on Monday Feb 2 (week 0 = ODD per firstWeekType).
  *
- * dayOfWeek values stored in DB:
- *   1 => DayOfWeek.of(2) = TUESDAY (LessonGenerationService: DayOfWeek.of(dayOfWeek + 1))
- *   2 => DayOfWeek.of(3) = WEDNESDAY
+ * dayOfWeek values stored in DB (aligned with java.time.DayOfWeek: 1=Mon..7=Sun):
+ *   2 => TUESDAY
+ *   3 => WEDNESDAY
  *
- * Tuesdays (dayOfWeek=1) in Feb 2-22: Feb 3, 10, 17 = 3 total, ODD weeks: Feb 3, 17 = 2
- * Wednesdays (dayOfWeek=2) in Feb 2-22: Feb 4, 11, 18 = 3 total
+ * Tuesdays (dayOfWeek=2) in Feb 2-22: Feb 3, 10, 17 = 3 total, ODD weeks: Feb 3, 17 = 2
+ * Wednesdays (dayOfWeek=3) in Feb 2-22: Feb 4, 11, 18 = 3 total
  */
 @AutoConfigureMockMvc
 class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
@@ -141,11 +141,11 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
 
     /**
      * POST creates template AND generates all matching lessons in the same transaction (D-01, LSSN-01).
-     * dayOfWeek=1 => TUESDAY. Feb 2-22 Tuesdays: Feb 3, 10, 17 = 3 lessons for weekType=ALL.
+     * dayOfWeek=2 => TUESDAY. Feb 2-22 Tuesdays: Feb 3, 10, 17 = 3 lessons for weekType=ALL.
      */
     @Test
     void createGeneratesLessons() throws Exception {
-        createItemViaApi((short) 1, WeekType.ALL);
+        createItemViaApi((short) 2, WeekType.ALL);
 
         List<Lesson> lessons = lessonRepository.findAll();
         assertThat(lessons).hasSize(3);
@@ -159,12 +159,12 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
 
     /**
      * Week parity respected: ODD weeks only (LSSN-02).
-     * dayOfWeek=1 => TUESDAY. Tuesdays: Feb 3 (ODD wk), Feb 10 (EVEN wk), Feb 17 (ODD wk).
+     * dayOfWeek=2 => TUESDAY. Tuesdays: Feb 3 (ODD wk), Feb 10 (EVEN wk), Feb 17 (ODD wk).
      * With weekType=ODD, firstWeekType=ODD: expected lessons = Feb 3, Feb 17 = 2 lessons.
      */
     @Test
     void createGeneratesLessonsOddWeeks() throws Exception {
-        createItemViaApi((short) 1, WeekType.ODD);
+        createItemViaApi((short) 2, WeekType.ODD);
 
         List<Lesson> lessons = lessonRepository.findAll();
         assertThat(lessons).hasSize(2);
@@ -178,21 +178,21 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
 
     /**
      * PUT with changed dayOfWeek removes old PLANNED lessons and generates new ones (D-06, LSSN-01).
-     * Create with dayOfWeek=1 (TUESDAY: Feb 3, 10, 17).
-     * Update to dayOfWeek=2 (WEDNESDAY: Feb 4, 11, 18).
+     * Create with dayOfWeek=2 (TUESDAY: Feb 3, 10, 17).
+     * Update to dayOfWeek=3 (WEDNESDAY: Feb 4, 11, 18).
      * After update: lessons should be on Wednesdays.
      */
     @Test
     void updateScheduleFieldsReGenerates() throws Exception {
-        Long itemId = createItemViaApi((short) 1, WeekType.ALL);
+        Long itemId = createItemViaApi((short) 2, WeekType.ALL);
 
         // Verify initial lessons are on Tuesdays
         assertThat(lessonRepository.findAll()).hasSize(3);
 
-        // Update dayOfWeek from 1 (Tue) to 2 (Wed)
+        // Update dayOfWeek from 2 (Tue) to 3 (Wed)
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequestJson((short) 2, WeekType.ALL, "A-101")))
+                .content(updateRequestJson((short) 3, WeekType.ALL, "A-101")))
                 .andExpect(status().isOk());
 
         // All PLANNED Tuesdays should be replaced by Wednesdays
@@ -223,7 +223,7 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
      */
     @Test
     void updateNonScheduleFieldsNoReGeneration() throws Exception {
-        Long itemId = createItemViaApi((short) 1, WeekType.ALL);
+        Long itemId = createItemViaApi((short) 2, WeekType.ALL);
 
         long countBefore = lessonRepository.count();
         assertThat(countBefore).isEqualTo(3);
@@ -231,7 +231,7 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
         // Update only room — dayOfWeek, weekType, startTime, endTime, lessonNumber all unchanged
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequestJson((short) 1, WeekType.ALL, "NEW-ROOM")))
+                .content(updateRequestJson((short) 2, WeekType.ALL, "NEW-ROOM")))
                 .andExpect(status().isOk());
 
         // Lesson count must remain exactly the same
@@ -253,7 +253,7 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
      */
     @Test
     void reGenerationPreservesNonPlannedLessons() throws Exception {
-        Long itemId = createItemViaApi((short) 1, WeekType.ALL);
+        Long itemId = createItemViaApi((short) 2, WeekType.ALL);
 
         // Find a lesson and mark it CANCELLED
         List<Lesson> lessons = lessonRepository.findAll();
@@ -266,7 +266,7 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
         // Update dayOfWeek to trigger re-generation attempt
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequestJson((short) 2, WeekType.ALL, "A-101")))
+                .content(updateRequestJson((short) 3, WeekType.ALL, "A-101")))
                 .andExpect(status().isOk());
 
         // The CANCELLED lesson must still exist (only PLANNED lessons are deleted by regenerateFromDate)

@@ -50,8 +50,9 @@ class OneOffLessonControllerIT extends AbstractScheduleIntegrationTest {
     // Semester "Spring 2026" spans Feb-Jun; pick a Monday (2026-04-20), lesson slot 1.
     private static final LocalDate TARGET_DATE = LocalDate.of(2026, 4, 20);
     private static final short TARGET_LESSON = (short) 1;
-    // day_of_week in schedule_items: 0=Mon..5=Sat. 2026-04-20 is Monday → 0.
-    private static final short TARGET_DOW = (short) 0;
+    // day_of_week in schedule_items: 1=Mon..7=Sun (aligned with java.time.DayOfWeek).
+    // 2026-04-20 is Monday → 1.
+    private static final short TARGET_DOW = (short) 1;
 
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;

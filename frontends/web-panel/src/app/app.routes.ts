@@ -208,6 +208,15 @@ export const routes: Routes = [
             data: { title: 'Предметы', eyebrow: 'Староста' },
           },
           {
+            path: 'homework',
+            canActivate: [headmanGuard],
+            loadComponent: () =>
+              import('./features/headman/homework/headman-homework.component').then(
+                m => m.HeadmanHomeworkComponent,
+              ),
+            data: { title: 'Домашние задания', eyebrow: 'Староста' },
+          },
+          {
             path: 'journal',
             canActivate: [headmanGuard],
             loadComponent: () =>

@@ -31,22 +31,35 @@ async def handle_homework(
         logger.warning("homework event missing required field: %s", exc)
         return
 
+    lesson_date = payload.get("lesson_date")
+    lesson_number = payload.get("lesson_number")
+
+    async def _resolve_subject_name(subject_id):
+        if subject_id is None:
+            return "Предмет"
+        try:
+            subjects_resp = await academic_client.get_subjects_by_ids([subject_id])
+            if subjects_resp.subjects:
+                return subjects_resp.subjects[0].subject_name
+        except Exception:
+            logger.warning(
+                "Could not resolve subject_id=%s for %s, using fallback",
+                subject_id,
+                event_type,
+            )
+        return "Предмет"
+
     if event_type == "homework.published":
-        subject_id = payload.get("subject_id")
-        subject_name = "Предмет"
-        if subject_id is not None:
-            try:
-                subjects_resp = await academic_client.get_subjects_by_ids([subject_id])
-                if subjects_resp.subjects:
-                    subject_name = subjects_resp.subjects[0].subject_name
-            except Exception:
-                logger.warning(
-                    "Could not resolve subject_id=%s for homework.published, using fallback",
-                    subject_id,
-                )
+        subject_name = await _resolve_subject_name(payload.get("subject_id"))
         text = f"Новое домашнее задание\n\n{subject_name}\n{title}"
+        if lesson_date and lesson_number:
+            text += f"\nПара {lesson_number}, {lesson_date}"
     elif event_type == "homework.updated":
-        text = f"Домашнее задание обновлено\n\n{title}"
+        # Phase 61 / D-07: payload теперь содержит subject_id + lesson_date + lesson_number.
+        subject_name = await _resolve_subject_name(payload.get("subject_id"))
+        text = f"ДЗ изменено: {subject_name} — {title}"
+        if lesson_date and lesson_number:
+            text += f"\nПара {lesson_number}, {lesson_date}"
     else:
         logger.debug("handle_homework called with unexpected event_type: %s", event_type)
         return

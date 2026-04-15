@@ -48,14 +48,20 @@ def _make_homework_published_event(
 def _make_homework_updated_event(
     homework_id: int = 1,
     group_id: int = 5,
+    subject_id: int = 42,
     title: str = "Задание 1 (обновлено)",
+    lesson_date: str = "2026-05-01",
+    lesson_number: int = 2,
 ):
     return {
         "event_type": "homework.updated",
         "payload": {
             "homework_id": homework_id,
             "group_id": group_id,
+            "subject_id": subject_id,
             "title": title,
+            "lesson_date": lesson_date,
+            "lesson_number": lesson_number,
         },
     }
 
@@ -168,8 +174,9 @@ async def test_homework_updated_sends_to_all_students_with_telegram_id():
 
 
 @pytest.mark.asyncio
-async def test_homework_updated_text_contains_updated_marker_and_title():
-    """homework.updated message text contains 'обновлено' and the title."""
+async def test_homework_updated_text_contains_subject_and_title():
+    """Phase 61 / D-07: homework.updated resolves subject_name и формирует
+    читаемый текст «ДЗ изменено: {subject} — {title}» + строку с парой/датой."""
     students = [_make_student(user_id=1, telegram_id=111)]
 
     bot = MagicMock()
@@ -177,8 +184,7 @@ async def test_homework_updated_text_contains_updated_marker_and_title():
 
     academic_client = MagicMock()
     academic_client.get_group_members = AsyncMock(return_value=students)
-    # get_subjects_by_ids is not called for homework.updated (no subject_id in payload)
-    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response())
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Математика"))
 
     captured_tasks = []
     send_queue = MagicMock()
@@ -189,7 +195,7 @@ async def test_homework_updated_text_contains_updated_marker_and_title():
     send_queue.put = capture_put
 
     await handle_homework(
-        _make_homework_updated_event(title="Задание по физике"),
+        _make_homework_updated_event(title="Задача 3", lesson_date="2026-05-01", lesson_number=2),
         bot=bot,
         academic_client=academic_client,
         send_queue=send_queue,
@@ -200,8 +206,49 @@ async def test_homework_updated_text_contains_updated_marker_and_title():
 
     call_kwargs = bot.send_message.call_args.kwargs
     text = call_kwargs.get("text", "")
-    assert "обновлено" in text.lower()
-    assert "Задание по физике" in text
+    assert "ДЗ изменено" in text
+    assert "Математика" in text
+    assert "Задача 3" in text
+    assert "Пара 2" in text
+    assert "2026-05-01" in text
+    # Ensure we did try to resolve the subject (D-07 требует lookup)
+    academic_client.get_subjects_by_ids.assert_awaited_once_with([42])
+
+
+@pytest.mark.asyncio
+async def test_homework_updated_subject_fallback_on_grpc_error():
+    """homework.updated — падение gRPC → fallback к «Предмет», сообщение всё равно уходит."""
+    students = [_make_student(user_id=1, telegram_id=111)]
+
+    bot = MagicMock()
+    bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+
+    academic_client = MagicMock()
+    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_subjects_by_ids = AsyncMock(side_effect=Exception("gRPC down"))
+
+    captured_tasks = []
+    send_queue = MagicMock()
+
+    async def capture_put(task):
+        captured_tasks.append(task)
+
+    send_queue.put = capture_put
+
+    await handle_homework(
+        _make_homework_updated_event(title="Упражнение"),
+        bot=bot,
+        academic_client=academic_client,
+        send_queue=send_queue,
+    )
+
+    assert len(captured_tasks) == 1
+    await captured_tasks[0].coroutine_factory()
+
+    text = bot.send_message.call_args.kwargs.get("text", "")
+    assert "ДЗ изменено" in text
+    assert "Предмет" in text
+    assert "Упражнение" in text
 
 
 @pytest.mark.asyncio

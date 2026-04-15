@@ -419,11 +419,11 @@ Plans:
   9. Sidebar содержит «Домашние задания» в секции старостата (только при `is_headman=true`), иконка `ph-notebook`
   10. Все существующие тесты проходят; новые unit/integration/pytest покрывают D-03/04/05/06/07; `./gradlew build` + `ng build` + `ng test` + `pytest` зелёные
 **Notes**: Новый gRPC RPC `ResolveLesson(group_id, date, lesson_number)` добавляется в schedule-service. `grpc-client-spring-boot-starter` переносится из testImplementation в implementation в academic-app. `Clock` bean (Europe/Moscow) для тестируемости D-03. Извлечены общие компоненты: `shared/week-navigator` (из headman-schedule) и первый универсальный `shared/segmented-control`. Deferred: помощник старосты, ADMIN override, прогресс выполнения для старосты, вложения, дедлайн отдельно от пары, drag-and-drop.
-**Plans:** 1/7 plans executed
+**Plans:** 2/7 plans executed
 
 Plans:
 - [x] 61-01-PLAN.md — schedule-service: gRPC RPC ResolveLesson + LessonRepository native query + IT
-- [ ] 61-02-PLAN.md — academic-service: Flyway V13 + entity/DTO lesson binding + ScheduleGrpcClient + Clock bean
+- [x] 61-02-PLAN.md — academic-service: Flyway V13 + entity/DTO lesson binding + ScheduleGrpcClient + Clock bean
 - [ ] 61-03-PLAN.md — academic-service: HomeworkService валидации D-03/D-04/D-05/D-06 + @RequireRole правки + unit+controller IT
 - [ ] 61-04-PLAN.md — events: payload extension (lesson_date, lesson_number, subject_id) + JSON Schemas + notification-bot handle_homework для homework.updated + pytest
 - [ ] 61-05-PLAN.md — web-panel headman: shared/week-navigator + shared/homework-card + /headman/homework + inline-form + sidebar + route

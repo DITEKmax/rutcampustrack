@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
 status: executing
-stopped_at: Completed 61-01-PLAN.md
-last_updated: "2026-04-15T12:49:47.041Z"
+stopped_at: Completed 61-02-PLAN.md
+last_updated: "2026-04-15T13:04:43.723Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 13
   completed_phases: 3
   total_plans: 34
-  completed_plans: 28
-  percent: 82
+  completed_plans: 29
+  percent: 85
 ---
 
 # Project State
@@ -23,7 +23,7 @@ v9.0 Frontend Unification — Single Login & Role-Based Web Clients
 ## Current Position
 
 Phase: 61 (headman-homework-management-ui-homeworkapi-controller-homewo) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7
 Plans: 0/TBD
 Status: Ready to execute
 Last activity: 2026-04-15
@@ -89,6 +89,7 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 60]: Phase 60-06: Angular subject dialog — multi-select teacherIds[] + required type (LECTURE/PRACTICE/LAB) per D-02+D-19
 - [Phase 60]: Phase 60-07: Angular /headman/schedule — матрица 5×8, клик→диалог (D-13/D-14); ScheduleSlot и OneOff диалоги; /api/schedule/items (реальный URL, deviation от плана); MatDialogModule убран из imports компонента для тестируемости
 - [Phase 61]: Phase 61-01: IT-тесты для gRPC resolveLesson ассертят ResourceNotFoundException (pattern ScheduleGrpcServiceImplTest, direct invocation без in-process канала)
+- [Phase 61]: Phase 61-02: ClockConfig переключён с systemUTC на Europe/Moscow (D-03 требует сравнения lesson_date с Moscow-днём)
 
 ### Key v9.0 Architecture Decisions
 
@@ -113,7 +114,7 @@ Phases 49 and 50 are CRITICAL-PATH and completed. Phases 51-55 (Blocks B and C) 
 
 ## Session Continuity
 
-Last session: 2026-04-15T12:49:38.686Z
-Stopped at: Completed 61-01-PLAN.md
+Last session: 2026-04-15T13:04:43.716Z
+Stopped at: Completed 61-02-PLAN.md
 Next action: /gsd-verifier 58 (после UAT) или /gsd-next для следующей фазы.
 Deferred: UAT checkpoint plan 58-09 Task 2 — 13 ручных шагов через браузер (docs/phase-58-report.md Known limitations).

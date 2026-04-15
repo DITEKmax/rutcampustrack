@@ -5,10 +5,28 @@
     <h1 class="page-header__title">Домашние задания</h1>
   </header>
 
+  <!-- Mode switcher -->
+  <div class="hw-toolbar">
+    <app-segmented-control
+      [options]="modeOptions"
+      [value]="mode()"
+      (valueChange)="onModeChange($event)">
+    </app-segmented-control>
+
+    <label class="hw-filter-toggle">
+      <mat-slide-toggle
+        [checked]="filterUncompleted()"
+        (change)="onFilterChange($event.checked)"
+        aria-label="Показать только невыполненные">
+      </mat-slide-toggle>
+      <span class="hw-filter-toggle__label">Только невыполненные</span>
+    </label>
+  </div>
+
   <!-- Loading skeleton -->
   @if (loading()) {
-    <div class="homework-list" role="list" aria-busy="true">
-      @for (_ of [1,2,3,4]; track $index) {
+    <div class="homework-skeleton-list" role="list" aria-busy="true">
+      @for (_ of [1,2,3]; track $index) {
         <div class="homework-skeleton" role="listitem"></div>
       }
     </div>
@@ -17,48 +35,38 @@
   <!-- Error state -->
   @if (!loading() && error()) {
     <div class="page-error" role="alert">
-      <i class="ph-warning-circle ph-fill"></i>
+      <i class="ph ph-warning-circle" aria-hidden="true"></i>
       <span>{{ error() }}</span>
     </div>
   }
 
-  <!-- Empty state -->
-  @if (!loading() && !error() && items().length === 0) {
-    <div class="page-empty">
-      <i class="ph-notebook-text ph-duotone"></i>
-      <h2>Заданий нет</h2>
-      <p>Домашние задания для группы пока не добавлены.</p>
-    </div>
-  }
-
-  <!-- Homework list -->
-  @if (!loading() && !error() && items().length > 0) {
-    @if (incompleteItems().length > 0) {
-      <p class="homework-section-label">Выполнить</p>
-      <div class="homework-list" role="list">
-        @for (item of incompleteItems(); track item.id) {
-          <app-homework-item
-            [item]="item"
-            [pending]="pendingItems()[item.id] ?? false"
-            (toggleComplete)="onToggleComplete($event)">
-          </app-homework-item>
-          @if (itemErrors()[item.id]) {
-            <p class="homework-item-error" role="alert">{{ itemErrors()[item.id] }}</p>
-          }
-        }
-      </div>
-    }
-    @if (completeItems().length > 0) {
-      <p class="homework-section-label">Выполнено</p>
-      <div class="homework-list" role="list">
-        @for (item of completeItems(); track item.id) {
-          <app-homework-item
-            [item]="item"
-            [pending]="pendingItems()[item.id] ?? false"
-            (toggleComplete)="onToggleComplete($event)">
-          </app-homework-item>
-        }
-      </div>
+  <!-- Sub-views -->
+  @if (!loading() && !error()) {
+    @switch (mode()) {
+      @case ('day') {
+        <app-student-homework-day-view
+          [date]="selectedDate()"
+          [items]="filteredHomeworks()"
+          (dateChanged)="onDayDateChanged($event)"
+          (completeToggled)="onCompleteToggled($event)">
+        </app-student-homework-day-view>
+      }
+      @case ('week') {
+        <app-student-homework-week-view
+          [monday]="weekMonday()"
+          [items]="filteredHomeworks()"
+          (mondayChanged)="onWeekMondayChanged($event)"
+          (completeToggled)="onCompleteToggled($event)">
+        </app-student-homework-week-view>
+      }
+      @case ('month') {
+        <app-student-homework-month-view
+          [month]="currentMonth()"
+          [items]="filteredHomeworks()"
+          (dateSelected)="onDateSelected($event)"
+          (monthChanged)="onMonthChanged($event)">
+        </app-student-homework-month-view>
+      }
     }
   }
 </div>

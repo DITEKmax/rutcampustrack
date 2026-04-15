@@ -1,0 +1,62 @@
+<div class="month-view">
+
+  <!-- Navigation bar -->
+  <nav class="month-nav" aria-label="Навигация по месяцам">
+    <button
+      type="button"
+      class="month-nav__btn"
+      (click)="previousMonth()"
+      aria-label="Предыдущий месяц">
+      <i class="ph ph-caret-left" aria-hidden="true"></i>
+    </button>
+    <span class="month-nav__label">{{ monthLabel }}</span>
+    <button
+      type="button"
+      class="month-nav__btn"
+      (click)="nextMonth()"
+      aria-label="Следующий месяц">
+      <i class="ph ph-caret-right" aria-hidden="true"></i>
+    </button>
+  </nav>
+
+  <!-- Calendar grid -->
+  <div class="month-grid" role="grid" aria-label="Календарь домашних заданий">
+
+    <!-- Week day headers -->
+    <div class="month-grid__header" role="row">
+      @for (dayName of WEEK_DAYS; track dayName) {
+        <div class="month-grid__weekday" role="columnheader">{{ dayName }}</div>
+      }
+    </div>
+
+    <!-- Weeks -->
+    @for (week of weeks; track $index) {
+      <div class="month-grid__week" role="row">
+        @for (cell of week; track cell.dateKey) {
+          <button
+            type="button"
+            role="gridcell"
+            class="month-grid__cell"
+            [class.month-grid__cell--other-month]="!cell.isCurrentMonth"
+            [class.month-grid__cell--today]="cell.isToday"
+            [class.month-grid__cell--has-items]="cell.count > 0"
+            (click)="onCellClick(cell)"
+            [attr.aria-label]="cell.dayNumber + ' — ' + cell.count + ' заданий'"
+            [attr.aria-pressed]="false">
+            <span class="month-grid__day-num">{{ cell.dayNumber }}</span>
+            @if (cell.count > 0) {
+              <span class="month-grid__badge" [class.month-grid__badge--alert]="cell.hasUncompleted">
+                {{ cell.count }}
+              </span>
+            }
+            @if (cell.hasUncompleted) {
+              <span class="month-grid__dot" aria-hidden="true"></span>
+            }
+          </button>
+        }
+      </div>
+    }
+
+  </div>
+
+</div>

@@ -1,0 +1,47 @@
+<div class="week-view">
+
+  <!-- Navigation bar -->
+  <nav class="week-nav" aria-label="Навигация по неделям">
+    <button
+      type="button"
+      class="week-nav__btn"
+      (click)="previous()"
+      aria-label="Предыдущая неделя">
+      <i class="ph ph-caret-left" aria-hidden="true"></i>
+    </button>
+    <span class="week-nav__label">{{ weekLabel }}</span>
+    <button
+      type="button"
+      class="week-nav__btn"
+      (click)="next()"
+      aria-label="Следующая неделя">
+      <i class="ph ph-caret-right" aria-hidden="true"></i>
+    </button>
+  </nav>
+
+  <!-- Days list -->
+  @if (hasAnyItems) {
+    @for (day of days; track day.dateKey) {
+      @if (day.items.length > 0) {
+        <section class="week-view__day" [attr.aria-label]="day.label">
+          <h3 class="week-view__day-heading">{{ day.label }}</h3>
+          <div class="week-view__day-items" role="list">
+            @for (item of day.items; track item.id) {
+              <app-homework-card
+                [homework]="item"
+                [showCompleteCheckbox]="true"
+                (completeToggled)="onCompleteToggled($event)">
+              </app-homework-card>
+            }
+          </div>
+        </section>
+      }
+    }
+  } @else {
+    <div class="week-view__empty">
+      <i class="ph ph-check-circle" aria-hidden="true"></i>
+      <p>На этой неделе заданий нет</p>
+    </div>
+  }
+
+</div>

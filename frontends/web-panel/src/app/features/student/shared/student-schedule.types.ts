@@ -118,6 +118,9 @@ export interface HomeworkItem {
   publishedBy: number;
   completed: boolean;
   createdAt: string; // ISO-8601
+  /** Phase 61: lesson binding fields (YYYY-MM-DD). */
+  lessonDate: string;
+  lessonNumber: number;
 }
 
 /** In-session notification log entry built from STOMP envelopes */

@@ -1,0 +1,40 @@
+<div class="day-view">
+
+  <!-- Navigation bar -->
+  <nav class="day-nav" aria-label="Навигация по дням">
+    <button
+      type="button"
+      class="day-nav__btn"
+      (click)="previous()"
+      aria-label="Предыдущий день">
+      <i class="ph ph-caret-left" aria-hidden="true"></i>
+    </button>
+    <span class="day-nav__label">{{ dateLabel }}</span>
+    <button
+      type="button"
+      class="day-nav__btn"
+      (click)="next()"
+      aria-label="Следующий день">
+      <i class="ph ph-caret-right" aria-hidden="true"></i>
+    </button>
+  </nav>
+
+  <!-- Items list -->
+  @if (itemsForDay.length > 0) {
+    <div class="day-view__list" role="list" aria-label="Задания на день">
+      @for (item of itemsForDay; track item.id) {
+        <app-homework-card
+          [homework]="item"
+          [showCompleteCheckbox]="true"
+          (completeToggled)="onCompleteToggled($event)">
+        </app-homework-card>
+      }
+    </div>
+  } @else {
+    <div class="day-view__empty">
+      <i class="ph ph-check-circle" aria-hidden="true"></i>
+      <p>На этот день заданий нет</p>
+    </div>
+  }
+
+</div>

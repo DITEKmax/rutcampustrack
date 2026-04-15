@@ -52,6 +52,17 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
                                @Param("fromDate") LocalDate fromDate);
 
     /**
+     * Returns the IDs of PLANNED lessons for a schedule item on or after the given date.
+     * Used by callers who must publish a cascade event (e.g. lesson.deleted) BEFORE
+     * calling {@link #deletePlannedFromDate} so downstream services (attendance-service)
+     * can drop dependent records keyed to the about-to-be-deleted lesson ids.
+     */
+    @Query(value = "SELECT id FROM lessons WHERE schedule_item_id = :itemId AND status::text = 'planned' AND date >= :fromDate",
+           nativeQuery = true)
+    List<Long> findPlannedIdsFromDate(@Param("itemId") Long scheduleItemId,
+                                      @Param("fromDate") LocalDate fromDate);
+
+    /**
      * Finds the active lesson for a group on a given date, ordered by lesson_number ASC.
      * Returns at most one result (LIMIT 1). Used by gRPC GetActiveLesson (GRPC-01).
      * When multiple active lessons exist for the same group (rare scheduling overlap),

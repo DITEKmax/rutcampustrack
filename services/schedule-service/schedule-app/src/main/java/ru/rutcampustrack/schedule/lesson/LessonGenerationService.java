@@ -1,8 +1,10 @@
 package ru.rutcampustrack.schedule.lesson;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
+import ru.rutcampustrack.schedule.event.LessonDeletedEvent;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
@@ -34,10 +36,28 @@ public class LessonGenerationService {
 
     private final LessonRepository lessonRepository;
     private final Clock clock;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public LessonGenerationService(LessonRepository lessonRepository, Clock clock) {
+    public LessonGenerationService(
+            LessonRepository lessonRepository,
+            Clock clock,
+            ApplicationEventPublisher eventPublisher
+    ) {
         this.lessonRepository = lessonRepository;
         this.clock = clock;
+        this.eventPublisher = eventPublisher;
+    }
+
+    /**
+     * Publishes {@link LessonDeletedEvent} for the given ids (no-op if empty).
+     * Called right before a physical delete so downstream consumers (attendance-
+     * service) can drop records keyed to the about-to-vanish lesson ids.
+     * The {@code @TransactionalEventListener(AFTER_COMMIT)} in DomainEventListener
+     * ensures the message is dispatched only if the surrounding transaction commits.
+     */
+    private void publishDeleted(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return;
+        eventPublisher.publishEvent(new LessonDeletedEvent(this, ids));
     }
 
     /**
@@ -139,7 +159,9 @@ public class LessonGenerationService {
             WeekType firstWeekType,
             LocalDate fromDate) {
 
+        List<Long> staleIds = lessonRepository.findPlannedIdsFromDate(item.getId(), fromDate);
         lessonRepository.deletePlannedFromDate(item.getId(), fromDate);
+        publishDeleted(staleIds);
 
         // Only generate dates >= fromDate (no backfill for already-passed dates)
         LocalDate effectiveStart = fromDate.isAfter(semesterStart) ? fromDate : semesterStart;
@@ -162,7 +184,9 @@ public class LessonGenerationService {
     @Transactional
     public void deletePlannedLessonsFromToday(Long scheduleItemId) {
         LocalDate today = LocalDate.now(clock);
+        List<Long> staleIds = lessonRepository.findPlannedIdsFromDate(scheduleItemId, today);
         lessonRepository.deletePlannedFromDate(scheduleItemId, today);
+        publishDeleted(staleIds);
     }
 
     // -------------------------------------------------------------------------

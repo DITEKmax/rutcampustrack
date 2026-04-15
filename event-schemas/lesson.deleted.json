@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "lesson.deleted",
+  "description": "Одна или несколько записей Lesson были физически удалены в schedule-service (например, при редактировании ScheduleItem с регенерацией PLANNED-пар). Потребители должны удалить все свои записи, привязанные к этим lesson_id, чтобы не остались orphan-строки, которые будут выглядеть как дубликаты после пересоздания.",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "lesson.deleted" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["lesson_ids"],
+      "properties": {
+        "lesson_ids": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 1
+        }
+      }
+    }
+  }
+}

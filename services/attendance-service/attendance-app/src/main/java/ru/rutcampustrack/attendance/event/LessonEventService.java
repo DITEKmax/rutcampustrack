@@ -118,4 +118,19 @@ public class LessonEventService {
         var result = mongoTemplate.updateMulti(filter, update, AttendanceDocument.class);
         log.info("lesson.cancelled: lessonId={}, updatedCount={}", lessonId, result.getModifiedCount());
     }
+
+    /**
+     * Cascade-delete attendance docs for lessons that were physically removed in
+     * schedule-service (e.g. PLANNED rows wiped during a ScheduleItem edit).
+     * Idempotent — missing ids yield 0 deletes without exception.
+     * This is critical: without it, the docs would orphan, surface as duplicates
+     * alongside the regenerated lessons, and inflate stats.
+     */
+    public void processLessonsDeleted(java.util.List<Long> lessonIds) {
+        if (lessonIds == null || lessonIds.isEmpty()) return;
+        Query filter = Query.query(Criteria.where("lesson_id").in(lessonIds));
+        DeleteResult result = mongoTemplate.remove(filter, AttendanceDocument.class);
+        log.info("lesson.deleted: lessonIds={}, deletedCount={}",
+                lessonIds.size(), result.getDeletedCount());
+    }
 }

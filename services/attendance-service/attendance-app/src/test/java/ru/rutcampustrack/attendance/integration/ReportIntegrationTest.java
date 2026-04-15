@@ -65,6 +65,18 @@ class ReportIntegrationTest extends AbstractAttendanceIntegrationTest {
         // D-13: subject name resolution via gRPC batch call
         lenient().when(academicGrpcClient.getSubjectsByIds(any()))
                 .thenReturn(Map.of(SUBJECT_ID, "Mathematics", SUBJECT_ID_2, "Physics"));
+
+        // Every lesson id passed to scheduleGrpcClient.getLessonsByIds is considered alive —
+        // ReportService uses this to filter orphan attendance docs, and these tests don't
+        // exercise that path.
+        lenient().when(scheduleGrpcClient.getLessonsByIds(any())).thenAnswer(inv -> {
+            java.util.List<Long> ids = inv.getArgument(0);
+            return ids.stream()
+                    .map(id -> ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
+                            .setLessonId(id)
+                            .build())
+                    .toList();
+        });
     }
 
     // -------------------------------------------------------------------------

@@ -40,6 +40,7 @@ public class EventConsumer {
             case "lesson.started"          -> handleLessonStarted(envelope);
             case "lesson.closed"           -> handleLessonClosed(envelope);
             case "lesson.cancelled"        -> handleLessonCancelled(envelope);
+            case "lesson.deleted"          -> handleLessonDeleted(envelope);
             case "lesson.one_off.cancelled" -> handleOneOffLessonCancelled(envelope);
             case "semester.archived"       -> handleSemesterArchived(envelope);
             case "late_checkin.decision"   -> handleLateCheckinDecision(envelope);
@@ -67,6 +68,28 @@ public class EventConsumer {
         if (payload == null) return;
         Long lessonId = extractLong(payload, "lesson_id");
         lessonEventService.processLessonCancelled(lessonId);
+    }
+
+    /**
+     * Cascade-delete attendance docs when schedule-service physically removes
+     * Lesson rows (e.g. ScheduleItem edit that regenerates planned lessons).
+     * Drops every attendance doc whose {@code lesson_id} is in the event payload.
+     */
+    @SuppressWarnings("unchecked")
+    private void handleLessonDeleted(Map<String, Object> envelope) {
+        Map<String, Object> payload = extractPayload(envelope);
+        if (payload == null) return;
+        Object raw = payload.get("lesson_ids");
+        if (!(raw instanceof java.util.List<?> list) || list.isEmpty()) {
+            log.warn("lesson.deleted: missing or empty lesson_ids, ignoring: {}", payload);
+            return;
+        }
+        java.util.List<Long> lessonIds = new java.util.ArrayList<>(list.size());
+        for (Object id : list) {
+            if (id instanceof Number n) lessonIds.add(n.longValue());
+        }
+        if (lessonIds.isEmpty()) return;
+        lessonEventService.processLessonsDeleted(lessonIds);
     }
 
     /**

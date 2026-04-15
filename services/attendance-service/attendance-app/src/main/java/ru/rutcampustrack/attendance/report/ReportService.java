@@ -162,7 +162,8 @@ public class ReportService {
             throw new IllegalStateException("Active semester not available");
         }
 
-        List<AttendanceRecord> allRecords = attendanceReadPort.findByUserId(userId, semesterId);
+        List<AttendanceRecord> allRecords = filterExistingLessons(
+                attendanceReadPort.findByUserId(userId, semesterId));
 
         // D-10: Filter out CANCELLED — they don't count in statistics
         Map<Long, List<AttendanceRecord>> grouped = allRecords.stream()
@@ -221,7 +222,8 @@ public class ReportService {
         Long userId = requestContext.getUserId();
         Long semesterId = semesterCacheService.getActiveSemesterId();
 
-        List<AttendanceRecord> records = attendanceReadPort.findByUserId(userId, semesterId);
+        List<AttendanceRecord> records = filterExistingLessons(
+                attendanceReadPort.findByUserId(userId, semesterId));
 
         return records.stream()
                 .filter(r -> subjectId == null || r.subjectId().equals(subjectId))
@@ -249,6 +251,23 @@ public class ReportService {
      * - TEACHER: must teach this subjectId for this groupId in the active semester
      * - ADMIN: access denied (admins use admin endpoints, not attendance reports)
      */
+    /**
+     * Drops attendance records whose lesson_id no longer exists in schedule-service.
+     * Defense-in-depth: even if the {@code lesson.deleted} cascade event was missed
+     * (broker downtime, consumer lag), stale docs won't surface in reports.
+     * Empty input short-circuits with no gRPC call.
+     */
+    private List<AttendanceRecord> filterExistingLessons(List<AttendanceRecord> records) {
+        if (records == null || records.isEmpty()) return List.of();
+        List<Long> ids = records.stream().map(AttendanceRecord::lessonId).distinct().toList();
+        java.util.Set<Long> alive = scheduleGrpcClient.getLessonsByIds(ids).stream()
+                .map(ru.rutcampustrack.schedule.grpc.LessonInfo::getLessonId)
+                .collect(Collectors.toSet());
+        return records.stream()
+                .filter(r -> alive.contains(r.lessonId()))
+                .toList();
+    }
+
     private void authorizeHeadmanOrTeacher(Long groupId, Long subjectId) {
         UserRole role = requestContext.getRole();
         if (role == UserRole.STUDENT) {

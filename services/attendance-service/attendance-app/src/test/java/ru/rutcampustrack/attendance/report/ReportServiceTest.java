@@ -76,6 +76,16 @@ class ReportServiceTest {
         lenient().when(semesterCacheService.getActiveSemesterId()).thenReturn(SEMESTER_ID);
         lenient().when(academicGrpcClient.getSubjectsByIds(any()))
                 .thenReturn(Map.of(SUBJECT_ID_1, "Math", SUBJECT_ID_2, "Physics"));
+        // Default: treat every lesson id as alive (exists in schedule-service).
+        // Tests that care about orphan filtering should override this stub.
+        lenient().when(scheduleGrpcClient.getLessonsByIds(any())).thenAnswer(inv -> {
+            java.util.List<Long> ids = inv.getArgument(0);
+            return ids.stream()
+                    .map(id -> ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
+                            .setLessonId(id)
+                            .build())
+                    .toList();
+        });
     }
 
     // -------------------------------------------------------------------------

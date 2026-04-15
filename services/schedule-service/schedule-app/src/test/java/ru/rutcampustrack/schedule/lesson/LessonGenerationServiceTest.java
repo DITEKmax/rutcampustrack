@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
@@ -42,6 +43,9 @@ class LessonGenerationServiceTest {
     @Mock
     private LessonRepository lessonRepository;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     private LessonGenerationService service;
 
     // Fixed clock for deterministic OffsetDateTime.now() in generateLessons
@@ -58,7 +62,7 @@ class LessonGenerationServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new LessonGenerationService(lessonRepository, fixedClock);
+        service = new LessonGenerationService(lessonRepository, fixedClock, eventPublisher);
     }
 
     // =========================================================================

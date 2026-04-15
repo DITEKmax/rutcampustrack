@@ -13,7 +13,9 @@
         placeholder="Выберите предмет"
       >
         @for (s of subjects(); track s.id) {
-          <mat-option [value]="s.id">{{ s.name }}</mat-option>
+          <mat-option [value]="s.id">
+            {{ s.name }}@if (s.type) { <span> ({{ typeLabel(s.type) }})</span> }
+          </mat-option>
         }
       </mat-select>
     </mat-form-field>

@@ -49,10 +49,10 @@
   padding: 48px 16px;
 }
 
-/* ---- Grid wrapper — horizontal scroll ---- */
+/* ---- Grid wrapper — horizontal scroll only, no vertical clipping ---- */
 .grid-wrapper {
-  overflow: auto;
-  max-height: calc(100vh - 280px);
+  overflow-x: auto;
+  overflow-y: visible;
   border-radius: 8px;
   position: relative;
 }
@@ -83,120 +83,70 @@
   vertical-align: middle;
 }
 .col-student--head {
-  background: var(--mat-sys-surface-container);
+  background: var(--bg-elevated, var(--mat-sys-surface-container-high));
   z-index: 6;
-  font-weight: 600;
-}
-
-/* ---- Sticky header rows ---- */
-thead tr.row-day-header th,
-thead tr.row-subject-header th,
-thead tr.row-status-header th {
-  position: sticky;
-  background: var(--mat-sys-surface-container);
-  z-index: 2;
-}
-thead tr.row-day-header th { top: 0; }
-thead tr.row-subject-header th { top: 38px; }
-thead tr.row-status-header th { top: 172px; }
-thead tr.row-day-header th.col-student--head,
-thead tr.row-subject-header th.col-student--head,
-thead tr.row-status-header th.col-student--head {
-  z-index: 7;
-}
-
-/* ---- Day header (top-level) ---- */
-.col-day {
-  padding: 8px 6px;
-  font-size: 13px;
   font-weight: 700;
+}
+
+/* ---- Day header (top-level) — заметнее ---- */
+.col-day {
+  padding: 10px 6px;
+  font-size: 15px;
+  font-weight: 800;
   text-align: center;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
-  border-right: 2px solid var(--mat-sys-outline-variant);
+  border-right: 3px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
   color: var(--mat-sys-on-surface);
-  background: var(--mat-sys-surface-container-high);
+  background: var(--bg-elevated, var(--mat-sys-surface-container-high));
+  letter-spacing: 0.3px;
 }
+.col-day:last-child { border-right: none; }
 .col-day__weekday {
   display: inline-block;
-  margin-right: 6px;
-  opacity: 0.7;
-  font-weight: 600;
+  margin-right: 8px;
+  opacity: 0.75;
+  font-weight: 700;
 }
-.col-day__date { font-weight: 700; }
+.col-day__date { font-weight: 800; }
 
-/* ---- Subject header (vertical text) ---- */
+/* ---- Subject header (vertical text, full name) ---- */
 .col-subject {
-  padding: 6px 2px 4px;
-  min-width: 126px;
-  width: 126px;
+  padding: 8px 2px;
+  min-width: 34px;
+  width: 34px;
   background: var(--mat-sys-surface-container);
   border-bottom: 1px solid var(--mat-sys-outline-variant);
   vertical-align: bottom;
-  height: 134px;
+  height: 200px;
 }
-.col-subject--day-end { border-right: 2px solid var(--mat-sys-outline-variant); }
+.col-subject--day-end {
+  border-right: 3px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
+}
 .col-subject__text {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
   align-items: center;
-  font-size: 11.5px;
-  line-height: 1.15;
+  justify-content: flex-start;
+  font-size: 12px;
+  line-height: 1.2;
   text-align: left;
-  height: 108px;
+  height: 184px;
   margin: 0 auto;
-  gap: 4px;
 }
 .col-subject__name {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  max-height: 82px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  overflow: visible;
 }
-.col-subject__meta {
-  font-weight: 500;
-  font-size: 10.5px;
-  opacity: 0.7;
-}
-
-/* ---- Bulk row ---- */
-.bulk-row {
-  display: flex;
-  gap: 3px;
-  justify-content: center;
-  margin-top: 4px;
-  padding: 0 6px;
-}
-.bulk-btn {
-  border: 1px solid var(--mat-sys-outline-variant);
-  background: var(--mat-sys-surface);
-  width: 22px;
-  height: 20px;
-  padding: 0;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.12s ease, background 0.12s ease;
-}
-.bulk-btn:hover { transform: scale(1.12); }
-.bulk-btn--present { color: var(--status-present); }
-.bulk-btn--absent  { color: var(--status-absent); }
-.bulk-btn--excused { color: var(--status-excused); }
 
 /* ---- Status sub-header (+/Н/У) ---- */
 .col-status {
-  width: 42px;
-  min-width: 42px;
-  max-width: 42px;
+  width: 30px;
+  min-width: 30px;
+  max-width: 30px;
   padding: 4px 0;
   text-align: center;
   font-weight: 700;
@@ -205,7 +155,9 @@ thead tr.row-status-header th.col-student--head {
   background: var(--mat-sys-surface-container);
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
-.col-status--day-end { border-right: 2px solid var(--mat-sys-outline-variant); }
+.col-status--day-end {
+  border-right: 3px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
+}
 
 /* ---- Body cells ---- */
 .row-student {
@@ -215,30 +167,33 @@ thead tr.row-status-header th.col-student--head {
 .row-student:hover .col-student { background: color-mix(in srgb, var(--mat-sys-primary) 7%, var(--mat-sys-surface)); }
 
 .cell {
-  width: 42px;
-  min-width: 42px;
-  max-width: 42px;
-  padding: 4px 0;
+  width: 30px;
+  min-width: 30px;
+  max-width: 30px;
+  padding: 3px 0;
   text-align: center;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
   vertical-align: middle;
   transition: box-shadow 0.4s ease;
 }
-.cell--day-end { border-right: 2px solid var(--mat-sys-outline-variant); }
+.cell + .cell { padding-left: 2px; }
+.cell--day-end {
+  border-right: 3px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
+}
 .cell--saving { opacity: 0.6; }
 .cell--flash {
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mat-sys-primary) 60%, transparent);
 }
 
-/* ---- Dot buttons ---- */
+/* ---- Dot buttons — compact ---- */
 .dot {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: 1px solid var(--mat-sys-outline-variant);
   background: transparent;
   color: var(--mat-sys-on-surface-variant);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
@@ -259,5 +214,3 @@ thead tr.row-status-header th.col-student--head {
 .dot--present.dot--active { background: var(--status-present); }
 .dot--absent.dot--active  { background: var(--status-absent); }
 .dot--excused.dot--active { background: var(--status-excused); }
-
-/* ---- Empty / error states inherit page-* from global styles ---- */

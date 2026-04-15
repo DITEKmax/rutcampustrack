@@ -46,7 +46,16 @@ export class HeadmanJournalPageComponent implements OnInit {
   private readonly headmanApi = inject(HeadmanApiService);
   private readonly authService = inject(AuthService);
 
-  readonly subjects = signal<{ id: number; name: string }[]>([]);
+  readonly subjects = signal<{ id: number; name: string; type: string | null }[]>([]);
+
+  readonly typeLabel = (t: string | null): string => {
+    switch (t) {
+      case 'LECTURE': return 'Лекция';
+      case 'PRACTICE': return 'Практическое занятие';
+      case 'LAB': return 'Лабораторная работа';
+      default: return '';
+    }
+  };
   readonly selectedSubjectId = signal<number | null>(null);
 
   readonly journalData = signal<JournalResponse | null>(null);
@@ -81,7 +90,7 @@ export class HeadmanJournalPageComponent implements OnInit {
         if (res?._embedded) {
           const key = Object.keys(res._embedded)[0];
           const raw: any[] = res._embedded[key] ?? [];
-          this.subjects.set(raw.map((s: any) => ({ id: s.id, name: s.name })));
+          this.subjects.set(raw.map((s: any) => ({ id: s.id, name: s.name, type: s.type ?? null })));
         }
       });
   }

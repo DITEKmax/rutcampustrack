@@ -13,13 +13,27 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
+type SubjectType = 'LECTURE' | 'PRACTICE' | 'LAB';
+
 interface StatsRow {
   subjectId: number;
   subjectName: string;
+  subjectType?: SubjectType | null;
   groupAveragePercent: number;
   threshold: number;
   isRedZone: boolean;
 }
+
+const TYPE_LABEL: Record<SubjectType, string> = {
+  LECTURE: 'Лек',
+  PRACTICE: 'Пр',
+  LAB: 'Лаб',
+};
+const TYPE_PILL: Record<SubjectType, string> = {
+  LECTURE: 'pill--info',      // --accent-secondary (blue)
+  PRACTICE: 'pill--success',  // --accent-primary (green)
+  LAB: 'pill--violet',        // --accent-info (violet)
+};
 
 function computeAttendanceRate(journal: any): number {
   const allCells: any[] = [];
@@ -49,6 +63,42 @@ function computeAttendanceRate(journal: any): number {
     ]),
   ],
   host: { '[@routeFade]': '' },
+  styles: [`
+    :host { display: block; }
+
+    .subject-cell { display: inline-flex; align-items: center; gap: var(--space-3); }
+    .subject-cell__name { font-weight: 500; }
+
+    .percent-cell {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+    .percent-cell--good { color: var(--accent-primary); }
+    .percent-cell--warn { color: var(--accent-warning); }
+    .percent-cell--bad  { color: var(--accent-danger); }
+
+    .threshold-input {
+      width: 80px;
+      padding: 6px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      font-variant-numeric: tabular-nums;
+      transition: border-color var(--duration-base) var(--ease-out);
+    }
+    .threshold-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .col-threshold { width: 140px; }
+    .col-rate { width: 220px; }
+  `],
   template: `
     <div class="page-header">
       <h1>Статистика группы</h1>
@@ -73,41 +123,47 @@ function computeAttendanceRate(journal: any): number {
         </div>
       </div>
     } @else {
-      <div class="page-card">
-        <table class="stats-table">
-          <thead>
-            <tr>
-              <th>Предмет</th>
-              <th>Посещаемость группы</th>
-              <th>Порог (%)</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of statsRows(); track row.subjectId) {
+      <div class="table-card">
+        <div class="table-card__scroll">
+          <table class="table-card__table">
+            <thead>
               <tr>
-                <td>{{ row.subjectName }}</td>
-                <td
-                  [style.color]="row.isRedZone ? 'var(--accent-danger)' : 'var(--status-present)'"
-                  [style.font-family]="'var(--font-mono)'"
-                  [style.font-size]="'var(--text-sm)'">
-                  {{ row.groupAveragePercent }}%
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    [value]="row.threshold"
-                    min="0" max="100"
-                    [attr.aria-label]="'Порог для предмета ' + row.subjectName + ', процент'"
-                    style="min-width: 64px; font-family: var(--font-mono); font-size: var(--text-sm);"
-                    (blur)="onThresholdBlur(row, $event)"
-                    (keydown.enter)="onThresholdEnter(row, $event)"
-                    (keydown.escape)="onThresholdEscape(row, $event)"
-                  />
-                </td>
+                <th scope="col">Предмет</th>
+                <th scope="col" class="col-rate">Посещаемость группы</th>
+                <th scope="col" class="col-threshold">Порог (%)</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (row of statsRows(); track row.subjectId) {
+                <tr class="table-card__row">
+                  <td>
+                    <span class="subject-cell">
+                      <span class="subject-cell__name">{{ row.subjectName }}</span>
+                      @if (row.subjectType) {
+                        <span class="pill {{ pillClass(row.subjectType) }}">{{ typeLabel(row.subjectType) }}</span>
+                      }
+                    </span>
+                  </td>
+                  <td class="percent-cell {{ percentClass(row.groupAveragePercent) }}">
+                    {{ row.groupAveragePercent }}%
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      class="threshold-input"
+                      [value]="row.threshold"
+                      min="0" max="100"
+                      [attr.aria-label]="'Порог для предмета ' + row.subjectName + ', процент'"
+                      (blur)="onThresholdBlur(row, $event)"
+                      (keydown.enter)="onThresholdEnter(row, $event)"
+                      (keydown.escape)="onThresholdEscape(row, $event)"
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     }
   `,
@@ -120,6 +176,18 @@ export class HeadmanStatsComponent implements OnInit {
   statsRows = signal<StatsRow[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
+
+  typeLabel(t: SubjectType): string {
+    return TYPE_LABEL[t];
+  }
+  pillClass(t: SubjectType): string {
+    return TYPE_PILL[t];
+  }
+  percentClass(p: number): string {
+    if (p >= 80) return 'percent-cell--good';
+    if (p >= 50) return 'percent-cell--warn';
+    return 'percent-cell--bad';
+  }
 
   ngOnInit(): void {
     const groupId = this.authService.currentUser()?.groupId;
@@ -154,6 +222,7 @@ export class HeadmanStatsComponent implements OnInit {
                 return {
                   subjectId: s.id,
                   subjectName: s.name,
+                  subjectType: (s.type ?? null) as SubjectType | null,
                   groupAveragePercent: rate,
                   threshold: thresh,
                   isRedZone: rate < thresh,

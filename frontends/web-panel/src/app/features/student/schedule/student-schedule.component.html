@@ -77,7 +77,13 @@
             [lesson]="lesson"
             [subjectName]="(getSubjectName$(lesson.subjectId) | async) ?? 'Предмет'"
             [expanded]="expandedLessonId() === lesson.id"
+            [personalStatus]="personalStatusFor(lesson.id)"
+            [lateCheckinSent]="isLateCheckinSent(lesson.id)"
+            [lateCheckinPending]="isLateCheckinPending(lesson.id)"
+            [lateCheckinError]="getLateCheckinError(lesson.id)"
             (toggle)="toggleLesson($event)"
+            (requestExcuse)="openExcuseDialog($event)"
+            (requestLateCheckin)="requestLateCheckin($event)"
           />
         }
       </div>

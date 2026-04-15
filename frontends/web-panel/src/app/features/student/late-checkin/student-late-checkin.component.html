@@ -22,58 +22,61 @@
       <p class="page-empty__body">Все ваши занятия отмечены — запрашивать позднюю отметку не нужно.</p>
     </div>
   } @else {
-    <div class="page-card page-card--flush">
-      <div
-        class="checkin-table"
-        role="table"
-        aria-label="Список пропущенных занятий"
-        aria-live="polite"
-      >
-        <div class="checkin-table__header" role="row">
-          <span role="columnheader">Дата</span>
-          <span role="columnheader">Занятие</span>
-          <span role="columnheader">Статус</span>
-          <span role="columnheader">Действие</span>
-        </div>
+    <div class="checkin-groups" aria-live="polite">
+      @for (group of groupedByDay(); track group.date) {
+        <section class="checkin-group" [attr.aria-label]="'Занятия за ' + group.label">
+          <header class="checkin-group__header">
+            <h2 class="checkin-group__title">{{ group.label }}</h2>
+            <span class="checkin-group__count">{{ group.records.length }}</span>
+          </header>
+          <div class="page-card page-card--flush">
+            <div class="checkin-table" role="table" aria-label="Список пропущенных занятий">
+              <div class="checkin-table__header" role="row">
+                <span role="columnheader">Занятие</span>
+                <span role="columnheader">Статус</span>
+                <span role="columnheader">Действие</span>
+              </div>
 
-        @for (record of absentRecords(); track record.lessonId) {
-          <div class="checkin-table__row" role="row">
-            <span class="cell-date" role="cell">{{ record.lessonDate }}</span>
-            <span class="cell-lesson" role="cell">Занятие {{ record.lessonNumber }}</span>
-            <span
-              class="status-chip status-chip--absent"
-              [attr.aria-label]="'Статус: пропущено'"
-              role="cell"
-            >н</span>
-            <div class="cell-action" role="cell">
-              @if (isSent(record.lessonId)) {
-                <span class="sent-pill" role="status" aria-label="Запрос отправлен">
-                  <i class="ph-fill ph-check-circle sent-pill__icon"></i>
-                  Запрос отправлен
-                </span>
-              } @else {
-                <button
-                  class="btn-request"
-                  type="button"
-                  (click)="requestLateCheckin(record.lessonId)"
-                  [disabled]="isPending(record.lessonId)"
-                  [attr.aria-busy]="isPending(record.lessonId)"
-                >
-                  @if (isPending(record.lessonId)) {
-                    <span class="btn-spinner-sm"></span>
-                  } @else {
-                    <i class="ph ph-clock-countdown btn-request__icon"></i>
-                  }
-                  Запросить отметку
-                </button>
-                @if (getRowError(record.lessonId)) {
-                  <p class="row-error" role="alert">{{ getRowError(record.lessonId) }}</p>
-                }
+              @for (record of group.records; track record.lessonId) {
+                <div class="checkin-table__row" role="row">
+                  <span class="cell-lesson" role="cell">Занятие {{ record.lessonNumber }}</span>
+                  <span
+                    class="status-chip status-chip--absent"
+                    [attr.aria-label]="'Статус: пропущено'"
+                    role="cell"
+                  >н</span>
+                  <div class="cell-action" role="cell">
+                    @if (isSent(record.lessonId)) {
+                      <span class="sent-pill" role="status" aria-label="Запрос отправлен">
+                        <i class="ph-fill ph-check-circle sent-pill__icon"></i>
+                        Запрос отправлен
+                      </span>
+                    } @else {
+                      <button
+                        class="btn-request"
+                        type="button"
+                        (click)="requestLateCheckin(record.lessonId)"
+                        [disabled]="isPending(record.lessonId)"
+                        [attr.aria-busy]="isPending(record.lessonId)"
+                      >
+                        @if (isPending(record.lessonId)) {
+                          <span class="btn-spinner-sm"></span>
+                        } @else {
+                          <i class="ph ph-clock-countdown btn-request__icon"></i>
+                        }
+                        Запросить отметку
+                      </button>
+                      @if (getRowError(record.lessonId)) {
+                        <p class="row-error" role="alert">{{ getRowError(record.lessonId) }}</p>
+                      }
+                    }
+                  </div>
+                </div>
               }
             </div>
           </div>
-        }
-      </div>
+        </section>
+      }
     </div>
   }
 </div>

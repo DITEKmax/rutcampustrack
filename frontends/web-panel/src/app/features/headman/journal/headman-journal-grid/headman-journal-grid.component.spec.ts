@@ -81,7 +81,7 @@ describe('HeadmanJournalGridComponent', () => {
     expect(cell!.status).toBe('absent');
 
     const row = mockJournalData.students[0];
-    component.setStatus(cell!, row, undefined, 'present');
+    component.setStatus(cell!, row, 'present');
 
     expect(headmanApiMock.markAttendance).toHaveBeenCalledWith(42, 10, 'present');
   });
@@ -95,7 +95,7 @@ describe('HeadmanJournalGridComponent', () => {
     const prevStatus = cell!.status;
     const row = mockJournalData.students[0];
 
-    component.setStatus(cell!, row, undefined, 'present');
+    component.setStatus(cell!, row, 'present');
 
     expect(cell!.status).toBe(prevStatus);
     expect(snackBarMock.open).toHaveBeenCalledWith(
@@ -111,7 +111,7 @@ describe('HeadmanJournalGridComponent', () => {
     expect(cell!.status).toBe('cancelled');
 
     const row = mockJournalData.students[1];
-    component.setStatus(cell!, row, undefined, 'present');
+    component.setStatus(cell!, row, 'present');
 
     // cancelled cells have no lessonId assumption; guard is by status, but our
     // impl only blocks by missing lessonId. Use existing lessonId=43, status=cancelled:
@@ -125,22 +125,15 @@ describe('HeadmanJournalGridComponent', () => {
     expect(component.getPercent(10)).toBe(0);
   });
 
-  it('bulkMark marks all non-cancelled students with the given status', () => {
-    const col = component.columns()[0];
-    component.bulkMark(col, 'present');
-    expect(headmanApiMock.markAttendance).toHaveBeenCalledWith(42, 10, 'present');
-    // student 11 is cancelled → skipped
-    expect(headmanApiMock.markAttendance).toHaveBeenCalledTimes(1);
-  });
-
-  it('renders bulk-mark buttons in the header', () => {
-    const bulkButtons = fixture.nativeElement.querySelectorAll('.bulk-btn');
-    expect(bulkButtons.length).toBeGreaterThan(0);
-  });
-
   it('renders a sticky percent column', () => {
-    const percentHeader = fixture.nativeElement.querySelector('.percent-header');
+    const percentHeader = fixture.nativeElement.querySelector('.col-percent--head');
     expect(percentHeader).toBeTruthy();
     expect(percentHeader.textContent.trim()).toBe('%');
+  });
+
+  it('renders three quick-status buttons per active cell', () => {
+    const dots = fixture.nativeElement.querySelectorAll('.dot');
+    // student 10 has one active cell (3 dots); student 11 is cancelled (0 dots).
+    expect(dots.length).toBe(3);
   });
 });

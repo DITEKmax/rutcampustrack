@@ -38,6 +38,7 @@ import java.util.Objects;
 public class LateCheckinService {
 
     private static final String LESSON_STATUS_ACTIVE = "active";
+    private static final String LESSON_STATUS_CLOSED = "closed";
 
     private final LateCheckinRepository repository;
     private final RequestContext requestContext;
@@ -73,8 +74,11 @@ public class LateCheckinService {
         if (!Objects.equals(lesson.getGroupId(), requestContext.getGroupId())) {
             throw new BadRequestException("Занятие не принадлежит вашей группе");
         }
-        if (!LESSON_STATUS_ACTIVE.equalsIgnoreCase(lesson.getStatus())) {
-            throw new BadRequestException("Запрос можно создать только для активной пары");
+        String lessonStatus = lesson.getStatus() == null ? "" : lesson.getStatus();
+        boolean statusAllowed = LESSON_STATUS_ACTIVE.equalsIgnoreCase(lessonStatus)
+                || LESSON_STATUS_CLOSED.equalsIgnoreCase(lessonStatus);
+        if (!statusAllowed) {
+            throw new BadRequestException("Запрос можно создать только для идущей или уже прошедшей пары");
         }
 
         // Already marked present — don't waste headman's time

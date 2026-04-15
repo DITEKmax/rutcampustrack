@@ -49,7 +49,7 @@
           <thead>
             <!-- Day headers row -->
             <tr class="row-day-header">
-              <th class="col-student col-student--head" rowspan="3">Студент</th>
+              <th class="col-student col-student--head" rowspan="2">Студент</th>
               @for (day of dayGroups(); track day.date; let last = $last) {
                 <th
                   class="col-day"
@@ -61,7 +61,7 @@
                 </th>
               }
             </tr>
-            <!-- Subject headers row -->
+            <!-- Subject + status headers merged into one row -->
             <tr class="row-subject-header">
               @for (day of dayGroups(); track day.date; let dayLast = $last) {
                 @for (col of day.columns; track col.lessonId; let colLast = $last) {
@@ -70,35 +70,14 @@
                     [class.col-subject--day-end]="colLast && !dayLast"
                     colspan="3"
                   >
-                    <div class="col-subject__text" [title]="col.subjectName + ' § ' + col.lessonNumber + ' ' + col.startTime">
+                    <div class="col-subject__text" [title]="col.subjectName">
                       <span class="col-subject__name">{{ col.subjectName }}</span>
-                      <span class="col-subject__meta">§ {{ col.lessonNumber }} · {{ col.startTime }}</span>
-                    </div>
-                    <div class="bulk-row">
-                      <button
-                        type="button"
-                        class="bulk-btn bulk-btn--present"
-                        (click)="onBulkMark(col, 'present')"
-                        title="Отметить всем +"
-                      >+</button>
-                      <button
-                        type="button"
-                        class="bulk-btn bulk-btn--absent"
-                        (click)="onBulkMark(col, 'absent')"
-                        title="Отметить всем Н"
-                      >Н</button>
-                      <button
-                        type="button"
-                        class="bulk-btn bulk-btn--excused"
-                        (click)="onBulkMark(col, 'excused')"
-                        title="Отметить всем У"
-                      >У</button>
                     </div>
                   </th>
                 }
               }
             </tr>
-            <!-- Status column headers row (+/Н/У) -->
+            <!-- Status sub-header (+/Н/У) -->
             <tr class="row-status-header">
               @for (day of dayGroups(); track day.date; let dayLast = $last) {
                 @for (col of day.columns; track col.lessonId; let colLast = $last) {

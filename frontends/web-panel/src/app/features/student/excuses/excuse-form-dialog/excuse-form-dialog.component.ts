@@ -85,7 +85,7 @@ export class ExcuseFormDialogComponent implements OnInit {
   get commentControl(): FormControl { return this.form.get('comment') as FormControl; }
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) data: { lessons: AttendanceRecord[] },
+    @Inject(MAT_DIALOG_DATA) data: { lessons: AttendanceRecord[]; preselectedLessonIds?: number[] },
   ) {
     this.lessons = data.lessons ?? [];
     this.missedRecords = this.lessons
@@ -94,6 +94,10 @@ export class ExcuseFormDialogComponent implements OnInit {
       .sort((a, b) => a.lessonDate.localeCompare(b.lessonDate) || a.lessonNumber - b.lessonNumber);
 
     this.dayGroups.set(this.groupByDay(this.missedRecords));
+
+    if (data.preselectedLessonIds?.length) {
+      this.selectedLessonIds.set(new Set(data.preselectedLessonIds));
+    }
 
     this.form = this.fb.group({
       excuseType: [null, [Validators.required]],

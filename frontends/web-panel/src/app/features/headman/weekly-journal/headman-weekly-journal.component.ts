@@ -10,15 +10,22 @@ import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
-import { addDays, formatDate, getMonday, formatWeekRange, isSameWeek } from '../../student/schedule/week-utils';
-import { BulkConfirmDialogComponent, BulkConfirmData } from './bulk-confirm-dialog.component';
+import { addDays, formatDate, getMonday, isSameWeek } from '../../student/schedule/week-utils';
+
+function isoWeekNumber(d: Date): number {
+  const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (target.getUTCDay() + 6) % 7;
+  target.setUTCDate(target.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+  const firstThursdayDayNum = (firstThursday.getUTCDay() + 6) % 7;
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstThursdayDayNum + 3);
+  return 1 + Math.round((target.getTime() - firstThursday.getTime()) / (7 * 24 * 3600 * 1000));
+}
 
 type AttendanceStatus = 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled';
 
@@ -30,6 +37,7 @@ interface Lesson {
   lessonNumber: number;
   startTime: string;
   endTime: string;
+  weekType?: string;
 }
 
 interface Student {
@@ -60,7 +68,7 @@ const WEEKDAY_LABELS = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'] 
   selector: 'app-headman-weekly-journal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MatProgressSpinnerModule, MatButtonModule, MatDialogModule],
+  imports: [CommonModule, MatProgressSpinnerModule],
   animations: [
     trigger('routeFade', [
       transition(':enter', [
@@ -76,7 +84,6 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
   private readonly headmanApi = inject(HeadmanApiService);
   private readonly auth = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly dialog = inject(MatDialog);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -103,8 +110,11 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
   readonly dayGroups = computed<DayGroup[]>(() => {
     const monday = this.monday();
     const subjects = this.subjects();
+    const weekParity: 'ODD' | 'EVEN' = isoWeekNumber(monday) % 2 === 1 ? 'ODD' : 'EVEN';
     const byDate = new Map<string, Lesson[]>();
     for (const l of this.lessons()) {
+      const wt = (l.weekType ?? 'ALL').toUpperCase();
+      if (wt !== 'ALL' && wt !== weekParity) continue;
       const arr = byDate.get(l.date) ?? [];
       arr.push(l);
       byDate.set(l.date, arr);
@@ -309,59 +319,4 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
     });
   }
 
-  onBulkMark(col: LessonColumn, status: AttendanceStatus): void {
-    const day = this.dayGroups().find(g => g.date === col.date);
-    const weekday = day?.weekday ?? '';
-    const statusLabel = status === 'present' ? '«+»' : status === 'absent' ? '«Н»' : '«У»';
-    const data: BulkConfirmData = {
-      title: `Проставить ${statusLabel} всем?`,
-      message: `${col.subjectName} (${weekday} ${day?.displayDate ?? ''}) — ${col.startTime}`,
-    };
-    const ref = this.dialog.open(BulkConfirmDialogComponent, { data, width: '420px' });
-    ref.afterClosed().subscribe(confirmed => {
-      if (!confirmed) return;
-      this.applyBulk(col.lessonId, status);
-    });
-  }
-
-  private applyBulk(lessonId: number, status: AttendanceStatus): void {
-    const studs = this.sortedStudents();
-    const targets: { userId: number; prev: AttendanceStatus | undefined }[] = [];
-    const map = new Map(this.statusMap());
-    for (const s of studs) {
-      const key = `${lessonId}_${s.userId}`;
-      const prev = map.get(key);
-      if (prev === 'cancelled') continue;
-      if (prev === status) continue;
-      targets.push({ userId: s.userId, prev });
-      map.set(key, status);
-    }
-    if (targets.length === 0) return;
-    this.statusMap.set(map);
-
-    forkJoin(
-      targets.map(t =>
-        this.headmanApi.markAttendance(lessonId, t.userId, status).pipe(
-          catchError(() => of({ failed: true, userId: t.userId, prev: t.prev })),
-        ),
-      ),
-    ).subscribe(results => {
-      const failed = results.filter((r: any) => r?.failed);
-      if (failed.length > 0) {
-        const rollback = new Map(this.statusMap());
-        for (const f of failed as any[]) {
-          const key = `${lessonId}_${f.userId}`;
-          if (f.prev) rollback.set(key, f.prev); else rollback.delete(key);
-        }
-        this.statusMap.set(rollback);
-        this.snackBar.open(
-          `Не удалось обновить ${failed.length} ${failed.length === 1 ? 'запись' : 'записей'}.`,
-          undefined,
-          { duration: 4000 },
-        );
-      } else {
-        this.snackBar.open('Статусы обновлены.', undefined, { duration: 2000 });
-      }
-    });
-  }
 }

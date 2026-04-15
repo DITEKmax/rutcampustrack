@@ -194,17 +194,9 @@ export class StudentApiService {
 
   /**
    * Request a late check-in for a specific absent lesson.
-   * Backend endpoint (POST /api/attendance/late-checkin/{lessonId}) is deferred.
-   * HTTP 404 → graceful degradation (treated as success).
+   * Backend: POST /api/attendance/late-checkin/{lessonId}.
    */
   requestLateCheckin(lessonId: number): Observable<void> {
-    return this.http
-      .post<void>(`/api/attendance/late-checkin/${lessonId}`, {})
-      .pipe(
-        catchError((err: HttpErrorResponse) => {
-          if (err.status === 404) return of(undefined);
-          return throwError(() => err);
-        }),
-      );
+    return this.http.post<void>(`/api/attendance/late-checkin/${lessonId}`, {});
   }
 }

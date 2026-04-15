@@ -73,6 +73,26 @@ describe('StudentLateCheckinComponent', () => {
     expect(screen.getByText('Запрос отправлен')).toBeTruthy();
   });
 
+  it('группирует absent записи по дням с заголовками дат', async () => {
+    mockApiService.getStudentRecords.mockReturnValue(
+      of([
+        { ...mockRecord(1, 'absent'), lessonDate: '2026-04-01', lessonNumber: 2 },
+        { ...mockRecord(2, 'absent'), lessonDate: '2026-04-01', lessonNumber: 1 },
+        { ...mockRecord(3, 'absent'), lessonDate: '2026-04-03', lessonNumber: 1 },
+      ]),
+    );
+    await render(StudentLateCheckinComponent, {
+      providers: [
+        provideNoopAnimations(),
+        { provide: StudentApiService, useValue: mockApiService },
+      ],
+    });
+    // Two day-group headings
+    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(2);
+    // Three request buttons total (one per absent record)
+    expect(screen.getAllByText('Запросить отметку')).toHaveLength(3);
+  });
+
   it('ошибка API → кнопка восстанавливается + inline error', async () => {
     mockApiService.getStudentRecords.mockReturnValue(of([mockRecord(1, 'absent')]));
     mockApiService.requestLateCheckin.mockReturnValue(

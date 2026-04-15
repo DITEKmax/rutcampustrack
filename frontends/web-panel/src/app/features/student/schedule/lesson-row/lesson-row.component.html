@@ -65,5 +65,39 @@
         </div>
       }
     </dl>
+
+    <div class="lesson-row__detail-actions">
+      <button
+        type="button"
+        class="lesson-row__detail-btn lesson-row__detail-btn--primary"
+        [disabled]="!canRequestExcuse"
+        (click)="onRequestExcuse($event)"
+      >
+        <i class="ph ph-note-pencil" aria-hidden="true"></i>
+        Заявить об уважительной причине
+      </button>
+
+      @if (lateCheckinSent) {
+        <span class="lesson-row__detail-sent" role="status" aria-label="Запрос отправлен">
+          <i class="ph-fill ph-check-circle" aria-hidden="true"></i>
+          Запрос на отметку отправлен
+        </span>
+      } @else {
+        <button
+          type="button"
+          class="lesson-row__detail-btn lesson-row__detail-btn--secondary"
+          [disabled]="!canRequestLateCheckin || lateCheckinPending"
+          [attr.aria-busy]="lateCheckinPending"
+          (click)="onRequestLateCheckin($event)"
+        >
+          <i class="ph ph-clock-countdown" aria-hidden="true"></i>
+          Заявить о посещении
+        </button>
+      }
+    </div>
+
+    @if (lateCheckinError) {
+      <p class="lesson-row__detail-error" role="alert">{{ lateCheckinError }}</p>
+    }
   </div>
 }

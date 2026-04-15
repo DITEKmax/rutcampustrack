@@ -65,7 +65,11 @@ describe('LessonRowComponent', () => {
     expect(screen.getByText(/Пара\s*№\s*2/)).toBeTruthy();
     expect(screen.getByText('Длительность')).toBeTruthy();
     // row button's aria-expanded reflects the input
-    expect(screen.getByRole('button').getAttribute('aria-expanded')).toBe('true');
+    const rowButton = document.querySelector('button.lesson-row') as HTMLButtonElement;
+    expect(rowButton.getAttribute('aria-expanded')).toBe('true');
+    // expanded panel also exposes the two action buttons
+    expect(screen.getByText('Заявить об уважительной причине')).toBeTruthy();
+    expect(screen.getByText('Заявить о посещении')).toBeTruthy();
   });
 
   it('hides the detail panel when expanded = false', async () => {

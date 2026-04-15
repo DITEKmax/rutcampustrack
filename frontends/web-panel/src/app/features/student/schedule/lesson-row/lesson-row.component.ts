@@ -42,7 +42,12 @@ export class LessonRowComponent {
   @Input() subjectName = 'Предмет';
   @Input() personalStatus: AttendanceStatus | null = null;
   @Input() expanded = false;
+  @Input() lateCheckinSent = false;
+  @Input() lateCheckinPending = false;
+  @Input() lateCheckinError: string | null = null;
   @Output() toggle = new EventEmitter<number>();
+  @Output() requestExcuse = new EventEmitter<number>();
+  @Output() requestLateCheckin = new EventEmitter<number>();
 
   get isActive(): boolean {
     return this.lesson.status === 'ACTIVE';
@@ -64,7 +69,6 @@ export class LessonRowComponent {
     if (this.personalStatus) {
       return `status-chip status-chip--${this.personalStatus}`;
     }
-    if (this.isActive) return 'status-chip status-chip--active';
     if (this.isCancelled) return 'status-chip status-chip--cancelled';
     return 'status-chip status-chip--planned';
   }
@@ -74,9 +78,29 @@ export class LessonRowComponent {
     if (this.personalStatus === 'absent') return 'н';
     if (this.personalStatus === 'excused') return 'у';
     if (this.personalStatus === 'free_attendance') return 'сп';
-    if (this.isActive) return 'Идёт';
     if (this.isCancelled) return 'Отменена';
     return 'Пара';
+  }
+
+  /** Excuse-ticket button is disabled for cancelled lessons. */
+  get canRequestExcuse(): boolean {
+    return !this.isCancelled;
+  }
+
+  /** Late-checkin button is available for any non-cancelled lesson not already marked present. */
+  get canRequestLateCheckin(): boolean {
+    return !this.isCancelled && this.personalStatus !== 'present';
+  }
+
+  onRequestExcuse(event: Event): void {
+    event.stopPropagation();
+    this.requestExcuse.emit(this.lesson.id);
+  }
+
+  onRequestLateCheckin(event: Event): void {
+    event.stopPropagation();
+    if (this.lateCheckinSent || this.lateCheckinPending) return;
+    this.requestLateCheckin.emit(this.lesson.id);
   }
 
   /**

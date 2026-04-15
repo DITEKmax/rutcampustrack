@@ -74,6 +74,20 @@ function flushSubjects(httpMock: HttpTestingController): void {
     );
 }
 
+/**
+ * Flush the personal records request fired alongside each loadWeek() call.
+ * Matches all pending /api/attendance/reports/student/records requests so
+ * tests can remain agnostic of how many reloads happened.
+ */
+function flushRecords(httpMock: HttpTestingController): void {
+  httpMock
+    .match(r => r.url === '/api/attendance/reports/student/records')
+    .forEach(r => {
+      if (r.cancelled) return;
+      r.flush({ _embedded: { attendanceRecordEntryList: [] } });
+    });
+}
+
 describe('StudentScheduleComponent', () => {
   let httpMock: HttpTestingController;
 
@@ -114,6 +128,7 @@ describe('StudentScheduleComponent', () => {
     expect(req.request.params.get('dateTo')).toBe('2026-04-11');
     expect(req.request.params.get('size')).toBe('100');
     req.flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
   });
 
   it('renders 4 skeleton rows while the request is pending', async () => {
@@ -122,6 +137,7 @@ describe('StudentScheduleComponent', () => {
     httpMock
       .expectOne(r => r.url === '/api/schedule/groups/5/lessons')
       .flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
   });
 
   it('renders "Занятий нет" empty state when no lessons are returned', async () => {
@@ -129,6 +145,7 @@ describe('StudentScheduleComponent', () => {
     httpMock
       .expectOne(r => r.url === '/api/schedule/groups/5/lessons')
       .flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
     fixture.detectChanges();
 
     expect(screen.getByText('Занятий нет')).toBeTruthy();
@@ -142,6 +159,7 @@ describe('StudentScheduleComponent', () => {
     httpMock
       .expectOne(r => r.url === '/api/schedule/groups/5/lessons')
       .flush(null, { status: 500, statusText: 'Server Error' });
+    flushRecords(httpMock);
     fixture.detectChanges();
 
     expect(
@@ -154,6 +172,7 @@ describe('StudentScheduleComponent', () => {
     httpMock
       .expectOne(r => r.url === '/api/schedule/groups/5/lessons')
       .flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
     fixture.detectChanges();
 
     const nextBtn = fixture.nativeElement.querySelector(
@@ -168,6 +187,7 @@ describe('StudentScheduleComponent', () => {
     expect(second.request.params.get('dateFrom')).toBe('2026-04-13');
     expect(second.request.params.get('dateTo')).toBe('2026-04-18');
     second.flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
   });
 
   it('previous week button shifts the date range by -7', async () => {
@@ -175,6 +195,7 @@ describe('StudentScheduleComponent', () => {
     httpMock
       .expectOne(r => r.url === '/api/schedule/groups/5/lessons')
       .flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
     fixture.detectChanges();
 
     const prevBtn = fixture.nativeElement.querySelector(
@@ -189,6 +210,7 @@ describe('StudentScheduleComponent', () => {
     expect(second.request.params.get('dateFrom')).toBe('2026-03-30');
     expect(second.request.params.get('dateTo')).toBe('2026-04-04');
     second.flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
   });
 
   it('"Сегодня" pill appears after navigation and jumps back to current week on click', async () => {
@@ -196,6 +218,7 @@ describe('StudentScheduleComponent', () => {
     httpMock
       .expectOne(r => r.url === '/api/schedule/groups/5/lessons')
       .flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
     fixture.detectChanges();
 
     // Initially on the current week — pill should NOT be visible.
@@ -210,6 +233,7 @@ describe('StudentScheduleComponent', () => {
     httpMock
       .expectOne(r => r.url === '/api/schedule/groups/5/lessons')
       .flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
     fixture.detectChanges();
 
     // Now the pill should be rendered.
@@ -224,6 +248,7 @@ describe('StudentScheduleComponent', () => {
     );
     expect(third.request.params.get('dateFrom')).toBe('2026-04-06');
     third.flush({ _embedded: { lessonResponseList: [] } });
+    flushRecords(httpMock);
     fixture.detectChanges();
 
     // Pill hides again.
@@ -255,6 +280,7 @@ describe('StudentScheduleComponent', () => {
         ],
       },
     });
+    flushRecords(httpMock);
     fixture.detectChanges();
     flushSubjects(httpMock);
     fixture.detectChanges();
@@ -287,6 +313,7 @@ describe('StudentScheduleComponent', () => {
         ],
       },
     });
+    flushRecords(httpMock);
     fixture.detectChanges();
     flushSubjects(httpMock);
     fixture.detectChanges();

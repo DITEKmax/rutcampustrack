@@ -8,12 +8,9 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { CdkTableModule } from '@angular/cdk/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatIconModule } from '@angular/material/icon';
-import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { HeadmanApiService } from '../../shared/headman-api.service';
 import type { JournalCell, JournalColumn, JournalResponse, JournalStudentRow } from '../../../teacher/journal/types';
 
@@ -30,248 +27,213 @@ const STATUS_SYMBOLS: Record<AttendanceStatus, string> = {
 const WEEKDAY_LABELS = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'] as const;
 
 const QUICK_STATUSES: AttendanceStatus[] = ['present', 'absent', 'excused'];
-const EXTRA_STATUSES: { value: AttendanceStatus; label: string }[] = [
-  { value: 'free_attendance', label: 'Свободное посещение' },
-  { value: 'cancelled', label: 'Отменена' },
-];
 
 @Component({
   selector: 'app-headman-journal-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CdkTableModule, MatMenuModule, MatIconModule],
+  imports: [],
   styles: [`
     :host { display: block; }
 
-    .journal-grid-wrapper {
+    .grid-wrapper {
       overflow-x: auto;
-      border: 1px solid var(--mat-sys-outline-variant);
-      border-radius: 8px;
-      background: var(--mat-sys-surface);
+      overflow-y: visible;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      background: var(--bg-secondary);
+      position: relative;
     }
 
-    table { border-collapse: separate; border-spacing: 0; width: 100%; }
-
-    :host ::ng-deep cdk-header-row,
-    :host ::ng-deep cdk-row {
-      display: flex;
-      align-items: stretch;
+    .journal-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: max-content;
+      min-width: 100%;
+      font-size: 13px;
     }
 
     /* Student column — sticky left */
-    .student-header, .student-cell {
-      position: sticky; left: 0; z-index: 4;
+    .col-student {
+      position: sticky; left: 0; z-index: 3;
       width: 220px; min-width: 220px; max-width: 220px;
-      padding: 8px 12px;
-      background: var(--mat-sys-surface-container);
-      border-right: 1px solid var(--mat-sys-outline-variant);
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      text-align: left;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      font-size: 14px;
-      display: flex; align-items: center;
+      vertical-align: middle;
     }
-    .student-header { font-weight: 600; z-index: 6; }
+    .col-student--head {
+      z-index: 6;
+      background: var(--bg-surface);
+      font: 500 var(--text-xs)/1 var(--font-mono);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+    }
 
-    /* Percentage column — sticky right */
-    .percent-header, .percent-cell {
-      position: sticky; right: 0; z-index: 4;
-      width: 72px; min-width: 72px; max-width: 72px;
-      padding: 8px;
-      background: var(--mat-sys-surface-container);
-      border-left: 1px solid var(--mat-sys-outline-variant);
+    /* Date column header */
+    .col-date {
+      min-width: 72px; width: 72px;
+      padding: var(--space-3) 4px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
       text-align: center;
-      display: flex; align-items: center; justify-content: center;
+      font: 500 var(--text-xs)/1.2 var(--font-mono);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--text-muted);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .col-date.today-column {
+      color: var(--accent-primary);
+      background: color-mix(in oklab, var(--accent-primary) 8%, var(--bg-surface));
+    }
+    .col-date__weekday { display: block; opacity: 0.8; margin-bottom: 2px; }
+    .col-date__date { display: block; color: var(--text-secondary); }
+
+    /* Percent column — sticky right */
+    .col-percent {
+      position: sticky; right: 0; z-index: 3;
+      width: 72px; min-width: 72px; max-width: 72px;
+      padding: var(--space-3) var(--space-3);
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-subtle);
+      text-align: center;
+      vertical-align: middle;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
       font-weight: 600;
-      font-size: 13px;
     }
-    .percent-header { font-weight: 600; z-index: 6; }
+    .col-percent--head {
+      z-index: 6;
+      background: var(--bg-surface);
+      font: 500 var(--text-xs)/1 var(--font-mono);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 500;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .col-percent--good { color: var(--accent-primary); }
+    .col-percent--warn { color: var(--accent-warning); }
+    .col-percent--bad  { color: var(--accent-danger); }
 
-    /* Date header */
-    .date-header {
-      width: 60px; min-width: 60px; max-width: 60px;
-      padding: 4px 2px;
-      background: var(--mat-sys-surface-container);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: flex-start;
-      font-size: 11px; font-weight: 600;
-      border-right: 1px solid var(--mat-sys-outline-variant);
-      gap: 2px;
+    /* Body */
+    .row-student { transition: background var(--duration-base) var(--ease-out); }
+    .row-student td {
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
     }
-    .date-header.today-column { background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent); }
-    .date-label { line-height: 1.2; letter-spacing: 0.3px; }
-    .date-label__weekday { opacity: 0.7; font-weight: 500; }
+    .row-student:hover { background: var(--bg-elevated); }
+    .row-student:hover .col-student,
+    .row-student:hover .col-percent { background: var(--bg-elevated); }
 
-    .bulk-row { display: flex; gap: 2px; margin-top: 2px; align-items: center; }
-    .bulk-btn {
-      border: none; background: transparent;
-      width: 16px; height: 16px; padding: 0;
-      font-size: 10px; font-weight: 700;
-      border-radius: 3px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .bulk-btn:hover { background: var(--mat-sys-surface-variant); }
-    .bulk-btn--present { color: var(--status-present); }
-    .bulk-btn--absent  { color: var(--status-absent); }
-    .bulk-btn--excused { color: var(--status-excused); }
-    .bulk-more {
-      border: none; background: transparent;
-      width: 16px; height: 16px; padding: 0;
-      cursor: pointer; border-radius: 3px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--mat-sys-on-surface-variant);
-    }
-    .bulk-more:hover { background: var(--mat-sys-surface-variant); }
-    .bulk-more mat-icon { font-size: 14px; width: 14px; height: 14px; }
-
-    /* Data cells */
-    .status-cell {
-      width: 60px; min-width: 60px; max-width: 60px;
+    .cell {
+      min-width: 72px; width: 72px;
       padding: 4px;
-      display: flex; align-items: center; justify-content: center;
-      border-right: 1px solid var(--mat-sys-outline-variant);
+      text-align: center;
+      border-right: 1px solid var(--border-subtle);
+      vertical-align: middle;
     }
 
-    :host ::ng-deep cdk-row { min-height: 44px; border-bottom: 1px solid var(--mat-sys-outline-variant); }
-    :host ::ng-deep cdk-row:hover { background: color-mix(in srgb, var(--mat-sys-primary) 6%, transparent); }
-    :host ::ng-deep cdk-row:hover .student-cell,
-    :host ::ng-deep cdk-row:hover .percent-cell {
-      background: color-mix(in srgb, var(--mat-sys-primary) 8%, var(--mat-sys-surface-container));
+    /* Three mini-buttons per cell */
+    .cell-buttons {
+      display: inline-flex;
+      gap: 3px;
+      align-items: center;
+      justify-content: center;
     }
-
-    .status-btn, .status-empty {
-      width: 28px; height: 28px;
-      border: none; border-radius: 50%;
-      cursor: pointer;
-      font-size: 12px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.12s ease, box-shadow 0.12s ease;
-    }
-    .status-btn:hover { transform: scale(1.1); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
-
-    .status-chip--present { background: var(--status-present); color: var(--accent-primary-contrast, #fff); }
-    .status-chip--absent { background: var(--status-absent); color: #fff; }
-    .status-chip--excused { background: var(--status-excused); color: #0A0E17; }
-    .status-chip--free_attendance { background: var(--status-free-attendance); color: #fff; }
-
-    .status-empty {
+    .dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--border-subtle);
       background: transparent;
-      border: 1px dashed var(--mat-sys-outline);
-      color: var(--mat-sys-on-surface-variant);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.45;
+      transition: transform 0.1s ease, opacity 0.15s ease, background 0.15s ease;
+      padding: 0;
     }
-    .status-empty:hover { background: var(--mat-sys-surface-variant); }
-
-    .status-cancelled {
-      width: 28px; height: 28px;
-      font-size: 11px; color: var(--mat-sys-on-surface);
-      opacity: 0.4; display: flex; align-items: center; justify-content: center;
-      cursor: default;
+    .dot:hover { opacity: 1; transform: scale(1.1); }
+    .dot--active {
+      opacity: 1;
+      color: var(--accent-primary-contrast, #fff);
+      border-color: transparent;
     }
+    .dot--present.dot--active { background: var(--status-present); }
+    .dot--absent.dot--active  { background: var(--status-absent); color: #fff; }
+    .dot--excused.dot--active { background: var(--status-excused); color: #0A0E17; }
 
-    :host ::ng-deep cdk-header-row {
-      position: sticky; top: 0; z-index: 5;
-      background: var(--mat-sys-surface-container);
-      border-bottom: 1px solid var(--mat-sys-outline-variant);
-      min-height: 56px;
+    .cell-cancelled {
+      color: var(--text-muted);
+      opacity: 0.5;
+      font-size: 12px;
     }
   `],
   template: `
-    <div class="journal-grid-wrapper"
+    <div class="grid-wrapper"
          [attr.aria-busy]="loading"
          [style.pointer-events]="loading ? 'none' : ''">
-      <table cdk-table [dataSource]="dataSource()">
-
-        <!-- Sticky student name column -->
-        <ng-container cdkColumnDef="student" sticky>
-          <th cdk-header-cell *cdkHeaderCellDef class="student-header">Студент</th>
-          <td cdk-cell *cdkCellDef="let row" class="student-cell" [title]="row.displayName">
-            {{ row.displayName }}
-          </td>
-        </ng-container>
-
-        <!-- Dynamic date/lesson columns -->
-        @for (col of columns(); track col.id) {
-          <ng-container [cdkColumnDef]="col.id">
-            <th cdk-header-cell *cdkHeaderCellDef class="date-header"
-                [class.today-column]="col.isToday">
-              <div class="date-label">
-                <span class="date-label__weekday">{{ col.weekday }}</span>
-                {{ col.displayDate }}
-              </div>
-              <div class="bulk-row" [attr.aria-label]="'Массовая отметка ' + col.weekday + ' ' + col.displayDate">
-                <button type="button" class="bulk-btn bulk-btn--present"
-                        (click)="bulkMark(col, 'present')"
-                        title="Отметить всем «присутствовал»">+</button>
-                <button type="button" class="bulk-btn bulk-btn--absent"
-                        (click)="bulkMark(col, 'absent')"
-                        title="Отметить всем «не был»">Н</button>
-                <button type="button" class="bulk-btn bulk-btn--excused"
-                        (click)="bulkMark(col, 'excused')"
-                        title="Отметить всем «уважит.»">У</button>
-                <button type="button" class="bulk-more"
-                        [matMenuTriggerFor]="extraMenu"
-                        title="Другие статусы">
-                  <mat-icon>more_horiz</mat-icon>
-                </button>
-                <mat-menu #extraMenu="matMenu">
-                  @for (extra of extraStatuses; track extra.value) {
-                    <button mat-menu-item (click)="bulkMark(col, extra.value)">
-                      {{ extra.label }}
-                    </button>
+      <table class="journal-table">
+        <thead>
+          <tr>
+            <th class="col-student col-student--head">Студент</th>
+            @for (col of columns(); track col.id) {
+              <th class="col-date" [class.today-column]="col.isToday">
+                <span class="col-date__weekday">{{ col.weekday }}</span>
+                <span class="col-date__date">{{ col.displayDate }}</span>
+              </th>
+            }
+            <th class="col-percent col-percent--head">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of dataSource(); track row.userId) {
+            <tr class="row-student">
+              <td class="col-student" [title]="row.displayName">{{ row.displayName }}</td>
+              @for (col of columns(); track col.id) {
+                <td class="cell">
+                  @let cell = getCell(row.userId, col.id);
+                  @if (cell && cell.status === 'cancelled') {
+                    <span class="cell-cancelled"
+                          [attr.aria-label]="'Отменена, ' + row.displayName + ', ' + col.displayDate">
+                      {{ cell.symbol }}
+                    </span>
+                  } @else if (cell) {
+                    <span class="cell-buttons">
+                      @for (s of quickStatuses; track s) {
+                        <button
+                          type="button"
+                          class="dot dot--{{ s }}"
+                          [class.dot--active]="cell.status === s"
+                          [attr.aria-label]="statusAriaLabel(s) + ', ' + row.displayName + ', ' + col.displayDate"
+                          [attr.aria-pressed]="cell.status === s"
+                          (click)="setStatus(cell, row, s)"
+                        >{{ statusSymbol(s) }}</button>
+                      }
+                    </span>
+                  } @else {
+                    <span class="cell-cancelled" aria-label="Нет занятия">—</span>
                   }
-                </mat-menu>
-              </div>
-            </th>
-            <td cdk-cell *cdkCellDef="let row" class="status-cell">
-              @let cell = getCell(row.userId, col.id);
-              @if (cell) {
-                @if (cell.status === 'cancelled') {
-                  <span
-                    class="status-cancelled"
-                    aria-disabled="true"
-                    tabindex="-1"
-                    [attr.aria-label]="'Отменена, ' + row.displayName + ', ' + col.displayDate"
-                  >{{ cell.symbol }}</span>
-                } @else {
-                  <button
-                    class="status-btn status-chip--{{ cell.status }}"
-                    [matMenuTriggerFor]="cellMenu"
-                    [matMenuTriggerData]="{ cell: cell, row: row }"
-                    [attr.aria-label]="'Статус: ' + cell.symbol + ', ' + row.displayName + ', ' + col.displayDate"
-                  >{{ cell.symbol }}</button>
-                }
-              } @else {
-                <button
-                  class="status-empty"
-                  [matMenuTriggerFor]="cellMenu"
-                  [matMenuTriggerData]="{ cell: null, row: row, col: col }"
-                  [attr.aria-label]="'Нет отметки, ' + row.displayName + ', ' + col.displayDate"
-                >—</button>
+                </td>
               }
-            </td>
-          </ng-container>
-        }
-
-        <!-- Sticky right percentage column -->
-        <ng-container cdkColumnDef="percent" stickyEnd>
-          <th cdk-header-cell *cdkHeaderCellDef class="percent-header">%</th>
-          <td cdk-cell *cdkCellDef="let row" class="percent-cell">
-            {{ getPercent(row.userId) }}%
-          </td>
-        </ng-container>
-
-        <tr cdk-header-row *cdkHeaderRowDef="displayedColumns(); sticky: true"></tr>
-        <tr cdk-row *cdkRowDef="let row; columns: displayedColumns();"></tr>
+              <td class="col-percent" [class]="percentClass(getPercent(row.userId))">
+                {{ getPercent(row.userId) }}%
+              </td>
+            </tr>
+          }
+        </tbody>
       </table>
-
-      <mat-menu #cellMenu="matMenu">
-        <ng-template matMenuContent let-cell="cell" let-row="row" let-col="col">
-          <button mat-menu-item (click)="setStatus(cell, row, col, 'present')">Присутствовал</button>
-          <button mat-menu-item (click)="setStatus(cell, row, col, 'absent')">Не был</button>
-          <button mat-menu-item (click)="setStatus(cell, row, col, 'excused')">Уважит. причина</button>
-          <button mat-menu-item (click)="setStatus(cell, row, col, 'free_attendance')">Свободное посещение</button>
-        </ng-template>
-      </mat-menu>
     </div>
   `,
 })
@@ -284,7 +246,7 @@ export class HeadmanJournalGridComponent implements OnChanges {
 
   private readonly today = new Date().toISOString().slice(0, 10);
 
-  readonly extraStatuses = EXTRA_STATUSES;
+  readonly quickStatuses = QUICK_STATUSES;
 
   readonly cellMap = signal<Map<string, JournalCell>>(new Map());
 
@@ -293,12 +255,6 @@ export class HeadmanJournalGridComponent implements OnChanges {
     if (!this.journalData) return [];
     return this.buildColumns(this.journalData);
   });
-
-  readonly displayedColumns = computed<string[]>(() => [
-    'student',
-    ...this.columns().map(c => c.id),
-    'percent',
-  ]);
 
   readonly dataSource = computed<JournalStudentRow[]>(() => {
     if (!this.journalData) return [];
@@ -313,11 +269,30 @@ export class HeadmanJournalGridComponent implements OnChanges {
     }
   }
 
+  statusSymbol(s: AttendanceStatus): string {
+    return STATUS_SYMBOLS[s];
+  }
+  statusAriaLabel(s: AttendanceStatus): string {
+    switch (s) {
+      case 'present': return 'Присутствовал';
+      case 'absent': return 'Не был';
+      case 'excused': return 'Уважительная причина';
+      case 'free_attendance': return 'Свободное посещение';
+      case 'cancelled': return 'Отменена';
+    }
+  }
+
+  percentClass(p: number): string {
+    if (p >= 80) return 'col-percent--good';
+    if (p >= 50) return 'col-percent--warn';
+    return 'col-percent--bad';
+  }
+
   private buildColumns(journal: JournalResponse): (JournalColumn & { weekday: string })[] {
     const colSet = new Map<string, JournalColumn & { weekday: string }>();
     journal.students.forEach(row =>
       row.records.forEach(cell => {
-        if (cell.date > this.today) return; // hide future lessons
+        if (cell.date > this.today) return;
         const id = `${cell.date}_lesson${cell.lessonNumber}`;
         if (!colSet.has(id)) {
           const parts = cell.date.split('-');
@@ -369,18 +344,7 @@ export class HeadmanJournalGridComponent implements OnChanges {
     return Math.round((attended / counted) * 100);
   }
 
-  setStatus(
-    cell: JournalCell | null,
-    row: JournalStudentRow,
-    col: (JournalColumn & { weekday: string }) | undefined,
-    next: AttendanceStatus,
-  ): void {
-    const resolvedCell = cell ?? (col ? this.getCell(row.userId, col.id) : undefined);
-    if (!resolvedCell || !resolvedCell.lessonId) return;
-    this.applyStatus(resolvedCell, row, next);
-  }
-
-  private applyStatus(cell: JournalCell, row: JournalStudentRow, next: AttendanceStatus): void {
+  setStatus(cell: JournalCell, row: JournalStudentRow, next: AttendanceStatus): void {
     if (!cell.lessonId || cell.status === next) return;
     const prev = cell.status as AttendanceStatus;
 
@@ -402,45 +366,5 @@ export class HeadmanJournalGridComponent implements OnChanges {
         }),
       )
       .subscribe();
-  }
-
-  bulkMark(col: JournalColumn, status: AttendanceStatus): void {
-    const targets: { cell: JournalCell; row: JournalStudentRow; prev: AttendanceStatus }[] = [];
-    for (const row of this.journalData.students) {
-      const cell = this.cellMap().get(`${row.userId}_${col.id}`);
-      if (!cell || !cell.lessonId) continue;
-      if (cell.status === 'cancelled' && status !== 'cancelled') continue;
-      if (cell.status === status) continue;
-      targets.push({ cell, row, prev: cell.status as AttendanceStatus });
-    }
-    if (targets.length === 0) return;
-
-    targets.forEach(t => {
-      t.cell.status = status;
-      t.cell.symbol = STATUS_SYMBOLS[status];
-    });
-    this.cellMap.set(new Map(this.cellMap()));
-
-    forkJoin(
-      targets.map(t =>
-        this.headmanApi.markAttendance(t.cell.lessonId!, t.row.userId, status).pipe(
-          catchError(() => {
-            t.cell.status = t.prev;
-            t.cell.symbol = STATUS_SYMBOLS[t.prev];
-            return of({ failed: true });
-          }),
-        ),
-      ),
-    ).subscribe(results => {
-      const failed = results.filter((r: any) => r?.failed).length;
-      if (failed > 0) {
-        this.cellMap.set(new Map(this.cellMap()));
-        this.snackBar.open(
-          `Не удалось обновить ${failed} ${failed === 1 ? 'запись' : 'записей'}.`,
-          undefined,
-          { duration: 4000 },
-        );
-      }
-    });
   }
 }

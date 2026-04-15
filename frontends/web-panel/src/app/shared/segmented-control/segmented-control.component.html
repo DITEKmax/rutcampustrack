@@ -1,0 +1,21 @@
+<div
+  class="seg-ctrl"
+  role="radiogroup"
+  aria-label="Переключатель режима">
+
+  @for (opt of options; track opt.value) {
+    <button
+      type="button"
+      role="radio"
+      class="seg-ctrl__btn"
+      [class.seg-ctrl__btn--active]="opt.value === value"
+      [attr.aria-checked]="opt.value === value ? 'true' : 'false'"
+      (click)="select(opt.value)">
+      @if (opt.icon) {
+        <i [class]="'ph ' + opt.icon" aria-hidden="true"></i>
+      }
+      {{ opt.label }}
+    </button>
+  }
+
+</div>

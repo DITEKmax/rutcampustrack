@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+
+.seg-ctrl {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-secondary, #f5f5f5);
+  border: 1px solid var(--border-subtle, #e0e0e0);
+  border-radius: var(--radius-full, 999px);
+  padding: 3px;
+}
+
+.seg-ctrl__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius-full, 999px);
+  background: transparent;
+  color: var(--text-secondary, #666);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+  white-space: nowrap;
+  min-height: 36px;
+}
+
+.seg-ctrl__btn:hover:not(.seg-ctrl__btn--active) {
+  background: var(--bg-hover, #eee);
+  color: var(--text-primary);
+}
+
+.seg-ctrl__btn--active {
+  background: var(--accent-primary, #1565c0);
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}

@@ -71,6 +71,26 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
             @Param("date") LocalDate date);
 
     /**
+     * Phase 61 D-04: Резолв пары по natural key (group_id, date, lesson_number).
+     * Возвращает lesson только если статус planned/active/closed (cancelled отфильтровывается).
+     * Используется academic-service для валидации существования пары перед созданием/апдейтом ДЗ.
+     */
+    @Query(value = """
+        SELECT l.* FROM lessons l
+        JOIN schedule_items si ON si.id = l.schedule_item_id
+        WHERE si.group_id = :groupId
+          AND si.lesson_number = :lessonNumber
+          AND l.date = CAST(:date AS date)
+          AND l.status::text IN ('planned','active','closed')
+        ORDER BY l.date
+        LIMIT 1
+        """, nativeQuery = true)
+    Optional<Lesson> findByGroupDateAndLessonNumber(
+            @Param("groupId") Long groupId,
+            @Param("date") LocalDate date,
+            @Param("lessonNumber") Integer lessonNumber);
+
+    /**
      * Finds PLANNED lessons whose (date + start_time) <= nowMoscow (CRON-01).
      * JOIN schedule_items to compare start_time. Uses native query with status::text cast
      * (same pattern as all other queries in this repo).

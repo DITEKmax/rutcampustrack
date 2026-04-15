@@ -18,6 +18,11 @@ service ScheduleGrpcService {
 
   // Получить компактную информацию о парах по списку ID (для валидации в excuse-сервисе)
   rpc GetLessonsByIds (LessonsByIdsRequest) returns (LessonsByIdsResponse);
+
+  // Phase 61 D-04: резолв пары по natural key (group_id, date, lesson_number).
+  // Используется academic-service для проверки существования пары перед созданием ДЗ.
+  // NOT_FOUND если на дату нет lesson в статусах planned/active/closed.
+  rpc ResolveLesson (ResolveLessonRequest) returns (LessonResponse);
 }
 
 message ActiveLessonRequest {
@@ -27,6 +32,13 @@ message ActiveLessonRequest {
 
 message LessonByIdRequest {
   int64 lesson_id = 1;
+}
+
+// Phase 61 D-04: natural-key резолв пары.
+message ResolveLessonRequest {
+  int64 group_id = 1;
+  string date = 2;          // ISO-8601 date, например "2026-05-01"
+  int32 lesson_number = 3;  // 1..8
 }
 
 message LessonsByGroupRequest {

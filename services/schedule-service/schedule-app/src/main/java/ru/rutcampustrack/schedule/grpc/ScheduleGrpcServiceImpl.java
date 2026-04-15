@@ -164,6 +164,30 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         responseObserver.onCompleted();
     }
 
+    /**
+     * Phase 61 D-04: Резолв пары по natural key (group_id, date, lesson_number).
+     * Используется academic-service для валидации существования пары перед созданием/апдейтом ДЗ.
+     * Возвращает NOT_FOUND, если пара не найдена в статусах planned/active/closed на эту дату.
+     */
+    @Override
+    public void resolveLesson(ResolveLessonRequest request,
+                              StreamObserver<LessonResponse> responseObserver) {
+        LocalDate date = LocalDate.parse(request.getDate());
+
+        Lesson lesson = lessonRepository
+                .findByGroupDateAndLessonNumber(request.getGroupId(), date, request.getLessonNumber())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Lesson",
+                        "group_id/date/lesson_number",
+                        request.getGroupId() + "/" + date + "/" + request.getLessonNumber()));
+
+        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
+
+        responseObserver.onNext(buildResponse(lesson, item));
+        responseObserver.onCompleted();
+    }
+
     private LessonResponse buildResponse(Lesson lesson, ScheduleItem item) {
         return LessonResponse.newBuilder()
                 .setId(lesson.getId())

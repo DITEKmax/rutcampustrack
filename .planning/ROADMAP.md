@@ -401,6 +401,35 @@ Plans:
 - [x] 60-08-PLAN.md — full build regression + phase-60-report.md
 **UI hint**: yes (`/headman/schedule` + обновление `/headman/subjects`)
 
+### Phase 61: Headman Homework Management — UI старосты для создания/редактирования домашних заданий группы с привязкой ДЗ к конкретной паре (дата + lesson_number), три режима просмотра для студента (День/Неделя/Месяц), push при create и update.
+
+**Goal:** Доделать фичу «Домашние задания»: (1) привязать ДЗ к конкретной паре через natural key (group_id, lesson_date, lesson_number) с бэкенд-валидациями (дата ≥ today, пара существует в расписании, subject совпадает, только автор правит/удаляет, только HEADMAN создаёт); (2) `/headman/homework` — недельный список пар с inline-формой (не MatDialog) для CRUD; (3) переписать `/student/homework` с тремя режимами (День = завтра / Неделя вертикальный список / Месяц матрица) + фильтр «только невыполненные»; (4) расширить payload событий homework.published/homework.updated + включить push при update в notification-bot.
+**Requirements**: [HW-LINK, HW-VAL-DATE, HW-VAL-LESSON, HW-AUTHOR, HW-ROLE, HW-EVENT, HW-UI-HEADMAN, HW-UI-STUDENT, HW-TEST]
+**Depends on:** Phase 60
+**Source**: `.planning/phases/61-headman-homework-management-ui-homeworkapi-controller-homewo/61-CONTEXT.md` (D-01..D-15) + `61-RESEARCH.md` (2026-04-15, HIGH confidence)
+**Success Criteria** (what must be TRUE):
+  1. Таблица `homeworks` имеет NOT NULL колонки `lesson_date DATE`, `lesson_number INT`; индекс `idx_homeworks_group_date` создан; колонка `lesson_id` удалена (Flyway V13)
+  2. POST `/api/academic/homeworks` с валидной датой и номером пары, которая существует в расписании группы + совпадающим subjectId → 201; без пары → 400; несовпадающий subject → 400
+  3. POST с `lesson_date < today` → 400 (D-03)
+  4. PUT/DELETE от НЕ автора → 403 (D-05). ADMIN больше не может create/update/delete (D-06)
+  5. На одну пару `(group_id, date, lesson_number)` успешно создаются ≥2 ДЗ подряд (нет UNIQUE)
+  6. Event `homework.published` содержит `lesson_date`, `lesson_number`; `homework.updated` дополнительно содержит `subject_id`; notification-bot шлёт push в обоих случаях с текстом, включающим имя предмета
+  7. Страница `/headman/homework` — недельный список пар, под каждой парой inline-форма (НЕ MatDialog) «Добавить задание», edit/delete работают только для своих ДЗ
+  8. Страница `/student/homework` — segmented День/Неделя/Месяц, дефолт День=завтра, навигация ← →, фильтр «только невыполненные», markComplete работает как раньше
+  9. Sidebar содержит «Домашние задания» в секции старостата (только при `is_headman=true`), иконка `ph-notebook`
+  10. Все существующие тесты проходят; новые unit/integration/pytest покрывают D-03/04/05/06/07; `./gradlew build` + `ng build` + `ng test` + `pytest` зелёные
+**Notes**: Новый gRPC RPC `ResolveLesson(group_id, date, lesson_number)` добавляется в schedule-service. `grpc-client-spring-boot-starter` переносится из testImplementation в implementation в academic-app. `Clock` bean (Europe/Moscow) для тестируемости D-03. Извлечены общие компоненты: `shared/week-navigator` (из headman-schedule) и первый универсальный `shared/segmented-control`. Deferred: помощник старосты, ADMIN override, прогресс выполнения для старосты, вложения, дедлайн отдельно от пары, drag-and-drop.
+**Plans:** 7 планов
+
+Plans:
+- [ ] 61-01-PLAN.md — schedule-service: gRPC RPC ResolveLesson + LessonRepository native query + IT
+- [ ] 61-02-PLAN.md — academic-service: Flyway V13 + entity/DTO lesson binding + ScheduleGrpcClient + Clock bean
+- [ ] 61-03-PLAN.md — academic-service: HomeworkService валидации D-03/D-04/D-05/D-06 + @RequireRole правки + unit+controller IT
+- [ ] 61-04-PLAN.md — events: payload extension (lesson_date, lesson_number, subject_id) + JSON Schemas + notification-bot handle_homework для homework.updated + pytest
+- [ ] 61-05-PLAN.md — web-panel headman: shared/week-navigator + shared/homework-card + /headman/homework + inline-form + sidebar + route
+- [ ] 61-06-PLAN.md — web-panel student: shared/segmented-control + переписать /student/homework на 3 режима (Day/Week/Month) + фильтр
+- [ ] 61-07-PLAN.md — E2E smoke + full build regression + phase-61-report.md + CLAUDE.md статус
+
 ---
 
 ## Progress

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -18,6 +20,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "attendances")
+@CompoundIndexes({
+        @CompoundIndex(
+                name = "uniq_lesson_user",
+                def = "{'lesson_id': 1, 'user_id': 1}",
+                unique = true
+        )
+})
 public class AttendanceDocument {
 
     @Id

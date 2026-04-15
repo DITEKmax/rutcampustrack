@@ -207,11 +207,11 @@ class CheckinIntegrationTest extends AbstractAttendanceIntegrationTest {
     }
 
     // -------------------------------------------------------------------------
-    // Test 5 — CHKN-05: Duplicate checkin (MongoDB unique index) returns 409
+    // Test 5 — CHKN-05: Repeated checkin upserts onto the same (lesson, user) row
     // -------------------------------------------------------------------------
 
     @Test
-    void checkin_duplicateCheckin_returns409() throws Exception {
+    void checkin_duplicateCheckin_upsertsSameRow() throws Exception {
         when(scheduleGrpcClient.getActiveLesson(anyLong(), anyString())).thenReturn(buildActiveLesson(false));
         when(geofenceService.isWithinCampus(anyDouble(), anyDouble())).thenReturn(true);
         when(semesterCacheService.getActiveSemesterId()).thenReturn(1L);
@@ -229,7 +229,8 @@ class CheckinIntegrationTest extends AbstractAttendanceIntegrationTest {
         // Flush Redis dedup so second request reaches MongoDB
         redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
 
-        // Second identical request must return 409 from MongoDB unique index
+        // Second identical request succeeds too (upsert semantics) — it just refreshes the doc.
+        // The compound unique index on (lesson_id, user_id) prevents a duplicate row.
         mockMvc.perform(post("/attendance/checkin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(checkinJson())
@@ -237,9 +238,9 @@ class CheckinIntegrationTest extends AbstractAttendanceIntegrationTest {
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", "10")
                         .header("X-Is-Headman", "false"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isCreated());
 
-        // MongoDB must have exactly 1 document
+        // MongoDB must have exactly 1 document — the upsert collapses both requests onto one row.
         assertThat(attendanceRepository.findAll()).hasSize(1);
     }
 

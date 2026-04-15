@@ -61,32 +61,20 @@
                 </th>
               }
             </tr>
-            <!-- Subject + status headers merged into one row -->
+            <!-- Subject headers -->
             <tr class="row-subject-header">
               @for (day of dayGroups(); track day.date; let dayLast = $last) {
                 @for (col of day.columns; track col.lessonId; let colLast = $last) {
                   <th
                     class="col-subject"
                     [class.col-subject--day-end]="colLast && !dayLast"
+                    [class.col-subject--day-inner]="!colLast"
                     colspan="3"
                   >
                     <div class="col-subject__text" [title]="col.subjectName">
                       <span class="col-subject__name">{{ col.subjectName }}</span>
                     </div>
                   </th>
-                }
-              }
-            </tr>
-            <!-- Status sub-header (+/Н/У) -->
-            <tr class="row-status-header">
-              @for (day of dayGroups(); track day.date; let dayLast = $last) {
-                @for (col of day.columns; track col.lessonId; let colLast = $last) {
-                  <th class="col-status col-status--plus">+</th>
-                  <th class="col-status">Н</th>
-                  <th
-                    class="col-status"
-                    [class.col-status--day-end]="colLast && !dayLast"
-                  >У</th>
                 }
               }
             </tr>
@@ -125,6 +113,7 @@
                       [class.cell--saving]="saving"
                       [class.cell--flash]="flashing"
                       [class.cell--day-end]="colLast && !dayLast"
+                      [class.cell--subject-end]="!colLast"
                     >
                       <button
                         type="button"

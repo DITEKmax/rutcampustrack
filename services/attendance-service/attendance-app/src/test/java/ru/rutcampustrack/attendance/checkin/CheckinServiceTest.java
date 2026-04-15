@@ -94,6 +94,8 @@ class CheckinServiceTest {
         lenient().when(rateLimiter.acquireDedup(anyLong(), anyLong())).thenReturn(true);
         lenient().when(semesterCacheService.getActiveSemesterId()).thenReturn(1L);
         lenient().when(attendanceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        lenient().when(attendanceRepository.findByLessonIdAndUserId(anyLong(), anyLong()))
+                .thenReturn(java.util.Optional.empty());
     }
 
     // -------------------------------------------------------------------------

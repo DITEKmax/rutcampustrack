@@ -110,8 +110,14 @@ public class CheckinService {
             throw new ConflictException("Отметка уже зафиксирована");
         }
 
-        // Step 7: Save to MongoDB (CHKN-05) — DuplicateKeyException propagates to GlobalExceptionHandler -> 409
-        AttendanceDocument doc = AttendanceDocument.builder()
+        // Step 7: Upsert to MongoDB keyed on (lesson_id, user_id).
+        // Schema-level compound unique index prevents duplicates (see AttendanceDocument).
+        // If an auto-ABSENT doc exists (from lesson.closed), we update it to PRESENT.
+        AttendanceDocument existing = attendanceRepository
+                .findByLessonIdAndUserId(lesson.getId(), requestContext.getUserId())
+                .orElse(null);
+
+        AttendanceDocument doc = existing != null ? existing : AttendanceDocument.builder()
                 .lessonId(lesson.getId())
                 .userId(requestContext.getUserId())
                 .groupId(requestContext.getGroupId())
@@ -119,12 +125,13 @@ public class CheckinService {
                 .semesterId(semesterCacheService.getActiveSemesterId())
                 .lessonNumber(lesson.getLessonNumber())
                 .lessonDate(LocalDate.parse(lesson.getDate()))
-                .status(AttendanceStatus.PRESENT)
-                .source(AttendanceSource.STUDENT_GEO)
-                .markedBy(null)
                 .createdAt(now)
-                .updatedAt(now)
                 .build();
+
+        doc.setStatus(AttendanceStatus.PRESENT);
+        doc.setSource(AttendanceSource.STUDENT_GEO);
+        doc.setMarkedBy(null);
+        doc.setUpdatedAt(now);
 
         AttendanceDocument savedDoc = attendanceRepository.save(doc);
 

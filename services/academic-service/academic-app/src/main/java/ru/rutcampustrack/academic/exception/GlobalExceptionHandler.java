@@ -280,6 +280,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
+    /**
+     * Phase 61 / T-61-06: gRPC-вызов к schedule-service упал (UNAVAILABLE, deadline, …).
+     * Отдаём 503 без стек-трейса — клиент видит только короткий детейл на русском.
+     */
+    @ExceptionHandler(ScheduleServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleScheduleUnavailable(
+            ScheduleServiceUnavailableException ex,
+            HttpServletRequest request) {
+        log.warn("schedule-service недоступен: {}", ex.getMessage());
+        ErrorResponse body = new ErrorResponse(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                PROBLEM_BASE + "schedule-service-unavailable",
+                "Сервис расписания недоступен",
+                "Не удалось связаться с сервисом расписания. Попробуйте позже.",
+                request.getRequestURI(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex,
                                                         HttpServletRequest request) {

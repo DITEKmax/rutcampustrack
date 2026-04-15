@@ -47,6 +47,11 @@ grpc:
     port: 19091
   auth:
     secret: ${GRPC_SECRET:}
+  client:
+    # Phase 61 D-04: резолв пары по (group, date, lessonNumber) для валидации ДЗ
+    schedule-service:
+      address: static://schedule-service:19092
+      negotiation-type: plaintext
 
 cache:
   ttl:

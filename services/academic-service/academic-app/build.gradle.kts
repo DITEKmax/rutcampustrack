@@ -47,6 +47,9 @@ dependencies {
     // gRPC server
     implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
 
+    // gRPC client (Phase 61 D-04: academic→schedule ResolveLesson)
+    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
+
     // Required for generated gRPC stubs (javax.annotation.Generated removed in Java 9+)
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 
@@ -64,7 +67,6 @@ dependencies {
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:rabbitmq")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
 }
 
 sourceSets {

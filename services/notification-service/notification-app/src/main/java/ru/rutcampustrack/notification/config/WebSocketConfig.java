@@ -25,7 +25,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
     private final SubscriptionAuthInterceptor subscriptionAuthInterceptor;
 
-    @Value("${notification.ws.allowed-origins:http://localhost:5173,http://localhost:4200,http://localhost:3000}")
+    @Value("${notification.ws.allowed-origins:http://localhost:5173,http://localhost:4200,http://localhost:3000,https://ruttrack.site}")
     private String allowedOrigins;
 
     public WebSocketConfig(JwtHandshakeInterceptor jwtHandshakeInterceptor,

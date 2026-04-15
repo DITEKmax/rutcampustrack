@@ -202,6 +202,21 @@ export class StudentCheckinComponent implements OnInit, OnDestroy {
 
     this.state.set({ kind: 'gps_pending' });
 
+    // Староста проходит без проверки геолокации (bypass есть и на бэкенде).
+    // Передаём нулевые координаты — сервер их игнорирует для is_headman.
+    const user = this.auth.currentUser();
+    if (user?.isHeadman) {
+      this.state.set({ kind: 'submitting' });
+      this.studentApi.checkin({ lat: 0, lng: 0 }).subscribe({
+        next: () => this.state.set({ kind: 'confirmed' }),
+        error: (err: unknown) => {
+          const status = (err as { status?: number } | null)?.status ?? 0;
+          this.state.set({ kind: 'error', message: mapCheckinError(status) });
+        },
+      });
+      return;
+    }
+
     if (!navigator.geolocation) {
       this.state.set({ kind: 'error', message: GPS_DENIED_MESSAGE });
       return;

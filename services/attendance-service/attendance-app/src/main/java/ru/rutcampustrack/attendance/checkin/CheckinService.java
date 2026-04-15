@@ -97,8 +97,11 @@ public class CheckinService {
             throw new GeofenceBlockedException("Геоотметка заблокирована преподавателем");
         }
 
-        // Step 5: Geofence (CHKN-01) — student must be on campus
-        if (!geofenceService.isWithinCampus(request.lat(), request.lng())) {
+        // Step 5: Geofence (CHKN-01) — student must be on campus.
+        // Headman is exempt: staroste отмечается без проверки геолокации
+        // (присутствует физически и ведёт пару — ей доверяем).
+        if (!requestContext.isHeadman()
+                && !geofenceService.isWithinCampus(request.lat(), request.lng())) {
             throw new GeofenceViolationException("Вы находитесь вне зоны кампуса");
         }
 

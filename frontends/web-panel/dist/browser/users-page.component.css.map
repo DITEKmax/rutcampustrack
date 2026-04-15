@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/features/admin/users/users-page.component.scss"],
-  "sourcesContent": ["// BUG-006-4: стилизация колонки «Начальный пароль» в таблице пользователей.\n// Моноширинный шрифт + приглушённый фон подсвечивает, что перед нами\n// одноразовый секрет, который нужно скопировать и отдать пользователю.\n\n.init-password__wrap {\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n}\n\n.init-password {\n  font-family: 'Fira Code', 'JetBrains Mono', Consolas, monospace;\n  font-size: 0.875rem;\n  background: var(--mat-sys-surface-variant, rgba(0, 0, 0, 0.06));\n  color: var(--mat-sys-on-surface-variant, inherit);\n  padding: 2px 6px;\n  border-radius: 4px;\n  letter-spacing: 0.5px;\n  user-select: all;\n}\n\n.init-password__muted {\n  color: var(--mat-sys-outline, #9e9e9e);\n}\n"],
-  "mappings": ";AAIA,CAAA;AACE,WAAA;AACA,eAAA;AACA,OAAA;;AAGF,CAAA;AACE;IAAA,WAAA;IAAA,gBAAA;IAAA,QAAA;IAAA;AACA,aAAA;AACA,cAAA,IAAA,yBAAA,EAAA,KAAA,CAAA,EAAA,CAAA,EAAA,CAAA,EAAA;AACA,SAAA,IAAA,4BAAA,EAAA;AACA,WAAA,IAAA;AACA,iBAAA;AACA,kBAAA;AACA,uBAAA;AAAA,eAAA;;AAGF,CAAA;AACE,SAAA,IAAA,iBAAA,EAAA;;",
-  "names": []
-}

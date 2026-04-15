@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/features/student/shared/format-load-error.ts"],
-  "sourcesContent": ["import { HttpErrorResponse } from '@angular/common/http';\n\n/**\n * BUG-008: общий helper для понятных error-сообщений на student-страницах.\n * Ранее везде возвращалось одно generic-сообщение и невозможно было понять причину.\n * Теперь — добавляем код статуса и хинт по типу ошибки, console.error остаётся\n * за вызывающей стороной (он даёт полный stack для DevTools).\n */\nexport function formatLoadError(err: unknown, prefix = 'Не удалось загрузить данные.'): string {\n  if (err instanceof HttpErrorResponse) {\n    if (err.status === 0) {\n      return `${prefix} Нет связи с сервером.`;\n    }\n    if (err.status === 401 || err.status === 403) {\n      return `${prefix} Сессия истекла или нет прав. Войдите снова.`;\n    }\n    if (err.status >= 500) {\n      return `${prefix} Сервер временно недоступен (${err.status}).`;\n    }\n    return `${prefix} (HTTP ${err.status})`;\n  }\n  return prefix;\n}\n"],
-  "mappings": ";;;;;AAQM,SAAU,gBAAgB,KAAc,SAAS,wJAA8B;AACnF,MAAI,eAAe,mBAAmB;AACpC,QAAI,IAAI,WAAW,GAAG;AACpB,aAAO,GAAG,MAAM;IAClB;AACA,QAAI,IAAI,WAAW,OAAO,IAAI,WAAW,KAAK;AAC5C,aAAO,GAAG,MAAM;IAClB;AACA,QAAI,IAAI,UAAU,KAAK;AACrB,aAAO,GAAG,MAAM,wJAAgC,IAAI,MAAM;IAC5D;AACA,WAAO,GAAG,MAAM,UAAU,IAAI,MAAM;EACtC;AACA,SAAO;AACT;",
-  "names": []
-}

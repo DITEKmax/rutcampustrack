@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/features/student/notifications/student-notifications.component.css"],
-  "sourcesContent": [".notifications-list {\n  display: flex;\n  flex-direction: column;\n  gap: var(--space-2, 8px);\n}\n\n.all-read-pill {\n  display: inline-flex;\n  align-items: center;\n  gap: var(--space-1, 4px);\n  font-size: var(--text-xs);\n  color: var(--text-muted);\n  background: color-mix(in oklab, var(--text-muted) 10%, transparent);\n  border-radius: var(--radius-full, 9999px);\n  padding: 4px 10px;\n  margin-bottom: var(--space-3, 12px);\n  width: fit-content;\n}\n"],
-  "mappings": ";AAAA,CAAC;AACC,WAAS;AACT,kBAAgB;AAChB,OAAK,IAAI,SAAS,EAAE;AACtB;AAEA,CAAC;AACC,WAAS;AACT,eAAa;AACb,OAAK,IAAI,SAAS,EAAE;AACpB,aAAW,IAAI;AACf,SAAO,IAAI;AACX,cAAY,UAAU,GAAG,KAAK,EAAE,IAAI,cAAc,GAAG,EAAE;AACvD,iBAAe,IAAI,aAAa,EAAE;AAClC,WAAS,IAAI;AACb,iBAAe,IAAI,SAAS,EAAE;AAC9B,SAAO;AACT;",
-  "names": []
-}

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["angular:styles/component:css;a5623b05abb03223c6cea9e7660a930755358f3f6e221c9d160fbafba4d85337;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/headman/subjects/headman-subjects.component.ts"],
-  "sourcesContent": ["\n    .no-teacher {\n      font-style: italic;\n      color: var(--text-muted);\n    }\n    .type-chip {\n      display: inline-block;\n      padding: 2px 8px;\n      border-radius: 10px;\n      background: var(--bg-secondary, #f0f0f0);\n      color: var(--text-secondary);\n      font-size: 0.8rem;\n      font-weight: 500;\n    }\n\n    .skeleton-row {\n      height: 52px;\n      margin: 4px 0;\n      border-radius: 4px;\n      background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-elevated) 50%, var(--bg-secondary) 75%);\n      background-size: 200% 100%;\n      animation: dashboard-shimmer 1.5s infinite;\n    }\n\n    @keyframes dashboard-shimmer {\n      0% { background-position: 200% 0; }\n      100% { background-position: -200% 0; }\n    }\n  "],
-  "mappings": ";AACI,CAAC;AACC,cAAY;AACZ,SAAO,IAAI;AACb;AACA,CAAC;AACC,WAAS;AACT,WAAS,IAAI;AACb,iBAAe;AACf,cAAY,IAAI,cAAc,EAAE;AAChC,SAAO,IAAI;AACX,aAAW;AACX,eAAa;AACf;AAEA,CAAC;AACC,UAAQ;AACR,UAAQ,IAAI;AACZ,iBAAe;AACf;AAAA,IAAY;AAAA,MAAgB,KAAK;AAAA,MAAE,IAAI,gBAAgB,GAAG;AAAA,MAAE,IAAI,eAAe,GAAG;AAAA,MAAE,IAAI,gBAAgB;AACxG,mBAAiB,KAAK;AACtB,aAAW,kBAAkB,KAAK;AACpC;AAEA,WAHa;AAIX;AAAK,yBAAqB,KAAK;AAAG;AAClC;AAAO,yBAAqB,MAAM;AAAG;AACvC;",
-  "names": []
-}

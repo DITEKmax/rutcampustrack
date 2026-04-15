@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["angular:styles/component:css;c5c62a263452950c01bd6b0ca0ecea62d4988415a4ba1c5f7a0001ae36b77647;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/headman/schedule/schedule-slot-dialog.component.ts"],
-  "sourcesContent": ["\n    .dialog-actions { gap: 8px; }\n    .dialog-actions__spacer { flex: 1; }\n    .btn-danger {\n      color: #c62828;\n      border-color: #ef9a9a !important;\n    }\n    .btn-danger:hover:not([disabled]) {\n      background: #ffebee;\n    }\n    .btn-danger i { margin-right: 4px; }\n    .subj-type { color: var(--text-muted); font-size: 0.85em; margin-left: 4px; }\n  "],
-  "mappings": ";AACI,CAAC;AAAiB,OAAK;AAAK;AAC5B,CAAC;AAAyB,QAAM;AAAG;AACnC,CAAC;AACC,SAAO;AACP,gBAAc;AAChB;AACA,CAJC,UAIU,MAAM,KAAK,CAAC;AACrB,cAAY;AACd;AACA,CAPC,WAOW;AAAI,gBAAc;AAAK;AACnC,CAAC;AAAY,SAAO,IAAI;AAAe,aAAW;AAAQ,eAAa;AAAK;",
-  "names": []
-}

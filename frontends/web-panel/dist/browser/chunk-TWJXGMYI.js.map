@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/student/shared/student-notification-badge.service.ts"],
+  "sourcesContent": ["import { Injectable, signal } from '@angular/core';\n\n/**\n * Singleton holding the count of unread notifications in the current session.\n * Incremented by StudentStompService on each stored event.\n * Reset to 0 by StudentNotificationsComponent.ngOnInit().\n * Read by SidebarComponent to render the bell badge.\n */\n@Injectable({ providedIn: 'root' })\nexport class StudentNotificationBadgeService {\n  private readonly _count = signal(0);\n  readonly unreadCount = this._count.asReadonly();\n\n  increment(): void {\n    this._count.update(n => n + 1);\n  }\n\n  reset(): void {\n    this._count.set(0);\n  }\n}\n"],
+  "mappings": ";;;;;;;;AASM,IAAO,kCAAP,MAAO,iCAA+B;EACzB,SAAS,OAAO,CAAC;EACzB,cAAc,KAAK,OAAO,WAAU;EAE7C,YAAS;AACP,SAAK,OAAO,OAAO,OAAK,IAAI,CAAC;EAC/B;EAEA,QAAK;AACH,SAAK,OAAO,IAAI,CAAC;EACnB;;qCAVW,kCAA+B;EAAA;4EAA/B,kCAA+B,SAA/B,iCAA+B,WAAA,YADlB,OAAM,CAAA;;;sEACnB,iCAA+B,CAAA;UAD3C;WAAW,EAAE,YAAY,OAAM,CAAE;;;",
+  "names": []
+}

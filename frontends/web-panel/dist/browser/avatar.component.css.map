@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;68d2eea9d14db15b47b58ac242e9e7be7c3c0ee567bd9ce65772085b1096b42e;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/core/profile/avatar.component.ts"],
+  "sourcesContent": ["\n    :host { display: inline-block; line-height: 0; }\n    .avatar {\n      display: grid; place-items: center;\n      border-radius: 50%;\n      color: #fff;\n      font-family: var(--font-display, 'Inter', sans-serif);\n      font-weight: 700;\n      letter-spacing: -0.01em;\n      box-shadow: 0 0 0 1px color-mix(in oklab, var(--text-primary, #000) 8%, transparent) inset;\n      overflow: hidden;\n      flex-shrink: 0;\n    }\n    .avatar i { font-size: calc(var(--avatar-size, 40px) * 0.55); }\n    .avatar--initials {\n      background: linear-gradient(135deg, #00E5A0, #3B82F6);\n      font-size: calc(var(--avatar-size, 40px) * 0.40);\n      text-transform: uppercase;\n    }\n  "],
+  "mappings": ";AACI;AAAQ,WAAS;AAAc,eAAa;AAAG;AAC/C,CAAC;AACC,WAAS;AAAM,eAAa;AAC5B,iBAAe;AACf,SAAO;AACP,eAAa,IAAI,cAAc,EAAE,OAAO,EAAE;AAC1C,eAAa;AACb,kBAAgB;AAChB,cAAY,EAAE,EAAE,EAAE,IAAI,UAAU,GAAG,KAAK,EAAE,IAAI,cAAc,EAAE,MAAM,EAAE,EAAE,aAAa;AACrF,YAAU;AACV,eAAa;AACf;AACA,CAXC,OAWO;AAAI,aAAW,KAAK,IAAI,aAAa,EAAE,MAAM,EAAE;AAAO;AAC9D,CAAC;AACC;AAAA,IAAY;AAAA,MAAgB,MAAhB;AAAA,MAAwB,OAAxB;AAAA,MAAiC;AAC7C,aAAW,KAAK,IAAI,aAAa,EAAE,MAAM,EAAE;AAC3C,kBAAgB;AAClB;",
+  "names": []
+}

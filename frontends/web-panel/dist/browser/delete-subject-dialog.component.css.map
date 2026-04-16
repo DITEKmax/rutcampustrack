@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;9f7d257b90868c967f70eae287689047f9ada6aa75edd77486135d00308fe529;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/headman/subjects/delete-subject-dialog.component.ts"],
+  "sourcesContent": ["\n    .btn-danger {\n      background: var(--accent-danger);\n      color: white;\n    }\n    .cascade-list {\n      margin: 8px 0 12px;\n      padding-left: 20px;\n      line-height: 1.8;\n    }\n    .cascade-list .warning {\n      color: var(--accent-danger);\n    }\n    .warning-box {\n      display: flex;\n      gap: 12px;\n      padding: 12px;\n      margin-top: 8px;\n      border-radius: var(--radius-md);\n      background: color-mix(in oklab, var(--accent-danger) 10%, transparent);\n      border: 1px solid color-mix(in oklab, var(--accent-danger) 30%, transparent);\n      color: var(--text-primary);\n      font-size: 0.875rem;\n    }\n    .warning-box i {\n      color: var(--accent-danger);\n      font-size: 1.5rem;\n      flex-shrink: 0;\n    }\n  "],
+  "mappings": ";AACI,CAAC;AACC,cAAY,IAAI;AAChB,SAAO;AACT;AACA,CAAC;AACC,UAAQ,IAAI,EAAE;AACd,gBAAc;AACd,eAAa;AACf;AACA,CALC,aAKa,CAAC;AACb,SAAO,IAAI;AACb;AACA,CAAC;AACC,WAAS;AACT,OAAK;AACL,WAAS;AACT,cAAY;AACZ,iBAAe,IAAI;AACnB,cAAY,UAAU,GAAG,KAAK,EAAE,IAAI,iBAAiB,GAAG,EAAE;AAC1D,UAAQ,IAAI,MAAM,UAAU,GAAG,KAAK,EAAE,IAAI,iBAAiB,GAAG,EAAE;AAChE,SAAO,IAAI;AACX,aAAW;AACb;AACA,CAXC,YAWY;AACX,SAAO,IAAI;AACX,aAAW;AACX,eAAa;AACf;",
+  "names": []
+}

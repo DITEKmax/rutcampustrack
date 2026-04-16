@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;749413b720d8c904d54352f1a09e5268417fa553ddd5251bbfd4f2252c986480;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/teacher/journal/journal-cell/journal-cell.component.ts"],
+  "sourcesContent": ["\n    .excuse-reason {\n      display: block;\n      margin-top: 2px;\n      font-size: 10px;\n      line-height: 1.2;\n      color: var(--status-excused, var(--accent-warning));\n      max-width: 72px;\n      overflow: hidden;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n    }\n  "],
+  "mappings": ";AACI,CAAC;AACC,WAAS;AACT,cAAY;AACZ,aAAW;AACX,eAAa;AACb,SAAO,IAAI,gBAAgB,EAAE,IAAI;AACjC,aAAW;AACX,YAAU;AACV,iBAAe;AACf,eAAa;AACf;",
+  "names": []
+}

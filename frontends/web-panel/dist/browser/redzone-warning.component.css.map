@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/student/dashboard/redzone-warning/redzone-warning.component.css"],
+  "sourcesContent": [":host { display: block; }\r\n\r\n.redzone-warning {\r\n  display: flex;\r\n  align-items: center;\r\n  gap: var(--space-3);\r\n  padding: var(--space-3) var(--space-4);\r\n  border-radius: var(--radius-md);\r\n  background: color-mix(in oklab, var(--accent-warning) 10%, transparent);\r\n  border: 1px solid color-mix(in oklab, var(--accent-warning) 25%, transparent);\r\n  color: var(--accent-warning);\r\n}\r\n.redzone-warning i {\r\n  font-size: 20px;\r\n  flex-shrink: 0;\r\n}\r\n.redzone-warning__text {\r\n  margin: 0;\r\n  font-size: var(--text-sm);\r\n  color: var(--text-primary);\r\n  line-height: var(--leading-body);\r\n}\r\n.redzone-warning__text strong {\r\n  color: var(--accent-warning);\r\n}\r\n"],
+  "mappings": ";AAAA;AAAQ,WAAS;AAAO;AAExB,CAAC;AACC,WAAS;AACT,eAAa;AACb,OAAK,IAAI;AACT,WAAS,IAAI,WAAW,IAAI;AAC5B,iBAAe,IAAI;AACnB,cAAY,UAAU,GAAG,KAAK,EAAE,IAAI,kBAAkB,GAAG,EAAE;AAC3D,UAAQ,IAAI,MAAM,UAAU,GAAG,KAAK,EAAE,IAAI,kBAAkB,GAAG,EAAE;AACjE,SAAO,IAAI;AACb;AACA,CAVC,gBAUgB;AACf,aAAW;AACX,eAAa;AACf;AACA,CAAC;AACC,UAAQ;AACR,aAAW,IAAI;AACf,SAAO,IAAI;AACX,eAAa,IAAI;AACnB;AACA,CANC,sBAMsB;AACrB,SAAO,IAAI;AACb;",
+  "names": []
+}

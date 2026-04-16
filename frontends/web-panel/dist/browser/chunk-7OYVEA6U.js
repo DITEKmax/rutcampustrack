@@ -1,1 +1,0 @@
-function r(e){let t=e.middleName?` ${e.middleName}`:"";return`${e.lastName} ${e.firstName}${t}`}function n(e){if(e.active)return"active";let t=new Date().toISOString().slice(0,10);return e.dateFrom>t?"planned":"finished"}export{r as a,n as b};

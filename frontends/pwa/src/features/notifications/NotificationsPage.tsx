@@ -4,7 +4,6 @@ import { AnimatePresence, motion, type PanInfo } from 'motion/react'
 import { Bell, BellSlash, ArrowRight } from '@phosphor-icons/react'
 import {
   describeNotification,
-  isHeadmanOnlyType,
   useNotificationCenter,
   type NotificationRecord,
 } from './NotificationCenter'

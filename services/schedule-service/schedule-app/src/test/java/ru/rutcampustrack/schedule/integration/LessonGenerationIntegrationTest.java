@@ -43,10 +43,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *   2 => TUESDAY
  *   3 => WEDNESDAY
  *
- * ISO-week parity of in-range dates (new algorithm — firstWeekType ignored):
- *   Feb  3 (Tue) / Feb  4 (Wed) → ISO week  6 → EVEN
- *   Feb 10 (Tue) / Feb 11 (Wed) → ISO week  7 → ODD
- *   Feb 17 (Tue) / Feb 18 (Wed) → ISO week  8 → EVEN
+ * ISO-week parity of in-range dates (inverted algorithm — firstWeekType ignored):
+ *   Feb  3 (Tue) / Feb  4 (Wed) → ISO week  6 (even) → mapped to ODD
+ *   Feb 10 (Tue) / Feb 11 (Wed) → ISO week  7 (odd)  → mapped to EVEN
+ *   Feb 17 (Tue) / Feb 18 (Wed) → ISO week  8 (even) → mapped to ODD
  *
  * Tuesdays (dayOfWeek=2) total 3; ODD-template matches only Feb 10 (1 date).
  * Wednesdays (dayOfWeek=3) total 3.
@@ -162,18 +162,20 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
     }
 
     /**
-     * Week parity respected: ISO-odd weeks only (LSSN-02).
-     * dayOfWeek=2 => TUESDAY. Tuesdays: Feb 3 (ISO 6 EVEN), Feb 10 (ISO 7 ODD), Feb 17 (ISO 8 EVEN).
-     * With weekType=ODD: expected lessons = Feb 10 only (1 lesson).
+     * Week parity respected: ODD template selects even-ISO weeks (inverted mapping, LSSN-02).
+     * dayOfWeek=2 => TUESDAY. Tuesdays: Feb 3 (ISO 6→ODD), Feb 10 (ISO 7→EVEN), Feb 17 (ISO 8→ODD).
+     * With weekType=ODD: expected lessons = Feb 3, Feb 17 (2 lessons).
      */
     @Test
     void createGeneratesLessonsOddWeeks() throws Exception {
         createItemViaApi((short) 2, WeekType.ODD);
 
         List<Lesson> lessons = lessonRepository.findAll();
-        assertThat(lessons).hasSize(1);
+        assertThat(lessons).hasSize(2);
         assertThat(lessons).extracting(Lesson::getDate)
-                .containsExactlyInAnyOrder(LocalDate.of(2026, 2, 10));
+                .containsExactlyInAnyOrder(
+                        LocalDate.of(2026, 2, 3),
+                        LocalDate.of(2026, 2, 17));
     }
 
     // ---------- D-06: Schedule-affecting update re-generates ----------

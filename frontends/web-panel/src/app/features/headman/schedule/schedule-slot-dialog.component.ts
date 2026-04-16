@@ -91,8 +91,8 @@ export interface ScheduleSlotDialogData {
           <mat-label>Тип недели</mat-label>
           <mat-select formControlName="weekType" aria-label="Тип недели">
             <mat-option value="ALL">Каждую неделю</mat-option>
-            <mat-option value="EVEN">1-я (чётная)</mat-option>
-            <mat-option value="ODD">2-я (нечётная)</mat-option>
+            <mat-option value="EVEN">2-я (чётная)</mat-option>
+            <mat-option value="ODD">1-я (нечётная)</mat-option>
           </mat-select>
         </mat-form-field>
 

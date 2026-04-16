@@ -259,11 +259,17 @@ function MenuScreen({
   const isFuture = lessonStatus === 'PLANNED'
   const isAbsent = personalStatus === 'absent'
 
-  // Late-checkin (request headman to confirm attendance) is useful:
-  //  - while a lesson is ongoing (student couldn't geo-check-in),
-  //  - or after the lesson ended with an "absent" mark (forgot to check in).
-  // It is not meaningful for future lessons or ones the student already
-  // attended / already has an excuse for.
+  const canSubmitExcuse = isAbsent
+  const excuseSubtitle = canSubmitExcuse
+    ? 'Болезнь, приказ, повестка, свобод. посещение'
+    : personalStatus === 'excused' || personalStatus === 'free_attendance'
+    ? 'Уважительная уже проставлена'
+    : personalStatus === 'present'
+    ? 'Ты уже отмечен как присутствующий'
+    : isFuture
+    ? 'Доступно после закрытия пары, если стоит «н»'
+    : 'Подать можно только если стоит «н»'
+
   const canRequestLateCheckin =
     (isLessonActive && personalStatus !== 'present') ||
     (isPast && isAbsent)
@@ -283,8 +289,9 @@ function MenuScreen({
       <ActionRow
         icon={<FileText size={22} weight="duotone" />}
         title="Подать уважительную"
-        subtitle="Болезнь, приказ, повестка, свобод. посещение"
+        subtitle={excuseSubtitle}
         onClick={onExcuse}
+        disabled={!canSubmitExcuse}
       />
       <ActionRow
         icon={<HandWaving size={22} weight="duotone" />}

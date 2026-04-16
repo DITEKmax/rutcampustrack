@@ -22,8 +22,8 @@ import java.util.List;
  * Service responsible for generating Lesson entities from ScheduleItem templates.
  *
  * Week parity is anchored to the ISO-8601 week number of each candidate date:
- * - Even ISO week → 1-я учебная неделя (WeekType.EVEN).
- * - Odd  ISO week → 2-я учебная неделя (WeekType.ODD).
+ * - Odd  ISO week → 1-я учебная неделя (WeekType.EVEN).
+ * - Even ISO week → 2-я учебная неделя (WeekType.ODD).
  *
  * Этот выбор синхронизирует бэкенд с фронтендом (web-panel/pwa показывают
  * баннер «идёт N-я неделя» на основе ISO-номера) и не зависит от даты
@@ -97,10 +97,8 @@ public class LessonGenerationService {
                 if (templateWeekType == WeekType.ALL) {
                     dates.add(current);
                 } else {
-                    // ISO-8601 week number parity is the single source of truth:
-                    // even ISO week == EVEN (1-я уч. неделя), odd ISO week == ODD (2-я уч. неделя).
                     int isoWeek = current.get(WeekFields.ISO.weekOfWeekBasedYear());
-                    WeekType currentParity = (isoWeek % 2 == 0) ? WeekType.EVEN : WeekType.ODD;
+                    WeekType currentParity = (isoWeek % 2 == 0) ? WeekType.ODD : WeekType.EVEN;
 
                     if (currentParity == templateWeekType) {
                         dates.add(current);

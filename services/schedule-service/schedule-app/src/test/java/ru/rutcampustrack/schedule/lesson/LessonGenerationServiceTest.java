@@ -27,13 +27,13 @@ import static org.mockito.Mockito.*;
  * Test data summary (all dates in 2026):
  *   Semester: Feb 2 (Mon) to Mar 2 (Mon)
  *   Mondays in range with their ISO-week parity:
- *     Feb 2  → ISO week  6 → EVEN
- *     Feb 9  → ISO week  7 → ODD
- *     Feb 16 → ISO week  8 → EVEN
- *     Feb 23 → ISO week  9 → ODD
- *     Mar 2  → ISO week 10 → EVEN
- *   ODD  template: Feb 9, Feb 23
- *   EVEN template: Feb 2, Feb 16, Mar 2
+ *     Feb 2  → ISO week  6 (even) → mapped to ODD
+ *     Feb 9  → ISO week  7 (odd)  → mapped to EVEN
+ *     Feb 16 → ISO week  8 (even) → mapped to ODD
+ *     Feb 23 → ISO week  9 (odd)  → mapped to EVEN
+ *     Mar 2  → ISO week 10 (even) → mapped to ODD
+ *   ODD  template: Feb 2, Feb 16, Mar 2
+ *   EVEN template: Feb 9, Feb 23
  *
  * The `firstWeekType` parameter is accepted for signature compatibility but
  * IGNORED — parity is derived from the ISO week number of each candidate date.
@@ -92,8 +92,8 @@ class LessonGenerationServiceTest {
     // =========================================================================
 
     /**
-     * ODD template: selects Mondays whose ISO-week number is odd.
-     * In this semester that's Feb 9 (ISO 7) and Feb 23 (ISO 9).
+     * ODD template: selects Mondays whose ISO-week number is even (inverted mapping).
+     * In this semester that's Feb 2 (ISO 6), Feb 16 (ISO 8), Mar 2 (ISO 10).
      * `firstWeekType` is ignored — same result regardless of value.
      */
     @Test
@@ -102,8 +102,9 @@ class LessonGenerationServiceTest {
                 SEM_START, SEM_END, WeekType.ODD, DAY_MONDAY, WeekType.ODD);
 
         assertThat(result).containsExactly(
-                LocalDate.of(2026, 2, 9),
-                LocalDate.of(2026, 2, 23));
+                LocalDate.of(2026, 2, 2),
+                LocalDate.of(2026, 2, 16),
+                LocalDate.of(2026, 3, 2));
     }
 
     // =========================================================================
@@ -111,8 +112,8 @@ class LessonGenerationServiceTest {
     // =========================================================================
 
     /**
-     * EVEN template: selects Mondays whose ISO-week number is even.
-     * In this semester that's Feb 2 (ISO 6), Feb 16 (ISO 8), Mar 2 (ISO 10).
+     * EVEN template: selects Mondays whose ISO-week number is odd (inverted mapping).
+     * In this semester that's Feb 9 (ISO 7) and Feb 23 (ISO 9).
      */
     @Test
     void computeLessonDates_evenTemplate_firstWeekOdd_returnsEvenWeekDates() {
@@ -120,9 +121,8 @@ class LessonGenerationServiceTest {
                 SEM_START, SEM_END, WeekType.ODD, DAY_MONDAY, WeekType.EVEN);
 
         assertThat(result).containsExactly(
-                LocalDate.of(2026, 2, 2),
-                LocalDate.of(2026, 2, 16),
-                LocalDate.of(2026, 3, 2));
+                LocalDate.of(2026, 2, 9),
+                LocalDate.of(2026, 2, 23));
     }
 
     // =========================================================================
@@ -140,8 +140,9 @@ class LessonGenerationServiceTest {
                 SEM_START, SEM_END, WeekType.EVEN, DAY_MONDAY, WeekType.ODD);
 
         assertThat(result).containsExactly(
-                LocalDate.of(2026, 2, 9),
-                LocalDate.of(2026, 2, 23));
+                LocalDate.of(2026, 2, 2),
+                LocalDate.of(2026, 2, 16),
+                LocalDate.of(2026, 3, 2));
     }
 
     /**
@@ -153,9 +154,8 @@ class LessonGenerationServiceTest {
                 SEM_START, SEM_END, WeekType.EVEN, DAY_MONDAY, WeekType.EVEN);
 
         assertThat(result).containsExactly(
-                LocalDate.of(2026, 2, 2),
-                LocalDate.of(2026, 2, 16),
-                LocalDate.of(2026, 3, 2));
+                LocalDate.of(2026, 2, 9),
+                LocalDate.of(2026, 2, 23));
     }
 
     // =========================================================================
@@ -222,8 +222,8 @@ class LessonGenerationServiceTest {
         verify(lessonRepository, times(1)).saveAll(captor.capture());
 
         List<Lesson> savedLessons = captor.getValue();
-        // ODD template under ISO algorithm: Feb 9 (ISO 7) and Feb 23 (ISO 9)
-        assertThat(savedLessons).hasSize(2);
+        // ODD template under inverted ISO algorithm: Feb 2 (ISO 6), Feb 16 (ISO 8), Mar 2 (ISO 10)
+        assertThat(savedLessons).hasSize(3);
 
         savedLessons.forEach(lesson -> {
             assertThat(lesson.getScheduleItemId()).isEqualTo(42L);
@@ -233,8 +233,9 @@ class LessonGenerationServiceTest {
         });
 
         assertThat(savedLessons.stream().map(Lesson::getDate).toList()).containsExactly(
-                LocalDate.of(2026, 2, 9),
-                LocalDate.of(2026, 2, 23));
+                LocalDate.of(2026, 2, 2),
+                LocalDate.of(2026, 2, 16),
+                LocalDate.of(2026, 3, 2));
     }
 
     /**

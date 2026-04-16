@@ -2,6 +2,7 @@ package ru.rutcampustrack.attendance.shared.port;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Read port interface for cross-domain data access (D-14, D-15).
@@ -24,4 +25,6 @@ public interface AttendanceReadPort {
      * Find attendance records for a group/subject within a date range (both boundaries inclusive).
      */
     List<AttendanceRecord> findByGroupAndSubject(Long groupId, Long subjectId, LocalDate from, LocalDate to);
+
+    Optional<AttendanceRecord> findByLessonIdAndUserId(Long lessonId, Long userId);
 }

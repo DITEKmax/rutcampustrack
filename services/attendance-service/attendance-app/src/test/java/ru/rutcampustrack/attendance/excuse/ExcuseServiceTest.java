@@ -19,6 +19,9 @@ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
+import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
@@ -58,6 +61,9 @@ class ExcuseServiceTest {
     private AcademicGrpcClient academicGrpcClient;
 
     @Mock
+    private AttendanceReadPort attendanceReadPort;
+
+    @Mock
     private AttendanceWritePort attendanceWritePort;
 
     @Mock
@@ -94,6 +100,10 @@ class ExcuseServiceTest {
                             .build())
                     .toList();
         });
+        lenient().when(attendanceReadPort.findByLessonIdAndUserId(anyLong(), anyLong()))
+                .thenReturn(Optional.of(new AttendanceRecord(
+                        1L, STUDENT_ID, GROUP_ID, 1L, null, 1,
+                        AttendanceStatus.ABSENT, null, null)));
         lenient().when(excuseRepository.save(any(ExcuseTicket.class)))
                 .thenAnswer(inv -> {
                     ExcuseTicket t = inv.getArgument(0);

@@ -9,6 +9,7 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implementation of AttendanceReadPort using MongoTemplate (D-14).
@@ -56,6 +57,16 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
                 .stream()
                 .map(this::toRecord)
                 .toList();
+    }
+
+    @Override
+    public Optional<AttendanceRecord> findByLessonIdAndUserId(Long lessonId, Long userId) {
+        Query query = new Query(
+                Criteria.where("lesson_id").is(lessonId)
+                        .and("user_id").is(userId)
+        );
+        return Optional.ofNullable(mongoTemplate.findOne(query, AttendanceDocument.class))
+                .map(this::toRecord);
     }
 
     private AttendanceRecord toRecord(AttendanceDocument doc) {

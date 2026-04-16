@@ -55,8 +55,8 @@ const SLOT_TIMES: Record<number, string> = {
 /** Russian label for week type. */
 function weekTypeLabel(weekType: string): string {
   switch (weekType) {
-    case 'ODD': return '2-я (нечёт)';
-    case 'EVEN': return '1-я (чёт)';
+    case 'ODD': return '1-я (нечёт)';
+    case 'EVEN': return '2-я (чёт)';
     default: return 'Каждую';
   }
 }
@@ -150,7 +150,7 @@ function isoWeekNumber(d: Date): number {
           <div class="current-week-banner" [class.current-week-banner--odd]="currentWeekIsOdd()">
             <i class="ph ph-calendar-check"></i>
             Сейчас <strong>{{ currentWeekNumber() }}-я неделя года</strong> —
-            <strong>{{ currentWeekIsOdd() ? '2-я (нечётная)' : '1-я (чётная)' }}</strong>
+            <strong>{{ currentWeekIsOdd() ? '1-я (нечётная)' : '2-я (чётная)' }}</strong>
             учебная
           </div>
           <div class="schedule-matrix">

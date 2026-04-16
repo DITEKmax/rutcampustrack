@@ -18,6 +18,8 @@ import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
+import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
@@ -67,6 +69,7 @@ public class ExcuseService {
     private final ExcuseRepository excuseRepository;
     private final RequestContext requestContext;
     private final AcademicGrpcClient academicGrpcClient;
+    private final AttendanceReadPort attendanceReadPort;
     private final AttendanceWritePort attendanceWritePort;
     private final ExcuseEventPublisher excuseEventPublisher;
     private final ScheduleGrpcClient scheduleGrpcClient;
@@ -74,12 +77,14 @@ public class ExcuseService {
     public ExcuseService(ExcuseRepository excuseRepository,
                          RequestContext requestContext,
                          AcademicGrpcClient academicGrpcClient,
+                         AttendanceReadPort attendanceReadPort,
                          AttendanceWritePort attendanceWritePort,
                          ExcuseEventPublisher excuseEventPublisher,
                          ScheduleGrpcClient scheduleGrpcClient) {
         this.excuseRepository = excuseRepository;
         this.requestContext = requestContext;
         this.academicGrpcClient = academicGrpcClient;
+        this.attendanceReadPort = attendanceReadPort;
         this.attendanceWritePort = attendanceWritePort;
         this.excuseEventPublisher = excuseEventPublisher;
         this.scheduleGrpcClient = scheduleGrpcClient;
@@ -158,6 +163,19 @@ public class ExcuseService {
 
         // D-25: validate that every lessonId exists and belongs to the student's group
         validateLessonIds(request.lessonIds());
+
+        // Excuse tickets only make sense for lessons where the student is marked absent.
+        Long studentId = requestContext.getUserId();
+        for (Long lessonId : request.lessonIds()) {
+            attendanceReadPort.findByLessonIdAndUserId(lessonId, studentId)
+                    .ifPresent(record -> {
+                        if (record.status() != AttendanceStatus.ABSENT) {
+                            throw new BadRequestException(
+                                    "Уважительную можно подать только на пару с «н». "
+                                            + "Урок id=" + lessonId + " имеет статус «" + record.status() + "»");
+                        }
+                    });
+        }
 
         // D-26: snapshot studentName via gRPC
         String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());

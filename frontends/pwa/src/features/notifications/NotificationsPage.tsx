@@ -1,8 +1,10 @@
 import { useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router'
 import { AnimatePresence, motion, type PanInfo } from 'motion/react'
-import { Bell, BellSlash } from '@phosphor-icons/react'
+import { Bell, BellSlash, ArrowRight } from '@phosphor-icons/react'
 import {
   describeNotification,
+  isHeadmanOnlyType,
   useNotificationCenter,
   type NotificationRecord,
 } from './NotificationCenter'
@@ -18,8 +20,20 @@ function formatRelative(iso: string): string {
   return new Date(iso).toLocaleDateString('ru-RU')
 }
 
+function notificationRoute(type: string): string | null {
+  switch (type) {
+    case 'late_checkin.requested':
+      return '/group/late-checkin'
+    case 'excuse.requested':
+      return '/group/excuses'
+    default:
+      return null
+  }
+}
+
 export function NotificationsPage() {
   const { items, markAllRead, archive } = useNotificationCenter()
+  const navigate = useNavigate()
 
   useEffect(() => {
     markAllRead()
@@ -32,6 +46,11 @@ export function NotificationsPage() {
         .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt)),
     [items],
   )
+
+  const handleTap = (item: NotificationRecord) => {
+    const route = notificationRoute(item.type)
+    if (route) navigate(route)
+  }
 
   return (
     <div className="flex min-h-full flex-col p-4">
@@ -63,6 +82,7 @@ export function NotificationsPage() {
                 key={item.id}
                 item={item}
                 onArchive={() => archive(item.id)}
+                onTap={notificationRoute(item.type) ? () => handleTap(item) : undefined}
               />
             ))}
           </AnimatePresence>
@@ -75,11 +95,14 @@ export function NotificationsPage() {
 function NotificationRow({
   item,
   onArchive,
+  onTap,
 }: {
   item: NotificationRecord
   onArchive: () => void
+  onTap?: () => void
 }) {
   const { title, body } = describeNotification(item)
+  const actionable = !!onTap
 
   const handleDragEnd = (_e: never, info: PanInfo) => {
     if (Math.abs(info.offset.x) > 96) {
@@ -98,13 +121,15 @@ function NotificationRow({
       dragConstraints={{ left: -160, right: 160 }}
       dragElastic={0.2}
       onDragEnd={handleDragEnd as never}
+      onClick={onTap}
       className="relative overflow-hidden rounded-2xl border p-4"
       style={{
         background: 'var(--bg-secondary)',
         borderColor: item.read ? 'var(--border-subtle)' : 'var(--border-accent)',
         touchAction: 'pan-y',
+        cursor: actionable ? 'pointer' : undefined,
       }}
-      aria-label={`${title}. Потяни в сторону чтобы архивировать`}
+      aria-label={`${title}. ${actionable ? 'Нажми чтобы перейти.' : ''} Потяни в сторону чтобы архивировать`}
     >
       <div className="flex items-start gap-3">
         <span
@@ -139,6 +164,14 @@ function NotificationRow({
             {formatRelative(item.receivedAt)}
           </p>
         </div>
+        {actionable && (
+          <ArrowRight
+            size={16}
+            weight="bold"
+            className="mt-1 shrink-0"
+            style={{ color: 'var(--accent-primary)' }}
+          />
+        )}
       </div>
     </motion.li>
   )

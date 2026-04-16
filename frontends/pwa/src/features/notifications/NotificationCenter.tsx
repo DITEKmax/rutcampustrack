@@ -122,6 +122,15 @@ function buildTitle(type: string, payload: Record<string, unknown>): string {
   }
 }
 
+const EXCUSE_TYPE_RU: Record<string, string> = {
+  illness: 'Болезнь',
+  summons: 'Повестка',
+  university_order: 'Приказ',
+  exemption: 'Освобождение',
+  free_attendance: 'Свобод. посещение',
+  other: 'Другое',
+}
+
 function buildBody(payload: Record<string, unknown>): string {
   const subject =
     typeof payload.subject_name === 'string' ? payload.subject_name : null
@@ -131,8 +140,21 @@ function buildBody(payload: Record<string, unknown>): string {
       : typeof payload.studentName === 'string'
       ? payload.studentName
       : null
-  if (subject && student) return `${student} · ${subject}`
-  return subject ?? student ?? ''
+  const excuseType =
+    typeof payload.excuse_type === 'string'
+      ? EXCUSE_TYPE_RU[payload.excuse_type] ?? payload.excuse_type
+      : null
+  const lessonIds = Array.isArray(payload.lesson_ids) ? payload.lesson_ids : null
+  const comment =
+    typeof payload.comment === 'string' && payload.comment ? payload.comment : null
+
+  const parts: string[] = []
+  if (student) parts.push(student)
+  if (subject) parts.push(subject)
+  if (excuseType) parts.push(excuseType)
+  if (lessonIds && lessonIds.length > 1) parts.push(`${lessonIds.length} пар(ы)`)
+  if (comment) parts.push(comment)
+  return parts.join(' · ')
 }
 
 export function NotificationCenterProvider({ children }: { children: ReactNode }) {

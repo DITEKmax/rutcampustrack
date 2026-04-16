@@ -1,5 +1,11 @@
 import { motion } from 'motion/react'
-import { CheckCircle, MapPin } from '@phosphor-icons/react'
+import {
+  CheckCircle,
+  DotsThreeVertical,
+  Lock,
+  LockOpen,
+  MapPin,
+} from '@phosphor-icons/react'
 import { useSubjectName } from './api'
 import { StatusBadge } from './StatusBadge'
 import { CheckInButton } from '@/features/checkin/CheckInButton'
@@ -23,6 +29,13 @@ interface LessonCardProps {
   onCheckin?: () => void
   onCheckinError?: (msg: string) => void
   isCheckinLoading?: boolean
+  /** Open the actions sheet (excuse / request check-in). */
+  onOpenActions?: () => void
+  /** Headman-only: toggle lesson blockage. Shown on future PLANNED lessons in window. */
+  onToggleBlock?: () => void
+  isHeadman?: boolean
+  /** Is lesson a future PLANNED one within the 14-day block window? */
+  isBlockable?: boolean
 }
 
 function formatTime(time: string): string {
@@ -46,11 +59,18 @@ export function LessonCard({
   onCheckin,
   onCheckinError,
   isCheckinLoading,
+  onOpenActions,
+  onToggleBlock,
+  isHeadman,
+  isBlockable,
 }: LessonCardProps) {
   const { data: subjectName, isLoading: subjectLoading } = useSubjectName(lesson.subjectId)
   const isCancelled = lesson.status === 'CANCELLED'
   const isActive = lesson.status === 'ACTIVE'
+  const isBlockedByHeadman = !!lesson.blockedByHeadman
   const dot = dotColor(lesson, personalStatus)
+  const showActions =
+    !!onOpenActions && !isCancelled && (isActive || lesson.status === 'PLANNED')
 
   return (
     <motion.article
@@ -65,10 +85,26 @@ export function LessonCard({
       )}
       style={{
         background: 'var(--bg-secondary)',
-        borderColor: isActive ? 'var(--border-accent)' : 'var(--border-subtle)',
+        borderColor: isBlockedByHeadman
+          ? 'color-mix(in oklab, var(--accent-warning) 40%, var(--border-subtle))'
+          : isActive
+          ? 'var(--border-accent)'
+          : 'var(--border-subtle)',
         boxShadow: isActive ? 'var(--glow-primary)' : 'none',
       }}
     >
+      {/* Headman-lock stripe */}
+      {isBlockedByHeadman && (
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-1"
+          style={{
+            background:
+              'linear-gradient(90deg, var(--accent-warning) 0%, color-mix(in oklab, var(--accent-warning) 40%, transparent) 100%)',
+          }}
+        />
+      )}
+
       {/* Left rail: time + station dot */}
       <div className="flex flex-col items-center gap-2 pt-0.5 shrink-0">
         <span
@@ -125,6 +161,19 @@ export function LessonCard({
           Ауд. {lesson.room}
         </p>
 
+        {/* Headman-lock notice (student sees why geo-checkin is unavailable) */}
+        {isBlockedByHeadman && (
+          <p
+            className="mt-1 inline-flex items-center gap-1 text-xs"
+            style={{ color: 'var(--accent-warning)' }}
+          >
+            <Lock size={12} weight="fill" aria-hidden="true" />
+            {isHeadman
+              ? 'Пара заблокирована. Посещаемость ставишь вручную.'
+              : 'Пара заблокирована старостой. Отмечает староста.'}
+          </p>
+        )}
+
         {isActive && !isCancelled && (
           <div className="mt-3 flex items-center justify-between gap-3">
             {personalStatus ? (
@@ -136,7 +185,8 @@ export function LessonCard({
                 <span>Отмечено</span>
               </div>
             ) : (
-              onCheckin && (
+              onCheckin &&
+              !isBlockedByHeadman && (
                 <CheckInButton
                   onSuccess={onCheckin}
                   onError={onCheckinError}
@@ -155,6 +205,59 @@ export function LessonCard({
             >
               {attendanceCount ?? 0} чел
             </motion.span>
+          </div>
+        )}
+
+        {/* Footer actions row */}
+        {(showActions || (isHeadman && isBlockable)) && (
+          <div
+            className="mt-2 flex items-center gap-2 border-t pt-2"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
+            {isHeadman && isBlockable && onToggleBlock && (
+              <button
+                type="button"
+                onClick={onToggleBlock}
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-medium"
+                style={{
+                  background: isBlockedByHeadman
+                    ? 'color-mix(in oklab, var(--accent-warning) 18%, transparent)'
+                    : 'var(--bg-secondary)',
+                  borderColor: isBlockedByHeadman
+                    ? 'var(--accent-warning)'
+                    : 'var(--border-subtle)',
+                  color: isBlockedByHeadman
+                    ? 'var(--accent-warning)'
+                    : 'var(--text-secondary)',
+                }}
+              >
+                {isBlockedByHeadman ? (
+                  <>
+                    <LockOpen size={12} weight="bold" /> Разблокировать
+                  </>
+                ) : (
+                  <>
+                    <Lock size={12} weight="bold" /> Заблокировать
+                  </>
+                )}
+              </button>
+            )}
+            {showActions && (
+              <button
+                type="button"
+                onClick={onOpenActions}
+                aria-label="Действия с парой"
+                className="ml-auto inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-medium"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  borderColor: 'var(--border-subtle)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                <DotsThreeVertical size={14} weight="bold" />
+                Действия
+              </button>
+            )}
           </div>
         )}
       </div>

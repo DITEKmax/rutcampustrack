@@ -7,10 +7,17 @@ import { useNetworkStatus } from '@/shared/hooks/useNetworkStatus'
 import { useStompEvents } from '@/features/checkin/StompProvider'
 import { CheckInToast } from '@/features/checkin/CheckInToast'
 import { cn } from '@/lib/utils'
-import { useWeekSchedule, usePrefetchSubjects } from './api'
+import { useWeekSchedule, usePrefetchSubjects, useSubjectName } from './api'
 import { WeekDayTabs } from './WeekDayTabs'
 import { LessonCard } from './LessonCard'
 import { OfflineStaleNotice } from './OfflineStaleNotice'
+import { LessonActionsSheet } from './LessonActionsSheet'
+import {
+  useBlockLesson,
+  useUnblockLesson,
+  mapLessonActionError,
+} from './lessonActionsApi'
+import type { LessonResponse } from './types'
 
 const MONTH_ABBREV = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
 
@@ -59,16 +66,24 @@ function isSameWeek(a: Date, b: Date): boolean {
   return mondayA.getTime() === mondayB.getTime()
 }
 
+const BLOCK_WINDOW_DAYS = 14
+
 export function SchedulePage() {
   const { user } = useAuth()
   const groupId = user?.groupId ?? 0
+  const isHeadman = !!user?.isHeadman
   const { isOnline } = useNetworkStatus()
   const { attendanceCounts, personalStatuses, markPersonalStatus } = useStompEvents()
 
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getMonday(new Date()))
   const [selectedDayIndex, setSelectedDayIndex] = useState(getTodayDayIndex)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [activeLesson, setActiveLesson] = useState<LessonResponse | null>(null)
   const hasAutoScrolled = useRef(false)
+
+  const blockMutation = useBlockLesson()
+  const unblockMutation = useUnblockLesson()
+  const activeSubject = useSubjectName(activeLesson?.subjectId)
 
   const weekStart = formatDate(currentWeekStart)
   const weekEnd = formatDate(addDays(currentWeekStart, 5))
@@ -138,6 +153,35 @@ export function SchedulePage() {
 
   const handleCheckinError = useCallback((msg: string) => {
     setToast({ type: 'error', message: msg })
+  }, [])
+
+  const handleToggleBlock = useCallback(
+    async (lesson: LessonResponse) => {
+      try {
+        if (lesson.blockedByHeadman) {
+          await unblockMutation.mutateAsync(lesson.id)
+          setToast({ type: 'success', message: 'Блокировка снята' })
+        } else {
+          await blockMutation.mutateAsync(lesson.id)
+          setToast({ type: 'success', message: 'Пара заблокирована' })
+        }
+      } catch (e: unknown) {
+        const status = (e as { response?: { status?: number } })?.response?.status
+        setToast({ type: 'error', message: mapLessonActionError(status) })
+      }
+    },
+    [blockMutation, unblockMutation],
+  )
+
+  const isLessonBlockable = useCallback((lesson: LessonResponse) => {
+    if (lesson.status !== 'PLANNED') return false
+    const lessonDate = new Date(lesson.date)
+    lessonDate.setHours(0, 0, 0, 0)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const limit = new Date(today)
+    limit.setDate(limit.getDate() + BLOCK_WINDOW_DAYS)
+    return lessonDate >= today && lessonDate <= limit
   }, [])
 
   return (
@@ -243,6 +287,14 @@ export function SchedulePage() {
                     personalStatus={personalStatuses[lesson.id] ?? null}
                     onCheckin={() => handleCheckinSuccess(lesson.id)}
                     onCheckinError={handleCheckinError}
+                    onOpenActions={
+                      isHeadman ? undefined : () => setActiveLesson(lesson)
+                    }
+                    onToggleBlock={
+                      isHeadman ? () => handleToggleBlock(lesson) : undefined
+                    }
+                    isHeadman={isHeadman}
+                    isBlockable={isHeadman && isLessonBlockable(lesson)}
                   />
                 </motion.div>
               ))}
@@ -261,6 +313,15 @@ export function SchedulePage() {
           />
         )}
       </AnimatePresence>
+
+      {/* Lesson actions sheet (excuse / request check-in) — student only */}
+      <LessonActionsSheet
+        open={!!activeLesson}
+        lesson={activeLesson}
+        subjectName={activeSubject.data ?? 'Пара'}
+        onClose={() => setActiveLesson(null)}
+        onToast={(type, message) => setToast({ type, message })}
+      />
 
       {/* Floating "Сегодня" pill */}
       <AnimatePresence>

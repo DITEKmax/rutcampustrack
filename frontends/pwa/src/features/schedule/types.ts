@@ -13,6 +13,10 @@ export interface LessonResponse {
   weekType: 'NUMERATOR' | 'DENOMINATOR' | 'BOTH'
   room: string
   geoBlocked: boolean
+  /** v9.0: headman hard-lock — students can't geo-check-in, only manual mark. */
+  blockedByHeadman?: boolean
+  blockedByUserId?: number | null
+  blockedAt?: string | null
   cancelReason: string | null
   createdAt: string
 }

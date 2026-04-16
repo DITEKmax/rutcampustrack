@@ -9,6 +9,7 @@ import ru.rutcampustrack.attendance.contract.api.ReportApi;
 import ru.rutcampustrack.attendance.contract.dto.report.AttendanceRecordEntry;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentStatsResponse;
 
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
@@ -59,6 +60,16 @@ public class ReportController implements ReportApi {
         StudentStatsResponse response = reportService.getStudentStats();
         EntityModel<StudentStatsResponse> model = EntityModel.of(response,
                 linkTo(methodOn(ReportController.class).getStudentStats()).withSelfRel());
+        return ResponseEntity.ok(model);
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<EntityModel<StudentDashboardResponse>> getStudentDashboard(Integer topLimit) {
+        int limit = (topLimit == null || topLimit <= 0) ? 5 : topLimit;
+        StudentDashboardResponse response = reportService.getStudentDashboard(limit);
+        EntityModel<StudentDashboardResponse> model = EntityModel.of(response,
+                linkTo(methodOn(ReportController.class).getStudentDashboard(topLimit)).withSelfRel());
         return ResponseEntity.ok(model);
     }
 

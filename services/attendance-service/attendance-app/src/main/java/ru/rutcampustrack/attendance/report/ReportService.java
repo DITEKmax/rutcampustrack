@@ -10,9 +10,14 @@ import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalStudentRow;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.OverallStats;
+import ru.rutcampustrack.attendance.contract.dto.report.StatusBreakdown;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentAttendanceEntry;
+import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.SubjectStats;
+import ru.rutcampustrack.attendance.contract.dto.report.TopMissedSubject;
+import ru.rutcampustrack.attendance.contract.dto.report.WeeklyStat;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
@@ -25,9 +30,12 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
@@ -209,6 +217,149 @@ public class ReportService {
                 totalOverall, attendedOverall, absentOverall, excusedOverall, percentageOverall);
 
         return new StudentStatsResponse(subjectStatsList, overallStats);
+    }
+
+    // -------------------------------------------------------------------------
+    // v9.0: Student dashboard (overall + donut breakdown + weekly + top missed)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Single-call payload for the PWA/Mini-App home dashboard.
+     * CANCELLED lessons are excluded from overall/weekly/topMissed (D-10),
+     * but still reported in {@link StatusBreakdown} for transparency.
+     * "Forgot to check-in" is a sub-slice of PRESENT with source=LATE_CHECKIN.
+     */
+    public StudentDashboardResponse getStudentDashboard(int topLimit) {
+        Long userId = requestContext.getUserId();
+        Long semesterId = semesterCacheService.getActiveSemesterId();
+        if (semesterId == null) {
+            throw new IllegalStateException("Active semester not available");
+        }
+
+        List<AttendanceRecord> records = filterExistingLessons(
+                attendanceReadPort.findByUserId(userId, semesterId));
+
+        StatusBreakdown breakdown = buildBreakdown(records);
+
+        List<AttendanceRecord> counted = records.stream()
+                .filter(r -> r.status() != AttendanceStatus.CANCELLED)
+                .toList();
+
+        OverallStats overall = buildOverall(counted);
+
+        LocalDate semesterStart = resolveSemesterStart();
+        List<WeeklyStat> weekly = buildWeekly(counted, semesterStart);
+
+        List<TopMissedSubject> topMissed = buildTopMissed(counted, topLimit);
+
+        return new StudentDashboardResponse(overall, breakdown, weekly, topMissed);
+    }
+
+    private StatusBreakdown buildBreakdown(List<AttendanceRecord> records) {
+        int present = 0, absent = 0, excused = 0, freeAtt = 0, forgot = 0, cancelled = 0;
+        for (AttendanceRecord r : records) {
+            switch (r.status()) {
+                case PRESENT -> {
+                    present++;
+                    if (r.source() == AttendanceSource.LATE_CHECKIN) forgot++;
+                }
+                case ABSENT -> absent++;
+                case EXCUSED -> excused++;
+                case FREE_ATTENDANCE -> freeAtt++;
+                case CANCELLED -> cancelled++;
+            }
+        }
+        return new StatusBreakdown(present, absent, excused, freeAtt, forgot, cancelled);
+    }
+
+    private OverallStats buildOverall(List<AttendanceRecord> counted) {
+        int total = counted.size();
+        int attended = (int) counted.stream()
+                .filter(r -> r.status() == AttendanceStatus.PRESENT
+                        || r.status() == AttendanceStatus.EXCUSED
+                        || r.status() == AttendanceStatus.FREE_ATTENDANCE)
+                .count();
+        int absent = (int) counted.stream()
+                .filter(r -> r.status() == AttendanceStatus.ABSENT)
+                .count();
+        int excused = (int) counted.stream()
+                .filter(r -> r.status() == AttendanceStatus.EXCUSED
+                        || r.status() == AttendanceStatus.FREE_ATTENDANCE)
+                .count();
+        double percentage = total == 0 ? 0.0 : (attended * 100.0) / total;
+        return new OverallStats(total, attended, absent, excused, percentage);
+    }
+
+    private LocalDate resolveSemesterStart() {
+        try {
+            String from = academicGrpcClient.getActiveSemester().getDateFrom();
+            return LocalDate.parse(from);
+        } catch (Exception e) {
+            // Fallback: first attendance date if semester info is unavailable.
+            return LocalDate.now().withDayOfYear(1);
+        }
+    }
+
+    private List<WeeklyStat> buildWeekly(List<AttendanceRecord> counted, LocalDate semesterStart) {
+        // Groups records by week number relative to the semester start (Mon-based weeks).
+        Map<Integer, List<AttendanceRecord>> byWeek = new TreeMap<>();
+        for (AttendanceRecord r : counted) {
+            int weekOfSemester = weekNumberFrom(semesterStart, r.lessonDate());
+            byWeek.computeIfAbsent(weekOfSemester, k -> new ArrayList<>()).add(r);
+        }
+        List<WeeklyStat> result = new ArrayList<>(byWeek.size());
+        for (Map.Entry<Integer, List<AttendanceRecord>> e : byWeek.entrySet()) {
+            int weekNum = e.getKey();
+            List<AttendanceRecord> rows = e.getValue();
+            int total = rows.size();
+            int attended = (int) rows.stream()
+                    .filter(r -> r.status() == AttendanceStatus.PRESENT
+                            || r.status() == AttendanceStatus.EXCUSED
+                            || r.status() == AttendanceStatus.FREE_ATTENDANCE)
+                    .count();
+            int absent = (int) rows.stream()
+                    .filter(r -> r.status() == AttendanceStatus.ABSENT)
+                    .count();
+            int excused = (int) rows.stream()
+                    .filter(r -> r.status() == AttendanceStatus.EXCUSED
+                            || r.status() == AttendanceStatus.FREE_ATTENDANCE)
+                    .count();
+            int isoWeek = rows.get(0).lessonDate()
+                    .get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear());
+            double pct = total == 0 ? 0.0 : (attended * 100.0) / total;
+            result.add(new WeeklyStat(weekNum, isoWeek, "Н" + weekNum,
+                    total, attended, absent, excused, pct));
+        }
+        return result;
+    }
+
+    private static int weekNumberFrom(LocalDate semesterStart, LocalDate date) {
+        // Align both dates to the Monday of their week so Mon..Sun always lands
+        // in the same bucket, regardless of which weekday the semester starts on.
+        LocalDate startMon = semesterStart.with(java.time.DayOfWeek.MONDAY);
+        LocalDate dateMon = date.with(java.time.DayOfWeek.MONDAY);
+        long days = ChronoUnit.DAYS.between(startMon, dateMon);
+        return (int) (days / 7L) + 1;
+    }
+
+    private List<TopMissedSubject> buildTopMissed(List<AttendanceRecord> counted, int limit) {
+        Map<Long, long[]> agg = counted.stream()
+                .collect(Collectors.toMap(
+                        AttendanceRecord::subjectId,
+                        r -> new long[]{1L, r.status() == AttendanceStatus.ABSENT ? 1L : 0L},
+                        (a, b) -> new long[]{a[0] + b[0], a[1] + b[1]}));
+        if (agg.isEmpty()) return List.of();
+        Map<Long, String> names = academicGrpcClient.getSubjectsByIds(new ArrayList<>(agg.keySet()));
+        return agg.entrySet().stream()
+                .filter(e -> e.getValue()[1] > 0)
+                .sorted(Comparator.comparingLong((Map.Entry<Long, long[]> e) -> e.getValue()[1]).reversed())
+                .limit(Math.max(1, limit))
+                .map(e -> new TopMissedSubject(
+                        e.getKey(),
+                        names.getOrDefault(e.getKey(), "Unknown"),
+                        (int) e.getValue()[1],
+                        (int) e.getValue()[0]))
+                .toList();
     }
 
     // -------------------------------------------------------------------------

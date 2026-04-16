@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.attendance.contract.dto.report.AttendanceRecordEntry;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
+import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentStatsResponse;
 import ru.rutcampustrack.attendance.contract.exception.ErrorResponse;
 
@@ -68,4 +69,12 @@ public interface ReportApi {
     @GetMapping("/student/records")
     ResponseEntity<CollectionModel<EntityModel<AttendanceRecordEntry>>> getStudentRecords(
             @RequestParam(required = false) Long subjectId);
+
+    @Operation(summary = "Aggregated dashboard for the student PWA/Mini-App home screen (v9.0): overall %, donut breakdown, weekly timeseries, top missed subjects")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Dashboard retrieved")
+    })
+    @GetMapping("/student/dashboard")
+    ResponseEntity<EntityModel<StudentDashboardResponse>> getStudentDashboard(
+            @RequestParam(required = false, defaultValue = "5") Integer topLimit);
 }

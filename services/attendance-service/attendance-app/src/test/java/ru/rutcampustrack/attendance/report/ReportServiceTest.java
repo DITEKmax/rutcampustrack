@@ -333,4 +333,93 @@ class ReportServiceTest {
         assertThatThrownBy(() -> reportService.getLessonAttendance(LESSON_ID))
                 .isInstanceOf(AccessDeniedException.class);
     }
+
+    // -------------------------------------------------------------------------
+    // v9.0 dashboard: overall + donut breakdown + weekly + top missed
+    // -------------------------------------------------------------------------
+
+    private AttendanceRecord recordOn(Long subjectId, AttendanceStatus status,
+                                      AttendanceSource source, LocalDate date) {
+        return new AttendanceRecord(LESSON_ID, USER_ID, GROUP_ID, subjectId,
+                date, 1, status, source);
+    }
+
+    private ru.rutcampustrack.academic.grpc.SemesterResponse semester(String dateFrom) {
+        return ru.rutcampustrack.academic.grpc.SemesterResponse.newBuilder()
+                .setId(SEMESTER_ID)
+                .setDateFrom(dateFrom)
+                .setDateTo("2026-06-30")
+                .build();
+    }
+
+    @Test
+    void dashboard_forgotToCheckinCountedFromLateCheckinSource() {
+        when(academicGrpcClient.getActiveSemester()).thenReturn(semester("2026-02-09"));
+        when(attendanceReadPort.findByUserId(USER_ID, SEMESTER_ID))
+                .thenReturn(List.of(
+                        recordOn(SUBJECT_ID_1, AttendanceStatus.PRESENT,
+                                AttendanceSource.STUDENT_GEO, LocalDate.of(2026, 4, 1)),
+                        recordOn(SUBJECT_ID_1, AttendanceStatus.PRESENT,
+                                AttendanceSource.LATE_CHECKIN, LocalDate.of(2026, 4, 2)),
+                        recordOn(SUBJECT_ID_1, AttendanceStatus.ABSENT,
+                                AttendanceSource.AUTO_SCHEDULER, LocalDate.of(2026, 4, 3))));
+
+        var dash = reportService.getStudentDashboard(5);
+
+        assertThat(dash.getBreakdown().getPresent()).isEqualTo(2);
+        assertThat(dash.getBreakdown().getForgotToCheckin()).isEqualTo(1);
+        assertThat(dash.getBreakdown().getAbsent()).isEqualTo(1);
+        assertThat(dash.getOverall().getTotal()).isEqualTo(3);
+        assertThat(dash.getOverall().getAttended()).isEqualTo(2);
+    }
+
+    @Test
+    void dashboard_weeklyGroupsByWeekOfSemester() {
+        // Semester starts 2026-02-09 (Monday). Week 1 = 2026-02-09..02-15.
+        // April 1 (Wed) is week 8; April 8 (Wed) is week 9.
+        when(academicGrpcClient.getActiveSemester()).thenReturn(semester("2026-02-09"));
+        when(attendanceReadPort.findByUserId(USER_ID, SEMESTER_ID))
+                .thenReturn(List.of(
+                        recordOn(SUBJECT_ID_1, AttendanceStatus.PRESENT,
+                                AttendanceSource.STUDENT_GEO, LocalDate.of(2026, 4, 1)),
+                        recordOn(SUBJECT_ID_1, AttendanceStatus.PRESENT,
+                                AttendanceSource.STUDENT_GEO, LocalDate.of(2026, 4, 1)),
+                        recordOn(SUBJECT_ID_1, AttendanceStatus.ABSENT,
+                                AttendanceSource.AUTO_SCHEDULER, LocalDate.of(2026, 4, 8))));
+
+        var weekly = reportService.getStudentDashboard(5).getWeekly();
+
+        assertThat(weekly).hasSize(2);
+        assertThat(weekly.get(0).getWeekOfSemester()).isEqualTo(8);
+        assertThat(weekly.get(0).getLabel()).isEqualTo("Н8");
+        assertThat(weekly.get(0).getAttended()).isEqualTo(2);
+        assertThat(weekly.get(0).getPercentage()).isEqualTo(100.0);
+        assertThat(weekly.get(1).getWeekOfSemester()).isEqualTo(9);
+        assertThat(weekly.get(1).getAttended()).isZero();
+    }
+
+    @Test
+    void dashboard_topMissedSortedByAbsentDescAndCapped() {
+        when(academicGrpcClient.getActiveSemester()).thenReturn(semester("2026-02-09"));
+        when(academicGrpcClient.getSubjectsByIds(any()))
+                .thenReturn(Map.of(SUBJECT_ID_1, "Math", SUBJECT_ID_2, "Physics"));
+        when(attendanceReadPort.findByUserId(USER_ID, SEMESTER_ID))
+                .thenReturn(List.of(
+                        recordOn(SUBJECT_ID_1, AttendanceStatus.ABSENT,
+                                AttendanceSource.AUTO_SCHEDULER, LocalDate.of(2026, 4, 1)),
+                        recordOn(SUBJECT_ID_2, AttendanceStatus.ABSENT,
+                                AttendanceSource.AUTO_SCHEDULER, LocalDate.of(2026, 4, 1)),
+                        recordOn(SUBJECT_ID_2, AttendanceStatus.ABSENT,
+                                AttendanceSource.AUTO_SCHEDULER, LocalDate.of(2026, 4, 2)),
+                        recordOn(SUBJECT_ID_2, AttendanceStatus.PRESENT,
+                                AttendanceSource.STUDENT_GEO, LocalDate.of(2026, 4, 3))));
+
+        var top = reportService.getStudentDashboard(5).getTopMissed();
+
+        assertThat(top).hasSize(2);
+        assertThat(top.get(0).getSubjectId()).isEqualTo(SUBJECT_ID_2);
+        assertThat(top.get(0).getAbsent()).isEqualTo(2);
+        assertThat(top.get(1).getSubjectId()).isEqualTo(SUBJECT_ID_1);
+        assertThat(top.get(1).getAbsent()).isEqualTo(1);
+    }
 }

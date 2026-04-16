@@ -25,3 +25,8 @@ management:
   health:
     rabbit:
       enabled: false
+
+rct:
+  schedule:
+    iso-parity-reconciler:
+      enabled: false

@@ -38,14 +38,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Integration tests proving the full lesson auto-generation flow (LSSN-01, LSSN-02, D-01, D-06, D-07).
  *
  * Uses a short 3-week semester (Feb 2–22, 2026) for predictable lesson counts.
- * Semester starts on Monday Feb 2 (week 0 = ODD per firstWeekType).
  *
  * dayOfWeek values stored in DB (aligned with java.time.DayOfWeek: 1=Mon..7=Sun):
  *   2 => TUESDAY
  *   3 => WEDNESDAY
  *
- * Tuesdays (dayOfWeek=2) in Feb 2-22: Feb 3, 10, 17 = 3 total, ODD weeks: Feb 3, 17 = 2
- * Wednesdays (dayOfWeek=3) in Feb 2-22: Feb 4, 11, 18 = 3 total
+ * ISO-week parity of in-range dates (new algorithm — firstWeekType ignored):
+ *   Feb  3 (Tue) / Feb  4 (Wed) → ISO week  6 → EVEN
+ *   Feb 10 (Tue) / Feb 11 (Wed) → ISO week  7 → ODD
+ *   Feb 17 (Tue) / Feb 18 (Wed) → ISO week  8 → EVEN
+ *
+ * Tuesdays (dayOfWeek=2) total 3; ODD-template matches only Feb 10 (1 date).
+ * Wednesdays (dayOfWeek=3) total 3.
  */
 @AutoConfigureMockMvc
 class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
@@ -158,20 +162,18 @@ class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
     }
 
     /**
-     * Week parity respected: ODD weeks only (LSSN-02).
-     * dayOfWeek=2 => TUESDAY. Tuesdays: Feb 3 (ODD wk), Feb 10 (EVEN wk), Feb 17 (ODD wk).
-     * With weekType=ODD, firstWeekType=ODD: expected lessons = Feb 3, Feb 17 = 2 lessons.
+     * Week parity respected: ISO-odd weeks only (LSSN-02).
+     * dayOfWeek=2 => TUESDAY. Tuesdays: Feb 3 (ISO 6 EVEN), Feb 10 (ISO 7 ODD), Feb 17 (ISO 8 EVEN).
+     * With weekType=ODD: expected lessons = Feb 10 only (1 lesson).
      */
     @Test
     void createGeneratesLessonsOddWeeks() throws Exception {
         createItemViaApi((short) 2, WeekType.ODD);
 
         List<Lesson> lessons = lessonRepository.findAll();
-        assertThat(lessons).hasSize(2);
+        assertThat(lessons).hasSize(1);
         assertThat(lessons).extracting(Lesson::getDate)
-                .containsExactlyInAnyOrder(
-                        LocalDate.of(2026, 2, 3),
-                        LocalDate.of(2026, 2, 17));
+                .containsExactlyInAnyOrder(LocalDate.of(2026, 2, 10));
     }
 
     // ---------- D-06: Schedule-affecting update re-generates ----------

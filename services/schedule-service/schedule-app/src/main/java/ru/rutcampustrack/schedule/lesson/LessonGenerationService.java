@@ -14,19 +14,24 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Service responsible for generating Lesson entities from ScheduleItem templates.
  *
- * The core algorithm anchors week parity to the semester start date:
- * - Week 0 (the week containing semesterStart) has parity = firstWeekType.
- * - Week 1 has opposite parity, week 2 has firstWeekType again, and so on.
- * - This correctly handles cases where the semester starts mid-week
- *   (the anchor is the Monday of the start week).
+ * Week parity is anchored to the ISO-8601 week number of each candidate date:
+ * - Even ISO week → 1-я учебная неделя (WeekType.EVEN).
+ * - Odd  ISO week → 2-я учебная неделя (WeekType.ODD).
+ *
+ * Этот выбор синхронизирует бэкенд с фронтендом (web-panel/pwa показывают
+ * баннер «идёт N-я неделя» на основе ISO-номера) и не зависит от даты
+ * начала семестра или колонки `first_week_type` — при смене семестра
+ * ничего в коде править не нужно.
+ *
+ * Параметр `firstWeekType` в публичных методах оставлен для обратной
+ * совместимости сигнатур/контрактов, но более НЕ влияет на результат.
  *
  * Satisfies LSSN-01 (generate lessons for a schedule item) and
  * LSSN-02 (week parity algorithm).
@@ -65,7 +70,8 @@ public class LessonGenerationService {
      *
      * @param semesterStart    First day of the semester (inclusive)
      * @param semesterEnd      Last day of the semester (inclusive)
-     * @param firstWeekType    Parity of the first semester week (ODD or EVEN; ALL is not valid here)
+     * @param firstWeekType    IGNORED — retained for signature backwards compatibility.
+     *                         Parity is now derived solely from ISO week number.
      * @param dayOfWeek        1=Monday .. 6=Saturday (schedule_items convention, aligned with java.time.DayOfWeek)
      * @param templateWeekType The schedule item's week type: ALL, ODD, or EVEN
      * @return ordered list of LocalDate occurrences
@@ -73,7 +79,7 @@ public class LessonGenerationService {
     public List<LocalDate> computeLessonDates(
             LocalDate semesterStart,
             LocalDate semesterEnd,
-            WeekType firstWeekType,
+            @SuppressWarnings("unused") WeekType firstWeekType,
             short dayOfWeek,
             WeekType templateWeekType) {
 
@@ -83,10 +89,6 @@ public class LessonGenerationService {
         int normalisedDow = dayOfWeek == 0 ? 1 : dayOfWeek;
         DayOfWeek targetJavaDow = DayOfWeek.of(normalisedDow);
 
-        // Anchor: the Monday of the week that contains semesterStart.
-        // All week indices are computed relative to this Monday.
-        LocalDate anchor = semesterStart.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-
         List<LocalDate> dates = new ArrayList<>();
         LocalDate current = semesterStart;
 
@@ -95,15 +97,10 @@ public class LessonGenerationService {
                 if (templateWeekType == WeekType.ALL) {
                     dates.add(current);
                 } else {
-                    // Number of full weeks from the anchor to the Monday of current's week
-                    LocalDate currentWeekMonday = current.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-                    long weeksSinceStart = ChronoUnit.WEEKS.between(anchor, currentWeekMonday);
-
-                    // Even-indexed weeks (0, 2, 4 ...) have the same parity as firstWeekType.
-                    // Odd-indexed weeks (1, 3, 5 ...) have the opposite parity.
-                    WeekType currentParity = (weeksSinceStart % 2 == 0)
-                            ? firstWeekType
-                            : (firstWeekType == WeekType.ODD ? WeekType.EVEN : WeekType.ODD);
+                    // ISO-8601 week number parity is the single source of truth:
+                    // even ISO week == EVEN (1-я уч. неделя), odd ISO week == ODD (2-я уч. неделя).
+                    int isoWeek = current.get(WeekFields.ISO.weekOfWeekBasedYear());
+                    WeekType currentParity = (isoWeek % 2 == 0) ? WeekType.EVEN : WeekType.ODD;
 
                     if (currentParity == templateWeekType) {
                         dates.add(current);

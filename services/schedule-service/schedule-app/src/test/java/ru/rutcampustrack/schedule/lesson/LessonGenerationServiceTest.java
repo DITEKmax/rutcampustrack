@@ -26,16 +26,17 @@ import static org.mockito.Mockito.*;
  *
  * Test data summary (all dates in 2026):
  *   Semester: Feb 2 (Mon) to Mar 2 (Mon)
- *   Mondays in range: Feb 2, Feb 9, Feb 16, Feb 23, Mar 2 = 5 Mondays
- *   Anchor = Feb 2 (Monday of the week containing Feb 2 = Feb 2 itself)
- *   With firstWeekType=ODD:
- *     Week 0 (Feb 2)  = ODD
- *     Week 1 (Feb 9)  = EVEN
- *     Week 2 (Feb 16) = ODD
- *     Week 3 (Feb 23) = EVEN
- *     Week 4 (Mar 2)  = ODD
- *   ODD template:  Feb 2, Feb 16, Mar 2
- *   EVEN template: Feb 9, Feb 23
+ *   Mondays in range with their ISO-week parity:
+ *     Feb 2  → ISO week  6 → EVEN
+ *     Feb 9  → ISO week  7 → ODD
+ *     Feb 16 → ISO week  8 → EVEN
+ *     Feb 23 → ISO week  9 → ODD
+ *     Mar 2  → ISO week 10 → EVEN
+ *   ODD  template: Feb 9, Feb 23
+ *   EVEN template: Feb 2, Feb 16, Mar 2
+ *
+ * The `firstWeekType` parameter is accepted for signature compatibility but
+ * IGNORED — parity is derived from the ISO week number of each candidate date.
  */
 @ExtendWith(MockitoExtension.class)
 class LessonGenerationServiceTest {
@@ -87,16 +88,36 @@ class LessonGenerationServiceTest {
     }
 
     // =========================================================================
-    // computeLessonDates — ODD week type, firstWeekType = ODD
+    // computeLessonDates — ODD week type (ISO-odd weeks)
     // =========================================================================
 
     /**
-     * ODD template with firstWeekType=ODD: weeks 0,2,4 (Feb 2, Feb 16, Mar 2) are ODD.
+     * ODD template: selects Mondays whose ISO-week number is odd.
+     * In this semester that's Feb 9 (ISO 7) and Feb 23 (ISO 9).
+     * `firstWeekType` is ignored — same result regardless of value.
      */
     @Test
     void computeLessonDates_oddTemplate_firstWeekOdd_returnsOddWeekDates() {
         List<LocalDate> result = service.computeLessonDates(
                 SEM_START, SEM_END, WeekType.ODD, DAY_MONDAY, WeekType.ODD);
+
+        assertThat(result).containsExactly(
+                LocalDate.of(2026, 2, 9),
+                LocalDate.of(2026, 2, 23));
+    }
+
+    // =========================================================================
+    // computeLessonDates — EVEN week type (ISO-even weeks)
+    // =========================================================================
+
+    /**
+     * EVEN template: selects Mondays whose ISO-week number is even.
+     * In this semester that's Feb 2 (ISO 6), Feb 16 (ISO 8), Mar 2 (ISO 10).
+     */
+    @Test
+    void computeLessonDates_evenTemplate_firstWeekOdd_returnsEvenWeekDates() {
+        List<LocalDate> result = service.computeLessonDates(
+                SEM_START, SEM_END, WeekType.ODD, DAY_MONDAY, WeekType.EVEN);
 
         assertThat(result).containsExactly(
                 LocalDate.of(2026, 2, 2),
@@ -105,32 +126,16 @@ class LessonGenerationServiceTest {
     }
 
     // =========================================================================
-    // computeLessonDates — EVEN week type, firstWeekType = ODD
+    // computeLessonDates — firstWeekType is ignored
     // =========================================================================
 
     /**
-     * EVEN template with firstWeekType=ODD: weeks 1,3 (Feb 9, Feb 23) are EVEN.
+     * Verifies the ISO algorithm does not depend on firstWeekType: passing
+     * WeekType.EVEN as firstWeekType yields the same ODD-week dates as
+     * passing WeekType.ODD.
      */
     @Test
-    void computeLessonDates_evenTemplate_firstWeekOdd_returnsEvenWeekDates() {
-        List<LocalDate> result = service.computeLessonDates(
-                SEM_START, SEM_END, WeekType.ODD, DAY_MONDAY, WeekType.EVEN);
-
-        assertThat(result).containsExactly(
-                LocalDate.of(2026, 2, 9),
-                LocalDate.of(2026, 2, 23));
-    }
-
-    // =========================================================================
-    // computeLessonDates — inverted: firstWeekType = EVEN
-    // =========================================================================
-
-    /**
-     * ODD template with firstWeekType=EVEN: week 0 = EVEN, week 1 = ODD, week 2 = EVEN ...
-     * ODD template matches weeks 1,3 → Feb 9, Feb 23.
-     */
-    @Test
-    void computeLessonDates_oddTemplate_firstWeekEven_returnsFlippedDates() {
+    void computeLessonDates_oddTemplate_firstWeekEven_returnsSameIsoOddDates() {
         List<LocalDate> result = service.computeLessonDates(
                 SEM_START, SEM_END, WeekType.EVEN, DAY_MONDAY, WeekType.ODD);
 
@@ -140,11 +145,10 @@ class LessonGenerationServiceTest {
     }
 
     /**
-     * EVEN template with firstWeekType=EVEN: EVEN pattern matches weeks 0,2,4
-     * → Feb 2, Feb 16, Mar 2.
+     * Same insensitivity for EVEN templates.
      */
     @Test
-    void computeLessonDates_evenTemplate_firstWeekEven_returnsEvenWeekDates() {
+    void computeLessonDates_evenTemplate_firstWeekEven_returnsSameIsoEvenDates() {
         List<LocalDate> result = service.computeLessonDates(
                 SEM_START, SEM_END, WeekType.EVEN, DAY_MONDAY, WeekType.EVEN);
 
@@ -218,8 +222,8 @@ class LessonGenerationServiceTest {
         verify(lessonRepository, times(1)).saveAll(captor.capture());
 
         List<Lesson> savedLessons = captor.getValue();
-        // ODD template, firstWeekType=ODD: should yield Feb 2, Feb 16, Mar 2
-        assertThat(savedLessons).hasSize(3);
+        // ODD template under ISO algorithm: Feb 9 (ISO 7) and Feb 23 (ISO 9)
+        assertThat(savedLessons).hasSize(2);
 
         savedLessons.forEach(lesson -> {
             assertThat(lesson.getScheduleItemId()).isEqualTo(42L);
@@ -229,9 +233,8 @@ class LessonGenerationServiceTest {
         });
 
         assertThat(savedLessons.stream().map(Lesson::getDate).toList()).containsExactly(
-                LocalDate.of(2026, 2, 2),
-                LocalDate.of(2026, 2, 16),
-                LocalDate.of(2026, 3, 2));
+                LocalDate.of(2026, 2, 9),
+                LocalDate.of(2026, 2, 23));
     }
 
     /**

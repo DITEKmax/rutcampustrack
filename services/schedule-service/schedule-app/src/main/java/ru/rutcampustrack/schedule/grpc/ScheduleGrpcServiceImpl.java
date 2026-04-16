@@ -160,6 +160,8 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                             .setGroupId(item.getGroupId())
                             .setSubjectId(item.getSubjectId())
                             .setStartsAt(l.getDate().toString() + "T" + item.getStartTime().toString())
+                            .setLessonNumber(item.getLessonNumber() != null ? item.getLessonNumber().intValue() : 0)
+                            .setDate(l.getDate().toString())
                             .build();
                 })
                 .toList();

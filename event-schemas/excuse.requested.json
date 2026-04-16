@@ -17,6 +17,20 @@
         "excuse_type": { "type": "string", "enum": ["illness", "summons", "university_order", "exemption", "free_attendance", "other"] },
         "ticket_id": { "type": "string" },
         "lesson_ids": { "type": "array", "items": { "type": "integer" } },
+        "lessons": {
+          "type": "array",
+          "description": "Обогащённые детали пар для Telegram/веб уведомления старосты. Поля могут быть null, если не удалось резолвить через schedule/academic.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lesson_id": { "type": "integer" },
+              "lesson_number": { "type": ["integer", "null"] },
+              "date": { "type": ["string", "null"] },
+              "subject_id": { "type": ["integer", "null"] },
+              "subject_name": { "type": ["string", "null"] }
+            }
+          }
+        },
         "has_attachments": { "type": "boolean" }
       }
     }

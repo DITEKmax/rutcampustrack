@@ -5,8 +5,10 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -57,24 +59,30 @@ public class ExcuseEventPublisher {
     /**
      * Publishes an {@code excuse.requested} event for a freshly created ticket.
      * Invoked from {@link ExcuseService#createExcuse} after the repository save.
+     *
+     * <p>{@code lessonDetails} — обогащение, которое staros/a должен видеть
+     * в Telegram и в веб-уведомлении (номер пары, дата, предмет). Если null/пусто,
+     * payload по-прежнему содержит только {@code lesson_ids}, без поломки
+     * существующих потребителей.
      */
-    public void publishRequested(ExcuseTicket ticket) {
+    public void publishRequested(ExcuseTicket ticket, List<Map<String, Object>> lessonDetails) {
         rabbitTemplate.convertAndSend(EXCHANGE, "",
-                buildEnvelope(EVENT_REQUESTED, buildRequestedPayload(ticket)));
+                buildEnvelope(EVENT_REQUESTED, buildRequestedPayload(ticket, lessonDetails)));
     }
 
     /**
-     * Variant of {@link #publishRequested(ExcuseTicket)} that carries a
+     * Variant of {@link #publishRequested(ExcuseTicket, List)} that carries a
      * supporting document. The document is base64-encoded so it can travel
      * inside the JSON envelope; notification-bot decodes it and forwards to
      * Telegram via {@code send_document}. The server never persists the file —
      * once the message is acked by the bot, the bytes are gone.
      */
     public void publishRequestedWithFile(ExcuseTicket ticket,
+                                         List<Map<String, Object>> lessonDetails,
                                          String fileName,
                                          String contentType,
                                          byte[] fileBytes) {
-        Map<String, Object> payload = buildRequestedPayload(ticket);
+        Map<String, Object> payload = buildRequestedPayload(ticket, lessonDetails);
         if (fileBytes != null && fileBytes.length > 0) {
             payload.put("file_name", fileName);
             payload.put("file_mime_type", contentType);
@@ -84,7 +92,8 @@ public class ExcuseEventPublisher {
         rabbitTemplate.convertAndSend(EXCHANGE, "", buildEnvelope(EVENT_REQUESTED, payload));
     }
 
-    private Map<String, Object> buildRequestedPayload(ExcuseTicket ticket) {
+    private Map<String, Object> buildRequestedPayload(ExcuseTicket ticket,
+                                                      List<Map<String, Object>> lessonDetails) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("ticket_id", ticket.getId());
         payload.put("student_id", ticket.getStudentId());
@@ -93,6 +102,7 @@ public class ExcuseEventPublisher {
         payload.put("student_name", ticket.getStudentName());
         payload.put("group_id", ticket.getGroupId());
         payload.put("lesson_ids", ticket.getLessonIds());
+        payload.put("lessons", lessonDetails != null ? lessonDetails : new ArrayList<>());
         // D-19: lowercase enum value (schema: illness|summons|university_order|exemption|free_attendance|other).
         payload.put("excuse_type",
                 ticket.getExcuseType() != null ? ticket.getExcuseType().name().toLowerCase() : null);

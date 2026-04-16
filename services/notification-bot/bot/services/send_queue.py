@@ -12,6 +12,11 @@ class SendTask:
     coroutine_factory: Callable[[], Awaitable[Any]]
     user_id: Optional[int] = None
     chat_id: Optional[int] = None
+    # Опциональный post-send хук: получает значение, вернувшееся из
+    # coroutine_factory (обычно это aiogram Message с полем message_id).
+    # Используется, чтобы сохранить пару (chat_id, message_id) в Redis для
+    # последующего редактирования при получении *.decided.
+    on_sent: Optional[Callable[[Any], Awaitable[None]]] = None
 
 
 class TelegramSendQueue:
@@ -65,8 +70,13 @@ class TelegramSendQueue:
 
         for attempt, delay in enumerate(self._RETRY_DELAYS + [None], start=1):
             try:
-                await task.coroutine_factory()
+                result = await task.coroutine_factory()
                 self._total_sent += 1
+                if task.on_sent is not None:
+                    try:
+                        await task.on_sent(result)
+                    except Exception:
+                        logger.exception("on_sent hook raised — ignoring, send already succeeded")
                 return
             except Exception as e:
                 if RetryAfterExc is not None and isinstance(e, RetryAfterExc):

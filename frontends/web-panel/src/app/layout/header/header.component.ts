@@ -7,6 +7,7 @@ import { ThemeToggleComponent } from '../../core/theme/theme-toggle.component';
 import { ProfileService } from '../../core/profile/profile.service';
 import { ProfileDialogComponent } from '../../core/profile/profile-dialog.component';
 import { AvatarComponent } from '../../core/profile/avatar.component';
+import { NotificationBellComponent } from '../../core/notifications/notification-bell.component';
 
 /**
  * RutCampusTrack — Shell Header
@@ -20,7 +21,7 @@ import { AvatarComponent } from '../../core/profile/avatar.component';
   selector: 'app-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ThemeToggleComponent, MatDialogModule, AvatarComponent],
+  imports: [ThemeToggleComponent, MatDialogModule, AvatarComponent, NotificationBellComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
 })

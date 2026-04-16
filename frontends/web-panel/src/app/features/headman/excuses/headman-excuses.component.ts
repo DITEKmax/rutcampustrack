@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   OnInit,
   computed,
   inject,
@@ -10,16 +11,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { SubjectCacheService } from '../../student/shared/subject-cache.service';
+import { NotificationCenterService } from '../../../core/notifications/notification-center.service';
 import {
   EXCUSE_STATUS_LABELS,
   EXCUSE_TYPE_LABELS,
   ExcuseTicket,
   ExcuseType,
   ExcuseTicketStatus,
+  LessonBrief,
 } from './excuse.types';
 
 /**
@@ -110,6 +115,13 @@ import {
                     {{ ticket.lessonIds.length }} урок(ов) · {{ ticket.createdAt | date:'dd.MM.yyyy HH:mm' }}
                   </span>
                 </header>
+                @if (ticket.lessons && ticket.lessons.length > 0) {
+                  <ul class="excuse-card__lessons">
+                    @for (lesson of ticket.lessons; track lesson.lessonId) {
+                      <li>{{ formatLesson(lesson) }}</li>
+                    }
+                  </ul>
+                }
                 @if (ticket.comment) {
                   <p class="excuse-card__comment">{{ ticket.comment }}</p>
                 }
@@ -239,6 +251,20 @@ import {
         font-size: 0.875rem;
         line-height: 1.5;
       }
+      .excuse-card__lessons {
+        list-style: none;
+        padding: 0;
+        margin: var(--space-2) 0;
+        display: flex; flex-direction: column;
+        gap: 4px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+      .excuse-card__lessons li::before {
+        content: '· ';
+        color: var(--text-muted);
+        margin-right: 4px;
+      }
       .excuse-card__actions {
         display: flex;
         gap: var(--space-2);
@@ -308,10 +334,15 @@ export class HeadmanExcusesComponent implements OnInit {
   private readonly headmanApi = inject(HeadmanApiService);
   private readonly auth = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly subjectCache = inject(SubjectCacheService);
+  private readonly center = inject(NotificationCenterService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(false);
   readonly loadError = signal<string | null>(null);
   readonly tickets = signal<ExcuseTicket[]>([]);
+
+  private readonly ruDays = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
 
   /** id of the ticket for which the inline reject form is open. */
   readonly rejectingId = signal<string | null>(null);
@@ -331,6 +362,22 @@ export class HeadmanExcusesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadTickets();
+
+    // Новая заявка пришла через STOMP → перезагружаем список (REST — источник
+    // правды с lessonIds, плюс обогащение через schedule).
+    this.center.onEvent$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(envelope => {
+        if (envelope.type === 'excuse.requested') {
+          this.loadTickets();
+          return;
+        }
+        // Решение принято (через TG или веб в другой вкладке) → обновляем,
+        // чтобы карточка ушла из раздела «На рассмотрении».
+        if (envelope.type === 'excuse.decided') {
+          this.loadTickets();
+        }
+      });
   }
 
   loadTickets(): void {
@@ -345,6 +392,7 @@ export class HeadmanExcusesComponent implements OnInit {
       next: list => {
         this.tickets.set(list);
         this.loading.set(false);
+        this.enrichLessons(groupId, list);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
@@ -355,6 +403,112 @@ export class HeadmanExcusesComponent implements OnInit {
         );
       },
     });
+  }
+
+  /**
+   * Обогащаем тикеты деталями пар, чтобы в карточке отображался список
+   * «№3 Матанализ, пн 14.04» вместо «N урок(ов)». Бэкенд-DTO несёт только
+   * lessonIds, поэтому тянем расписание группы ±21 день (чтобы покрыть
+   * свежие тикеты, а также просроченные заявки на прошлые пары).
+   */
+  private enrichLessons(groupId: number, tickets: ExcuseTicket[]): void {
+    if (tickets.length === 0) return;
+    const today = new Date();
+    const from = new Date(today);
+    from.setDate(from.getDate() - 30);
+    const to = new Date(today);
+    to.setDate(to.getDate() + 14);
+    const dateFrom = from.toISOString().slice(0, 10);
+    const dateTo = to.toISOString().slice(0, 10);
+
+    this.headmanApi.getGroupLessons(groupId, dateFrom, dateTo).subscribe({
+      next: resp => {
+        const lessonsById = new Map<number, { lessonNumber: number; date: string; subjectId: number }>();
+        const raw = this.extractLessons(resp);
+        for (const l of raw) {
+          if (l && typeof l.id === 'number') {
+            lessonsById.set(l.id, {
+              lessonNumber: l.lessonNumber,
+              date: l.date,
+              subjectId: l.subjectId,
+            });
+          }
+        }
+        if (lessonsById.size === 0) return;
+
+        const subjectIds = new Set<number>();
+        for (const d of lessonsById.values()) subjectIds.add(d.subjectId);
+        const subjectNames = new Map<number, string>();
+        const pendingIds = [...subjectIds];
+
+        const applyUpdate = () => {
+          this.tickets.update(curr =>
+            curr.map(ticket => {
+              const lessons: LessonBrief[] = ticket.lessonIds.map(id => {
+                const details = lessonsById.get(id);
+                if (!details) {
+                  return { lessonId: id, lessonNumber: null, date: null, subjectId: null, subjectName: null };
+                }
+                return {
+                  lessonId: id,
+                  lessonNumber: details.lessonNumber,
+                  date: details.date,
+                  subjectId: details.subjectId,
+                  subjectName: subjectNames.get(details.subjectId) ?? null,
+                };
+              });
+              return { ...ticket, lessons };
+            }),
+          );
+        };
+
+        if (pendingIds.length === 0) {
+          applyUpdate();
+          return;
+        }
+
+        let resolved = 0;
+        for (const sid of pendingIds) {
+          this.subjectCache.getName(sid).subscribe(name => {
+            subjectNames.set(sid, name);
+            resolved += 1;
+            if (resolved === pendingIds.length) applyUpdate();
+          });
+        }
+      },
+      error: () => {
+        // Обогащение — опциональное улучшение UX. Без него останется «N урок(ов)».
+      },
+    });
+  }
+
+  private extractLessons(resp: unknown): Array<{ id: number; lessonNumber: number; date: string; subjectId: number }> {
+    if (!resp || typeof resp !== 'object') return [];
+    const anyResp = resp as Record<string, unknown>;
+    if (Array.isArray(anyResp)) return anyResp as any;
+    const embedded = anyResp['_embedded'] as Record<string, unknown> | undefined;
+    if (!embedded) return [];
+    const firstKey = Object.keys(embedded)[0];
+    return (firstKey ? (embedded[firstKey] as any[]) : []) as any;
+  }
+
+  formatLesson(lesson: LessonBrief): string {
+    const parts: string[] = [];
+    if (lesson.lessonNumber != null) parts.push(`№${lesson.lessonNumber}`);
+    if (lesson.subjectName) parts.push(lesson.subjectName);
+    const head = parts.join(' ').trim();
+    const date = lesson.date ? this.formatRuDate(lesson.date) : '';
+    if (!head && !date) return `Пара #${lesson.lessonId}`;
+    return date ? `${head}, ${date}` : head;
+  }
+
+  private formatRuDate(iso: string): string {
+    const parsed = new Date(iso.length === 10 ? `${iso}T00:00:00` : iso);
+    if (Number.isNaN(parsed.getTime())) return iso;
+    const dow = this.ruDays[parsed.getDay()];
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    return `${dow} ${dd}.${mm}`;
   }
 
   approve(id: string): void {

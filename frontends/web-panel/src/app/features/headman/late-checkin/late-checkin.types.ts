@@ -5,6 +5,11 @@
  * Shape mirrors {@code LateCheckinRequestResponse} from the backend contract
  * (services/attendance-service/attendance-api-contract) minus the HATEOAS
  * `_links` wrapper. Status arrives lowercase to match Mongo / event payloads.
+ *
+ * Поля {@code lessonNumber} / {@code lessonDate} / {@code subjectName} —
+ * клиентское обогащение поверх REST-ответа: бэкенд отдаёт только {@code lessonId},
+ * а деталей пары нет; мы подтягиваем их из schedule-service для отображения
+ * «№3 Матанализ, пн 14.04 10:30» вместо «Пара #123».
  */
 export type LateCheckinRequestStatus = 'pending' | 'approved' | 'rejected';
 
@@ -19,6 +24,12 @@ export interface LateCheckinRequestView {
   decisionAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Обогащение из STOMP payload или schedule-service. Необязательное. */
+  lessonNumber?: number | null;
+  /** YYYY-MM-DD. */
+  lessonDate?: string | null;
+  subjectId?: number | null;
+  subjectName?: string | null;
 }
 
 /**
@@ -36,6 +47,24 @@ export interface LateCheckinRequestedEvent {
     group_id: number;
     lesson_id: number;
     student_name: string;
+    lesson_date: string | null;
+    lesson_number: number | null;
+    subject_id: number | null;
+    subject_name: string | null;
+  };
+}
+
+/** STOMP envelope для {@code late_checkin.decided} — используется для авто-закрытия карточек. */
+export interface LateCheckinDecidedEvent {
+  type: 'late_checkin.decided';
+  payload: {
+    request_id: string;
+    user_id: number;
+    group_id: number;
+    lesson_id: number;
+    decision_by: number | null;
+    status: 'approved' | 'rejected';
+    decided_at: string | null;
     lesson_date: string | null;
     lesson_number: number | null;
     subject_id: number | null;

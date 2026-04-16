@@ -8,6 +8,10 @@
     <app-theme-toggle />
 
     @if (currentUser()) {
+      <app-notification-bell />
+    }
+
+    @if (currentUser()) {
       <button type="button"
               class="user-chip user-chip--button"
               aria-label="Открыть профиль"

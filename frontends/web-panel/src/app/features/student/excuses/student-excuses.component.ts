@@ -1,8 +1,9 @@
 import {
-  ChangeDetectionStrategy, Component, OnInit, computed, inject, signal,
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { StudentApiService } from '../shared/student-api.service';
@@ -11,6 +12,7 @@ import type { ExcuseTicket, ExcuseTicketStatus, ExcuseType, LessonResponse } fro
 import { EXCUSE_TYPE_LABELS } from '../shared/student-schedule.types';
 import { ExcuseFormDialogComponent } from './excuse-form-dialog/excuse-form-dialog.component';
 import { AuthService } from '../../../core/auth/auth.service';
+import { NotificationCenterService } from '../../../core/notifications/notification-center.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -42,6 +44,8 @@ export class StudentExcusesComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly center = inject(NotificationCenterService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -80,6 +84,17 @@ export class StudentExcusesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadTickets();
+
+    // Когда староста принял решение (через TG или веб), перезагружаем список
+    // чтобы студент сразу увидел вердикт без F5. Фильтрация по user_id
+    // выполняется в NotificationCenterService.
+    this.center.onEvent$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(envelope => {
+        if (envelope.type === 'excuse.decided') {
+          this.loadTickets();
+        }
+      });
   }
 
   switchTab(tab: ExcuseTab): void {

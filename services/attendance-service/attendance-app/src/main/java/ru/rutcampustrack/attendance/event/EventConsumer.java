@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.attendance.excuse.ExcuseService;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 
@@ -27,6 +28,7 @@ public class EventConsumer {
     private final LessonEventService lessonEventService;
     private final SemesterCacheService semesterCacheService;
     private final LateCheckinService lateCheckinService;
+    private final ExcuseService excuseService;
 
     @RabbitListener(queues = "attendance-service.events")
     public void onEvent(Map<String, Object> envelope) {
@@ -44,6 +46,7 @@ public class EventConsumer {
             case "lesson.one_off.cancelled" -> handleOneOffLessonCancelled(envelope);
             case "semester.archived"       -> handleSemesterArchived(envelope);
             case "late_checkin.decision"   -> handleLateCheckinDecision(envelope);
+            case "excuse.decision"         -> handleExcuseDecision(envelope);
             default -> log.debug("Ignoring unknown event type: {}", eventType);
         }
     }
@@ -133,6 +136,25 @@ public class EventConsumer {
             return;
         }
         lateCheckinService.applyDecision(requestId, decisionBy, (Boolean) approvedRaw);
+    }
+
+    /**
+     * Старос/тa нажал inline-кнопку под excuse-тикетом в Telegram. Payload:
+     * {@code ticket_id}, {@code decision_by} (telegram user_id), {@code approved},
+     * опционально {@code decision_comment}.
+     */
+    private void handleExcuseDecision(Map<String, Object> envelope) {
+        Map<String, Object> payload = extractPayload(envelope);
+        if (payload == null) return;
+        String ticketId = (String) payload.get("ticket_id");
+        Long decisionBy = extractLong(payload, "decision_by");
+        Object approvedRaw = payload.get("approved");
+        String comment = (String) payload.get("decision_comment");
+        if (ticketId == null || !(approvedRaw instanceof Boolean)) {
+            log.warn("excuse.decision: missing required fields, ignoring: {}", payload);
+            return;
+        }
+        excuseService.applyDecisionFromBot(ticketId, decisionBy, (Boolean) approvedRaw, comment);
     }
 
     @SuppressWarnings("unchecked")

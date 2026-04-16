@@ -34,6 +34,20 @@ export interface ExcuseTicket {
   decisionAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Клиентское обогащение — детали пар, которые бэкенд не возвращает в ответе
+   * (в отличие от события excuse.requested, где они уже есть).
+   * Заполняется компонентом через schedule-service + SubjectCacheService.
+   */
+  lessons?: LessonBrief[];
+}
+
+export interface LessonBrief {
+  lessonId: number;
+  lessonNumber: number | null;
+  date: string | null;          // YYYY-MM-DD
+  subjectId: number | null;
+  subjectName: string | null;
 }
 
 export interface PagedExcuseResponse {

@@ -1,34 +1,24 @@
 import {
-  ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal,
+  ChangeDetectionStrategy, Component, OnInit, computed, inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { AuthService } from '../../../core/auth/auth.service';
-import { StudentStompService } from '../shared/student-stomp.service';
-import { StudentNotificationBadgeService } from '../shared/student-notification-badge.service';
+import { NotificationCenterService, NotificationRecord } from '../../../core/notifications/notification-center.service';
 import type { NotificationItem } from '../shared/student-schedule.types';
 import { NotificationItemComponent } from './notification-item/notification-item.component';
 
 /**
- * Events that carry a user_id and MUST only be stored if that id matches
- * the current user. Prevents showing "your excuse was approved" to
- * everyone in the group when the broker fans out via /topic/group/{id}.
+ * Страница «Уведомления» для студента и старосты.
+ *
+ * После Phase v9 централизации источника правды компонент больше не поднимает
+ * собственный STOMP-клиент — всё приходит из {@link NotificationCenterService},
+ * который живёт в {@code providedIn: 'root'} и подключается сразу после логина
+ * (см. ShellComponent). Это устраняет баг, когда уведомления не появлялись до
+ * тех пор, пока пользователь не открывал конкретную страницу.
+ *
+ * Страница отображает общий список, который глобальный сервис уже собрал;
+ * дополнительная фильтрация user_scoped делается в самом центре.
  */
-const USER_SCOPED_TYPES = new Set(['late_checkin.decided', 'excuse.decided']);
-
-const STORAGE_KEY = 'rct-notifications';
-const MAX_ITEMS = 100;
-const STORED_TYPES = [
-  'lesson.started',
-  'lesson.cancelled',
-  'homework.published',
-  'homework.updated',
-  'attendance.marked',
-  'late_checkin.decided',
-  'excuse.decided',
-];
-
 @Component({
   selector: 'app-student-notifications',
   standalone: true,
@@ -46,78 +36,36 @@ const STORED_TYPES = [
   styleUrl: './student-notifications.component.css',
 })
 export class StudentNotificationsComponent implements OnInit {
-  private readonly stompService = inject(StudentStompService);
-  private readonly badgeService = inject(StudentNotificationBadgeService);
-  private readonly auth = inject(AuthService);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly center = inject(NotificationCenterService);
 
-  readonly items = signal<NotificationItem[]>(this.loadFromStorage());
+  /** Прокси к {@link NotificationCenterService.items} для существующего шаблона. */
+  readonly items = this.center.items;
 
-  readonly sortedItems = computed(() =>
-    [...this.items()].sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime()),
-  );
+  /**
+   * Адаптер: глобальный сервис хранит receivedAt как ISO-строку (иначе
+   * sessionStorage теряет Date при (de)serialization), а существующий
+   * {@link NotificationItemComponent} ждёт {@link NotificationItem} с Date.
+   */
+  readonly sortedItems = computed<NotificationItem[]>(() => {
+    return this.center.items().map(toItem).sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime());
+  });
 
   readonly allRead = computed(() =>
-    this.items().length > 0 && this.items().every(i => i.read),
+    this.center.items().length > 0 && this.center.unreadCount() === 0,
   );
 
   ngOnInit(): void {
-    // Mark all items as read
-    this.items.update(list => list.map(i => ({ ...i, read: true })));
-    this.persistToStorage();
-    // Reset badge
-    this.badgeService.reset();
-
-    // BUG-008: до этого фикса страница могла «не открываться», если onAnyEvent$
-    // бросал ошибку (нет STOMP-соединения). Защищаемся от таких ошибок и не валим
-    // компонент целиком — пустой список без новых событий лучше чёрного экрана.
-    this.stompService.onAnyEvent$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: envelope => {
-          if (!STORED_TYPES.includes(envelope.type)) return;
-          if (USER_SCOPED_TYPES.has(envelope.type)) {
-            const currentUserId = this.auth.currentUser()?.id;
-            const payloadUserId = envelope.payload?.['user_id'];
-            if (currentUserId == null || payloadUserId !== currentUserId) return;
-          }
-          const newItem: NotificationItem = {
-            id: crypto.randomUUID(),
-            type: envelope.type,
-            payload: envelope.payload,
-            receivedAt: new Date(),
-            read: true, // already on the page — immediately read
-          };
-          this.items.update(list => {
-            const updated = [newItem, ...list];
-            return updated.length > MAX_ITEMS ? updated.slice(0, MAX_ITEMS) : updated;
-          });
-          this.persistToStorage();
-        },
-        error: err => {
-          console.error('[student-notifications] STOMP stream error', err);
-        },
-      });
+    // Пользователь зашёл на страницу — сбрасываем счётчик. Записи остаются.
+    this.center.markAllRead();
   }
+}
 
-  private loadFromStorage(): NotificationItem[] {
-    try {
-      if (typeof sessionStorage === 'undefined') return [];
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw) as Array<NotificationItem & { receivedAt: string }>;
-      return parsed.map(i => ({ ...i, receivedAt: new Date(i.receivedAt) }));
-    } catch (e) {
-      console.warn('[student-notifications] failed to read sessionStorage', e);
-      return [];
-    }
-  }
-
-  private persistToStorage(): void {
-    try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(this.items()));
-    } catch {
-      // sessionStorage full — ignore
-    }
-  }
+function toItem(record: NotificationRecord): NotificationItem {
+  return {
+    id: record.id,
+    type: record.type,
+    payload: record.payload,
+    receivedAt: new Date(record.receivedAt),
+    read: record.read,
+  };
 }

@@ -1,3 +1,4 @@
+from bot.handlers.excuse import excuse_router
 from bot.handlers.late_checkin import late_checkin_router
 from bot.handlers.login import login_router
 from bot.handlers.prefs import prefs_router
@@ -10,4 +11,5 @@ __all__ = [
     "status_router",
     "prefs_router",
     "late_checkin_router",
+    "excuse_router",
 ]

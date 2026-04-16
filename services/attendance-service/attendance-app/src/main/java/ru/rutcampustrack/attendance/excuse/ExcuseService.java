@@ -23,11 +23,14 @@ import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Business logic for excuse tickets (Phase 59, Wave 2).
@@ -91,7 +94,9 @@ public class ExcuseService {
     public ExcuseTicket createExcuse(CreateExcuseRequest request) {
         ExcuseTicket saved = createTicketInternal(request);
         // D-19 / D-27: publish excuse.requested after save — notification-bot listens.
-        excuseEventPublisher.publishRequested(saved);
+        // Обогащаем payload деталями пар (номер, дата, предмет): без этого староста
+        // в TG/веб видел только ID пар без контекста.
+        excuseEventPublisher.publishRequested(saved, resolveLessonDetails(saved.getLessonIds()));
         return saved;
     }
 
@@ -106,8 +111,9 @@ public class ExcuseService {
     public ExcuseTicket createExcuseWithFile(CreateExcuseRequest request, MultipartFile file) {
         final long MAX_BYTES = 10L * 1024 * 1024;
         ExcuseTicket saved = createTicketInternal(request);
+        List<Map<String, Object>> lessonDetails = resolveLessonDetails(saved.getLessonIds());
         if (file == null || file.isEmpty()) {
-            excuseEventPublisher.publishRequested(saved);
+            excuseEventPublisher.publishRequested(saved, lessonDetails);
             return saved;
         }
         if (file.getSize() > MAX_BYTES) {
@@ -122,7 +128,8 @@ public class ExcuseService {
         String fileName = file.getOriginalFilename() != null && !file.getOriginalFilename().isBlank()
                 ? file.getOriginalFilename()
                 : "attachment";
-        excuseEventPublisher.publishRequestedWithFile(saved, fileName, file.getContentType(), bytes);
+        excuseEventPublisher.publishRequestedWithFile(
+                saved, lessonDetails, fileName, file.getContentType(), bytes);
         return saved;
     }
 
@@ -288,6 +295,59 @@ public class ExcuseService {
     }
 
     /**
+     * Применить решение старосты, пришедшее через inline-кнопку в Telegram.
+     *
+     * <p>В отличие от {@link #updateStatus}, эта ветка НЕ имеет
+     * {@link RequestContext} — вызывающий это consumer RabbitMQ без JWT. Доверие
+     * к источнику обеспечивается тем, что inline-клавиатура отправляется только
+     * старостам группы (фильтр в {@code headman_alerts.py}), а event
+     * {@code excuse.decision} публикуется ботом только на нажатии кнопки.
+     *
+     * <p>Идемпотентность: повторная доставка для уже решённого тикета игнорируется
+     * — симметрия с {@link ru.rutcampustrack.attendance.latecheckin.LateCheckinService#applyDecision}.
+     *
+     * @param ticketId         Mongo id тикета
+     * @param decisionBy       telegram user_id старосты (сохраняется «как есть», как делает late_checkin)
+     * @param approved         true = APPROVED, false = REJECTED
+     * @param decisionComment  опциональный комментарий
+     */
+    public void applyDecisionFromBot(String ticketId, Long decisionBy, boolean approved, String decisionComment) {
+        ExcuseTicket ticket = excuseRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
+
+        // D-18: решение уже принято — тихо выходим (дубликат доставки RabbitMQ).
+        if (ticket.getStatus() != ExcuseTicketStatus.SUBMITTED) {
+            return;
+        }
+
+        Instant now = Instant.now();
+        ExcuseTicketStatus newStatus = approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED;
+        ticket.setStatus(newStatus);
+        ticket.setDecisionBy(decisionBy);
+        ticket.setDecisionComment(decisionComment);
+        ticket.setDecisionAt(now);
+        ticket.setUpdatedAt(now);
+
+        ExcuseTicket saved = excuseRepository.save(ticket);
+
+        if (newStatus == ExcuseTicketStatus.APPROVED) {
+            AttendanceStatus attendanceStatus = mapExcuseTypeToAttendanceStatus(saved.getExcuseType());
+            String reason = buildReason(saved);
+            for (Long lessonId : saved.getLessonIds()) {
+                attendanceWritePort.mark(
+                        saved.getStudentId(),
+                        lessonId,
+                        saved.getGroupId(),
+                        attendanceStatus,
+                        AttendanceSource.HEADMAN_EXCUSE,
+                        reason);
+            }
+        }
+
+        excuseEventPublisher.publishDecided(saved);
+    }
+
+    /**
      * D-16: map an {@link ExcuseType} to the corresponding {@link AttendanceStatus}
      * used when cascading an approved ticket onto attendance documents.
      *
@@ -344,6 +404,40 @@ public class ExcuseService {
                 throw new BadRequestException(
                         "Урок с id=" + lesson.getLessonId() + " не принадлежит вашей группе");
             }
+        }
+    }
+
+    /**
+     * Собирает детали пар для обогащения payload события и UI.
+     *
+     * <p>Возвращает список {@code [{lesson_id, lesson_number, date, subject_id,
+     * subject_name}]}. Если gRPC-вызов упадёт, возвращаем пустой список — обогащение
+     * опционально, и падение schedule/academic не должно ломать публикацию события.
+     */
+    List<Map<String, Object>> resolveLessonDetails(List<Long> lessonIds) {
+        if (lessonIds == null || lessonIds.isEmpty()) return List.of();
+        try {
+            List<LessonInfo> lessons = scheduleGrpcClient.getLessonsByIds(lessonIds);
+            if (lessons.isEmpty()) return List.of();
+            List<Long> subjectIds = lessons.stream()
+                    .map(LessonInfo::getSubjectId)
+                    .distinct()
+                    .collect(Collectors.toList());
+            Map<Long, String> subjectNames = academicGrpcClient.getSubjectsByIds(subjectIds);
+            List<Map<String, Object>> out = new ArrayList<>(lessons.size());
+            for (LessonInfo lesson : lessons) {
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("lesson_id", lesson.getLessonId());
+                entry.put("lesson_number", lesson.getLessonNumber());
+                entry.put("date", lesson.getDate());
+                entry.put("subject_id", lesson.getSubjectId());
+                entry.put("subject_name", subjectNames.getOrDefault(lesson.getSubjectId(), null));
+                out.add(entry);
+            }
+            return out;
+        } catch (RuntimeException e) {
+            // Обогащение не критично для публикации события. Логируем на debug и едем дальше.
+            return List.of();
         }
     }
 }

@@ -55,7 +55,7 @@ class ExcuseEventPublisherTest {
                 .updatedAt(now)
                 .build();
 
-        publisher.publishRequested(ticket);
+        publisher.publishRequested(ticket, List.of());
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
         verify(rabbitTemplate).convertAndSend(eq(EXCHANGE), eq(""), captor.capture());
@@ -99,7 +99,7 @@ class ExcuseEventPublisherTest {
                 .createdAt(Instant.now())
                 .build();
 
-        publisher.publishRequested(ticket);
+        publisher.publishRequested(ticket, List.of());
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
         verify(rabbitTemplate).convertAndSend(eq(EXCHANGE), eq(""), captor.capture());
@@ -169,7 +169,7 @@ class ExcuseEventPublisherTest {
                 .createdAt(Instant.now())
                 .build();
 
-        publisher.publishRequested(ticket);
+        publisher.publishRequested(ticket, List.of());
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
         verify(rabbitTemplate).convertAndSend(eq(EXCHANGE), eq(""), captor.capture());

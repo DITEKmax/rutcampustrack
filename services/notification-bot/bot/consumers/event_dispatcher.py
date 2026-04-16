@@ -9,6 +9,7 @@ from bot.config import Settings
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
+from bot.services.request_message_tracker import RequestMessageTracker
 from bot.services.send_queue import TelegramSendQueue
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class EventDispatcher:
         config: Settings,
         otp_tracker: OtpMessageTracker,
         reminder_scheduler=None,  # Optional — injected by __main__.py (Plan 25-02)
+        request_tracker: RequestMessageTracker | None = None,
     ) -> None:
         self._bot = bot
         self._academic_client = academic_client
@@ -38,6 +40,7 @@ class EventDispatcher:
         self._config = config
         self._otp_tracker = otp_tracker
         self._reminder_scheduler = reminder_scheduler
+        self._request_tracker = request_tracker
 
         # Import handlers here to avoid circular imports at module level
         from bot.notifications.attendance_marked import handle_attendance_marked
@@ -91,26 +94,18 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                request_tracker=self._request_tracker,
             ),
             # 59-06 / D-28: notify the student when their excuse ticket is decided
-            "excuse.decided": lambda event: handle_student_alert(
-                event,
-                bot=self._bot,
-                academic_client=self._academic_client,
-                send_queue=self._send_queue,
-            ),
+            "excuse.decided": lambda event: self._handle_excuse_decided(event),
             "late_checkin.requested": lambda event: handle_headman_alert(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+                request_tracker=self._request_tracker,
             ),
-            "late_checkin.decided": lambda event: handle_student_alert(
-                event,
-                bot=self._bot,
-                academic_client=self._academic_client,
-                send_queue=self._send_queue,
-            ),
+            "late_checkin.decided": lambda event: self._handle_late_checkin_decided(event),
             "lesson.closed": lambda event: handle_lesson_closed(
                 event,
                 bot=self._bot,
@@ -144,6 +139,81 @@ class EventDispatcher:
                 tracker=self._otp_tracker,
             ),
         }
+
+    async def _handle_excuse_decided(self, event: dict) -> None:
+        """Извещаем студента + закрываем карточки у старост в Telegram.
+
+        Симметрия с web-панелью: когда решение пришло через веб (или через TG
+        другого старосты), мы убираем inline-клавиатуру у всех сохранённых
+        карточек и добавляем вердикт. Если карточку в TG уже отредактировал
+        локальный callback (excuse.py), Telegram вернёт 400 "message not
+        modified" — это не ошибка, просто пропускаем.
+        """
+        from bot.notifications.student_alerts import handle_student_alert
+
+        await handle_student_alert(
+            event,
+            bot=self._bot,
+            academic_client=self._academic_client,
+            send_queue=self._send_queue,
+        )
+
+        payload = event.get("payload") or {}
+        ticket_id = payload.get("ticket_id")
+        status = payload.get("status")
+        if ticket_id and self._request_tracker is not None:
+            verdict = "✅ Одобрено" if status == "approved" else "❌ Отклонено"
+            await self._close_tracked_messages("excuse", str(ticket_id), verdict)
+
+    async def _handle_late_checkin_decided(self, event: dict) -> None:
+        """Как _handle_excuse_decided, но для late-checkin-запросов."""
+        from bot.notifications.student_alerts import handle_student_alert
+
+        await handle_student_alert(
+            event,
+            bot=self._bot,
+            academic_client=self._academic_client,
+            send_queue=self._send_queue,
+        )
+
+        payload = event.get("payload") or {}
+        request_id = payload.get("request_id")
+        status = payload.get("status")
+        if request_id and self._request_tracker is not None:
+            verdict = "✅ Подтверждено" if status == "approved" else "❌ Отклонено"
+            await self._close_tracked_messages("late_checkin", str(request_id), verdict)
+
+    async def _close_tracked_messages(self, kind: str, request_id: str, verdict_line: str) -> None:
+        entries = await self._request_tracker.get_all(kind, request_id)
+        for entry in entries:
+            chat_id = entry.get("chat_id")
+            message_id = entry.get("message_id")
+            if chat_id is None or message_id is None:
+                continue
+            try:
+                # Убираем клавиатуру и шлём verdict отдельным reply-сообщением:
+                # Telegram Bot API не возвращает исходный текст сообщения, поэтому
+                # edit_text/edit_caption без сохранённого контекста перезапишет
+                # карточку. Reply — минимально-инвазивный вариант: сохраняет
+                # оригинал в истории чата и однозначно связан с ним.
+                await self._bot.edit_message_reply_markup(
+                    chat_id=chat_id, message_id=message_id, reply_markup=None
+                )
+                await self._bot.send_message(
+                    chat_id=chat_id,
+                    text=verdict_line,
+                    reply_to_message_id=message_id,
+                )
+            except Exception:
+                logger.debug(
+                    "Failed to close TG message kind=%s id=%s chat=%s msg=%s",
+                    kind,
+                    request_id,
+                    chat_id,
+                    message_id,
+                    exc_info=True,
+                )
+        await self._request_tracker.delete(kind, request_id)
 
     async def _handle_lesson_started_with_scheduling(self, event: dict) -> None:
         """Handle lesson.started: send initial messages then schedule reminders.

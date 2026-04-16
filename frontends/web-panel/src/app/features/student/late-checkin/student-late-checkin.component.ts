@@ -1,10 +1,12 @@
 import {
-  ChangeDetectionStrategy, Component, OnInit, inject, signal, computed,
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal, computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StudentApiService } from '../shared/student-api.service';
 import { SubjectCacheService } from '../shared/subject-cache.service';
+import { NotificationCenterService } from '../../../core/notifications/notification-center.service';
 import type { AttendanceRecord } from '../shared/student-schedule.types';
 
 interface DayGroup {
@@ -46,6 +48,8 @@ function formatDayLabel(isoDate: string): string {
 export class StudentLateCheckinComponent implements OnInit {
   private readonly apiService = inject(StudentApiService);
   private readonly subjectCache = inject(SubjectCacheService);
+  private readonly center = inject(NotificationCenterService);
+  private readonly destroyRef = inject(DestroyRef);
 
   /** Observable subject-name for the async pipe. */
   getSubjectName$(subjectId: number) {
@@ -84,6 +88,21 @@ export class StudentLateCheckinComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.fetchRecords();
+
+    // При решении старосты (TG или web) перезагружаем список — статус пары
+    // мог измениться (APPROVED → present). NotificationCenter уже отфильтровал
+    // decided по user_id, так что лишних дёрганий не будет.
+    this.center.onEvent$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(envelope => {
+        if (envelope.type === 'late_checkin.decided' || envelope.type === 'attendance.marked') {
+          this.fetchRecords();
+        }
+      });
+  }
+
+  private fetchRecords(): void {
     this.loading.set(true);
     this.apiService.getStudentRecords().subscribe({
       next: (records) => {

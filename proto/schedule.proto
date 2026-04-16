@@ -89,6 +89,11 @@ message LessonInfo {
   int64 group_id = 2;
   int64 subject_id = 3;
   string starts_at = 4;  // ISO datetime (date + "T" + start_time)
+  // Phase v9 — обогащение excuse.requested: бот и веб показывают детали пары
+  // без дополнительных round-trip'ов. Все поля обязательны к заполнению
+  // в schedule-service LessonQueryGrpcService.
+  int32 lesson_number = 5;  // 1..8
+  string date = 6;          // ISO-8601 date (YYYY-MM-DD)
 }
 
 message CountSubjectReferencesRequest {

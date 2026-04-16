@@ -21,6 +21,7 @@ async def handle_headman_alert(
     bot: Bot,
     academic_client,
     send_queue: TelegramSendQueue,
+    request_tracker=None,
     **kwargs,
 ) -> None:
     """Send alert to headman(s) of the group only.
@@ -62,12 +63,40 @@ async def handle_headman_alert(
     file_bytes: bytes | None = None
     file_name: str | None = None
 
+    # kind+id для RequestMessageTracker — заполняются ниже, чтобы сохранить
+    # message_id каждого старосты после send_message/send_document и потом
+    # отредактировать их при получении *.decided (двусторонняя sync TG ↔ Web).
+    tracking_kind: str | None = None
+    tracking_id: str | None = None
+
     if event_type == "excuse.requested":
-        excuse_type_label = payload.get("excuse_type", "не указан")
+        excuse_type_label = _excuse_type_label(payload.get("excuse_type"))
         text = f"Запрос у.п.\n\nСтудент: {student_name}\nТип: {excuse_type_label}"
+
+        lessons = payload.get("lessons") or []
+        if lessons:
+            text += "\n\nПары:"
+            for lesson in lessons:
+                text += "\n  · " + _format_lesson(lesson)
+
         comment = payload.get("comment")
         if comment:
-            text += f"\nКомментарий: {comment}"
+            text += f"\n\nКомментарий: {comment}"
+
+        ticket_id = payload.get("ticket_id")
+        if ticket_id:
+            tracking_kind = "excuse"
+            tracking_id = str(ticket_id)
+            reply_markup = InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(text="✅ Одобрить", callback_data=f"ex:approve:{ticket_id}"),
+                        InlineKeyboardButton(text="❌ Отклонить", callback_data=f"ex:reject:{ticket_id}"),
+                    ]
+                ]
+            )
+        else:
+            logger.warning("excuse.requested missing ticket_id, sending without buttons")
 
         file_b64 = payload.get("file_payload_b64")
         if file_b64:
@@ -96,6 +125,8 @@ async def handle_headman_alert(
             text += f"\nДата: {lesson_date}"
         request_id = payload.get("request_id")
         if request_id:
+            tracking_kind = "late_checkin"
+            tracking_id = str(request_id)
             reply_markup = InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
@@ -109,6 +140,18 @@ async def handle_headman_alert(
     else:
         logger.debug("handle_headman_alert called with unexpected event_type: %s", event_type)
         return
+
+    def _build_on_sent(chat_id_value: int):
+        if request_tracker is None or tracking_kind is None or tracking_id is None:
+            return None
+
+        async def _on_sent(result):
+            message_id = getattr(result, "message_id", None)
+            if message_id is None:
+                return
+            await request_tracker.add(tracking_kind, tracking_id, chat_id_value, int(message_id))
+
+        return _on_sent
 
     for headman in headmen:
         if file_bytes:
@@ -135,6 +178,7 @@ async def handle_headman_alert(
                     coroutine_factory=_send_document,
                     user_id=headman.user_id,
                     chat_id=headman.telegram_id,
+                    on_sent=_build_on_sent(headman.telegram_id),
                 )
             )
         else:
@@ -145,5 +189,54 @@ async def handle_headman_alert(
                     ),
                     user_id=headman.user_id,
                     chat_id=headman.telegram_id,
+                    on_sent=_build_on_sent(headman.telegram_id),
                 )
             )
+
+
+_EXCUSE_TYPE_LABELS = {
+    "illness": "Болезнь",
+    "summons": "Повестка",
+    "university_order": "Приказ университета",
+    "exemption": "Освобождение",
+    "free_attendance": "Свободное посещение",
+    "other": "Другое",
+}
+
+_RU_WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
+
+
+def _excuse_type_label(code: str | None) -> str:
+    if not code:
+        return "не указан"
+    return _EXCUSE_TYPE_LABELS.get(code, code)
+
+
+def _format_lesson(lesson: dict) -> str:
+    """Строка вида «№3 Матанализ, пн 14.04» для карточки в TG."""
+    parts: list[str] = []
+    lesson_number = lesson.get("lesson_number")
+    if lesson_number:
+        parts.append(f"№{lesson_number}")
+    subject_name = lesson.get("subject_name")
+    if subject_name:
+        parts.append(str(subject_name))
+    head = " ".join(parts).strip()
+    date_str = lesson.get("date")
+    date_part = _format_ru_date(date_str) if date_str else ""
+    if not head and not date_part:
+        return f"Пара #{lesson.get('lesson_id', '?')}"
+    return f"{head}, {date_part}" if date_part else head
+
+
+def _format_ru_date(iso: str) -> str:
+    """YYYY-MM-DD → «пн 14.04». На ошибке возвращает вход как есть."""
+    try:
+        from datetime import date
+        y, m, d = iso[:10].split("-")
+        parsed = date(int(y), int(m), int(d))
+        # date.weekday(): пн=0, вс=6 — совпадает с _RU_WEEKDAYS.
+        dow = _RU_WEEKDAYS[parsed.weekday()]
+        return f"{dow} {int(d):02d}.{int(m):02d}"
+    except (ValueError, IndexError, TypeError):
+        return iso

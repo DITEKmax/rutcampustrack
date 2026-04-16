@@ -10,7 +10,7 @@ from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
-from bot.handlers import late_checkin_router, login_router, prefs_router, start_router, status_router
+from bot.handlers import excuse_router, late_checkin_router, login_router, prefs_router, start_router, status_router
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.event_publisher import EventPublisher
@@ -19,6 +19,7 @@ from bot.services.notification_prefs import NotificationPrefsClient
 from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.reminder_scheduler import ReminderScheduler
+from bot.services.request_message_tracker import RequestMessageTracker
 from bot.services.send_queue import TelegramSendQueue
 
 logging.basicConfig(
@@ -130,6 +131,7 @@ async def main() -> None:
     dp["prefs_client"] = prefs_client
     dp["otp_tracker"] = otp_tracker
     dp["event_publisher"] = event_publisher
+    dp["request_tracker"] = request_tracker
 
     # Register routers
     dp.include_router(start_router)
@@ -137,6 +139,7 @@ async def main() -> None:
     dp.include_router(status_router)
     dp.include_router(prefs_router)
     dp.include_router(late_checkin_router)
+    dp.include_router(excuse_router)
 
     # Create send queue and reminder redis client
     send_queue = TelegramSendQueue(prefs_client=prefs_client)
@@ -144,6 +147,12 @@ async def main() -> None:
     redis_client = ReminderRedisClient(
         key_template=config.reminder_key_template,
         ttl=config.reminder_key_ttl,
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+    # Трекер (chat_id, message_id) запросов — для sync TG ↔ Web при *.decided.
+    request_tracker = RequestMessageTracker(
         host=config.redis_host,
         port=config.redis_port,
         password=config.redis_password,
@@ -166,6 +175,7 @@ async def main() -> None:
         config=config,
         otp_tracker=otp_tracker,
         reminder_scheduler=reminder_scheduler,
+        request_tracker=request_tracker,
     )
 
     # Start watchdog with dispatcher
@@ -194,6 +204,7 @@ async def main() -> None:
                 task.cancel()
         await send_queue.shutdown()
         await redis_client.close()
+        await request_tracker.close()
         await otp_tracker.close()
         await auth_client.close()
         await attendance_client.close()

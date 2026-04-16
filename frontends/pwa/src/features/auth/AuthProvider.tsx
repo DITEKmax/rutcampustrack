@@ -9,6 +9,7 @@ import {
 } from 'react'
 import {
   setAccessTokenGetter,
+  setRefreshTokenGetter,
   setTokenRefreshCallback,
   setAuthLogoutCallback,
 } from '@/shared/lib/axios'
@@ -23,6 +24,43 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
+
+const STORAGE_KEY = 'rct.auth.v1'
+
+interface PersistedTokens {
+  accessToken: string
+  refreshToken: string
+}
+
+function readPersisted(): PersistedTokens | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<PersistedTokens>
+    if (
+      parsed &&
+      typeof parsed.accessToken === 'string' &&
+      typeof parsed.refreshToken === 'string'
+    ) {
+      return { accessToken: parsed.accessToken, refreshToken: parsed.refreshToken }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+function writePersisted(tokens: PersistedTokens | null): void {
+  try {
+    if (tokens === null) {
+      localStorage.removeItem(STORAGE_KEY)
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tokens))
+    }
+  } catch {
+    // Storage disabled — degrade gracefully.
+  }
+}
 
 function parseJwt(token: string): {
   sub: string
@@ -70,46 +108,105 @@ function tokenToUser(token: string): AuthUser {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [accessToken, setAccessToken] = useState<string | null>(null)
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const tokenRef = useRef<string | null>(null)
+  const persisted = readPersisted()
+  const [accessToken, setAccessToken] = useState<string | null>(persisted?.accessToken ?? null)
+  const [refreshToken, setRefreshToken] = useState<string | null>(persisted?.refreshToken ?? null)
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    if (!persisted) return null
+    try {
+      return tokenToUser(persisted.accessToken)
+    } catch {
+      return null
+    }
+  })
+  const tokenRef = useRef<string | null>(persisted?.accessToken ?? null)
+  const refreshRef = useRef<string | null>(persisted?.refreshToken ?? null)
 
-  // Keep ref in sync with state
+  // Keep refs in sync with state
   useEffect(() => {
     tokenRef.current = accessToken
   }, [accessToken])
+  useEffect(() => {
+    refreshRef.current = refreshToken
+  }, [refreshToken])
 
   // Wire Axios interceptor callbacks on mount
   useEffect(() => {
     setAccessTokenGetter(() => tokenRef.current)
+    setRefreshTokenGetter(() => refreshRef.current)
 
-    setTokenRefreshCallback((newToken: string) => {
-      tokenRef.current = newToken
-      setAccessToken(newToken)
-      setUser(tokenToUser(newToken))
+    setTokenRefreshCallback((newAccess: string, newRefresh: string) => {
+      tokenRef.current = newAccess
+      refreshRef.current = newRefresh
+      setAccessToken(newAccess)
+      setRefreshToken(newRefresh)
+      setUser(tokenToUser(newAccess))
+      writePersisted({ accessToken: newAccess, refreshToken: newRefresh })
     })
 
     setAuthLogoutCallback(() => {
       tokenRef.current = null
+      refreshRef.current = null
       setAccessToken(null)
+      setRefreshToken(null)
       setUser(null)
+      writePersisted(null)
     })
+
+    // Cross-tab sync: listen for storage writes from other tabs.
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY) return
+      if (!event.newValue) {
+        tokenRef.current = null
+        refreshRef.current = null
+        setAccessToken(null)
+        setRefreshToken(null)
+        setUser(null)
+        return
+      }
+      try {
+        const parsed = JSON.parse(event.newValue) as Partial<PersistedTokens>
+        if (
+          typeof parsed.accessToken === 'string' &&
+          typeof parsed.refreshToken === 'string'
+        ) {
+          tokenRef.current = parsed.accessToken
+          refreshRef.current = parsed.refreshToken
+          setAccessToken(parsed.accessToken)
+          setRefreshToken(parsed.refreshToken)
+          setUser(tokenToUser(parsed.accessToken))
+        }
+      } catch {
+        // Malformed write — ignore.
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   const login = useCallback(async (credentials: LoginRequest) => {
     const response = await loginApi(credentials)
     tokenRef.current = response.accessToken
+    refreshRef.current = response.refreshToken
     setAccessToken(response.accessToken)
+    setRefreshToken(response.refreshToken)
     setUser(tokenToUser(response.accessToken))
+    writePersisted({
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    })
   }, [])
 
   const logout = useCallback(async () => {
     try {
-      await logoutApi()
+      await logoutApi(refreshRef.current)
     } finally {
       tokenRef.current = null
+      refreshRef.current = null
       setAccessToken(null)
+      setRefreshToken(null)
       setUser(null)
+      writePersisted(null)
     }
   }, [])
 

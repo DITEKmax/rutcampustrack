@@ -5,8 +5,9 @@ export interface LoginRequest {
   password: string
 }
 
-export interface AccessTokenResponse {
+export interface TokenResponse {
   accessToken: string
+  refreshToken: string
   expiresIn: number
 }
 
@@ -17,16 +18,17 @@ export interface AuthUser {
   isHeadman: boolean  // derived from JWT is_headman claim
 }
 
-export async function loginApi(credentials: LoginRequest): Promise<AccessTokenResponse> {
-  const { data } = await apiClient.post<AccessTokenResponse>('/auth/login', credentials)
+export async function loginApi(credentials: LoginRequest): Promise<TokenResponse> {
+  const { data } = await apiClient.post<TokenResponse>('/auth/login', credentials)
   return data
 }
 
-export async function logoutApi(): Promise<void> {
-  await apiClient.post('/auth/logout', {})
+export async function logoutApi(refreshToken: string | null): Promise<void> {
+  if (!refreshToken) return
+  await apiClient.post('/auth/logout', { refreshToken })
 }
 
-export async function refreshApi(): Promise<AccessTokenResponse> {
-  const { data } = await apiClient.post<AccessTokenResponse>('/auth/refresh', {})
+export async function refreshApi(refreshToken: string): Promise<TokenResponse> {
+  const { data } = await apiClient.post<TokenResponse>('/auth/refresh', { refreshToken })
   return data
 }

@@ -1,5 +1,12 @@
 import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import { vi, afterEach } from 'vitest'
+
+// Isolate persisted state (e.g. auth tokens in rct.auth.v1) between specs so
+// stateful providers like AuthProvider don't leak across test boundaries.
+afterEach(() => {
+  localStorage.clear()
+  sessionStorage.clear()
+})
 
 Object.defineProperty(global.navigator, 'geolocation', {
   value: {

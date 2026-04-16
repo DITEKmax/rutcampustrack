@@ -12,6 +12,7 @@ vi.mock('@/shared/lib/axios', () => ({
     },
   },
   setAccessTokenGetter: vi.fn(),
+  setRefreshTokenGetter: vi.fn(),
   setTokenRefreshCallback: vi.fn(),
   setAuthLogoutCallback: vi.fn(),
 }))
@@ -36,6 +37,7 @@ function wrapper({ children }: { children: ReactNode }) {
 describe('AuthProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
   it('renders children and returns isAuthenticated=false initially', () => {
@@ -47,7 +49,7 @@ describe('AuthProvider', () => {
   it('after login() succeeds, returns isAuthenticated=true and user object', async () => {
     const fakeToken = createFakeJwt({ sub: '1', role: 'STUDENT', groupId: 5 })
     mockedPost.mockResolvedValueOnce({
-      data: { accessToken: fakeToken, expiresIn: 900 },
+      data: { accessToken: fakeToken, refreshToken: 'refresh-xyz', expiresIn: 900 },
     })
 
     const { result } = renderHook(() => useAuth(), { wrapper })
@@ -60,10 +62,48 @@ describe('AuthProvider', () => {
     expect(result.current.user).toEqual({ id: 1, role: 'STUDENT', groupId: 5, isHeadman: false })
   })
 
-  it('after logout(), returns isAuthenticated=false and calls /auth/logout', async () => {
+  it('after login() persists tokens to localStorage', async () => {
+    const fakeToken = createFakeJwt({ sub: '1', role: 'STUDENT', groupId: 5 })
+    mockedPost.mockResolvedValueOnce({
+      data: { accessToken: fakeToken, refreshToken: 'refresh-xyz', expiresIn: 900 },
+    })
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    await act(async () => {
+      await result.current.login({ login: 'student00001', password: 'pass' })
+    })
+
+    const raw = localStorage.getItem('rct.auth.v1')
+    expect(raw).not.toBeNull()
+    expect(JSON.parse(raw!)).toEqual({ accessToken: fakeToken, refreshToken: 'refresh-xyz' })
+  })
+
+  it('restores session from localStorage on mount', () => {
+    const fakeToken = createFakeJwt({ sub: '9', role: 'TEACHER' })
+    localStorage.setItem(
+      'rct.auth.v1',
+      JSON.stringify({ accessToken: fakeToken, refreshToken: 'persisted-refresh' }),
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    expect(result.current.isAuthenticated).toBe(true)
+    expect(result.current.user?.id).toBe(9)
+    expect(result.current.user?.role).toBe('TEACHER')
+  })
+
+  it('ignores malformed localStorage payload', () => {
+    localStorage.setItem('rct.auth.v1', 'not-json')
+    const { result } = renderHook(() => useAuth(), { wrapper })
+    expect(result.current.isAuthenticated).toBe(false)
+  })
+
+  it('after logout(), clears localStorage and calls /auth/logout with refreshToken', async () => {
     const fakeToken = createFakeJwt({ sub: '1', role: 'STUDENT', groupId: 5 })
     mockedPost
-      .mockResolvedValueOnce({ data: { accessToken: fakeToken, expiresIn: 900 } })
+      .mockResolvedValueOnce({
+        data: { accessToken: fakeToken, refreshToken: 'refresh-xyz', expiresIn: 900 },
+      })
       .mockResolvedValueOnce({ data: undefined })
 
     const { result } = renderHook(() => useAuth(), { wrapper })
@@ -79,6 +119,7 @@ describe('AuthProvider', () => {
 
     expect(result.current.isAuthenticated).toBe(false)
     expect(result.current.user).toBeNull()
-    expect(mockedPost).toHaveBeenCalledWith('/auth/logout', {})
+    expect(mockedPost).toHaveBeenCalledWith('/auth/logout', { refreshToken: 'refresh-xyz' })
+    expect(localStorage.getItem('rct.auth.v1')).toBeNull()
   })
 })

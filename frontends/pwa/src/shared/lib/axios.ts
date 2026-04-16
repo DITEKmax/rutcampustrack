@@ -13,18 +13,25 @@ const flushQueue = (token: string | null, error: unknown = null) => {
 
 export const apiClient = axios.create({
   baseURL: '/api',
-  withCredentials: true,
 })
 
-// Token getter — set by AuthProvider
+// Token getters — set by AuthProvider
 let getAccessToken: () => string | null = () => null
 export const setAccessTokenGetter = (fn: () => string | null) => {
   getAccessToken = fn
 }
 
-// Token setter — called by interceptor after refresh
-let onTokenRefreshed: ((token: string) => void) | null = null
-export const setTokenRefreshCallback = (fn: (token: string) => void) => {
+let getRefreshToken: () => string | null = () => null
+export const setRefreshTokenGetter = (fn: () => string | null) => {
+  getRefreshToken = fn
+}
+
+// Token setter — called by interceptor after refresh; delivers both tokens
+// so AuthProvider can persist the rotated refresh_token.
+let onTokenRefreshed: ((accessToken: string, refreshToken: string) => void) | null = null
+export const setTokenRefreshCallback = (
+  fn: (accessToken: string, refreshToken: string) => void
+) => {
   onTokenRefreshed = fn
 }
 
@@ -65,12 +72,16 @@ apiClient.interceptors.response.use(
 
       isRefreshing = true
       try {
-        // withCredentials: true sends the httpOnly refresh_token cookie automatically
-        const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true })
-        const newToken = data.accessToken
-        onTokenRefreshed?.(newToken)
-        flushQueue(newToken)
-        original.headers['Authorization'] = `Bearer ${newToken}`
+        const refreshToken = getRefreshToken()
+        if (!refreshToken) {
+          throw new Error('No refresh token available')
+        }
+        const { data } = await axios.post('/api/auth/refresh', { refreshToken })
+        const newAccess = data.accessToken
+        const newRefresh = data.refreshToken
+        onTokenRefreshed?.(newAccess, newRefresh)
+        flushQueue(newAccess)
+        original.headers['Authorization'] = `Bearer ${newAccess}`
         return apiClient(original)
       } catch (refreshError) {
         flushQueue(null, refreshError)

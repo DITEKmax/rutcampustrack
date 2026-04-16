@@ -11,6 +11,43 @@ export interface AuthUser {
   groupId: number | null;
 }
 
+const STORAGE_KEY = 'rct.auth.v1';
+
+interface PersistedTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+function readPersisted(): PersistedTokens | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PersistedTokens>;
+    if (
+      parsed &&
+      typeof parsed.accessToken === 'string' &&
+      typeof parsed.refreshToken === 'string'
+    ) {
+      return { accessToken: parsed.accessToken, refreshToken: parsed.refreshToken };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writePersisted(tokens: PersistedTokens | null): void {
+  try {
+    if (tokens === null) {
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tokens));
+    }
+  } catch {
+    // Storage disabled (private mode / quota) — degrade to in-memory only.
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly injector = inject(Injector);
@@ -37,9 +74,47 @@ export class AuthService {
     }
   });
 
+  constructor() {
+    const persisted = readPersisted();
+    if (persisted) {
+      this._accessToken.set(persisted.accessToken);
+      this._refreshToken.set(persisted.refreshToken);
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (event) => {
+        if (event.key !== STORAGE_KEY) return;
+        // Another tab wrote or cleared tokens — mirror into this tab's state
+        // without re-persisting (would echo back and potentially race).
+        if (!event.newValue) {
+          this._accessToken.set(null);
+          this._refreshToken.set(null);
+          try {
+            this.injector.get(ProfileService).clear();
+          } catch {
+            // ProfileService not available in this context
+          }
+          return;
+        }
+        try {
+          const parsed = JSON.parse(event.newValue) as Partial<PersistedTokens>;
+          if (
+            typeof parsed.accessToken === 'string' &&
+            typeof parsed.refreshToken === 'string'
+          ) {
+            this._accessToken.set(parsed.accessToken);
+            this._refreshToken.set(parsed.refreshToken);
+          }
+        } catch {
+          // Malformed write from another tab — ignore.
+        }
+      });
+    }
+  }
+
   setTokens(accessToken: string, refreshToken: string): void {
     this._accessToken.set(accessToken);
     this._refreshToken.set(refreshToken);
+    writePersisted({ accessToken, refreshToken });
   }
 
   getRefreshToken(): string | null {
@@ -49,6 +124,7 @@ export class AuthService {
   clearTokens(): void {
     this._accessToken.set(null);
     this._refreshToken.set(null);
+    writePersisted(null);
     // Lazy-resolve ProfileService so unit tests for AuthService/guards don't
     // need to provide HttpClient just to instantiate the auth graph.
     try {

@@ -12,6 +12,7 @@ vi.mock('@/shared/lib/axios', () => ({
     },
   },
   setAccessTokenGetter: vi.fn(),
+  setRefreshTokenGetter: vi.fn(),
   setTokenRefreshCallback: vi.fn(),
   setAuthLogoutCallback: vi.fn(),
 }))
@@ -40,6 +41,7 @@ function wrapper({ children }: { children: ReactNode }) {
 describe('AuthProvider — isHeadman from JWT is_headman claim', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
   it('sets isHeadman=true when JWT payload contains is_headman: true', async () => {
@@ -50,7 +52,7 @@ describe('AuthProvider — isHeadman from JWT is_headman claim', () => {
       is_headman: true,
     })
     mockedPost.mockResolvedValueOnce({
-      data: { accessToken: fakeToken, expiresIn: 900 },
+      data: { accessToken: fakeToken, refreshToken: 'refresh-abc', expiresIn: 900 },
     })
 
     const { result } = renderHook(() => useAuth(), { wrapper })
@@ -70,7 +72,7 @@ describe('AuthProvider — isHeadman from JWT is_headman claim', () => {
       is_headman: false,
     })
     mockedPost.mockResolvedValueOnce({
-      data: { accessToken: fakeToken, expiresIn: 900 },
+      data: { accessToken: fakeToken, refreshToken: 'refresh-abc', expiresIn: 900 },
     })
 
     const { result } = renderHook(() => useAuth(), { wrapper })
@@ -90,7 +92,7 @@ describe('AuthProvider — isHeadman from JWT is_headman claim', () => {
       // is_headman intentionally absent
     })
     mockedPost.mockResolvedValueOnce({
-      data: { accessToken: fakeToken, expiresIn: 900 },
+      data: { accessToken: fakeToken, refreshToken: 'refresh-abc', expiresIn: 900 },
     })
 
     const { result } = renderHook(() => useAuth(), { wrapper })

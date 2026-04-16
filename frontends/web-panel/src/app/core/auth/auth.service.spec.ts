@@ -23,6 +23,7 @@ describe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(() => {
+    localStorage.clear();
     TestBed.configureTestingModule({
       providers: [AuthService],
     });
@@ -164,5 +165,42 @@ describe('AuthService', () => {
     expect(
       service.resolveDashboardFor({ id: 4, role: 'STUDENT', isHeadman: true, groupId: 5 }),
     ).toBe('/headman/dashboard');
+  });
+
+  it('setTokens persists tokens to localStorage', () => {
+    service.setTokens(ACCESS_TOKEN, REFRESH_TOKEN);
+    const raw = localStorage.getItem('rct.auth.v1');
+    expect(raw).not.toBeNull();
+    expect(JSON.parse(raw!)).toEqual({
+      accessToken: ACCESS_TOKEN,
+      refreshToken: REFRESH_TOKEN,
+    });
+  });
+
+  it('clearTokens removes persisted tokens', () => {
+    service.setTokens(ACCESS_TOKEN, REFRESH_TOKEN);
+    service.clearTokens();
+    expect(localStorage.getItem('rct.auth.v1')).toBeNull();
+  });
+
+  it('restores tokens from localStorage on construction', () => {
+    localStorage.setItem(
+      'rct.auth.v1',
+      JSON.stringify({ accessToken: ADMIN_ACCESS_TOKEN, refreshToken: 'persisted-refresh' }),
+    );
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [AuthService] });
+    const restored = TestBed.inject(AuthService);
+    expect(restored.isAuthenticated()).toBe(true);
+    expect(restored.accessToken()).toBe(ADMIN_ACCESS_TOKEN);
+    expect(restored.getRefreshToken()).toBe('persisted-refresh');
+  });
+
+  it('ignores malformed localStorage payload on construction', () => {
+    localStorage.setItem('rct.auth.v1', 'not-json');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [AuthService] });
+    const restored = TestBed.inject(AuthService);
+    expect(restored.isAuthenticated()).toBe(false);
   });
 });

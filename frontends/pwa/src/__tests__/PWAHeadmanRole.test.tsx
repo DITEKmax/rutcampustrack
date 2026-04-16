@@ -23,6 +23,7 @@ vi.mock('@/shared/lib/axios', () => ({
     },
   },
   setAccessTokenGetter: vi.fn(),
+  setRefreshTokenGetter: vi.fn(),
   setTokenRefreshCallback: vi.fn(),
   setAuthLogoutCallback: vi.fn(),
 }))
@@ -56,7 +57,7 @@ function wrapper({ children }: { children: ReactNode }) {
 async function renderWithLogin(jwtPayload: Record<string, unknown>) {
   const token = createFakeJwt(jwtPayload)
   mockedPost.mockResolvedValueOnce({
-    data: { accessToken: token, expiresIn: 900 },
+    data: { accessToken: token, refreshToken: 'refresh-token', expiresIn: 900 },
   })
 
   // Use renderHook to get the auth context, then reuse same wrapper for BottomNav

@@ -52,6 +52,13 @@
   padding: var(--space-6) var(--space-6) var(--space-9);
 }
 
+/* Full-bleed pages (wide tables, dashboards) opt out of the 1280px cap by
+ * exposing a custom-element tag we can target with :has(). Keeps the
+ * opt-in strictly local — no global class toggling required. */
+.shell__content:has(app-headman-weekly-journal) {
+  max-width: none;
+}
+
 @media (max-width: 768px) {
   .shell__content {
     padding: var(--space-4) var(--space-4) var(--space-8);

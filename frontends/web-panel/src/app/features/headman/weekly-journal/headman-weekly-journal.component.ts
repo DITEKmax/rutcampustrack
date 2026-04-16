@@ -17,16 +17,6 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { addDays, formatDate, getMonday, isSameWeek } from '../../student/schedule/week-utils';
 
-function isoWeekNumber(d: Date): number {
-  const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = (target.getUTCDay() + 6) % 7;
-  target.setUTCDate(target.getUTCDate() - dayNum + 3);
-  const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
-  const firstThursdayDayNum = (firstThursday.getUTCDay() + 6) % 7;
-  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstThursdayDayNum + 3);
-  return 1 + Math.round((target.getTime() - firstThursday.getTime()) / (7 * 24 * 3600 * 1000));
-}
-
 type AttendanceStatus = 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled';
 
 interface Lesson {
@@ -110,11 +100,11 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
   readonly dayGroups = computed<DayGroup[]>(() => {
     const monday = this.monday();
     const subjects = this.subjects();
-    const weekParity: 'ODD' | 'EVEN' = isoWeekNumber(monday) % 2 === 1 ? 'ODD' : 'EVEN';
     const byDate = new Map<string, Lesson[]>();
+    // Backend already materialises lessons for the correct week parity — trust
+    // the dates returned by /api/schedule/groups/{id}/lessons and don't filter
+    // again client-side (previous ISO-week heuristic dropped valid lessons).
     for (const l of this.lessons()) {
-      const wt = (l.weekType ?? 'ALL').toUpperCase();
-      if (wt !== 'ALL' && wt !== weekParity) continue;
       const arr = byDate.get(l.date) ?? [];
       arr.push(l);
       byDate.set(l.date, arr);

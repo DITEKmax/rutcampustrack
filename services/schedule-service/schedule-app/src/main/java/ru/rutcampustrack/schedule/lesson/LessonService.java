@@ -23,6 +23,7 @@ import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -164,6 +165,41 @@ public class LessonService {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
         Lesson lesson = lwi.lesson();
         lesson.setGeoBlocked(request.blocked());
+        return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
+    }
+
+    /**
+     * Headman hard-lock: blocks geo-checkin on a lesson so that attendance
+     * can only be set manually by the headman. Allowed only for PLANNED
+     * lessons that haven't started yet — past or cancelled lessons reject
+     * with 422.
+     */
+    public LessonWithItem blockLessonByHeadman(Long lessonId) {
+        LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
+        Lesson lesson = lwi.lesson();
+        if (lesson.getStatus() == LessonStatus.CANCELLED) {
+            throw new InvalidLessonStateException("Cannot block a cancelled lesson");
+        }
+        if (lesson.getStatus() != LessonStatus.PLANNED) {
+            throw new InvalidLessonStateException(
+                    "Only future (planned) lessons can be blocked, current status: " + lesson.getStatus());
+        }
+        lesson.setBlockedByHeadman(true);
+        lesson.setBlockedByUserId(requestContext.getUserId());
+        lesson.setBlockedAt(OffsetDateTime.now());
+        return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
+    }
+
+    /**
+     * Headman hard-lock removal: lifts the manual-only attendance mode so
+     * students can geo-check-in again.
+     */
+    public LessonWithItem unblockLessonByHeadman(Long lessonId) {
+        LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
+        Lesson lesson = lwi.lesson();
+        lesson.setBlockedByHeadman(false);
+        lesson.setBlockedByUserId(null);
+        lesson.setBlockedAt(null);
         return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
     }
 

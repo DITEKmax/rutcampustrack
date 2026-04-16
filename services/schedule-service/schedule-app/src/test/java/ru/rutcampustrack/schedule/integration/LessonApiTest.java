@@ -24,6 +24,7 @@ import java.util.Map;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -246,6 +247,84 @@ class LessonApiTest extends AbstractScheduleIntegrationTest {
     }
 
     // --- LSSN-07: Geo-block Toggle ---
+
+    // --- v9.0: Headman hard-lock (blockage) ---
+
+    @Test
+    void blockLesson_planned_success() throws Exception {
+        ScheduleItem item = createScheduleItem();
+        Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 20));
+
+        mockMvc.perform(withHeadmanHeaders(
+                post("/schedule/lessons/" + lesson.getId() + "/blockage")
+        ))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.blockedByHeadman", is(true)))
+                .andExpect(jsonPath("$.blockedByUserId", is(USER_ID.intValue())));
+
+        Lesson saved = lessonRepository.findById(lesson.getId()).orElseThrow();
+        org.assertj.core.api.Assertions.assertThat(saved.isBlockedByHeadman()).isTrue();
+        org.assertj.core.api.Assertions.assertThat(saved.getBlockedByUserId()).isEqualTo(USER_ID);
+        org.assertj.core.api.Assertions.assertThat(saved.getBlockedAt()).isNotNull();
+    }
+
+    @Test
+    void blockLesson_cancelled_returns422() throws Exception {
+        ScheduleItem item = createScheduleItem();
+        Lesson lesson = createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 20));
+
+        mockMvc.perform(withHeadmanHeaders(
+                post("/schedule/lessons/" + lesson.getId() + "/blockage")
+        ))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void blockLesson_closed_returns422() throws Exception {
+        // Past lessons are CLOSED — blocking them has no effect on checkin,
+        // so we reject the request to avoid confusing UX.
+        ScheduleItem item = createScheduleItem();
+        Lesson lesson = createLesson(item.getId(), LessonStatus.CLOSED, LocalDate.of(2026, 3, 1));
+
+        mockMvc.perform(withHeadmanHeaders(
+                post("/schedule/lessons/" + lesson.getId() + "/blockage")
+        ))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void unblockLesson_success() throws Exception {
+        ScheduleItem item = createScheduleItem();
+        Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 20));
+        lesson.setBlockedByHeadman(true);
+        lesson.setBlockedByUserId(USER_ID);
+        lesson.setBlockedAt(OffsetDateTime.now());
+        lessonRepository.save(lesson);
+
+        mockMvc.perform(withHeadmanHeaders(
+                delete("/schedule/lessons/" + lesson.getId() + "/blockage")
+        ))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.blockedByHeadman", is(false)))
+                .andExpect(jsonPath("$.blockedByUserId", nullValue()));
+
+        Lesson saved = lessonRepository.findById(lesson.getId()).orElseThrow();
+        org.assertj.core.api.Assertions.assertThat(saved.isBlockedByHeadman()).isFalse();
+        org.assertj.core.api.Assertions.assertThat(saved.getBlockedByUserId()).isNull();
+        org.assertj.core.api.Assertions.assertThat(saved.getBlockedAt()).isNull();
+    }
+
+    @Test
+    void blockLesson_notHeadman_returns403() throws Exception {
+        when(academicGrpcClient.isHeadman(USER_ID, GROUP_ID)).thenReturn(false);
+        ScheduleItem item = createScheduleItem();
+        Lesson lesson = createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 20));
+
+        mockMvc.perform(withHeadmanHeaders(
+                post("/schedule/lessons/" + lesson.getId() + "/blockage")
+        ))
+                .andExpect(status().isForbidden());
+    }
 
     @Test
     void toggleGeoBlock_success() throws Exception {

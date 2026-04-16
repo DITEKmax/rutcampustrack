@@ -65,6 +65,20 @@ public class LessonController implements LessonApi {
     }
 
     @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<EntityModel<LessonResponse>> blockLesson(Long id) {
+        LessonWithItem result = lessonService.blockLessonByHeadman(id);
+        return ResponseEntity.ok(lessonAssembler.toModel(result));
+    }
+
+    @Override
+    @RequireRole({UserRole.STUDENT})
+    public ResponseEntity<EntityModel<LessonResponse>> unblockLesson(Long id) {
+        LessonWithItem result = lessonService.unblockLessonByHeadman(id);
+        return ResponseEntity.ok(lessonAssembler.toModel(result));
+    }
+
+    @Override
     public ResponseEntity<PagedModel<EntityModel<LessonResponse>>> getLessons(
             Long groupId,
             LocalDate dateFrom,

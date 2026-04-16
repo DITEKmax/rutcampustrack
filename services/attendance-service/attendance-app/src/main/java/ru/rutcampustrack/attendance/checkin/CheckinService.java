@@ -97,6 +97,13 @@ public class CheckinService {
             throw new GeofenceBlockedException("Геоотметка заблокирована преподавателем");
         }
 
+        // Step 4.5 (v9.0): Headman hard-lock — старост вручную ведёт посещаемость,
+        // геоотметка студентов запрещена. Старост сам — исключение (см. ниже).
+        if (lesson.getIsBlockedByHeadman() && !requestContext.isHeadman()) {
+            throw new GeofenceBlockedException(
+                    "Пара заблокирована старостой — посещаемость проставляет староста вручную");
+        }
+
         // Step 5: Geofence (CHKN-01) — student must be on campus.
         // Headman is exempt: staroste отмечается без проверки геолокации
         // (присутствует физически и ведёт пару — ей доверяем).

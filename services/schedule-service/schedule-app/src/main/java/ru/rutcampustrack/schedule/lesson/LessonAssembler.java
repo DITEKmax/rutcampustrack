@@ -40,6 +40,9 @@ public class LessonAssembler {
                 si.getWeekType(),
                 si.getRoom(),
                 l.isGeoBlocked(),
+                l.isBlockedByHeadman(),
+                l.getBlockedByUserId(),
+                l.getBlockedAt(),
                 l.getCancelReason(),
                 l.getCreatedAt()
         );
@@ -66,6 +69,11 @@ public class LessonAssembler {
             links.add(Link.of("/schedule/lessons/" + l.getId() + "/restore").withRel("restore"));
         }
         links.add(Link.of("/schedule/lessons/" + l.getId() + "/geo-block").withRel("geo-block"));
+        if (l.isBlockedByHeadman()) {
+            links.add(Link.of("/schedule/lessons/" + l.getId() + "/blockage").withRel("unblock"));
+        } else {
+            links.add(Link.of("/schedule/lessons/" + l.getId() + "/blockage").withRel("block"));
+        }
 
         return EntityModel.of(response, links);
     }

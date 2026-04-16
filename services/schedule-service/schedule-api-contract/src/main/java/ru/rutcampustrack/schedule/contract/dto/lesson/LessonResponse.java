@@ -31,6 +31,9 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
     private WeekType weekType;
     private String room;
     private boolean geoBlocked;
+    private boolean blockedByHeadman;
+    private Long blockedByUserId;
+    private OffsetDateTime blockedAt;
     private String cancelReason;
     private OffsetDateTime createdAt;
 
@@ -41,6 +44,18 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
                            Short dayOfWeek, Short lessonNumber, LocalTime startTime,
                            LocalTime endTime, WeekType weekType, String room,
                            boolean geoBlocked, String cancelReason, OffsetDateTime createdAt) {
+        this(id, scheduleItemId, groupId, subjectId, date, status,
+                dayOfWeek, lessonNumber, startTime, endTime, weekType, room,
+                geoBlocked, false, null, null, cancelReason, createdAt);
+    }
+
+    public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
+                           LocalDate date, LessonStatus status,
+                           Short dayOfWeek, Short lessonNumber, LocalTime startTime,
+                           LocalTime endTime, WeekType weekType, String room,
+                           boolean geoBlocked, boolean blockedByHeadman,
+                           Long blockedByUserId, OffsetDateTime blockedAt,
+                           String cancelReason, OffsetDateTime createdAt) {
         this.id = id;
         this.scheduleItemId = scheduleItemId;
         this.groupId = groupId;
@@ -54,6 +69,9 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
         this.weekType = weekType;
         this.room = room;
         this.geoBlocked = geoBlocked;
+        this.blockedByHeadman = blockedByHeadman;
+        this.blockedByUserId = blockedByUserId;
+        this.blockedAt = blockedAt;
         this.cancelReason = cancelReason;
         this.createdAt = createdAt;
     }
@@ -108,6 +126,18 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
 
     public boolean isGeoBlocked() {
         return geoBlocked;
+    }
+
+    public boolean isBlockedByHeadman() {
+        return blockedByHeadman;
+    }
+
+    public Long getBlockedByUserId() {
+        return blockedByUserId;
+    }
+
+    public OffsetDateTime getBlockedAt() {
+        return blockedAt;
     }
 
     public String getCancelReason() {

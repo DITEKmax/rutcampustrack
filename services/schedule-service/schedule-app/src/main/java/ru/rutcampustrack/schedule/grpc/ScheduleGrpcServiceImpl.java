@@ -229,6 +229,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .setStatus(lesson.getStatus().name().toLowerCase())
                 .setIsGeoBlocked(lesson.isGeoBlocked())
                 .setRoom(item.getRoom() != null ? item.getRoom() : "")
+                .setIsBlockedByHeadman(lesson.isBlockedByHeadman())
                 .build();
     }
 }

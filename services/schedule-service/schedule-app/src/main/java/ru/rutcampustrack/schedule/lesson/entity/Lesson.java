@@ -48,6 +48,18 @@ public class Lesson {
     private boolean isGeoBlocked = false;
 
     @Setter
+    @Column(name = "is_blocked_by_headman", nullable = false)
+    private boolean isBlockedByHeadman = false;
+
+    @Setter
+    @Column(name = "blocked_by_user_id")
+    private Long blockedByUserId;
+
+    @Setter
+    @Column(name = "blocked_at")
+    private OffsetDateTime blockedAt;
+
+    @Setter
     @Column(name = "cancel_reason", length = 512)
     private String cancelReason;
 

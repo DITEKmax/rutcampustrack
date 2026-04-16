@@ -160,6 +160,60 @@ class CheckinServiceTest {
     }
 
     // -------------------------------------------------------------------------
+    // Test 3b (v9.0): Lesson is headman-blocked — student cannot geo-checkin
+    // -------------------------------------------------------------------------
+
+    @Test
+    void checkin_lessonHeadmanBlocked_throwsGeofenceBlockedException() {
+        String today = LocalDate.now(ZoneId.of("Europe/Moscow")).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        LessonResponse blockedLesson = LessonResponse.newBuilder()
+                .setId(1L)
+                .setGroupId(10L)
+                .setSubjectId(5L)
+                .setDate(today)
+                .setStartTime("00:00")
+                .setEndTime("23:59")
+                .setIsGeoBlocked(false)
+                .setIsBlockedByHeadman(true)
+                .setLessonNumber(1)
+                .setStatus("active")
+                .build();
+        when(scheduleGrpcClient.getActiveLesson(anyLong(), anyString())).thenReturn(blockedLesson);
+        when(requestContext.isHeadman()).thenReturn(false);
+
+        assertThatThrownBy(() -> checkinService.checkin(validRequest))
+                .isInstanceOf(GeofenceBlockedException.class)
+                .hasMessageContaining("старостой");
+
+        verify(attendanceRepository, never()).save(any());
+    }
+
+    @Test
+    void checkin_lessonHeadmanBlocked_headmanCanStillCheckin() {
+        // Headman himself is exempt: can mark his own presence on a blocked lesson.
+        String today = LocalDate.now(ZoneId.of("Europe/Moscow")).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        LessonResponse blockedLesson = LessonResponse.newBuilder()
+                .setId(1L)
+                .setGroupId(10L)
+                .setSubjectId(5L)
+                .setDate(today)
+                .setStartTime("00:00")
+                .setEndTime("23:59")
+                .setIsGeoBlocked(false)
+                .setIsBlockedByHeadman(true)
+                .setLessonNumber(1)
+                .setStatus("active")
+                .build();
+        when(scheduleGrpcClient.getActiveLesson(anyLong(), anyString())).thenReturn(blockedLesson);
+        when(requestContext.isHeadman()).thenReturn(true);
+
+        AttendanceDocument result = checkinService.checkin(validRequest);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+    }
+
+    // -------------------------------------------------------------------------
     // Test 4: Outside geofence — throws GeofenceViolationException
     // -------------------------------------------------------------------------
 

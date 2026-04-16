@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -80,6 +81,25 @@ public interface LessonApi {
     ResponseEntity<EntityModel<LessonResponse>> toggleGeoBlock(
             @PathVariable Long id,
             @Valid @RequestBody GeoBlockRequest request);
+
+    @Operation(summary = "Заблокировать пару старостой — запретить геоотметку, посещаемость ставит только староста вручную (HEADMAN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Пара заблокирована"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Урок не найден"),
+            @ApiResponse(responseCode = "422", description = "Нельзя заблокировать прошедшую или отменённую пару")
+    })
+    @PostMapping("/lessons/{id}/blockage")
+    ResponseEntity<EntityModel<LessonResponse>> blockLesson(@PathVariable Long id);
+
+    @Operation(summary = "Снять блокировку пары старостой (HEADMAN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Блокировка снята"),
+            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "404", description = "Урок не найден")
+    })
+    @DeleteMapping("/lessons/{id}/blockage")
+    ResponseEntity<EntityModel<LessonResponse>> unblockLesson(@PathVariable Long id);
 
     @Operation(summary = "Получить расписание группы за диапазон дат (все роли)")
     @ApiResponse(responseCode = "200", description = "Расписание группы")

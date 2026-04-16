@@ -7,7 +7,12 @@ import { useNetworkStatus } from '@/shared/hooks/useNetworkStatus'
 import { useStompEvents } from '@/features/checkin/StompProvider'
 import { CheckInToast } from '@/features/checkin/CheckInToast'
 import { cn } from '@/lib/utils'
-import { useWeekSchedule, usePrefetchSubjects, useSubjectName } from './api'
+import {
+  useWeekSchedule,
+  usePrefetchSubjects,
+  useSubjectName,
+  useStudentRecords,
+} from './api'
 import { WeekDayTabs } from './WeekDayTabs'
 import { LessonCard } from './LessonCard'
 import { OfflineStaleNotice } from './OfflineStaleNotice'
@@ -18,7 +23,7 @@ import {
   useUnblockLesson,
   mapLessonActionError,
 } from './lessonActionsApi'
-import type { LessonResponse } from './types'
+import type { AttendanceStatus, LessonResponse } from './types'
 
 const MONTH_ABBREV = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
 
@@ -97,6 +102,22 @@ export function SchedulePage() {
   )
 
   const { data: lessons, isLoading, dataUpdatedAt } = useWeekSchedule(groupId, weekStart, weekEnd)
+  const { data: records } = useStudentRecords()
+
+  const recordStatuses = useMemo(() => {
+    const map: Record<number, AttendanceStatus> = {}
+    for (const r of records ?? []) {
+      if (
+        r.status === 'present' ||
+        r.status === 'absent' ||
+        r.status === 'excused' ||
+        r.status === 'free_attendance'
+      ) {
+        map[r.lessonId] = r.status
+      }
+    }
+    return map
+  }, [records])
 
   const subjectIds = useMemo(
     () => (lessons ?? []).map((l) => l.subjectId),
@@ -287,7 +308,11 @@ export function SchedulePage() {
                   <LessonCard
                     lesson={lesson}
                     attendanceCount={attendanceCounts[lesson.id]}
-                    personalStatus={personalStatuses[lesson.id] ?? null}
+                    personalStatus={
+                      personalStatuses[lesson.id] ??
+                      recordStatuses[lesson.id] ??
+                      null
+                    }
                     onCheckin={() => handleCheckinSuccess(lesson.id)}
                     onCheckinError={handleCheckinError}
                     onOpenActions={
@@ -324,6 +349,13 @@ export function SchedulePage() {
         open={!!activeLesson}
         lesson={activeLesson}
         subjectName={activeSubject.data ?? 'Пара'}
+        personalStatus={
+          activeLesson
+            ? personalStatuses[activeLesson.id] ??
+              recordStatuses[activeLesson.id] ??
+              null
+            : null
+        }
         onClose={() => setActiveLesson(null)}
         onToast={(type, message) => setToast({ type, message })}
       />

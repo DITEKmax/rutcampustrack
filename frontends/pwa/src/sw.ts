@@ -54,13 +54,20 @@ self.addEventListener('push', (event) => {
     .then((clients) => {
       const isFocused = clients.some((c) => (c as WindowClient).focused)
       if (isFocused) return
+      // `silent: false` + `vibrate` ensure the device plays its default
+      // notification sound and haptics — Android respects `vibrate`, iOS
+      // respects `silent`. Without these the PWA shows a silent banner which
+      // users miss, especially with the phone in a pocket.
       return self.registration.showNotification(title, {
         body,
         icon: '/icons/icon-192.png',
         badge: '/icons/icon-192.png',
         data: { url, event_type, lessonId: (data as Record<string, unknown>).lesson_id },
         tag: `${event_type}-${(data as Record<string, unknown>).lesson_id ?? Date.now()}`,
-      })
+        silent: false,
+        vibrate: [200, 100, 200],
+        renotify: true,
+      } as NotificationOptions & { vibrate?: number[]; renotify?: boolean })
     })
 
   event.waitUntil(promiseChain)

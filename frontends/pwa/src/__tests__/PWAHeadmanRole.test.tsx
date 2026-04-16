@@ -28,6 +28,19 @@ vi.mock('@/shared/lib/axios', () => ({
   setAuthLogoutCallback: vi.fn(),
 }))
 
+// BottomNav reads the NotificationCenter for the unread badge. Stub the
+// hook so these tests don't need to wrap everything in the provider (and
+// with it, a live STOMP client).
+vi.mock('@/features/notifications/NotificationCenter', () => ({
+  useNotificationCenter: () => ({
+    items: [],
+    unreadCount: 0,
+    markAllRead: vi.fn(),
+    archive: vi.fn(),
+    clearAll: vi.fn(),
+  }),
+}))
+
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider'
 import { BottomNav } from '@/shared/components/BottomNav'
 import { apiClient } from '@/shared/lib/axios'
@@ -75,7 +88,7 @@ describe('PWAHeadmanRole — JWT is_headman → user.isHeadman parsing', () => {
     vi.clearAllMocks()
   })
 
-  it('is_headman=true in JWT → user.isHeadman is true → BottomNav should show 5 tabs', async () => {
+  it('is_headman=true in JWT → user.isHeadman is true → BottomNav renders correct tab count', async () => {
     const { isHeadman } = await renderWithLogin({
       sub: '42',
       role: 'STUDENT',
@@ -87,7 +100,7 @@ describe('PWAHeadmanRole — JWT is_headman → user.isHeadman parsing', () => {
     expect(isHeadman).toBe(true)
   })
 
-  it('is_headman=false in JWT → user.isHeadman is false → BottomNav should show 4 tabs', async () => {
+  it('is_headman=false in JWT → user.isHeadman is false → BottomNav renders correct tab count', async () => {
     const { isHeadman } = await renderWithLogin({
       sub: '10',
       role: 'STUDENT',
@@ -98,7 +111,7 @@ describe('PWAHeadmanRole — JWT is_headman → user.isHeadman parsing', () => {
     expect(isHeadman).toBe(false)
   })
 
-  it('is_headman absent in JWT → user.isHeadman defaults to false → BottomNav should show 4 tabs', async () => {
+  it('is_headman absent in JWT → user.isHeadman defaults to false → BottomNav renders correct tab count', async () => {
     const { isHeadman } = await renderWithLogin({
       sub: '5',
       role: 'STUDENT',
@@ -115,7 +128,7 @@ describe('PWAHeadmanRole — BottomNav tab rendering by isHeadman state', () => 
     vi.clearAllMocks()
   })
 
-  it('BottomNav shows Группа tab (5 links) when isHeadman=true', async () => {
+  it('BottomNav shows Группа tab (6 links) when isHeadman=true', async () => {
     const headmanToken = createFakeJwt({
       sub: '42',
       role: 'STUDENT',
@@ -155,21 +168,21 @@ describe('PWAHeadmanRole — BottomNav tab rendering by isHeadman state', () => 
       screen.getByTestId('login-btn').click()
     })
 
-    // After login with is_headman=true: 5 tabs
+    // After login with is_headman=true: 6 tabs (including Уведомл.)
     const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(5)
+    expect(links).toHaveLength(6)
 
-    // Группа tab is present at index 3
+    // Группа tab sits between Уведомл. and Профиль for headmen
     const labels = links.map((l) => l.textContent)
-    expect(labels[3]).toBe('Группа')
-    expect(labels[4]).toBe('Профиль')
+    expect(labels[4]).toBe('Группа')
+    expect(labels[5]).toBe('Профиль')
 
     // Группа href ends with /group
     const groupLink = screen.getByText('Группа').closest('a')
     expect(groupLink?.getAttribute('href')).toMatch(/\/group$/)
   })
 
-  it('BottomNav shows no Группа tab (4 links) when is_headman absent in JWT', async () => {
+  it('BottomNav shows no Группа tab (5 links) when is_headman absent in JWT', async () => {
     const plainToken = createFakeJwt({
       sub: '5',
       role: 'STUDENT',
@@ -205,7 +218,8 @@ describe('PWAHeadmanRole — BottomNav tab rendering by isHeadman state', () => 
     })
 
     const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(4)
+    // Plain student has 5 tabs after notifications-tab addition (no "Группа")
+    expect(links).toHaveLength(5)
     expect(screen.queryByText('Группа')).toBeNull()
   })
 })

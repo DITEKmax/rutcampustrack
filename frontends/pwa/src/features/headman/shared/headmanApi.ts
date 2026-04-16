@@ -55,6 +55,16 @@ export function useGroupTeachers(groupId: number) {
   })
 }
 
+/**
+ * Flatten the backend journal response ({groupId, subjectId, dates, students:
+ * [{userId, displayName, records: JournalCell[]}]}) into a flat list of
+ * {studentId, studentName, lessonId, date, status} cells that the PWA
+ * journal/stats UI expects.
+ *
+ * Previously this hook read `_embedded.journalCellList` which never exists —
+ * the endpoint returns the tree shape directly — so every caller saw an empty
+ * list and the stats page rendered 100% for every subject and student.
+ */
 export function useJournal(
   groupId: number,
   subjectId: number,
@@ -67,7 +77,28 @@ export function useJournal(
       const { data } = await apiClient.get('/attendance/reports/journal', {
         params: { groupId, subjectId, dateFrom, dateTo },
       })
-      return data._embedded?.journalCellList ?? []
+      const students: Array<{
+        userId: number
+        displayName: string
+        records: Array<{
+          lessonId: number
+          date: string
+          status: AttendanceStatus
+        }>
+      }> = data?.students ?? []
+      const cells: JournalCell[] = []
+      for (const s of students) {
+        for (const r of s.records ?? []) {
+          cells.push({
+            lessonId: r.lessonId,
+            studentId: s.userId,
+            studentName: s.displayName,
+            date: r.date,
+            status: r.status,
+          })
+        }
+      }
+      return cells
     },
     staleTime: 5 * 60 * 1000, // 5 min
     enabled: !!groupId && !!subjectId,

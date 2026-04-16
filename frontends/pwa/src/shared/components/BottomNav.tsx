@@ -2,6 +2,7 @@ import { NavLink } from 'react-router'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 import { useTabs } from './useTabs'
+import { useNotificationCenter } from '@/features/notifications/NotificationCenter'
 
 /**
  * RutCampusTrack — Bottom tab bar (brandbook §4.6, §5.4)
@@ -21,6 +22,7 @@ import { useTabs } from './useTabs'
 
 export function BottomNav() {
   const tabs = useTabs()
+  const { unreadCount } = useNotificationCenter()
 
   return (
     <nav
@@ -33,60 +35,72 @@ export function BottomNav() {
       )}
     >
       <ul className="mx-auto flex max-w-md items-stretch justify-around px-2 pt-1.5 pb-1.5">
-        {tabs.map(({ to, icon: Icon, label }) => (
-          <li key={to} className="flex-1">
-            <NavLink
-              to={to}
-              end={to === '/home'}
-              className={({ isActive }) =>
-                cn(
-                  'relative flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-xl',
-                  'text-[10px] font-medium leading-tight',
-                  'transition-colors duration-200 ease-out',
-                  isActive
-                    ? 'text-[var(--accent-primary)]'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {/* Active background pill — shared layoutId for smooth slide */}
-                  {isActive && (
-                    <motion.span
-                      layoutId="tab-active-pill"
-                      aria-hidden="true"
-                      className={cn(
-                        'absolute inset-x-1 inset-y-0.5 -z-10 rounded-xl',
-                        'bg-[color-mix(in_oklab,var(--accent-primary)_12%,transparent)]',
-                        'border border-[var(--border-accent)]',
+        {tabs.map(({ to, icon: Icon, label, badge }) => {
+          const badgeValue = badge === 'unread' ? unreadCount : 0
+          return (
+            <li key={to} className="flex-1">
+              <NavLink
+                to={to}
+                end={to === '/home'}
+                className={({ isActive }) =>
+                  cn(
+                    'relative flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-xl',
+                    'text-[10px] font-medium leading-tight',
+                    'transition-colors duration-200 ease-out',
+                    isActive
+                      ? 'text-[var(--accent-primary)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <motion.span
+                        layoutId="tab-active-pill"
+                        aria-hidden="true"
+                        className={cn(
+                          'absolute inset-x-1 inset-y-0.5 -z-10 rounded-xl',
+                          'bg-[color-mix(in_oklab,var(--accent-primary)_12%,transparent)]',
+                          'border border-[var(--border-accent)]',
+                        )}
+                        transition={{ type: 'spring', stiffness: 520, damping: 34 }}
+                      />
+                    )}
+
+                    <span className="relative">
+                      <Icon
+                        size={22}
+                        weight={isActive ? 'fill' : 'regular'}
+                        aria-hidden="true"
+                      />
+                      {badgeValue > 0 && (
+                        <span
+                          aria-label={`Непрочитанных: ${badgeValue}`}
+                          className="absolute -right-1.5 -top-1 min-w-[16px] rounded-full px-1 text-center text-[9px] font-bold leading-[16px] text-white"
+                          style={{ background: 'var(--accent-danger, #ef4444)' }}
+                        >
+                          {badgeValue > 9 ? '9+' : badgeValue}
+                        </span>
                       )}
-                      transition={{ type: 'spring', stiffness: 520, damping: 34 }}
-                    />
-                  )}
+                    </span>
+                    <span className="truncate">{label}</span>
 
-                  <Icon
-                    size={22}
-                    weight={isActive ? 'fill' : 'regular'}
-                    aria-hidden="true"
-                  />
-                  <span className="truncate">{label}</span>
-
-                  {/* Station dot — only when active, tiny glow */}
-                  {isActive && (
-                    <motion.span
-                      layoutId="tab-active-dot"
-                      aria-hidden="true"
-                      className="absolute -bottom-0.5 size-1 rounded-full bg-[var(--accent-primary)]"
-                      style={{ boxShadow: '0 0 6px var(--accent-primary)' }}
-                      transition={{ type: 'spring', stiffness: 520, damping: 34 }}
-                    />
-                  )}
-                </>
-              )}
-            </NavLink>
-          </li>
-        ))}
+                    {isActive && (
+                      <motion.span
+                        layoutId="tab-active-dot"
+                        aria-hidden="true"
+                        className="absolute -bottom-0.5 size-1 rounded-full bg-[var(--accent-primary)]"
+                        style={{ boxShadow: '0 0 6px var(--accent-primary)' }}
+                        transition={{ type: 'spring', stiffness: 520, damping: 34 }}
+                      />
+                    )}
+                  </>
+                )}
+              </NavLink>
+            </li>
+          )
+        })}
       </ul>
     </nav>
   )

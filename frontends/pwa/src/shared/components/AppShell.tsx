@@ -1,8 +1,10 @@
+import { Suspense } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { AppHeader } from './AppHeader'
 import { BottomNav } from './BottomNav'
 import { OfflineBanner } from './OfflineBanner'
+import { LoadingSpinner } from './LoadingSpinner'
 
 /**
  * RutCampusTrack — PWA shell (brandbook §7, §5.4)
@@ -29,20 +31,30 @@ export function AppShell() {
           paddingBottom: 'calc(64px + env(safe-area-inset-bottom))',
         }}
       >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={location.pathname}
-            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-            transition={{
-              duration: reduceMotion ? 0 : 0.2,
-              ease: 'easeOut',
-            }}
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        {/*
+         * Single Suspense boundary above AnimatePresence. When a lazy route
+         * chunk suspends, React does not blow away the previous tree —
+         * AnimatePresence's exit animation can finish before the new tree
+         * commits. Keeping Suspense *inside* the motion.div caused transient
+         * black screens (no fallback, no previous content) when switching
+         * from a non-lazy route (/checkin) to a still-loading lazy one.
+         */}
+        <Suspense fallback={<LoadingSpinner />}>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+              transition={{
+                duration: reduceMotion ? 0 : 0.2,
+                ease: 'easeOut',
+              }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </Suspense>
       </main>
 
       <BottomNav />

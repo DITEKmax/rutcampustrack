@@ -25,6 +25,16 @@ vi.mock('@/features/auth/AuthProvider', async (importOriginal) => {
   }
 })
 
+vi.mock('@/features/notifications/NotificationCenter', () => ({
+  useNotificationCenter: () => ({
+    items: [],
+    unreadCount: 0,
+    markAllRead: vi.fn(),
+    archive: vi.fn(),
+    clearAll: vi.fn(),
+  }),
+}))
+
 import { BottomNav } from '../BottomNav'
 import { useAuth } from '@/features/auth/AuthProvider'
 
@@ -43,7 +53,7 @@ describe('BottomNav', () => {
     vi.clearAllMocks()
   })
 
-  it('renders 4 tabs for a plain student (isHeadman=false)', () => {
+  it('renders 5 tabs for a plain student (isHeadman=false) — includes Уведомл.', () => {
     mockedUseAuth.mockReturnValue({
       isAuthenticated: true,
       user: { id: 1, role: 'STUDENT', groupId: 5, isHeadman: false },
@@ -55,11 +65,12 @@ describe('BottomNav', () => {
     renderBottomNav()
 
     const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(4)
+    expect(links).toHaveLength(5)
     expect(screen.queryByText('Группа')).toBeNull()
+    expect(screen.getByText('Уведомл.')).toBeInTheDocument()
   })
 
-  it('renders 5 tabs for a headman user (isHeadman=true), Группа before Профиль', () => {
+  it('renders 6 tabs for a headman — Уведомл. and Группа both present, Профиль last', () => {
     mockedUseAuth.mockReturnValue({
       isAuthenticated: true,
       user: { id: 42, role: 'STUDENT', groupId: 7, isHeadman: true },
@@ -71,13 +82,18 @@ describe('BottomNav', () => {
     renderBottomNav()
 
     const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(5)
+    expect(links).toHaveLength(6)
 
-    // Verify tab order: Главная, Расписание, Отметка, Группа, Профиль
     const labels = links.map((l) => l.textContent)
-    expect(labels).toEqual(['Главная', 'Расписание', 'Отметка', 'Группа', 'Профиль'])
+    expect(labels).toEqual([
+      'Главная',
+      'Расписание',
+      'Отметка',
+      'Уведомл.',
+      'Группа',
+      'Профиль',
+    ])
 
-    // Группа link href ends with /group
     const groupLink = screen.getByText('Группа').closest('a')
     expect(groupLink?.getAttribute('href')).toMatch(/\/group$/)
   })

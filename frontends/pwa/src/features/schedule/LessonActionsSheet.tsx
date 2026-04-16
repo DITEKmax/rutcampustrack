@@ -23,6 +23,8 @@ interface Props {
   subjectName: string
   onClose: () => void
   onToast: (type: 'success' | 'error', message: string) => void
+  /** Student's attendance status for this lesson, if known. */
+  personalStatus?: string | null
 }
 
 type Screen = 'menu' | 'excuse' | 'excuse-success' | 'late-checkin-success'
@@ -40,6 +42,7 @@ export function LessonActionsSheet({
   subjectName,
   onClose,
   onToast,
+  personalStatus,
 }: Props) {
   const [screen, setScreen] = useState<Screen>('menu')
   const [excuseType, setExcuseType] = useState<ExcuseType>('ILLNESS')
@@ -192,7 +195,8 @@ export function LessonActionsSheet({
                 <MenuScreen
                   onExcuse={() => setScreen('excuse')}
                   onLateCheckin={handleLateCheckin}
-                  isLessonActive={lesson.status === 'ACTIVE'}
+                  lessonStatus={lesson.status}
+                  personalStatus={personalStatus ?? null}
                   isLateCheckinLoading={lateCheckinMutation.isPending}
                 />
               )}
@@ -240,14 +244,40 @@ export function LessonActionsSheet({
 function MenuScreen({
   onExcuse,
   onLateCheckin,
-  isLessonActive,
+  lessonStatus,
+  personalStatus,
   isLateCheckinLoading,
 }: {
   onExcuse: () => void
   onLateCheckin: () => void
-  isLessonActive: boolean
+  lessonStatus: LessonResponse['status']
+  personalStatus: string | null
   isLateCheckinLoading: boolean
 }) {
+  const isLessonActive = lessonStatus === 'ACTIVE'
+  const isPast = lessonStatus === 'CLOSED'
+  const isFuture = lessonStatus === 'PLANNED'
+  const isAbsent = personalStatus === 'absent'
+
+  // Late-checkin (request headman to confirm attendance) is useful:
+  //  - while a lesson is ongoing (student couldn't geo-check-in),
+  //  - or after the lesson ended with an "absent" mark (forgot to check in).
+  // It is not meaningful for future lessons or ones the student already
+  // attended / already has an excuse for.
+  const canRequestLateCheckin =
+    (isLessonActive && personalStatus !== 'present') ||
+    (isPast && isAbsent)
+
+  const lateCheckinSubtitle = canRequestLateCheckin
+    ? isLessonActive
+      ? 'Попросить старосту подтвердить, что ты был на паре'
+      : 'Попросить старосту зачесть, что ты был на этой паре'
+    : isFuture
+    ? 'Доступно пока идёт пара или после того, как её закрыли с «н»'
+    : personalStatus === 'present'
+    ? 'Ты уже отмечен как присутствующий'
+    : 'Сейчас недоступно для этой пары'
+
   return (
     <div className="flex flex-col gap-[var(--space-3)]">
       <ActionRow
@@ -259,13 +289,9 @@ function MenuScreen({
       <ActionRow
         icon={<HandWaving size={22} weight="duotone" />}
         title="Запросить посещение"
-        subtitle={
-          isLessonActive
-            ? 'Попросить старосту подтвердить, что ты был на паре'
-            : 'Доступно только пока идёт пара'
-        }
+        subtitle={lateCheckinSubtitle}
         onClick={onLateCheckin}
-        disabled={!isLessonActive || isLateCheckinLoading}
+        disabled={!canRequestLateCheckin || isLateCheckinLoading}
         loading={isLateCheckinLoading}
       />
     </div>

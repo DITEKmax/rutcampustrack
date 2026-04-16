@@ -1,4 +1,4 @@
-import { StrictMode, Suspense, lazy } from 'react'
+import { StrictMode, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -9,8 +9,8 @@ import { LoginPage } from './features/auth/LoginPage'
 import { ProtectedRoute } from './shared/components/ProtectedRoute'
 import { AppShell } from './shared/components/AppShell'
 import { IOSOnboardingOverlay } from './features/auth/IOSOnboardingOverlay'
-import { LoadingSpinner } from './shared/components/LoadingSpinner'
 import { StompProvider } from './features/checkin/StompProvider'
+import { NotificationCenterProvider } from './features/notifications/NotificationCenter'
 import { UpdateBanner } from './shared/components/UpdateBanner'
 import './index.css'
 
@@ -18,6 +18,7 @@ const HomeDashboard = lazy(() => import('./features/home/HomeDashboard'))
 const SchedulePage = lazy(() => import('./features/schedule/SchedulePage').then(m => ({ default: m.SchedulePage })))
 const CheckInScreen = lazy(() => import('./features/checkin/CheckInScreen').then(m => ({ default: m.CheckInScreen })))
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'))
+const NotificationsPage = lazy(() => import('./features/notifications/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
 const GroupHub = lazy(() => import('./features/headman/group-hub/GroupHub').then(m => ({ default: m.GroupHub })))
 const Overview = lazy(() => import('./features/headman/overview/Overview').then(m => ({ default: m.Overview })))
 const StudentsList = lazy(() => import('./features/headman/students/StudentsList').then(m => ({ default: m.StudentsList })))
@@ -40,52 +41,27 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <StompProvider>
-          <AppShell />
+          <NotificationCenterProvider>
+            <AppShell />
+          </NotificationCenterProvider>
         </StompProvider>
       </ProtectedRoute>
     ),
     children: [
       { index: true, element: <Navigate to="/home" replace /> },
-      {
-        path: 'home',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <HomeDashboard />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'schedule',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SchedulePage />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'checkin',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <CheckInScreen />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'profile',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <ProfilePage />
-          </Suspense>
-        ),
-      },
-      { path: 'group', element: <Suspense fallback={<LoadingSpinner />}><GroupHub /></Suspense> },
-      { path: 'group/overview', element: <Suspense fallback={<LoadingSpinner />}><Overview /></Suspense> },
-      { path: 'group/students', element: <Suspense fallback={<LoadingSpinner />}><StudentsList /></Suspense> },
-      { path: 'group/subjects', element: <Suspense fallback={<LoadingSpinner />}><SubjectsList /></Suspense> },
-      { path: 'group/journal', element: <Suspense fallback={<LoadingSpinner />}><JournalPage /></Suspense> },
-      { path: 'group/excuses', element: <Suspense fallback={<LoadingSpinner />}><ExcusesPage /></Suspense> },
-      { path: 'group/late-checkin', element: <Suspense fallback={<LoadingSpinner />}><LateCheckinPage /></Suspense> },
-      { path: 'group/stats', element: <Suspense fallback={<LoadingSpinner />}><StatsPage /></Suspense> },
+      { path: 'home', element: <HomeDashboard /> },
+      { path: 'schedule', element: <SchedulePage /> },
+      { path: 'checkin', element: <CheckInScreen /> },
+      { path: 'notifications', element: <NotificationsPage /> },
+      { path: 'profile', element: <ProfilePage /> },
+      { path: 'group', element: <GroupHub /> },
+      { path: 'group/overview', element: <Overview /> },
+      { path: 'group/students', element: <StudentsList /> },
+      { path: 'group/subjects', element: <SubjectsList /> },
+      { path: 'group/journal', element: <JournalPage /> },
+      { path: 'group/excuses', element: <ExcusesPage /> },
+      { path: 'group/late-checkin', element: <LateCheckinPage /> },
+      { path: 'group/stats', element: <StatsPage /> },
     ],
   },
 ], { basename: '/app' })

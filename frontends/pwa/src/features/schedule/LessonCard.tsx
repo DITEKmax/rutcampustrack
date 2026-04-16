@@ -69,8 +69,7 @@ export function LessonCard({
   const isActive = lesson.status === 'ACTIVE'
   const isBlockedByHeadman = !!lesson.blockedByHeadman
   const dot = dotColor(lesson, personalStatus)
-  const showActions =
-    !!onOpenActions && !isCancelled && (isActive || lesson.status === 'PLANNED')
+  const showActions = !!onOpenActions && !isCancelled
 
   return (
     <motion.article

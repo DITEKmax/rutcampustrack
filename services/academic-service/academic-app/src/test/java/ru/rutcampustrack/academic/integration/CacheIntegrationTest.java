@@ -44,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Data from V2__seed_test_data.sql:
  *   group(id=1, name=ИВТ-211), semester(id=1, is_active=true),
  *   users: admin(id=1), teacher(id=2), student(id=3, is_headman=true, group_id=1),
- *   campus_settings(id=1, lat=55.7699, lng=37.7039, radius_m=200)
+ *   campus_settings(id=1, lat=55.788204, lng=37.606762, radius_m=200)
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

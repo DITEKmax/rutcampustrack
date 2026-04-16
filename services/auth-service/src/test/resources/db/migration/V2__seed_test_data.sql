@@ -23,6 +23,6 @@ VALUES
 UPDATE users SET employee_number = 'T00001' WHERE login = 'teacher';
 
 -- Campus settings for geofence testing
--- Coordinates: RUT MIIT main campus (approx.)
+-- Coordinates: RUT MIIT main campus (ул. Образцова 9, Москва)
 INSERT INTO campus_settings (name, lat, lng, radius_m)
-VALUES ('Main Campus', 55.7699, 37.7039, 200);
+VALUES ('Main Campus', 55.788204, 37.606762, 200);

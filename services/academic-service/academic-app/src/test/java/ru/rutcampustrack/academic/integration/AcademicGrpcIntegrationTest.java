@@ -313,12 +313,12 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
 
         GeofenceResponse response = stub.getCampusGeofence(request);
 
-        // V2 seed: lat=55.7699, lng=37.7039, radius_m=200
+        // V2 seed: lat=55.788204, lng=37.606762, radius_m=200 (RUT MIIT, ул. Образцова 9)
         assertThat(response.getLat()).isNotZero();
         assertThat(response.getLng()).isNotZero();
         assertThat(response.getRadiusM()).isGreaterThan(0);
-        assertThat(response.getLat()).isEqualTo(55.7699);
-        assertThat(response.getLng()).isEqualTo(37.7039);
+        assertThat(response.getLat()).isEqualTo(55.788204);
+        assertThat(response.getLng()).isEqualTo(37.606762);
         assertThat(response.getRadiusM()).isEqualTo(200);
     }
 

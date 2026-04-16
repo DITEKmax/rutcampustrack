@@ -111,33 +111,61 @@ export class StatCardComponent {
     return typeof raw === 'number' ? this.animated() : raw;
   });
 
+  /**
+   * Текущий активный RAF-кадр анимации. Держим снаружи effect, чтобы при смене
+   * target до завершения предыдущей анимации отменить старую — иначе два
+   * параллельных RAF одновременно пишут в `animated` с разных стартов и
+   * счётчик «мигает» (в т.ч. может кратковременно показать значение ниже
+   * актуального, визуально воспринимаемое как «минус»).
+   */
+  private rafHandle = 0;
+
   constructor() {
     /** CountUp — brandbook §5.3. Runs once per target change, respects
      * prefers-reduced-motion, cleans up on destroy. */
     effect(() => {
       const target = this.value();
       if (typeof target !== 'number') return;
+      // Отменяем предыдущий RAF — иначе две гонки пишут в `animated`.
+      if (this.rafHandle !== 0) {
+        cancelAnimationFrame(this.rafHandle);
+        this.rafHandle = 0;
+      }
       const reduceMotion =
         typeof window !== 'undefined' &&
         window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-      if (reduceMotion || target === 0) {
-        this.animated.set(target);
+      if (reduceMotion) {
+        this.animated.set(Math.max(0, target));
         return;
       }
       const from = this.animated();
       const delta = target - from;
-      if (delta === 0) return;
+      if (delta === 0) {
+        // Гарантируем корректный floor-0 даже если target пришёл <0 из-за рейса.
+        this.animated.set(Math.max(0, target));
+        return;
+      }
       const duration = 900;
       const start = performance.now();
-      let frame = 0;
       const step = (now: number) => {
         const t = Math.min(1, (now - start) / duration);
         const eased = 1 - Math.pow(1 - t, 3);
-        this.animated.set(Math.round(from + delta * eased));
-        if (t < 1) frame = requestAnimationFrame(step);
+        // Math.max(0, …) — страховка от промежуточных отрицательных значений
+        // при анимации вниз (при быстрой череде обновлений REST может вернуть
+        // 0, пока локальный `from` ещё высокий; eased даст корректно убывающее
+        // значение, но гарантируем что никогда не уйдёт ниже нуля).
+        this.animated.set(Math.max(0, Math.round(from + delta * eased)));
+        if (t < 1) {
+          this.rafHandle = requestAnimationFrame(step);
+        } else {
+          this.rafHandle = 0;
+        }
       };
-      frame = requestAnimationFrame(step);
-      this.destroyRef.onDestroy(() => cancelAnimationFrame(frame));
+      this.rafHandle = requestAnimationFrame(step);
+    });
+
+    this.destroyRef.onDestroy(() => {
+      if (this.rafHandle !== 0) cancelAnimationFrame(this.rafHandle);
     });
   }
 

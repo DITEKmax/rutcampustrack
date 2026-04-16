@@ -59,6 +59,9 @@
                   <span class="col-day__weekday">{{ day.weekday }}</span>
                   <span class="col-day__date">{{ day.displayDate }}</span>
                 </th>
+                @if (!last) {
+                  <th class="col-day-spacer" aria-hidden="true"></th>
+                }
               }
             </tr>
             <!-- Subject headers -->
@@ -67,7 +70,6 @@
                 @for (col of day.columns; track col.lessonId; let colLast = $last) {
                   <th
                     class="col-subject"
-                    [class.col-subject--day-end]="colLast && !dayLast"
                     [class.col-subject--day-inner]="!colLast"
                     colspan="3"
                   >
@@ -75,6 +77,9 @@
                       <span class="col-subject__name">{{ col.subjectName }}</span>
                     </div>
                   </th>
+                }
+                @if (!dayLast) {
+                  <th class="col-spacer" aria-hidden="true"></th>
                 }
               }
             </tr>
@@ -112,7 +117,6 @@
                       class="cell"
                       [class.cell--saving]="saving"
                       [class.cell--flash]="flashing"
-                      [class.cell--day-end]="colLast && !dayLast"
                       [class.cell--subject-end]="!colLast"
                     >
                       @let reason = getReason(col.lessonId, student.userId);
@@ -126,6 +130,9 @@
                         [attr.title]="reason"
                       >у</button>
                     </td>
+                  }
+                  @if (!dayLast) {
+                    <td class="cell-spacer" aria-hidden="true"></td>
                   }
                 }
               </tr>

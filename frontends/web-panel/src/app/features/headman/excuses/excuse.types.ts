@@ -52,6 +52,10 @@ export interface LessonBrief {
 
 export interface PagedExcuseResponse {
   _embedded?: {
+    // Spring HATEOAS имя ключа генерируется из имени DTO: ExcuseTicketResponse
+    // → excuseTicketResponseList. Старое имя оставлено для обратной совместимости
+    // на случай, если кто-то добавит @Relation("excuseTicket") на бэкенде.
+    excuseTicketResponseList?: ExcuseTicket[];
     excuseTicketList?: ExcuseTicket[];
   };
   page?: { totalElements: number; totalPages: number; size: number; number: number };

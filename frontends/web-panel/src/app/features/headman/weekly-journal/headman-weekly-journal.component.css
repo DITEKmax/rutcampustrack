@@ -66,13 +66,15 @@
 }
 
 /* ---- Divider color tokens (same line from day header to last row) ----
- * Day divider uses the SAME color as the subject divider but 20× thicker —
- * 1px between lessons inside a day, 20px between days. Keeps the grid
- * monochrome (no green accent between days). */
+ * Day divider uses the SAME color as the subject divider but rendered as a
+ * separate empty column (col-spacer / cell-spacer) instead of a border.
+ * Ширина разделителя ≈75% от кружка-кнопки статуса (22px → 16px), чтобы
+ * визуально читался как разрыв между днями, но не «съедал» ячейку «у».
+ * Цвет фона задаётся явно, чтобы быть видимым в светлой теме тоже. */
 .journal-table {
   --subject-divider: var(--border-subtle, var(--mat-sys-outline-variant));
-  --day-divider: var(--subject-divider);
-  --day-divider-width: 20px;
+  --day-divider: var(--mat-sys-outline-variant);
+  --day-divider-width: 16px;
 }
 
 /* ---- Student column — sticky left, wider, wraps ---- */
@@ -101,19 +103,45 @@
   font-size: var(--text-lg, 16px);
 }
 
-/* ---- Day header — bold, elevated, unified divider ---- */
+/* ---- Day header — bold, elevated ---- */
 .col-day {
   padding: 12px 8px;
   font-size: var(--text-lg, 16px);
   font-weight: 700;
   text-align: center;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
-  border-right: var(--day-divider-width) solid var(--day-divider);
   color: var(--mat-sys-on-surface);
   background: var(--bg-elevated, var(--mat-sys-surface-container-high));
   letter-spacing: 0.3px;
 }
-.col-day:last-child { border-right: none; }
+
+/* ---- Day spacer column — пустой столбец между днями.
+ * Ширина одинаковая для заголовка дня и subject/body-рядов.
+ * Видимый цвет фона в обеих темах, граница снизу — как у соседних колонок. */
+.col-day-spacer {
+  width: var(--day-divider-width);
+  min-width: var(--day-divider-width);
+  max-width: var(--day-divider-width);
+  padding: 0;
+  background: var(--day-divider);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+.col-spacer {
+  width: var(--day-divider-width);
+  min-width: var(--day-divider-width);
+  max-width: var(--day-divider-width);
+  padding: 0;
+  background: var(--day-divider);
+  border-bottom: 1px solid var(--subject-divider);
+}
+.cell-spacer {
+  width: var(--day-divider-width);
+  min-width: var(--day-divider-width);
+  max-width: var(--day-divider-width);
+  padding: 0;
+  background: var(--day-divider);
+  border-bottom: 1px solid var(--subject-divider);
+}
 .col-day__weekday {
   display: inline-block;
   margin-right: 8px;
@@ -134,9 +162,6 @@
 }
 .col-subject--day-inner {
   border-right: 1px solid var(--subject-divider);
-}
-.col-subject--day-end {
-  border-right: var(--day-divider-width) solid var(--day-divider);
 }
 .col-subject__text {
   writing-mode: vertical-rl;
@@ -185,9 +210,6 @@
 }
 .cell--subject-end {
   border-right: 1px solid var(--subject-divider);
-}
-.cell--day-end {
-  border-right: var(--day-divider-width) solid var(--day-divider);
 }
 .cell--saving { opacity: 0.6; }
 

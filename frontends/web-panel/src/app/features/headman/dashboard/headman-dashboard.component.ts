@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   OnInit,
   computed,
   inject,
@@ -11,9 +12,11 @@ import { RouterModule } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { forkJoin } from 'rxjs';
 import { catchError, of } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { StatCardComponent } from '../../admin/dashboard/stat-card/stat-card.component';
+import { NotificationCenterService } from '../../../core/notifications/notification-center.service';
 
 /**
  * Headman cabinet landing page — `/headman/dashboard` (HEAD-WEB-02).
@@ -206,6 +209,8 @@ import { StatCardComponent } from '../../admin/dashboard/stat-card/stat-card.com
 export class HeadmanDashboardComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly headmanApi = inject(HeadmanApiService);
+  private readonly center = inject(NotificationCenterService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -232,33 +237,83 @@ export class HeadmanDashboardComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.loading.set(true);
     const groupId = this.auth.currentUser()?.groupId;
     if (!groupId) {
       this.error.set('Не удалось загрузить данные группы. Попробуйте обновить страницу.');
-      this.loading.set(false);
       return;
     }
 
+    this.refreshAll(groupId, true);
+
+    // Real-time обновления счётчиков: STOMP события от notification-web.
+    // Источник правды — REST: на любом релевантном событии перечитываем тикеты
+    // и late-checkins целиком, чтобы не дрейфовать (инкремент/декремент
+    // на лету даёт минусы при гонке с начальной загрузкой и пропуске событий).
+    this.center.onEvent$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(envelope => {
+        const t = envelope.type;
+        if (t === 'excuse.requested' || t === 'excuse.decided') {
+          this.refreshExcuses(groupId);
+        } else if (t === 'late_checkin.requested' || t === 'late_checkin.decided') {
+          this.refreshLateCheckins();
+        }
+      });
+  }
+
+  private refreshAll(groupId: number, withSpinner: boolean): void {
+    if (withSpinner) this.loading.set(true);
     forkJoin([
-      this.headmanApi.getGroupMembers(0, 1),
+      this.headmanApi.getGroupMembers(0, 1).pipe(catchError(() => of(null))),
       this.headmanApi.getTodayLessons(groupId).pipe(catchError(() => of(null))),
       this.headmanApi.getGroupExcuses(groupId, 'submitted').pipe(catchError(() => of([] as any[]))),
+      this.headmanApi.getPendingLateCheckins().pipe(catchError(() => of([] as any[]))),
     ]).subscribe({
-      next: ([members, lessons, excuses]) => {
-        this.memberCount.set((members as any)?.page?.totalElements ?? 0);
+      next: ([members, lessons, excuses, lateCheckins]) => {
+        // PagedModel: totalElements в `page`, либо через _embedded как fallback.
+        const page = (members as any)?.page;
+        const embeddedMembers = (members as any)?._embedded;
+        let total: number = page?.totalElements ?? 0;
+        if (!total && embeddedMembers) {
+          const firstList = Object.values(embeddedMembers)[0] as unknown;
+          if (Array.isArray(firstList)) total = firstList.length;
+        }
+        this.memberCount.set(Math.max(0, total));
 
         const embedded = (lessons as any)?._embedded;
         const lessonList: any[] = embedded ? (Object.values(embedded)[0] as any[]) : [];
         this.todayLesson.set(lessonList[0] ?? null);
 
-        this.pendingExcuses.set(Array.isArray(excuses) ? excuses.length : 0);
-        this.pendingLateCheckins.set(0);
-        this.loading.set(false);
+        this.pendingExcuses.set(Math.max(0, Array.isArray(excuses) ? excuses.length : 0));
+        this.pendingLateCheckins.set(
+          Math.max(0, Array.isArray(lateCheckins) ? lateCheckins.length : 0),
+        );
+        if (withSpinner) this.loading.set(false);
       },
       error: () => {
-        this.error.set('Не удалось загрузить данные группы. Попробуйте обновить страницу.');
-        this.loading.set(false);
+        if (withSpinner) {
+          this.error.set('Не удалось загрузить данные группы. Попробуйте обновить страницу.');
+          this.loading.set(false);
+        }
+      },
+    });
+  }
+
+  private refreshExcuses(groupId: number): void {
+    this.headmanApi.getGroupExcuses(groupId, 'submitted').subscribe({
+      next: list => this.pendingExcuses.set(Math.max(0, Array.isArray(list) ? list.length : 0)),
+      error: () => {
+        /* сеть моргнула — тихо пропускаем, счётчик обновится следующим событием */
+      },
+    });
+  }
+
+  private refreshLateCheckins(): void {
+    this.headmanApi.getPendingLateCheckins().subscribe({
+      next: list =>
+        this.pendingLateCheckins.set(Math.max(0, Array.isArray(list) ? list.length : 0)),
+      error: () => {
+        /* сеть моргнула — тихо пропускаем */
       },
     });
   }

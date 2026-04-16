@@ -111,7 +111,10 @@ export class HeadmanApiService {
   /**
    * Fetch excuse tickets for the headman's group (Phase 59, D-23).
    * Endpoint: GET /api/attendance/excuses/group/{groupId}?status=...&size=50
-   * Returns unwrapped ExcuseTicket[] (extracts _embedded.excuseTicketList).
+   * Returns unwrapped ExcuseTicket[]. Spring HATEOAS использует имя DTO для
+   * ключа в `_embedded` — без @Relation получаем `excuseTicketResponseList`.
+   * Старое имя `excuseTicketList` оставлено как fallback для совместимости,
+   * плюс `Object.values(embedded)[0]` — защита от переименования DTO.
    * 403/404 → empty list (graceful degradation while backend rolls out).
    * Other errors propagate.
    */
@@ -123,7 +126,16 @@ export class HeadmanApiService {
     return this.http
       .get<PagedExcuseResponse>(`/api/attendance/excuses/group/${groupId}`, { params })
       .pipe(
-        map(resp => resp?._embedded?.excuseTicketList ?? []),
+        map(resp => {
+          const embedded = resp?._embedded as Record<string, unknown> | undefined;
+          if (!embedded) return [] as ExcuseTicket[];
+          return (
+            (embedded['excuseTicketResponseList'] as ExcuseTicket[]) ??
+            (embedded['excuseTicketList'] as ExcuseTicket[]) ??
+            (Object.values(embedded)[0] as ExcuseTicket[]) ??
+            []
+          );
+        }),
         catchError((err: HttpErrorResponse) => {
           if (err.status === 403 || err.status === 404) {
             return of([] as ExcuseTicket[]);

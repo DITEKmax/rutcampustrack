@@ -12,6 +12,7 @@ import { WeekDayTabs } from './WeekDayTabs'
 import { LessonCard } from './LessonCard'
 import { OfflineStaleNotice } from './OfflineStaleNotice'
 import { LessonActionsSheet } from './LessonActionsSheet'
+import { HeadmanLessonSheet } from './HeadmanLessonSheet'
 import {
   useBlockLesson,
   useUnblockLesson,
@@ -79,11 +80,13 @@ export function SchedulePage() {
   const [selectedDayIndex, setSelectedDayIndex] = useState(getTodayDayIndex)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [activeLesson, setActiveLesson] = useState<LessonResponse | null>(null)
+  const [headmanLesson, setHeadmanLesson] = useState<LessonResponse | null>(null)
   const hasAutoScrolled = useRef(false)
 
   const blockMutation = useBlockLesson()
   const unblockMutation = useUnblockLesson()
   const activeSubject = useSubjectName(activeLesson?.subjectId)
+  const headmanSubject = useSubjectName(headmanLesson?.subjectId)
 
   const weekStart = formatDate(currentWeekStart)
   const weekEnd = formatDate(addDays(currentWeekStart, 5))
@@ -288,7 +291,9 @@ export function SchedulePage() {
                     onCheckin={() => handleCheckinSuccess(lesson.id)}
                     onCheckinError={handleCheckinError}
                     onOpenActions={
-                      isHeadman ? undefined : () => setActiveLesson(lesson)
+                      isHeadman
+                        ? () => setHeadmanLesson(lesson)
+                        : () => setActiveLesson(lesson)
                     }
                     onToggleBlock={
                       isHeadman ? () => handleToggleBlock(lesson) : undefined
@@ -320,6 +325,15 @@ export function SchedulePage() {
         lesson={activeLesson}
         subjectName={activeSubject.data ?? 'Пара'}
         onClose={() => setActiveLesson(null)}
+        onToast={(type, message) => setToast({ type, message })}
+      />
+
+      {/* Headman bulk-mark sheet (manual attendance on a single lesson) */}
+      <HeadmanLessonSheet
+        open={!!headmanLesson}
+        lesson={headmanLesson}
+        subjectName={headmanSubject.data ?? 'Пара'}
+        onClose={() => setHeadmanLesson(null)}
         onToast={(type, message) => setToast({ type, message })}
       />
 

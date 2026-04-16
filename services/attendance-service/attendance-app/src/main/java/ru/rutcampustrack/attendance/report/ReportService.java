@@ -96,8 +96,11 @@ public class ReportService {
                     Long uid = student.getUserId();
                     AttendanceRecord rec = recordsByUserId.get(uid);
                     AttendanceStatus status = (rec != null) ? rec.status() : AttendanceStatus.ABSENT;
+                    String source = (rec != null && rec.source() != null)
+                            ? rec.source().name().toLowerCase()
+                            : null;
                     return new StudentAttendanceEntry(uid, student.getDisplayName(),
-                            status.name().toLowerCase(), statusSymbol(status));
+                            status.name().toLowerCase(), statusSymbol(status), source);
                 })
                 .toList();
 

@@ -29,8 +29,8 @@
 }
 
 .lesson-row--active {
-  border-color: var(--border-accent);
-  box-shadow: var(--glow-primary);
+  border-color: var(--accent-secondary);
+  box-shadow: var(--glow-blue);
 }
 
 .lesson-row--cancelled {
@@ -69,11 +69,32 @@
   height: 12px;
   border-radius: 50%;
   background: var(--text-muted);
+  transition: background var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
 }
 
-.lesson-row--active .lesson-row__dot {
-  background: var(--accent-primary);
-  box-shadow: 0 0 12px var(--accent-primary);
+.lesson-row__dot--muted {
+  background: var(--text-muted);
+}
+
+.lesson-row__dot--active {
+  background: var(--accent-secondary);
+  box-shadow: 0 0 12px var(--accent-secondary);
+}
+
+.lesson-row__dot--present {
+  background: var(--status-present);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--status-present) 60%, transparent);
+}
+
+.lesson-row__dot--absent {
+  background: var(--status-absent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--status-absent) 60%, transparent);
+}
+
+.lesson-row__dot--excused {
+  background: var(--status-excused);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--status-excused) 60%, transparent);
 }
 
 .lesson-row__body {

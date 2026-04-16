@@ -58,6 +58,25 @@ export class LessonRowComponent {
     return this.lesson.status === 'CANCELLED';
   }
 
+  /**
+   * Colour bucket for the rail dot. Covers the 4 states the UX mapping asks
+   * for: waiting-to-check-in (active, not yet marked) is blue; present is
+   * green; absent is red; excused / free attendance is yellow. Everything
+   * else (planned, cancelled, past without own status) is muted.
+   */
+  get dotStateClass(): string {
+    if (this.personalStatus === 'present') return 'lesson-row__dot--present';
+    if (this.personalStatus === 'absent') return 'lesson-row__dot--absent';
+    if (
+      this.personalStatus === 'excused' ||
+      this.personalStatus === 'free_attendance'
+    ) {
+      return 'lesson-row__dot--excused';
+    }
+    if (this.isActive) return 'lesson-row__dot--active';
+    return 'lesson-row__dot--muted';
+  }
+
   get startLabel(): string {
     return formatLessonTime(this.lesson.startTime);
   }

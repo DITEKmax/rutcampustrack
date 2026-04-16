@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.excuse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
 import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
@@ -19,6 +20,7 @@ import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -75,6 +77,44 @@ public class ExcuseService {
      * @throws BadRequestException defensive validation guard (comment length, empty list) — primary validation lives in DTO
      */
     public ExcuseTicket createExcuse(CreateExcuseRequest request) {
+        ExcuseTicket saved = createTicketInternal(request);
+        // D-19 / D-27: publish excuse.requested after save — notification-bot listens.
+        excuseEventPublisher.publishRequested(saved);
+        return saved;
+    }
+
+    /**
+     * Same lifecycle as {@link #createExcuse(CreateExcuseRequest)} plus a supporting
+     * document that is forwarded to the headman by notification-bot and never
+     * persisted server-side (per CLAUDE.md — excuse attachments do not live in
+     * our storage). The file is read into memory, base64-encoded, and shipped
+     * inside the {@code excuse.requested} event payload. Bot picks it up via
+     * the existing RabbitMQ consumer.
+     */
+    public ExcuseTicket createExcuseWithFile(CreateExcuseRequest request, MultipartFile file) {
+        final long MAX_BYTES = 10L * 1024 * 1024;
+        ExcuseTicket saved = createTicketInternal(request);
+        if (file == null || file.isEmpty()) {
+            excuseEventPublisher.publishRequested(saved);
+            return saved;
+        }
+        if (file.getSize() > MAX_BYTES) {
+            throw new BadRequestException("Файл должен быть не больше 10 МБ");
+        }
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new BadRequestException("Не удалось прочитать файл: " + e.getMessage());
+        }
+        String fileName = file.getOriginalFilename() != null && !file.getOriginalFilename().isBlank()
+                ? file.getOriginalFilename()
+                : "attachment";
+        excuseEventPublisher.publishRequestedWithFile(saved, fileName, file.getContentType(), bytes);
+        return saved;
+    }
+
+    private ExcuseTicket createTicketInternal(CreateExcuseRequest request) {
         // D-12: headman does not submit tickets — they self-mark via the journal
         if (requestContext.isHeadman()) {
             throw new ConflictException(
@@ -116,12 +156,7 @@ public class ExcuseService {
                 .updatedAt(now)
                 .build();
 
-        ExcuseTicket saved = excuseRepository.save(ticket);
-
-        // D-19 / D-27: publish excuse.requested after save — notification-bot listens.
-        excuseEventPublisher.publishRequested(saved);
-
-        return saved;
+        return excuseRepository.save(ticket);
     }
 
     /**

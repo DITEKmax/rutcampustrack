@@ -13,7 +13,7 @@
 >
   <div class="lesson-row__rail" aria-hidden="true">
     <span class="lesson-row__time lesson-row__time--start">{{ startLabel }}</span>
-    <span class="lesson-row__dot"></span>
+    <span class="lesson-row__dot" [ngClass]="dotStateClass"></span>
     <span class="lesson-row__time lesson-row__time--end">{{ endLabel }}</span>
   </div>
 

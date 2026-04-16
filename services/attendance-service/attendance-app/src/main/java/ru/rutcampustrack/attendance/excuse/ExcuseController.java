@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import ru.rutcampustrack.attendance.contract.api.ExcuseApi;
 import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
 import ru.rutcampustrack.attendance.contract.dto.excuse.ExcuseTicketResponse;
@@ -44,6 +45,14 @@ public class ExcuseController implements ExcuseApi {
     public ResponseEntity<EntityModel<ExcuseTicketResponse>> createExcuse(
             @Valid @RequestBody CreateExcuseRequest request) {
         ExcuseTicket ticket = excuseService.createExcuse(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(excuseAssembler.toModel(ticket));
+    }
+
+    @Override
+    @RequireRole(UserRole.STUDENT)
+    public ResponseEntity<EntityModel<ExcuseTicketResponse>> createExcuseWithFile(
+            @Valid CreateExcuseRequest request, MultipartFile file) {
+        ExcuseTicket ticket = excuseService.createExcuseWithFile(request, file);
         return ResponseEntity.status(HttpStatus.CREATED).body(excuseAssembler.toModel(ticket));
     }
 

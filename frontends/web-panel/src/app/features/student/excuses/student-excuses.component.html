@@ -12,15 +12,46 @@
     </div>
   </div>
 
+  <div class="excuse-tabs" role="tablist" aria-label="Фильтр тикетов">
+    <button
+      type="button"
+      role="tab"
+      class="excuse-tabs__btn"
+      [class.excuse-tabs__btn--active]="currentTab() === 'active'"
+      [attr.aria-selected]="currentTab() === 'active'"
+      (click)="switchTab('active')"
+    >
+      Активные
+      <span class="excuse-tabs__count">{{ activeTickets().length }}</span>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="excuse-tabs__btn"
+      [class.excuse-tabs__btn--active]="currentTab() === 'archive'"
+      [attr.aria-selected]="currentTab() === 'archive'"
+      (click)="switchTab('archive')"
+    >
+      Архив
+      <span class="excuse-tabs__count">{{ archiveTickets().length }}</span>
+    </button>
+  </div>
+
   @if (loading()) {
     <div class="page-card">
       <div class="skeleton-row" *ngFor="let i of [1,2,3]"></div>
     </div>
-  } @else if (tickets().length === 0) {
+  } @else if (visibleTickets().length === 0) {
     <div class="page-empty">
       <i class="ph-duotone ph-file-text page-empty__icon"></i>
-      <h2 class="page-empty__heading">Нет тикетов о пропуске</h2>
-      <p class="page-empty__body">Подайте первый тикет, если пропустили занятие по уважительной причине</p>
+      <h2 class="page-empty__heading">
+        {{ currentTab() === 'active' ? 'Нет активных тикетов' : 'Архив пуст' }}
+      </h2>
+      <p class="page-empty__body">
+        {{ currentTab() === 'active'
+          ? 'Подайте тикет, если пропустили занятие по уважительной причине.'
+          : 'Здесь появляются одобренные и отклонённые тикеты.' }}
+      </p>
     </div>
   } @else {
     <div class="page-card page-card--flush">
@@ -31,18 +62,74 @@
           <span role="columnheader">Занятий</span>
           <span role="columnheader">Статус</span>
         </div>
-        @for (ticket of tickets(); track ticket.id) {
-          <div class="excuse-table__row" role="row">
-            <span class="excuse-date" role="cell">{{ ticket.createdAt | date:'dd.MM.yyyy' }}</span>
-            <span class="excuse-subjects" role="cell">{{ labelForExcuseType(ticket.excuseType) }}</span>
-            <span class="excuse-count" role="cell">{{ ticket.lessonIds.length }}</span>
+        @for (ticket of visibleTickets(); track ticket.id) {
+          <button
+            type="button"
+            class="excuse-table__row excuse-table__row--clickable"
+            [class.excuse-table__row--expanded]="isExpanded(ticket.id)"
+            (click)="toggleTicket(ticket)"
+            [attr.aria-expanded]="isExpanded(ticket.id)"
+          >
+            <span class="excuse-date">{{ ticket.createdAt | date:'dd.MM.yyyy' }}</span>
+            <span class="excuse-subjects">{{ labelForExcuseType(ticket.excuseType) }}</span>
+            <span class="excuse-count">{{ ticket.lessonIds.length }}</span>
             <span
               class="status-chip"
               [class]="'status-chip--' + ticket.status"
               [attr.aria-label]="statusLabels[ticket.status]"
-              role="cell"
             >{{ statusLabels[ticket.status] }}</span>
-          </div>
+          </button>
+          @if (isExpanded(ticket.id)) {
+            <div class="excuse-detail" role="region" [attr.aria-label]="'Детали тикета ' + ticket.id">
+              <dl class="excuse-detail__facts">
+                <div>
+                  <dt>Причина</dt>
+                  <dd>{{ labelForExcuseType(ticket.excuseType) }}</dd>
+                </div>
+                <div>
+                  <dt>Статус</dt>
+                  <dd>
+                    <span class="status-chip" [class]="'status-chip--' + ticket.status">
+                      {{ statusLabels[ticket.status] }}
+                    </span>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Подан</dt>
+                  <dd>{{ ticket.createdAt | date:'dd.MM.yyyy HH:mm' }}</dd>
+                </div>
+                @if (ticket.decisionAt) {
+                  <div>
+                    <dt>Решение</dt>
+                    <dd>{{ ticket.decisionAt | date:'dd.MM.yyyy HH:mm' }}</dd>
+                  </div>
+                }
+              </dl>
+
+              @if (ticket.comment) {
+                <section class="excuse-detail__section">
+                  <h4 class="excuse-detail__heading">Комментарий студента</h4>
+                  <p class="excuse-detail__text">{{ ticket.comment }}</p>
+                </section>
+              }
+
+              @if (ticket.decisionComment) {
+                <section class="excuse-detail__section">
+                  <h4 class="excuse-detail__heading">Комментарий старосты</h4>
+                  <p class="excuse-detail__text">{{ ticket.decisionComment }}</p>
+                </section>
+              }
+
+              <section class="excuse-detail__section">
+                <h4 class="excuse-detail__heading">Пары ({{ ticket.lessonIds.length }})</h4>
+                <ul class="excuse-detail__lessons">
+                  @for (lid of ticket.lessonIds; track lid) {
+                    <li>{{ lessonLabel(lid) }}</li>
+                  }
+                </ul>
+              </section>
+            </div>
+          }
         }
       </div>
     </div>

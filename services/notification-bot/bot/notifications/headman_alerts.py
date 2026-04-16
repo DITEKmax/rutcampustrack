@@ -1,13 +1,19 @@
 """Handler for headman alert events — sends notifications to group headmen only."""
 
+import base64
+import binascii
 import logging
 
 from aiogram import Bot
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
 logger = logging.getLogger(__name__)
+
+# Telegram's hard limit for bot uploads is 50 MB; the Java side caps at 10 MB.
+# Anything larger is dropped with a warning — we never silently truncate.
+MAX_FORWARDED_FILE_BYTES = 10 * 1024 * 1024
 
 
 async def handle_headman_alert(
@@ -53,9 +59,30 @@ async def handle_headman_alert(
 
     reply_markup = None
 
+    file_bytes: bytes | None = None
+    file_name: str | None = None
+
     if event_type == "excuse.requested":
         excuse_type_label = payload.get("excuse_type", "не указан")
         text = f"Запрос у.п.\n\nСтудент: {student_name}\nТип: {excuse_type_label}"
+        comment = payload.get("comment")
+        if comment:
+            text += f"\nКомментарий: {comment}"
+
+        file_b64 = payload.get("file_payload_b64")
+        if file_b64:
+            try:
+                file_bytes = base64.b64decode(file_b64, validate=True)
+            except (binascii.Error, ValueError) as exc:
+                logger.warning("excuse.requested file_payload_b64 decode failed: %s", exc)
+                file_bytes = None
+            if file_bytes is not None and len(file_bytes) > MAX_FORWARDED_FILE_BYTES:
+                logger.warning(
+                    "excuse.requested attachment too large (%d bytes), skipping",
+                    len(file_bytes),
+                )
+                file_bytes = None
+            file_name = payload.get("file_name") or "attachment"
     elif event_type == "late_checkin.requested":
         text = f"Запрос подтверждения присутствия\n\nСтудент: {student_name}"
         subject_name = payload.get("subject_name")
@@ -84,12 +111,36 @@ async def handle_headman_alert(
         return
 
     for headman in headmen:
-        await send_queue.put(
-            SendTask(
-                coroutine_factory=lambda h=headman, markup=reply_markup: bot.send_message(
-                    chat_id=h.telegram_id, text=text, reply_markup=markup
-                ),
-                user_id=headman.user_id,
-                chat_id=headman.telegram_id,
+        if file_bytes:
+            # Telegram caption limit is 1024 chars — truncate defensively so the
+            # send never fails because a long comment pushed us over the edge.
+            caption = text if len(text) <= 1024 else text[:1020] + "…"
+
+            async def _send_document(h=headman, markup=reply_markup,
+                                     payload_bytes=file_bytes,
+                                     payload_name=file_name,
+                                     payload_caption=caption):
+                return await bot.send_document(
+                    chat_id=h.telegram_id,
+                    document=BufferedInputFile(payload_bytes, filename=payload_name),
+                    caption=payload_caption,
+                    reply_markup=markup,
+                )
+
+            await send_queue.put(
+                SendTask(
+                    coroutine_factory=_send_document,
+                    user_id=headman.user_id,
+                    chat_id=headman.telegram_id,
+                )
             )
-        )
+        else:
+            await send_queue.put(
+                SendTask(
+                    coroutine_factory=lambda h=headman, markup=reply_markup: bot.send_message(
+                        chat_id=h.telegram_id, text=text, reply_markup=markup
+                    ),
+                    user_id=headman.user_id,
+                    chat_id=headman.telegram_id,
+                )
+            )

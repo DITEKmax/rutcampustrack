@@ -4,7 +4,14 @@
 
   <!-- Lesson selection -->
   <section class="form-section">
-    <h3 class="form-section__label">Выберите пропущенные занятия</h3>
+    <h3 class="form-section__label">
+      {{ isLocked() ? 'Заявка по выбранной паре' : 'Выберите пропущенные занятия' }}
+    </h3>
+    @if (isLocked()) {
+      <p class="form-hint">
+        Тикет будет подан только по этой паре. Для других пропусков откройте раздел «Уважительные причины».
+      </p>
+    }
     <div class="lesson-list" role="list" aria-label="Список пропусков с начала семестра">
       @if (!hasRecords()) {
         <p class="form-hint">Нет пропусков с начала семестра.</p>
@@ -13,9 +20,14 @@
         <div class="lesson-day">
           <div class="lesson-day__heading">{{ day.label }}</div>
           @for (lesson of day.records; track lesson.lessonId) {
-            <label class="lesson-row" role="listitem">
+            <label
+              class="lesson-row"
+              role="listitem"
+              [class.lesson-row--disabled]="isDisabled(lesson.lessonId)"
+            >
               <mat-checkbox
                 [checked]="isSelected(lesson.lessonId)"
+                [disabled]="isDisabled(lesson.lessonId)"
                 (change)="toggleLesson(lesson.lessonId)"
                 [aria-label]="day.label + ', №' + lesson.lessonNumber + ' ' + subjectName(lesson.subjectId)"
               />
@@ -59,6 +71,38 @@
         placeholder="Укажите дополнительные обстоятельства"
       ></textarea>
     </mat-form-field>
+  </section>
+
+  <!-- Attachment -->
+  <section class="form-section">
+    <h3 class="form-section__label">Подтверждающий документ <span class="form-hint-inline">(необязательно, до 10 МБ)</span></h3>
+    <p class="form-hint">
+      Файл будет переслан старосте в Telegram. На сервере он не хранится.
+    </p>
+    <div class="file-row">
+      <label class="file-row__picker">
+        <input
+          type="file"
+          (change)="onFileSelected($event)"
+          aria-label="Прикрепить файл"
+        />
+        <span class="file-row__picker-label">
+          <i class="ph ph-paperclip" aria-hidden="true"></i>
+          {{ attachedFile() ? 'Заменить файл' : 'Прикрепить файл' }}
+        </span>
+      </label>
+      @if (attachedFile(); as file) {
+        <span class="file-row__meta">
+          <span class="file-row__name">{{ file.name }}</span>
+          <button type="button" class="file-row__clear" (click)="clearFile()" aria-label="Удалить файл">
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
+        </span>
+      }
+    </div>
+    @if (fileError()) {
+      <p class="form-error" role="alert">{{ fileError() }}</p>
+    }
   </section>
 
   @if (validationError()) {

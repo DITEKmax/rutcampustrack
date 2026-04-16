@@ -64,6 +64,13 @@ export class ExcuseFormDialogComponent implements OnInit {
   /** Записи «н» (absent) и «у» (excused), отсортированные по дате от начала семестра. */
   readonly missedRecords: AttendanceRecord[];
 
+  /**
+   * When the dialog is opened from a specific lesson card, the submission is
+   * locked to that single lesson — other checkboxes are disabled so students
+   * cannot piggy-back unrelated absences onto a per-lesson request.
+   */
+  readonly lockedToLessonIds: Set<number>;
+
   /** Записи, сгруппированные по дню, отсортированные по возрастанию даты. */
   readonly dayGroups = signal<DayGroup[]>([]);
 
@@ -97,6 +104,9 @@ export class ExcuseFormDialogComponent implements OnInit {
 
     if (data.preselectedLessonIds?.length) {
       this.selectedLessonIds.set(new Set(data.preselectedLessonIds));
+      this.lockedToLessonIds = new Set(data.preselectedLessonIds);
+    } else {
+      this.lockedToLessonIds = new Set();
     }
 
     this.form = this.fb.group({
@@ -119,6 +129,7 @@ export class ExcuseFormDialogComponent implements OnInit {
   }
 
   toggleLesson(lessonId: number): void {
+    if (this.isLocked()) return;
     this.selectedLessonIds.update(set => {
       const next = new Set(set);
       if (next.has(lessonId)) next.delete(lessonId);
@@ -130,6 +141,42 @@ export class ExcuseFormDialogComponent implements OnInit {
 
   isSelected(lessonId: number): boolean {
     return this.selectedLessonIds().has(lessonId);
+  }
+
+  /** True when the dialog was opened with a pre-selected lesson — selection is frozen. */
+  isLocked(): boolean {
+    return this.lockedToLessonIds.size > 0;
+  }
+
+  /** Disable a checkbox row if the selection is locked and this lesson isn't the locked one. */
+  isDisabled(lessonId: number): boolean {
+    return this.isLocked() && !this.lockedToLessonIds.has(lessonId);
+  }
+
+  readonly attachedFile = signal<File | null>(null);
+  readonly fileError = signal<string | null>(null);
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files.length > 0 ? input.files[0] : null;
+    this.fileError.set(null);
+    if (!file) {
+      this.attachedFile.set(null);
+      return;
+    }
+    const MAX_BYTES = 10 * 1024 * 1024;
+    if (file.size > MAX_BYTES) {
+      this.fileError.set('Файл должен быть не больше 10 МБ.');
+      input.value = '';
+      this.attachedFile.set(null);
+      return;
+    }
+    this.attachedFile.set(file);
+  }
+
+  clearFile(): void {
+    this.attachedFile.set(null);
+    this.fileError.set(null);
   }
 
   statusSymbol(status: string): string {
@@ -153,8 +200,13 @@ export class ExcuseFormDialogComponent implements OnInit {
     this.submitting.set(true);
     this.submitError.set(null);
     const comment = (this.commentControl.value as string)?.trim() || null;
+    const file = this.attachedFile();
 
-    this.apiService.submitExcuse(ids, excuseType, comment).subscribe({
+    const submit$ = file
+      ? this.apiService.submitExcuseWithFile(ids, excuseType, comment, file)
+      : this.apiService.submitExcuse(ids, excuseType, comment);
+
+    submit$.subscribe({
       next: () => {
         this.submitting.set(false);
         this.dialogRef.close(true);

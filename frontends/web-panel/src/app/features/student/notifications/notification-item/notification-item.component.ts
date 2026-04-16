@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Observable, of } from 'rxjs';
 import type { NotificationItem } from '../../shared/student-schedule.types';
+import { SubjectCacheService } from '../../shared/subject-cache.service';
 
 @Component({
   selector: 'app-notification-item',
@@ -23,7 +25,7 @@ import type { NotificationItem } from '../../shared/student-schedule.types';
           <span class="notification-item__heading">{{ heading }}</span>
           <span class="notification-item__time">{{ relativeTime }}</span>
         </div>
-        <p class="notification-item__text">{{ bodyText }}</p>
+        <p class="notification-item__text">{{ getBodyText(subjectName$ | async) }}</p>
       </div>
     </div>
   `,
@@ -44,16 +46,41 @@ import type { NotificationItem } from '../../shared/student-schedule.types';
     .notification-item__header { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
     .notification-item__heading { font-size: var(--text-base); font-family: var(--font-heading); font-weight: 600; }
     .notification-item__time { font-size: var(--text-xs); font-family: var(--font-mono); color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-    .notification-item__text { font-size: var(--text-sm); line-height: var(--leading-body); color: var(--text-secondary); margin-top: var(--space-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notification-item__text { font-size: var(--text-sm); line-height: var(--leading-body); color: var(--text-secondary); margin-top: var(--space-1); white-space: normal; }
     .icon-primary { color: var(--accent-primary); }
     .icon-info { color: var(--accent-info); }
     .icon-secondary { color: var(--accent-secondary); }
     .icon-warning { color: var(--accent-warning); }
+    .icon-danger { color: var(--accent-danger); }
     .icon-muted { color: var(--text-muted); }
   `],
 })
-export class NotificationItemComponent {
+export class NotificationItemComponent implements OnChanges {
+  private readonly subjectCache = inject(SubjectCacheService);
+
   @Input({ required: true }) item!: NotificationItem;
+
+  subjectName$: Observable<string> = of('');
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['item']) {
+      this.subjectName$ = this.resolveSubjectName$(this.item);
+    }
+  }
+
+  private resolveSubjectName$(item: NotificationItem): Observable<string> {
+    const p = item.payload ?? {};
+    const inline = (p['subject_name'] ?? p['subjectName']) as string | undefined;
+    if (typeof inline === 'string' && inline.trim() !== '') {
+      return of(inline);
+    }
+    const rawId = p['subject_id'] ?? p['subjectId'];
+    const subjectId = typeof rawId === 'number' ? rawId : Number(rawId);
+    if (!Number.isFinite(subjectId) || subjectId <= 0) {
+      return of('');
+    }
+    return this.subjectCache.getName(subjectId);
+  }
 
   get heading(): string {
     switch (this.item.type) {
@@ -88,9 +115,9 @@ export class NotificationItemComponent {
 
   get iconColorClass(): string {
     switch (this.item.type) {
-      case 'lesson.started': return 'icon-primary';
-      case 'lesson.cancelled': return 'icon-info';
-      case 'homework.published': return 'icon-secondary';
+      case 'lesson.started': return 'icon-secondary';
+      case 'lesson.cancelled': return 'icon-danger';
+      case 'homework.published': return 'icon-info';
       case 'homework.updated': return 'icon-warning';
       case 'attendance.marked': return 'icon-primary';
       case 'late_checkin.decided':
@@ -100,34 +127,62 @@ export class NotificationItemComponent {
     }
   }
 
-  get bodyText(): string {
-    const p = this.item.payload;
-    const subjectName = (p['subject_name'] ?? p['subjectName'] ?? 'Пара') as string;
+  getBodyText(resolvedSubjectName: string | null): string {
+    const p = this.item.payload ?? {};
+    const subjectName = (resolvedSubjectName && resolvedSubjectName.trim()) || 'пары';
     const title = (p['title'] ?? '') as string;
     const lessonNumber = p['lesson_number'] ?? p['lessonNumber'];
     const lessonDate = (p['lesson_date'] ?? p['lessonDate'] ?? '') as string;
+    const dateText = lessonDate ? this.formatRuDate(lessonDate) : '';
+    const comment = (p['decision_comment'] ?? p['decisionComment'] ?? '') as string;
     switch (this.item.type) {
-      case 'lesson.started': return `${subjectName} — отметьтесь!`;
-      case 'lesson.cancelled': return `${subjectName} — пара отменена`;
-      case 'homework.published': return `Новое ДЗ по ${subjectName}: ${title}`;
-      case 'homework.updated': return `ДЗ по ${subjectName} обновлено: ${title}`;
-      case 'attendance.marked': return '';
+      case 'lesson.started':
+        return `${this.capitalize(subjectName)} началась — не забудьте отметиться.`;
+      case 'lesson.cancelled': {
+        const d = dateText ? ` ${dateText}` : '';
+        return `Пара «${subjectName}»${d} отменена.`;
+      }
+      case 'homework.published':
+        return title
+          ? `Задание по ${subjectName}: «${title}».`
+          : `Опубликовано новое задание по ${subjectName}.`;
+      case 'homework.updated':
+        return title
+          ? `Задание по ${subjectName} обновлено: «${title}».`
+          : `Задание по ${subjectName} обновлено.`;
+      case 'attendance.marked': {
+        const num = lessonNumber ? ` №${lessonNumber}` : '';
+        return `Вы отмечены на паре${num}.`;
+      }
       case 'late_checkin.decided': {
-        const suffix = this.isApproved ? 'принята' : 'отклонена';
-        const lessonPart = lessonNumber ? ` — пара №${lessonNumber}` : '';
-        const datePart = lessonDate ? ` (${lessonDate})` : '';
-        return `${subjectName}${lessonPart}: староста ${suffix}${datePart}`;
+        const verdict = this.isApproved ? 'подтвердил вашу отметку' : 'отклонил запрос на отметку';
+        const lessonPart = lessonNumber ? ` №${lessonNumber}` : '';
+        const datePart = dateText ? ` (${dateText})` : '';
+        return `Староста ${verdict} по «${subjectName}»${lessonPart}${datePart}.`;
       }
       case 'excuse.decided': {
-        const suffix = this.isApproved ? 'одобрил' : 'отклонил';
-        return `Староста ${suffix} заявку об уважительной причине`;
+        const verdict = this.isApproved ? 'одобрил' : 'отклонил';
+        const tail = comment ? ` Комментарий: «${comment}».` : '';
+        return `Староста ${verdict} заявку об уважительной причине.${tail}`;
       }
       default: return '';
     }
   }
 
+  private capitalize(value: string): string {
+    if (!value) return value;
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }
+
+  private formatRuDate(iso: string): string {
+    // Accepts both "YYYY-MM-DD" and full ISO. Falls back to raw string on parse error.
+    const parsed = new Date(iso.length === 10 ? `${iso}T00:00:00` : iso);
+    if (Number.isNaN(parsed.getTime())) return iso;
+    return parsed.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  }
+
   private get isApproved(): boolean {
-    const raw = this.item.payload['status'];
+    const raw = this.item.payload?.['status'];
     return typeof raw === 'string' && raw.toLowerCase() === 'approved';
   }
 

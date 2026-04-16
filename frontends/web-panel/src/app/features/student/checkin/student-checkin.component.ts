@@ -11,11 +11,13 @@ import {
 import { AsyncPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth/auth.service';
 import { StudentApiService } from '../shared/student-api.service';
 import { SubjectCacheService } from '../shared/subject-cache.service';
 import { StudentStompService } from '../shared/student-stomp.service';
-import type { LessonResponse } from '../shared/student-schedule.types';
+import type { AttendanceRecord, LessonResponse } from '../shared/student-schedule.types';
 import {
   mapCheckinError,
   mapRequestHeadmanError,
@@ -175,11 +177,24 @@ export class StudentCheckinComponent implements OnInit, OnDestroy {
   private fetchToday(groupId: number): void {
     const today = todayDateString();
     this.loading.set(true);
-    this.studentApi.getWeekLessons(groupId, today, today).subscribe({
-      next: lessons => {
+    forkJoin({
+      lessons: this.studentApi.getWeekLessons(groupId, today, today),
+      records: this.studentApi.getStudentRecords().pipe(
+        catchError(() => of<AttendanceRecord[]>([])),
+      ),
+    }).subscribe({
+      next: ({ lessons, records }) => {
         this.lessons.set(lessons);
         const active = lessons.find(l => l.status === 'ACTIVE');
-        this.state.set(active ? { kind: 'ready' } : { kind: 'idle' });
+        if (!active) {
+          this.state.set({ kind: 'idle' });
+        } else {
+          // Student may already be marked present — either by this browser
+          // earlier, by a late-checkin approval, or by the headman. In any
+          // of those cases the CTA must stay disabled as "Вы отмечены".
+          const own = records.find(r => r.lessonId === active.id);
+          this.state.set(own?.status === 'present' ? { kind: 'confirmed' } : { kind: 'ready' });
+        }
         this.loading.set(false);
       },
       error: err => {

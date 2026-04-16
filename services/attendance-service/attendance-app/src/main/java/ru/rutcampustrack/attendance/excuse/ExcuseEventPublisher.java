@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 
 import java.time.Instant;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -58,6 +59,32 @@ public class ExcuseEventPublisher {
      * Invoked from {@link ExcuseService#createExcuse} after the repository save.
      */
     public void publishRequested(ExcuseTicket ticket) {
+        rabbitTemplate.convertAndSend(EXCHANGE, "",
+                buildEnvelope(EVENT_REQUESTED, buildRequestedPayload(ticket)));
+    }
+
+    /**
+     * Variant of {@link #publishRequested(ExcuseTicket)} that carries a
+     * supporting document. The document is base64-encoded so it can travel
+     * inside the JSON envelope; notification-bot decodes it and forwards to
+     * Telegram via {@code send_document}. The server never persists the file —
+     * once the message is acked by the bot, the bytes are gone.
+     */
+    public void publishRequestedWithFile(ExcuseTicket ticket,
+                                         String fileName,
+                                         String contentType,
+                                         byte[] fileBytes) {
+        Map<String, Object> payload = buildRequestedPayload(ticket);
+        if (fileBytes != null && fileBytes.length > 0) {
+            payload.put("file_name", fileName);
+            payload.put("file_mime_type", contentType);
+            payload.put("file_size", fileBytes.length);
+            payload.put("file_payload_b64", Base64.getEncoder().encodeToString(fileBytes));
+        }
+        rabbitTemplate.convertAndSend(EXCHANGE, "", buildEnvelope(EVENT_REQUESTED, payload));
+    }
+
+    private Map<String, Object> buildRequestedPayload(ExcuseTicket ticket) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("ticket_id", ticket.getId());
         payload.put("student_id", ticket.getStudentId());
@@ -71,8 +98,7 @@ public class ExcuseEventPublisher {
                 ticket.getExcuseType() != null ? ticket.getExcuseType().name().toLowerCase() : null);
         payload.put("comment", ticket.getComment());
         payload.put("created_at", ticket.getCreatedAt() != null ? ticket.getCreatedAt().toString() : null);
-
-        rabbitTemplate.convertAndSend(EXCHANGE, "", buildEnvelope(EVENT_REQUESTED, payload));
+        return payload;
     }
 
     /**

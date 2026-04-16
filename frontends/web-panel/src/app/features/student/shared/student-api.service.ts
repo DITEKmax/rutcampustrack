@@ -193,6 +193,37 @@ export class StudentApiService {
   }
 
   /**
+   * Submit an excuse ticket with a supporting file. The file is forwarded to
+   * the headman via Telegram (notification-bot) and never persisted on the
+   * server — see ExcuseController#createExcuseWithFile.
+   *
+   * Backend endpoint: POST /api/attendance/excuses/with-file (multipart/form-data).
+   * Parts:
+   *  - request: JSON body with { lessonIds, excuseType, comment }
+   *  - file:    the attachment (≤ 10 MB)
+   */
+  submitExcuseWithFile(
+    lessonIds: number[],
+    excuseType: ExcuseType,
+    comment: string | null,
+    file: File,
+  ): Observable<void> {
+    const form = new FormData();
+    const requestJson = JSON.stringify({ lessonIds, excuseType, comment });
+    form.append(
+      'request',
+      new Blob([requestJson], { type: 'application/json' }),
+    );
+    form.append('file', file, file.name);
+    return this.http.post<void>('/api/attendance/excuses/with-file', form).pipe(
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 404) return of(undefined);
+        return throwError(() => err);
+      }),
+    );
+  }
+
+  /**
    * Request a late check-in for a specific absent lesson.
    * Backend: POST /api/attendance/late-checkin/{lessonId}.
    */

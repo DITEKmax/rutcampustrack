@@ -14,10 +14,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
 import ru.rutcampustrack.attendance.contract.dto.excuse.ExcuseTicketResponse;
 import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
@@ -48,6 +51,28 @@ public interface ExcuseApi {
     @PostMapping
     ResponseEntity<EntityModel<ExcuseTicketResponse>> createExcuse(
             @Valid @RequestBody CreateExcuseRequest request
+    );
+
+    @Operation(
+            summary = "Создать тикет о пропуске с файлом",
+            description = "STUDENT создаёт тикет и прикладывает документ (до 10 МБ). "
+                    + "Файл пересылается старосте через notification-bot и не сохраняется на сервере."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Тикет создан, файл поставлен в очередь на отправку"),
+            @ApiResponse(responseCode = "400", description = "Некорректный запрос или файл",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Староста не создаёт тикеты (D-12) или доступ запрещён",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "На один из уроков уже есть активный тикет (D-11)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "413", description = "Файл больше 10 МБ",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping(value = "/with-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<EntityModel<ExcuseTicketResponse>> createExcuseWithFile(
+            @Valid @RequestPart("request") CreateExcuseRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file
     );
 
     @Operation(

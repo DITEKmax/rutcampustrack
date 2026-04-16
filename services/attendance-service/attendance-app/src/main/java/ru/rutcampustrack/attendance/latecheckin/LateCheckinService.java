@@ -6,6 +6,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
@@ -17,6 +18,7 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -126,11 +128,50 @@ public class LateCheckinService {
     }
 
     /**
+     * List PENDING requests for the headman's own group. Caller must be STUDENT+is_headman;
+     * the controller enforces the role via {@code @RequireRole}, this method enforces the
+     * is_headman flag defensively so the query can never leak requests from another group.
+     */
+    public List<LateCheckinRequest> listPendingForHeadman() {
+        if (!requestContext.isHeadman()) {
+            throw new AccessDeniedException("Список запросов доступен только старосте группы");
+        }
+        Long groupId = requestContext.getGroupId();
+        if (groupId == null) {
+            throw new AccessDeniedException("Староста не привязан к группе");
+        }
+        return repository.findByGroupIdAndStatusOrderByCreatedAtAsc(
+                groupId, LateCheckinRequestStatus.PENDING);
+    }
+
+    /**
+     * Apply a headman's decision submitted from a web client (web-panel / PWA / mini-app).
+     * Guard: only a headman of the request's own group may decide. Delegates to the same
+     * idempotent {@link #applyDecision} used by the RabbitMQ consumer, using the authenticated
+     * headman's user_id as {@code decisionBy}.
+     *
+     * @return the decided request (APPROVED or REJECTED), or the already-decided request
+     *         if called twice (idempotent).
+     */
+    public LateCheckinRequest applyDecisionFromWeb(String requestId, boolean approved) {
+        if (!requestContext.isHeadman()) {
+            throw new AccessDeniedException("Решение может принимать только староста");
+        }
+        LateCheckinRequest request = repository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+        if (!Objects.equals(request.getGroupId(), requestContext.getGroupId())) {
+            throw new AccessDeniedException("Запрос принадлежит другой группе");
+        }
+        applyDecision(requestId, requestContext.getUserId(), approved);
+        return repository.findById(requestId).orElse(request);
+    }
+
+    /**
      * Apply a headman's decision received via RabbitMQ from the notification-bot.
      * Idempotent — duplicate deliveries to an already-decided request are ignored.
      *
      * @param requestId  the Mongo id of the LateCheckinRequest
-     * @param decisionBy telegram user_id of the headman (resolved upstream by the bot)
+     * @param decisionBy telegram user_id (bot path) or internal user_id (web path)
      * @param approved   true → APPROVED + attendance upsert; false → REJECTED
      */
     public void applyDecision(String requestId, Long decisionBy, boolean approved) {

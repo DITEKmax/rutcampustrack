@@ -6,7 +6,7 @@ describe('StatusLegendComponent', () => {
   it('renders 5 legend entries with correct symbols and labels', async () => {
     await render(StatusLegendComponent);
 
-    expect(screen.getByText('б')).toBeTruthy();
+    expect(screen.getByText('+')).toBeTruthy();
     expect(screen.getByText('н')).toBeTruthy();
     expect(screen.getByText('у')).toBeTruthy();
     expect(screen.getByText('сп')).toBeTruthy();

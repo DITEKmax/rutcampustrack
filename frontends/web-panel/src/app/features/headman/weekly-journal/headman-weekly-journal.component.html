@@ -106,7 +106,7 @@
                         (click)="onStatusClick(col.lessonId, student.userId, 'absent')"
                         [attr.aria-label]="'Не был — ' + student.displayName"
                         [attr.aria-pressed]="status === 'absent'"
-                      >Н</button>
+                      >н</button>
                     </td>
                     <td
                       class="cell"
@@ -115,14 +115,16 @@
                       [class.cell--day-end]="colLast && !dayLast"
                       [class.cell--subject-end]="!colLast"
                     >
+                      @let reason = getReason(col.lessonId, student.userId);
                       <button
                         type="button"
                         class="dot dot--excused"
-                        [class.dot--active]="status === 'excused'"
+                        [class.dot--active]="status === 'excused' || status === 'free_attendance'"
                         (click)="onStatusClick(col.lessonId, student.userId, 'excused')"
-                        [attr.aria-label]="'Уважит. причина — ' + student.displayName"
-                        [attr.aria-pressed]="status === 'excused'"
-                      >У</button>
+                        [attr.aria-label]="'Уважит. причина — ' + student.displayName + (reason ? (' · ' + reason) : '')"
+                        [attr.aria-pressed]="status === 'excused' || status === 'free_attendance'"
+                        [attr.title]="reason"
+                      >у</button>
                     </td>
                   }
                 }

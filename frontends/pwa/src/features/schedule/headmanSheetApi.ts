@@ -22,6 +22,8 @@ export interface LessonAttendanceEntry {
   symbol: string
   /** null if no attendance doc yet. */
   source: AttendanceSource | null
+  /** Populated only for excused / free_attendance from approved excuse tickets. */
+  excuseReason?: string | null
 }
 
 export interface LessonAttendance {

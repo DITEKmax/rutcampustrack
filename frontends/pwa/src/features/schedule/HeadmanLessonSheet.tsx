@@ -350,6 +350,16 @@ function RosterTab({
                 ст · сам отметился
               </span>
             )}
+            {(entry.status === 'excused' || entry.status === 'free_attendance') &&
+              entry.excuseReason && (
+                <span
+                  className="text-[10px] tracking-wide truncate block"
+                  style={{ color: 'var(--accent-warning)' }}
+                  title={entry.excuseReason}
+                >
+                  у · {entry.excuseReason}
+                </span>
+              )}
           </div>
           <div className="flex items-center gap-1.5">
             <MarkBtn
@@ -360,14 +370,14 @@ function RosterTab({
               onClick={() => onMark(entry, 'present')}
             />
             <MarkBtn
-              label="Н"
+              label="н"
               active={entry.status === 'absent' && !!entry.source}
               color="var(--accent-danger)"
               loading={pendingUserId === entry.userId}
               onClick={() => onMark(entry, 'absent')}
             />
             <MarkBtn
-              label="У"
+              label="у"
               active={
                 entry.status === 'excused' || entry.status === 'free_attendance'
               }

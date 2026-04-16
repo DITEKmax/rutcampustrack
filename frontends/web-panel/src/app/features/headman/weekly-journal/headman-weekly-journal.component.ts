@@ -83,6 +83,7 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
   readonly subjects = signal<Map<number, string>>(new Map());
   /** key = `${lessonId}_${userId}` -> status */
   readonly statusMap = signal<Map<string, AttendanceStatus>>(new Map());
+  readonly reasonMap = signal<Map<string, string>>(new Map());
   /** cells currently saving (visual feedback) */
   readonly savingCells = signal<Set<string>>(new Set());
   /** cells that just saved successfully — flash indicator */
@@ -222,6 +223,7 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
         ),
       ).subscribe(results => {
         const map = new Map<string, AttendanceStatus>();
+        const reasons = new Map<string, string>();
         for (let i = 0; i < normalised.length; i++) {
           const lesson = normalised[i];
           const resp: any = results[i];
@@ -230,10 +232,15 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
           for (const e of entries) {
             const status = (e.status ?? '').toLowerCase() as AttendanceStatus;
             if (!status) continue;
-            map.set(`${lesson.id}_${e.userId}`, status);
+            const key = `${lesson.id}_${e.userId}`;
+            map.set(key, status);
+            if (e.excuseReason) {
+              reasons.set(key, e.excuseReason);
+            }
           }
         }
         this.statusMap.set(map);
+        this.reasonMap.set(reasons);
         this.loading.set(false);
       });
     });
@@ -259,6 +266,10 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
 
   getStatus(lessonId: number, userId: number): AttendanceStatus | undefined {
     return this.statusMap().get(`${lessonId}_${userId}`);
+  }
+
+  getReason(lessonId: number, userId: number): string | null {
+    return this.reasonMap().get(`${lessonId}_${userId}`) ?? null;
   }
 
   isSaving(lessonId: number, userId: number): boolean {

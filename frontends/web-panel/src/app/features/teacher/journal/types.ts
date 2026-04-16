@@ -17,6 +17,8 @@ export interface JournalCell {
   lessonNumber: number;
   status: 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled';
   symbol: string;
+  /** Human-readable excuse reason — present only for excused/free_attendance. */
+  excuseReason?: string | null;
 }
 
 export interface GroupResponse {

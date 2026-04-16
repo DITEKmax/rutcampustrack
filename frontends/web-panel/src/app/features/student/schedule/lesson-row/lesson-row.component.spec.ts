@@ -117,7 +117,7 @@ describe('LessonRowComponent', () => {
     expect(toggle).not.toHaveBeenCalled();
   });
 
-  it('shows "+" instead of "б" when present lesson came from late_checkin source', async () => {
+  it('shows "+" for a present lesson regardless of source', async () => {
     await render(LessonRowComponent, {
       providers: [provideNoopAnimations()],
       componentInputs: {
@@ -141,7 +141,7 @@ describe('LessonRowComponent', () => {
       },
     });
 
-    const chip = screen.getByText('б');
+    const chip = screen.getByText('+');
     expect(chip.className).toContain('status-chip--present');
   });
 

@@ -1,15 +1,16 @@
 import type { AttendanceStatus } from '@/features/headman/shared/types'
+import { STATUS_SYMBOLS, STATUS_ARIA_LABELS } from '@/features/schedule/statusSymbols'
 
 const SEGMENTS: ReadonlyArray<{
   value: AttendanceStatus
   label: string
   ariaLabel: string
 }> = [
-  { value: 'present', label: 'б', ariaLabel: 'Присутствовал' },
-  { value: 'absent', label: 'н', ariaLabel: 'Отсутствовал' },
-  { value: 'excused', label: 'у', ariaLabel: 'Уважительная причина' },
-  { value: 'free_attendance', label: 'сп', ariaLabel: 'Свободное посещение' },
-  { value: 'cancelled', label: '—', ariaLabel: 'Отменена' },
+  { value: 'present',         label: STATUS_SYMBOLS.present,         ariaLabel: STATUS_ARIA_LABELS.present },
+  { value: 'absent',          label: STATUS_SYMBOLS.absent,          ariaLabel: STATUS_ARIA_LABELS.absent },
+  { value: 'excused',         label: STATUS_SYMBOLS.excused,         ariaLabel: STATUS_ARIA_LABELS.excused },
+  { value: 'free_attendance', label: STATUS_SYMBOLS.free_attendance, ariaLabel: STATUS_ARIA_LABELS.free_attendance },
+  { value: 'cancelled',       label: STATUS_SYMBOLS.cancelled,       ariaLabel: STATUS_ARIA_LABELS.cancelled },
 ]
 
 export interface SegmentedControlProps {

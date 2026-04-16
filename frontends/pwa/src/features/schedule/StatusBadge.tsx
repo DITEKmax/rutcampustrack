@@ -1,35 +1,45 @@
 import type { CSSProperties } from 'react'
 import { cn } from '@/lib/utils'
 import type { LessonStatus, AttendanceStatus } from './types'
+import { STATUS_SYMBOLS } from './statusSymbols'
 
 /**
  * Transit Grid status pill (brandbook §4.4 "status chips").
  *
- * Attendance codes (б/н/у/сп) map to --status-* tokens defined in tokens.css,
+ * Attendance codes (+/н/у/сп) map to --status-* tokens defined in tokens.css,
  * so both themes render correctly. Lesson statuses (ACTIVE/PLANNED/…) use
  * accent colors — ACTIVE is the only one that claims the primary accent
  * (single-accent-per-view rule from baseline-ui).
+ *
+ * For `excused` pass `reason` to append the human-readable cause after "у"
+ * (e.g. "у · Болезнь"). Kept optional so non-attendance callers are unaffected.
  */
 interface StatusBadgeProps {
   status: LessonStatus | AttendanceStatus
+  reason?: string | null
 }
 
 type StatusKey = LessonStatus | AttendanceStatus
 
 const config: Record<StatusKey, { label: string; tone: string; strikethrough?: boolean }> = {
-  present:         { label: 'б',             tone: 'status-present' },
-  absent:          { label: 'н',             tone: 'status-absent' },
-  excused:         { label: 'у',             tone: 'status-excused' },
-  free_attendance: { label: 'сп',            tone: 'status-free' },
+  present:         { label: STATUS_SYMBOLS.present,         tone: 'status-present' },
+  absent:          { label: STATUS_SYMBOLS.absent,          tone: 'status-absent' },
+  excused:         { label: STATUS_SYMBOLS.excused,         tone: 'status-excused' },
+  free_attendance: { label: STATUS_SYMBOLS.free_attendance, tone: 'status-free' },
   ACTIVE:          { label: 'Идёт',          tone: 'lesson-active' },
   PLANNED:         { label: 'Запланировано', tone: 'lesson-planned' },
   CANCELLED:       { label: 'Отменена',      tone: 'lesson-muted', strikethrough: true },
   CLOSED:          { label: 'Завершено',     tone: 'lesson-muted' },
 }
 
-export function StatusBadge({ status }: StatusBadgeProps) {
+export function StatusBadge({ status, reason }: StatusBadgeProps) {
   const conf = config[status]
   if (!conf) return null
+
+  const showReason =
+    (status === 'excused' || status === 'free_attendance') &&
+    typeof reason === 'string' &&
+    reason.trim().length > 0
 
   return (
     <span
@@ -42,8 +52,12 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         conf.strikethrough && 'line-through',
       )}
       style={toneStyle(conf.tone)}
+      title={showReason ? reason! : undefined}
     >
       {conf.label}
+      {showReason && (
+        <span className="ml-1 opacity-80 font-normal">· {reason}</span>
+      )}
     </span>
   )
 }

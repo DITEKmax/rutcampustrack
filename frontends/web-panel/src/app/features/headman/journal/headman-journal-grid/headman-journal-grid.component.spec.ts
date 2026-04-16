@@ -31,7 +31,7 @@ describe('HeadmanJournalGridComponent', () => {
         userId: 10,
         displayName: 'Иванов Иван',
         records: [
-          { lessonId: 42, date, lessonNumber: 1, status: 'absent' as const, symbol: 'Н' },
+          { lessonId: 42, date, lessonNumber: 1, status: 'absent' as const, symbol: 'н' },
         ],
       },
       {

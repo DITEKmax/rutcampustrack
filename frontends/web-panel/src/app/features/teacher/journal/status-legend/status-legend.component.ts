@@ -22,7 +22,7 @@ interface LegendEntry {
 })
 export class StatusLegendComponent {
   readonly entries: LegendEntry[] = [
-    { symbol: 'б', label: 'присутствовал', status: 'present' },
+    { symbol: '+', label: 'присутствовал', status: 'present' },
     { symbol: 'н', label: 'отсутствовал', status: 'absent' },
     { symbol: 'у', label: 'уважительная причина', status: 'excused' },
     { symbol: 'сп', label: 'свободное посещение', status: 'free_attendance' },

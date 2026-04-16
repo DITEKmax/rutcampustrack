@@ -18,10 +18,10 @@ type AttendanceStatus = 'present' | 'absent' | 'excused' | 'free_attendance' | '
 
 const STATUS_SYMBOLS: Record<AttendanceStatus, string> = {
   present: '+',
-  absent: 'Н',
-  excused: 'У',
-  free_attendance: 'СП',
-  cancelled: '--',
+  absent: 'н',
+  excused: 'у',
+  free_attendance: 'сп',
+  cancelled: '—',
 };
 
 const WEEKDAY_LABELS = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'] as const;
@@ -179,6 +179,18 @@ const QUICK_STATUSES: AttendanceStatus[] = ['present', 'absent', 'excused'];
       opacity: 0.5;
       font-size: 12px;
     }
+
+    .excuse-reason {
+      display: block;
+      margin-top: 2px;
+      font-size: 10px;
+      line-height: 1.2;
+      color: var(--status-excused, var(--accent-warning));
+      max-width: 72px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   `],
   template: `
     <div class="grid-wrapper"
@@ -218,10 +230,14 @@ const QUICK_STATUSES: AttendanceStatus[] = ['present', 'absent', 'excused'];
                           [class.dot--active]="cell.status === s"
                           [attr.aria-label]="statusAriaLabel(s) + ', ' + row.displayName + ', ' + col.displayDate"
                           [attr.aria-pressed]="cell.status === s"
+                          [attr.title]="s === 'excused' && cell.excuseReason ? cell.excuseReason : null"
                           (click)="setStatus(cell, row, s)"
                         >{{ statusSymbol(s) }}</button>
                       }
                     </span>
+                    @if ((cell.status === 'excused' || cell.status === 'free_attendance') && cell.excuseReason) {
+                      <span class="excuse-reason" [attr.title]="cell.excuseReason">{{ cell.excuseReason }}</span>
+                    }
                   } @else {
                     <span class="cell-cancelled" aria-label="Нет занятия">—</span>
                   }

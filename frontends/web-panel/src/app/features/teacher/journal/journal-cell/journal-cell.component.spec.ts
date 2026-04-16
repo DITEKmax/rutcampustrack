@@ -4,17 +4,17 @@ import { JournalCellComponent } from './journal-cell.component';
 import type { JournalCell } from '../types';
 
 describe('JournalCellComponent', () => {
-  it('renders status-chip--present with text "б" for present status', async () => {
+  it('renders status-chip--present with text "+" for present status', async () => {
     const cell: JournalCell = {
       date: '2026-03-15',
       lessonNumber: 1,
       status: 'present',
-      symbol: 'б',
+      symbol: 'б', // backend symbol is ignored — client maps by status
     };
 
     await render(JournalCellComponent, { componentInputs: { cell } });
 
-    const chip = screen.getByText('б');
+    const chip = screen.getByText('+');
     expect(chip.className).toContain('status-chip--present');
   });
 

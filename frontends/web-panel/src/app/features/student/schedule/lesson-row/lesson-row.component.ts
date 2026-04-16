@@ -94,10 +94,7 @@ export class LessonRowComponent {
   }
 
   get statusLabel(): string {
-    if (this.personalStatus === 'present') {
-      const src = (this.personalSource ?? '').toLowerCase();
-      return src === 'late_checkin' ? '+' : 'б';
-    }
+    if (this.personalStatus === 'present') return '+';
     if (this.personalStatus === 'absent') return 'н';
     if (this.personalStatus === 'excused') return 'у';
     if (this.personalStatus === 'free_attendance') return 'сп';

@@ -147,6 +147,11 @@ describe('StudentCheckinComponent', () => {
     httpMock
       .expectOne(r => r.url === '/api/schedule/groups/5/lessons')
       .flush({ _embedded: { lessonResponseList: lessons } });
+    // fetchToday also pulls the student's attendance records to seed the
+    // "already marked present" confirmed state. Flush an empty list by default.
+    httpMock
+      .match(r => r.url === '/api/attendance/reports/student/records')
+      .forEach(r => r.flush({ _embedded: { attendanceRecordEntryList: [] } }));
   }
 
   function flushSubjectCache() {

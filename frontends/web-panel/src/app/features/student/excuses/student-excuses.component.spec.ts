@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { signal } from '@angular/core';
 import { render, screen, fireEvent } from '@testing-library/angular';
 import { StudentExcusesComponent } from './student-excuses.component';
 import { ExcuseFormDialogComponent } from './excuse-form-dialog/excuse-form-dialog.component';
 import { StudentApiService } from '../shared/student-api.service';
 import { SubjectCacheService } from '../shared/subject-cache.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -15,11 +17,22 @@ const mockApiService = {
   getExcuseTickets: vi.fn(),
   getStudentRecords: vi.fn(),
   submitExcuse: vi.fn(),
+  submitExcuseWithFile: vi.fn(),
+  getWeekLessons: vi.fn(() => of([])),
 };
 
 const mockDialog = { open: vi.fn() };
 const mockSnackBar = { open: vi.fn() };
 const mockDialogRef = { close: vi.fn() };
+const mockSubjectCacheService = { getName: vi.fn(() => of('Алгебра')) };
+const mockAuthService = {
+  currentUser: signal<{ id: number; role: string; isHeadman: boolean; groupId: number } | null>({
+    id: 1,
+    role: 'STUDENT',
+    isHeadman: false,
+    groupId: 1,
+  }),
+};
 
 const sampleTicket: ExcuseTicket = {
   id: '650000000000000000000001',
@@ -53,9 +66,11 @@ describe('StudentExcusesComponent', () => {
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
+        { provide: SubjectCacheService, useValue: mockSubjectCacheService },
+        { provide: AuthService, useValue: mockAuthService },
       ],
     });
-    expect(screen.getByText('Нет тикетов о пропуске')).toBeTruthy();
+    expect(screen.getByText('Нет активных тикетов')).toBeTruthy();
   });
 
   it('показывает empty state при пустом списке тикетов', async () => {
@@ -66,9 +81,11 @@ describe('StudentExcusesComponent', () => {
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
+        { provide: SubjectCacheService, useValue: mockSubjectCacheService },
+        { provide: AuthService, useValue: mockAuthService },
       ],
     });
-    expect(screen.getByText('Нет тикетов о пропуске')).toBeTruthy();
+    expect(screen.getByText('Нет активных тикетов')).toBeTruthy();
     // AC-9: вызывается реальный endpoint GET /excuses/me
     expect(mockApiService.getExcuseTickets).toHaveBeenCalled();
   });
@@ -81,6 +98,8 @@ describe('StudentExcusesComponent', () => {
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
+        { provide: SubjectCacheService, useValue: mockSubjectCacheService },
+        { provide: AuthService, useValue: mockAuthService },
       ],
     });
     expect(screen.getByText('Подать тикет')).toBeTruthy();
@@ -94,6 +113,8 @@ describe('StudentExcusesComponent', () => {
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
+        { provide: SubjectCacheService, useValue: mockSubjectCacheService },
+        { provide: AuthService, useValue: mockAuthService },
       ],
     });
     // excuseType=illness → «Болезнь»
@@ -110,6 +131,8 @@ describe('StudentExcusesComponent', () => {
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
+        { provide: SubjectCacheService, useValue: mockSubjectCacheService },
+        { provide: AuthService, useValue: mockAuthService },
       ],
     });
     const cmp = fixture.componentInstance;

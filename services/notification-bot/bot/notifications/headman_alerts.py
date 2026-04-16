@@ -116,10 +116,13 @@ async def handle_headman_alert(
             # send never fails because a long comment pushed us over the edge.
             caption = text if len(text) <= 1024 else text[:1020] + "…"
 
-            async def _send_document(h=headman, markup=reply_markup,
-                                     payload_bytes=file_bytes,
-                                     payload_name=file_name,
-                                     payload_caption=caption):
+            async def _send_document(
+                h=headman,
+                markup=reply_markup,
+                payload_bytes=file_bytes,
+                payload_name=file_name,
+                payload_caption=caption,
+            ):
                 return await bot.send_document(
                     chat_id=h.telegram_id,
                     document=BufferedInputFile(payload_bytes, filename=payload_name),

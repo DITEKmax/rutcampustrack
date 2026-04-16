@@ -1,49 +1,93 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
 import { ExcusesPage } from './ExcusesPage'
+import type { ExcuseTicket } from '@/features/headman/shared/types'
 
-function renderPage() {
+vi.mock('@/features/auth/AuthProvider', () => ({
+  useAuth: () => ({
+    user: { id: 7, role: 'STUDENT', groupId: 1, isHeadman: true },
+    isAuthenticated: true,
+    accessToken: 'stub',
+    login: async () => {},
+    logout: async () => {},
+  }),
+}))
+
+const mockUseGroupExcuses = vi.fn()
+const mockMutate = vi.fn()
+vi.mock('@/features/headman/shared/headmanApi', async () => {
+  const actual =
+    await vi.importActual<typeof import('@/features/headman/shared/headmanApi')>(
+      '@/features/headman/shared/headmanApi',
+    )
+  return {
+    ...actual,
+    useGroupExcuses: () => mockUseGroupExcuses(),
+    useDecideExcuse: () => ({ mutateAsync: mockMutate }),
+  }
+})
+
+function wrap(ui: ReactNode) {
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
-    <BrowserRouter>
-      <ExcusesPage />
-    </BrowserRouter>,
+    <QueryClientProvider client={qc}>
+      <BrowserRouter>{ui}</BrowserRouter>
+    </QueryClientProvider>,
   )
 }
 
-describe('ExcusesPage (graceful degradation per D-10)', () => {
-  it('Test 1: renders back link pointing to /group', () => {
-    renderPage()
-    const backLink = screen.getByRole('link', { name: /назад/i })
-    expect(backLink).toHaveAttribute('href', '/group')
+function pendingTicket(overrides: Partial<ExcuseTicket> = {}): ExcuseTicket {
+  return {
+    id: 'ex-1',
+    studentId: 100,
+    groupId: 1,
+    studentName: 'Петров П.П.',
+    lessonIds: [501, 502],
+    excuseType: 'illness',
+    comment: 'Болею',
+    status: 'submitted',
+    decisionBy: null,
+    decisionComment: null,
+    decisionAt: null,
+    createdAt: '2026-04-16T10:00:00Z',
+    updatedAt: '2026-04-16T10:00:00Z',
+    ...overrides,
+  }
+}
+
+describe('ExcusesPage', () => {
+  beforeEach(() => {
+    mockUseGroupExcuses.mockReset()
+    mockMutate.mockReset()
   })
 
-  it('Test 2: renders page heading "Пропуски"', () => {
-    renderPage()
+  it('renders back link to /group and page heading', () => {
+    mockUseGroupExcuses.mockReturnValue({ data: [], isLoading: false })
+    wrap(<ExcusesPage />)
+    expect(screen.getByRole('link', { name: /назад/i })).toHaveAttribute('href', '/group')
     expect(screen.getByRole('heading', { level: 1, name: 'Пропуски' })).toBeInTheDocument()
   })
 
-  it('Test 3: renders circle icon container with FileText phosphor icon', () => {
-    const { container } = renderPage()
-    // Icon circle container uses w-20 h-20 (80×80) rounded-full
-    const circle = container.querySelector('.w-20.h-20.rounded-full')
-    expect(circle).toBeTruthy()
-    // Phosphor icons render as <svg>
-    const svg = circle?.querySelector('svg')
-    expect(svg).toBeTruthy()
+  it('shows empty state when no tickets', () => {
+    mockUseGroupExcuses.mockReturnValue({ data: [], isLoading: false })
+    wrap(<ExcusesPage />)
+    expect(screen.getByText('Нет заявок')).toBeInTheDocument()
   })
 
-  it('Test 4: renders "Функция в разработке" heading and body copy', () => {
-    renderPage()
-    expect(screen.getByText('Функция в разработке')).toBeInTheDocument()
-    expect(
-      screen.getByText(/Запросы студентов на одобрение пропусков появятся здесь/i),
-    ).toBeInTheDocument()
+  it('renders a pending ticket with approve/reject buttons', () => {
+    mockUseGroupExcuses.mockReturnValue({ data: [pendingTicket()], isLoading: false })
+    wrap(<ExcusesPage />)
+    expect(screen.getByText('Петров П.П.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Одобрить/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Отклонить/ })).toBeInTheDocument()
   })
 
-  it('Test 5: renders no action buttons (no approve/reject/add buttons)', () => {
-    renderPage()
-    const buttons = screen.queryAllByRole('button')
-    expect(buttons).toHaveLength(0)
+  it('renders skeletons while loading', () => {
+    mockUseGroupExcuses.mockReturnValue({ data: undefined, isLoading: true })
+    const { container } = wrap(<ExcusesPage />)
+    expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0)
   })
 })

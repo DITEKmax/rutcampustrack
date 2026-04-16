@@ -45,6 +45,53 @@ export interface Assistant {
 
 export type AssistantPermission = 'manage_students' | 'manage_subjects' | 'manage_excuses' | 'manage_stats'
 
+export type ExcuseType =
+  | 'illness'
+  | 'summons'
+  | 'university_order'
+  | 'exemption'
+  | 'free_attendance'
+  | 'other'
+
+export type ExcuseTicketStatus = 'submitted' | 'approved' | 'rejected' | 'draft'
+
+/**
+ * Full shape of an ExcuseTicket from attendance-service.
+ * Matches ExcuseTicketResponse in the backend contract (Phase 59).
+ */
+export interface ExcuseTicket {
+  id: string
+  studentId: number
+  groupId: number
+  studentName: string
+  lessonIds: number[]
+  excuseType: ExcuseType
+  comment: string | null
+  status: ExcuseTicketStatus
+  decisionBy: number | null
+  decisionComment: string | null
+  decisionAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export const EXCUSE_TYPE_LABELS: Record<ExcuseType, string> = {
+  illness: 'Болезнь',
+  summons: 'Повестка',
+  university_order: 'Приказ университета',
+  exemption: 'Освобождение',
+  free_attendance: 'Свободное посещение',
+  other: 'Другое',
+}
+
+export const EXCUSE_STATUS_LABELS: Record<ExcuseTicketStatus, string> = {
+  submitted: 'На рассмотрении',
+  approved: 'Одобрено',
+  rejected: 'Отклонено',
+  draft: 'Черновик',
+}
+
+/** @deprecated — use ExcuseTicket. Kept for backward compatibility of old hooks. */
 export interface PendingExcuse {
   id: number
   studentName: string
@@ -52,6 +99,26 @@ export interface PendingExcuse {
   createdAt: string
 }
 
+/**
+ * LateCheckinRequest — matches LateCheckinRequestResponse on the backend.
+ * status: 'pending' | 'approved' | 'rejected' (lowercase to match Mongo / events).
+ */
+export type LateCheckinRequestStatus = 'pending' | 'approved' | 'rejected'
+
+export interface LateCheckinRequest {
+  id: string
+  studentId: number
+  groupId: number
+  lessonId: number
+  studentName: string
+  status: LateCheckinRequestStatus
+  decisionBy: number | null
+  decisionAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+/** @deprecated — use LateCheckinRequest. Kept for backward compatibility. */
 export interface PendingLateCheckin {
   id: number
   studentName: string

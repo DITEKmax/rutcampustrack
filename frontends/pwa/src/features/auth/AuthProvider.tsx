@@ -24,7 +24,13 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-function parseJwt(token: string): { sub: string; role: string; groupId?: number; is_headman?: boolean } {
+function parseJwt(token: string): {
+  sub: string
+  role: string
+  groupId?: number
+  group_id?: number
+  is_headman?: boolean
+} {
   const parts = token.split('.')
   if (parts.length !== 3) {
     throw new Error('Malformed JWT: expected 3 segments')
@@ -46,10 +52,19 @@ function tokenToUser(token: string): AuthUser {
   if (!Number.isFinite(idNum)) {
     throw new Error('Invalid JWT: sub is not numeric')
   }
+  // auth-service JwtService emits the `group_id` claim (snake_case, see
+  // services/auth-service/.../JwtService.java). Older tests and some legacy
+  // tokens used `groupId` — accept both so a token refresh is not required.
+  const rawGroupId =
+    typeof payload.group_id === 'number'
+      ? payload.group_id
+      : typeof payload.groupId === 'number'
+        ? payload.groupId
+        : undefined
   return {
     id: idNum,
     role: payload.role,
-    groupId: typeof payload.groupId === 'number' ? payload.groupId : undefined,
+    groupId: rawGroupId,
     isHeadman: payload.is_headman ?? false,
   }
 }

@@ -9,6 +9,9 @@ import type {
   TodayLesson,
   PendingExcuse,
   PendingLateCheckin,
+  ExcuseTicket,
+  ExcuseTicketStatus,
+  LateCheckinRequest,
 } from './types'
 import type { AttendanceStatus } from './types'
 
@@ -150,6 +153,115 @@ export function usePendingLateCheckins(groupId: number) {
     retry: false,
     staleTime: 5 * 60 * 1000,
     enabled: !!groupId,
+  })
+}
+
+/**
+ * Phase 59 endpoint: excuse tickets for the headman's group.
+ * GET /api/attendance/excuses/group/{groupId}?status=...
+ * 403/404 → empty list (graceful degradation while backend rolls out).
+ */
+export function useGroupExcuses(
+  groupId: number,
+  status?: ExcuseTicketStatus | 'submitted',
+) {
+  return useQuery<ExcuseTicket[]>({
+    queryKey: ['groupExcuses', groupId, status ?? 'all'],
+    queryFn: async () => {
+      try {
+        const params: Record<string, unknown> = { size: 50 }
+        if (status) params.status = status
+        const { data } = await apiClient.get(
+          `/attendance/excuses/group/${groupId}`,
+          { params },
+        )
+        return (
+          data._embedded?.excuseTicketList ??
+          data._embedded?.excuseTicketResponseList ??
+          []
+        )
+      } catch (err: unknown) {
+        const s = (err as { response?: { status?: number } })?.response?.status
+        if (s === 403 || s === 404) return []
+        throw err
+      }
+    },
+    retry: false,
+    staleTime: 60 * 1000,
+    enabled: !!groupId,
+  })
+}
+
+export function useDecideExcuse() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      id,
+      approved,
+      decisionComment,
+    }: {
+      id: string
+      approved: boolean
+      decisionComment: string | null
+    }) => {
+      await apiClient.patch(`/attendance/excuses/${id}/status`, {
+        status: approved ? 'approved' : 'rejected',
+        decisionComment: decisionComment ?? null,
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groupExcuses'] })
+    },
+  })
+}
+
+/**
+ * Late-checkin requests for the headman's own group.
+ * GET /api/attendance/late-checkin/pending (from Phase 61 — web channel).
+ * 403/404 → empty list (graceful degradation).
+ */
+export function usePendingLateCheckinRequests() {
+  return useQuery<LateCheckinRequest[]>({
+    queryKey: ['pendingLateCheckinRequests'],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get('/attendance/late-checkin/pending')
+        if (Array.isArray(data)) return data as LateCheckinRequest[]
+        const embedded = data?._embedded
+        if (!embedded) return []
+        return (
+          (embedded.lateCheckinRequestResponseList as LateCheckinRequest[]) ??
+          (Object.values(embedded)[0] as LateCheckinRequest[]) ??
+          []
+        )
+      } catch (err: unknown) {
+        const s = (err as { response?: { status?: number } })?.response?.status
+        if (s === 403 || s === 404) return []
+        throw err
+      }
+    },
+    retry: false,
+    staleTime: 30 * 1000,
+  })
+}
+
+export function useDecideLateCheckin() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      requestId,
+      approved,
+    }: {
+      requestId: string
+      approved: boolean
+    }) => {
+      await apiClient.post(`/attendance/late-checkin/${requestId}/decision`, {
+        approved,
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingLateCheckinRequests'] })
+    },
   })
 }
 

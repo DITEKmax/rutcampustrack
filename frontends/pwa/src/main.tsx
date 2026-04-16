@@ -14,6 +14,7 @@ import { StompProvider } from './features/checkin/StompProvider'
 import { UpdateBanner } from './shared/components/UpdateBanner'
 import './index.css'
 
+const HomeDashboard = lazy(() => import('./features/home/HomeDashboard'))
 const SchedulePage = lazy(() => import('./features/schedule/SchedulePage').then(m => ({ default: m.SchedulePage })))
 const CheckInScreen = lazy(() => import('./features/checkin/CheckInScreen').then(m => ({ default: m.CheckInScreen })))
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'))
@@ -49,7 +50,7 @@ const router = createBrowserRouter([
         path: 'home',
         element: (
           <Suspense fallback={<LoadingSpinner />}>
-            <SchedulePage />
+            <HomeDashboard />
           </Suspense>
         ),
       },

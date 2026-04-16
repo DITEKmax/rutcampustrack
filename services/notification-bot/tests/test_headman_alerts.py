@@ -142,7 +142,8 @@ async def test_excuse_requested_text_contains_student_name_and_excuse_type():
     call_kwargs = bot.send_message.call_args.kwargs
     text = call_kwargs.get("text", "")
     assert "Иван Иванов" in text
-    assert "illness" in text
+    # handler localizes the enum to a Russian label (headman_alerts._excuse_type_label)
+    assert "Болезнь" in text
 
 
 @pytest.mark.asyncio

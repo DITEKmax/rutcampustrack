@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
 import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
+import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -48,6 +50,16 @@ public class ExcuseService {
 
     private static final List<ExcuseTicketStatus> ACTIVE_STATUSES =
             List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED);
+
+    /** Russian labels for excuse types — shown next to "у" in journal cells. */
+    private static final Map<ExcuseType, String> EXCUSE_TYPE_LABELS = Map.of(
+            ExcuseType.ILLNESS, "Болезнь",
+            ExcuseType.SUMMONS, "Повестка",
+            ExcuseType.UNIVERSITY_ORDER, "Приказ",
+            ExcuseType.EXEMPTION, "Освобождение",
+            ExcuseType.FREE_ATTENDANCE, "Свободное посещение",
+            ExcuseType.OTHER, "Другое"
+    );
 
     private final ExcuseRepository excuseRepository;
     private final RequestContext requestContext;
@@ -256,12 +268,15 @@ public class ExcuseService {
         // D-16: on APPROVED, cascade to attendance documents (EXCUSED or FREE_ATTENDANCE)
         if (newStatus == ExcuseTicketStatus.APPROVED) {
             AttendanceStatus attendanceStatus = mapExcuseTypeToAttendanceStatus(saved.getExcuseType());
+            String reason = buildReason(saved);
             for (Long lessonId : saved.getLessonIds()) {
                 attendanceWritePort.mark(
                         saved.getStudentId(),
                         lessonId,
                         saved.getGroupId(),
-                        attendanceStatus);
+                        attendanceStatus,
+                        AttendanceSource.HEADMAN_EXCUSE,
+                        reason);
             }
         }
 
@@ -286,6 +301,23 @@ public class ExcuseService {
             return AttendanceStatus.FREE_ATTENDANCE;
         }
         return AttendanceStatus.EXCUSED;
+    }
+
+    /**
+     * Human-readable reason shown next to "у" in journal cells. For OTHER we prefer
+     * the student's own comment (truncated) — it carries the actual explanation.
+     */
+    private String buildReason(ExcuseTicket ticket) {
+        ExcuseType type = ticket.getExcuseType();
+        if (type == ExcuseType.OTHER) {
+            String comment = ticket.getComment();
+            if (comment != null && !comment.isBlank()) {
+                String trimmed = comment.strip();
+                return trimmed.length() > 80 ? trimmed.substring(0, 80) + "…" : trimmed;
+            }
+            return EXCUSE_TYPE_LABELS.get(ExcuseType.OTHER);
+        }
+        return EXCUSE_TYPE_LABELS.getOrDefault(type, "Уважительная");
     }
 
     /**

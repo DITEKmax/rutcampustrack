@@ -301,11 +301,15 @@ class ExcuseServiceTest {
         assertThat(result.getDecisionAt()).isNotNull();
         assertThat(result.getUpdatedAt()).isNotNull();
         verify(excuseRepository).save(submitted);
-        // D-16 cascade: one mark() per lessonId with EXCUSED status (ILLNESS → EXCUSED)
+        // D-16 cascade: one mark() per lessonId with EXCUSED status + excuse reason (ILLNESS → "Болезнь")
         verify(attendanceWritePort).mark(STUDENT_ID, 1L, GROUP_ID,
-                ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED);
+                ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED,
+                ru.rutcampustrack.attendance.contract.enums.AttendanceSource.HEADMAN_EXCUSE,
+                "Болезнь");
         verify(attendanceWritePort).mark(STUDENT_ID, 2L, GROUP_ID,
-                ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED);
+                ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.EXCUSED,
+                ru.rutcampustrack.attendance.contract.enums.AttendanceSource.HEADMAN_EXCUSE,
+                "Болезнь");
         // 59-05: publishDecided must fire AFTER cascade, before return
         verify(excuseEventPublisher).publishDecided(result);
     }

@@ -94,12 +94,12 @@ class ReportServiceTest {
 
     private AttendanceRecord record(Long subjectId, AttendanceStatus status) {
         return new AttendanceRecord(LESSON_ID, USER_ID, GROUP_ID, subjectId,
-                LocalDate.of(2026, 4, 1), 1, status, AttendanceSource.STUDENT_GEO);
+                LocalDate.of(2026, 4, 1), 1, status, AttendanceSource.STUDENT_GEO, null);
     }
 
     private AttendanceRecord recordForUser(Long userId, Long subjectId, AttendanceStatus status) {
         return new AttendanceRecord(LESSON_ID, userId, GROUP_ID, subjectId,
-                LocalDate.of(2026, 4, 1), 1, status, AttendanceSource.STUDENT_GEO);
+                LocalDate.of(2026, 4, 1), 1, status, AttendanceSource.STUDENT_GEO, null);
     }
 
     // -------------------------------------------------------------------------
@@ -291,7 +291,8 @@ class ReportServiceTest {
         Long knownLessonId = 42L;
         AttendanceRecord recordWithKnownLesson = new AttendanceRecord(
                 knownLessonId, USER_ID, GROUP_ID, SUBJECT_ID_1,
-                LocalDate.of(2026, 4, 1), 1, AttendanceStatus.PRESENT, AttendanceSource.STUDENT_GEO
+                LocalDate.of(2026, 4, 1), 1, AttendanceStatus.PRESENT, AttendanceSource.STUDENT_GEO,
+                null
         );
 
         GroupMembersResponse members = GroupMembersResponse.newBuilder()
@@ -341,7 +342,7 @@ class ReportServiceTest {
     private AttendanceRecord recordOn(Long subjectId, AttendanceStatus status,
                                       AttendanceSource source, LocalDate date) {
         return new AttendanceRecord(LESSON_ID, USER_ID, GROUP_ID, subjectId,
-                date, 1, status, source);
+                date, 1, status, source, null);
     }
 
     private ru.rutcampustrack.academic.grpc.SemesterResponse semester(String dateFrom) {

@@ -13,13 +13,25 @@ public class JournalCell {
     private final Integer lessonNumber;
     private final String status;
     private final String symbol;
+    /**
+     * Human-readable excuse reason shown next to "у" in the journal.
+     * Non-null only when status is EXCUSED / FREE_ATTENDANCE and the cascade
+     * from an approved excuse ticket stamped it onto the document.
+     */
+    private final String excuseReason;
 
     public JournalCell(Long lessonId, String date, Integer lessonNumber, String status, String symbol) {
+        this(lessonId, date, lessonNumber, status, symbol, null);
+    }
+
+    public JournalCell(Long lessonId, String date, Integer lessonNumber, String status, String symbol,
+                       String excuseReason) {
         this.lessonId = lessonId;
         this.date = date;
         this.lessonNumber = lessonNumber;
         this.status = status;
         this.symbol = symbol;
+        this.excuseReason = excuseReason;
     }
 
     public Long getLessonId() {
@@ -40,5 +52,9 @@ public class JournalCell {
 
     public String getSymbol() {
         return symbol;
+    }
+
+    public String getExcuseReason() {
+        return excuseReason;
     }
 }

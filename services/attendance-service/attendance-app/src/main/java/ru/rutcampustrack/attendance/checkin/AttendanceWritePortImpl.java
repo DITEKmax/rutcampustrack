@@ -33,11 +33,17 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
 
     @Override
     public void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status) {
-        mark(studentId, lessonId, groupId, status, AttendanceSource.HEADMAN_EXCUSE);
+        mark(studentId, lessonId, groupId, status, AttendanceSource.HEADMAN_EXCUSE, null);
     }
 
     @Override
     public void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status, AttendanceSource source) {
+        mark(studentId, lessonId, groupId, status, source, null);
+    }
+
+    @Override
+    public void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status,
+                     AttendanceSource source, String excuseReason) {
         Instant now = Instant.now();
         Optional<AttendanceDocument> existing =
                 attendanceRepository.findByLessonIdAndUserId(lessonId, studentId);
@@ -46,6 +52,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
             AttendanceDocument doc = existing.get();
             doc.setStatus(status);
             doc.setSource(source);
+            doc.setExcuseReason(excuseReason);
             doc.setUpdatedAt(now);
             attendanceRepository.save(doc);
             return;
@@ -57,6 +64,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
                 .groupId(groupId)
                 .status(status)
                 .source(source)
+                .excuseReason(excuseReason)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();

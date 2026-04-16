@@ -18,5 +18,6 @@ public record AttendanceRecord(
         LocalDate lessonDate,
         Integer lessonNumber,
         AttendanceStatus status,
-        AttendanceSource source
+        AttendanceSource source,
+        String excuseReason
 ) {}

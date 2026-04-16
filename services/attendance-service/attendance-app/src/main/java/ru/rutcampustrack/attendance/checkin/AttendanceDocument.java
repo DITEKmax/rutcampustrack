@@ -62,6 +62,9 @@ public class AttendanceDocument {
     @Field("marked_by")
     private Long markedBy;
 
+    @Field("excuse_reason")
+    private String excuseReason;
+
     @Field("created_at")
     private Instant createdAt;
 

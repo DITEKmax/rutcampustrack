@@ -35,4 +35,13 @@ public interface AttendanceWritePort {
      * @param source    who/what is claiming this write (LATE_CHECKIN, HEADMAN_EXCUSE, ...)
      */
     void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status, AttendanceSource source);
+
+    /**
+     * Upsert with explicit source and an optional human-readable excuse reason.
+     * {@code excuseReason} is only meaningful for EXCUSED / FREE_ATTENDANCE via the
+     * excuse cascade; passing {@code null} clears the stored reason (e.g. when the
+     * status is overwritten by a non-excuse path).
+     */
+    void mark(Long studentId, Long lessonId, Long groupId, AttendanceStatus status,
+              AttendanceSource source, String excuseReason);
 }

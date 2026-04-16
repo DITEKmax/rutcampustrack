@@ -13,9 +13,17 @@ public class AttendanceRecordEntry {
     private final String status;
     private final String symbol;
     private final String source;
+    /** Human-readable excuse reason; non-null only for EXCUSED / FREE_ATTENDANCE. */
+    private final String excuseReason;
 
     public AttendanceRecordEntry(Long lessonId, Long subjectId, String lessonDate,
                                   Integer lessonNumber, String status, String symbol, String source) {
+        this(lessonId, subjectId, lessonDate, lessonNumber, status, symbol, source, null);
+    }
+
+    public AttendanceRecordEntry(Long lessonId, Long subjectId, String lessonDate,
+                                  Integer lessonNumber, String status, String symbol, String source,
+                                  String excuseReason) {
         this.lessonId = lessonId;
         this.subjectId = subjectId;
         this.lessonDate = lessonDate;
@@ -23,6 +31,7 @@ public class AttendanceRecordEntry {
         this.status = status;
         this.symbol = symbol;
         this.source = source;
+        this.excuseReason = excuseReason;
     }
 
     public Long getLessonId() {
@@ -51,5 +60,9 @@ public class AttendanceRecordEntry {
 
     public String getSource() {
         return source;
+    }
+
+    public String getExcuseReason() {
+        return excuseReason;
     }
 }

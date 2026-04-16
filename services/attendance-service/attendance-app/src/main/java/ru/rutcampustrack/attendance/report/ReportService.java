@@ -99,8 +99,9 @@ public class ReportService {
                     String source = (rec != null && rec.source() != null)
                             ? rec.source().name().toLowerCase()
                             : null;
+                    String excuseReason = (rec != null) ? rec.excuseReason() : null;
                     return new StudentAttendanceEntry(uid, student.getDisplayName(),
-                            status.name().toLowerCase(), statusSymbol(status), source);
+                            status.name().toLowerCase(), statusSymbol(status), source, excuseReason);
                 })
                 .toList();
 
@@ -147,7 +148,8 @@ public class ReportService {
                                     r.lessonDate().toString(),
                                     r.lessonNumber(),
                                     r.status().name().toLowerCase(),
-                                    statusSymbol(r.status())
+                                    statusSymbol(r.status()),
+                                    r.excuseReason()
                             ))
                             .toList();
                     return new JournalStudentRow(uid, displayName, cells);
@@ -388,7 +390,8 @@ public class ReportService {
                         r.lessonNumber(),
                         r.status().name().toLowerCase(),
                         statusSymbol(r.status()),
-                        r.source().name().toLowerCase()
+                        r.source().name().toLowerCase(),
+                        r.excuseReason()
                 ))
                 .toList();
     }

@@ -67,7 +67,8 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
                 doc.getLessonDate(),
                 doc.getLessonNumber(),
                 doc.getStatus(),
-                doc.getSource()
+                doc.getSource(),
+                doc.getExcuseReason()
         );
     }
 }

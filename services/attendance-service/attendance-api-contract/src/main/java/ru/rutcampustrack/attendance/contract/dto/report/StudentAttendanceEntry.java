@@ -16,18 +16,29 @@ public class StudentAttendanceEntry {
      * Used by PWA/Mini-App headman sheet to show "ст" badge for self-marked students.
      */
     private final String source;
+    /**
+     * Human-readable excuse reason shown next to "у" in lesson rosters.
+     * Non-null only when status is EXCUSED / FREE_ATTENDANCE via the excuse cascade.
+     */
+    private final String excuseReason;
 
     public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol) {
-        this(userId, displayName, status, symbol, null);
+        this(userId, displayName, status, symbol, null, null);
     }
 
     public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol,
                                   String source) {
+        this(userId, displayName, status, symbol, source, null);
+    }
+
+    public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol,
+                                  String source, String excuseReason) {
         this.userId = userId;
         this.displayName = displayName;
         this.status = status;
         this.symbol = symbol;
         this.source = source;
+        this.excuseReason = excuseReason;
     }
 
     public Long getUserId() {
@@ -48,5 +59,9 @@ public class StudentAttendanceEntry {
 
     public String getSource() {
         return source;
+    }
+
+    public String getExcuseReason() {
+        return excuseReason;
     }
 }

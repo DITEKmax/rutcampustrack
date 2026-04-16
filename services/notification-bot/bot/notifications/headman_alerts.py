@@ -233,6 +233,7 @@ def _format_ru_date(iso: str) -> str:
     """YYYY-MM-DD → «пн 14.04». На ошибке возвращает вход как есть."""
     try:
         from datetime import date
+
         y, m, d = iso[:10].split("-")
         parsed = date(int(y), int(m), int(d))
         # date.weekday(): пн=0, вс=6 — совпадает с _RU_WEEKDAYS.

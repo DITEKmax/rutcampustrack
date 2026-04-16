@@ -32,6 +32,7 @@ const mockAuthService = {
     isHeadman: false,
     groupId: 1,
   }),
+  accessToken: signal('stub-token').asReadonly(),
 };
 
 const sampleTicket: ExcuseTicket = {

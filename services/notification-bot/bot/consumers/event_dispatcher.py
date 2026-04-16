@@ -195,9 +195,7 @@ class EventDispatcher:
                 # edit_text/edit_caption без сохранённого контекста перезапишет
                 # карточку. Reply — минимально-инвазивный вариант: сохраняет
                 # оригинал в истории чата и однозначно связан с ним.
-                await self._bot.edit_message_reply_markup(
-                    chat_id=chat_id, message_id=message_id, reply_markup=None
-                )
+                await self._bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=None)
                 await self._bot.send_message(
                     chat_id=chat_id,
                     text=verdict_line,

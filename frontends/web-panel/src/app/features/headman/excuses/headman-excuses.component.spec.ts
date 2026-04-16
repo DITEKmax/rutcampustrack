@@ -44,6 +44,9 @@ function makeApi(overrides: Partial<HeadmanApiService> = {}): HeadmanApiService 
     getGroupExcuses: vi.fn(() => of([MOCK_PENDING, MOCK_APPROVED])),
     approveExcuse: vi.fn(() => of(undefined as unknown as void)),
     rejectExcuse: vi.fn(() => of(undefined as unknown as void)),
+    // enrichLessons() fires after getGroupExcuses resolves; stub empty page
+    // so the async call doesn't hit an undefined method.
+    getGroupLessons: vi.fn(() => of({ content: [], totalElements: 0 })),
     ...overrides,
   } as unknown as HeadmanApiService;
 }
@@ -51,6 +54,9 @@ function makeApi(overrides: Partial<HeadmanApiService> = {}): HeadmanApiService 
 function makeAuth(groupId: number | null = 42): AuthService {
   return {
     currentUser: signal({ id: 1, role: 'STUDENT', isHeadman: true, groupId }),
+    // NotificationCenterService reads this on a provideAnAcessToken effect;
+    // make it a proper signal so .accessToken() returns a string.
+    accessToken: signal('stub-token').asReadonly(),
   } as unknown as AuthService;
 }
 

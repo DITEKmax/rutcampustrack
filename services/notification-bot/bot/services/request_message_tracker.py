@@ -57,9 +57,7 @@ class RequestMessageTracker:
             await self._redis.rpush(key, payload)
             await self._redis.expire(key, self._ttl)
         except Exception:
-            logger.exception(
-                "Redis error storing request message_id (kind=%s, id=%s)", kind, request_id
-            )
+            logger.exception("Redis error storing request message_id (kind=%s, id=%s)", kind, request_id)
 
     async def get_all(self, kind: str, request_id: str | int) -> list[dict]:
         """Вернуть все сохранённые (chat_id, message_id) для запроса."""
@@ -74,9 +72,7 @@ class RequestMessageTracker:
                     continue
             return out
         except Exception:
-            logger.exception(
-                "Redis error reading request message_ids (kind=%s, id=%s)", kind, request_id
-            )
+            logger.exception("Redis error reading request message_ids (kind=%s, id=%s)", kind, request_id)
             return []
 
     async def delete(self, kind: str, request_id: str | int) -> None:
@@ -85,9 +81,7 @@ class RequestMessageTracker:
         try:
             await self._redis.delete(key)
         except Exception:
-            logger.exception(
-                "Redis error deleting request key (kind=%s, id=%s)", kind, request_id
-            )
+            logger.exception("Redis error deleting request key (kind=%s, id=%s)", kind, request_id)
 
     async def close(self) -> None:
         await self._redis.aclose()

@@ -3,11 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { SegmentedControl } from '../SegmentedControl'
 
 describe('SegmentedControl', () => {
-  it('renders 5 buttons with exact labels [б, н, у, сп, —]', () => {
+  it('renders 5 buttons with exact labels [+, н, у, сп, —]', () => {
     render(
       <SegmentedControl value="present" onValueChange={vi.fn()} />,
     )
-    expect(screen.getByText('б')).toBeInTheDocument()
+    expect(screen.getByText('+')).toBeInTheDocument()
     expect(screen.getByText('н')).toBeInTheDocument()
     expect(screen.getByText('у')).toBeInTheDocument()
     expect(screen.getByText('сп')).toBeInTheDocument()

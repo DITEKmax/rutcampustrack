@@ -1,12 +1,25 @@
 import { render, screen } from '@testing-library/angular';
 import { of, throwError } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { HeadmanLateCheckinComponent } from './headman-late-checkin.component';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { HeadmanStompService } from '../shared/headman-stomp.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import type { LateCheckinRequestView } from './late-checkin.types';
+
+function commonProviders(mockApi: unknown) {
+  return [
+    { provide: HeadmanApiService, useValue: mockApi },
+    { provide: HeadmanStompService, useValue: stubStomp() },
+    { provide: AuthService, useValue: stubAuth() },
+    provideNoopAnimations(),
+    provideHttpClient(),
+    provideHttpClientTesting(),
+  ];
+}
 
 function stubAuth(groupId: number | null = 1): Partial<AuthService> {
   return {
@@ -27,12 +40,7 @@ describe('HeadmanLateCheckinComponent', () => {
   it('shows empty state when backend returns no pending requests', async () => {
     const mockApi = { getPendingLateCheckins: () => of<LateCheckinRequestView[]>([]) };
     await render(HeadmanLateCheckinComponent, {
-      providers: [
-        { provide: HeadmanApiService, useValue: mockApi },
-        { provide: HeadmanStompService, useValue: stubStomp() },
-        { provide: AuthService, useValue: stubAuth() },
-        provideNoopAnimations(),
-      ],
+      providers: commonProviders(mockApi),
     });
     expect(screen.getByText('Нет активных запросов')).toBeTruthy();
   });
@@ -42,12 +50,7 @@ describe('HeadmanLateCheckinComponent', () => {
       getPendingLateCheckins: () => of<LateCheckinRequestView[]>([]),
     };
     await render(HeadmanLateCheckinComponent, {
-      providers: [
-        { provide: HeadmanApiService, useValue: mockApi },
-        { provide: HeadmanStompService, useValue: stubStomp() },
-        { provide: AuthService, useValue: stubAuth() },
-        provideNoopAnimations(),
-      ],
+      providers: commonProviders(mockApi),
     });
     expect(screen.getByText('Нет активных запросов')).toBeTruthy();
   });
@@ -67,12 +70,7 @@ describe('HeadmanLateCheckinComponent', () => {
     };
     const mockApi = { getPendingLateCheckins: () => of([sample]) };
     await render(HeadmanLateCheckinComponent, {
-      providers: [
-        { provide: HeadmanApiService, useValue: mockApi },
-        { provide: HeadmanStompService, useValue: stubStomp() },
-        { provide: AuthService, useValue: stubAuth() },
-        provideNoopAnimations(),
-      ],
+      providers: commonProviders(mockApi),
     });
     expect(screen.getByText('Иванов И.И.')).toBeTruthy();
     expect(screen.getByText(/Подтвердить/)).toBeTruthy();
@@ -84,12 +82,7 @@ describe('HeadmanLateCheckinComponent', () => {
       getPendingLateCheckins: () => throwError(() => ({ status: 500 })),
     };
     await render(HeadmanLateCheckinComponent, {
-      providers: [
-        { provide: HeadmanApiService, useValue: mockApi },
-        { provide: HeadmanStompService, useValue: stubStomp() },
-        { provide: AuthService, useValue: stubAuth() },
-        provideNoopAnimations(),
-      ],
+      providers: commonProviders(mockApi),
     });
     expect(screen.getByText('Не удалось загрузить список запросов.')).toBeTruthy();
   });

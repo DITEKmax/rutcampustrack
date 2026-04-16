@@ -53,7 +53,6 @@ class EventDispatcher:
         from bot.notifications.lesson_one_off_cancelled import handle_lesson_one_off_cancelled
         from bot.notifications.lesson_one_off_created import handle_lesson_one_off_created
         from bot.notifications.otp_verified import handle_otp_verified
-        from bot.notifications.student_alerts import handle_student_alert
 
         # Handler registry: event_type -> async callable(event: dict)
         self._handlers: dict[str, Callable[[dict], Awaitable[None]]] = {

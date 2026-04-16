@@ -123,6 +123,13 @@ async def main() -> None:
     # Inject dependencies via dp workflow data (Aiogram 3 DI pattern)
     event_publisher = EventPublisher(config.rabbitmq_url)
 
+    # Трекер (chat_id, message_id) запросов — для sync TG ↔ Web при *.decided.
+    request_tracker = RequestMessageTracker(
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
     dp["academic_client"] = academic_client
     dp["schedule_client"] = schedule_client
     dp["jwt_redis"] = jwt_redis
@@ -147,12 +154,6 @@ async def main() -> None:
     redis_client = ReminderRedisClient(
         key_template=config.reminder_key_template,
         ttl=config.reminder_key_ttl,
-        host=config.redis_host,
-        port=config.redis_port,
-        password=config.redis_password,
-    )
-    # Трекер (chat_id, message_id) запросов — для sync TG ↔ Web при *.decided.
-    request_tracker = RequestMessageTracker(
         host=config.redis_host,
         port=config.redis_port,
         password=config.redis_password,

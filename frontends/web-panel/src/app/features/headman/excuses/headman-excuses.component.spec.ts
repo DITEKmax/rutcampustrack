@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { signal } from '@angular/core';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -69,6 +70,8 @@ describe('HeadmanExcusesComponent', () => {
       imports: [HeadmanExcusesComponent],
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: HeadmanApiService, useValue: api },
         { provide: AuthService, useValue: makeAuth(groupId) },
         { provide: MatSnackBar, useValue: snackBar },

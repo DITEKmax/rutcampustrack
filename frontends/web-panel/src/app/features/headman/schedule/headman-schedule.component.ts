@@ -52,28 +52,25 @@ const SLOT_TIMES: Record<number, string> = {
   8: '20:00–21:20',
 };
 
-/** Russian label for week type. */
+/**
+ * Russian label for week type. Pure number to match the user's convention
+ * (UI shows only «1» / «2» without parity wording).
+ * - ODD  = 1-я учебная неделя (идёт на ISO-чётных неделях года)
+ * - EVEN = 2-я учебная неделя (идёт на ISO-нечётных неделях года)
+ */
 function weekTypeLabel(weekType: string): string {
   switch (weekType) {
-    case 'ODD': return '1-я (нечёт)';
-    case 'EVEN': return '2-я (чёт)';
+    case 'ODD': return '1';
+    case 'EVEN': return '2';
     default: return 'Каждую';
   }
 }
 
-/** Returns Monday 00:00 of the week containing `d` (local time). */
-function mondayOf(d: Date): Date {
-  const m = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const dow = m.getDay(); // 0=Sun..6=Sat
-  const diff = (dow + 6) % 7; // distance back to Monday
-  m.setDate(m.getDate() - diff);
-  return m;
-}
-
 /**
- * ISO 8601 week number (1..53). Это «номер недели в году», по которому
- * считается чётность учебной недели в РУТ МИИТ: чётный номер недели — чётная
- * неделя, нечётный — нечётная. См. ГОСТ ISO 8601-2001.
+ * ISO 8601 week number (1..53). По его чётности определяется номер текущей
+ * учебной недели РУТ МИИТ: ISO-чётный → 1-я учебная, ISO-нечётный → 2-я.
+ * Эта же конвенция используется backend'ом при генерации уроков
+ * (LessonGenerationService).
  */
 function isoWeekNumber(d: Date): number {
   const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -147,11 +144,9 @@ function isoWeekNumber(d: Date): number {
         </div>
       } @else {
         <div class="page-card page-card--flush">
-          <div class="current-week-banner" [class.current-week-banner--odd]="currentWeekIsOdd()">
+          <div class="current-week-banner" [class.current-week-banner--odd]="currentAcademicWeek() === 1">
             <i class="ph ph-calendar-check"></i>
-            Сейчас <strong>{{ currentWeekNumber() }}-я неделя года</strong> —
-            <strong>{{ currentWeekIsOdd() ? '1-я (нечётная)' : '2-я (чётная)' }}</strong>
-            учебная
+            Сейчас <strong>{{ currentAcademicWeek() }}-я</strong> учебная неделя
           </div>
           <div class="schedule-matrix">
             <div class="matrix-header">
@@ -354,8 +349,6 @@ export class HeadmanScheduleComponent implements OnInit {
   readonly subjects = signal<Subject[]>([]);
   readonly groupId = signal<number | null>(null);
   readonly semesterId = signal<number | null>(null);
-  readonly semesterDateFrom = signal<string | null>(null);
-  readonly semesterFirstWeekIsOdd = signal<boolean>(false);
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
@@ -384,9 +377,6 @@ export class HeadmanScheduleComponent implements OnInit {
           return;
         }
         this.semesterId.set(active.id);
-        this.semesterDateFrom.set(active.dateFrom ?? null);
-        const fwt = (active.firstWeekType ?? 'ODD').toUpperCase();
-        this.semesterFirstWeekIsOdd.set(fwt !== 'EVEN');
         this.loadSchedule();
       },
       error: () => {
@@ -461,21 +451,15 @@ export class HeadmanScheduleComponent implements OnInit {
   }
 
   /**
-   * Идёт ли сейчас нечётная учебная неделя.
+   * Номер текущей учебной недели в конвенции РУТ МИИТ (1 или 2).
    *
-   * В РУТ МИИТ чётность учебной недели совпадает с чётностью её ISO-номера
-   * (week-of-year). Например: ISO неделя №16 = чётная (1-я по соглашению
-   * пользователя), №17 = нечётная (2-я). Привязки к dateFrom семестра нет.
-   *
-   * @returns true если ISO-номер текущей недели нечётный.
+   * Чётность «учебной» недели привязана к ISO-номеру недели года (а не к
+   * дате начала семестра): ISO-чётный номер → 1-я учебная неделя,
+   * ISO-нечётный → 2-я. Этой же маппинг использует backend при генерации
+   * уроков (LessonGenerationService: isoEven → WeekType.ODD → «1»).
    */
-  currentWeekIsOdd(): boolean {
-    return isoWeekNumber(new Date()) % 2 === 1;
-  }
-
-  /** ISO-номер текущей недели (1..53) — для отображения в баннере. */
-  currentWeekNumber(): number {
-    return isoWeekNumber(new Date());
+  currentAcademicWeek(): 1 | 2 {
+    return isoWeekNumber(new Date()) % 2 === 0 ? 1 : 2;
   }
 
   subjectName(subjectId: number): string {

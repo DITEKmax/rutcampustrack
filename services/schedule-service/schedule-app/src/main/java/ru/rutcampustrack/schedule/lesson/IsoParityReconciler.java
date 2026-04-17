@@ -106,10 +106,15 @@ public class IsoParityReconciler {
 
         int count = 0;
         for (ScheduleItem item : all) {
-            // ALL slots don't depend on parity — their dates stay identical under both
-            // algorithms, so skip them to avoid unnecessary delete+re-insert churn.
-            if (item.getWeekType() == WeekType.ALL) continue;
-            lessonGenerationService.regenerateFromDate(
+            // Regenerate EVERY active slot — including WeekType.ALL. Previously
+            // ALL slots were skipped on the assumption that their dates stay
+            // identical under both algorithms, but that left a gap after any
+            // full wipe of `lessons` (manual cleanup, fresh DB, disaster
+            // recovery): ALL-typed items would never be materialised by any
+            // other code path. The reconciliation-specific delete variant is
+            // a no-op when there are no PLANNED/CANCELLED rows, so running it
+            // for ALL slots is safe and idempotent.
+            lessonGenerationService.regenerateFromDateForReconciliation(
                     item, semesterStart, semesterEnd, firstWeekType, today);
             count++;
         }

@@ -169,6 +169,38 @@ public class LessonGenerationService {
     }
 
     /**
+     * Reconciliation variant of {@link #regenerateFromDate}: wipes BOTH
+     * PLANNED and CANCELLED lessons before reinsert. Used by
+     * {@link IsoParityReconciler} to avoid duplicate-key collisions on the
+     * {@code UNIQUE (schedule_item_id, date)} constraint when the prior
+     * generation left a future-dated CANCELLED occurrence on the same day
+     * that the ISO-anchored algorithm now wants to regenerate.
+     *
+     * Not used by headman-driven updates — those call {@link #regenerateFromDate}
+     * so freshly-cancelled slots are preserved.
+     */
+    @Transactional
+    public void regenerateFromDateForReconciliation(
+            ScheduleItem item,
+            LocalDate semesterStart,
+            LocalDate semesterEnd,
+            WeekType firstWeekType,
+            LocalDate fromDate) {
+
+        List<Long> staleIds = lessonRepository.findPlannedOrCancelledIdsFromDate(item.getId(), fromDate);
+        lessonRepository.deletePlannedOrCancelledFromDate(item.getId(), fromDate);
+        publishDeleted(staleIds);
+
+        LocalDate effectiveStart = fromDate.isAfter(semesterStart) ? fromDate : semesterStart;
+        List<LocalDate> dates = computeLessonDates(
+                effectiveStart, semesterEnd, firstWeekType,
+                item.getDayOfWeek(), item.getWeekType());
+
+        List<Lesson> lessons = buildLessons(item.getId(), dates);
+        lessonRepository.saveAll(lessons);
+    }
+
+    /**
      * Deletes all PLANNED lessons for a schedule item starting from today.
      * Called by ScheduleItemService.deleteScheduleItem so that disabling a
      * template also clears future planned occurrences from the calendar

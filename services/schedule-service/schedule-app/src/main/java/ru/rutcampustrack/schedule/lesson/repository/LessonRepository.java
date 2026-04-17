@@ -52,6 +52,35 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
                                @Param("fromDate") LocalDate fromDate);
 
     /**
+     * Reconciliation-only: deletes every PLANNED and CANCELLED lesson for a
+     * schedule item on or after the given date. Used by
+     * {@link ru.rutcampustrack.schedule.lesson.IsoParityReconciler} to fully
+     * wipe the regeneration target window before reinsert — otherwise a
+     * previously-CANCELLED future lesson would collide with the freshly
+     * generated PLANNED one on the {@code UNIQUE (schedule_item_id, date)}
+     * constraint. ACTIVE/CLOSED are preserved because they imply real
+     * attendance data and cannot legitimately exist in a future date anyway.
+     */
+    @Modifying
+    @Query(value = "DELETE FROM lessons WHERE schedule_item_id = :itemId "
+            + "AND status::text IN ('planned','cancelled') AND date >= :fromDate",
+           nativeQuery = true)
+    void deletePlannedOrCancelledFromDate(@Param("itemId") Long scheduleItemId,
+                                          @Param("fromDate") LocalDate fromDate);
+
+    /**
+     * Returns the IDs of PLANNED and CANCELLED lessons for a schedule item on
+     * or after the given date. Companion to {@link #deletePlannedOrCancelledFromDate}
+     * so the caller can publish {@code lesson.deleted} events before the physical
+     * delete (attendance-service drops dependent records).
+     */
+    @Query(value = "SELECT id FROM lessons WHERE schedule_item_id = :itemId "
+            + "AND status::text IN ('planned','cancelled') AND date >= :fromDate",
+           nativeQuery = true)
+    List<Long> findPlannedOrCancelledIdsFromDate(@Param("itemId") Long scheduleItemId,
+                                                 @Param("fromDate") LocalDate fromDate);
+
+    /**
      * Returns the IDs of PLANNED lessons for a schedule item on or after the given date.
      * Used by callers who must publish a cascade event (e.g. lesson.deleted) BEFORE
      * calling {@link #deletePlannedFromDate} so downstream services (attendance-service)

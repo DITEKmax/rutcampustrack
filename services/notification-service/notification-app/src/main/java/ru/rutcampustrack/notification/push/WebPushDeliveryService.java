@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Async Web Push delivery service.
@@ -27,10 +28,31 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class WebPushDeliveryService {
 
+    /** Events that fan out to every subscriber of the group. */
     private static final Set<String> PUSH_EVENT_TYPES = Set.of(
-            "lesson.started", "lesson.cancelled", "homework.published",
-            // 58-07 / BUG-006-6: уведомляем студентов о переименовании/архивации группы.
-            "group.renamed", "group.archived"
+            "lesson.started",
+            "lesson.cancelled",
+            "lesson.one_off.created",
+            "lesson.one_off.cancelled",
+            "homework.published",
+            "homework.updated",
+            "group.renamed",
+            "group.archived",
+            // Студент-таргетированные: доходят только подписчику user_id из payload.
+            "excuse.decided",
+            "late_checkin.decided"
+    );
+
+    /** Events that fan out only to headmen of the group (старостам). */
+    private static final Set<String> HEADMAN_ONLY_EVENT_TYPES = Set.of(
+            "excuse.requested",
+            "late_checkin.requested"
+    );
+
+    /** Events that are sent to a single subscriber identified by payload.user_id. */
+    private static final Set<String> USER_SCOPED_EVENT_TYPES = Set.of(
+            "excuse.decided",
+            "late_checkin.decided"
     );
 
     private final PushSubscriptionRepository repository;
@@ -49,12 +71,13 @@ public class WebPushDeliveryService {
      * Returns true if this event type should trigger a Web Push notification.
      */
     public boolean shouldPush(String eventType) {
-        return PUSH_EVENT_TYPES.contains(eventType);
+        return PUSH_EVENT_TYPES.contains(eventType)
+                || HEADMAN_ONLY_EVENT_TYPES.contains(eventType);
     }
 
     /**
-     * Sends Web Push notifications asynchronously to all subscribers in the group.
-     * Runs on the pushTaskExecutor thread pool — does not block the caller thread.
+     * Sends Web Push notifications asynchronously to subscribers in the group,
+     * respecting per-event routing rules (headman-only, user-scoped).
      */
     @Async("pushTaskExecutor")
     public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload) {
@@ -64,11 +87,17 @@ public class WebPushDeliveryService {
             return CompletableFuture.completedFuture(null);
         }
 
+        List<PushSubscriptionDocument> targets = filterRecipients(subs, eventType, payload);
+        if (targets.isEmpty()) {
+            log.debug("No eligible push recipients for event {} in group {}", eventType, groupId);
+            return CompletableFuture.completedFuture(null);
+        }
+
         String title = buildTitle(eventType, payload);
         String body = buildBody(eventType, payload);
         byte[] payloadBytes = buildPayloadJson(title, body, eventType, payload);
 
-        for (PushSubscriptionDocument sub : subs) {
+        for (PushSubscriptionDocument sub : targets) {
             try {
                 Notification notification = createNotification(sub, payloadBytes);
                 webPushService.send(notification);
@@ -85,6 +114,36 @@ public class WebPushDeliveryService {
             }
         }
         return CompletableFuture.completedFuture(null);
+    }
+
+    /**
+     * Narrows subscribers to those eligible for this event:
+     * <ul>
+     *   <li>HEADMAN_ONLY events → only subscribers with headman=true</li>
+     *   <li>USER_SCOPED events  → only subscriber matching payload.user_id</li>
+     *   <li>everyone else       → all group subscribers</li>
+     * </ul>
+     */
+    private List<PushSubscriptionDocument> filterRecipients(List<PushSubscriptionDocument> subs,
+                                                            String eventType,
+                                                            Map<String, Object> payload) {
+        if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
+            return subs.stream()
+                    .filter(PushSubscriptionDocument::isHeadman)
+                    .collect(Collectors.toList());
+        }
+        if (USER_SCOPED_EVENT_TYPES.contains(eventType)) {
+            Number userIdNum = (Number) payload.get("user_id");
+            if (userIdNum == null) {
+                log.warn("Event {} is user-scoped but payload has no user_id", eventType);
+                return List.of();
+            }
+            long userId = userIdNum.longValue();
+            return subs.stream()
+                    .filter(s -> s.getUserId() != null && s.getUserId() == userId)
+                    .collect(Collectors.toList());
+        }
+        return subs;
     }
 
     /**
@@ -113,26 +172,132 @@ public class WebPushDeliveryService {
         return switch (eventType) {
             case "lesson.started" -> "Пара началась";
             case "lesson.cancelled" -> "Пара отменена";
+            case "lesson.one_off.created" -> "Добавлена пара";
+            case "lesson.one_off.cancelled" -> "Пара отменена";
             case "homework.published" -> "Новое ДЗ";
+            case "homework.updated" -> "ДЗ обновлено";
             case "group.renamed" -> "Группа переименована";
             case "group.archived" -> "Группа архивирована";
+            case "excuse.requested" -> "Новый тикет о пропуске";
+            case "excuse.decided" -> isApproved(payload)
+                    ? "Уважительная одобрена"
+                    : "Уважительная отклонена";
+            case "late_checkin.requested" -> "Запрос опоздалой отметки";
+            case "late_checkin.decided" -> isApproved(payload)
+                    ? "Присутствие подтверждено"
+                    : "Запрос отклонён";
             default -> "Уведомление";
         };
     }
 
     private String buildBody(String eventType, Map<String, Object> payload) {
-        String subjectName = (String) payload.getOrDefault("subject_name", "");
         return switch (eventType) {
-            case "lesson.started" -> subjectName + " — отметьтесь!";
-            case "lesson.cancelled" -> subjectName + " — пара отменена";
-            case "homework.published" -> {
-                String title = (String) payload.getOrDefault("title", "");
-                yield subjectName + ": " + title;
+            case "lesson.started" -> lessonBody(payload, "Время отметиться");
+            case "lesson.cancelled" -> {
+                String base = lessonBody(payload, "Пара отменена");
+                String reason = str(payload, "cancel_reason");
+                yield reason.isEmpty() ? base : base + " · " + reason;
             }
-            case "group.renamed" -> "Ваша группа получила новое название. Откройте приложение для подробностей.";
-            case "group.archived" -> "Группа архивирована (выпуск). Поздравляем!";
+            case "lesson.one_off.created" -> {
+                String parts = lessonBody(payload, "Дополнительная пара");
+                String classroom = str(payload, "classroom");
+                yield classroom.isEmpty() ? parts : parts + " · ауд. " + classroom;
+            }
+            case "lesson.one_off.cancelled" -> lessonBody(payload, "Староста отменил пару");
+            case "homework.published", "homework.updated" -> {
+                String title = str(payload, "title");
+                String lessonPart = formatLessonRef(payload);
+                if (title.isEmpty() && lessonPart.isEmpty()) {
+                    yield "Откройте приложение для подробностей";
+                }
+                if (title.isEmpty()) {
+                    yield lessonPart;
+                }
+                yield lessonPart.isEmpty() ? title : title + " · " + lessonPart;
+            }
+            case "group.renamed" -> {
+                String newName = str(payload, "new_name");
+                if (!newName.isEmpty()) {
+                    yield "Новое название: " + newName;
+                }
+                yield "Откройте приложение для подробностей";
+            }
+            case "group.archived" -> "Группа выпустилась. Поздравляем!";
+            case "excuse.requested", "late_checkin.requested" -> {
+                String student = str(payload, "student_name");
+                String lessonPart = formatLessonRef(payload);
+                if (student.isEmpty() && lessonPart.isEmpty()) {
+                    yield "Нужна ваша реакция в приложении";
+                }
+                if (student.isEmpty()) {
+                    yield lessonPart;
+                }
+                yield lessonPart.isEmpty() ? student : student + " · " + lessonPart;
+            }
+            case "excuse.decided", "late_checkin.decided" -> {
+                String comment = str(payload, "decision_comment");
+                if (!comment.isEmpty()) {
+                    yield comment;
+                }
+                yield isApproved(payload)
+                        ? "Староста одобрил ваш запрос"
+                        : "Староста отклонил ваш запрос";
+            }
             default -> "";
         };
+    }
+
+    /**
+     * Builds a short lesson reference like «№3, 14:30-16:00» or «№2, 17.04»
+     * using only fields that are guaranteed by the event schema (no subject_name).
+     * Returns {@code fallback} if nothing useful can be built.
+     */
+    private String lessonBody(Map<String, Object> payload, String fallback) {
+        String lessonRef = formatLessonRef(payload);
+        return lessonRef.isEmpty() ? fallback : lessonRef;
+    }
+
+    private String formatLessonRef(Map<String, Object> payload) {
+        StringBuilder sb = new StringBuilder();
+        Number lessonNumber = (Number) payload.get("lesson_number");
+        if (lessonNumber != null) {
+            sb.append("№").append(lessonNumber.intValue());
+        }
+        String startTime = str(payload, "start_time");
+        String endTime = str(payload, "end_time");
+        if (!startTime.isEmpty() && !endTime.isEmpty()) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(startTime).append("–").append(endTime);
+        } else {
+            String date = firstNonEmpty(str(payload, "lesson_date"), str(payload, "date"));
+            if (!date.isEmpty()) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(formatShortDate(date));
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Converts ISO "2026-04-17" → "17.04". Returns input unchanged on parse errors. */
+    private String formatShortDate(String iso) {
+        if (iso.length() >= 10 && iso.charAt(4) == '-' && iso.charAt(7) == '-') {
+            return iso.substring(8, 10) + "." + iso.substring(5, 7);
+        }
+        return iso;
+    }
+
+    private static boolean isApproved(Map<String, Object> payload) {
+        Object status = payload.get("status");
+        return status instanceof String s && "approved".equals(s);
+    }
+
+    private static String str(Map<String, Object> payload, String key) {
+        Object v = payload.get(key);
+        return v instanceof String s ? s : "";
+    }
+
+    private static String firstNonEmpty(String a, String b) {
+        return a == null || a.isEmpty() ? (b == null ? "" : b) : a;
     }
 
     private byte[] buildPayloadJson(String title, String body, String eventType, Map<String, Object> payload) {

@@ -11,6 +11,11 @@ import {
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { useAuth } from '@/features/auth/AuthProvider'
+import {
+  loadPrefs,
+  shouldStoreInHistory,
+  shouldSuppressBanner,
+} from './notificationPrefs'
 
 /**
  * Global notification center for the PWA.
@@ -24,16 +29,22 @@ import { useAuth } from '@/features/auth/AuthProvider'
  * системе телефона со звуком" requirement.
  */
 
+// attendance.marked — это ACK собственной отметки студента, не уведомление.
+// В PWA он всё равно прилетает по STOMP и используется пушами/SW для сброса
+// reminder-сообщений, но в список уведомлений его не кладём.
 const STORED_TYPES: ReadonlySet<string> = new Set([
   'lesson.started',
   'lesson.cancelled',
+  'lesson.one_off.created',
+  'lesson.one_off.cancelled',
   'homework.published',
   'homework.updated',
-  'attendance.marked',
   'late_checkin.requested',
   'late_checkin.decided',
   'excuse.requested',
   'excuse.decided',
+  'group.renamed',
+  'group.archived',
 ])
 
 const USER_SCOPED_TYPES: ReadonlySet<string> = new Set([
@@ -99,24 +110,30 @@ function buildTitle(type: string, payload: Record<string, unknown>): string {
       return 'Пара началась'
     case 'lesson.cancelled':
       return 'Пара отменена'
+    case 'lesson.one_off.created':
+      return 'Добавлена пара'
+    case 'lesson.one_off.cancelled':
+      return 'Пара отменена'
     case 'homework.published':
       return 'Новое домашнее задание'
     case 'homework.updated':
       return 'Изменения в домашнем задании'
-    case 'attendance.marked':
-      return 'Отметка поставлена'
     case 'late_checkin.requested':
       return 'Запрос опоздалой отметки'
     case 'late_checkin.decided':
-      return payload.approved === true
+      return payload.status === 'approved'
         ? 'Запрос одобрен'
         : 'Запрос отклонён'
     case 'excuse.requested':
       return 'Новый тикет о пропуске'
     case 'excuse.decided':
-      return payload.approved === true
+      return payload.status === 'approved'
         ? 'Уважительная одобрена'
         : 'Уважительная отклонена'
+    case 'group.renamed':
+      return 'Группа переименована'
+    case 'group.archived':
+      return 'Группа архивирована'
     default:
       return 'RutTrack'
   }
@@ -131,30 +148,104 @@ const EXCUSE_TYPE_RU: Record<string, string> = {
   other: 'Другое',
 }
 
-function buildBody(payload: Record<string, unknown>): string {
-  const subject =
-    typeof payload.subject_name === 'string' ? payload.subject_name : null
-  const student =
-    typeof payload.student_name === 'string'
-      ? payload.student_name
-      : typeof payload.studentName === 'string'
-      ? payload.studentName
-      : null
-  const excuseType =
-    typeof payload.excuse_type === 'string'
-      ? EXCUSE_TYPE_RU[payload.excuse_type] ?? payload.excuse_type
-      : null
-  const lessonIds = Array.isArray(payload.lesson_ids) ? payload.lesson_ids : null
-  const comment =
-    typeof payload.comment === 'string' && payload.comment ? payload.comment : null
+function str(payload: Record<string, unknown>, key: string): string {
+  const v = payload[key]
+  return typeof v === 'string' ? v : ''
+}
 
+function formatShortDate(iso: string): string {
+  if (iso.length >= 10 && iso[4] === '-' && iso[7] === '-') {
+    return `${iso.slice(8, 10)}.${iso.slice(5, 7)}`
+  }
+  return iso
+}
+
+function formatLessonRef(payload: Record<string, unknown>): string {
   const parts: string[] = []
-  if (student) parts.push(student)
-  if (subject) parts.push(subject)
-  if (excuseType) parts.push(excuseType)
-  if (lessonIds && lessonIds.length > 1) parts.push(`${lessonIds.length} пар(ы)`)
-  if (comment) parts.push(comment)
-  return parts.join(' · ')
+  const lessonNumber = payload.lesson_number
+  if (typeof lessonNumber === 'number') parts.push(`№${lessonNumber}`)
+  const startTime = str(payload, 'start_time')
+  const endTime = str(payload, 'end_time')
+  if (startTime && endTime) {
+    parts.push(`${startTime}–${endTime}`)
+  } else {
+    const date = str(payload, 'lesson_date') || str(payload, 'date')
+    if (date) parts.push(formatShortDate(date))
+  }
+  return parts.join(', ')
+}
+
+function buildBody(
+  type: string,
+  payload: Record<string, unknown>,
+): string {
+  const student = str(payload, 'student_name')
+  const excuseType = (() => {
+    const code = str(payload, 'excuse_type')
+    if (!code) return ''
+    return EXCUSE_TYPE_RU[code] ?? code
+  })()
+  const lessonIds = Array.isArray(payload.lesson_ids) ? payload.lesson_ids : null
+  const comment = str(payload, 'comment')
+  const lessonRef = formatLessonRef(payload)
+
+  switch (type) {
+    case 'lesson.started':
+      return lessonRef || 'Время отметиться'
+    case 'lesson.cancelled': {
+      const reason = str(payload, 'cancel_reason')
+      const base = lessonRef || 'Пара отменена'
+      return reason ? `${base} · ${reason}` : base
+    }
+    case 'lesson.one_off.created': {
+      const classroom = str(payload, 'classroom')
+      const base = lessonRef || 'Дополнительная пара'
+      return classroom ? `${base} · ауд. ${classroom}` : base
+    }
+    case 'lesson.one_off.cancelled':
+      return lessonRef || 'Староста отменил пару'
+    case 'homework.published':
+    case 'homework.updated': {
+      const title = str(payload, 'title')
+      if (!title && !lessonRef) return 'Откройте приложение для подробностей'
+      if (!title) return lessonRef
+      return lessonRef ? `${title} · ${lessonRef}` : title
+    }
+    case 'excuse.requested': {
+      const parts: string[] = []
+      if (student) parts.push(student)
+      if (excuseType) parts.push(excuseType)
+      if (lessonIds && lessonIds.length > 0) {
+        parts.push(`${lessonIds.length} пар(ы)`)
+      }
+      if (comment) parts.push(comment)
+      return parts.join(' · ')
+    }
+    case 'late_checkin.requested': {
+      const parts: string[] = []
+      if (student) parts.push(student)
+      if (lessonRef) parts.push(lessonRef)
+      return parts.join(' · ')
+    }
+    case 'excuse.decided':
+    case 'late_checkin.decided': {
+      const decisionComment = str(payload, 'decision_comment')
+      if (decisionComment) return decisionComment
+      return payload.status === 'approved'
+        ? 'Староста одобрил ваш запрос'
+        : 'Староста отклонил ваш запрос'
+    }
+    case 'group.renamed': {
+      const newName = str(payload, 'new_name')
+      return newName
+        ? `Новое название: ${newName}`
+        : 'Откройте приложение для подробностей'
+    }
+    case 'group.archived':
+      return 'Группа выпустилась. Поздравляем!'
+    default:
+      return ''
+  }
 }
 
 export function NotificationCenterProvider({ children }: { children: ReactNode }) {
@@ -204,6 +295,12 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
 
           if (!STORED_TYPES.has(envelope.type)) return
 
+          // Читаем prefs прямо из localStorage на каждое событие, чтобы
+          // не таскать их в deps effect'а — он пересоздаёт STOMP-клиент.
+          // В идеале это 3 JSON.parse/минуту, без ощутимой цены.
+          const prefs = loadPrefs()
+          if (!shouldStoreInHistory(envelope.type, prefs)) return
+
           const record: NotificationRecord = {
             id:
               typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -221,7 +318,9 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
             return next.length > MAX_ITEMS ? next.slice(0, MAX_ITEMS) : next
           })
 
-          showNativeNotification(record)
+          if (!shouldSuppressBanner(envelope.type, prefs)) {
+            showNativeNotification(record)
+          }
         }
 
         client.subscribe(`/topic/group/${groupId}`, (message) =>
@@ -293,7 +392,7 @@ function showNativeNotification(record: NotificationRecord): void {
   }
 
   const title = buildTitle(record.type, record.payload)
-  const body = buildBody(record.payload)
+  const body = buildBody(record.type, record.payload)
   try {
     const n = new Notification(title, {
       body,
@@ -324,7 +423,7 @@ export function describeNotification(record: NotificationRecord): {
 } {
   return {
     title: buildTitle(record.type, record.payload),
-    body: buildBody(record.payload),
+    body: buildBody(record.type, record.payload),
   }
 }
 

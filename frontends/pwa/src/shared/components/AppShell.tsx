@@ -1,8 +1,9 @@
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { AppHeader } from './AppHeader'
 import { BottomNav } from './BottomNav'
+import { DrawerMenu } from './DrawerMenu'
 import { OfflineBanner } from './OfflineBanner'
 import { LoadingSpinner } from './LoadingSpinner'
 
@@ -18,11 +19,13 @@ import { LoadingSpinner } from './LoadingSpinner'
 export function AppShell() {
   const location = useLocation()
   const reduceMotion = useReducedMotion()
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
     <div className="flex h-dvh flex-col bg-background text-foreground">
       <OfflineBanner />
-      <AppHeader />
+      <AppHeader onOpenMenu={() => setDrawerOpen(true)} />
+      <DrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <main
         className="relative flex-1 overflow-x-hidden overflow-y-auto"

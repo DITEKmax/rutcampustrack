@@ -17,6 +17,10 @@ class SendTask:
     # Используется, чтобы сохранить пару (chat_id, message_id) в Redis для
     # последующего редактирования при получении *.decided.
     on_sent: Optional[Callable[[Any], Awaitable[None]]] = None
+    # Категория уведомления (см. bot.services.notification_prefs.CATEGORIES).
+    # Если указана — перед отправкой сверяемся с per-category prefs; None
+    # означает «системное сообщение», пропускаем только через глобальный toggle.
+    category: Optional[str] = None
 
 
 class TelegramSendQueue:
@@ -43,7 +47,7 @@ class TelegramSendQueue:
         while True:
             task = await self._queue.get()
             if self._prefs_client is not None and task.chat_id is not None:
-                if not await self._prefs_client.is_enabled(task.chat_id):
+                if not await self._prefs_client.is_enabled(task.chat_id, task.category):
                     self._queue.task_done()
                     continue
             await self._consume_token()

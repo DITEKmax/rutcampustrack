@@ -4,7 +4,6 @@ import {
   Calendar,
   Fingerprint,
   House,
-  User,
   Users,
   type Icon,
 } from '@phosphor-icons/react'
@@ -21,8 +20,9 @@ export interface Tab {
 export function useTabs(): Tab[] {
   const { user } = useAuth()
   return useMemo(() => {
-    // Tab layout: Главная → Расписание → Отметка → Уведомления →
-    //             [Группа] → Профиль. "Группа" only for headmen.
+    // Primary tabs only: Главная → Расписание → Отметка → Уведомления →
+    // [Группа]. Secondary destinations (ДЗ, Профиль) live in the drawer
+    // menu opened from the header, to keep the bar compact for headmen.
     const tabs: Tab[] = [
       { to: '/home', icon: House, label: 'Главная' },
       { to: '/schedule', icon: Calendar, label: 'Расписание' },
@@ -31,7 +31,6 @@ export function useTabs(): Tab[] {
       ...(user?.isHeadman
         ? [{ to: '/group', icon: Users, label: 'Группа' } as Tab]
         : []),
-      { to: '/profile', icon: User, label: 'Профиль' },
     ]
     return tabs
   }, [user?.isHeadman])

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["angular:styles/component:css;b689efd749bd3e686a7129699fc7fb85798717cdcf01d57dc8492dbd72beca4b;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/headman/group/assign-assistant-dialog.component.ts"],
-  "sourcesContent": ["\n    .permissions-label {\n      font-weight: 600;\n      font-size: var(--text-sm);\n      margin-bottom: var(--space-2);\n      color: var(--text-primary);\n    }\n\n    .permissions-hint {\n      font-size: var(--text-xs);\n      color: var(--text-muted);\n      margin-top: var(--space-2);\n    }\n\n    .permission-row {\n      display: flex;\n      align-items: center;\n    }\n\n    .permission-error {\n      display: block;\n      font-size: var(--text-xs);\n      color: var(--accent-danger);\n      margin-top: var(--space-1);\n    }\n  "],
-  "mappings": ";AACI,CAAC;AACC,eAAa;AACb,aAAW,IAAI;AACf,iBAAe,IAAI;AACnB,SAAO,IAAI;AACb;AAEA,CAAC;AACC,aAAW,IAAI;AACf,SAAO,IAAI;AACX,cAAY,IAAI;AAClB;AAEA,CAAC;AACC,WAAS;AACT,eAAa;AACf;AAEA,CAAC;AACC,WAAS;AACT,aAAW,IAAI;AACf,SAAO,IAAI;AACX,cAAY,IAAI;AAClB;",
-  "names": []
-}

@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router'
+import { List } from '@phosphor-icons/react'
 import { ThemeToggle } from '@/shared/theme/ThemeToggle'
 import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,7 @@ const routeLabels: Record<string, string> = {
   '/schedule': 'Расписание',
   '/checkin': 'Отметка',
   '/profile': 'Профиль',
+  '/homework': 'Домашние задания',
 }
 
 function matchTitle(pathname: string): string {
@@ -31,7 +33,11 @@ function matchTitle(pathname: string): string {
   return 'RutTrack'
 }
 
-export function AppHeader() {
+interface AppHeaderProps {
+  onOpenMenu: () => void
+}
+
+export function AppHeader({ onOpenMenu }: AppHeaderProps) {
   const { pathname } = useLocation()
   const title = matchTitle(pathname)
   const { canInstall, triggerInstall } = useInstallPrompt()
@@ -98,6 +104,18 @@ export function AppHeader() {
           </button>
         )}
         <ThemeToggle compact />
+        <button
+          type="button"
+          onClick={onOpenMenu}
+          aria-label="Открыть меню"
+          className={cn(
+            'grid size-9 place-items-center rounded-full',
+            'transition-colors duration-150',
+            'text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
+          )}
+        >
+          <List size={22} weight="bold" aria-hidden="true" />
+        </button>
       </div>
     </header>
   )

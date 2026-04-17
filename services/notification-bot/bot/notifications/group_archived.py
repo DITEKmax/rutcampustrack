@@ -55,5 +55,6 @@ async def handle_group_archived(
                 ),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
+                category="group",
             )
         )

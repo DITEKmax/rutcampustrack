@@ -160,12 +160,13 @@ class WebPushDeliveryServiceTest {
         doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
 
         CompletableFuture<Void> result = service.sendToGroup(11L, "group.renamed",
-                Map.of("group_id", 11));
+                Map.of("group_id", 11, "new_name", "БИ-2401"));
         result.join();
 
         String payloadStr = new String(payloadCaptor.getValue());
         assertThat(payloadStr).contains("Группа переименована");
-        assertThat(payloadStr).contains("новое название");
+        // 04-17: body теперь включает новое имя для осмысленного push-уведомления.
+        assertThat(payloadStr).contains("БИ-2401");
     }
 
     @Test
@@ -182,7 +183,7 @@ class WebPushDeliveryServiceTest {
 
         String payloadStr = new String(payloadCaptor.getValue());
         assertThat(payloadStr).contains("Группа архивирована");
-        assertThat(payloadStr).contains("выпуск");
+        assertThat(payloadStr).contains("выпустилась");
     }
 
     // Test 7: homework.published payload has correct title and body

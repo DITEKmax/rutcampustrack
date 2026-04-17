@@ -74,5 +74,6 @@ async def handle_homework(
                 coroutine_factory=lambda s=student: bot.send_message(chat_id=s.telegram_id, text=text),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
+                category="homework",
             )
         )

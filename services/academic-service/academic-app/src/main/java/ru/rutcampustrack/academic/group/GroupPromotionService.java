@@ -206,7 +206,7 @@ public class GroupPromotionService {
         for (PromotionPreviewItem item : promote) {
             Group g = byId.get(item.getId());
             g.setName(item.getTo());
-            publisher.publishEvent(new GroupRenamedEvent(this, g.getId()));
+            publisher.publishEvent(new GroupRenamedEvent(this, g.getId(), g.getName()));
         }
     }
 }

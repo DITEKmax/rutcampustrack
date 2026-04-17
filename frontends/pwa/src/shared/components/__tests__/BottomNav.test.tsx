@@ -53,7 +53,7 @@ describe('BottomNav', () => {
     vi.clearAllMocks()
   })
 
-  it('renders 5 tabs for a plain student (isHeadman=false) — includes Уведомл.', () => {
+  it('renders 4 tabs for a plain student (isHeadman=false) — includes Уведомл., excludes Профиль (now in drawer)', () => {
     mockedUseAuth.mockReturnValue({
       isAuthenticated: true,
       user: { id: 1, role: 'STUDENT', groupId: 5, isHeadman: false },
@@ -65,12 +65,13 @@ describe('BottomNav', () => {
     renderBottomNav()
 
     const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(5)
+    expect(links).toHaveLength(4)
     expect(screen.queryByText('Группа')).toBeNull()
+    expect(screen.queryByText('Профиль')).toBeNull()
     expect(screen.getByText('Уведомл.')).toBeInTheDocument()
   })
 
-  it('renders 6 tabs for a headman — Уведомл. and Группа both present, Профиль last', () => {
+  it('renders 5 tabs for a headman — Уведомл. and Группа present, Профиль lives in drawer', () => {
     mockedUseAuth.mockReturnValue({
       isAuthenticated: true,
       user: { id: 42, role: 'STUDENT', groupId: 7, isHeadman: true },
@@ -82,7 +83,7 @@ describe('BottomNav', () => {
     renderBottomNav()
 
     const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(6)
+    expect(links).toHaveLength(5)
 
     const labels = links.map((l) => l.textContent)
     expect(labels).toEqual([
@@ -91,7 +92,6 @@ describe('BottomNav', () => {
       'Отметка',
       'Уведомл.',
       'Группа',
-      'Профиль',
     ])
 
     const groupLink = screen.getByText('Группа').closest('a')

@@ -94,5 +94,6 @@ async def handle_student_alert(
             coroutine_factory=lambda chat=telegram_id, t=text: bot.send_message(chat_id=chat, text=t),
             user_id=user_id,
             chat_id=telegram_id,
+            category="tickets",
         )
     )

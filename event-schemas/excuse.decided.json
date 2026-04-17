@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "excuse.decided",
+  "description": "Староста одобрил или отклонил тикет студента о пропуске с уважительной причиной. Генерируется Attendance Service после обработки решения (59-06 / D-28).",
+  "type": "object",
+  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "properties": {
+    "event_type": { "const": "excuse.decided" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "payload": {
+      "type": "object",
+      "required": ["ticket_id", "user_id", "status"],
+      "properties": {
+        "ticket_id": { "type": "string", "description": "Идентификатор excuse-тикета" },
+        "user_id": { "type": "integer", "description": "Студент — получатель уведомления об итоге" },
+        "group_id": { "type": "integer", "description": "Группа студента (для маршрутизации Web Push / STOMP)" },
+        "status": { "enum": ["approved", "rejected"] },
+        "decision_by": { "type": ["integer", "null"], "description": "user_id старосты, принявшего решение" },
+        "decision_comment": { "type": "string", "description": "Необязательный комментарий старосты, показывается студенту" },
+        "decided_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

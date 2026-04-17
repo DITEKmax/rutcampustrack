@@ -94,8 +94,9 @@ async def test_attendance_marked_absent_does_not_delete():
 
 
 @pytest.mark.asyncio
-async def test_attendance_marked_excused_does_not_delete():
-    """status=excused: bot.delete_message is NOT called."""
+async def test_attendance_marked_excused_deletes_messages():
+    """status=excused: reminder'ы тоже чистим — уважительная означает, что
+    студента не ждут, и напоминание-«отметься» становится бесполезным."""
     students = [_make_student(user_id=10, telegram_id=1010)]
     bot, academic_client, redis_client = _make_deps(students=students, message_ids=[50])
 
@@ -106,8 +107,26 @@ async def test_attendance_marked_excused_does_not_delete():
         redis_client=redis_client,
     )
 
-    bot.delete_message.assert_not_called()
-    redis_client.delete_key.assert_not_called()
+    bot.delete_message.assert_called_once_with(chat_id=1010, message_id=50)
+    redis_client.delete_key.assert_called_once_with(101, 10)
+
+
+@pytest.mark.asyncio
+async def test_attendance_marked_free_attendance_deletes_messages():
+    """status=free_attendance: свободное посещение — напоминание тоже
+    становится бесполезным, чистим."""
+    students = [_make_student(user_id=10, telegram_id=1010)]
+    bot, academic_client, redis_client = _make_deps(students=students, message_ids=[50])
+
+    await handle_attendance_marked(
+        _make_event(status="free_attendance"),
+        bot=bot,
+        academic_client=academic_client,
+        redis_client=redis_client,
+    )
+
+    bot.delete_message.assert_called_once_with(chat_id=1010, message_id=50)
+    redis_client.delete_key.assert_called_once_with(101, 10)
 
 
 @pytest.mark.asyncio

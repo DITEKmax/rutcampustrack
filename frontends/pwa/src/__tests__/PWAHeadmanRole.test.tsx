@@ -168,21 +168,21 @@ describe('PWAHeadmanRole — BottomNav tab rendering by isHeadman state', () => 
       screen.getByTestId('login-btn').click()
     })
 
-    // After login with is_headman=true: 6 tabs (including Уведомл.)
+    // After login with is_headman=true: 5 tabs (Профиль moved to drawer)
     const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(6)
+    expect(links).toHaveLength(5)
 
-    // Группа tab sits between Уведомл. and Профиль for headmen
+    // Группа tab sits last for headmen — Профиль now lives in the drawer menu
     const labels = links.map((l) => l.textContent)
     expect(labels[4]).toBe('Группа')
-    expect(labels[5]).toBe('Профиль')
+    expect(screen.queryByText('Профиль')).toBeNull()
 
     // Группа href ends with /group
     const groupLink = screen.getByText('Группа').closest('a')
     expect(groupLink?.getAttribute('href')).toMatch(/\/group$/)
   })
 
-  it('BottomNav shows no Группа tab (5 links) when is_headman absent in JWT', async () => {
+  it('BottomNav shows no Группа tab (4 links) when is_headman absent in JWT', async () => {
     const plainToken = createFakeJwt({
       sub: '5',
       role: 'STUDENT',
@@ -218,8 +218,9 @@ describe('PWAHeadmanRole — BottomNav tab rendering by isHeadman state', () => 
     })
 
     const links = screen.getAllByRole('link')
-    // Plain student has 5 tabs after notifications-tab addition (no "Группа")
-    expect(links).toHaveLength(5)
+    // Plain student has 4 tabs — Профиль moved to drawer, no Группа
+    expect(links).toHaveLength(4)
     expect(screen.queryByText('Группа')).toBeNull()
+    expect(screen.queryByText('Профиль')).toBeNull()
   })
 })

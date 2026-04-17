@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import {
+  BookOpen,
   CheckCircle,
   DotsThreeVertical,
   Lock,
@@ -36,6 +37,8 @@ interface LessonCardProps {
   isHeadman?: boolean
   /** Is lesson a future PLANNED one within the 14-day block window? */
   isBlockable?: boolean
+  /** Homework preview: title of first ДЗ + total count. Hidden when count === 0. */
+  homeworkPreview?: { title: string; count: number }
 }
 
 function formatTime(time: string): string {
@@ -63,6 +66,7 @@ export function LessonCard({
   onToggleBlock,
   isHeadman,
   isBlockable,
+  homeworkPreview,
 }: LessonCardProps) {
   const { data: subjectName, isLoading: subjectLoading } = useSubjectName(lesson.subjectId)
   const isCancelled = lesson.status === 'CANCELLED'
@@ -159,6 +163,32 @@ export function LessonCard({
           <MapPin size={12} weight="fill" aria-hidden="true" />
           Ауд. {lesson.room}
         </p>
+
+        {homeworkPreview && homeworkPreview.count > 0 && !isCancelled && (
+          <p
+            className="flex items-center gap-1 text-xs"
+            style={{ color: 'var(--accent-primary)' }}
+          >
+            <BookOpen
+              size={12}
+              weight="duotone"
+              aria-hidden="true"
+              style={{ flexShrink: 0 }}
+            />
+            <span className="truncate">{homeworkPreview.title}</span>
+            {homeworkPreview.count > 1 && (
+              <span
+                className="shrink-0 rounded-full px-1.5 text-[10px] font-semibold leading-4"
+                style={{
+                  background:
+                    'color-mix(in oklab, var(--accent-primary) 18%, transparent)',
+                }}
+              >
+                +{homeworkPreview.count - 1}
+              </span>
+            )}
+          </p>
+        )}
 
         {/* Headman-lock notice (student sees why geo-checkin is unavailable) */}
         {isBlockedByHeadman && (

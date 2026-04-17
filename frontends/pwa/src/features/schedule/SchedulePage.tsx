@@ -13,6 +13,11 @@ import {
   useSubjectName,
   useStudentRecords,
 } from './api'
+import {
+  useActiveSemesterId,
+  useHomeworksForGroup,
+} from '@/features/homework/api'
+import { LessonHomeworkSection } from '@/features/homework/LessonHomeworkSection'
 import { WeekDayTabs } from './WeekDayTabs'
 import { LessonCard } from './LessonCard'
 import { OfflineStaleNotice } from './OfflineStaleNotice'
@@ -103,6 +108,8 @@ export function SchedulePage() {
 
   const { data: lessons, isLoading, dataUpdatedAt } = useWeekSchedule(groupId, weekStart, weekEnd)
   const { data: records } = useStudentRecords()
+  const { data: semesterId } = useActiveSemesterId()
+  const { data: homeworks } = useHomeworksForGroup(groupId, semesterId)
 
   const recordStatuses = useMemo(() => {
     const map: Record<number, AttendanceStatus> = {}
@@ -297,37 +304,66 @@ export function SchedulePage() {
                 hidden: {},
               }}
             >
-              {dayLessons.map((lesson) => (
-                <motion.div
-                  key={lesson.id}
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: { opacity: 1 },
-                  }}
-                >
-                  <LessonCard
-                    lesson={lesson}
-                    attendanceCount={attendanceCounts[lesson.id]}
-                    personalStatus={
-                      personalStatuses[lesson.id] ??
-                      recordStatuses[lesson.id] ??
-                      null
-                    }
-                    onCheckin={() => handleCheckinSuccess(lesson.id)}
-                    onCheckinError={handleCheckinError}
-                    onOpenActions={
-                      isHeadman
-                        ? () => setHeadmanLesson(lesson)
-                        : () => setActiveLesson(lesson)
-                    }
-                    onToggleBlock={
-                      isHeadman ? () => handleToggleBlock(lesson) : undefined
-                    }
-                    isHeadman={isHeadman}
-                    isBlockable={isHeadman && isLessonBlockable(lesson)}
-                  />
-                </motion.div>
-              ))}
+              {dayLessons.map((lesson) => {
+                const lessonHomeworks = (homeworks ?? []).filter(
+                  (hw) =>
+                    hw.lessonDate === lesson.date &&
+                    hw.lessonNumber === lesson.lessonNumber,
+                )
+                const preview =
+                  lessonHomeworks.length > 0
+                    ? {
+                        title: lessonHomeworks[0].title,
+                        count: lessonHomeworks.length,
+                      }
+                    : undefined
+                return (
+                  <motion.div
+                    key={lesson.id}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { opacity: 1 },
+                    }}
+                    className="flex flex-col gap-2"
+                  >
+                    <LessonCard
+                      lesson={lesson}
+                      attendanceCount={attendanceCounts[lesson.id]}
+                      personalStatus={
+                        personalStatuses[lesson.id] ??
+                        recordStatuses[lesson.id] ??
+                        null
+                      }
+                      onCheckin={() => handleCheckinSuccess(lesson.id)}
+                      onCheckinError={handleCheckinError}
+                      onOpenActions={
+                        isHeadman
+                          ? () => setHeadmanLesson(lesson)
+                          : () => setActiveLesson(lesson)
+                      }
+                      onToggleBlock={
+                        isHeadman ? () => handleToggleBlock(lesson) : undefined
+                      }
+                      isHeadman={isHeadman}
+                      isBlockable={isHeadman && isLessonBlockable(lesson)}
+                      homeworkPreview={preview}
+                    />
+                    {isHeadman && (
+                      <LessonHomeworkSection
+                        homeworks={homeworks ?? []}
+                        groupId={groupId}
+                        semesterId={semesterId ?? null}
+                        subjectId={lesson.subjectId}
+                        lessonDate={lesson.date}
+                        lessonNumber={lesson.lessonNumber}
+                        isCancelled={lesson.status === 'CANCELLED'}
+                        canManage={true}
+                        currentUserId={user?.id}
+                      />
+                    )}
+                  </motion.div>
+                )
+              })}
             </motion.div>
           )}
         </motion.div>

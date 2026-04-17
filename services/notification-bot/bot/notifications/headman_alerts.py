@@ -179,6 +179,7 @@ async def handle_headman_alert(
                     user_id=headman.user_id,
                     chat_id=headman.telegram_id,
                     on_sent=_build_on_sent(headman.telegram_id),
+                    category="tickets",
                 )
             )
         else:
@@ -190,6 +191,7 @@ async def handle_headman_alert(
                     user_id=headman.user_id,
                     chat_id=headman.telegram_id,
                     on_sent=_build_on_sent(headman.telegram_id),
+                    category="tickets",
                 )
             )
 

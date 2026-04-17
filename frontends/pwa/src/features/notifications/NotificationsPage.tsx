@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { AnimatePresence, motion, type PanInfo } from 'motion/react'
-import { Bell, BellSlash, ArrowRight } from '@phosphor-icons/react'
+import { Bell, BellSlash, ArrowRight, GearSix } from '@phosphor-icons/react'
 import {
   describeNotification,
   useNotificationCenter,
@@ -25,6 +25,9 @@ function notificationRoute(type: string): string | null {
       return '/group/late-checkin'
     case 'excuse.requested':
       return '/group/excuses'
+    case 'homework.published':
+    case 'homework.updated':
+      return '/homework'
     default:
       return null
   }
@@ -55,7 +58,7 @@ export function NotificationsPage() {
     <div className="flex min-h-full flex-col p-4">
       <header className="mb-4 flex items-center gap-3">
         <Bell size={22} weight="fill" style={{ color: 'var(--accent-primary)' }} />
-        <div className="flex flex-col">
+        <div className="flex flex-1 flex-col">
           <h1
             className="text-lg font-semibold"
             style={{
@@ -69,6 +72,19 @@ export function NotificationsPage() {
             Смахни карточку, чтобы убрать в архив
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => navigate('/notifications/settings')}
+          aria-label="Настройки уведомлений"
+          className="grid size-10 place-items-center rounded-full"
+          style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-subtle)',
+            color: 'var(--text-primary)',
+          }}
+        >
+          <GearSix size={18} weight="bold" />
+        </button>
       </header>
 
       {visible.length === 0 ? (

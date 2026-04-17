@@ -42,6 +42,17 @@ public class PushSubscriptionDocument {
     @Field("auth")
     private String auth;
 
+    /**
+     * Староста группы на момент оформления подписки. Используется Web Push
+     * маршрутизацией для событий, адресованных только старостам
+     * (excuse.requested, late_checkin.requested).
+     *
+     * Примечание: снимок значения на момент subscribe. Если староста
+     * перевыбирается, PWA должна переподписаться для обновления флага.
+     */
+    @Field("is_headman")
+    private boolean headman;
+
     @Field("created_at")
     private Instant createdAt;
 }

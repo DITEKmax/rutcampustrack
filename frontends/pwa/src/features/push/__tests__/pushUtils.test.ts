@@ -10,8 +10,12 @@ describe('getUrlForEventType', () => {
     expect(getUrlForEventType('lesson.cancelled')).toBe('/schedule')
   })
 
-  it('returns / for homework.published', () => {
-    expect(getUrlForEventType('homework.published')).toBe('/')
+  it('returns /homework for homework.published', () => {
+    expect(getUrlForEventType('homework.published')).toBe('/homework')
+  })
+
+  it('returns /homework for homework.updated', () => {
+    expect(getUrlForEventType('homework.updated')).toBe('/homework')
   })
 
   it('returns / for unknown event type', () => {

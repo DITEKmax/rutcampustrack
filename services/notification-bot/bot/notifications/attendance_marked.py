@@ -9,6 +9,11 @@ from bot.services.redis_client import ReminderRedisClient
 
 logger = logging.getLogger(__name__)
 
+# Статусы, при которых напоминания больше не нужны: студент либо отметился сам,
+# либо ему проставили уважительную/свободное посещение. absent (авто-статус для
+# не отметившихся в конце пары) обрабатывается через lesson.closed → NOTIF-04.
+_CLEANUP_STATUSES = frozenset({"present", "excused", "free_attendance"})
+
 
 async def handle_attendance_marked(
     event: dict,
@@ -16,21 +21,28 @@ async def handle_attendance_marked(
     academic_client,
     redis_client: ReminderRedisClient,
 ) -> None:
-    """Delete reminder messages for a student who has checked in (status=present).
+    """Delete reminder messages for a student whose attendance became final.
 
-    CRITICAL: Only act on status=present. The auto_scheduler writes status=absent
-    for no-shows — deleting reminders on absent would break NOTIF-04 cleanup.
+    Снимаем ремайндер-сообщения ТГ, когда статус перестал быть «студента ждут
+    на паре»:
+      · present          — студент отметился сам;
+      · excused          — староста/админ поставил у.п.;
+      · free_attendance  — свободное посещение на эту пару.
+
+    Для status=absent, который auto_scheduler пишет в конце пары для не
+    отметившихся, мы НЕ чистим тут — lesson.closed приедет чуть позже и
+    приведёт к общему cleanup через lesson_closed handler (NOTIF-04).
 
     Protocol:
-    1. Guard: if status != "present", return immediately.
+    1. Guard: принимаем только perminated-статусы, прочее (absent, cancelled) игнор.
     2. Validate required payload fields.
     3. Look up student's telegram_id via group members (cached).
     4. Delete all stored message_ids for (lesson_id, user_id) and clear Redis key.
     """
     payload = event.get("payload", {})
     status = payload.get("status")
-    if status != "present":
-        return  # Only clean up on self check-in (not absent/excused/free_attendance)
+    if status not in _CLEANUP_STATUSES:
+        return
 
     lesson_id = payload.get("lesson_id")
     user_id = payload.get("user_id")

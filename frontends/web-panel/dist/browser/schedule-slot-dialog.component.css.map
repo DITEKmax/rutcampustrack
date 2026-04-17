@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["angular:styles/component:css;9f1055486ee3a374322a58474f6d6f61d32c9c2ef9a40bca7ae92718678684d1;C:/Users/maksd/IntelliJIDEA/rutcampustrack/frontends/web-panel/src/app/features/headman/schedule/schedule-slot-dialog.component.ts"],
-  "sourcesContent": ["\n    .dialog-actions { gap: 8px; }\n    .dialog-actions__spacer { flex: 1; }\n    .btn-danger {\n      color: var(--accent-danger);\n      border-color: color-mix(in oklab, var(--accent-danger) 40%, transparent) !important;\n    }\n    .btn-danger:hover:not([disabled]) {\n      background: color-mix(in oklab, var(--accent-danger) 12%, transparent);\n    }\n    .btn-danger i { margin-right: 4px; }\n    .subj-type { color: var(--text-muted); font-size: 0.85em; margin-left: 4px; }\n  "],
-  "mappings": ";AACI,CAAC;AAAiB,OAAK;AAAK;AAC5B,CAAC;AAAyB,QAAM;AAAG;AACnC,CAAC;AACC,SAAO,IAAI;AACX,gBAAc,UAAU,GAAG,KAAK,EAAE,IAAI,iBAAiB,GAAG,EAAE;AAC9D;AACA,CAJC,UAIU,MAAM,KAAK,CAAC;AACrB,cAAY,UAAU,GAAG,KAAK,EAAE,IAAI,iBAAiB,GAAG,EAAE;AAC5D;AACA,CAPC,WAOW;AAAI,gBAAc;AAAK;AACnC,CAAC;AAAY,SAAO,IAAI;AAAe,aAAW;AAAQ,eAAa;AAAK;",
-  "names": []
-}

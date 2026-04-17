@@ -58,6 +58,7 @@ public class PushController implements PushApi {
                 .endpoint(request.endpoint())
                 .p256dh(request.keys().p256dh())
                 .auth(request.keys().auth())
+                .headman(requestContext.isHeadman())
                 .createdAt(Instant.now())
                 .build();
         repository.save(doc);

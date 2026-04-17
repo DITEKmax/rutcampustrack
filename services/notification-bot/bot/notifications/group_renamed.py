@@ -57,5 +57,6 @@ async def handle_group_renamed(
                 ),
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
+                category="group",
             )
         )

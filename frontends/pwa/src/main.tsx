@@ -16,9 +16,11 @@ import './index.css'
 
 const HomeDashboard = lazy(() => import('./features/home/HomeDashboard'))
 const SchedulePage = lazy(() => import('./features/schedule/SchedulePage').then(m => ({ default: m.SchedulePage })))
+const HomeworkPage = lazy(() => import('./features/homework/HomeworkPage'))
 const CheckInScreen = lazy(() => import('./features/checkin/CheckInScreen').then(m => ({ default: m.CheckInScreen })))
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'))
 const NotificationsPage = lazy(() => import('./features/notifications/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
+const NotificationSettingsPage = lazy(() => import('./features/notifications/NotificationSettingsPage'))
 const GroupHub = lazy(() => import('./features/headman/group-hub/GroupHub').then(m => ({ default: m.GroupHub })))
 const Overview = lazy(() => import('./features/headman/overview/Overview').then(m => ({ default: m.Overview })))
 const StudentsList = lazy(() => import('./features/headman/students/StudentsList').then(m => ({ default: m.StudentsList })))
@@ -53,6 +55,8 @@ const router = createBrowserRouter([
       { path: 'schedule', element: <SchedulePage /> },
       { path: 'checkin', element: <CheckInScreen /> },
       { path: 'notifications', element: <NotificationsPage /> },
+      { path: 'notifications/settings', element: <NotificationSettingsPage /> },
+      { path: 'homework', element: <HomeworkPage /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'group', element: <GroupHub /> },
       { path: 'group/overview', element: <Overview /> },

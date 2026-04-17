@@ -2,6 +2,9 @@ export function getUrlForEventType(eventType: string): string {
   switch (eventType) {
     case 'lesson.started': return '/checkin'
     case 'lesson.cancelled': return '/schedule'
+    case 'homework.published':
+    case 'homework.updated':
+      return '/homework'
     default: return '/'
   }
 }

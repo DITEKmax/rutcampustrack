@@ -64,15 +64,11 @@ def _checkbox(enabled: bool) -> str:
     return "✅" if enabled else "⬜"
 
 
-async def _build_menu(
-    prefs_client: NotificationPrefsClient, telegram_id: int
-) -> tuple[str, InlineKeyboardMarkup]:
+async def _build_menu(prefs_client: NotificationPrefsClient, telegram_id: int) -> tuple[str, InlineKeyboardMarkup]:
     global_on = await prefs_client.is_global_enabled(telegram_id)
     categories = await prefs_client.get_categories(telegram_id)
 
-    header = (
-        "🔔 Уведомления включены" if global_on else "🔕 Уведомления глобально выключены"
-    )
+    header = "🔔 Уведомления включены" if global_on else "🔕 Уведомления глобально выключены"
     body = (
         "Выберите, какие уведомления хотите получать в этом боте. "
         "Настройки для браузера и PWA — отдельные, в приложении."
@@ -109,9 +105,7 @@ async def cmd_open_settings(message: Message, prefs_client: NotificationPrefsCli
 
 
 @prefs_router.callback_query(F.data == _GLOBAL_CB)
-async def cb_toggle_global(
-    callback: CallbackQuery, prefs_client: NotificationPrefsClient
-) -> None:
+async def cb_toggle_global(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
     telegram_id = callback.from_user.id
     currently_on = await prefs_client.is_global_enabled(telegram_id)
     if currently_on:
@@ -130,9 +124,7 @@ async def cb_toggle_global(
 
 
 @prefs_router.callback_query(F.data.startswith(_CAT_CB_PREFIX))
-async def cb_toggle_category(
-    callback: CallbackQuery, prefs_client: NotificationPrefsClient
-) -> None:
+async def cb_toggle_category(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
     category = (callback.data or "").removeprefix(_CAT_CB_PREFIX)
     if category not in CATEGORIES:
         await callback.answer("Неизвестная категория")

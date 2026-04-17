@@ -33,12 +33,12 @@ logger = logging.getLogger(__name__)
 # (frontends/pwa/src/features/notifications/notificationPrefs.ts) —
 # оба клиента должны показывать один набор и использовать одинаковые ключи.
 CATEGORIES: tuple[str, ...] = (
-    "lessons",      # lesson.started, lesson.cancelled
-    "homework",     # homework.published, homework.updated
-    "tickets",      # excuse.*, late_checkin.*
-    "schedule",     # lesson.one_off.*
-    "group",        # group.renamed, group.archived
-    "reminders",    # NOTIF-02/NOTIF-03 — напоминания в середине/конце пары
+    "lessons",  # lesson.started, lesson.cancelled
+    "homework",  # homework.published, homework.updated
+    "tickets",  # excuse.*, late_checkin.*
+    "schedule",  # lesson.one_off.*
+    "group",  # group.renamed, group.archived
+    "reminders",  # NOTIF-02/NOTIF-03 — напоминания в середине/конце пары
 )
 
 # Ивент → категория. None означает «категория неприменима», отправляем

@@ -46,11 +46,11 @@
 
 ## Группа 6 — shared-logback
 
-- [ ] `logback-base.xml` (ConsoleAppender + LogstashEncoder, JSON format)
-- [ ] `MaskingProvider.java` extends CompositeJsonProvider — regex masking
-- [ ] Regex patterns (class constant): BEARER_TOKEN, TELEGRAM_ID, FCM_ENDPOINT
-- [ ] Unit-тесты: `log.info("token: {}", "eyJabc...")` → в capture'нутом output `token: ***`
-- [ ] `README.md` модуля — как подключить (одна `<include>` строчка в сервисном `logback-spring.xml`)
+- [x] `shared/logback-base.xml` (ConsoleAppender + LoggingEventCompositeJsonEncoder, JSON format, поля ts/level/logger/thread/msg/service/MDC[traceId,userId,eventType]/stack)
+- [x] `MaskingJsonProvider` extends `MessageJsonProvider` — regex masking поля msg
+- [x] Regex patterns: `BEARER_TOKEN` (JWT после `Bearer`), `TELEGRAM_ID` (json field telegram_id/telegramId numeric or quoted), `FCM_ENDPOINT` (googleapis URL)
+- [x] Unit-тесты: 14 параметризованных + 4 integration через programmatic Logback pipeline (0 failures)
+- [x] `README.md` модуля — как подключить через `<include resource="shared/logback-base.xml"/>`
 
 ## Группа 7 — shared-test-containers
 

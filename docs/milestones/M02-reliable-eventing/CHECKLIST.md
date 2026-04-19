@@ -23,12 +23,14 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 3 — Outbox решение (DECISIONS.md) + миграции
 
-- [ ] DECISIONS.md: shared-outbox vs copy-paste (NEW-6) — зафиксировать выбор перед кодом
-- [ ] Flyway `V{N}__outbox.sql` в academic (PG, `academic_outbox` таблица)
-- [ ] Flyway `V{N}__outbox.sql` в schedule (PG, `schedule_outbox` таблица)
-- [ ] Mongo collection init / Flyway-Mongo для attendance (`attendance_outbox`)
-- [ ] Индекс `(status, created_at)` для publisher-job performance
-- [ ] Retention: документировать в migration comments «cleanup job drops sent>7d»
+- [x] DECISIONS.md: shared-outbox vs copy-paste (NEW-6) — зафиксировано 2026-04-19 (вариант a)
+- [x] `services/shared/shared-outbox` scaffold: build.gradle.kts + settings include + OutboxStatus / OutboxRecord / OutboxStorage API
+- [x] Flyway `V16__academic_outbox.sql` в academic (PG, `academic_outbox` таблица + 2 partial index)
+- [x] Flyway `V15__shedlock_table.sql` в academic (prerequisite для OutboxPublisherJob в Группе 4)
+- [x] Flyway `V11__schedule_outbox.sql` в schedule (PG, `schedule_outbox` таблица + 2 partial index)
+- [x] N/A — Mongo collection init для `attendance_outbox` отложен в Группу 4: Mongo auto-создаёт collection по `@Document`, индексы инициализируются через `ApplicationRunner` по existing pattern `AttendanceIndexInitializer`
+- [x] Partial index `created_at WHERE status='pending'` для publisher-job performance (вместо composite `(status, created_at)` — partial даёт smaller index + лучший selectivity на pending)
+- [x] Retention: migration comments + `idx_*_sent_cleanup` partial index для OutboxCleanupJob (sent>7d)
 
 ## Группа 4 — Outbox infrastructure (Entity + Repository + Publisher)
 

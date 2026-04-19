@@ -78,3 +78,45 @@ ShedLock деталей в academic + attendance build.gradle/Flyway. Реаль
 (libs + Flyway + EnableSchedulerLock) добавляется **в Группу 3**,
 когда появится OutboxPublisherJob (первый `@Scheduled` в этих
 сервисах). Закрываю пункты Группы 2 как N/A со ссылкой сюда.
+
+## 2026-04-19 — Состояние publisher'ов перед Группой 3/5
+
+Grep `RabbitTemplate|convertAndSend` — две архитектуры параллельно:
+
+**schedule + academic — Spring ApplicationEvent паттерн:**
+- Свой `ru.rutcampustrack.{service}.event.DomainEvent extends ApplicationEvent`
+  (envelope: `event_type`, `event_id UUID`, `occurred_at`, `payload`).
+- Service-layer делает `ApplicationEventPublisher.publishEvent(event)`.
+- `DomainEventListener` с `@TransactionalEventListener(AFTER_COMMIT)`
+  получает event и шлёт `rabbitTemplate.convertAndSend(EXCHANGE, "", event)`.
+- AFTER_COMMIT гарантирует что при rollback события не летят — **pseudo-outbox**,
+  но без persist/retry: если Rabbit down ПОСЛЕ commit БД — событие
+  потеряно (тот самый P0-6 message loss).
+
+**attendance — direct publisher:**
+- Три публикатора (`AttendanceEventPublisher`, `ExcuseEventPublisher`,
+  `LateCheckinEventPublisher`) строят `Map<String,Object>` envelope и
+  шлют напрямую `rabbitTemplate.convertAndSend`.
+- Нет ApplicationEvent слоя — publisher вызывается из service в той же
+  транзакции.
+
+**`shared-events/DomainEvent` (M01) — НЕ adopted сервисами.** Он
+спроектирован с другой envelope-схемой (`event_version`, `trace_id`,
+`occurred_at`, `source` + поля события напрямую, без nested `payload`).
+Это конфликт моделей, который M02 **не будет решать** — рефакторинг
+envelope'а = breaking change для всех 14+ JSON-схем. Оставляем как есть:
+outbox будет хранить уже сериализованный JSON payload (строку) и
+event_type как отдельный столбец для таргетинга. Миграцию на
+`shared-events/DomainEvent` откладываем (не scope M02).
+
+**Стратегия Группы 5 (refactor publisher'ов):**
+1. Вместо `rabbitTemplate.convertAndSend(...)` в `DomainEventListener` /
+   `AttendanceEventPublisher` — вызов `OutboxStorage.save(eventType,
+   jsonPayload)` в **той же @Transactional** что и доменная операция.
+   Т.е. для schedule/academic — переносим write в outbox из AFTER_COMMIT
+   в BEFORE_COMMIT (обычный listener без фазы), чтобы сохранить outbox
+   atomically с доменной записью.
+2. `OutboxPublisherJob` читает batch `pending` → шлёт в Rabbit →
+   помечает `sent`.
+3. При Rabbit-недоступности — rows остаются `pending`, next tick job
+   подхватывает. Это и есть guarantee'д retry.

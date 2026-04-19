@@ -53,7 +53,18 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private static final List<String> INTERNAL_HEADERS = List.of(
-            "X-User-Id", "X-User-Role", "X-Group-Id", "X-Is-Headman"
+            // Legacy X-User-* (dual-mode legacy identity) — client-supplied injection blocked.
+            "X-User-Id", "X-User-Role", "X-Group-Id", "X-Is-Headman",
+            // M03a post-audit: block client-supplied Internal JWT injection.
+            // Without this strip, a compromised sibling pod on the docker private-net
+            // could forward its own X-Internal-Token directly to downstream, bypassing
+            // Gateway's token-exchange. Gateway ALWAYS issues X-Internal-Token itself
+            // in InternalJwtIssuerFilter → strip any client-provided value first.
+            "X-Internal-Token",
+            // M03a post-audit: block client-supplied X-Login injection into composite
+            // rate-limit key. Clients that need rate-limit isolation must send login
+            // in request body; Gateway may populate X-Login internally (future enhancement).
+            "X-Login"
     );
 
     @Override

@@ -59,9 +59,16 @@ public class RedisRateLimiterConfig {
     /**
      * Ключ — login из заголовка {@code X-Login}.
      *
-     * <p>Для роута {@code /api/auth/login} тело приходит через
-     * {@code CacheRequestBody} + {@code JsonToHeadersGatewayFilter} (конфигурируется в
-     * Группе 10). Если header отсутствует — fallback на IP, чтобы не падать.</p>
+     * <p><b>Безопасность:</b> {@code JwtAuthenticationFilter} strip'ает клиентский
+     * {@code X-Login} (вместе с X-User-*, X-Internal-Token) чтобы избежать
+     * DoS-by-rate-limit атаки и обхода composite-ключа. Значит в текущей реализации
+     * header может поставить ТОЛЬКО внутренний Gateway-фильтр — сейчас такого
+     * фильтра нет, поэтому резолвер всегда fallback'ится на IP-ключ.</p>
+     *
+     * <p>Чтобы composite {@code (ip, login)} начал реально защищать, нужен
+     * Gateway pre-filter который читает {@code login} из JSON body (через
+     * {@code CacheRequestBody}) и ставит {@code X-Login} в mutated request.
+     * Запланировано: hot-patch после v0.0.0-alpha.3 либо в M03b.</p>
      */
     @Bean
     public KeyResolver loginKeyResolver() {

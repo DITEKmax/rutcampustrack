@@ -95,10 +95,32 @@ public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
     protected abstract void applyLegacyHeaders(HttpServletRequest request);
 
     /**
-     * Override to skip filter for specific paths (e.g. actuator, public endpoints).
-     * Default: no exclusions.
+     * Override to add service-specific exclusions; combine with
+     * {@link #isInfrastructurePath(HttpServletRequest)} via {@code super.isExcluded...}
+     * or the convenience method {@link #isInfrastructurePath(HttpServletRequest)}.
+     *
+     * <p>Default returns {@link #isInfrastructurePath(HttpServletRequest)} — covers
+     * actuator / swagger / api-docs which MUST stay reachable even in strict mode
+     * (otherwise Docker HEALTHCHECK on {@code /actuator/health} fails and containers
+     * enter unhealthy loop, M03a Группа 16 audit finding H3).</p>
      */
     protected boolean isExcludedPath(HttpServletRequest request) {
-        return false;
+        return isInfrastructurePath(request);
+    }
+
+    /**
+     * Infrastructure paths that must bypass identity checks:
+     * <ul>
+     *   <li>{@code /actuator/**} — Spring Boot health/metrics/prometheus.</li>
+     *   <li>{@code /api-docs**}, {@code /v3/api-docs**} — OpenAPI schema.</li>
+     *   <li>{@code /swagger-ui**} — dev/staging API explorer.</li>
+     * </ul>
+     */
+    protected static boolean isInfrastructurePath(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/actuator")
+                || path.startsWith("/api-docs")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-ui");
     }
 }

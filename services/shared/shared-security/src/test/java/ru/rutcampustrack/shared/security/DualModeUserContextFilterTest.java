@@ -123,6 +123,30 @@ class DualModeUserContextFilterTest {
     }
 
     @Test
+    void infrastructurePath_skipsFilter_evenInStrictMode() throws Exception {
+        TestFilter filter = filter(false);  // strict mode (legacyHeadersEnabled=false)
+        for (String path : new String[]{
+                "/actuator/health", "/actuator/prometheus", "/actuator/info",
+                "/api-docs", "/v3/api-docs/swagger-config",
+                "/swagger-ui/index.html"
+        }) {
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            request.setRequestURI(path);
+            // no X-Internal-Token, no X-User-* — in strict mode normally → 401,
+            // but infrastructure paths must passthrough для Docker HEALTHCHECK / Prometheus.
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            FilterChain localChain = mock(FilterChain.class);
+
+            filter.doFilter(request, response, localChain);
+
+            assertThat(response.getStatus())
+                    .as("path=%s must not 401 in strict mode", path)
+                    .isEqualTo(200);
+            verify(localChain).doFilter(request, response);
+        }
+    }
+
+    @Test
     void internalTokenTakesPrecedence_overLegacyHeaders() throws Exception {
         TestFilter filter = filter(true);
         MockHttpServletRequest request = new MockHttpServletRequest();

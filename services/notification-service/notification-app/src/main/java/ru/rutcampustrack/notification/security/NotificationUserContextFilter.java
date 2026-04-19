@@ -51,7 +51,8 @@ public class NotificationUserContextFilter extends DualModeUserContextFilter {
     @Override
     protected boolean isExcludedPath(HttpServletRequest request) {
         // WebSocket upgrade uses JwtHandshakeInterceptor with external JWT (M03b ws-ticket scope).
+        // + infrastructure paths (actuator/api-docs/swagger-ui) from base class.
         String path = request.getRequestURI();
-        return path.startsWith("/ws");
+        return path.startsWith("/ws") || isInfrastructurePath(request);
     }
 }

@@ -232,4 +232,33 @@ class JwtAuthenticationFilterTest {
         verify(chain).filter(any());
         assertThat(exchange.getResponse().getStatusCode()).isNotEqualTo(HttpStatus.UNAUTHORIZED);
     }
+
+    // Post-audit (M03a Группа 16): клиентские X-Internal-Token и X-Login
+    // должны быть удалены до route-handling чтобы предотвратить header-injection.
+    @Test
+    void stripsClientSuppliedInternalTokenAndXLogin() {
+        Date expiry = new Date(System.currentTimeMillis() + 60_000);
+        String token = generateToken(keyPair.getPrivate(), Map.of("role", "STUDENT"), expiry);
+
+        var request = MockServerHttpRequest.get("/api/academic/groups")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .header("X-Internal-Token", "attacker-crafted-jwt")
+                .header("X-Login", "victim")
+                .header("X-User-Id", "666")   // legacy attempt
+                .build();
+        var exchange = MockServerWebExchange.from(request);
+        var chain = mock(GatewayFilterChain.class);
+        ArgumentCaptor<org.springframework.web.server.ServerWebExchange> captor =
+                ArgumentCaptor.forClass(org.springframework.web.server.ServerWebExchange.class);
+        when(chain.filter(captor.capture())).thenReturn(Mono.empty());
+
+        filter.filter(exchange, chain).block();
+
+        var mutated = captor.getValue().getRequest();
+        // X-Internal-Token и X-Login должны быть удалены (header injection mitigation)
+        assertThat(mutated.getHeaders().getFirst("X-Internal-Token")).isNull();
+        assertThat(mutated.getHeaders().getFirst("X-Login")).isNull();
+        // X-User-Id от клиента заменяется значением из JWT (sub=123)
+        assertThat(mutated.getHeaders().getFirst("X-User-Id")).isEqualTo("123");
+    }
 }

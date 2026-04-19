@@ -54,7 +54,7 @@ class WsTicketIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void consumeTicket_happyPath_returnsIdentity() {
+    void consumeTicket_happyPath_returnsFullIdentity() {
         String accessToken = loginAndGetAccessToken("student");
         String ticket = issueTicket(accessToken);
 
@@ -64,6 +64,10 @@ class WsTicketIT extends AbstractIntegrationTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().userId()).isPositive();
         assertThat(response.getBody().role()).isEqualTo("STUDENT");
+        // groupId и isHeadman извлекаются из access-JWT — seed-юзер `student`
+        // по phase-1 default уже в группе → groupId > 0, isHeadman=false.
+        assertThat(response.getBody().groupId()).isGreaterThanOrEqualTo(0L);
+        assertThat(response.getBody().isHeadman()).isIn(true, false);
     }
 
     @Test

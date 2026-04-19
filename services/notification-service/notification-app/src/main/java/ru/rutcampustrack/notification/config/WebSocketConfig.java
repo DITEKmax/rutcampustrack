@@ -12,7 +12,9 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
  * STOMP WebSocket configuration for notification-web.
  *
  * <p>Per D-09: STOMP endpoint /ws with SockJS fallback.
- * Per D-02: JwtHandshakeInterceptor validates ?token= at HTTP Upgrade level.
+ * M03b Группа 4: {@link TicketHandshakeInterceptor} validates
+ * {@code ?ticket=<uuid>} at HTTP Upgrade (replaces legacy
+ * {@code JwtHandshakeInterceptor} which accepted raw JWT in URL).
  * Per D-04: Simple in-memory broker on /topic — group topics: /topic/group/{groupId}.
  * Per D-10: Default Spring heartbeat (10s server, 10s client) — no custom tuning needed.
  * Per Pitfall 6: setApplicationDestinationPrefixes is NOT called —
@@ -22,26 +24,26 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
+    private final TicketHandshakeInterceptor ticketHandshakeInterceptor;
     private final SubscriptionAuthInterceptor subscriptionAuthInterceptor;
 
     @Value("${notification.ws.allowed-origins:http://localhost:5173,http://localhost:4200,http://localhost:3000,https://ruttrack.site}")
     private String allowedOrigins;
 
-    public WebSocketConfig(JwtHandshakeInterceptor jwtHandshakeInterceptor,
+    public WebSocketConfig(TicketHandshakeInterceptor ticketHandshakeInterceptor,
                            SubscriptionAuthInterceptor subscriptionAuthInterceptor) {
-        this.jwtHandshakeInterceptor = jwtHandshakeInterceptor;
+        this.ticketHandshakeInterceptor = ticketHandshakeInterceptor;
         this.subscriptionAuthInterceptor = subscriptionAuthInterceptor;
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // D-09: STOMP endpoint /ws with SockJS fallback
-        // D-02: JwtHandshakeInterceptor validates ?token= at HTTP Upgrade level
-        // IMP-06: Restrict CORS to configured origins instead of wildcard
+        // D-09: STOMP endpoint /ws with SockJS fallback.
+        // M03b Группа 4: ticket-based handshake (single-use opaque UUID).
+        // IMP-06: Restrict CORS to configured origins instead of wildcard.
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns(allowedOrigins.split(","))
-                .addInterceptors(jwtHandshakeInterceptor)
+                .addInterceptors(ticketHandshakeInterceptor)
                 .withSockJS();
     }
 

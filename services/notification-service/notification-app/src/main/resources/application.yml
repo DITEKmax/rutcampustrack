@@ -27,6 +27,11 @@ rutcampustrack:
       public-key-refresh-minutes: 60
       clock-skew-seconds: 30
       legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:true}
+  notification:
+    ws-ticket:
+      # M03b Группа 4: consume WebSocket ticket через auth-service internal API.
+      auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
+      internal-issuer-secret: ${INTERNAL_ISSUER_SECRET:dev-internal-issuer-secret-32-bytes-for-local-testing-only}
 
 vapid:
   public-key: ${VAPID_PUBLIC_KEY:}

@@ -12,8 +12,9 @@ import ru.rutcampustrack.shared.security.InternalJwtValidator;
  * M03a: notification-service adaptation of {@link DualModeUserContextFilter}.
  * Bridges Internal JWT claims (or legacy X-User-* headers) into {@link RequestContext}.
  *
- * Note: WebSocket handshake flow uses {@code JwtHandshakeInterceptor} with external
- * JWT (query-string ticket flow scope of M03b). Only REST endpoints (/push/*) use
+ * Note: WebSocket handshake flow uses {@code TicketHandshakeInterceptor}
+ * (M03b Группа 4) with single-use Redis ticket consumed via auth-service
+ * {@code /internal/consume-ws-ticket}. Only REST endpoints (/push/*) use
  * this filter.
  */
 @Component
@@ -50,7 +51,7 @@ public class NotificationUserContextFilter extends DualModeUserContextFilter {
 
     @Override
     protected boolean isExcludedPath(HttpServletRequest request) {
-        // WebSocket upgrade uses JwtHandshakeInterceptor with external JWT (M03b ws-ticket scope).
+        // WebSocket upgrade uses TicketHandshakeInterceptor (M03b Группа 4).
         // + infrastructure paths (actuator/api-docs/swagger-ui) from base class.
         String path = request.getRequestURI();
         return path.startsWith("/ws") || isInfrastructurePath(request);

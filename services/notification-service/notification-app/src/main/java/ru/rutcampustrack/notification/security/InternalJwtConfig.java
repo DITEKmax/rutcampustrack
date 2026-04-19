@@ -3,15 +3,17 @@ package ru.rutcampustrack.notification.security;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.rutcampustrack.notification.config.WsTicketProperties;
 import ru.rutcampustrack.shared.security.InternalJwtProperties;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 import ru.rutcampustrack.shared.security.PublicKeyProvider;
 
 /**
  * M03a: wires shared-security beans into notification-service context.
+ * M03b Группа 4: enables {@code WsTicketProperties} для WebSocket handshake.
  */
 @Configuration
-@EnableConfigurationProperties(InternalJwtProperties.class)
+@EnableConfigurationProperties({InternalJwtProperties.class, WsTicketProperties.class})
 public class InternalJwtConfig {
 
     @Bean

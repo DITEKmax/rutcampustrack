@@ -64,15 +64,20 @@ same-origin + `SameSite=Strict`). Группа 5 переформатирова�
 
 ## Группа 4 — Notification-web: ticket handshake
 
-- [ ] Удалить старый `JwtHandshakeInterceptor` (читал external JWT из
-  query), заменить на `TicketHandshakeInterceptor`
-- [ ] `TicketHandshakeInterceptor` — читает `query.ticket`, вызывает
-  `WsTicketServiceClient` (gRPC или REST к auth-service), получает
-  userId/role, кладёт в STOMP session attributes
-- [ ] gRPC vs REST — решение в DECISIONS. Для single-use consume —
-  простой REST `POST /internal/consume-ws-ticket` с Internal-Issuer-Secret
-- [ ] IT `WsHandshakeIT` (Testcontainers) — valid ticket → handshake 101;
-  invalid/used → 401
+- [x] Удалить старый `JwtHandshakeInterceptor` (читал external JWT из
+  query) + `JwtHandshakeInterceptorTest`. WebSocketConfig переключён.
+- [x] `TicketHandshakeInterceptor` — читает `query.ticket`, вызывает
+  `WsTicketClient` (REST к auth-service `/internal/consume-ws-ticket`
+  с `X-Internal-Issuer-Secret`), получает userId/role/groupId/isHeadman,
+  кладёт в STOMP session attributes (совместимо с SubscriptionAuthInterceptor).
+- [x] REST выбран (не gRPC): `POST /internal/consume-ws-ticket` с
+  `X-Internal-Issuer-Secret` — переиспользует M03a pattern, проще
+  unit-тестировать, не требует proto-контракта. NotificationConfig
+  WsTicketProperties (auth-service-url + internal-issuer-secret).
+- [x] Unit-тест `TicketHandshakeInterceptorTest` — valid ticket →
+  sessionAttributes populated; missing ticket → 401; consumed/expired
+  ticket → 401; SockJS-style path → ticket extracted; multi-param
+  query → ticket picked (5 тестов, mockito).
 
 ## Группа 5 — (reserved — was CSRF, removed per DECISIONS 2026-04-20)
 

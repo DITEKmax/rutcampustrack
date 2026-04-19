@@ -17,9 +17,11 @@ import java.util.UUID;
  *
  * <p>Storage (DECISIONS 2026-04-20 WS-ticket storage):</p>
  * <ul>
- *     <li>{@code ws_ticket:<uuid>} → JSON payload {@code {userId, role, expiresAt}}, TTL 30s</li>
+ *     <li>{@code ws_ticket:<uuid>} → pipe-joined payload
+ *         {@code userId|role|groupId|isHeadman|expiresEpoch}, TTL 30s.
+ *         Pipe-separated (не JSON) — упрощает Lua-script SREM без cjson.</li>
  *     <li>{@code ws_ticket_user:<userId>} → SET&lt;uuid&gt; для batch-invalidate
- *     при logout (Группа 8). TTL 60s, refresh на каждый issue.</li>
+ *         при logout (Группа 8). TTL 60s, refresh на каждый issue.</li>
  * </ul>
  *
  * <p>Consume — atomic via Lua-script: GET ws_ticket:&lt;uuid&gt; → DEL →
@@ -36,15 +38,6 @@ public class WsTicketService {
     private static final String KEY_PREFIX = "ws_ticket:";
     private static final String USER_SET_PREFIX = "ws_ticket_user:";
 
-    /**
-     * Lua: atomic GET + DEL + SREM. Возвращает payload или nil.
-     * KEYS[1] = ws_ticket:<uuid>, KEYS[2] = ws_ticket_user:<userId-from-payload>
-     * ARGV[1] = uuid (для SREM)
-     *
-     * Мы сначала читаем payload; если есть, парсим userId; но Lua не парсит JSON.
-     * Поэтому структура ключа: value = "<userId>|<role>|<expiresEpoch>".
-     * Это проще Lua-парсинга JSON и избавляет от зависимости cjson.
-     */
     private static final String CONSUME_SCRIPT = """
             local payload = redis.call('GET', KEYS[1])
             if not payload then
@@ -68,13 +61,13 @@ public class WsTicketService {
     }
 
     /**
-     * Issue ticket для userId/role. TTL = 30s single-use.
-     * @return (ticket, expiresAt) пара
+     * Issue ticket c полными identity claims (для SubscriptionAuthInterceptor
+     * в notification-service). groupId=0 если null в JWT. TTL = 30s single-use.
      */
-    public Issued issue(long userId, String role) {
+    public Issued issue(long userId, String role, long groupId, boolean isHeadman) {
         String ticket = UUID.randomUUID().toString();
         Instant expiresAt = Instant.now().plus(TICKET_TTL);
-        String payload = userId + "|" + role + "|" + expiresAt.getEpochSecond();
+        String payload = userId + "|" + role + "|" + groupId + "|" + isHeadman + "|" + expiresAt.getEpochSecond();
 
         redisTemplate.opsForValue().set(KEY_PREFIX + ticket, payload, TICKET_TTL);
         String userSetKey = USER_SET_PREFIX + userId;
@@ -100,8 +93,8 @@ public class WsTicketService {
     }
 
     /**
-     * Для Группы 8 (logout): invalidate все tickets пользователя. Используется
-     * SMEMBERS + DEL pipeline.
+     * Для Группы 8 (logout): invalidate все tickets пользователя.
+     * SMEMBERS + batch DEL + DEL user-set.
      */
     public void invalidateAllFor(long userId) {
         String userSetKey = USER_SET_PREFIX + userId;
@@ -114,17 +107,19 @@ public class WsTicketService {
     }
 
     private Optional<TicketClaims> parsePayload(String payload) {
-        int first = payload.indexOf('|');
-        int second = payload.indexOf('|', first + 1);
-        if (first < 0 || second < 0) {
-            log.warn("Invalid ws-ticket payload format");
+        String[] parts = payload.split("\\|", -1);
+        if (parts.length != 5) {
+            log.warn("Invalid ws-ticket payload format: expected 5 fields, got {}", parts.length);
             return Optional.empty();
         }
         try {
-            long userId = Long.parseLong(payload.substring(0, first));
-            String role = payload.substring(first + 1, second);
-            long expiresEpoch = Long.parseLong(payload.substring(second + 1));
-            return Optional.of(new TicketClaims(userId, role, Instant.ofEpochSecond(expiresEpoch)));
+            long userId = Long.parseLong(parts[0]);
+            String role = parts[1];
+            long groupId = Long.parseLong(parts[2]);
+            boolean isHeadman = Boolean.parseBoolean(parts[3]);
+            long expiresEpoch = Long.parseLong(parts[4]);
+            return Optional.of(new TicketClaims(userId, role, groupId, isHeadman,
+                    Instant.ofEpochSecond(expiresEpoch)));
         } catch (NumberFormatException e) {
             log.warn("Failed to parse ws-ticket payload", e);
             return Optional.empty();
@@ -133,5 +128,6 @@ public class WsTicketService {
 
     public record Issued(String ticket, Instant expiresAt) {}
 
-    public record TicketClaims(long userId, String role, Instant expiresAt) {}
+    public record TicketClaims(long userId, String role, long groupId,
+                               boolean isHeadman, Instant expiresAt) {}
 }

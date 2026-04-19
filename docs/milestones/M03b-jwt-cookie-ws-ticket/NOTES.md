@@ -72,6 +72,21 @@ Bearer <access_token>`.
 auth-service. Gateway просто не strip'ает путь из PUBLIC_PATHS,
 поэтому он проверит JWT прежде чем пустить на auth-service.
 
+## 2026-04-20 — Surprise: ticket должен нести group_id + is_headman
+
+`SubscriptionAuthInterceptor` в notification-service требует
+`group_id` и `is_headman` в session attributes. Изначальный WsTicketService
+payload = `userId|role|expiresEpoch` — недостаточно.
+
+Расширяю payload на `userId|role|groupId|isHeadman|expiresEpoch` (5 полей
+pipe-separated). `groupId=0` если null. `InternalWsTicketController.ConsumeResponse`
+расширяется на `{userId, role, groupId, isHeadman, expiresAt}`.
+
+WsTicketController парсит access-JWT через JwtService.parseToken() чтобы
+извлечь group_id/is_headman (они есть в access-JWT по M03a, проверено).
+
+Обратная совместимость: не требуется, endpoint добавлен в M03b.
+
 ## Backlog из M03a post-mortem (для рассмотрения в Группах 9-10)
 
 Известные issues, которые попадут в M03b или будут документированы как

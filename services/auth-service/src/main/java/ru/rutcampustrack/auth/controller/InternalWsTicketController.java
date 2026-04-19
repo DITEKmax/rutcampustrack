@@ -45,7 +45,8 @@ public class InternalWsTicketController {
         Optional<WsTicketService.TicketClaims> claims = wsTicketService.consume(request.ticket());
         return claims
                 .<ResponseEntity<ConsumeResponse>>map(c -> ResponseEntity.ok(
-                        new ConsumeResponse(c.userId(), c.role(), c.expiresAt())))
+                        new ConsumeResponse(c.userId(), c.role(), c.groupId(),
+                                c.isHeadman(), c.expiresAt())))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -54,6 +55,8 @@ public class InternalWsTicketController {
     public record ConsumeResponse(
             @JsonProperty("user_id") long userId,
             String role,
+            @JsonProperty("group_id") long groupId,
+            @JsonProperty("is_headman") boolean isHeadman,
             @JsonProperty("expires_at") Instant expiresAt
     ) {}
 }

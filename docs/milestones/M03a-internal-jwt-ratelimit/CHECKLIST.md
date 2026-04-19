@@ -10,7 +10,7 @@
 - [x] Grep `@Scheduled` + `PublicKeyConfig` + `/auth/public-key` в api-gateway и auth-service — зафиксировано в NOTES 2026-04-19 (surprise block)
 - [x] DECISIONS.md: где держится приватный ключ — (a3) Token Exchange endpoint в auth-service, Gateway дёргает с кэшем
 - [x] DECISIONS.md: dual-mode flag дефолт в prod — `true` + strict toggle последним commit'ом
-- [ ] DECISIONS.md: `Authorization: Internal <jwt>` header name vs `X-Internal-Token` (рекомендация — `Authorization: Internal` по OWNER-ANSWERS 02-Q2) — зафиксировать
+- [x] DECISIONS.md: header name — `X-Internal-Token` (отдельный custom header, решение 2026-04-19)
 
 ## Группа 2 — shared-security scaffold (validator side)
 

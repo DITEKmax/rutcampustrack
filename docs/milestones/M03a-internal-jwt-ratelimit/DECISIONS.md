@@ -84,6 +84,21 @@ rollback-safety.
 UAT checklist (admin/teacher/student/headman golden path) обязателен перед
 toggle. После toggle — `X-User-*` strip в Gateway issuer filter.
 
+## 2026-04-19 — Header name `X-Internal-Token` для Internal JWT
+
+**Выбрано:** `X-Internal-Token: <jwt>` — отдельный custom header.
+**Отвергнуто:** `Authorization: Internal <jwt>` (scheme-based, как Bearer).
+**Причина:** (1) Не конфликтует с proxy middleware, которые могут перезаписать
+или прокинуть внешний `Authorization: Bearer`. (2) В логах чётко видно что
+это internal-only trust boundary — не путается с user-facing auth. (3)
+Downstream-фильтр проще: `request.getHeader("X-Internal-Token")` вместо
+парсинга `Authorization` scheme. (4) OWNER-ANSWERS 02-Q2 допускает оба
+варианта — выбор технический.
+**Последствия:** `InternalJwtValidator` читает из `X-Internal-Token`.
+`InternalJwtIssuerFilter` в Gateway кладёт туда. `shared-logback` masking
+добавляет правило для `X-Internal-Token` (наряду с `Authorization` из M01).
+Документация в `docs/internal-jwt-spec.md` — header name как контракт.
+
 ---
 
 _Формат записи:_

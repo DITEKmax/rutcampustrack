@@ -11,6 +11,10 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import ru.rutcampustrack.notification.contract.enums.UserRole;
 import ru.rutcampustrack.notification.exception.AccessDeniedException;
+import ru.rutcampustrack.shared.security.InternalJwtProperties;
+import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+import ru.rutcampustrack.shared.security.InternalJwtValidator;
+import ru.rutcampustrack.shared.security.PublicKeyProvider;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -23,11 +27,32 @@ class SecurityInfrastructureTest {
 
     private RequestContext requestContext;
     private RoleCheckAspect roleCheckAspect;
+    private NotificationUserContextFilter filter;
 
     @BeforeEach
     void setUp() {
         requestContext = new RequestContext();
         roleCheckAspect = new RoleCheckAspect(requestContext);
+
+        // M03a: build NotificationUserContextFilter with in-memory keypair for legacy header tests.
+        InternalJwtTestFactory factory = new InternalJwtTestFactory();
+        InternalJwtProperties props = new InternalJwtProperties(null, 0, 0, true, null, null, null);
+        PublicKeyProvider keyProvider = new PublicKeyProvider(props) {
+            @Override
+            public void init() {
+            }
+
+            @Override
+            public void refresh() {
+            }
+
+            @Override
+            public java.security.PublicKey getPublicKey() {
+                return factory.publicKey();
+            }
+        };
+        InternalJwtValidator validator = new InternalJwtValidator(keyProvider, props);
+        filter = new NotificationUserContextFilter(validator, props, requestContext);
     }
 
     // Test 1: RoleCheckAspect allows method execution when request has STUDENT role and @RequireRole({STUDENT}) is present
@@ -54,27 +79,28 @@ class SecurityInfrastructureTest {
         verify(pjp, never()).proceed();
     }
 
-    // Test 3: UserContextFilter populates RequestContext.userId from X-User-Id header
+    // Test 3: NotificationUserContextFilter populates RequestContext.userId from X-User-Id legacy header (dual-mode)
     @Test
-    void userContextFilter_populatesUserIdFromHeader() throws Exception {
+    void userContextFilter_populatesUserIdFromLegacyHeader() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/push/subscribe");
         request.addHeader("X-User-Id", "42");
         request.addHeader("X-User-Role", "STUDENT");
 
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain chain = new MockFilterChain();
 
-        UserContextFilter filter = new UserContextFilter(requestContext);
-        filter.doFilterInternal(request, response, chain);
+        filter.doFilter(request, response, chain);
 
         assertThat(requestContext.getUserId()).isEqualTo(42L);
         assertThat(requestContext.getRole()).isEqualTo(UserRole.STUDENT);
     }
 
-    // Test 4: UserContextFilter populates RequestContext.groupId from X-Group-Id header
+    // Test 4: NotificationUserContextFilter populates RequestContext.groupId from X-Group-Id legacy header
     @Test
-    void userContextFilter_populatesGroupIdFromHeader() throws Exception {
+    void userContextFilter_populatesGroupIdFromLegacyHeader() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/push/subscribe");
         request.addHeader("X-User-Id", "42");
         request.addHeader("X-User-Role", "STUDENT");
         request.addHeader("X-Group-Id", "7");
@@ -82,8 +108,7 @@ class SecurityInfrastructureTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain chain = new MockFilterChain();
 
-        UserContextFilter filter = new UserContextFilter(requestContext);
-        filter.doFilterInternal(request, response, chain);
+        filter.doFilter(request, response, chain);
 
         assertThat(requestContext.getGroupId()).isEqualTo(7L);
     }

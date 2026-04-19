@@ -20,6 +20,9 @@ dependencies {
     // M02 — shared-outbox
     implementation(project(":services:shared:shared-outbox"))
 
+    // M03a — shared-security (Internal JWT validator + dual-mode filter)
+    implementation(project(":services:shared:shared-security"))
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -47,6 +50,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql")
     testImplementation(libs.json.schema.validator)
     testImplementation(libs.archunit.junit5)
+    testImplementation(testFixtures(project(":services:shared:shared-security")))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")

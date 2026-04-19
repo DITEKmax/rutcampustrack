@@ -17,6 +17,9 @@ dependencies {
     implementation(project(":services:shared:shared-events"))
     implementation(project(":services:shared:shared-logback"))
 
+    // M03a — shared-security (Internal JWT validator + dual-mode filter)
+    implementation(project(":services:shared:shared-security"))
+
     // Spring Security Core — для shared-web AccessDeniedException handler.
     // Full spring-boot-starter-security добавляется только при реальной SecurityFilterChain
     // (в M03). Сейчас нужен только класс AccessDeniedException на classpath.
@@ -61,6 +64,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
     testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
+    testImplementation(testFixtures(project(":services:shared:shared-security")))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

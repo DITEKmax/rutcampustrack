@@ -19,6 +19,15 @@ notification:
   jwt:
     public-key-path: ${JWT_PUBLIC_KEY_PATH:/keys/public.key}
 
+rutcampustrack:
+  security:
+    internal-jwt:
+      # M03a: pull RSA public key from auth-service /auth/public-key.
+      auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
+      public-key-refresh-minutes: 60
+      clock-skew-seconds: 30
+      legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:true}
+
 vapid:
   public-key: ${VAPID_PUBLIC_KEY:}
   private-key: ${VAPID_PRIVATE_KEY:}

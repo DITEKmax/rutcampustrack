@@ -74,22 +74,33 @@
 
 ## Группа 6 — Downstream миграция (schedule)
 
-- [ ] build.gradle.kts + application.yml (аналогично academic)
-- [ ] `UserContextFilter` replace
-- [ ] `InternalJwtBypassIT` + `LegacyHeadersIT`
+- [x] build.gradle.kts — shared-security + testFixtures
+- [x] application.yml + application-test.yml — rutcampustrack.security.internal-jwt config
+- [x] Удалён старый `UserContextFilter`, создан `ScheduleUserContextFilter extends DualModeUserContextFilter`
+- [x] `InternalJwtConfig` + `InternalJwtTestConfig` (аналогично academic)
+- [x] `AbstractScheduleIntegrationTest` — `@Import(InternalJwtTestConfig.class)`
+- [x] `ScheduleUserContextFilterIT` (6) + `StrictModeIT` (3) — endpoint `/schedule/items`
+- [x] Build зелёный — 108 тестов (было 99, +9 новых)
 
 ## Группа 7 — Downstream миграция (attendance)
 
-- [ ] build.gradle.kts + application.yml
-- [ ] `UserContextFilter` replace
-- [ ] `InternalJwtBypassIT` + `LegacyHeadersIT`
+- [x] build.gradle.kts — shared-security + testFixtures
+- [x] application.yml + application-test.yml — internal-jwt config
+- [x] Удалён старый `UserContextFilter`, создан `AttendanceUserContextFilter extends DualModeUserContextFilter`
+- [x] `InternalJwtConfig` + `InternalJwtTestConfig`
+- [x] `AbstractAttendanceIntegrationTest` — `@Import(InternalJwtTestConfig.class)`
+- [x] `AttendanceUserContextFilterIT` (6) + `StrictModeIT` (3) — endpoint `/attendance/reports/student/stats`
+- [x] Build зелёный — 157 тестов (было 148, +9 новых)
 
 ## Группа 8 — Downstream миграция (notification-web)
 
-- [ ] build.gradle.kts + application.yml
-- [ ] `UserContextFilter` replace
-- [ ] `InternalJwtBypassIT` + `LegacyHeadersIT`
-- [ ] WebSocket handshake — отдельно (текущий token-flow НЕ меняется в M03a, это scope M03b через ws-ticket)
+- [x] build.gradle.kts — shared-security + testFixtures
+- [x] application.yml — internal-jwt config
+- [x] Удалён старый `UserContextFilter`, создан `NotificationUserContextFilter` с `isExcludedPath(/ws)` для WebSocket handshake (ws-ticket — scope M03b)
+- [x] `InternalJwtConfig` (wire bean'ы)
+- [x] Обновлён `SecurityInfrastructureTest` — тесты 3-4 теперь тестируют `NotificationUserContextFilter` с in-memory keypair (legacy-mode verification)
+- [x] Build зелёный — 59 тестов (унаследованные от M01/M02, + фикс тестов для нового filter)
+- [x] Notification IT-файлы не добавляю — `ContainerTestBase`-based тесты без общего Abstract class; M03b добавит WS-ticket IT с учётом full stack
 
 ## Группа 9 — Rate-limit Gateway deps + infra
 

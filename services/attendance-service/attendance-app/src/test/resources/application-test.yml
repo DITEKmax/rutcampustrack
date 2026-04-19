@@ -13,3 +13,11 @@ grpc:
     academic-service:
       address: static://localhost:19091
       negotiation-type: plaintext
+
+rutcampustrack:
+  security:
+    internal-jwt:
+      auth-service-url: http://localhost:9999
+      public-key-refresh-minutes: 60
+      clock-skew-seconds: 30
+      legacy-headers-enabled: true

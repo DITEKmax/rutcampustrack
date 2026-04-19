@@ -22,6 +22,9 @@ dependencies {
     implementation(libs.shedlock.spring)
     implementation(libs.shedlock.provider.mongo)
 
+    // M03a — shared-security (Internal JWT validator + dual-mode filter)
+    implementation(project(":services:shared:shared-security"))
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -48,6 +51,7 @@ dependencies {
     testImplementation("org.awaitility:awaitility:4.2.2")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
     testImplementation(libs.json.schema.validator)
+    testImplementation(testFixtures(project(":services:shared:shared-security")))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

@@ -62,6 +62,13 @@ _(Будет заполняться по ходу milestone'а.)_
 **Причина:** NEW-34 «shared-web — без сервис-специфики». Доменные handler'ы остаются в `@RestControllerAdvice` каждого сервиса и просто переиспользуют shared `ErrorResponse` record.
 **Последствия:** сервис, подключающий shared-web, получает 10 handlers «бесплатно». Свои доменные — дополняет локально. Academic продолжает иметь свой `@RestControllerAdvice(order=0)` выше по приоритету.
 
+## 2026-04-19 — Config beans через @Component + component scan (не autoconfig)
+
+**Выбрано:** `JacksonConfig`, `OpenApiCustomizer`, `AdminActionAspect` — обычные `@Component` / `@Configuration` классы в пакете `ru.rutcampustrack.shared.web.*`. Сервис подключает через component scan (`@ComponentScan` на `ru.rutcampustrack.shared.web` или `scanBasePackages` в `@SpringBootApplication`).
+**Отвергнуто:** (a) Spring Boot AutoConfiguration через `META-INF/spring.factories` / `AutoConfiguration.imports` — запрещено NEW-34. (b) `static` factory methods — требует явного вызова в каждом сервисе (больше трения).
+**Причина:** NEW-34 «без autoconfiguration» означает отсутствие `spring.factories` / auto-imports, а НЕ отсутствие `@Component`. Component scan — стандартный Spring-паттерн для библиотек, `GlobalExceptionHandler` (Группа 2) уже работает по тому же паттерну.
+**Последствия:** сервис-потребитель должен явно указать shared-web пакет в component scan. Проверка в acceptance-тесте (Группа 8).
+
 ---
 
 _Формат записи:_

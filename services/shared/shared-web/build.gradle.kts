@@ -19,6 +19,7 @@ dependencies {
     compileOnly("org.springframework:spring-web")
     compileOnly("org.springframework:spring-webmvc")
     compileOnly("org.springframework:spring-context")
+    compileOnly("org.springframework.boot:spring-boot-autoconfigure")
     compileOnly("jakarta.validation:jakarta.validation-api")
     compileOnly("com.fasterxml.jackson.core:jackson-databind")
     compileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")

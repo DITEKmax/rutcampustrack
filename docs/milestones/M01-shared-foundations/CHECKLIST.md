@@ -31,9 +31,10 @@
 
 ## Группа 4 — shared-web (config beans)
 
-- [ ] `JacksonConfig` — `Jackson2ObjectMapperBuilderCustomizer` с `READ_UNKNOWN_ENUM_VALUES_AS_NULL`, `FAIL_ON_UNKNOWN_PROPERTIES=false`, `WRITE_DATES_AS_TIMESTAMPS=false`
-- [ ] `OpenApiCustomizer` bean-заглушка (реальная логика в M6)
-- [ ] `@AdminAction` marker annotation + aspect-заглушка (реальный handler в M4)
+- [x] `JacksonConfig` — `Jackson2ObjectMapperBuilderCustomizer` (READ_UNKNOWN_ENUM_VALUES_AS_NULL, FAIL_ON_UNKNOWN_PROPERTIES=false, WRITE_DATES_AS_TIMESTAMPS=false), 5 тестов
+- [x] `SharedOpenApiCustomizer` bean-заглушка с `@ConditionalOnClass(OpenApiCustomizer.class)` (реальная логика в M06), 1 тест
+- [x] `@AdminAction` marker annotation + `AdminActionAspect` заглушка (proxy verified через AopUtils, реальный handler в M04), 3 теста
+- [x] Итого shared-web: 40 tests, 0 failures
 
 ## Группа 5 — shared-events
 

@@ -7,14 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
-import ru.rutcampustrack.schedule.event.LessonClosedEvent;
-import ru.rutcampustrack.schedule.event.LessonStartedEvent;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.shared.outbox.OutboxRecord;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -26,12 +25,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -78,6 +71,7 @@ class LessonStatusTransitionJobTest extends AbstractScheduleIntegrationTest {
     void cleanup() {
         lessonRepository.deleteAll();
         scheduleItemRepository.deleteAll();
+        drainOutbox();
     }
 
     // =========================================================================
@@ -98,11 +92,9 @@ class LessonStatusTransitionJobTest extends AbstractScheduleIntegrationTest {
         Lesson after = lessonRepository.findById(lesson.getId()).orElseThrow();
         assertThat(after.getStatus()).isEqualTo(LessonStatus.ACTIVE);
 
-        // Verify LessonStartedEvent was forwarded to RabbitMQ via DomainEventListener
-        verify(rabbitTemplate).convertAndSend(
-                anyString(),
-                anyString(),
-                (Object) argThat(e -> e instanceof LessonStartedEvent));
+        // Verify lesson.started был записан в outbox (via DomainEventListener BEFORE_COMMIT)
+        assertThat(outboxStorage.findPending(10))
+                .anyMatch(r -> "lesson.started".equals(r.eventType()));
     }
 
     // =========================================================================
@@ -124,11 +116,9 @@ class LessonStatusTransitionJobTest extends AbstractScheduleIntegrationTest {
         assertThat(after.getStatus()).isEqualTo(LessonStatus.CLOSED);
         assertThat(after.getClosedAt()).isNotNull();
 
-        // Verify LessonClosedEvent was forwarded to RabbitMQ via DomainEventListener
-        verify(rabbitTemplate).convertAndSend(
-                anyString(),
-                anyString(),
-                (Object) argThat(e -> e instanceof LessonClosedEvent));
+        // Verify lesson.closed был записан в outbox
+        assertThat(outboxStorage.findPending(10))
+                .anyMatch(r -> "lesson.closed".equals(r.eventType()));
     }
 
     // =========================================================================
@@ -178,11 +168,12 @@ class LessonStatusTransitionJobTest extends AbstractScheduleIntegrationTest {
         assertThat(all).allMatch(l -> l.getStatus() == LessonStatus.CLOSED);
         assertThat(all).allMatch(l -> l.getClosedAt() != null);
 
-        // 3 LessonStartedEvent + 3 LessonClosedEvent = 6 total RabbitMQ messages
-        verify(rabbitTemplate, atLeast(3)).convertAndSend(
-                anyString(), anyString(), (Object) argThat(e -> e instanceof LessonStartedEvent));
-        verify(rabbitTemplate, atLeast(3)).convertAndSend(
-                anyString(), anyString(), (Object) argThat(e -> e instanceof LessonClosedEvent));
+        // 3 lesson.started + 3 lesson.closed в outbox
+        List<OutboxRecord> pending = outboxStorage.findPending(100);
+        assertThat(pending.stream().filter(r -> "lesson.started".equals(r.eventType())).count())
+                .isGreaterThanOrEqualTo(3);
+        assertThat(pending.stream().filter(r -> "lesson.closed".equals(r.eventType())).count())
+                .isGreaterThanOrEqualTo(3);
     }
 
     // =========================================================================
@@ -203,8 +194,8 @@ class LessonStatusTransitionJobTest extends AbstractScheduleIntegrationTest {
         Lesson after = lessonRepository.findById(lesson.getId()).orElseThrow();
         assertThat(after.getStatus()).isEqualTo(LessonStatus.PLANNED);
 
-        // No RabbitMQ messages should be published
-        verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), any(Object.class));
+        // No outbox entries should be created
+        assertThat(outboxStorage.findPending(10)).isEmpty();
     }
 
     // =========================================================================

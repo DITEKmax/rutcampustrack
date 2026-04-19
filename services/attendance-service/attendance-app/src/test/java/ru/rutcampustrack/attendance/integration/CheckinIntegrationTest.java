@@ -317,20 +317,20 @@ class CheckinIntegrationTest extends AbstractAttendanceIntegrationTest {
                 .andExpect(status().isCreated());
 
         // Verify event was published to the test queue
-        Object message = rabbitTemplate.receiveAndConvert(TEST_QUEUE, 5000);
+        flushOutbox();
+        org.springframework.amqp.core.Message message = rabbitTemplate.receive(TEST_QUEUE, 5000);
         assertThat(message).isNotNull();
-        assertThat(message).isInstanceOf(Map.class);
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> envelope = (Map<String, Object>) message;
-        assertThat(envelope.get("event_type")).isEqualTo("attendance.marked");
-        assertThat(envelope.get("event_id")).isNotNull();
-        assertThat(envelope.get("occurred_at")).isNotNull();
+        // M02: raw JSON bytes в body (RabbitOutboxEventSender.send).
+        com.fasterxml.jackson.databind.JsonNode envelope =
+                new com.fasterxml.jackson.databind.ObjectMapper().readTree(message.getBody());
+        assertThat(envelope.get("event_type").asText()).isEqualTo("attendance.marked");
+        assertThat(envelope.get("event_id").asText()).isNotBlank();
+        assertThat(envelope.get("occurred_at").asText()).isNotBlank();
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> payload = (Map<String, Object>) envelope.get("payload");
+        com.fasterxml.jackson.databind.JsonNode payload = envelope.get("payload");
         assertThat(payload.get("lesson_id")).isNotNull();
         assertThat(payload.get("user_id")).isNotNull();
-        assertThat(payload.get("status")).isEqualTo("present");
+        assertThat(payload.get("status").asText()).isEqualTo("present");
     }
 }

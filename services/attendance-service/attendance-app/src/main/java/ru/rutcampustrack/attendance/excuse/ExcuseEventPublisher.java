@@ -1,8 +1,10 @@
 package ru.rutcampustrack.attendance.excuse;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -46,14 +48,15 @@ import java.util.UUID;
 @Component
 public class ExcuseEventPublisher {
 
-    private static final String EXCHANGE = "rut-uit.events";
     private static final String EVENT_REQUESTED = "excuse.requested";
     private static final String EVENT_DECIDED = "excuse.decided";
 
-    private final RabbitTemplate rabbitTemplate;
+    private final OutboxStorage outboxStorage;
+    private final ObjectMapper objectMapper;
 
-    public ExcuseEventPublisher(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
+    public ExcuseEventPublisher(OutboxStorage outboxStorage, ObjectMapper objectMapper) {
+        this.outboxStorage = outboxStorage;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -66,8 +69,7 @@ public class ExcuseEventPublisher {
      * существующих потребителей.
      */
     public void publishRequested(ExcuseTicket ticket, List<Map<String, Object>> lessonDetails) {
-        rabbitTemplate.convertAndSend(EXCHANGE, "",
-                buildEnvelope(EVENT_REQUESTED, buildRequestedPayload(ticket, lessonDetails)));
+        saveToOutbox(EVENT_REQUESTED, buildRequestedPayload(ticket, lessonDetails));
     }
 
     /**
@@ -89,7 +91,7 @@ public class ExcuseEventPublisher {
             payload.put("file_size", fileBytes.length);
             payload.put("file_payload_b64", Base64.getEncoder().encodeToString(fileBytes));
         }
-        rabbitTemplate.convertAndSend(EXCHANGE, "", buildEnvelope(EVENT_REQUESTED, payload));
+        saveToOutbox(EVENT_REQUESTED, payload);
     }
 
     private Map<String, Object> buildRequestedPayload(ExcuseTicket ticket,
@@ -130,7 +132,7 @@ public class ExcuseEventPublisher {
         payload.put("decided_at",
                 ticket.getDecisionAt() != null ? ticket.getDecisionAt().toString() : null);
 
-        rabbitTemplate.convertAndSend(EXCHANGE, "", buildEnvelope(EVENT_DECIDED, payload));
+        saveToOutbox(EVENT_DECIDED, payload);
     }
 
     private Map<String, Object> buildEnvelope(String eventType, Map<String, Object> payload) {
@@ -140,5 +142,16 @@ public class ExcuseEventPublisher {
         envelope.put("occurred_at", Instant.now().toString());
         envelope.put("payload", payload);
         return envelope;
+    }
+
+    private void saveToOutbox(String eventType, Map<String, Object> payload) {
+        Map<String, Object> envelope = buildEnvelope(eventType, payload);
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(envelope);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize " + eventType + " event", e);
+        }
+        outboxStorage.save(eventType, json);
     }
 }

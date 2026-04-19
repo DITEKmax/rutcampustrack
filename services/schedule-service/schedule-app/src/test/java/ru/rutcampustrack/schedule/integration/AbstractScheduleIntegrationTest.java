@@ -1,12 +1,19 @@
 package ru.rutcampustrack.schedule.integration;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
+import ru.rutcampustrack.shared.outbox.OutboxRecord;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.util.List;
 
 /**
  * Abstract base class for Schedule Service integration tests.
@@ -27,6 +34,25 @@ public abstract class AbstractScheduleIntegrationTest {
 
     @MockitoBean
     protected RabbitTemplate rabbitTemplate;
+
+    @Autowired(required = false)
+    protected OutboxStorage outboxStorage;
+
+    @Autowired(required = false)
+    private PlatformTransactionManager transactionManager;
+
+    /**
+     * M02: удаляет все pending outbox-записи (markSent в tx). Вызывать
+     * из @AfterEach в тестах которые пишут в outbox, чтобы следующий тест
+     * стартовал с чистым findPending.
+     */
+    protected void drainOutbox() {
+        if (outboxStorage == null || transactionManager == null) return;
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            List<OutboxRecord> pending = outboxStorage.findPending(1000);
+            pending.forEach(r -> outboxStorage.markSent(r.id()));
+        });
+    }
 
     static final PostgreSQLContainer<?> POSTGRES;
 

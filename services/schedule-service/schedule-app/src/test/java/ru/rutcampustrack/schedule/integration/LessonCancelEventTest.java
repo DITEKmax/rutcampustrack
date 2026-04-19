@@ -20,19 +20,19 @@ import ru.rutcampustrack.schedule.security.RequestContext;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import ru.rutcampustrack.shared.outbox.OutboxRecord;
 
 /**
  * Integration test verifying that cancelling a lesson publishes a LessonCancelledEvent
- * to RabbitMQ (EVNT-03).
+ * to the outbox (EVNT-03).
  *
- * Uses @Autowired LessonService directly to avoid HTTP auth complexity.
- * NOT @Transactional — transaction must commit for @TransactionalEventListener(AFTER_COMMIT)
- * to fire and forward the event to rabbitTemplate.
+ * M02 Группа 5: listener теперь пишет в schedule_outbox (BEFORE_COMMIT),
+ * а не напрямую в Rabbit. Тест проверяет запись в outbox — это эквивалент
+ * гарантии «событие не теряется, даже если Rabbit недоступен».
  */
 class LessonCancelEventTest extends AbstractScheduleIntegrationTest {
 
@@ -59,6 +59,7 @@ class LessonCancelEventTest extends AbstractScheduleIntegrationTest {
     void cleanup() {
         lessonRepository.deleteAll();
         scheduleItemRepository.deleteAll();
+        drainOutbox();
     }
 
     // =========================================================================
@@ -79,12 +80,11 @@ class LessonCancelEventTest extends AbstractScheduleIntegrationTest {
         // Act: cancel the lesson
         lessonService.cancelLesson(lesson.getId(), new CancelLessonRequest("Teacher sick"));
 
-        // Assert: LessonCancelledEvent was forwarded to RabbitMQ after commit
-        verify(rabbitTemplate).convertAndSend(
-                anyString(),
-                anyString(),
-                (Object) argThat(e -> e instanceof LessonCancelledEvent
-                        && ((LessonCancelledEvent) e).getEventType().equals("lesson.cancelled")));
+        // Assert: LessonCancelledEvent записано в outbox (в той же tx что и
+        // доменная операция). Publisher async, в тестах не тикает.
+        List<OutboxRecord> pending = outboxStorage.findPending(10);
+        assertThat(pending)
+                .anyMatch(r -> "lesson.cancelled".equals(r.eventType()));
     }
 
     // =========================================================================

@@ -1,11 +1,15 @@
 package ru.rutcampustrack.academic.integration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
+import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 
 /**
  * Base class for event integration tests.
@@ -17,10 +21,36 @@ import org.testcontainers.containers.RabbitMQContainer;
  * - Does NOT exclude RabbitAutoConfiguration -- AMQP stack is needed for event tests (Pitfall 2)
  * - Excludes Redis autoconfiguration (no Redis container needed for event tests per D-12)
  * - Sets grpc.server.port=-1 to disable Netty port binding (matches Phase 07 convention)
+ *
+ * M02 Группа 5: {@code DomainEventListener} пишет в outbox (а не напрямую в
+ * Rabbit). Для event-тестов после сервисного вызова нужно явно дёрнуть
+ * {@link #flushOutbox()} — эмулирует OutboxPublisherJob tick и публикует
+ * pending события в Rabbit. OutboxPublisherJob прод-bean guarded
+ * {@code @Profile("!test")}, тест-bean создаётся {@link OutboxTestConfig}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public abstract class AbstractAcademicEventIntegrationTest {
+
+    @Autowired
+    protected OutboxPublisherJob outboxPublisherJob;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
+    /**
+     * Эмулирует один tick OutboxPublisherJob: читает pending rows из
+     * academic_outbox и публикует в Rabbit. Вызывать в тестах после
+     * service-вызова, который публикует события.
+     *
+     * <p>{@code publishBatch()} содержит {@code UPDATE} (markSent/markFailed),
+     * требующий активной tx. В проде это обеспечивает {@code @Transactional}
+     * на tick()-методе; в тестах оборачиваем вручную в TransactionTemplate.
+     */
+    protected void flushOutbox() {
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+                outboxPublisherJob.publishBatch());
+    }
 
     static final PostgreSQLContainer<?> POSTGRES;
     static final RabbitMQContainer RABBITMQ;

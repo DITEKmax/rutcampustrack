@@ -86,6 +86,7 @@ class GroupRenameEventTest extends AbstractAcademicEventIntegrationTest {
 
         String newName = "Тно-" + String.format("%03d", (int) ((System.nanoTime() + 7) % 1000));
         groupService.updateGroup(group.getId(), new UpdateGroupRequest(newName, true));
+        flushOutbox();
 
         // Должно прийти минимум 2 события: group.renamed + group.updated (порядок не гарантируется).
         Set<String> receivedTypes = new HashSet<>();
@@ -113,6 +114,7 @@ class GroupRenameEventTest extends AbstractAcademicEventIntegrationTest {
 
         // Переименовываем «в то же имя» — rename-event не должен публиковаться.
         groupService.updateGroup(group.getId(), new UpdateGroupRequest(group.getName(), true));
+        flushOutbox();
 
         // Собрать все события в окне и убедиться что rename среди них нет.
         Set<String> receivedTypes = new HashSet<>();

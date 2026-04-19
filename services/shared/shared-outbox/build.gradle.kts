@@ -32,6 +32,9 @@ dependencies {
 
     // JPA для OutboxEntity (абстрактный MappedSuperclass)
     compileOnly("jakarta.persistence:jakarta.persistence-api")
+    // Hibernate @JdbcTypeCode для jsonb-колонки (Postgres). Сервис-потребитель
+    // приносит Hibernate через spring-boot-starter-data-jpa.
+    compileOnly("org.hibernate.orm:hibernate-core")
 
     // Mongo для OutboxDocument (attendance)
     compileOnly("org.springframework.boot:spring-boot-starter-data-mongodb")

@@ -50,15 +50,16 @@ import static org.mockito.Mockito.when;
 
 /**
  * Integration tests verifying end-to-end event publishing pipeline.
- * Each test proves: service method -> Spring ApplicationEvent ->
- * @TransactionalEventListener(AFTER_COMMIT) -> RabbitTemplate -> real RabbitMQ broker.
+ * M02 Группа 5: service -> Spring ApplicationEvent -> DomainEventListener
+ * (BEFORE_COMMIT) -> academic_outbox -> OutboxPublisherJob.publishBatch()
+ * -> RabbitTemplate -> real RabbitMQ broker.
  *
- * CRITICAL: No @Transactional on test methods -- service methods manage their own
- * transactions. Test-level @Transactional wraps the test in a transaction that rolls back,
- * so AFTER_COMMIT never fires (Pitfall 5 from RESEARCH.md).
+ * CRITICAL: No @Transactional on test methods. Service methods manage their own
+ * transactions. Листенер теперь срабатывает BEFORE_COMMIT и пишет в outbox
+ * в той же tx — если тест-tx откатится, outbox-запись тоже откатится.
  *
- * RequestContext is mocked via @MockBean -- replaces the request-scoped bean with a
- * Mockito mock that can be stubbed per-test (no active request scope needed).
+ * Тесты вызывают {@link #flushOutbox()} после service-метода чтобы
+ * эмулировать OutboxPublisherJob tick (в test-профиле он не шедулится).
  */
 class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
 
@@ -247,6 +248,7 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
         // Читаем очередь до тех пор, пока не встретим group.updated.
         groupService.updateGroup(groupA.getId(),
                 new UpdateGroupRequest("Тна-" + String.format("%03d", (int) (System.nanoTime() % 1000)), true));
+        flushOutbox();
 
         JsonNode root = null;
         for (int i = 0; i < 3 && root == null; i++) {
@@ -281,6 +283,7 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
 
         groupService.deleteGroup(groupA.getId());
         groupA = null; // prevent @AfterEach from trying to delete again
+        flushOutbox();
 
         Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
         assertThat(message).isNotNull();
@@ -304,6 +307,7 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
 
         userService.transferStudent(testUser.getId(),
                 new TransferStudentRequest(newGroupId, "Test transfer reason"));
+        flushOutbox();
 
         // First message -- old group
         Message message1 = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
@@ -349,13 +353,15 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
 
         // Activate semesterA -- this deactivates whatever is currently active (V2 seed semester)
         semesterService.activateSemester(semesterA.getId());
+        flushOutbox();
 
-        // Drain the archived event for the seed semester (not what we're testing)
-        rabbitTemplate.receive(queueName, 2000);
+        // Drain events from the first activation (seed semester archiving + semesterA activation).
+        while (rabbitTemplate.receive(queueName, 500) != null) { /* drain */ }
 
         // Activate semesterB -- this archives semesterA and should publish semester.archived for semesterA
         Long archivedSemesterId = semesterA.getId();
         semesterService.activateSemester(semesterB.getId());
+        flushOutbox();
 
         Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
         assertThat(message).isNotNull();
@@ -385,6 +391,7 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
                 testSubject.getId(), groupA.getId(), testSemester.getId(),
                 java.time.LocalDate.now().plusDays(1), 1
         ));
+        flushOutbox();
 
         Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
         assertThat(message).isNotNull();
@@ -420,6 +427,7 @@ class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
 
         homeworkService.updateHomework(homework.getId(),
                 new UpdateHomeworkRequest("Updated Title", "new desc", "https://link.example.com"));
+        flushOutbox();
 
         Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
         assertThat(message).isNotNull();

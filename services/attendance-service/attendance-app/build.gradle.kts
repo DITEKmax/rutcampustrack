@@ -17,6 +17,11 @@ dependencyManagement {
 dependencies {
     implementation(project(":services:attendance-service:attendance-api-contract"))
 
+    // M02 — shared-outbox + ShedLock (Mongo-storage)
+    implementation(project(":services:shared:shared-outbox"))
+    implementation(libs.shedlock.spring)
+    implementation(libs.shedlock.provider.mongo)
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-validation")

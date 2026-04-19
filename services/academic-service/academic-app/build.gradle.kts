@@ -18,6 +18,11 @@ dependencies {
     // Наш контракт
     implementation(project(":services:academic-service:academic-api-contract"))
 
+    // M02 — shared-outbox + ShedLock
+    implementation(project(":services:shared:shared-outbox"))
+    implementation(libs.shedlock.spring)
+    implementation(libs.shedlock.provider.jdbc.template)
+
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

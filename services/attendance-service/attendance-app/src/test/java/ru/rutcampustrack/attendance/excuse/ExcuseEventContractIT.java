@@ -123,12 +123,13 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         ExcuseTicket saved = excuseService.createExcuse(req);
         assertThat(saved.getId()).isNotNull();
 
-        Object message = rabbitTemplate.receiveAndConvert(testQueueName, Duration.ofSeconds(5).toMillis());
+        flushOutbox();
+        org.springframework.amqp.core.Message message = rabbitTemplate.receive(testQueueName, Duration.ofSeconds(5).toMillis());
         assertThat(message).as("excuse.requested event must reach the test queue").isNotNull();
 
-        // The default Jackson2JsonMessageConverter (registered in RabbitConfig) deserialises
-        // the envelope into LinkedHashMap; re-serialise through ObjectMapper to traverse.
-        JsonNode root = mapper.valueToTree(message);
+        // M02: body — raw JSON bytes (RabbitOutboxEventSender.send напрямую,
+        // без Jackson2JsonMessageConverter). Парсим через ObjectMapper.
+        JsonNode root = mapper.readTree(message.getBody());
 
         assertThat(root.get("event_type").asText()).isEqualTo("excuse.requested");
         assertThat(root.get("event_id").asText()).isNotBlank();
@@ -179,10 +180,11 @@ class ExcuseEventContractIT extends AbstractAttendanceIntegrationTest {
         ExcuseTicket decided = excuseService.updateStatus(ticket.getId(), decision);
         assertThat(decided.getStatus()).isEqualTo(ExcuseTicketStatus.APPROVED);
 
-        Object message = rabbitTemplate.receiveAndConvert(testQueueName, Duration.ofSeconds(5).toMillis());
+        flushOutbox();
+        org.springframework.amqp.core.Message message = rabbitTemplate.receive(testQueueName, Duration.ofSeconds(5).toMillis());
         assertThat(message).as("excuse.decided event must reach the test queue").isNotNull();
 
-        JsonNode root = mapper.valueToTree(message);
+        JsonNode root = mapper.readTree(message.getBody());
         assertThat(root.get("event_type").asText()).isEqualTo("excuse.decided");
         JsonNode payload = root.get("payload");
         assertThat(payload.get("ticket_id").asText()).isEqualTo(ticket.getId());

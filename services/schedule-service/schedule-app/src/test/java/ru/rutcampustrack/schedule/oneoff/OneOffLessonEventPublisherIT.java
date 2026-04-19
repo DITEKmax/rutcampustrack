@@ -10,19 +10,14 @@ import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.schedule.contract.dto.oneoff.CreateOneOffLessonRequest;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
-import ru.rutcampustrack.schedule.event.OneOffLessonCancelledEvent;
-import ru.rutcampustrack.schedule.event.OneOffLessonCreatedEvent;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
 import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
-
 import java.time.LocalDate;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
@@ -82,6 +77,7 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
     @AfterEach
     void cleanup() {
         oneOffLessonRepository.deleteAll();
+        drainOutbox();
     }
 
     @Test
@@ -89,11 +85,8 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
         oneOffLessonService.createOneOffLesson(new CreateOneOffLessonRequest(
                 GROUP_ID, SUBJECT_ID, TARGET_DATE, TARGET_LESSON, "D-404"));
 
-        verify(rabbitTemplate).convertAndSend(
-                anyString(),
-                anyString(),
-                (Object) argThat(e -> e instanceof OneOffLessonCreatedEvent
-                        && ((OneOffLessonCreatedEvent) e).getEventType().equals("lesson.one_off.created")));
+        assertThat(outboxStorage.findPending(10))
+                .anyMatch(r -> "lesson.one_off.created".equals(r.eventType()));
     }
 
     @Test
@@ -112,11 +105,8 @@ class OneOffLessonEventPublisherIT extends AbstractScheduleIntegrationTest {
         // Act
         oneOffLessonService.deleteOneOffLesson(saved.getId());
 
-        // Assert: OneOffLessonCancelledEvent forwarded to RabbitMQ after commit
-        verify(rabbitTemplate).convertAndSend(
-                anyString(),
-                anyString(),
-                (Object) argThat(e -> e instanceof OneOffLessonCancelledEvent
-                        && ((OneOffLessonCancelledEvent) e).getEventType().equals("lesson.one_off.cancelled")));
+        // Assert: lesson.one_off.cancelled записан в outbox
+        assertThat(outboxStorage.findPending(10))
+                .anyMatch(r -> "lesson.one_off.cancelled".equals(r.eventType()));
     }
 }

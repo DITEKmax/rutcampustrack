@@ -1,8 +1,10 @@
 package ru.rutcampustrack.attendance.latecheckin;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,14 +27,15 @@ import java.util.UUID;
 @Component
 public class LateCheckinEventPublisher {
 
-    private static final String EXCHANGE = "rut-uit.events";
     private static final String EVENT_REQUESTED = "late_checkin.requested";
     private static final String EVENT_DECIDED = "late_checkin.decided";
 
-    private final RabbitTemplate rabbitTemplate;
+    private final OutboxStorage outboxStorage;
+    private final ObjectMapper objectMapper;
 
-    public LateCheckinEventPublisher(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
+    public LateCheckinEventPublisher(OutboxStorage outboxStorage, ObjectMapper objectMapper) {
+        this.outboxStorage = outboxStorage;
+        this.objectMapper = objectMapper;
     }
 
     public void publishRequested(
@@ -53,7 +56,7 @@ public class LateCheckinEventPublisher {
         payload.put("subject_id", subjectId);
         payload.put("subject_name", subjectName);
 
-        rabbitTemplate.convertAndSend(EXCHANGE, "", buildEnvelope(EVENT_REQUESTED, payload));
+        saveToOutbox(EVENT_REQUESTED, payload);
     }
 
     public void publishDecided(
@@ -78,7 +81,7 @@ public class LateCheckinEventPublisher {
         payload.put("subject_id", subjectId);
         payload.put("subject_name", subjectName);
 
-        rabbitTemplate.convertAndSend(EXCHANGE, "", buildEnvelope(EVENT_DECIDED, payload));
+        saveToOutbox(EVENT_DECIDED, payload);
     }
 
     private Map<String, Object> buildEnvelope(String eventType, Map<String, Object> payload) {
@@ -88,5 +91,16 @@ public class LateCheckinEventPublisher {
         envelope.put("occurred_at", Instant.now().toString());
         envelope.put("payload", payload);
         return envelope;
+    }
+
+    private void saveToOutbox(String eventType, Map<String, Object> payload) {
+        Map<String, Object> envelope = buildEnvelope(eventType, payload);
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(envelope);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize " + eventType + " event", e);
+        }
+        outboxStorage.save(eventType, json);
     }
 }

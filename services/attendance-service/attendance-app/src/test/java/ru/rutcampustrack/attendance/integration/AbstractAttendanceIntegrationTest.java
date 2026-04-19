@@ -17,6 +17,7 @@ import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
 
 /**
  * Abstract base class for Attendance Service integration tests.
@@ -52,6 +53,20 @@ public abstract class AbstractAttendanceIntegrationTest {
 
     @MockitoBean
     protected GeofenceService geofenceService;
+
+    @Autowired(required = false)
+    protected OutboxPublisherJob outboxPublisherJob;
+
+    /**
+     * M02: flush pending outbox rows → Rabbit. Прод-шедулер guarded
+     * {@code @Profile("!test")}, так что тесты дёргают publisher вручную
+     * после сервисного вызова.
+     */
+    protected void flushOutbox() {
+        if (outboxPublisherJob != null) {
+            outboxPublisherJob.publishBatch();
+        }
+    }
 
     static final MongoDBContainer MONGODB;
     static final RabbitMQContainer RABBITMQ;

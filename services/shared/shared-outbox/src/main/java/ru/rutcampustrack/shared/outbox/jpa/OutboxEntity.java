@@ -6,6 +6,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import ru.rutcampustrack.shared.outbox.OutboxStatus;
 
 import java.time.Instant;
@@ -50,6 +52,7 @@ public abstract class OutboxEntity {
     @Column(name = "event_type", nullable = false, length = 128)
     private String eventType;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false, columnDefinition = "jsonb")
     private String payload;
 

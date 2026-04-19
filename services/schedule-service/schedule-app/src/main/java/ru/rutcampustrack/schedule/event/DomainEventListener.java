@@ -1,36 +1,51 @@
 package ru.rutcampustrack.schedule.event;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 /**
- * Bridges Spring domain events to RabbitMQ after the database transaction commits.
- * <p>
- * Per D-04: receives DomainEvent subclasses published by service layer via ApplicationEventPublisher,
- *           then forwards them to the RabbitMQ fanout exchange.
- * Per D-05: services are decoupled from AMQP — this class is the only one that knows RabbitTemplate.
- * Per research decision (STATE.md): @TransactionalEventListener(AFTER_COMMIT) guarantees
- *   no message is published if the database transaction rolls back.
+ * Записывает Spring ApplicationEvent'ы в schedule_outbox (M02 Группа 5).
+ *
+ * <p>Изменение относительно v1: раньше был
+ * {@code @TransactionalEventListener(AFTER_COMMIT)} → прямой
+ * {@code rabbitTemplate.convertAndSend(...)}. Проблема — потеря сообщений
+ * при Rabbit outage после коммита (02 P0-6).
+ *
+ * <p>Новая схема: {@link TransactionPhase#BEFORE_COMMIT} — listener
+ * срабатывает ВНУТРИ активной tx. Запись в outbox идёт в той же
+ * транзакции, что и доменная операция. {@code OutboxPublisherJob}
+ * асинхронно публикует pending rows в Rabbit.
  */
 @Component
 public class DomainEventListener {
 
     private static final Logger log = LoggerFactory.getLogger(DomainEventListener.class);
-    private static final String EXCHANGE = "rut-uit.events";
 
-    private final RabbitTemplate rabbitTemplate;
+    private final OutboxStorage outboxStorage;
+    private final ObjectMapper objectMapper;
 
-    public DomainEventListener(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
+    public DomainEventListener(OutboxStorage outboxStorage, ObjectMapper objectMapper) {
+        this.outboxStorage = outboxStorage;
+        this.objectMapper = objectMapper;
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void onDomainEvent(DomainEvent event) {
-        log.debug("Publishing event: type={}, id={}", event.getEventType(), event.getEventId());
-        rabbitTemplate.convertAndSend(EXCHANGE, "", event);
+        String payload;
+        try {
+            payload = objectMapper.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(
+                    "Failed to serialize domain event: type=" + event.getEventType()
+                            + ", id=" + event.getEventId(), e);
+        }
+        outboxStorage.save(event.getEventType(), payload);
+        log.debug("Outbox saved: type={}, id={}", event.getEventType(), event.getEventId());
     }
 }

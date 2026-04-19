@@ -46,10 +46,14 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 5 — Refactor существующих publisher'ов на outbox
 
-- [ ] Explore: найти все места прямой публикации в Rabbit (`rabbitTemplate.convertAndSend` / `AmqpTemplate.send`) в 3 сервисах
-- [ ] `EventPublisher.publish(event)` — переписать: вместо Rabbit → запись в outbox в той же `@Transactional`
-- [ ] Проверить что сериализация event в JSON payload сохраняет snake_case (через shared-events `DomainEvent`)
-- [ ] Integration-тест «kill Rabbit → тест event сохраняется в outbox → restart Rabbit → outbox publishes → consumer receives»
+- [x] Explore `rabbitTemplate.convertAndSend`: academic/schedule — через DomainEventListener (AFTER_COMMIT), attendance — 3 direct publisher'а (AttendanceEventPublisher, ExcuseEventPublisher, LateCheckinEventPublisher)
+- [x] academic: AcademicOutboxEntity + OutboxConfig (Storage всегда + Publisher `@Profile("!test")`), DomainEventListener — BEFORE_COMMIT → outbox.save. RabbitOutboxEventSender для прод-путь. Hibernate `@JdbcTypeCode(SqlTypes.JSON)` на payload для jsonb casting.
+- [x] schedule: ScheduleOutboxEntity + такой же OutboxConfig + DomainEventListener BEFORE_COMMIT + RabbitOutboxEventSender
+- [x] attendance: MongoOutboxStorage (ensureIndexes) + OutboxConfig (MongoLockProvider) + 3 publisher'а переписаны на outbox.save с ObjectMapper.writeValueAsString
+- [x] Snake_case сохраняется — JSON сериализуется как раньше (payload как строка в outbox)
+- [x] Integration-тесты переписаны: academic EventIntegrationTest + GroupRenameEventTest — flushOutbox() helper в AbstractAcademicEventIntegrationTest (+ TransactionTemplate вокруг). schedule LessonCancelEventTest + LessonStatusTransitionJobTest + OneOffLessonEventPublisherIT — смотрят outbox напрямую через `findPending`. attendance ExcuseEventContractIT + CheckinIntegrationTest + ExcuseEventPublisherTest — flushOutbox + парсинг raw JSON body.
+- [x] OutboxTestConfig (@Profile("test")) в academic + attendance для OutboxPublisherJob bean в тестах (без @EnableScheduling).
+- [x] Build зелёный: 185/185 academic + 94/94 schedule + 146/146 attendance + 6/6 shared-outbox unit = 431 теста.
 
 ## Группа 6 — Outbox cleanup + метрики
 

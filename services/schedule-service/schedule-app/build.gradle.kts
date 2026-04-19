@@ -17,6 +17,9 @@ dependencyManagement {
 dependencies {
     implementation(project(":services:schedule-service:schedule-api-contract"))
 
+    // M02 — shared-outbox
+    implementation(project(":services:shared:shared-outbox"))
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")

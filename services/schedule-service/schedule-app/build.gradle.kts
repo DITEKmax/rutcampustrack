@@ -46,6 +46,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation(libs.json.schema.validator)
+    testImplementation(libs.archunit.junit5)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")

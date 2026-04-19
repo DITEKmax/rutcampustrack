@@ -87,8 +87,10 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 9 — ArchUnit rule (NEW-28)
 
-- [ ] ArchUnit тест в каждом backend-сервисе: `methodsThat().areAnnotatedWith(Scheduled.class).should().beAnnotatedWith(SchedulerLock.class).orShould().beAnnotatedWith(SuppressWarnings.class, "SingleInstance")`
-- [ ] Негативный тест: добавить тестовый `@Scheduled` без lock → ArchUnit fail
+- [x] `ScheduledMustHaveSchedulerLockTest` в каждом backend-сервисе (schedule/academic/attendance). Кастомный `ArchCondition<JavaMethod>`: если метод `@Scheduled` не имеет `@SchedulerLock` и `@SuppressWarnings("SingleInstance")` — violation. `ImportOption.DoNotIncludeTests` чтобы test-fixtures не попадали в scan.
+- [x] Negative тест `ScheduledLockRuleNegativeTest` в schedule: fixture `BadScheduledClass` с `@Scheduled` без lock → правило падает с ожидаемым сообщением. Проверяет что rule реально работает.
+- [x] `archunit-junit5` добавлен через version catalog (attendance уже имел — унифицировано).
+- [x] Build зелёный: 582/582.
 
 ## Группа 10 — Документация
 

@@ -36,6 +36,9 @@ dependencies {
     // приносит Hibernate через spring-boot-starter-data-jpa.
     compileOnly("org.hibernate.orm:hibernate-core")
 
+    // Micrometer — outbox.lag / outbox.published.total / outbox.failed.total
+    compileOnly("io.micrometer:micrometer-core")
+
     // Mongo для OutboxDocument (attendance)
     compileOnly("org.springframework.boot:spring-boot-starter-data-mongodb")
 

@@ -1,5 +1,7 @@
 package ru.rutcampustrack.shared.outbox;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,14 +47,26 @@ public class OutboxPublisherJob {
 
     private final OutboxStorage storage;
     private final OutboxEventSender sender;
+    private final MeterRegistry meterRegistry;
 
     /**
      * @param storage storage-реализация (JpaOutboxStorage / MongoOutboxStorage)
      * @param sender  транспортный shim (обычно RabbitTemplate wrapper)
      */
     public OutboxPublisherJob(OutboxStorage storage, OutboxEventSender sender) {
+        this(storage, sender, null);
+    }
+
+    /**
+     * @param storage       storage-реализация
+     * @param sender        транспортный shim
+     * @param meterRegistry Micrometer registry — null допустимо (метрики не пишутся)
+     */
+    public OutboxPublisherJob(OutboxStorage storage, OutboxEventSender sender,
+                              MeterRegistry meterRegistry) {
         this.storage = storage;
         this.sender = sender;
+        this.meterRegistry = meterRegistry;
     }
 
     @Scheduled(fixedDelayString = "${rutcampustrack.outbox.publisher.fixed-delay-ms:5000}")
@@ -79,10 +93,12 @@ public class OutboxPublisherJob {
                 sender.send(record.eventType(), record.payload());
                 storage.markSent(record.id());
                 successCount++;
+                incrementPublished(record.eventType());
             } catch (Exception e) {
                 log.error("Outbox publish failed: id={}, eventType={}, error={}",
                         record.id(), record.eventType(), e.getMessage());
                 storage.markFailed(record.id(), e.getMessage());
+                incrementFailed(record.eventType());
             }
         }
         if (successCount > 0) {
@@ -92,4 +108,21 @@ public class OutboxPublisherJob {
         return successCount;
     }
 
+    private void incrementPublished(String eventType) {
+        if (meterRegistry == null) return;
+        Counter.builder("outbox.published.total")
+                .description("Количество outbox-событий, успешно опубликованных в транспорт")
+                .tag("event_type", eventType)
+                .register(meterRegistry)
+                .increment();
+    }
+
+    private void incrementFailed(String eventType) {
+        if (meterRegistry == null) return;
+        Counter.builder("outbox.failed.total")
+                .description("Количество outbox-событий, помеченных FAILED (sender threw)")
+                .tag("event_type", eventType)
+                .register(meterRegistry)
+                .increment();
+    }
 }

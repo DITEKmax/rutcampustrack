@@ -57,10 +57,13 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 6 — Outbox cleanup + метрики
 
-- [ ] `OutboxCleanupJob` — `@Scheduled(cron="0 0 3 * * *")` + `@SchedulerLock` → удаляет `sent` rows старше 7д
-- [ ] Integration-тест cleanup с `@MockBean Clock` (подменяем время)
-- [ ] Micrometer метрика `outbox.lag` = COUNT pending rows (gauge, публикуется в Prometheus)
-- [ ] Метрика `outbox.published.total` (counter, labels: service, event_type)
+- [x] `OutboxCleanupJob` — `@Scheduled(cron="${...:0 0 3 * * *}")` + `@SchedulerLock(name="outbox-cleanup")` → удаляет SENT rows старше `rutcampustrack.outbox.retention-days:7`. Clock параметр для тестируемости.
+- [x] `OutboxCleanupJobTest` (shared-outbox unit) — 4/4 зелёные (cutoff, zero deletes, invalid retention, lock-name)
+- [x] `OutboxCleanupIntegrationTest` (academic) — 1/1 зелёный: pending не трогается, recent SENT (3d) остаётся, old SENT (10d) удаляется. Clock подменён через `@TestConfiguration` + `@Primary`.
+- [x] Micrometer `outbox.lag` — gauge через `OutboxMetrics` (bean в Storage-config). Источник — `storage.countPending()`.
+- [x] Micrometer `outbox.published.total` (counter) + `outbox.failed.total` (counter) — tag `event_type`. Инкрементится внутри `OutboxPublisherJob.publishBatch()`.
+- [x] OutboxConfig.Publisher во всех 3 сервисах создаёт `@Bean OutboxCleanupJob` + PublisherJob теперь принимает `MeterRegistry`.
+- [x] AbstractAttendanceIntegrationTest.@BeforeEach drainOutboxBeforeEach — чистит leftover pending между тестами (reused Mongo container).
 
 ## Группа 7 — Event schemas (P2-11/7)
 

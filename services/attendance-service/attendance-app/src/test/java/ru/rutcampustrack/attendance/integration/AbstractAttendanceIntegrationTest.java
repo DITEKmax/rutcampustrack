@@ -17,7 +17,12 @@ import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import org.junit.jupiter.api.BeforeEach;
+import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.util.List;
 
 /**
  * Abstract base class for Attendance Service integration tests.
@@ -57,6 +62,9 @@ public abstract class AbstractAttendanceIntegrationTest {
     @Autowired(required = false)
     protected OutboxPublisherJob outboxPublisherJob;
 
+    @Autowired(required = false)
+    protected OutboxStorage outboxStorage;
+
     /**
      * M02: flush pending outbox rows → Rabbit. Прод-шедулер guarded
      * {@code @Profile("!test")}, так что тесты дёргают publisher вручную
@@ -66,6 +74,18 @@ public abstract class AbstractAttendanceIntegrationTest {
         if (outboxPublisherJob != null) {
             outboxPublisherJob.publishBatch();
         }
+    }
+
+    /**
+     * M02: очистить leftover pending outbox rows между тестами (коллекция
+     * shared через reused Mongo container). Вызывается автоматически в
+     * {@code @BeforeEach}.
+     */
+    @BeforeEach
+    void drainOutboxBeforeEach() {
+        if (outboxStorage == null) return;
+        List<OutboxRecord> leftover = outboxStorage.findPending(1000);
+        leftover.forEach(r -> outboxStorage.markSent(r.id()));
     }
 
     static final MongoDBContainer MONGODB;

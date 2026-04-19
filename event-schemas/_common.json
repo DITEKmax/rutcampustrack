@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "_common.json",
+  "title": "Shared $defs for rut-uit event envelopes",
+  "description": "M02 / P2-11/7 — общие определения, используемые по $ref из всех event-schemas/*.json. Держит envelope согласованным и сокращает drift при добавлении новых событий.",
+  "$defs": {
+    "eventId": {
+      "description": "UUID event-идентификатора (envelope.event_id).",
+      "type": "string",
+      "format": "uuid"
+    },
+    "occurredAt": {
+      "description": "Момент возникновения события в UTC (ISO-8601).",
+      "type": "string",
+      "format": "date-time"
+    },
+    "traceId": {
+      "description": "Correlation ID, проброшенный из MDC (shared-events AbstractEventPublisher). M04 Observability использует для tracing. Опциональное поле — legacy events могут не содержать.",
+      "type": "string",
+      "minLength": 1
+    },
+    "eventVersion": {
+      "description": "Версия schema. Текущее поколение — 1. Bump = breaking change consumer'у. См. docs/event-schemas.md (NEW-48).",
+      "type": "integer",
+      "minimum": 1
+    },
+    "lessonNumber": {
+      "description": "Порядковый номер пары в дне (1..8). Единый diapason через все события.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8
+    }
+  }
+}

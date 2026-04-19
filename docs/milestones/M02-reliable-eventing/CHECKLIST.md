@@ -67,10 +67,10 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 7 — Event schemas (P2-11/7)
 
-- [ ] `event-schemas/_common.json` — master с `$defs`: lessonNumber (min:1), traceId (string), eventVersion (integer const:1), occurredAt (date-time)
-- [ ] Explore: перечислить все существующие `event-schemas/*.json`
-- [ ] Каждая schema — refactor на `{"$ref":"_common.json#/$defs/..."}` для общих полей
-- [ ] Unit-тест: validator загружается и понимает `$ref` (networknt json-schema-validator)
+- [x] `event-schemas/_common.json` — 5 defs: eventId (uuid), occurredAt (date-time), traceId (M04 observability), eventVersion (integer min=1), lessonNumber (1..8)
+- [x] Glob: 19 схем в event-schemas (18 событий + _common.json)
+- [x] Refactor 19 schemas на `{"$ref":"_common.json#/$defs/..."}`: event_id, occurred_at (везде), lesson_number (4 файла: homework.published/updated, lesson.one_off.created/cancelled, lesson.started). Массовая замена через py-скрипт.
+- [x] `EventSchemaRefTest` — 3 теста через networknt json-schema-validator 1.5.4: valid payload проходит, lesson_number=9 нарушает $defs/lessonNumber.maximum (проверка резолвинга $ref), _common.json содержит ожидаемые defs. Все зелёные.
 
 ## Группа 8 — Contract-тесты events (C1-5)
 

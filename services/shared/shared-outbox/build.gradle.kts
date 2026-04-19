@@ -51,5 +51,6 @@ dependencies {
     testImplementation(libs.shedlock.spring)
     testImplementation("jakarta.persistence:jakarta.persistence-api")
     testImplementation("org.mongodb:bson")
+    testImplementation(libs.json.schema.validator)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

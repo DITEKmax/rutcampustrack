@@ -6,8 +6,8 @@
   "required": ["event_type", "event_id", "occurred_at", "payload"],
   "properties": {
     "event_type": { "const": "group.updated" },
-    "event_id": { "type": "string", "format": "uuid" },
-    "occurred_at": { "type": "string", "format": "date-time" },
+    "event_id": { "$ref": "_common.json#/$defs/eventId" },
+    "occurred_at": { "$ref": "_common.json#/$defs/occurredAt" },
     "payload": {
       "type": "object",
       "required": ["group_id"],

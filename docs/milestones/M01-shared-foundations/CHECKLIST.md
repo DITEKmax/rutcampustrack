@@ -54,12 +54,13 @@
 
 ## Группа 7 — shared-test-containers
 
-- [ ] `ContainerTestBase` abstract class с `@Testcontainers` + 4 containers (reuse=true)
-- [ ] `@DynamicPropertySource` provider
-- [ ] `GrpcInProcessFixture` helper
-- [ ] `WireMockFixture` helper
-- [ ] `MigrationTestUtils.runMigrationsUpTo(version)` static helper
-- [ ] `~/.testcontainers.properties` инструкция в `README.md` модуля (reuse.enable=true для dev)
+- [x] `ContainerTestBase` abstract class с `@Testcontainers` + 4 containers (Postgres 16 / Mongo 7 / Redis 7 / RabbitMQ 3.13, `reuse=true`)
+- [x] `@DynamicPropertySource` — `spring.datasource.*` + `spring.data.mongodb.uri` + `spring.data.redis.*` + `spring.rabbitmq.*`
+- [x] `GrpcInProcessFixture` — in-process gRPC round-trip с уникальным channel name
+- [x] `WireMockFixture` — динамический порт, AutoCloseable
+- [x] `MigrationTestUtils` — `runMigrationsUpTo(version)`, `runAllMigrations`, `clean`
+- [x] `~/.testcontainers.properties` инструкция в `README.md` + подключение через `testImplementation(testFixtures(project(...)))`
+- [x] Smoke-тесты (3 passing + 1 disabled-Docker, 0 failures); реальный integration в Группе 8
 
 ## Группа 8 — notification-service миграция (acceptance)
 

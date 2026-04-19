@@ -43,5 +43,9 @@ dependencies {
     // JDBC + Flyway для MigrationTestUtils
     testFixturesApi("org.flywaydb:flyway-core")
 
+    // Smoke-тесты самого модуля
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.assertj:assertj-core")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

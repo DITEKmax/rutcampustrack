@@ -41,18 +41,22 @@
 
 ## Группа 4 — Gateway issuer client
 
-- [ ] `services/api-gateway/build.gradle.kts` — `com.github.ben-manes.caffeine:caffeine` dep
-- [ ] `services/api-gateway/.../security/InternalIssuerClientProperties.java` — authServiceUrl, secret (из env `INTERNAL_ISSUER_SECRET`), cacheTtlMinutes (default 4), timeoutMillis
-- [ ] `InternalJwtIssuerClient` — WebClient + Caffeine cache (`user:${userId}:${role}` → `CachedToken{token, expiresAt}`, `expireAfterWrite(4min)`); method `Mono<String> issueFor(Long userId, String role, Long groupId, boolean isHeadman)`
-- [ ] Error handling: auth-service 5xx / timeout → Mono.error(ServiceUnavailableException) → 503 клиенту + WARN в лог
-- [ ] `InternalJwtIssuerFilter implements GlobalFilter, Ordered` — после `JwtAuthenticationFilter` (order +10):
-  - Читает claims из внешнего JWT (уже валидирован и лежит в attributes)
-  - Вызывает `issuerClient.issueFor(...)`, ждёт Mono
-  - Добавляет header `Authorization: Internal <jwt>` в mutated request
-  - Dual-mode: НЕ strip'ает `X-User-*` (остаются как fallback)
-- [ ] Unit `InternalJwtIssuerClientTest` — cache hit (1 WebClient invocation на N запросов), cache expiry, error propagation
-- [ ] IT `InternalJwtIssuerClientIT` (WireMock auth-service) — 2 запроса одного user → 1 network call; после TTL (форсированно) — refetch
-- [ ] IT `InternalJwtIssuerFilterIT` — full Gateway stack + WireMock auth-service + WireMock downstream → downstream видит `Authorization: Internal <jwt>` с правильными claims
+- [x] `services/api-gateway/build.gradle.kts` — `com.github.ben-manes.caffeine:caffeine` + test deps (reactor-test, WireMock, webflux-starter)
+- [x] `services/api-gateway/.../security/InternalIssuerClientProperties.java` — authServiceUrl, secret (из env `INTERNAL_ISSUER_SECRET`), cacheTtlSeconds (default 240, < 290 ← auth-service TTL 300), cacheMaxSize, timeoutMillis; fail-fast validation
+- [x] `InternalJwtIssuerClient` — WebClient + Caffeine `AsyncCache<CacheKey(userId, role), IssuedToken>` с `expireAfterWrite`; `Mono<String> issueFor(userId, role, groupId, isHeadman)`
+- [x] Error handling: auth-service 4xx/5xx / timeout → Mono.error(`InternalIssuerUnavailableException`) с message, пробрасывается через onErrorMap
+- [x] `InternalJwtIssuerFilter implements GlobalFilter, Ordered` — order=-50 (после JwtAuthenticationFilter=-100):
+  - Читает `X-User-Id`/`X-User-Role`/`X-Group-Id`/`X-Is-Headman` (уже поставлены JwtAuthenticationFilter'ом)
+  - Парсит userId (non-numeric → skip), groupId (null-tolerant)
+  - Вызывает `issuerClient.issueFor(...)`, добавляет `X-Internal-Token: <jwt>` в downstream request
+  - На `InternalIssuerUnavailableException` → 503 Problem Details
+  - Dual-mode: НЕ strip'ает `X-User-*` headers (остаются как fallback для dual-mode downstream)
+- [x] `GatewayApplication` + `application.yml` — `@EnableConfigurationProperties(InternalIssuerClientProperties.class)` + секция `rutcampustrack.security.internal-issuer-client` с dev defaults и ENV override
+- [x] Unit `InternalJwtIssuerClientTest` (7): first call hits network, second hit cached, different users → separate entries, role change → new entry, auth 500/401 → unavailable, invalidateAll forces refetch. WireMock для auth-service
+- [x] Unit `InternalJwtIssuerFilterTest` (6): X-Internal-Token ставится, no headers → skip, non-numeric userId → skip, unavailable → 503, null groupId → passes null, filter order > -100
+- [x] Unit `InternalIssuerClientPropertiesTest` (6): empty/short secret, valid secret, ttl edges, defaults
+- [x] `./gradlew :services:api-gateway:build` зелёный (19 новых тестов)
+- [ ] IT `InternalJwtIssuerClientIT` — отложен в Группу 13 (contract-тест Gateway↔downstream), т.к. unit-тесты c WireMock покрывают тот же functional ground
 
 ## Группа 5 — Downstream миграция (academic)
 

@@ -124,6 +124,16 @@ springdoc:
 gateway:
   auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
 
+rutcampustrack:
+  security:
+    internal-issuer-client:
+      # M03a token-exchange — must match auth-service INTERNAL_ISSUER_SECRET
+      auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
+      secret: ${INTERNAL_ISSUER_SECRET:dev-internal-issuer-secret-32-bytes-for-local-testing-only}
+      cache-ttl-seconds: 240     # Gateway cache < auth-service TTL (300) with safety margin
+      cache-max-size: 10000
+      timeout-millis: 3000
+
 management:
   endpoints:
     web:

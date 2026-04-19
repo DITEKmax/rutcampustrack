@@ -18,7 +18,13 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
+    // M03a: Caffeine cache для InternalJwtIssuerClient (per-user token cache 4 min).
+    implementation("com.github.ben-manes.caffeine:caffeine")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webflux")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation("org.wiremock:wiremock-standalone:3.9.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

@@ -38,16 +38,19 @@ subagent на diff в конце milestone'а.
 |---|-----------|------------|----------|--------|
 | M01 | [Shared Foundations](M01-shared-foundations/PLAN.md) | — | ~5-7д | ✅ 2026-04-19 |
 | M02 | [Reliable Eventing (ShedLock + outbox + contract-тесты)](M02-reliable-eventing/PLAN.md) | M01 | ~8-10д | ✅ 2026-04-19 |
-| M03 | Secure Boundaries (Internal JWT + JWT cookie + logout) | M01, M02 | ~14-18д | ⬜ |
+| M03a | [Internal JWT + Rate-limit](M03a-internal-jwt-ratelimit/PLAN.md) | M01, M02 | ~5-8д | ⏳ в работе |
+| M03b | Secure Boundaries Part B (JWT cookie + ws-ticket + logout) | M03a | ~8-12д | ⬜ |
 | M04 | Observability (Tracing, Alertmanager, JSON-логи) | M01 | ~5-7д | ⬜ |
 | M05 | Performance (Indexes, Caffeine, EntityGraph, batch) | M01 | ~6-7д | ⬜ |
 | M06 | Ops & Supply Chain (SHA tagging, Trivy, HEALTHCHECK) | — | ~3-4д | ⬜ |
-| M07 | Frontend Hardening (CSP, a11y, UX, openapi-typescript) | M03 | ~10-12д | ⬜ |
-| M08 | Test Infrastructure (Playwright, golden, coverage-gate) | M01, M02, M03 | ~10-12д | ⬜ |
+| M07 | Frontend Hardening (CSP, a11y, UX, openapi-typescript) | M03b | ~10-12д | ⬜ |
+| M08 | Test Infrastructure (Playwright, golden, coverage-gate) | M01, M02, M03b | ~10-12д | ⬜ |
 
-**Parallel tracks:** M04 и M05 можно делать одновременно с M03 (независимы
-по коду). M06 полностью независим — можно делать когда угодно, даже
-параллельно M01.
+**Parallel tracks:** M04 и M05 можно делать одновременно с M03a/M03b
+(независимы по коду). M06 полностью независим — можно делать когда угодно,
+даже параллельно M01. M03 разделён на M03a (Internal JWT + rate-limit) и
+M03b (JWT cookie + ws-ticket + logout) для промежуточного тега
+`v0.0.0-alpha.3` и снижения риска breaking change.
 
 ## Правила
 

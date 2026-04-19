@@ -12,6 +12,16 @@ version = "0.1.0"
 dependencies {
     implementation(project(":services:notification-service:notification-api-contract"))
 
+    // M01 Shared Foundations — первый сервис-потребитель shared-web/events/logback
+    implementation(project(":services:shared:shared-web"))
+    implementation(project(":services:shared:shared-events"))
+    implementation(project(":services:shared:shared-logback"))
+
+    // Spring Security Core — для shared-web AccessDeniedException handler.
+    // Full spring-boot-starter-security добавляется только при реальной SecurityFilterChain
+    // (в M03). Сейчас нужен только класс AccessDeniedException на classpath.
+    implementation("org.springframework.security:spring-security-core")
+
     // Existing
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-amqp")
@@ -50,6 +60,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
+    testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

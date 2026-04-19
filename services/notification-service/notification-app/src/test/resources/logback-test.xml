@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Тестовая конфигурация: подключает shared/logback-base.xml как production,
+  чтобы NotificationLoggingIT мог проверить реальный pipeline (вкл. MaskingJsonProvider).
+-->
+<configuration>
+    <property name="SERVICE_NAME" value="notification-web"/>
+    <include resource="shared/logback-base.xml"/>
+</configuration>

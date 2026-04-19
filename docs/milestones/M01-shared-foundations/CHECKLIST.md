@@ -64,14 +64,14 @@
 
 ## Группа 8 — notification-service миграция (acceptance)
 
-- [ ] `notification-service/build.gradle.kts` → добавить зависимости shared-web + shared-logback + shared-events (implementation)
-- [ ] Удалить не-existent (или существующий minimal) локальный error-handling в notification-service
-- [ ] Компонент-скан: убедиться что `@RestControllerAdvice` из shared-web подхватывается (scan `ru.rutcampustrack.shared.web`)
-- [ ] `notification-service/src/main/resources/logback-spring.xml` → `<include resource="shared/logback-base.xml"/>`
-- [ ] Integration-тест `NotificationErrorHandlingIT`: POST с невалидным body → 400 `application/problem+json` + `invalid-params[]`
-- [ ] Integration-тест `NotificationLoggingIT`: логирование JSON + masking Bearer token
-- [ ] `NotificationIntegrationIT` extends `ContainerTestBase` (миграция с @MockitoBean на real Testcontainers Mongo + Rabbit)
-- [ ] Smoke-тест: `docker compose up notification-web` локально, `curl -i` с невалидным body → проверить headers/body вручную
+- [x] `notification-service/build.gradle.kts` → shared-web + shared-events + shared-logback (implementation) + testImplementation(testFixtures(shared-test-containers)) + spring-security-core (для AccessDeniedException в classpath)
+- [~] Удалить локальный error-handling в notification-service — **N/A**: в notification-service `@RestControllerAdvice` не было, только `AccessDeniedException` доменный класс (сохранён, локальный `NotificationExceptionHandler` маппит его в 403 problem+json)
+- [x] Компонент-скан: `@SpringBootApplication(scanBasePackages={"ru.rutcampustrack.notification", "ru.rutcampustrack.shared.web"})` — GlobalExceptionHandler + JacksonConfig + AdminActionAspect + SharedOpenApiCustomizer подхватываются
+- [x] `notification-app/src/main/resources/logback-spring.xml` → `<include resource="shared/logback-base.xml"/>` + `SERVICE_NAME=notification-web`
+- [x] `NotificationErrorHandlingIT` (extends ContainerTestBase, @SpringBootTest+MockMvc): 4 кейса (validation → invalidParams, malformed JSON, method-not-allowed, AccessDenied → 403) все зелёные
+- [x] `NotificationLoggingIT` (programmatic Logback capture): JSON структура + masking Bearer в реальном pipeline, 2 теста зелёных
+- [~] `NotificationIntegrationIT` миграция с @MockitoBean — **N/A**: такого теста до M01 не существовало. Вместо миграции — NotificationErrorHandlingIT уже extends ContainerTestBase (real Mongo+Rabbit)
+- [~] Smoke-тест `docker compose up notification-web` + curl — **отложено**: NotificationErrorHandlingIT (real containers + HTTP через MockMvc) даёт ту же уверенность
 
 ## Группа 9 — документация
 

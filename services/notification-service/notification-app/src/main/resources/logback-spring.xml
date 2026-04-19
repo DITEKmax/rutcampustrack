@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  M01 Группа 8: подключение shared-logback через одну строчку.
+  Даёт JSON-вывод в stdout + маскирование Bearer/telegram_id/FCM endpoint.
+-->
+<configuration>
+
+    <property name="SERVICE_NAME" value="notification-web"/>
+
+    <include resource="shared/logback-base.xml"/>
+
+</configuration>

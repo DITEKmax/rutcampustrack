@@ -21,6 +21,9 @@ dependencies {
     // M03a: Caffeine cache для InternalJwtIssuerClient (per-user token cache 4 min).
     implementation("com.github.ben-manes.caffeine:caffeine")
 
+    // M03a Group 9: Redis-backed rate-limiting (spring-cloud-gateway RedisRateLimiter).
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation("io.projectreactor:reactor-test")

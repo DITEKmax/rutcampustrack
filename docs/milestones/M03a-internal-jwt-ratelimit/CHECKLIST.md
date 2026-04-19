@@ -104,10 +104,11 @@
 
 ## Группа 9 — Rate-limit Gateway deps + infra
 
-- [ ] `services/api-gateway/build.gradle.kts` — `spring-boot-starter-data-redis-reactive` (если нет), `spring-cloud-starter-gateway-redis-rate-limiter` (проверить artifact name для Spring Cloud 2024.x)
-- [ ] `application.yml` spring.data.redis host/port — такой же Redis что и auth-service (re-use)
-- [ ] `RedisRateLimiterConfig` — бины `IpKeyResolver`, `UserIdKeyResolver`, `LoginKeyResolver`, `CompositeIpLoginKeyResolver`
-- [ ] Fail-open wrapper: кастомный `RateLimiter` ловит `RedisConnectionFailureException` → `Response(allowed=true)` + WARN лог
+- [x] `services/api-gateway/build.gradle.kts` — `spring-boot-starter-data-redis-reactive` (artifact `spring-cloud-starter-gateway-redis-rate-limiter` для 2024.x не существует; `RedisRateLimiter` идёт из `spring-cloud-starter-gateway` + требует redis-reactive client — см. NOTES Группа 9)
+- [x] `application.yml` spring.data.redis host/port — re-use того же Redis, timeout 1s для fail-fast
+- [x] `RedisRateLimiterConfig` — бины `ipKeyResolver`, `userIdKeyResolver`, `loginKeyResolver`, `ipLoginKeyResolver` + `@Primary FailOpenRateLimiter` wrapper (9 unit-тестов для resolvers)
+- [x] Fail-open wrapper `FailOpenRateLimiter`: ловит `RedisConnectionFailureException` / `QueryTimeoutException` / Lettuce exceptions → `Response(allowed=true)` + WARN (6 unit-тестов)
+- [x] `docker-compose.prod.yml` — api-gateway получает `REDIS_HOST/PORT/PASSWORD` + `INTERNAL_ISSUER_SECRET` + `depends_on: redis` (M03a Группа 4 env тоже фиксим в этом коммите — отсутствовал в prod compose)
 
 ## Группа 10 — Rate-limit routes
 

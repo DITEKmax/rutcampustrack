@@ -100,3 +100,37 @@ Gateway `InternalJwtIssuerClient` по-прежнему на WebClient (api-gate
 **Последствия:** во всех 4 downstream-сервисах НЕ нужен webflux dep. Пятница
 уже добавляла тесты с `starter-webflux` testImplementation в shared-security —
 это удалено. Academic build зелёный (197 тестов, +9 новых filter IT).
+
+## 2026-04-19 — Группа 9: deps + infra для rate-limit
+
+**Пояснение по артефактам:** CHECKLIST упоминал
+`spring-cloud-starter-gateway-redis-rate-limiter` — такого отдельного артефакта
+в Spring Cloud 2024.0.x (gateway-server 4.2.0) **не существует**. RedisRateLimiter
+и RequestRateLimiterGatewayFilterFactory идут из `spring-cloud-starter-gateway`
+(уже есть). Нужен только redis-reactive client, чтобы Spring Boot autoconfig
+поднял `ReactiveStringRedisTemplate` + `RedisScript` для Lua-скрипта
+RedisRateLimiter. Добавлен `spring-boot-starter-data-redis-reactive`.
+
+**Про `loginKeyResolver`:** Gateway — reactive WebFlux, body потребляется один
+раз, чтобы прочитать `login` из JSON надо ставить `CacheRequestBody` filter
+перед rate-limit. Для простоты в Группе 9 резолвер читает login из заголовка
+`X-Login`; клиент frontend будет слать его дубликатом при логине (или Gateway
+в Группе 10 поставит его сам через `CacheRequestBody` + простая SpEL mutation).
+Решение переводится в Группу 10 при оформлении роутов.
+
+**Fail-open wrapper подход:** `@Primary FailOpenRateLimiter extends
+AbstractRateLimiter<RedisRateLimiter.Config>` — делегирует стандартному
+`redisRateLimiter` (autoconfig-bean), на `RedisConnectionFailureException` /
+`QueryTimeoutException` / Lettuce exceptions возвращает `Response(allowed=true,
+headers={X-RateLimit-FailOpen: true})` + WARN. `RequestRateLimiterGatewayFilter`
+по-умолчанию резолвит `RateLimiter`-бин из контекста — с `@Primary` все роуты
+автоматически получают fail-open, без явных `rate-limiter: "#{@bean}"`.
+
+**Результат:** Gateway build зелёный — 47 тестов (было 32, +15 новых:
+9 KeyResolver + 6 FailOpenRateLimiter).
+
+**docker-compose.prod.yml fix:** обнаружил что api-gateway в prod не получал
+`INTERNAL_ISSUER_SECRET` (должен был попасть в Группе 4, но было забыто —
+Gateway там стартовал с dev-default секретом из application.yml, что = FAIL в prod,
+т.к. auth-service уже требует его). Добавил `REDIS_HOST/PORT/PASSWORD` +
+`INTERNAL_ISSUER_SECRET` + `depends_on: redis` в один commit с Группой 9.

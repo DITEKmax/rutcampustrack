@@ -20,6 +20,27 @@ OWNER-ANSWERS.md. Каждая запись — 5-10 строк, не больш
 
 _(Будет заполняться по ходу milestone'а.)_
 
+## 2026-04-19 — Gradle Version Catalog вместо inline-версий
+
+**Выбрано:** `gradle/libs.versions.toml` с минимальным набором ключей (springBoot, logstash, testcontainers-bom, grpc, wiremock, springdoc).
+**Отвергнуто:** (a) inline-версии в каждом build.gradle.kts, (b) `extra` properties в корневом build.
+**Причина:** M06 включает Renovate — catalog даёт единое место правки; в существующих сервисах уже drift по 8+ версиям, catalog остановит рост drift'а без насильной миграции (сервисы мигрируют постепенно вне scope M01).
+**Последствия:** новые модули/правки версий идут через catalog; существующие сервисы не трогаем в M01.
+
+## 2026-04-19 — shared-test-containers через java-test-fixtures
+
+**Выбрано:** плагин `java-test-fixtures`, потребители подключают через `testImplementation(testFixtures(project(...)))`.
+**Отвергнуто:** (b) обычный `java-library` + `testImplementation(project(...))` — проще синтаксис, но модуль-fixture может случайно попасть в main classpath сервиса.
+**Причина:** семантическая корректность + защита от ошибки подключения. PLAN.md изначально имел это в виду («testFixtures scope»).
+**Последствия:** сервисные тесты используют двойной wrapper `testFixtures(project(...))`; вариант-b случая «притащил Testcontainers в прод-jar» исключён.
+
+## 2026-04-19 — shared-web: compileOnly для spring/jackson/slf4j
+
+**Выбрано:** spring-web, spring-webmvc, spring-context, jakarta.validation-api, jackson-databind, jsr310, jackson-annotations, spring-security-core, jakarta.servlet-api, slf4j-api — все `compileOnly`. Сервис провайдит через свой Spring Boot starter.
+**Отвергнуто:** (a) `api` — удобно, но дублирует spring-webmvc между модулем и starter сервиса, риск конфликта версий; (b) `implementation` — тот же минус без удобства.
+**Причина:** буквальная трактовка NEW-34 («никакой магии, подключение как обычная библиотека»). Все 5 сервисов-потребителей уже имеют spring-boot-starter-web или transitively-webmvc.
+**Последствия:** сервис БЕЗ spring-boot-starter-web не сможет использовать shared-web (ожидаемо — он там просто не нужен).
+
 ---
 
 _Формат записи:_

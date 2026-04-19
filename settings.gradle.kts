@@ -1,5 +1,11 @@
 rootProject.name = "rutcampustrack"
 
+// === Shared modules (M01 — foundations для всех сервисов) ===
+include("services:shared:shared-web")
+include("services:shared:shared-events")
+include("services:shared:shared-logback")
+include("services:shared:shared-test-containers")
+
 // === API Contracts (чистые модули без Spring Boot) ===
 include("services:academic-service:academic-api-contract")
 include("services:schedule-service:schedule-api-contract")

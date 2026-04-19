@@ -1,0 +1,25 @@
+[versions]
+# M01 — shared modules foundations
+# Добавляем минимальный набор версий, используемых shared-* модулями.
+# Остальные сервисы мигрируют на catalog постепенно (не scope M01).
+springBoot = "3.4.1"
+springDependencyManagement = "1.1.7"
+logstashLogback = "7.4"
+testcontainersBom = "1.20.4"
+grpc = "1.63.0"
+wiremock = "3.9.1"
+springdocOpenapi = "2.8.6"
+
+[libraries]
+# shared-logback
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashLogback" }
+
+# shared-test-containers
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainersBom" }
+grpc-inprocess = { module = "io.grpc:grpc-inprocess", version.ref = "grpc" }
+grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
+grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
+wiremock-standalone = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
+
+# shared-web (OpenAPI — заглушка OpenApiCustomizer для M06)
+springdoc-openapi-starter-common = { module = "org.springdoc:springdoc-openapi-starter-common", version.ref = "springdocOpenapi" }

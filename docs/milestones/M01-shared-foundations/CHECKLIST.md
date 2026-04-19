@@ -4,13 +4,14 @@
 
 ## Группа 1 — Gradle scaffolding
 
-- [ ] Создать директорию `services/shared/` с пустым `.gitkeep`
-- [ ] Создать `services/shared/shared-web/build.gradle.kts` (java-library, deps: spring-web, spring-context, jakarta.validation-api, jackson-databind, hibernate-validator)
-- [ ] Создать `services/shared/shared-events/build.gradle.kts` (java-library, deps: jackson-databind, slf4j-api)
-- [ ] Создать `services/shared/shared-logback/build.gradle.kts` (java-library, deps: logback-classic, logstash-logback-encoder)
-- [ ] Создать `services/shared/shared-test-containers/build.gradle.kts` (java-library, deps: testcontainers BOM + postgres/mongodb/redis/rabbitmq/junit-jupiter)
-- [ ] Добавить 4 модуля в `settings.gradle.kts`
-- [ ] `./gradlew :services:shared:shared-web:build` зелёный (пустой модуль)
+- [~] Создать директорию `services/shared/` с пустым `.gitkeep` — **N/A**, директория наполнена 4 модулями сразу (см. NOTES.md)
+- [x] Создать `services/shared/shared-web/build.gradle.kts` (compileOnly для spring/jackson/slf4j — NEW-34; hibernate-validator + aspectjweaver implementation)
+- [x] Создать `services/shared/shared-events/build.gradle.kts` (compileOnly для jackson/slf4j)
+- [x] Создать `services/shared/shared-logback/build.gradle.kts` (compileOnly logback/slf4j, implementation logstash-encoder через catalog)
+- [x] Создать `services/shared/shared-test-containers/build.gradle.kts` (`java-test-fixtures` plugin, testFixturesApi; testcontainers-bom + grpc + wiremock через catalog)
+- [x] Создать `gradle/libs.versions.toml` (version catalog — см. DECISIONS.md)
+- [x] Добавить 4 модуля в `settings.gradle.kts`
+- [ ] `./gradlew :services:shared:shared-web:build` зелёный — отложено до Группы 2+ (избегаем пустого compile)
 
 ## Группа 2 — shared-web (core)
 

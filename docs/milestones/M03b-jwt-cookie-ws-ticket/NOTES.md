@@ -87,6 +87,75 @@ WsTicketController парсит access-JWT через JwtService.parseToken() ч
 
 Обратная совместимость: не требуется, endpoint добавлен в M03b.
 
+## 2026-04-20 — Hand-off для следующей сессии (конец дня)
+
+**Прогресс M03b: 6 из 13 групп закрыто + Группа 5 reserved.**
+
+| Группа | Коммит | Статус |
+|--------|--------|--------|
+| 1 — Discovery + 5 decisions | `d3a03df` | ✅ |
+| 2 — Auth-service cookie endpoints | `835b79b` | ✅ |
+| 3 — WS-ticket endpoint + Lua consume | `afe1928` | ✅ |
+| 4 — notification-service ticket handshake | `7c4fa6d` | ✅ |
+| 5 — (reserved — CSRF удалён per DECISIONS 2026-04-20) | — | ✅ |
+| 6 — PWA cookie+ws-ticket migration | `bc8fb3e` | ✅ |
+| 7 — web-panel cookie+ws-ticket migration | `16915bc` | ✅ |
+| 8 — Logout lifecycle (C0-5 полный) | — | ⏳ следующая |
+| 9 — KI-3/6/8 hot-patches из M03a | — | ⬜ |
+| 10 — KI-7 bcrypt DoS mitigation | — | ⬜ |
+| 11 — Expanded IT + bug-hunter + security-auditor | — | ⬜ |
+| 12 — docs + CHANGELOG + architecture | — | ⬜ |
+| 13 — финал + tag v0.0.0-alpha.4 | — | ⬜ |
+
+**Все тесты зелёные после Группы 7:**
+- auth-service: полный test suite прошёл (AuthIntegrationTest +
+  WsTicketIT + все остальные).
+- notification-service: полный test suite прошёл
+  (TicketHandshakeInterceptorTest + остальные).
+- PWA: 122/122 vitest зелёные, `npm run build` зелёный.
+- web-panel: 444/444 vitest зелёные, `npm run build` зелёный.
+
+**Критичный контекст для Группы 8 (logout lifecycle):**
+
+Смотри CHECKLIST.md Группа 8 — 4 пункта:
+1. `AuthController#logout` дополнить: `wsTicketService.invalidateAllFor(userId)`
+   из access-token Authentication перед revoke refresh. Метод уже
+   существует в `WsTicketService` (Группа 3).
+2. Push subscription отвязка — `DELETE /api/notifications/push/subscribe`
+   (web-panel Группа 7 уже вызывает через clearAllClientState, проверить
+   что endpoint существует в notification-service PushController).
+3. Event `user.logged-out` через shared-outbox — owner решит что важно:
+   можно отложить в M04 (там observability/events properly).
+4. IT `LogoutLifecycleIT` — cookie cleared + refresh invalidated +
+   ws-tickets invalidated + (если есть) push отвязан.
+
+**Нюанс:** сейчас `AuthController#logout` НЕ knows userId если в body
+передан refresh-token (парсит jti, но не userId explicitly). Через
+access-JWT `Authentication` в SecurityContext мы можем получить userId,
+но `/auth/logout` в SecurityConfig — в permit-all (JwtAuthenticationFilter
+всё равно выставит auth если Bearer есть; при anon — userId нет).
+Стратегия: если access-JWT есть → вызываем `invalidateAllFor(userId)`;
+если нет (чистый cookie logout) → пропускаем invalidation (ticket'ы
+истекут через 30s естественно). Не идеально, но OK для v0.0.0 — alpha.
+
+**Что важно не забыть:**
+- Тег `v0.0.0-alpha.4` ставится ТОЛЬКО в Группе 13, на финальном
+  коммите milestone'а. БЕЗ push (жду «go»).
+- ИЗМЕНЕНИЕ SCOPE: Группа 5 (CSRF) удалена per DECISIONS 2026-04-20.
+- Фронтенд WSсервисы уже переключены на ticket — back-compat не нужен.
+
+**Последние коммиты M03b (git log --oneline -7):**
+
+- `16915bc` feat(web-panel): cookie-based refresh + WS ticket + clearAllClientState (M03b Группа 7)
+- `bc8fb3e` feat(pwa): cookie-based refresh + WS ticket + clearAllClientState (M03b Группа 6)
+- `7c4fa6d` feat(notification): WS ticket handshake replaces raw-JWT in query (M03b Группа 4)
+- `afe1928` feat(auth): ws-ticket endpoint + atomic consume via Lua (M03b Группа 3)
+- `835b79b` feat(auth): cookie-based refresh — HttpOnly+Secure+SameSite=Strict (M03b Группа 2)
+- `d3a03df` docs(m03b): start milestone — 5 decisions + CSRF removed per OWNER-ANSWERS (M03b Группа 1)
+- `081d3b0` docs(m03b): scaffold M03b + hand-off для следующей сессии
+
+---
+
 ## Backlog из M03a post-mortem (для рассмотрения в Группах 9-10)
 
 Известные issues, которые попадут в M03b или будут документированы как

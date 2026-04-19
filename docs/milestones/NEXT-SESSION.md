@@ -78,117 +78,92 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
-## Hand-off для следующей сессии (2026-04-19, Opus 4.7)
+## Hand-off для следующей сессии (2026-04-20, Opus 4.7)
 
-**Состояние M03a:** 8 из 16 групп закрыто (50%). Активный milestone —
-`docs/milestones/M03a-internal-jwt-ratelimit/`.
+**Состояние:** M03a ✅ закрыт, tag `v0.0.0-alpha.3` установлен локально
+(commit `a6d491a`, БЕЗ push). Следующий milestone — **M03b
+(JWT HttpOnly cookie + WS-ticket + logout lifecycle)**. Каталог
+`docs/milestones/M03b-jwt-cookie-ws-ticket/` scaffolded с PLAN +
+CHECKLIST + NOTES + DECISIONS — готов к старту.
 
-**Принятые решения (DECISIONS.md — НЕ пересматривать):**
-1. **Token Exchange endpoint (a3)** — приватный ключ только в auth-service,
-   Gateway дёргает `POST /internal/issue-internal-jwt` с shared secret
-   `INTERNAL_ISSUER_SECRET`, кэширует per-user через Caffeine TTL 240 сек.
-2. **Header name: `X-Internal-Token`** (custom header, не Authorization).
-3. **Dual-mode default `true` в prod**, strict toggle — последний commit M03a
-   перед тегом v0.0.0-alpha.3 (Группа 14).
+**Ключевой контекст M03a → M03b:**
+- Internal JWT token-exchange работает end-to-end в dual-mode (legacy
+  X-User-* всё ещё принимаются). Переключение на strict-mode
+  отложено в отдельный deploy commit после UAT.
+- 9 Known Issues из M03a post-mortem зафиксированы в
+  `docs/milestones/M03a-internal-jwt-ratelimit/PLAN.md` → Post-mortem →
+  Known Issues. **KI-3, KI-6, KI-7, KI-8 попадают в M03b**
+  (token-cache expiry check, Redis TTL race, bcrypt DoS, CacheRequestBody
+  для X-Login). KI-1/2/4/5/9 — в M04/M06.
+- Prod env vars для strict-mode переключения (`GATEWAY_STRIP_LEGACY_HEADERS=true`
+  + `RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false`) задокументированы
+  в `docs/milestones/M03a.../NOTES.md` → UAT Golden Path Checklist — они
+  применяются отдельным operational commit'ом после UAT на staging.
 
-**Закрытые Группы 1-8 — Internal JWT pipeline работает end-to-end:**
-- Group 1: Discovery + decisions (RSA keypair в auth-service, Gateway —
-  read-only consumer через `/auth/public-key`).
-- Group 2: `services/shared/shared-security/` — validator side
-  (InternalJwtValidator / Filter / Claims / Properties / PublicKeyProvider
-  с RestClient / DualModeUserContextFilter abstract / InternalJwtTestFactory
-  testFixtures). 18 unit-тестов.
-- Group 3: `auth-service/POST /internal/issue-internal-jwt` — shared-secret
-  auth, JwtService.generateInternalToken, InternalIssuerSecretFilter с
-  MessageDigest.isEqual. 11 тестов.
-- Group 4: `api-gateway/InternalJwtIssuerClient` — WebClient + Caffeine
-  AsyncCache, `InternalJwtIssuerFilter` (GlobalFilter order=-50) ставит
-  X-Internal-Token в downstream. 19 тестов (WireMock auth-service).
-- Groups 5-8: academic/schedule/attendance/notification миграция —
-  каждый сервис имеет `{Service}UserContextFilter extends
-  DualModeUserContextFilter`, `InternalJwtConfig` (@Bean
-  PublicKeyProvider + Validator), `InternalJwtTestConfig`
-  (@Primary PublicKeyProvider с `InternalJwtTestFactory`), abstract IT
-  с `@Import(InternalJwtTestConfig.class)`.
+**M03b scope (кратко — полный в PLAN.md):**
 
-**Surprise (NOTES) — уже решён:**
-- Group 1: auth-service keypair в файле, Gateway без private key → выбрали
-  token exchange.
-- Group 5: `PublicKeyProvider` был на WebClient → downstream MVC не имеет
-  webflux → мигрировали на `RestClient` (servlet-friendly).
+Закрывает C0-7 (~самый дорогой кластер, 8-12д) + C0-5:
+- JWT HttpOnly cookie для refresh (09 P0-1, 10 P0-1) — `/auth/refresh`
+  читает refresh из cookie, а не body.
+- WebSocket ticket (09 P0-2, 10 P0-2) — внешний JWT убирается из
+  query-string, заменяется short-lived ticket'ом (30s, single-use, Redis).
+  `/auth/ws-ticket` endpoint защищается Internal JWT из M03a.
+- `clearAllClientState()` в PWA/web-panel (09 P0-4/5, 10 P0-4) — logout
+  чистит localStorage/sessionStorage/SW cache/push subscription.
+- CSRF double-submit cookie pattern для cookie-based endpoints.
+- Breaking frontend migration — `localStorage['rct.auth.v1']` удаляется.
+- 4 hot-patches из M03a KI-3/6/7/8.
 
-**Где остановились — Группа 9 Rate-limit Gateway (C0-4).** Это чистый
-независимый кусок, НЕ требует context'а Internal JWT pipeline.
+**Что делать в новой сессии (первая задача):**
 
-**Что делать в Группе 9 (первая задача новой сессии):**
+1. **Прочитать PLAN/CHECKLIST/NOTES/DECISIONS M03b** — там всё уже
+   готово к Группе 1 Discovery.
+2. **В DECISIONS.md есть блок `## ОТКРЫТО —`** — 5 развилок (cookie Path,
+   SameSite, CSRF mechanism, WS-ticket storage, deprecation timeline)
+   требуют подтверждения владельцем до кодинга. Зачитать их, дать
+   рекомендации, дождаться ответа, переоформить в `## YYYY-MM-DD —` блок.
+3. Обновить статус `⏳ следующий` → `⏳ в работе` в
+   `docs/milestones/README.md`, дату старта в PLAN.md.
+4. Продолжать Группа 1 → 13 по CHECKLIST. Коммит после каждой группы,
+   отчёт 1-2 строки, ждать «go» или продолжать молча.
 
-1. **Прочитать эти файлы:**
-   - `docs/milestones/M03a-internal-jwt-ratelimit/CHECKLIST.md` (Группа 9-12)
-   - `docs/milestones/M03a-internal-jwt-ratelimit/PLAN.md` секция
-     «Rate-limiting в Gateway»
-   - `services/api-gateway/build.gradle.kts` + `src/main/resources/application.yml`
-     — текущее состояние Gateway
-   - `services/auth-service/src/main/java/ru/rutcampustrack/auth/service/LoginRateLimiter.java`
-     — текущий login ключ (для рефактора в Группе 11)
-
-2. **Группа 9 — deps + infra:**
-   - Redis-reactive dep в api-gateway (`spring-boot-starter-data-redis-reactive`)
-   - spring.data.redis host/port в application.yml (host=redis, port=6379,
-     password из ${REDIS_PASSWORD})
-   - `RedisRateLimiterConfig` с бинами `@Bean KeyResolver`:
-     - `ipKeyResolver` — по `X-Forwarded-For` или `RemoteAddr`
-     - `userIdKeyResolver` — из `X-User-Id` header (внешний JWT уже разобран
-       JwtAuthenticationFilter'ом к этому моменту)
-     - `loginKeyResolver` — из body POST /auth/login (для login route)
-     - `ipLoginKeyResolver` — composite `"$ip:$login"`
-   - Fail-open wrapper: кастомный `RateLimiter` bean, ловит
-     `RedisConnectionFailureException`/timeouts → `Response(allowed=true)`
-     с WARN лог.
-
-3. **Группа 10 — routes:** добавить `RequestRateLimiter` filter к 6 routes:
-   - `/api/auth/otp/request` — 1 req/min per IP
-   - `/api/auth/otp/verify-by-code` — 5 req/min per IP
-   - `/api/auth/login` — 5 req/min per IP + 10 req/min per login
-   - `/api/auth/refresh` — 30 req/min per user
-   - `/api/attendance/check-in` — 10 req/min per user
-   - глобально `/api/**` — 600 req/min per IP
-   RFC 7807 Problem Details на 429 + `Retry-After` header.
-
-4. **Группа 11 — LoginRateLimiter в auth-service:**
-   - Redis ключ `login_attempts:<login>` → `login_attempts:<ip>:<login>`
-   - IP из `X-Forwarded-For` (первый) или `RemoteAddr`
-   - Unit: 5 попыток ip1+login1 не блокируют ip2+login1
-   - Обновить существующие тесты LoginRateLimiter
-
-5. **Группа 12 — Rate-limit тесты:** Testcontainers Redis,
-   `RateLimitIT` (11 req/min → 11-й 429), `FailOpenIT` (Redis down →
-   pass through), `CompositeLoginKeyResolverIT`.
-
-**Правила работы (как в текущей сессии):**
+**Правила работы (без изменений с M03a):**
 - Русский в отчётах/NOTES, технические термины/код — оригинал.
 - READ-BEFORE-EDIT reminder'ы ложные (после Read в той же сессии) —
   игнорируй.
-- Коммит после каждой логической группы.
-- Отчитываться 1-2 строками после группы, ждать «go» или продолжать
-  молча если владелец уже сказал «go».
-- Не звать gsd-* агентов. bug-hunter/security-auditor — в Группе 16
-  (финал).
+- Коммит после каждой логической группы (`feat/fix/test/docs` scope:
+  `<service>/<module>` + `(M03b Группа N)`).
+- Не звать `gsd-*` агентов. `Explore` для «найти все X», `bug-hunter` +
+  `security-auditor` — в Группе 11 (финальный аудит перед тегом).
+- Surprise / отклонение от плана → NOTES.md + спросить владельца.
+- Micro-решение → DECISIONS.md.
+- Закрыл пункт CHECKLIST → `[x]` через Edit (не write-rewrite).
 
-**После Группы 12 остаются (не забыть):**
-- Группа 13: Contract-тест Gateway↔downstream (IT E2E через WireMock).
-- Группа 14: Strict mode toggle (legacy-headers-enabled=false в prod
-  default — отдельный commit + UAT checklist).
-- Группа 15: Документация (`docs/internal-jwt-spec.md` NEW-3,
-  `docs/api-rate-limits.md` NEW-11, architecture.md раздел, CHANGELOG).
-- Группа 16: Финал (acceptance criteria, bug-hunter, security-auditor,
-  post-mortem, `git tag v0.0.0-alpha.3`).
+**После Группы 13 (финал M03b):**
+- Acceptance criteria проверяются все сразу.
+- Post-mortem в PLAN.md.
+- Статус в `docs/milestones/README.md` → ✅.
+- `git tag v0.0.0-alpha.4` на финальном коммите (БЕЗ push — жду go).
+- Следующий milestone по dependency graph — M07 (Frontend Hardening)
+  либо M04 Observability (parallel-safe).
 
-**Последние коммиты (git log --oneline -10):**
-- `18d50f3` feat(downstream): schedule+attendance+notification (Groups 6-8)
-- `f5f8adc` feat(academic): dual-mode + RestClient fix (Group 5)
-- `23e33b0` feat(gateway): Internal JWT issuer client (Group 4)
-- `da41c39` feat(auth): token exchange endpoint (Group 3)
-- `ca62e8e` feat(shared-security): Internal JWT validator (Group 2)
-- `e5b2e0c` docs(m03a): close Group 1 (header name)
-- `ebc35ad` docs(m03a): token exchange rework
-- `0311297` docs(milestones): scaffold M03a
+**Последние коммиты M03a (git log --oneline -10):**
+- `a6d491a` chore(m03a): close Internal JWT + rate-limit milestone (Группа 16)
+- `35640b2` fix(security): audit blockers C1/C2/H3 перед v0.0.0-alpha.3 (Группа 16)
+- `50123ff` docs(m03a): Internal JWT spec + rate-limits + architecture + CHANGELOG (Группа 15)
+- `4a13b90` feat(gateway): strip-legacy-headers toggle + UAT checklist (Группа 14)
+- `dd96917` test(gateway): contract-тест Gateway↔downstream Internal JWT pipeline (Группа 13)
+- `8a320d1` test(gateway): rate-limit Testcontainers IT + 3 фикса (Группа 12)
+- `315a662` feat(auth): LoginRateLimiter composite (ip, login) (Группа 11)
+- `025a266` feat(gateway): rate-limit routes + RFC 7807 Problem Details (Группа 10)
+- `b38d263` feat(gateway): rate-limit infra (Группа 9)
+- `4a13b90` (см. выше, одна из последних)
+
+**Source of truth для M03b:**
+- `docs/milestones/M03b-jwt-cookie-ws-ticket/PLAN.md` — scope + acceptance criteria
+- `docs/milestones/M03b-jwt-cookie-ws-ticket/CHECKLIST.md` — 13 групп
+- `docs/milestones/M03b-jwt-cookie-ws-ticket/NOTES.md` — пустой (+ backlog KI-3/6/7/8)
+- `docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md` — 5 `ОТКРЫТО` развилок + 0 принятых
+- `docs/report-before-v0.0.0/99-executive-summary.md` секция «C0-7»
+- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` → `02-Q-frontend-security` (Часть А + Часть Б)
+- `docs/milestones/M03a-internal-jwt-ratelimit/PLAN.md` Post-mortem → Known Issues KI-1..KI-9

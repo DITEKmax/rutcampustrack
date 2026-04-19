@@ -9,6 +9,9 @@ include("services:shared:shared-test-containers")
 // === M02 shared modules ===
 include("services:shared:shared-outbox")
 
+// === M03a shared modules ===
+include("services:shared:shared-security")
+
 // === API Contracts (чистые модули без Spring Boot) ===
 include("services:academic-service:academic-api-contract")
 include("services:schedule-service:schedule-api-contract")

@@ -14,15 +14,15 @@
 
 ## Группа 2 — shared-security scaffold (validator side)
 
-- [ ] `services/shared/shared-security/build.gradle.kts` + `settings.gradle.kts` include — java-library + testFixtures plugin
-- [ ] `InternalJwtProperties` (`@ConfigurationProperties("rutcampustrack.security.internal-jwt")`) — authServiceUrl, publicKeyRefreshMinutes (default 60), clockSkewSeconds (default 30), legacyHeadersEnabled (default true)
-- [ ] `PublicKeyProvider` — WebClient-based puller из `/auth/public-key` (паттерн скопировать из `api-gateway/PublicKeyConfig`), `@Scheduled` refresh + `AtomicReference<PublicKey>`, `@SchedulerLock` не нужен (per-instance cache)
-- [ ] `InternalJwtValidator` — парсит `Authorization: Internal <jwt>`, валидирует подпись + audience (`rutcampustrack-internal`) + issuer (`rutcampustrack-auth`) + expiration через jjwt
-- [ ] `InternalJwtFilter extends OncePerRequestFilter` — ставит `Authentication` с `userId/role/groupId/isHeadman` claims
-- [ ] `DualModeUserContextFilter` — Internal JWT есть → использует (приоритет); иначе legacy `X-User-*` если `legacyHeadersEnabled=true`; иначе 401
-- [ ] `InternalJwtAutoConfiguration` + `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
-- [ ] Unit-тесты: valid token passes, expired token fails, wrong signature fails, wrong audience fails, missing claims fails
-- [ ] `src/testFixtures/` — helper `InternalJwtTestFactory.validToken(userId, role, ...)` + `.expiredToken()` + `.invalidSignature()` используя RSA keypair in-memory
+- [x] `services/shared/shared-security/build.gradle.kts` + `settings.gradle.kts` include — java-library + testFixtures plugin
+- [x] `InternalJwtProperties` (record с `@ConfigurationProperties("rutcampustrack.security.internal-jwt")`) — authServiceUrl, publicKeyRefreshMinutes (default 60), clockSkewSeconds (default 30), legacyHeadersEnabled, expectedIssuer/Audience, headerName (default `X-Internal-Token`)
+- [x] `PublicKeyProvider` — WebClient-based puller из `/auth/public-key` (паттерн скопирован из `api-gateway/PublicKeyConfig`), `@Scheduled` refresh + `AtomicReference<PublicKey>`, `@SuppressWarnings("SingleInstance")` — per-instance cache
+- [x] `InternalJwtValidator` — парсит `X-Internal-Token`, валидирует подпись + audience + issuer + expiration + clockSkew через jjwt. Возвращает `InternalJwtClaims` record (userId/role/groupId/isHeadman) или бросает `InternalJwtException`
+- [x] `DualModeUserContextFilter` (abstract) — Internal JWT priority, fallback legacy X-User-* если `legacyHeadersEnabled=true`, иначе 401. Hooks `applyInternalJwt(claims)` + `applyLegacyHeaders(request)` для сервис-специфичного `RequestContext`
+- [x] `InternalJwtException` — runtime exception для 401 mapping
+- [x] `src/testFixtures/InternalJwtTestFactory` — in-memory RSA keypair, методы validToken / expiredToken / invalidSignature / wrongIssuer / wrongAudience / missingRole
+- [x] Unit-тесты: 18 зелёных (9 Validator + 7 DualModeFilter + 2 Properties). Покрывают: valid/expired/invalid-signature/wrong-iss/wrong-aud/missing-role tokens; dual-mode precedence, legacy fallback, strict 401, no-headers passthrough
+- [x] ~~`InternalJwtAutoConfiguration` + `AutoConfiguration.imports`~~ — не нужен: паттерн M01 без autoconfig, сервис-потребитель регистрирует бины через `@ComponentScan` / явные `@Bean`
 
 ## Группа 3 — Auth-service token exchange endpoint
 

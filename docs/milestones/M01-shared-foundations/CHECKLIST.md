@@ -24,10 +24,10 @@
 
 ## Группа 3 — shared-web (validation)
 
-- [ ] `@StartBeforeEnd(start, end)` + `StartBeforeEndValidator` (BeanWrapper)
-- [ ] `@DateRangeValid(from, to)` + `DateRangeValidator`
-- [ ] `@ValidFile(maxSizeBytes, allowedMediaTypes)` + `ValidFileValidator` (MultipartFile)
-- [ ] Параметризованные unit-тесты (valid/invalid cases)
+- [x] `@StartBeforeEnd(start, end)` + `StartBeforeEndValidator` (BeanWrapper, LocalDate/LocalDateTime/Instant/OffsetDateTime/ZonedDateTime)
+- [x] `@DateRangeValid(from, to)` + `DateRangeValidator` (inclusive: `from == to` валидно)
+- [x] `@ValidFile(maxSizeBytes=10MiB default, allowedMediaTypes)` + `ValidFileValidator` (MultipartFile, custom message per reason)
+- [x] Параметризованные unit-тесты (19 кейсов по 3 валидаторам, 0 failures)
 
 ## Группа 4 — shared-web (config beans)
 

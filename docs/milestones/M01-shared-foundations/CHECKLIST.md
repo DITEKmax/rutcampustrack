@@ -11,16 +11,16 @@
 - [x] Создать `services/shared/shared-test-containers/build.gradle.kts` (`java-test-fixtures` plugin, testFixturesApi; testcontainers-bom + grpc + wiremock через catalog)
 - [x] Создать `gradle/libs.versions.toml` (version catalog — см. DECISIONS.md)
 - [x] Добавить 4 модуля в `settings.gradle.kts`
-- [ ] `./gradlew :services:shared:shared-web:build` зелёный — отложено до Группы 2+ (избегаем пустого compile)
+- [x] `./gradlew :services:shared:shared-web:test` зелёный (12 тестов, 34s первый прогон)
 
 ## Группа 2 — shared-web (core)
 
-- [ ] `ErrorResponse` record (type, title, status, detail, instance, timestamp, traceId, invalidParams nullable)
-- [ ] `InvalidParam` record (name, reason)
-- [ ] `ErrorResponse.badRequest(...)`, `.notFound(...)`, `.internal(...)` factory methods
-- [ ] `GlobalExceptionHandler` — 9 handler'ов: MethodArgumentNotValidException, ConstraintViolationException, HttpMessageNotReadableException, HttpMediaTypeNotSupportedException, MissingServletRequestParameterException, MethodArgumentTypeMismatchException, HttpRequestMethodNotSupportedException, NoHandlerFoundException, AccessDeniedException
-- [ ] `GlobalExceptionHandler.handleGeneral(Exception)` — catch-all с `correlation=<traceId>` (MDC) + log.error
-- [ ] Unit-тесты handler'ов (mock HttpServletRequest, ServletWebRequest → expected ErrorResponse)
+- [x] `ErrorResponse` record (status, type, title, detail, instance, timestamp, traceId, invalidParams, field, extras) — 9 полей, см. DECISIONS.md (Вариант B)
+- [x] `InvalidParam` record (name, reason, rejectedValue) — 3 поля, см. DECISIONS.md
+- [x] `ErrorResponse.badRequest(...)`, `.notFound(...)`, `.internal(...)` factory methods
+- [x] `GlobalExceptionHandler` — 9 handler'ов: MethodArgumentNotValidException, ConstraintViolationException, HttpMessageNotReadableException, HttpMediaTypeNotSupportedException, MissingServletRequestParameterException, MethodArgumentTypeMismatchException, HttpRequestMethodNotSupportedException, NoHandlerFoundException, AccessDeniedException
+- [x] `GlobalExceptionHandler.handleGeneral(Exception)` — catch-all с `correlation=<traceId>` (MDC) + log.error, не утечка message в response
+- [x] Unit-тесты handler'ов (12 кейсов, 0 failures)
 
 ## Группа 3 — shared-web (validation)
 

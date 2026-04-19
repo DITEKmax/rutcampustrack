@@ -41,6 +41,27 @@ _(Будет заполняться по ходу milestone'а.)_
 **Причина:** буквальная трактовка NEW-34 («никакой магии, подключение как обычная библиотека»). Все 5 сервисов-потребителей уже имеют spring-boot-starter-web или transitively-webmvc.
 **Последствия:** сервис БЕЗ spring-boot-starter-web не сможет использовать shared-web (ожидаемо — он там просто не нужен).
 
+## 2026-04-19 — ErrorResponse: 9 полей, канонически от academic + traceId
+
+**Выбрано:** shared-web `ErrorResponse` = record с 9 полями: `status, type, title, detail, instance, timestamp, traceId, invalidParams[], field, extras`. Поле validation-списка переименовано `fieldErrors` → `invalidParams[]` (RFC 9457). Добавлен top-level `traceId` (P2-3/1).
+**Отвергнуто:** (A) буквально PLAN.md (без field/extras) — потеряли бы BUG-006-2 field-тэгирование и каскадный extras; (C) оставить `fieldErrors` — non-standard имя; (D) драфтовать постепенно — долго живущий drift между API.
+**Причина:** максимальная RFC 9457 совместимость + сохранение всех существующих фич academic. Миграция фронтов = один rename `fieldErrors`→`invalidParams` (web-panel + pwa).
+**Последствия:** при миграции сервисов (M04+) фронты получат breaking rename. В M01 — only notification-service использует shared ErrorResponse сразу.
+
+## 2026-04-19 — InvalidParam: 3 поля вместо 2
+
+**Выбрано:** `InvalidParam(name, reason, rejectedValue)` — 3 поля. `rejectedValue` опционально (`@JsonInclude(NON_NULL)`).
+**Отвергнуто:** PLAN.md буквально — `(name, reason)` только 2 поля.
+**Причина:** zero-cost расширение, сохраняет текущий FieldError.rejectedValue — полезно для debug-логов и подсветки значения на фронте.
+**Последствия:** PLAN.md отклонён на 1 поле — зафиксировано в NOTES.md.
+
+## 2026-04-19 — GlobalExceptionHandler: только 9 стандартных + catch-all
+
+**Выбрано:** shared-web `GlobalExceptionHandler` содержит ТОЛЬКО 9 стандартных Spring MVC handlers (MethodArgumentNotValidException, ConstraintViolationException, HttpMessageNotReadableException, HttpMediaTypeNotSupportedException, MissingServletRequestParameterException, MethodArgumentTypeMismatchException, HttpRequestMethodNotSupportedException, NoHandlerFoundException, AccessDeniedException) + `handleGeneral(Exception)`.
+**Отвергнуто:** включать доменные handler'ы (ResourceNotFoundException, ConflictException, DataIntegrityViolationException, …) — они специфичны для academic.
+**Причина:** NEW-34 «shared-web — без сервис-специфики». Доменные handler'ы остаются в `@RestControllerAdvice` каждого сервиса и просто переиспользуют shared `ErrorResponse` record.
+**Последствия:** сервис, подключающий shared-web, получает 10 handlers «бесплатно». Свои доменные — дополняет локально. Academic продолжает иметь свой `@RestControllerAdvice(order=0)` выше по приоритету.
+
 ---
 
 _Формат записи:_

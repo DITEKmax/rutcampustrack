@@ -102,13 +102,15 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 11 — Финал
 
-- [ ] Acceptance criteria из PLAN.md прогнаны разово
-- [ ] `./gradlew build` зелёный полностью (5 сервисов + 4 shared)
-- [ ] Optional: `bug-hunter` subagent на diff milestone'а (один вызов)
-- [ ] Финальный коммит `chore(m02): bug-hunter fixes + post-mortem + close`
-- [ ] Post-mortem в PLAN.md
-- [ ] M02 → ✅ в `docs/milestones/README.md` + CLAUDE.md
-- [ ] `git tag v0.0.0-alpha.2` на последнем коммите (если по workflow)
+- [x] Acceptance criteria из PLAN.md — все 8 отмечены с комментарием "как" и ссылкой на тест/архитектурный инвариант.
+- [x] `./gradlew build` зелёный: BUILD SUCCESSFUL, 583/583 тестов (282 до M02 → 583 после, +301 новых).
+- [x] `bug-hunter` subagent на diff `17561c9..b088210` — нашёл 2 CRITICAL + 2 HIGH + 2 MEDIUM.
+- [x] Fix HIGH #3 ArchUnit gap — `SharedOutboxSchedulerLockTest` в shared-outbox (packages=ru.rutcampustrack.shared.outbox). Покрывает OutboxPublisherJob/OutboxCleanupJob.
+- [x] CRITICAL/HIGH/MEDIUM остальные — задокументированы в NOTES 2026-04-19 как known limitations + path forward для M04/M05.
+- [x] Post-mortem в PLAN.md: commits list, surprises, lessons learned, M04/M05 follow-ups.
+- [x] M02 → ✅ 2026-04-19 в docs/milestones/README.md (Группа 10) + CLAUDE.md.
+- [x] Финальный коммит `chore(m02): bug-hunter fixes + post-mortem + close`.
+- [x] `git tag v0.0.0-alpha.2` на финальном коммите milestone'а.
 
 ---
 

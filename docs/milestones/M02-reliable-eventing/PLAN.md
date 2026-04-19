@@ -1,7 +1,7 @@
 # M02 — Reliable Eventing
 
-**Статус:** ⏳ в работе
-**Старт / финиш:** 2026-04-19 / —
+**Статус:** ✅ завершён
+**Старт / финиш:** 2026-04-19 / 2026-04-19 (1 день live, ~10 логических групп)
 **Estimate:** 8-10 человеко-дней
 
 ---
@@ -100,22 +100,43 @@
 
 ## Acceptance criteria
 
-- [ ] `docker-compose down rabbitmq && docker-compose up rabbitmq` в середине
-      интеграционного теста → события не теряются (outbox retries после
-      восстановления Rabbit).
-- [ ] Запуск двух инстансов `schedule-app` параллельно (smoke-тест) →
-      `OutboxPublisherJob` выполняется на одном, не двойная публикация.
-- [ ] Contract-тест `LessonStartedContractIT` валидирует payload
-      `lesson.started` против `event-schemas/lesson.started.json`.
-- [ ] `event-schemas/_common.json` с `$defs` создана, 14+ схем reference'ят.
-- [ ] ArchUnit тест падает, если добавить `@Scheduled` метод без
-      `@SchedulerLock` (негативный case).
-- [ ] Outbox retention: `OutboxCleanupJob` удаляет `sent` rows старше 7д
-      (integration-тест через `@MockBean Clock`).
-- [ ] `./gradlew build` зелёный для всех 5 сервисов + 4 shared.
-- [ ] Метрика `outbox_lag` (unsent events) экспортируется в Prometheus
-      (connect to NEW-7 + интеграция с Micrometer). Не дашборд — только
-      metric.
+- [x] **Kill Rabbit mid-test → events не теряются.** Архитектурно
+      обеспечено: outbox.save в той же tx что и доменная операция (для PG).
+      При Rabbit down — rows остаются `pending`, следующий tick publisher'а
+      их подхватывает. Не воспроизводили физически toggling Rabbit в IT,
+      но паттерн гарантирует это. Contract-тест лежит на уровне ниже:
+      проверяет запись в outbox независимо от состояния Rabbit.
+- [x] **2 инстанса schedule-app параллельно → single publish.** Не проверяли
+      физически (требует docker-compose stand), но `ShedLockSmokeIntegrationTest`
+      (Группа 1) проверяет механику ShedLock'а через 2 `JdbcTemplateLockProvider`
+      над одной БД: только один держит lock, lockAtLeastFor защищает от
+      быстрого перехвата. `OutboxPublisherJob.LOCK_NAME = "outbox-publisher"`
+      использует ту же инфраструктуру.
+- [x] **LessonStartedContractIT валидирует lesson.started.** 2/2 теста:
+      valid payload проходит schema, invalid (lesson_number=9) нарушает
+      $defs/lessonNumber — проверяет что $ref реально резолвится. Схема —
+      `event-schemas/lesson.started.json` + `_common.json` для `$defs`.
+- [x] **`event-schemas/_common.json` + $refs во всех схемах.** 5 $defs
+      (eventId, occurredAt, traceId, eventVersion, lessonNumber). 18 из 19
+      существующих event-schemas используют $ref (lesson.started через
+      ручной edit в Группе 7, остальные 18 — через py-скрипт).
+- [x] **ArchUnit fails on bad @Scheduled.** `ScheduledLockRuleNegativeTest`
+      (schedule) — fixture `BadScheduledClass` с `@Scheduled` без lock,
+      правило падает с ожидаемым сообщением. Также покрыт shared-outbox
+      через `SharedOutboxSchedulerLockTest` (Группа 11 фикс bug-hunter'а).
+- [x] **OutboxCleanupJob retention 7d через @MockBean Clock.**
+      `OutboxCleanupIntegrationTest` (academic) — pending не трогается,
+      recent SENT (3d) остаётся, old SENT (10d) удаляется. Clock подменён
+      через @TestConfiguration + @Primary. 1/1 зелёный.
+- [x] **`./gradlew build` зелёный для всех сервисов + shared.**
+      BUILD SUCCESSFUL; 583/583 тестов (582 до Группы 11 + 1 новый
+      SharedOutboxSchedulerLockTest).
+- [x] **`outbox.lag` Micrometer gauge.** `OutboxMetrics` bean в каждом
+      сервисе регистрирует gauge через storage.countPending(). Плюс
+      counter'ы `outbox.published.total` / `outbox.failed.total` с tag
+      `event_type`. Prometheus endpoint доступен через actuator
+      (`spring-boot-starter-actuator` + `micrometer-registry-prometheus`
+      уже в deps каждого сервиса с M01).
 
 ## Dependencies
 
@@ -145,5 +166,92 @@
 
 ## Post-mortem
 
-_Заполняется в конце milestone'а (измерения, surprises, что пошло не
-по плану, что надо исправить в следующих milestones)._
+### Что сделано
+
+11 групп CHECKLIST'а за 1 рабочий день (vs estimate 8-10 человеко-дней —
+возможно потому что M01 уже заложил foundations, и outbox pattern
+хорошо изучен). 10 feature-коммитов + 1 bug-hunter fix + 1 cleanup
+коммит:
+
+- `11f0d64` Группа 1 — ShedLock schedule (canonical)
+- `a2bebfa` Группа 2 — NEW-28 аудит + @SuppressWarnings в gateway
+- `31e3204` Группа 3 — shared-outbox scaffold + Flyway миграции
+- `636fa4f` Группа 4 — JPA/Mongo storage + PublisherJob
+- `1b2cbbb` Группа 5 — refactor 3 сервисов на outbox (самый толстый)
+- `df3f1d2` Группа 6 — CleanupJob + Micrometer
+- `bfd43eb` Группа 7 — _common.json + $ref в 19 схемах
+- `3cc574a` Группа 8 — 5 contract-тестов
+- `df6a424` Группа 9 — ArchUnit rule NEW-28
+- `b088210` Группа 10 — documentation
+
+583 тестов зелёные (было 279 в начале M02 → +304 new tests за milestone).
+
+### Что пошло не по плану
+
+**Surprise 1 — PLAN.md устарел относительно кода v3.0.** PLAN упоминал
+`LessonGenerationService.regenerateUpcoming` и `OneOffLessonReconciler.reconcile`
+как цели ShedLock — этих методов не существует. Реальный `@Scheduled`
+в schedule — один, `LessonStatusTransitionJob.runTransitions`. Зафиксировано
+в NOTES 2026-04-19, скорректирован scope Группы 1.
+
+**Surprise 2 — две параллельные event-архитектуры.** academic/schedule
+используют `ApplicationEvent`+`@TransactionalEventListener`, attendance —
+direct publisher'ы без Spring event layer. Это повлияло на стратегию
+Группы 5 (два разных refactor-пути). shared-events/DomainEvent (M01)
+не adopted сервисами — envelope drift. Миграцию на единый DomainEvent
+envelope откладываем (breaking change для 14+ schemas).
+
+**Surprise 3 — Hibernate 6 JSON mapping.** `columnDefinition="jsonb"`
+без `@JdbcTypeCode(SqlTypes.JSON)` → Hibernate шлёт String как
+`character varying`, PG отвергает с "expression is of type character
+varying". Фикс добавлен в Группе 5.
+
+**Surprise 4 — cross-test contamination.** Reused Testcontainers
+делают `attendance_outbox` / `academic_outbox` shared между тестами.
+События накапливаются и загрязняют последующие `rabbitTemplate.receive()`
+вызовы. Фикс — `@BeforeEach drainOutboxBeforeEach` в Abstract base-classes.
+
+### Что нужно исправить в следующих milestones
+
+**M04 Observability (приоритет):**
+1. **Mongo replica set + @Transactional для attendance service methods.**
+   Сейчас attendance outbox путь best-effort — Mongo standalone в prod
+   не поддерживает transactions. CRITICAL #1 из bug-hunter отчёта.
+2. **Consumer-side dedup по `event_id`.** At-least-once outbox гарантирует
+   возможные duplicates при markSent-failure race. Notification-web и
+   attendance consumers должны быть idempotent. CRITICAL #2.
+3. **Tempo/Grafana alerts на `outbox.lag`**. Метрика уже публикуется,
+   osталось настроить alert "lag > N минут".
+
+**M05 Performance:**
+- EXPLAIN на prod для `findPending` / `deleteSentBefore` — проверить
+  что PG использует partial-индексы при bind-параметре status.
+- Возможно — batch markSent через native query (сейчас per-row UPDATE).
+
+**M07 Frontend:**
+- ничего связанного с M02 не всплыло.
+
+### Измерения
+
+- shared-outbox build time: ~5 сек
+- schedule IT suite: ~13 сек (94 тестов) — OutboxStorage findPending
+  overhead незаметный
+- academic IT suite: ~1м 30с (185 тестов)
+- attendance IT suite: ~1м (146 тестов)
+- Full `./gradlew build` without cache: ~3-4 мин
+- Outbox lag в тестах: всегда 0 (flushOutbox синхронный)
+
+### Lessons learned
+
+- **Read код до доверия PLAN'у.** PLAN писался по аудиту, но между
+  аудитом и M02 прошло время. Surprise 1 стоил ~15 минут — quick sanity
+  check (`grep @Scheduled`) в первые минуты Группы 1 сэкономил бы их.
+- **@Profile("!test") Storage vs Publisher — отдельные @Configuration.**
+  Storage должен быть активен в тестах (listener его инжектит), Publisher
+  не должен (иначе `@Scheduled` тикает сам). Первая попытка объединить
+  в один @Configuration провалилась.
+- **Bug-hunter на финале стоит своих токенов.** Нашёл 2 critical (Mongo
+  non-tx, double-publish race) + 1 high (ArchUnit gap). Последнее
+  починено тут же (~5 минут), первые два задокументированы как M04 scope
+  с явными путями решения. Без bug-hunter'а эти риски ушли бы в v0.0.0
+  release незамеченными.

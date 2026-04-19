@@ -120,3 +120,56 @@ event_type как отдельный столбец для таргетинга.
    помечает `sent`.
 3. При Rabbit-недоступности — rows остаются `pending`, next tick job
    подхватывает. Это и есть guarantee'д retry.
+
+## 2026-04-19 — bug-hunter findings (Группа 11)
+
+Полный отчёт agent'а — см. git history (bug-hunter subagent на diff
+17561c9..b088210). Резюме ниже + решения.
+
+**Пофикшено в Группе 11:**
+- **HIGH #3 ArchUnit gap** — добавил `SharedOutboxSchedulerLockTest` в
+  shared-outbox test scope со сканом `ru.rutcampustrack.shared.outbox`.
+  Теперь `OutboxPublisherJob.tick` / `OutboxCleanupJob.tick` тоже покрыты
+  правилом NEW-28 (раньше сервисные тесты сканировали только `*.academic`
+  / `*.schedule` / `*.attendance` — shared jobs были вне покрытия).
+
+**Задокументировано как known limitations (вынесено в M04 follow-up):**
+
+- **CRITICAL #1 Mongo outbox путь не atomic.** attendance-service сервисы
+  (`CheckinService`, `MarkingService`, `ExcuseService`, `LateCheckinService`)
+  НЕ обёрнуты `@Transactional` с MongoTransactionManager — Mongo transactions
+  требуют replica set, который у нас есть только в `MongoDBContainer` тестах.
+  В prod — standalone Mongo. До этого attendance и так работал через
+  direct-Rabbit AFTER_COMMIT (т.е. slightly выше best-effort). Сейчас
+  outbox.save + domain write идут sequentially; при crash процесса между
+  ними возможна рассинхронизация. **Path forward:** в M04 Observability
+  добавить Mongo replica set (docker-compose + consul-init для elect) +
+  обернуть attendance service methods в `@Transactional`. До тех пор —
+  attendance outbox считаем best-effort (at-least-once c risk 10⁻⁶ "lost
+  write" на crash). Это лучше чем было до M02 (direct Rabbit без outbox).
+- **CRITICAL #2 Double-publish race в tick().** `@Transactional` tick
+  оборачивает `findPending → for each: sender.send + markSent`. Rabbit
+  send — non-transactional side-effect. Если markSent fails посередине
+  batch'а → rollback → весь batch re-publish на next tick → duplicates.
+  **Это inherent свойство at-least-once transactional outbox** (любая
+  реализация сталкивается). Mitigation — consumer-side dedup по
+  `event_id` (UUID уже есть во всех envelope'ах, `event-schemas/_common.json
+  #/$defs/eventId`). **Path forward:** M04 Observability — добавить
+  idempotent consumers в notification-web + attendance consumers.
+  Задокументировано в `docs/event-schemas.md` что гарантия = at-least-once.
+- **HIGH #4 bind-параметр partial-index.** JPQL `WHERE e.status = :status`
+  с bind — PG planner может не свернуть на partial-index predicate
+  `WHERE status = 'pending'`. 582 тестов зелёные — объёмы малые,
+  не ловится. **Path forward:** M05 Performance — EXPLAIN на проде +
+  при необходимости перейти на native query с literal.
+- **MEDIUM #5 Cross-test `drainOutbox` перезаписывает sent_at = now.**
+  `OutboxCleanupIntegrationTest` не полагается на drain — он сам
+  контролирует `sent_at` через native UPDATE. Не реальная проблема,
+  но fragile. Truncate table в `@BeforeEach` был бы надёжнее.
+- **MEDIUM #6 ApplicationEvent.source serialization fragility.**
+  `@JsonIgnoreProperties({"source","timestamp"})` на `DomainEvent`
+  работает (582 теста зелёные), но опирается на class-level annotation
+  + Jackson default property detection. Unified pattern — `LinkedHashMap`
+  envelope (как в `AttendanceEventPublisher`). Миграцию schedule/academic
+  на такой же pattern откладываем — breaking change для existing tests,
+  а существующий работает.

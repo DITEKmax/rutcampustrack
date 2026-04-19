@@ -52,5 +52,6 @@ dependencies {
     testImplementation("jakarta.persistence:jakarta.persistence-api")
     testImplementation("org.mongodb:bson")
     testImplementation(libs.json.schema.validator)
+    testImplementation(libs.archunit.junit5)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

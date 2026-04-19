@@ -52,12 +52,36 @@ public class InternalJwtIssuerClient {
                 .buildAsync();
     }
 
+    /**
+     * M03b Группа 9 (KI-3): защита от clock-drift edge-case.
+     * Токен считается «скоро истечёт» если до expiresAt < SKEW_THRESHOLD (5s).
+     * В таком случае invalidate ключ и перевыдать, чтобы downstream не получил
+     * токен с expiresAt в прошлом относительно своих часов.
+     */
+    private static final Duration CLOCK_SKEW_THRESHOLD = Duration.ofSeconds(5);
+
     public Mono<String> issueFor(long userId, String role, Long groupId, boolean isHeadman) {
         CacheKey key = new CacheKey(userId, role);
         return Mono.fromFuture(cache.get(key, (k, executor) ->
-                issueFromAuthService(userId, role, groupId, isHeadman)
-                        .toFuture()))
-                .map(IssuedToken::token);
+                        issueFromAuthService(userId, role, groupId, isHeadman)
+                                .toFuture()))
+                .flatMap(token -> {
+                    if (isAboutToExpire(token)) {
+                        log.debug("Cached internal JWT for userId={} near expiry ({}s skew threshold) — re-issuing",
+                                userId, CLOCK_SKEW_THRESHOLD.toSeconds());
+                        cache.synchronous().invalidate(key);
+                        return Mono.fromFuture(cache.get(key, (k, executor) ->
+                                        issueFromAuthService(userId, role, groupId, isHeadman)
+                                                .toFuture()))
+                                .map(IssuedToken::token);
+                    }
+                    return Mono.just(token.token());
+                });
+    }
+
+    private static boolean isAboutToExpire(IssuedToken token) {
+        return token.expiresAt() == null
+                || token.expiresAt().isBefore(Instant.now().plus(CLOCK_SKEW_THRESHOLD));
     }
 
     /**

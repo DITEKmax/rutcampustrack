@@ -92,11 +92,11 @@ class CompositeLoginKeyResolverIT {
 
         String loginName = "alice";
 
-        // 5 запросов с IP-A (IP-RL=5, упрётся в IP-RL на 6-м, но 5 пройдут composite)
+        // 5 запросов с IP-A (IP-RL=5, упрётся в IP-RL на 6-м, но 5 пройдут composite).
+        // X-Login НЕ шлём — LoginBodyExtractionFilter вытянет из body (KI-8).
         for (int i = 0; i < 5; i++) {
             client.post().uri("/api/auth/login")
                     .header("X-Forwarded-For", "10.1.1.1")
-                    .header("X-Login", loginName)
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue("{\"login\":\"" + loginName + "\",\"password\":\"x\"}")
                     .exchange()
@@ -107,11 +107,41 @@ class CompositeLoginKeyResolverIT {
         // Первый запрос с IP-B для того же login — должен пройти (composite bucket пустой)
         client.post().uri("/api/auth/login")
                 .header("X-Forwarded-For", "10.2.2.2")
-                .header("X-Login", loginName)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"login\":\"" + loginName + "\",\"password\":\"x\"}")
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);  // 401 от downstream, НЕ 429
+    }
+
+    @Test
+    @DisplayName("KI-8: composite isolates по login внутри одного IP (разные логины — разные buckets)")
+    void compositeIsolatesByLogin_sameIp_KI8() {
+        // NB: этот тест проверяет что LoginBodyExtractionFilter ставит X-Login
+        // и composite key-resolver использует разные buckets для разных login'ов.
+        // IP-RL=5 даёт окно для 5 попыток в sum. Поэтому делаем: alice×5 (упираются
+        // в IP-RL на 6-м), потом bob×1 с другого IP — проходит (composite bucket
+        // bob пустой). Это повторяет compositeKeyIsolatesByIp, но явно тестирует
+        // что body-extraction работает (нет X-Login в заголовках).
+        redis.keys("request_rate_limiter*").flatMap(redis::delete).blockLast();
+
+        // alice × 5 из IP-A
+        for (int i = 0; i < 5; i++) {
+            client.post().uri("/api/auth/login")
+                    .header("X-Forwarded-For", "10.5.5.5")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue("{\"login\":\"alice\",\"password\":\"x\"}")
+                    .exchange()
+                    .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
+        }
+
+        // bob × 1 из IP-B — composite bucket (10.6.6.6, bob) пустой, IP-RL (10.6.6.6)
+        // тоже пустой → 401, НЕ 429.
+        client.post().uri("/api/auth/login")
+                .header("X-Forwarded-For", "10.6.6.6")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"login\":\"bob\",\"password\":\"x\"}")
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -129,7 +159,6 @@ class CompositeLoginKeyResolverIT {
             String login = i < 6 ? "alice" : "bob";
             org.springframework.http.HttpStatusCode status = client.post().uri("/api/auth/login")
                     .header("X-Forwarded-For", ip)
-                    .header("X-Login", login)
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue("{\"login\":\"" + login + "\",\"password\":\"x\"}")
                     .exchange()

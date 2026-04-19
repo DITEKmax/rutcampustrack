@@ -146,17 +146,17 @@ CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWE
 
 ## Группа 9 — KI-3/6/8 hot-patches из M03a post-mortem
 
-- [ ] KI-3: `InternalJwtIssuerClient.issueFor` проверяет
-  `issuedToken.expiresAt().isBefore(Instant.now().plusSeconds(5))` → если
-  да, invalidate + retry loader (защита от clock drift edge case)
-- [ ] KI-6: `LoginRateLimiter.recordFailure` атомарно через Lua-script
-  `INCR + EXPIRE NX` или `SET ... EX 3600 NX` перед INCR (защита от
-  network blip = persistent key)
-- [ ] KI-8: Gateway `LoginBodyExtractionFilter` на `/api/auth/login` —
-  `CacheRequestBody` + парсит JSON body, ставит X-Login header в mutated
-  request (composite rate-limit теперь реально работает). IT тест
-  `CompositeLoginKeyResolverIT` обновить: проверить что IP-A+alice
-  5 раз → 6-й IP-A+bob проходит (разные login-buckets)
+- [x] KI-3: `InternalJwtIssuerClient.issueFor` проверяет
+  `issuedToken.expiresAt()` < now+5s → invalidate cache + retry loader.
+  Защита от clock drift. Новый тест `cachedToken_nearExpiry_triggersReIssue_KI3`.
+- [x] KI-6: `LoginRateLimiter.recordFailure` — atomic `INCR + EXPIRE` через
+  Lua-script (EXPIRE на первой попытке только). Убирает TTL-race =
+  persistent key без expiry. LoginRateLimiterIT остаётся зелёным.
+- [x] KI-8: Gateway `LoginBodyExtractionFilter` (GlobalFilter, order=-50) —
+  читает JSON body POST `/api/auth/login`, извлекает `login`, ставит
+  X-Login header в mutated request. `CompositeLoginKeyResolverIT`
+  обновлён: клиент не шлёт X-Login (он бы strip'ался), composite
+  rate-limit работает через body-extraction.
 
 ## Группа 10 — KI-7 bcrypt DoS mitigation
 

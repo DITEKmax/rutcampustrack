@@ -111,6 +111,39 @@ class InternalJwtIssuerClientTest {
     }
 
     @Test
+    void cachedToken_nearExpiry_triggersReIssue_KI3() {
+        // M03b Группа 9 (KI-3): токен с expiresAt через 3 секунды < порога 5s —
+        // issueFor детектит это СРАЗУ внутри первого вызова, инвалидирует
+        // ключ и перевыдаёт. В stub'е оба ответа near-expiry → поэтому
+        // каждый issueFor делает 2 сетевых вызова. Ожидаемое поведение:
+        // fail-safe retry при clock-drift edge case.
+        stubIssueWithExpiry("near-expiry-token", Instant.now().plusSeconds(3));
+
+        StepVerifier.create(client.issueFor(42L, "ADMIN", null, false))
+                .expectNext("near-expiry-token")
+                .verifyComplete();
+
+        // Первый issueFor: получил near-expiry → invalidate → retry → снова
+        // near-expiry (stub тот же). Итого 2 сетевых запроса за один issueFor.
+        server.verify(2, WireMock.postRequestedFor(urlEqualTo("/internal/issue-internal-jwt")));
+
+        // Теперь поменяем stub на healthy-token — повторный issueFor видит
+        // near-expiry в кэше, invalidate, сходит за свежим (+1 запрос).
+        // Свежий кэшируется нормально.
+        stubIssue("fresh-token", 10);
+        StepVerifier.create(client.issueFor(42L, "ADMIN", null, false))
+                .expectNext("fresh-token")
+                .verifyComplete();
+        server.verify(3, WireMock.postRequestedFor(urlEqualTo("/internal/issue-internal-jwt")));
+
+        // Следующий issueFor — cache hit, без сетевого вызова.
+        StepVerifier.create(client.issueFor(42L, "ADMIN", null, false))
+                .expectNext("fresh-token")
+                .verifyComplete();
+        server.verify(3, WireMock.postRequestedFor(urlEqualTo("/internal/issue-internal-jwt")));
+    }
+
+    @Test
     void invalidateAll_forcesRefetch() {
         stubIssue("token-inv", 10);
 
@@ -122,8 +155,12 @@ class InternalJwtIssuerClientTest {
     }
 
     private void stubIssue(String token, int ttlMinutes) {
+        stubIssueWithExpiry(token, Instant.now().plusSeconds(ttlMinutes * 60L));
+    }
+
+    private void stubIssueWithExpiry(String token, Instant expiresAt) {
         String body = "{\"token\":\"" + token + "\","
-                + "\"expiresAt\":\"" + Instant.now().plusSeconds(ttlMinutes * 60L) + "\"}";
+                + "\"expiresAt\":\"" + expiresAt + "\"}";
         server.stubFor(post(urlEqualTo("/internal/issue-internal-jwt"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)

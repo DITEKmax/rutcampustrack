@@ -46,16 +46,7 @@ public class RateLimitProblemDetailsFilter implements GlobalFilter, Ordered {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                 if (HttpStatus.TOO_MANY_REQUESTS.equals(getStatusCode())) {
-                    HttpHeaders headers = getHeaders();
-                    headers.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
-                    if (!headers.containsKey(HttpHeaders.RETRY_AFTER)) {
-                        headers.set(HttpHeaders.RETRY_AFTER, "60");
-                    }
-                    byte[] payload = BODY_TEMPLATE.getBytes(StandardCharsets.UTF_8);
-                    headers.setContentLength(payload.length);
-                    DataBuffer buffer = bufferFactory().wrap(payload);
-                    // swallow original empty body from RequestRateLimiter
-                    return Flux.from(body).ignoreElements().then(super.writeWith(Mono.just(buffer)));
+                    return writeProblemDetailsBody();
                 }
                 return super.writeWith(body);
             }
@@ -63,6 +54,28 @@ public class RateLimitProblemDetailsFilter implements GlobalFilter, Ordered {
             @Override
             public Mono<Void> writeAndFlushWith(Publisher<? extends Publisher<? extends DataBuffer>> body) {
                 return writeWith(Flux.from(body).flatMap(p -> p));
+            }
+
+            @Override
+            public Mono<Void> setComplete() {
+                // RequestRateLimiterGatewayFilterFactory при denied вызывает setComplete()
+                // без writeWith — пишем Problem Details здесь вместо пустого ответа.
+                if (HttpStatus.TOO_MANY_REQUESTS.equals(getStatusCode())) {
+                    return writeProblemDetailsBody();
+                }
+                return super.setComplete();
+            }
+
+            private Mono<Void> writeProblemDetailsBody() {
+                HttpHeaders headers = getHeaders();
+                headers.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+                if (!headers.containsKey(HttpHeaders.RETRY_AFTER)) {
+                    headers.set(HttpHeaders.RETRY_AFTER, "60");
+                }
+                byte[] payload = BODY_TEMPLATE.getBytes(StandardCharsets.UTF_8);
+                headers.setContentLength(payload.length);
+                DataBuffer buffer = bufferFactory().wrap(payload);
+                return super.writeWith(Mono.just(buffer));
             }
         };
 

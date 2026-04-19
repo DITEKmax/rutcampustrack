@@ -194,3 +194,49 @@ brute через много IP останавливается раньше — G
 `login_attempts:unknown:<login>` — это хуже чем composite, но всё же не хуже
 оригинального «по login только». В prod такого не случается (Gateway ставит
 XFF всегда).
+
+## 2026-04-19 — Группа 12: Testcontainers IT + 3 бага обнаружено
+
+**БАГ 1 (context startup): `NoUniqueBeanDefinitionException: KeyResolver`.**
+`RequestRateLimiterGatewayFilterFactory` при старте Spring Context'а injects
+default `KeyResolver`. С 4 бинами (ip/user/login/ipLogin) autowire падает.
+Фикс — `@Primary` на `ipKeyResolver`. Это влияло и на prod-боот, не только
+тесты (обнаружилось только после @SpringBootTest — раньше Gateway никто
+реальным application-контекстом не поднимал).
+
+**БАГ 2 (context startup): `NoSuchMethodException <init>()` для
+`InternalJwtIssuerClient`.** Класс имеет 2 конструктора: public
+`(properties)` и package-private `(properties, webClient)`. Без `@Autowired`
+Spring считает их одинаково приоритетными → падает. Фикс: `@Autowired` на
+primary конструктор. Тоже не работало и в prod — но context'ы с
+`InternalJwtIssuerClient` раньше не поднимались (unit-тесты = manual new).
+
+**БАГ 3 (Problem Details body пустое):** `RequestRateLimiterGatewayFilterFactory`
+при denied вызывает `response.setComplete()`, **не** `writeWith()`. Поэтому
+`RateLimitProblemDetailsFilter` на overridden `writeWith` никогда не
+срабатывал. Фикс: decorator также override'ит `setComplete()` — при
+status=429 пишет Problem Details body вместо пустого setComplete.
+
+**SURPRISE `replenishRate` семантика:** в Spring Cloud Gateway
+`redis-rate-limiter.replenishRate` — это **tokens per second**, НЕ per minute.
+PLAN/CHECKLIST писали «5 req/min per IP» но `replenishRate=5` = 5 в секунду
+(300 в минуту). `burstCapacity=5` — allowed burst перед rate-limiting.
+Фактическая текущая семантика во всех route'ах: `burst=N` моментально,
+затем steady ~N/sec restore. Это даёт DDoS-guard, но не соответствует тексту
+«5/min». Документация в Группе 15 (api-rate-limits.md) должна описать точную
+семантику как «allowed burst N + restore N/sec». Для точного «X/min» нужно
+`replenishRate=1`+`requestedTokens=60/X` (следующий milestone/fix).
+
+**Route URI placeholders:** application.yml все URI routes переведены на
+`${AUTH_SERVICE_URL:http://auth-service:9090}` / `${ACADEMIC_SERVICE_URL:...}`
+/ т.д. Это позволяет IT-тестам через `@DynamicPropertySource` указать
+WireMock. В prod дефолты работают без env vars. docker-compose.prod.yml
+ничего не меняется.
+
+**Результат Group 12:** Gateway build зелёный — 58 тестов
+(было 52, +6: 2 RateLimitIT + 1 FailOpenIT + 2 CompositeLoginKeyResolverIT
++ 1 unit test для setComplete в RateLimitProblemDetailsFilter).
+Acceptance criteria «11 запросов → 429» реализован как «6 запросов → 429»
+(burst=5 по `replenishRate` semantics). Real DDoS тест (burst исчерпание
+под реальной нагрузкой) — responsibility следующего milestone'а (M04 +
+Grafana alerts).

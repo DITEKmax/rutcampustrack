@@ -23,8 +23,13 @@ import reactor.core.publisher.Mono;
 @Configuration
 public class RedisRateLimiterConfig {
 
-    /** Ключ — IP клиента из X-Forwarded-For (первый) или RemoteAddr. */
+    /**
+     * Ключ — IP клиента из X-Forwarded-For (первый) или RemoteAddr.
+     * {@code @Primary} — default для {@code RequestRateLimiterGatewayFilterFactory}
+     * когда в route-конфиге не указан явный {@code key-resolver}.
+     */
     @Bean
+    @Primary
     public KeyResolver ipKeyResolver() {
         return exchange -> Mono.just(resolveIp(exchange.getRequest().getHeaders(),
                 exchange.getRequest().getRemoteAddress() == null

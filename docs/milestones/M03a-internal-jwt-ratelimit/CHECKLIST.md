@@ -131,12 +131,10 @@
 
 ## Группа 12 — Rate-limit тесты (14 P1-2)
 
-- [ ] `services/api-gateway/src/test/.../RateLimitIT.java` — Testcontainers Redis:
-  - 11 запросов на `/otp/verify-by-code` за минуту → 11-й 429
-  - `Retry-After` header присутствует
-  - Problem Details body
-- [ ] `RateLimitFailOpenIT` — Redis недоступен (`container.stop()` или wrong port) → запрос проходит, WARN в логах
-- [ ] `CompositeLoginKeyResolverIT` — разные IP одного login'а считаются раздельно
+- [x] `RateLimitIT` (2 теста) Testcontainers Redis + WireMock: 5 req/burst `/otp/verify-by-code` → 6-й 429 + Retry-After + Problem Details body; разные IP имеют отдельные корзины (IP-A исчерпан, IP-B первый запрос проходит)
+- [x] `FailOpenIT` (1 тест) Redis указан на connection-refused порт — 10 запросов все проходят (X-RateLimit-FailOpen ставится на RateLimiter.Response, но до клиента может быть затёрт downstream'ом — проверяется FailOpenRateLimiterTest unit)
+- [x] `CompositeLoginKeyResolverIT` (2 теста): composite (ip, login) изолирует корзины по IP; IP-RL burst применяется ко всем login'ам с одного IP
+- [x] Фиксы для стабилизации IT: `@Primary` на `ipKeyResolver` (RequestRateLimiterGatewayFilterFactory требует уникальный bean), `@Autowired` на primary-конструктор `InternalJwtIssuerClient`, route URIs в `application.yml` переведены на `${*_SERVICE_URL:...}` placeholders для WireMock override, `RateLimitProblemDetailsFilter` перехватывает `setComplete()` (RequestRateLimiter никогда не вызывает writeWith на denied path)
 
 ## Группа 13 — Contract-тест Gateway↔downstream (14 P1-1)
 

@@ -28,6 +28,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.wiremock:wiremock-standalone:3.9.1")
+    // M03a Group 12: real Redis для RateLimitIT / FailOpenIT
+    testImplementation("org.testcontainers:testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -36,5 +39,6 @@ extra["springCloudVersion"] = "2024.0.0"
 dependencyManagement {
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+        mavenBom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainersBom.get()}")
     }
 }

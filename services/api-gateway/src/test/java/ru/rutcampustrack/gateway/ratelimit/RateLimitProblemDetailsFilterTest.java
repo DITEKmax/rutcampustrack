@@ -95,6 +95,28 @@ class RateLimitProblemDetailsFilterTest {
     }
 
     @Test
+    @DisplayName("Status 429 через setComplete() (RequestRateLimiter path) → Problem Details body")
+    void status429_viaSetComplete_writesBody() {
+        MockServerHttpRequest req = MockServerHttpRequest.get("/api/auth/login").build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(req);
+
+        GatewayFilterChain chain = decoratedExchange -> {
+            decoratedExchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+            // simulate RequestRateLimiter: just setComplete, no writeWith
+            return decoratedExchange.getResponse().setComplete();
+        };
+
+        filter.filter(exchange, chain).block();
+
+        MockServerHttpResponse resp = exchange.getResponse();
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+        assertThat(resp.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(resp.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("60");
+        String body = resp.getBodyAsString().block();
+        assertThat(body).contains("\"status\":429").contains("\"title\":\"Too Many Requests\"");
+    }
+
+    @Test
     @DisplayName("Status 429 с предыдущим непустым body → оригинальное body игнорируется")
     void status429_swallowsPreviousBody() {
         MockServerHttpRequest req = MockServerHttpRequest.get("/api/x").build();

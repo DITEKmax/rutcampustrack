@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.AsyncCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,7 @@ public class InternalJwtIssuerClient {
     private final WebClient webClient;
     private final AsyncCache<CacheKey, IssuedToken> cache;
 
+    @Autowired
     public InternalJwtIssuerClient(InternalIssuerClientProperties properties) {
         this(properties, WebClient.builder()
                 .baseUrl(properties.getAuthServiceUrl())

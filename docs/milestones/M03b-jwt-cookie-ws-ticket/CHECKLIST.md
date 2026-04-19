@@ -45,15 +45,22 @@ same-origin + `SameSite=Strict`). Группа 5 переформатирова�
 
 ## Группа 3 — Auth-service: ws-ticket endpoint
 
-- [ ] `WsTicketController` — `POST /auth/ws-ticket`, secured Internal
-  JWT (shared-security), body empty, response `{ticket, expiresAt}`
-- [ ] `WsTicketService` — generate UUID ticket, store Redis
-  `ws_ticket:<ticket>` → `<userId>:<role>` TTL 30s. Method `consume(ticket)`
-  atomically GET+DEL.
-- [ ] IT `WsTicketIT` (Testcontainers Redis): generate + consume happy
-  path; consume twice → 2nd 404; expired (waitFor 31s) → 404
-- [ ] SecurityConfig — `/auth/ws-ticket` permit-all на уровне Spring
-  Security, но требует Internal JWT через `DualModeUserContextFilter`
+- [x] `WsTicketController` — `POST /auth/ws-ticket`, защищён access-JWT
+  (не Internal JWT — surprise, NOTES 2026-04-20), body empty, response
+  `{ticket, expiresAt}`
+- [x] `WsTicketService` — generate UUID ticket + user-set index, Redis
+  `ws_ticket:<uuid>` → `<userId>|<role>|<expiresEpoch>` TTL 30s +
+  `ws_ticket_user:<userId>` Set TTL 60s. Method `consume(ticket)` —
+  atomic GET+DEL+SREM через Lua-script.
+- [x] `InternalWsTicketController` — `POST /internal/consume-ws-ticket`
+  защищён shared-secret filter из M03a, возвращает `{userId, role,
+  expiresAt}` или 404. Для notification-web handshake (Группа 4).
+- [x] IT `WsTicketIT` (Testcontainers Redis): issue happy-path,
+  без auth → 401/403, consume happy-path, double consume → 404,
+  unknown ticket → 404, consume без internal-secret → 401 (6 тестов)
+- [x] SecurityConfig — `/auth/ws-ticket` НЕ permit-all (дефолт
+  `.anyRequest().authenticated()` + `JwtAuthenticationFilter`).
+  `/internal/consume-ws-ticket` уже защищён `InternalIssuerSecretFilter`.
 
 ## Группа 4 — Notification-web: ticket handshake
 

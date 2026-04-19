@@ -51,6 +51,27 @@ HttpOnly cookies). Это УПРОЩАЕТ scope Группы 2:
 TMA/Mini App может либо остаться на `refresh-body` (legacy path), либо
 мигрировать на cookie-flow — решение для M07 Frontend Hardening.
 
+## 2026-04-20 — Surprise: /auth/ws-ticket защищён access-JWT, не Internal JWT
+
+В PLAN/CHECKLIST сказано «secured Internal JWT (shared-security)». Это
+ошибка плана. Реальность:
+
+- Auth-service — **issuer** Internal JWT, не downstream-consumer.
+- Auth-service не использует shared-security (DualModeUserContextFilter).
+- Gateway валидирует внешний access-JWT и НЕ strip'ает `Authorization`
+  header — он попадает в auth-service, который парсит его своим
+  `JwtAuthenticationFilter` (стандартный RS256).
+
+**Решение:** `/auth/ws-ticket` защищается access-JWT через
+`.anyRequest().authenticated()` (дефолт SecurityConfig). `userId`
+берётся из `Authentication.getName()` (как в `AuthController#changePassword`).
+Internal JWT здесь не нужен — фронт делает запрос с `Authorization:
+Bearer <access_token>`.
+
+Это упрощает реализацию — никаких shared-security dependencies в
+auth-service. Gateway просто не strip'ает путь из PUBLIC_PATHS,
+поэтому он проверит JWT прежде чем пустить на auth-service.
+
 ## Backlog из M03a post-mortem (для рассмотрения в Группах 9-10)
 
 Известные issues, которые попадут в M03b или будут документированы как

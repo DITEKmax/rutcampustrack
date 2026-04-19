@@ -49,3 +49,32 @@ PLAN.md упоминает `LessonGenerationService.regenerateUpcoming()` и
 **Решение:** продолжаю с `@SchedulerLock` на `runTransitions()`.
 Acceptance criteria PLAN.md не меняются (они по outbox/events, не
 по конкретным методам).
+
+## 2026-04-19 — NEW-28 аудит результат (Группа 2)
+
+Grep `@Scheduled` по всем backend-сервисам:
+
+| Сервис | `@Scheduled` методы | Решение |
+|---|---|---|
+| schedule-service | `LessonStatusTransitionJob.runTransitions()` | ShedLock ✅ (Группа 1) |
+| api-gateway | `PublicKeyConfig.refresh()` | `@SuppressWarnings("SingleInstance")` |
+| academic-service | 0 | — |
+| attendance-service | 0 | — |
+| auth-service | 0 | — |
+| notification-web | 0 | — |
+
+**`PublicKeyConfig.refresh()` — intentionally SingleInstance:** каждый
+gateway-инстанс держит свою копию PublicKey в памяти
+(`AtomicReference`). ShedLock-координация означала бы «один тянет,
+остальные не тянут» → кэш остальных инстансов протухает после
+ротации ключа в Auth (C0-1, M03) → отвержение валидных JWT. Это баг
+который ShedLock создаёт, а не решает. Маркер `@SuppressWarnings(
+"SingleInstance")` явно документирует дизайн и делает ArchUnit rule
+(Группа 9) корректной.
+
+**Отклонение от PLAN.md (Группа 2):** PLAN подразумевал добавление
+ShedLock деталей в academic + attendance build.gradle/Flyway. Реально
+это не требуется пока — `@Scheduled` там нет. ShedLock infra
+(libs + Flyway + EnableSchedulerLock) добавляется **в Группу 3**,
+когда появится OutboxPublisherJob (первый `@Scheduled` в этих
+сервисах). Закрываю пункты Группы 2 как N/A со ссылкой сюда.

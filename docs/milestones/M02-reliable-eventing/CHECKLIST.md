@@ -15,11 +15,11 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 2 — ShedLock в academic + attendance (NEW-28 аудит)
 
-- [ ] Explore subagent: найти все `@Scheduled` в academic/attendance
-- [ ] `academic-app/build.gradle.kts` + Flyway shedlock-table (academic_db)
-- [ ] `attendance-app/build.gradle.kts` + `shedlock-provider-mongo` (не jdbc)
-- [ ] Добавить `@SchedulerLock` на найденные `@Scheduled` методы
-- [ ] Для методов, которые НЕ должны scale (single-instance by design) — явный `@SuppressWarnings("SingleInstance")` + комментарий
+- [x] Grep `@Scheduled` по всем backend-сервисам — результат в NOTES 2026-04-19
+- [x] N/A — academic-service: 0 `@Scheduled` методов (ShedLock infra добавим в Группу 3 для OutboxPublisherJob)
+- [x] N/A — attendance-service: 0 `@Scheduled` методов (ShedLock infra добавим в Группу 3 для OutboxPublisherJob, Mongo-провайдер)
+- [x] N/A — нет дополнительных методов для `@SchedulerLock` в academic/attendance
+- [x] `PublicKeyConfig.refresh()` (api-gateway) → `@SuppressWarnings("SingleInstance")` + комментарий про per-instance key cache
 
 ## Группа 3 — Outbox решение (DECISIONS.md) + миграции
 

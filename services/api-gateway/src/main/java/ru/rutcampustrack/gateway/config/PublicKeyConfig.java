@@ -33,7 +33,12 @@ public class PublicKeyConfig {
         fetchAndCachePublicKey();
     }
 
+    // NEW-28: single-instance by design — ShedLock would break key rotation.
+    // Каждый gateway-инстанс держит свой AtomicReference<PublicKey>. При
+    // ShedLock-координации кэш остальных инстансов протухнет после
+    // ротации ключа в Auth (C0-1, M03), и они начнут отвергать валидные JWT.
     @Scheduled(fixedRate = 3_600_000)
+    @SuppressWarnings("SingleInstance")
     public void refresh() {
         fetchAndCachePublicKey();
     }

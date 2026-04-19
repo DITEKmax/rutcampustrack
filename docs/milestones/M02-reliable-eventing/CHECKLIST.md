@@ -74,10 +74,16 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 8 — Contract-тесты events (C1-5)
 
-- [ ] `shared-events` + `shared-test-containers`: `EventSchemaValidator` helper (поддержка `$ref` через FileSystemSchemaLoader)
-- [ ] `AbstractEventContractIT` — базовый test-класс: publish event → read from outbox → validate against schema
-- [ ] По одному contract-тесту per event-type в каждом сервисе (lesson.started, lesson.closed, attendance.marked, и т.д.) — минимум 5 шт в M02
-- [ ] Test matrix: publish через `EventPublisher` → ждёт до OutboxPublisherJob → reads from Rabbit sink → validates schema
+- [x] `EventSchemaValidator` helper в каждом сервисе (academic/schedule/attendance) — использует networknt json-schema-validator 1.5.4, загружает schema из repo-root `event-schemas/*.json`, `$ref` резолвится автоматически через baseURI.
+- [x] Подход без AbstractEventContractIT — контракт-тесты наследуют сервис-специфичные Abstract*IntegrationTest (где уже настроен Spring+outbox), делают service-call, читают из outbox.findPending, валидируют.
+- [x] 5 contract-тестов в 3 сервисах:
+  - schedule.`LessonStartedContractIT` — lesson.started + lesson.closed (2)
+  - schedule.`LessonCancelledContractIT` — lesson.cancelled (1)
+  - academic.`GroupUpdatedContractIT` — group.updated (1)
+  - attendance.`AttendanceMarkedContractIT` — attendance.marked (1)
+- [x] Test flow: service-call → outboxStorage.findPending(100) → filter by event_type → validate envelope вместе с payload против schema. Envelope уже корректно структурируется через existing DomainEvent/publishers.
+- [x] Cross-test contamination: `AbstractAcademicEventIntegrationTest` добавил `@BeforeEach drainOutboxBeforeEach` через TransactionTemplate.
+- [x] Build зелёный: 577/577 тестов.
 
 ## Группа 9 — ArchUnit rule (NEW-28)
 

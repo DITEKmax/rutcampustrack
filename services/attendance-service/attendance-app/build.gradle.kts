@@ -47,6 +47,7 @@ dependencies {
     testImplementation("org.testcontainers:rabbitmq")
     testImplementation("org.awaitility:awaitility:4.2.2")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+    testImplementation(libs.json.schema.validator)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

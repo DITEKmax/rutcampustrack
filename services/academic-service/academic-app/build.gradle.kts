@@ -71,6 +71,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:rabbitmq")
+    testImplementation(libs.json.schema.validator)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

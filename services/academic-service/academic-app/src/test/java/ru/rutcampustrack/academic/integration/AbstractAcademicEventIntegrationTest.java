@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.integration;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -10,6 +11,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
 import ru.rutcampustrack.shared.outbox.OutboxPublisherJob;
+import ru.rutcampustrack.shared.outbox.OutboxRecord;
+import ru.rutcampustrack.shared.outbox.OutboxStorage;
+
+import java.util.List;
 
 /**
  * Base class for event integration tests.
@@ -35,6 +40,9 @@ public abstract class AbstractAcademicEventIntegrationTest {
     @Autowired
     protected OutboxPublisherJob outboxPublisherJob;
 
+    @Autowired(required = false)
+    protected OutboxStorage outboxStorage;
+
     @Autowired
     private PlatformTransactionManager transactionManager;
 
@@ -50,6 +58,21 @@ public abstract class AbstractAcademicEventIntegrationTest {
     protected void flushOutbox() {
         new TransactionTemplate(transactionManager).executeWithoutResult(status ->
                 outboxPublisherJob.publishBatch());
+    }
+
+    /**
+     * M02: drain leftover pending outbox rows между тестами — academic_outbox
+     * shared через reused Testcontainer. Без этого предыдущий тест может
+     * оставить события, которые flushOutbox() подхватит и пошлёт в Rabbit
+     * next testу.
+     */
+    @BeforeEach
+    void drainOutboxBeforeEach() {
+        if (outboxStorage == null) return;
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            List<OutboxRecord> leftover = outboxStorage.findPending(1000);
+            leftover.forEach(r -> outboxStorage.markSent(r.id()));
+        });
     }
 
     static final PostgreSQLContainer<?> POSTGRES;

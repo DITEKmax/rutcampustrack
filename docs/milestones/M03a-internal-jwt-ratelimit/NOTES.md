@@ -165,3 +165,32 @@ public endpoints (public-key, health) не DoS-sensitive.
 **Результат:** 52 Gateway-теста (было 47, +5 RateLimitProblemDetailsFilter).
 Build зелёный. Фактическое поведение 429+Problem Details будет провалидировано
 Testcontainers-тестом в Группе 12.
+
+## 2026-04-19 — Группа 11: LoginRateLimiter composite key (01 P0-6)
+
+**Breaking API change:** `LoginRateLimiter` — 3 метода `(ip, login)` вместо
+`(login)`. `AuthService#login(request)` → `login(request, ipAddress)`.
+`AuthController` извлекает IP в новом helper'е `resolveClientIp(req)`:
+приоритет `X-Forwarded-For` → `RemoteAddr` → `"unknown"`. auth-service всегда
+за Gateway/nginx в prod → XFF всегда присутствует; RemoteAddr — это адрес прокси.
+
+**Почему это важно (01 P0-6):** старый ключ `login_attempts:<login>` позволял
+атакующему DoS-лочить чужой аккаунт — 20 неудач → 2 часа лока жертвы. Теперь
+каждая (ip, login)-пара ведёт собственный счётчик: атакующий с одного botnet-узла
+лочит только СВОЮ попытку, жертва с её IP продолжает логиниться. Distributed
+brute через много IP останавливается раньше — Gateway IP-RL 5/min per IP
+на `/api/auth/login` (Группа 10).
+
+**Тесты:** 11 unit + 3 IT. Integration-тесты поднимают реальный Redis через
+`AbstractIntegrationTest` (Testcontainers), проверяют Redis-ключи напрямую.
+Ключевой IT — `attackerIpDoesNotBlockVictimIp`: 5 failed с IP-атакующего не
+мешают жертве с другого IP залогиниться корректно.
+
+**Результат auth-service build:** 54 теста (было 40, +14: 11 unit + 3 IT).
+0 failures.
+
+**Trade-off null IP:** если каким-то образом `X-Forwarded-For` и `RemoteAddr`
+оба `null` — fallback `"unknown"`. Все запросы без IP попадают в общую корзину
+`login_attempts:unknown:<login>` — это хуже чем composite, но всё же не хуже
+оригинального «по login только». В prod такого не случается (Gateway ставит
+XFF всегда).

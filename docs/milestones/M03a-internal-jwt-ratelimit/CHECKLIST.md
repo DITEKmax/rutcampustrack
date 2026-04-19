@@ -122,11 +122,12 @@
 
 ## Группа 11 — LoginRateLimiter рефактор (01 P0-6)
 
-- [ ] `services/auth-service/.../service/LoginRateLimiter.java` — ключ Redis: `login_attempts:<ip>:<login>` (composite)
-- [ ] IP извлекается из `X-Forwarded-For` (первый IP) или `RemoteAddr` fallback
-- [ ] Unit-тест: 5 попыток с `ip1+login1` не блокируют `ip2+login1`
-- [ ] Integration: 5 failed login с одного IP + login → 6-й 429 (или `LoginRateLimiter` exception)
-- [ ] Документация в `docs/api-rate-limits.md` — различие Gateway global-RL vs auth-service LoginRateLimiter
+- [x] `services/auth-service/.../service/LoginRateLimiter.java` — ключи Redis: `login_attempts:<ip>:<login>` / `login_blocked:<ip>:<login>` (composite). API `checkBlocked(ip, login)` / `recordFailure(ip, login)` / `clearFailures(ip, login)`. Null/blank IP → fallback `"unknown"`
+- [x] `AuthController#login(request, HttpServletRequest)` извлекает IP из `X-Forwarded-For` (первый IP) или `RemoteAddr` fallback — auth-service всегда за прокси
+- [x] `AuthService#login(request, ipAddress)` прокидывает IP в все вызовы LoginRateLimiter
+- [x] Unit-тесты `LoginRateLimiterTest` — 11: composite key; разные IP НЕ аккумулируются; 5/10/20 thresholds; IP-jack victim НЕ блокируется
+- [x] Integration `LoginRateLimiterIT` — 3: 5 попыток с IP-A → 6-й 429; IP-A лочит login → IP-B логинится успешно; successful login clear'ит только свою корзину
+- [ ] Документация в `docs/api-rate-limits.md` — различие Gateway global-RL vs auth-service LoginRateLimiter _(отложено в Группу 15 документации)_
 
 ## Группа 12 — Rate-limit тесты (14 P1-2)
 

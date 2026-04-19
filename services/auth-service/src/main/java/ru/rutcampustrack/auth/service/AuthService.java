@@ -41,33 +41,33 @@ public class AuthService {
         this.loginRateLimiter = loginRateLimiter;
     }
 
-    public TokenResponse login(LoginRequest request) {
-        // IMP-02: Check if account is blocked due to too many failed attempts
-        loginRateLimiter.checkBlocked(request.login());
+    public TokenResponse login(LoginRequest request, String ipAddress) {
+        // IMP-02 + M03a Группа 11: composite (ip, login) блокировка
+        loginRateLimiter.checkBlocked(ipAddress, request.login());
 
         User user = userRepository.findByLogin(request.login())
                 .orElseThrow(() -> {
-                    loginRateLimiter.recordFailure(request.login());
+                    loginRateLimiter.recordFailure(ipAddress, request.login());
                     return new InvalidCredentialsException();
                 });
 
         if (user.getStatus() != AccountStatus.ACTIVE) {
-            loginRateLimiter.recordFailure(request.login());
+            loginRateLimiter.recordFailure(ipAddress, request.login());
             throw new InvalidCredentialsException();
         }
 
         if (user.getPasswordHash() == null) {
-            loginRateLimiter.recordFailure(request.login());
+            loginRateLimiter.recordFailure(ipAddress, request.login());
             throw new InvalidCredentialsException();
         }
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            loginRateLimiter.recordFailure(request.login());
+            loginRateLimiter.recordFailure(ipAddress, request.login());
             throw new InvalidCredentialsException();
         }
 
         // Successful login — clear failure counter
-        loginRateLimiter.clearFailures(request.login());
+        loginRateLimiter.clearFailures(ipAddress, request.login());
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);

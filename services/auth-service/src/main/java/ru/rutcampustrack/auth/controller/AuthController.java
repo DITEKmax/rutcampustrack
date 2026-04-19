@@ -3,6 +3,7 @@ package ru.rutcampustrack.auth.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -40,8 +41,24 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Successfully authenticated")
     @ApiResponse(responseCode = "401", description = "Invalid credentials")
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request,
+                                               HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.login(request, resolveClientIp(httpRequest)));
+    }
+
+    /**
+     * M03a Группа 11: client IP для composite login rate-limit key.
+     * X-Forwarded-For (первый IP) имеет приоритет над RemoteAddr — auth-service
+     * всегда за Gateway/nginx, RemoteAddr = прокси.
+     */
+    private static String resolveClientIp(HttpServletRequest req) {
+        String xff = req.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            int comma = xff.indexOf(',');
+            return (comma > 0 ? xff.substring(0, comma) : xff).trim();
+        }
+        String remote = req.getRemoteAddr();
+        return remote == null ? "unknown" : remote;
     }
 
     @Operation(summary = "Refresh access token", description = "Exchange refresh token for new token pair (rotation)")

@@ -27,19 +27,21 @@ same-origin + `SameSite=Strict`). Группа 5 переформатирова�
 
 ## Группа 2 — Auth-service: cookie endpoints
 
-- [ ] `AuthController#login` — добавить `Set-Cookie` на successful login
+- [x] `AuthController#login` — добавить `Set-Cookie` на successful login
   (cookie `rct_refresh` с refresh-token, HttpOnly+Secure+SameSite=Strict+
-  Path=/api/auth+Max-Age=<refreshTtl>)
-- [ ] `AuthController#refresh` — новый `@PostMapping("/refresh")` читает
+  Path=/api/auth+Max-Age=<refreshTtl>). Также OTP verify + TMA ставят
+  cookie (для web-panel / PWA fallback).
+- [x] `AuthController#refresh` — новый `@PostMapping("/refresh")` читает
   `@CookieValue("rct_refresh")`, возвращает new access + cookie rotate
-- [ ] `AuthController#refresh-body` — deprecated (оставляется на 1
-  milestone с header `Deprecation: true`)
-- [ ] `AuthController#logout` — в Set-Cookie пишет cookie с Max-Age=0
-  и тем же Path=/api/auth (clear), revokes refresh в Redis как раньше
-- [ ] Unit/IT: `AuthIntegrationTest` расширить — cookie присутствует,
+- [x] `AuthController#refresh-body` — deprecated (оставляется на 1
+  milestone с header `Deprecation: true` + `Sunset: <date>`)
+- [x] `AuthController#logout` — в Set-Cookie пишет cookie с Max-Age=0
+  и тем же Path=/api/auth (clear), revokes refresh в Redis как раньше.
+  Поддерживает и cookie, и body (legacy TMA).
+- [x] Unit/IT: `AuthIntegrationTest` расширить — cookie присутствует,
   `rct_refresh=...; HttpOnly; Secure; SameSite=Strict; Path=/api/auth;
-  Max-Age=N`. Refresh через cookie works.
-- [ ] `docs/auth-flow.md` scaffold с cookie flow diagram
+  Max-Age=N`. Refresh через cookie works. Logout clear. Deprecation header.
+- [x] `docs/auth-flow.md` scaffold с cookie flow diagram
 
 ## Группа 3 — Auth-service: ws-ticket endpoint
 

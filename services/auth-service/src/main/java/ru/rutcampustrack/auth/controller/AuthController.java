@@ -5,9 +5,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.OtpCodeResponse;
@@ -18,6 +21,8 @@ import ru.rutcampustrack.auth.dto.PublicKeyResponse;
 import ru.rutcampustrack.auth.dto.RefreshRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.dto.TmaAuthRequest;
+import ru.rutcampustrack.auth.exception.TokenRefreshException;
+import ru.rutcampustrack.auth.security.AuthCookies;
 import ru.rutcampustrack.auth.service.AuthService;
 import ru.rutcampustrack.auth.service.OtpService;
 import ru.rutcampustrack.auth.service.TmaService;
@@ -27,23 +32,38 @@ import ru.rutcampustrack.auth.service.TmaService;
 @Tag(name = "Authentication", description = "JWT authentication endpoints")
 public class AuthController {
 
+    /**
+     * Жёсткая дата deprecation'а для /auth/refresh-body. Установлена через
+     * M04/M05 — при removal обновить. Формат — RFC 7231 HTTP-date.
+     */
+    private static final String REFRESH_BODY_SUNSET = "Mon, 01 Jun 2026 00:00:00 GMT";
+
     private final AuthService authService;
     private final OtpService otpService;
     private final TmaService tmaService;
+    private final JwtProperties jwtProperties;
 
-    public AuthController(AuthService authService, OtpService otpService, TmaService tmaService) {
+    public AuthController(AuthService authService,
+                          OtpService otpService,
+                          TmaService tmaService,
+                          JwtProperties jwtProperties) {
         this.authService = authService;
         this.otpService = otpService;
         this.tmaService = tmaService;
+        this.jwtProperties = jwtProperties;
     }
 
-    @Operation(summary = "Login with credentials", description = "Authenticate with login and password, returns JWT token pair")
+    @Operation(summary = "Login with credentials", description = "Authenticate with login and password, returns JWT token pair + refresh cookie")
     @ApiResponse(responseCode = "200", description = "Successfully authenticated")
     @ApiResponse(responseCode = "401", description = "Invalid credentials")
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request,
                                                HttpServletRequest httpRequest) {
-        return ResponseEntity.ok(authService.login(request, resolveClientIp(httpRequest)));
+        return respondWithCookie(authService.login(request, resolveClientIp(httpRequest)));
+    }
+
+    private ResponseCookie issueRefreshCookie(String refreshToken) {
+        return AuthCookies.issue(refreshToken, jwtProperties.refreshTokenExpiration());
     }
 
     /**
@@ -61,20 +81,35 @@ public class AuthController {
         return remote == null ? "unknown" : remote;
     }
 
-    @Operation(summary = "Refresh access token", description = "Exchange refresh token for new token pair (rotation)")
+    @Operation(summary = "Refresh access token",
+               description = "Read refresh token from HttpOnly cookie 'rct_refresh', rotate it, return new access in body + new cookie.")
     @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully")
-    @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
+    @ApiResponse(responseCode = "401", description = "Missing, invalid or expired refresh cookie")
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshRequest request) {
-        return ResponseEntity.ok(authService.refresh(request));
+    public ResponseEntity<TokenResponse> refresh(
+            @CookieValue(name = AuthCookies.REFRESH_COOKIE_NAME, required = false) String refreshCookie) {
+        if (refreshCookie == null || refreshCookie.isBlank()) {
+            throw new TokenRefreshException("Missing refresh cookie");
+        }
+        return respondWithCookie(authService.refresh(new RefreshRequest(refreshCookie)));
     }
 
-    @Operation(summary = "Logout", description = "Invalidate refresh token")
+    @Operation(summary = "Logout", description = "Invalidate refresh token and clear refresh cookie")
     @ApiResponse(responseCode = "204", description = "Successfully logged out")
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequest request) {
-        authService.logout(request.refreshToken());
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = AuthCookies.REFRESH_COOKIE_NAME, required = false) String refreshCookie,
+            @RequestBody(required = false) RefreshRequest body) {
+        // Best-effort: revoke cookie token if present, иначе — body (legacy TMA).
+        String token = refreshCookie != null && !refreshCookie.isBlank()
+                ? refreshCookie
+                : (body != null ? body.refreshToken() : null);
+        if (token != null && !token.isBlank()) {
+            authService.logout(token);
+        }
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, AuthCookies.clear().toString())
+                .build();
     }
 
     @Operation(summary = "Get RSA public key", description = "Returns RSA public key in PEM format for JWT verification")
@@ -93,12 +128,12 @@ public class AuthController {
         return ResponseEntity.ok(new OtpCodeResponse(code));
     }
 
-    @Operation(summary = "Verify OTP code", description = "Verify OTP code and receive JWT token pair")
+    @Operation(summary = "Verify OTP code", description = "Verify OTP code and receive JWT token pair + refresh cookie")
     @ApiResponse(responseCode = "200", description = "OTP verified, JWT pair returned")
     @ApiResponse(responseCode = "401", description = "Invalid or expired OTP code")
     @PostMapping("/otp/verify")
     public ResponseEntity<TokenResponse> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
-        return ResponseEntity.ok(otpService.verifyOtp(request));
+        return respondWithCookie(otpService.verifyOtp(request));
     }
 
     @Operation(summary = "Verify OTP code without telegram ID",
@@ -108,25 +143,37 @@ public class AuthController {
     @ApiResponse(responseCode = "401", description = "Invalid or expired OTP code")
     @PostMapping("/otp/verify-by-code")
     public ResponseEntity<TokenResponse> verifyOtpByCode(@Valid @RequestBody OtpVerifyByCodeRequest request) {
-        return ResponseEntity.ok(otpService.verifyOtpByCode(request));
+        return respondWithCookie(otpService.verifyOtpByCode(request));
     }
 
     @Operation(summary = "Authenticate via Telegram Mini App",
-               description = "Validate Telegram initData (HMAC-SHA256) and return JWT token pair")
+               description = "Validate Telegram initData (HMAC-SHA256) and return JWT token pair. "
+                       + "Cookie also set for web-panel fallback; TMA clients read refreshToken from body.")
     @ApiResponse(responseCode = "200", description = "Successfully authenticated via TMA")
     @ApiResponse(responseCode = "401", description = "Invalid or tampered initData, or user not linked")
     @PostMapping("/tma")
     public ResponseEntity<TokenResponse> tmaAuth(@Valid @RequestBody TmaAuthRequest request) {
-        return ResponseEntity.ok(tmaService.authenticateWithInitData(request));
+        return respondWithCookie(tmaService.authenticateWithInitData(request));
     }
 
-    @Operation(summary = "Refresh tokens (body-based)",
-               description = "Exchange refresh token in request body for new token pair. For Mini App clients that cannot use httpOnly cookies.")
+    private ResponseEntity<TokenResponse> respondWithCookie(TokenResponse tokens) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, issueRefreshCookie(tokens.refreshToken()).toString())
+                .body(tokens);
+    }
+
+    @Operation(summary = "Refresh tokens (body-based, deprecated)",
+               description = "Exchange refresh token in request body for new token pair. "
+                       + "DEPRECATED in M03b — use cookie-based POST /auth/refresh instead. "
+                       + "Planned removal: M04/M05.")
     @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully")
     @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
     @PostMapping("/refresh-body")
     public ResponseEntity<TokenResponse> refreshBody(@Valid @RequestBody RefreshRequest request) {
-        return ResponseEntity.ok(authService.refresh(request));
+        return ResponseEntity.ok()
+                .header("Deprecation", "true")
+                .header("Sunset", REFRESH_BODY_SUNSET)
+                .body(authService.refresh(request));
     }
 
     @Operation(summary = "Change password", description = "Change password for authenticated user")

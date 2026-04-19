@@ -8,6 +8,8 @@ import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.RefreshRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AuthIntegrationTest extends AbstractIntegrationTest {
@@ -77,74 +79,128 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void refresh_withValidToken_returnsNewTokenPair() {
-        // First login to get tokens
-        LoginRequest loginRequest = new LoginRequest("student", "password");
-        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
-                "/auth/login", loginRequest, TokenResponse.class);
-        assertThat(loginResponse.getBody()).isNotNull();
-        String originalAccessToken = loginResponse.getBody().accessToken();
-        String originalRefreshToken = loginResponse.getBody().refreshToken();
+    void login_setsRefreshCookie_withStrictAttributes() {
+        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
+                "/auth/login", new LoginRequest("student", "password"), TokenResponse.class);
 
-        // Refresh
-        RefreshRequest refreshRequest = new RefreshRequest(originalRefreshToken);
-        ResponseEntity<TokenResponse> refreshResponse = restTemplate.postForEntity(
-                "/auth/refresh", refreshRequest, TokenResponse.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        List<String> cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
+        assertThat(cookies).isNotNull().isNotEmpty();
+        String refreshCookie = cookies.stream()
+                .filter(c -> c.startsWith("rct_refresh="))
+                .findFirst()
+                .orElseThrow();
+        assertThat(refreshCookie).contains("HttpOnly");
+        assertThat(refreshCookie).contains("Secure");
+        assertThat(refreshCookie).contains("SameSite=Strict");
+        assertThat(refreshCookie).contains("Path=/api/auth");
+        assertThat(refreshCookie).contains("Max-Age=604800");
+    }
+
+    @Test
+    void refresh_viaCookie_returnsNewTokenPair_andRotatesCookie() {
+        // Login — cookie ставится
+        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
+                "/auth/login", new LoginRequest("student", "password"), TokenResponse.class);
+        assertThat(loginResponse.getBody()).isNotNull();
+        String originalRefreshToken = loginResponse.getBody().refreshToken();
+        String originalSetCookie = loginResponse.getHeaders().get(HttpHeaders.SET_COOKIE).stream()
+                .filter(c -> c.startsWith("rct_refresh="))
+                .findFirst().orElseThrow();
+        String cookieHeader = "rct_refresh=" + extractCookieValue(originalSetCookie);
+
+        // Refresh с cookie (без body)
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.COOKIE, cookieHeader);
+        HttpEntity<Void> entity = new HttpEntity<>(null, headers);
+
+        ResponseEntity<TokenResponse> refreshResponse = restTemplate.exchange(
+                "/auth/refresh", HttpMethod.POST, entity, TokenResponse.class);
 
         assertThat(refreshResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(refreshResponse.getBody()).isNotNull();
         assertThat(refreshResponse.getBody().accessToken()).isNotBlank();
-        assertThat(refreshResponse.getBody().refreshToken()).isNotBlank();
-        // Refresh token must be different (has unique jti UUID)
-        assertThat(refreshResponse.getBody().refreshToken()).isNotEqualTo(originalRefreshToken);
+        assertThat(refreshResponse.getBody().refreshToken()).isNotBlank()
+                .isNotEqualTo(originalRefreshToken);
+
+        // Cookie rotated
+        List<String> rotatedCookies = refreshResponse.getHeaders().get(HttpHeaders.SET_COOKIE);
+        assertThat(rotatedCookies).isNotNull();
+        assertThat(rotatedCookies.stream().anyMatch(c -> c.startsWith("rct_refresh="))).isTrue();
     }
 
     @Test
-    void refresh_withUsedToken_returns401() {
-        // Login
-        LoginRequest loginRequest = new LoginRequest("student", "password");
-        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
-                "/auth/login", loginRequest, TokenResponse.class);
-        assertThat(loginResponse.getBody()).isNotNull();
-        String originalRefreshToken = loginResponse.getBody().refreshToken();
+    void refresh_withoutCookie_returns401() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/auth/refresh", HttpMethod.POST, HttpEntity.EMPTY, String.class);
 
-        // Refresh once — consumes the token
-        RefreshRequest refreshRequest = new RefreshRequest(originalRefreshToken);
-        restTemplate.postForEntity("/auth/refresh", refreshRequest, TokenResponse.class);
-
-        // Attempt refresh again with the same original token — should fail
-        ResponseEntity<String> secondRefreshResponse = restTemplate.postForEntity(
-                "/auth/refresh", refreshRequest, String.class);
-
-        assertThat(secondRefreshResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void logout_withValidToken_returns204() {
-        // Login
-        LoginRequest loginRequest = new LoginRequest("student", "password");
+    void refresh_withUsedCookie_returns401() {
+        // Login → get cookie
         ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
-                "/auth/login", loginRequest, TokenResponse.class);
-        assertThat(loginResponse.getBody()).isNotNull();
-        String accessToken = loginResponse.getBody().accessToken();
+                "/auth/login", new LoginRequest("student", "password"), TokenResponse.class);
+        String cookieHeader = "rct_refresh=" + extractCookieValue(
+                loginResponse.getHeaders().get(HttpHeaders.SET_COOKIE).stream()
+                        .filter(c -> c.startsWith("rct_refresh=")).findFirst().orElseThrow());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.COOKIE, cookieHeader);
+        HttpEntity<Void> entity = new HttpEntity<>(null, headers);
+
+        // First refresh — consumes the token
+        restTemplate.exchange("/auth/refresh", HttpMethod.POST, entity, TokenResponse.class);
+
+        // Second refresh with same cookie — should 401
+        ResponseEntity<String> second = restTemplate.exchange(
+                "/auth/refresh", HttpMethod.POST, entity, String.class);
+        assertThat(second.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void refreshBody_withValidToken_returnsDeprecationHeader() {
+        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
+                "/auth/login", new LoginRequest("student", "password"), TokenResponse.class);
         String refreshToken = loginResponse.getBody().refreshToken();
 
-        // Logout with Authorization header
+        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
+                "/auth/refresh-body", new RefreshRequest(refreshToken), TokenResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getFirst("Deprecation")).isEqualTo("true");
+        assertThat(response.getHeaders().getFirst("Sunset")).isNotBlank();
+    }
+
+    @Test
+    void logout_viaCookie_returns204_andClearsCookie() {
+        // Login → cookie
+        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
+                "/auth/login", new LoginRequest("student", "password"), TokenResponse.class);
+        String cookieValue = extractCookieValue(
+                loginResponse.getHeaders().get(HttpHeaders.SET_COOKIE).stream()
+                        .filter(c -> c.startsWith("rct_refresh=")).findFirst().orElseThrow());
+        String cookieHeader = "rct_refresh=" + cookieValue;
+
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        RefreshRequest logoutRequest = new RefreshRequest(refreshToken);
-        HttpEntity<RefreshRequest> entity = new HttpEntity<>(logoutRequest, headers);
+        headers.setBearerAuth(loginResponse.getBody().accessToken());
+        headers.add(HttpHeaders.COOKIE, cookieHeader);
+        HttpEntity<Void> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<Void> logoutResponse = restTemplate.postForEntity(
-                "/auth/logout", entity, Void.class);
-
+        ResponseEntity<Void> logoutResponse = restTemplate.exchange(
+                "/auth/logout", HttpMethod.POST, entity, Void.class);
         assertThat(logoutResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
-        // Verify that refreshToken is now invalid
-        RefreshRequest refreshRequest = new RefreshRequest(refreshToken);
-        ResponseEntity<String> refreshResponse = restTemplate.postForEntity(
-                "/auth/refresh", refreshRequest, String.class);
+        // Logout cookie — Max-Age=0
+        List<String> cookies = logoutResponse.getHeaders().get(HttpHeaders.SET_COOKIE);
+        assertThat(cookies).isNotNull();
+        assertThat(cookies.stream().anyMatch(c ->
+                c.startsWith("rct_refresh=") && c.contains("Max-Age=0"))).isTrue();
+
+        // После logout этот cookie больше не refresh'ится
+        ResponseEntity<String> refreshResponse = restTemplate.exchange(
+                "/auth/refresh", HttpMethod.POST, entity, String.class);
         assertThat(refreshResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
@@ -157,5 +213,12 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         assertThat(response.getBody()).isNotNull();
         // Response is a JSON object with publicKey field containing PEM
         assertThat(response.getBody()).contains("BEGIN PUBLIC KEY");
+    }
+
+    private static String extractCookieValue(String setCookieHeader) {
+        // "rct_refresh=<value>; Path=/api/auth; ..."
+        int eq = setCookieHeader.indexOf('=');
+        int semi = setCookieHeader.indexOf(';');
+        return setCookieHeader.substring(eq + 1, semi > 0 ? semi : setCookieHeader.length());
     }
 }

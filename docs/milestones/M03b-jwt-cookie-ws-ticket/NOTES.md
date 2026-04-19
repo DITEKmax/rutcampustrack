@@ -36,6 +36,21 @@
 
 ---
 
+## 2026-04-20 — Surprise: `/auth/refresh-body` уже существует
+
+В `AuthController.java:127` уже есть endpoint `POST /auth/refresh-body`
+(введён ранее для TMA / Mini App клиентов, которые не могут использовать
+HttpOnly cookies). Это УПРОЩАЕТ scope Группы 2:
+
+- `/auth/refresh` (тело → cookie-based) — breaking change: меняем
+  контракт (читает cookie, пишет cookie, body игнорируется).
+- `/auth/refresh-body` (сохраняется) — добавляем header `Deprecation:`
+  + `Sunset:` per DECISIONS 2026-04-20 (удаление в M04/M05).
+  Никакого нового endpoint создавать не нужно.
+
+TMA/Mini App может либо остаться на `refresh-body` (legacy path), либо
+мигрировать на cookie-flow — решение для M07 Frontend Hardening.
+
 ## Backlog из M03a post-mortem (для рассмотрения в Группах 9-10)
 
 Известные issues, которые попадут в M03b или будут документированы как

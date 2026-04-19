@@ -138,11 +138,14 @@
 
 ## Группа 13 — Contract-тест Gateway↔downstream (14 P1-1)
 
-- [ ] `services/api-gateway/src/test/.../InternalJwtIssuerIT.java` — Testcontainers (Gateway + downstream mock):
-  - Валидный внешний JWT → downstream видит Internal JWT с правильными claims
-  - Невалидный внешний JWT → 401 (не доходит до downstream)
-  - Истёкший внешний JWT → 401
-- [ ] Smoke: попытка прямого запроса на :9091 без Internal JWT → 401
+- [x] `InternalJwtIssuerIT` (4 теста, WireMock auth-service + downstream):
+  - Валидный внешний JWT → downstream получает `X-Internal-Token`, token-exchange вызван
+  - Невалидная подпись внешнего JWT → 401, downstream НЕ вызван, token-exchange НЕ вызван
+  - Истёкший внешний JWT → 401, downstream НЕ вызван
+  - Отсутствие Authorization header → 401
+- [x] Smoke-тест прямого запроса к downstream без Internal JWT покрыт IT в M03a
+  Группах 5-7 (`{Service}UserContextFilterStrictModeIT`) — в strict-mode запрос без
+  X-Internal-Token → 401
 
 ## Группа 14 — Смена на strict mode (подготовка к M03b)
 

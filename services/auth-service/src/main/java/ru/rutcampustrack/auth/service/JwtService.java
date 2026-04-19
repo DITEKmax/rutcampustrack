@@ -34,6 +34,9 @@ public class JwtService {
     private static final String JWT_ISSUER = "rutcampustrack-auth";
     private static final String JWT_AUDIENCE = "rutcampustrack";
 
+    // M03a: internal JWT audience — validated by shared-security validator on downstream services.
+    public static final String INTERNAL_JWT_AUDIENCE = "rutcampustrack-internal";
+
     private PrivateKey privateKey;
     private PublicKey publicKey;
     private String publicKeyPem;
@@ -135,6 +138,30 @@ public class JwtService {
 
     public String getPublicKeyPem() {
         return publicKeyPem;
+    }
+
+    /**
+     * M03a: sign an Internal JWT for downstream-service authentication (token exchange).
+     * Called by {@code InternalIssuerController} after the shared secret is verified.
+     * Claims mirror the external access-token schema so downstream filters stay uniform.
+     */
+    public String generateInternalToken(long userId, String role, Long groupId, boolean isHeadman, long ttlSeconds) {
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + ttlSeconds * 1000);
+
+        var builder = Jwts.builder()
+                .header().keyId(keyId).and()
+                .subject(String.valueOf(userId))
+                .issuer(JWT_ISSUER)
+                .audience().add(INTERNAL_JWT_AUDIENCE).and()
+                .claim("role", role)
+                .claim("is_headman", isHeadman)
+                .issuedAt(now)
+                .expiration(expiration);
+        if (groupId != null) {
+            builder.claim("group_id", groupId);
+        }
+        return builder.signWith(privateKey, Jwts.SIG.RS256).compact();
     }
 
     private void writeKeyToFile(Key key, Path path, String type) throws IOException {

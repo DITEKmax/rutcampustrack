@@ -26,16 +26,18 @@
 
 ## Группа 3 — Auth-service token exchange endpoint
 
-- [ ] `services/auth-service/.../config/InternalIssuerProperties.java` — `@ConfigurationProperties("rutcampustrack.security.internal-issuer")` с полем `secret`; fail-fast `@PostConstruct` if empty (mirror паттерн `GrpcSecretFilter`)
-- [ ] `services/auth-service/.../JwtService.java` — новый метод `generateInternalToken(Long userId, String role, Long groupId, boolean isHeadman)`: TTL 5 мин, `iss=rutcampustrack-auth`, `aud=rutcampustrack-internal`, kid header
-- [ ] `services/auth-service/.../dto/InternalIssueRequest.java` — record (userId, role, groupId, isHeadman) + Bean Validation
-- [ ] `services/auth-service/.../dto/InternalIssueResponse.java` — record (token, expiresAt)
-- [ ] `services/auth-service/.../controller/InternalIssuerController.java` — `POST /internal/issue-internal-jwt`, принимает `InternalIssueRequest`, возвращает `InternalIssueResponse`
-- [ ] `services/auth-service/.../security/InternalIssuerSecretFilter.java` — `OncePerRequestFilter` на `/internal/**`, проверяет `X-Internal-Issuer-Secret` через `MessageDigest.isEqual` (timing-safe)
-- [ ] `SecurityConfig` — `/internal/**` permit-all + custom filter chain
-- [ ] Unit `JwtServiceTest.generateInternalToken_*` — правильные claims, правильный TTL, правильная signature
-- [ ] IT `InternalIssuerControllerIT` — valid secret → 200 + signed JWT; wrong secret → 401; missing secret → 401; malformed body → 400; service с empty `INTERNAL_ISSUER_SECRET` fails-fast на старте
-- [ ] `application.yml` (dev) — `rutcampustrack.security.internal-issuer.secret: dev-secret-at-least-32-bytes-for-local-testing-only`
+- [x] `services/auth-service/.../config/InternalIssuerProperties.java` — класс с `@ConfigurationProperties("rutcampustrack.security.internal-issuer")`, fail-fast `@PostConstruct` при empty/short secret (MIN 32 bytes) или TTL вне (0, 3600]
+- [x] `services/auth-service/.../JwtService.java` — новый метод `generateInternalToken(userId, role, groupId, isHeadman, ttlSeconds)`: `iss=rutcampustrack-auth`, `aud=rutcampustrack-internal` (константа `INTERNAL_JWT_AUDIENCE`), kid header, подпись тем же приватным ключом
+- [x] `services/auth-service/.../dto/InternalIssueRequest.java` — record (userId, role, groupId, isHeadman) + `@NotNull`/`@Positive`/`@NotBlank`
+- [x] `services/auth-service/.../dto/InternalIssueResponse.java` — record (token, expiresAt)
+- [x] `services/auth-service/.../controller/InternalIssuerController.java` — `POST /internal/issue-internal-jwt`, принимает `InternalIssueRequest`, возвращает `InternalIssueResponse` с `@Operation`/`@ApiResponse`
+- [x] `services/auth-service/.../security/InternalIssuerSecretFilter.java` — `OncePerRequestFilter` на `/internal/**` через `shouldNotFilter`, проверяет `X-Internal-Issuer-Secret` через `MessageDigest.isEqual` (timing-safe); при ошибке — `setStatus(401)` + JSON body (не `sendError` — Spring Security мапит на 403)
+- [x] `SecurityConfig` — `/internal/**` добавлен в permit-all + `InternalIssuerSecretFilter` перед `UsernamePasswordAuthenticationFilter`
+- [x] `AuthApplication` — `InternalIssuerProperties.class` добавлен в `@EnableConfigurationProperties`
+- [x] `application.yml` + `application-test.yml` — `rutcampustrack.security.internal-issuer.secret` (dev default + ENV override) + `token-ttl-seconds: 300`
+- [x] Unit `InternalIssuerPropertiesTest` — 6 тестов: empty/blank/short secret, valid, ttl=0, ttl>3600
+- [x] IT `InternalIssuerIT` — 5 тестов: valid secret → signed JWT c правильными claims (проверка через `/auth/public-key`), missing/wrong secret → 401, malformed body → 400, null groupId (teacher) accepted
+- [x] Build `./gradlew :services:auth-service:build` зелёный — 40 тестов (было 29, +11 новых)
 
 ## Группа 4 — Gateway issuer client
 

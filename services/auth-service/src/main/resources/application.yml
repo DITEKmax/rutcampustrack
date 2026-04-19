@@ -46,6 +46,15 @@ jwt:
   access-token-expiration: 900        # 15 минут
   refresh-token-expiration: 604800    # 7 дней
 
+rutcampustrack:
+  security:
+    internal-issuer:
+      # M03a: token exchange endpoint shared secret (api-gateway ↔ auth-service).
+      # Required ≥32 bytes; fail-fast on empty. Rotate simultaneously on both services.
+      secret: ${INTERNAL_ISSUER_SECRET:dev-internal-issuer-secret-32-bytes-for-local-testing-only}
+      # Internal JWT TTL — Gateway cache is 4 мин, so 300 даёт safe margin.
+      token-ttl-seconds: 300
+
 otp:
   code-length: 6
   ttl-seconds: 120

@@ -9,15 +9,19 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ru.rutcampustrack.auth.security.InternalIssuerSecretFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final InternalIssuerSecretFilter internalIssuerSecretFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          InternalIssuerSecretFilter internalIssuerSecretFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.internalIssuerSecretFilter = internalIssuerSecretFilter;
     }
 
     @Bean
@@ -33,6 +37,7 @@ public class SecurityConfig {
                                 "/auth/refresh-body",
                                 "/auth/public-key",
                                 "/auth/otp/**",
+                                "/internal/**",
                                 "/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -41,6 +46,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(internalIssuerSecretFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

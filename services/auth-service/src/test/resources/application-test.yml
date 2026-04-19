@@ -25,6 +25,12 @@ jwt:
   access-token-expiration: 900
   refresh-token-expiration: 604800
 
+rutcampustrack:
+  security:
+    internal-issuer:
+      secret: test-internal-issuer-secret-32-bytes-or-more-for-test-env
+      token-ttl-seconds: 300
+
 otp:
   code-length: 6
   ttl-seconds: 120

@@ -22,20 +22,29 @@ import java.nio.charset.StandardCharsets;
  * filter) and calls {@link InternalJwtIssuerClient} to obtain a signed Internal JWT,
  * which is then added as {@code X-Internal-Token} to the downstream request.
  *
- * <p>Dual-mode (NEW-4 / DECISIONS 2026-04-19): X-User-* legacy headers are NOT stripped.
- * Downstream {@code DualModeUserContextFilter} accepts either header family. After UAT,
- * a follow-up commit enables strict mode (strip X-User-* on the gateway side).</p>
+ * <p>Dual-mode (NEW-4): контролируется
+ * {@code rutcampustrack.security.internal-issuer-client.strip-legacy-headers}.
+ * При {@code false} (dev default) X-User-* остаются в запросе — downstream
+ * {@code DualModeUserContextFilter} принимает оба семейства. При {@code true}
+ * (prod после UAT, Группа 14) Gateway strip'ает X-User-Id/Role/Group-Id/Is-Headman —
+ * downstream с {@code legacy-headers-enabled=false} валидирует только Internal JWT.</p>
  */
 @Component
 public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
 
     private static final Logger log = LoggerFactory.getLogger(InternalJwtIssuerFilter.class);
     static final String INTERNAL_TOKEN_HEADER = "X-Internal-Token";
+    private static final String[] LEGACY_HEADERS = {
+            "X-User-Id", "X-User-Role", "X-Group-Id", "X-Is-Headman"
+    };
 
     private final InternalJwtIssuerClient client;
+    private final InternalIssuerClientProperties properties;
 
-    public InternalJwtIssuerFilter(InternalJwtIssuerClient client) {
+    public InternalJwtIssuerFilter(InternalJwtIssuerClient client,
+                                   InternalIssuerClientProperties properties) {
         this.client = client;
+        this.properties = properties;
     }
 
     @Override
@@ -62,9 +71,17 @@ public class InternalJwtIssuerFilter implements GlobalFilter, Ordered {
 
         return client.issueFor(userId, role, groupId, isHeadman)
                 .flatMap(token -> {
-                    ServerHttpRequest mutated = request.mutate()
-                            .header(INTERNAL_TOKEN_HEADER, token)
-                            .build();
+                    ServerHttpRequest.Builder builder = request.mutate()
+                            .header(INTERNAL_TOKEN_HEADER, token);
+                    if (properties.isStripLegacyHeaders()) {
+                        // Strict mode: downstream видит ТОЛЬКО X-Internal-Token,
+                        // legacy X-User-* удалены — DualModeUserContextFilter
+                        // с legacy-headers-enabled=false валидирует только JWT.
+                        builder.headers(h -> {
+                            for (String legacy : LEGACY_HEADERS) h.remove(legacy);
+                        });
+                    }
+                    ServerHttpRequest mutated = builder.build();
                     return chain.filter(exchange.mutate().request(mutated).build());
                 })
                 .onErrorResume(InternalIssuerUnavailableException.class, e -> {

@@ -240,3 +240,88 @@ Acceptance criteria «11 запросов → 429» реализован как 
 (burst=5 по `replenishRate` semantics). Real DDoS тест (burst исчерпание
 под реальной нагрузкой) — responsibility следующего milestone'а (M04 +
 Grafana alerts).
+
+## 2026-04-20 — Группа 14: strict-mode toggle infrastructure + UAT checklist
+
+**Что сделано (infrastructure):**
+- `InternalIssuerClientProperties.stripLegacyHeaders` (default `false`).
+  env var override: `GATEWAY_STRIP_LEGACY_HEADERS`.
+- `InternalJwtIssuerFilter`: при `stripLegacyHeaders=true` после
+  successful issue удаляет `X-User-Id`, `X-User-Role`, `X-Group-Id`,
+  `X-Is-Headman` из downstream request.
+- 2 unit-теста (dual/strict) + обновлён конструктор в существующих тестах.
+- Dev default остаётся dual-mode (flag `false`) — ничего не ломается
+  для разработчика.
+
+**Что ОТЛОЖЕНО в Группу 16 (финальный commit перед тегом v0.0.0-alpha.3):**
+- docker-compose.prod.yml: `GATEWAY_STRIP_LEGACY_HEADERS=true` +
+  `RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false` на все 4
+  downstream сервиса (academic/schedule/attendance/notification-web).
+- Один коммит = одна строка в changelog = ясный rollback point если
+  что-то сломается в prod после переключения.
+
+### UAT Golden Path Checklist (выполнить на staging ПЕРЕД strict toggle)
+
+Цель: подтвердить что Internal JWT pipeline работает для всех 4 ролей
+и всех critical user-journeys. Выполнять на staging/VPS развёрнутом
+с текущим M03a-кодом в dual-mode, затем повторить после применения
+Группа 16 strict-toggle commit'а.
+
+**Pre-conditions:**
+- Gateway, auth-service, 4 downstream подняты через docker compose.
+- Тестовые пользователи сидированы: `admin/password`, `teacher/password`,
+  `student/password`, `student00001/password` (староста).
+- PWA/web-panel статичный build развёрнут.
+
+**Admin flow (web-panel):**
+- [ ] Login `admin/password` → 200 + TokenResponse.
+- [ ] GET /api/academic/users — список пользователей приходит.
+- [ ] POST /api/academic/groups — создание группы.
+- [ ] PATCH /api/academic/users/{id}/role → смена роли.
+- [ ] GET /api/academic/semesters.
+- [ ] Logout.
+
+**Teacher flow (web-panel):**
+- [ ] Login `teacher/password`.
+- [ ] GET /api/schedule/my — расписание преподавателя.
+- [ ] GET /api/attendance/reports/teacher/{lessonId} — журнал пары.
+- [ ] Невозможно изменить статус (read-only) — 403.
+
+**Student flow (PWA):**
+- [ ] Login `student/password`.
+- [ ] GET /api/schedule/my — расписание студента.
+- [ ] POST /api/attendance/check-in с геоточкой в окне пары → 200 + presence.
+- [ ] Повтор check-in сверх лимита 10/min → 429 Problem Details.
+- [ ] GET /api/attendance/reports/student/stats.
+
+**Headman flow (PWA):**
+- [ ] Login `student00001/password`.
+- [ ] Подтверждение тикетов отсутствия.
+- [ ] Изменение статусов товарищей по группе.
+- [ ] POST excuse-тикета.
+
+**Failure-path:**
+- [ ] Прямой запрос на :9091 без X-Internal-Token (SSH tunnel) → 401.
+  (В prod — порт закрыт фаерволом, но тест показывает что внутри сети
+  downstream также защищён.)
+- [ ] Неправильный refresh-token → 401.
+
+**Rate-limit smoke:**
+- [ ] 5 неуспешных login с одного IP → 6-й логин-попытка → 429.
+- [ ] Тот же login с другого IP — проходит (composite key).
+- [ ] 1 SMS-request → 2-й в ту же минуту → 429 (OTP request).
+
+**После UAT → Группа 16 commit переключает strict mode → повторный smoke:**
+- [ ] Повторить Admin/Teacher/Student/Headman flows — все должны работать
+  (X-Internal-Token покрывает всё).
+- [ ] Проверить логи Gateway: строки `InternalJwtIssuerFilter` должны
+  удалять X-User-* (подтвердить через `docker logs rct-api-gateway | grep -i strip`).
+- [ ] Ручной curl на downstream с X-User-Id без Internal JWT → 401
+  (dual-mode off).
+
+**Rollback план (если UAT fail'ится):**
+1. `GATEWAY_STRIP_LEGACY_HEADERS=false` в .env.prod.
+2. `RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=true` для всех downstream.
+3. `docker compose restart api-gateway academic-service schedule-service
+   attendance-service notification-web`.
+4. Зафиксировать failing flow в NOTES + issue в M03b до повторной попытки.

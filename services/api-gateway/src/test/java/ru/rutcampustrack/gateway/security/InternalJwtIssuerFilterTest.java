@@ -25,12 +25,16 @@ import static org.mockito.Mockito.when;
 class InternalJwtIssuerFilterTest {
 
     private InternalJwtIssuerClient client;
+    private InternalIssuerClientProperties props;
     private InternalJwtIssuerFilter filter;
 
     @BeforeEach
     void setUp() {
         client = mock(InternalJwtIssuerClient.class);
-        filter = new InternalJwtIssuerFilter(client);
+        props = new InternalIssuerClientProperties();
+        props.setSecret("a".repeat(32));
+        props.setStripLegacyHeaders(false);  // default dual-mode
+        filter = new InternalJwtIssuerFilter(client, props);
     }
 
     @Test
@@ -131,5 +135,59 @@ class InternalJwtIssuerFilterTest {
     void filterOrder_isAfterJwtAuth() {
         // JwtAuthenticationFilter = -100; this one must come later (higher order number)
         assertThat(filter.getOrder()).isGreaterThan(-100);
+    }
+
+    @Test
+    void dualMode_stripLegacyFalse_keepsXUserHeaders() {
+        when(client.issueFor(anyLong(), anyString(), any(), anyBoolean()))
+                .thenReturn(Mono.just("signed-jwt"));
+        props.setStripLegacyHeaders(false);
+
+        MockServerHttpRequest request = MockServerHttpRequest.get("/api/academic/users")
+                .header("X-User-Id", "42")
+                .header("X-User-Role", "ADMIN")
+                .header("X-Group-Id", "7")
+                .header("X-Is-Headman", "true")
+                .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        AtomicReference<ServerWebExchange> captured = new AtomicReference<>();
+        GatewayFilterChain chain = ex -> { captured.set(ex); return Mono.empty(); };
+
+        StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
+
+        var hs = captured.get().getRequest().getHeaders();
+        assertThat(hs.getFirst("X-Internal-Token")).isEqualTo("signed-jwt");
+        assertThat(hs.getFirst("X-User-Id")).isEqualTo("42");
+        assertThat(hs.getFirst("X-User-Role")).isEqualTo("ADMIN");
+        assertThat(hs.getFirst("X-Group-Id")).isEqualTo("7");
+        assertThat(hs.getFirst("X-Is-Headman")).isEqualTo("true");
+    }
+
+    @Test
+    void strictMode_stripLegacyTrue_removesXUserHeaders() {
+        when(client.issueFor(anyLong(), anyString(), any(), anyBoolean()))
+                .thenReturn(Mono.just("signed-jwt"));
+        props.setStripLegacyHeaders(true);
+
+        MockServerHttpRequest request = MockServerHttpRequest.get("/api/academic/users")
+                .header("X-User-Id", "42")
+                .header("X-User-Role", "ADMIN")
+                .header("X-Group-Id", "7")
+                .header("X-Is-Headman", "true")
+                .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        AtomicReference<ServerWebExchange> captured = new AtomicReference<>();
+        GatewayFilterChain chain = ex -> { captured.set(ex); return Mono.empty(); };
+
+        StepVerifier.create(filter.filter(exchange, chain)).verifyComplete();
+
+        var hs = captured.get().getRequest().getHeaders();
+        assertThat(hs.getFirst("X-Internal-Token")).isEqualTo("signed-jwt");
+        assertThat(hs.getFirst("X-User-Id")).isNull();
+        assertThat(hs.getFirst("X-User-Role")).isNull();
+        assertThat(hs.getFirst("X-Group-Id")).isNull();
+        assertThat(hs.getFirst("X-Is-Headman")).isNull();
     }
 }

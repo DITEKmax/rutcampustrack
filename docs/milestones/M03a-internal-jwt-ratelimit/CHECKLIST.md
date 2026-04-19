@@ -149,10 +149,10 @@
 
 ## Группа 14 — Смена на strict mode (подготовка к M03b)
 
-- [ ] `application.yml` в prod — `legacy-headers-enabled: false` (отдельный commit, применяется после UAT)
-- [ ] `InternalJwtIssuerFilter` в Gateway — добавить strip `X-User-*` headers (вторая фаза, отдельный commit/flag)
-- [ ] NOTES.md — отметить, что переключение запланировано как последний commit M03a перед тегом v0.0.0-alpha.3
-- [ ] UAT golden path checklist: admin login, teacher journal, student check-in, headman operations — все проходят на strict mode
+- [x] `InternalJwtIssuerFilter` в Gateway — добавлен `stripLegacyHeaders` flag в `InternalIssuerClientProperties` (default `false`); при `true` Gateway после issue удаляет `X-User-Id/Role/Group-Id/Is-Headman` перед proxy. 2 новых unit-теста (dual-mode keep + strict-mode strip)
+- [x] application.yml — `strip-legacy-headers: ${GATEWAY_STRIP_LEGACY_HEADERS:false}` (toggle через env var, dev default остаётся dual-mode)
+- [x] NOTES.md UAT golden path checklist — см. секцию "Группа 14: UAT checklist"
+- [ ] docker-compose.prod.yml env: `GATEWAY_STRIP_LEGACY_HEADERS=true` + `RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false` — **ОТЛОЖЕНО** в Группу 16 как финальный commit перед тегом `v0.0.0-alpha.3` (UAT golden path должен пройти перед переключением)
 
 ## Группа 15 — Документация + artifacts
 

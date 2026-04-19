@@ -17,6 +17,13 @@ public class InternalIssuerClientProperties {
     private long cacheTtlSeconds = 240;
     private int cacheMaxSize = 10_000;
     private long timeoutMillis = 3_000;
+    /**
+     * M03a Группа 14 (strict mode toggle): если {@code true}, Gateway удаляет
+     * legacy {@code X-User-*} headers после успешного выпуска Internal JWT —
+     * downstream вынужден работать только через X-Internal-Token. Dev default
+     * {@code false} для dual-mode; prod включает после UAT golden path.
+     */
+    private boolean stripLegacyHeaders = false;
 
     public String getAuthServiceUrl() {
         return authServiceUrl;
@@ -56,6 +63,14 @@ public class InternalIssuerClientProperties {
 
     public void setTimeoutMillis(long timeoutMillis) {
         this.timeoutMillis = timeoutMillis;
+    }
+
+    public boolean isStripLegacyHeaders() {
+        return stripLegacyHeaders;
+    }
+
+    public void setStripLegacyHeaders(boolean stripLegacyHeaders) {
+        this.stripLegacyHeaders = stripLegacyHeaders;
     }
 
     @PostConstruct

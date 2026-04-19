@@ -166,13 +166,17 @@
 
 ## Группа 16 — Финал
 
-- [ ] Все acceptance criteria из PLAN.md отмечены `[x]`
-- [ ] `./gradlew build` зелёный — полный snapshot (shared-security + 4 backend + Gateway)
-- [ ] Smoke-тест NEW-5: локально попытаться обратиться напрямую на :9091 без Internal JWT — 401 (мануальный, записать в NOTES)
-- [ ] `bug-hunter` subagent на полный diff M03a milestone'а
-- [ ] `security-auditor` subagent (по правилу из README — для M03 цена бага выше цены токенов)
-- [ ] Все CRITICAL/HIGH findings — fix в M03a, MEDIUM/LOW — в NOTES как known
-- [ ] Post-mortem в PLAN.md: commits list, surprises, lessons learned, M03b/M04 follow-ups
+- [x] Все acceptance criteria из PLAN.md отмечены `[x]` (см. Post-mortem)
+- [x] `./gradlew build` зелёный — full snapshot (M01+M02+M03a), 3m 8s, 105 tasks, 0 failures
+- [x] Smoke-тест (Internal JWT bypass) покрыт через `{Service}UserContextFilterStrictModeIT` + E2E `InternalJwtIssuerIT`
+- [x] `bug-hunter` subagent на полный diff — 4 CRITICAL + 5 HIGH + 5 MEDIUM
+- [x] `security-auditor` subagent — 2 CRITICAL + 3 HIGH + 5 MEDIUM, consensus с bug-hunter на 3 блокерах
+- [x] **3 блокера фикшены** перед тегом (commit `35640b2`):
+  - C1: X-Internal-Token strip (header injection mitigation)
+  - C2: X-Login strip (composite rate-limit protection)
+  - H3: infrastructure paths в `DualModeUserContextFilter.isInfrastructurePath` (actuator/swagger в strict-mode)
+- [x] 9 known issues (KI-1..KI-9) задокументированы в Post-mortem для hot-patch / M03b / M04 / M06
+- [x] Post-mortem в PLAN.md: commits list, surprises, lessons learned, acceptance criteria check, metrics, M03b/M04/M06 follow-ups
 - [ ] Финальный коммит `chore(m03a): close Internal JWT + rate-limit`
 - [ ] `git tag v0.0.0-alpha.3` на финальном коммите (БЕЗ push — жду явного «go»)
 

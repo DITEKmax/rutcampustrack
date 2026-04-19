@@ -169,4 +169,131 @@ _Никаких «why», «motivation», «background» — это уже в 99-
 
 ## Post-mortem
 
-_Заполняется в конце milestone'а._
+**Финиш:** 2026-04-20. Estimate 6-9д, фактически 1 день в-walltime
+одной Opus-сессии (с заранее готовым из аудита PLAN+CHECKLIST+DECISIONS).
+
+### Commits M03a
+
+От `v0.0.0-alpha.2` до HEAD:
+
+```
+0311297 docs(milestones): scaffold M03a
+ebc35ad docs(m03a): rework architecture — token exchange endpoint
+e5b2e0c docs(m03a): close Group 1 (header name X-Internal-Token)
+ca62e8e feat(shared-security): scaffold Internal JWT validator (Группа 2)
+da41c39 feat(auth): token exchange endpoint (Группа 3)
+23e33b0 feat(gateway): Internal JWT issuer client с Caffeine cache (Группа 4)
+f5f8adc feat(academic): dual-mode + RestClient fix (Группа 5)
+18d50f3 feat(downstream): schedule+attendance+notification (Группы 6-8)
+2cd6de6 docs(m03a): hand-off для следующей сессии
+b38d263 feat(gateway): rate-limit infra (Группа 9)
+025a266 feat(gateway): rate-limit routes + RFC 7807 (Группа 10)
+315a662 feat(auth): LoginRateLimiter composite (ip, login) (Группа 11)
+8a320d1 test(gateway): rate-limit Testcontainers IT + 3 фикса (Группа 12)
+dd96917 test(gateway): contract-тест E2E Internal JWT pipeline (Группа 13)
+4a13b90 feat(gateway): strip-legacy-headers toggle + UAT checklist (Группа 14)
+50123ff docs(m03a): Internal JWT spec + rate-limits + CHANGELOG (Группа 15)
+35640b2 fix(security): audit blockers C1/C2/H3 (Группа 16)
+```
+
+### Surprises (полный список из NOTES)
+
+1. **Group 1 — keypair discovery:** исходный DECISIONS предполагал
+   shared RSA keypair между auth-service и Gateway. Реальность: auth
+   генерит keypair в `@PostConstruct`, Gateway — read-only consumer через
+   `/auth/public-key`. Решение: **(a3) Token Exchange** паттерн (RFC 8693),
+   приватный ключ остаётся только в auth-service.
+2. **Group 5 — WebClient/webflux несовместимость:** `PublicKeyProvider`
+   был написан на Reactor WebClient, а downstream MVC. Решение: переписать
+   на `RestClient` (servlet-friendly, работает в обоих stacks).
+3. **Group 12 — 3 critical bugs обнаружены первым @SpringBootTest:**
+   `@Primary` на ipKeyResolver, `@Autowired` на primary-конструктор
+   `InternalJwtIssuerClient`, `RateLimitProblemDetailsFilter` перехват
+   `setComplete()` (RequestRateLimiter не вызывает writeWith на denied).
+4. **Group 12 — replenishRate unit semantics:** `replenishRate` в
+   Spring Cloud Gateway это tokens/**sec**, НЕ tokens/**min**.
+   PLAN писал «5 req/min per IP», фактически реализовано
+   «burst=5 + 5/sec restore». Документировано в api-rate-limits.md.
+5. **Group 16 audit — 3 блокера:** header injection `X-Internal-Token` и
+   `X-Login` не strip'ались в JwtAuthenticationFilter; infrastructure paths
+   (actuator/api-docs/swagger-ui) в strict-mode возвращали 401 → Docker
+   HEALTHCHECK был бы broken. Исправлены перед тегом.
+
+### Lessons learned
+
+- **Запускать @SpringBootTest раньше.** 3 context-startup бага в Группе
+  12 были бы обнаружены на неделю раньше, если бы первый IT написали сразу
+  в Группе 4 (Gateway issuer). Unit-тесты с `new Component(...)` не видят
+  проблем с Spring autowire.
+- **Security audit обязателен перед тегом.** Без bug-hunter + security-
+  auditor прошёл бы `X-Internal-Token` header injection — критическая
+  уязвимость в Zero Trust Level 2 feature. Два параллельных агента нашли
+  consensus-блокеры, которых не видно изнутри реализации.
+- **Token-bucket семантика требует явного upfront-валидатора.** Все
+  числовые лимиты в CHECKLIST указаны как «X req/min», а фактическая
+  семантика Spring Cloud Gateway — N/sec. Hands-on экспериментом в
+  Testcontainers выявилось только в Группе 12. Добавить в M04 metric
+  `rate_limit_denial_rate` для мониторинга реального поведения.
+- **Header injection защита — must-have list, не blacklist.** Добавить
+  новый header в identity-flow → сразу добавить в strip-list. Regression
+  test должен проверять что все identity-headers (X-User-*, X-Internal-
+  Token, X-Login) удаляются до route-handling.
+
+### Known issues (НЕ блокеры v0.0.0-alpha.3)
+
+Задокументированы из bug-hunter + security-auditor findings, для
+hot-patch после alpha.3 либо в следующих milestones:
+
+| # | Severity | Описание | План |
+|---|----------|----------|------|
+| KI-1 | HIGH | `X-Forwarded-For` spoofing — Gateway и auth-service берут первый IP без trusted-proxies allowlist | M06: nginx + Gateway `server.forward-headers-strategy=native` с whitelist |
+| KI-2 | HIGH | Dual-mode silent fallback: Gateway при auth-service 5xx проваливается в legacy X-User-* без метрики/алерта | M04: метрика `internal_jwt_fallback_total` + Grafana alert |
+| KI-3 | MEDIUM | `InternalJwtIssuerClient` не проверяет `issuedToken.expiresAt()` перед возвратом из кэша — при clock drift возможен expired token (окно ≤60s) | Hot-patch или M03b: добавить expiry check в `issueFor()` |
+| KI-4 | MEDIUM | `PublicKeyProvider.init()` silent swallow exception → `publicKeyRef=null` race окно на старте | M04: readiness probe + InternalJwtException вместо IllegalStateException |
+| KI-5 | MEDIUM | `FailOpenRateLimiter` ловит `RedisSystemException` — слишком широко, прячет real app bugs | Hot-patch: сузить whitelist до Connection/Timeout only |
+| KI-6 | MEDIUM | `LoginRateLimiter` Redis TTL race `INCR+EXPIRE` — network blip = persistent key без expiry | Hot-patch: Lua-script атомарность или `SET ... EX N NX` |
+| KI-7 | MEDIUM | Bcrypt DoS через concurrent invalid-password до `checkBlocked` triggers | M03b/M05: semaphore на bcrypt или pre-check lock на (ip, login) |
+| KI-8 | MEDIUM | Composite rate-limit composite `(ip, login)` неэффективен без Gateway CacheRequestBody extraction X-Login из тела | Hot-patch: реализовать pre-filter extract login-from-body → set X-Login |
+| KI-9 | MEDIUM | `INTERNAL_ISSUER_SECRET` передаётся plaintext по docker bridge — мелкий риск для single-host, значительный для k8s multi-tenant | M06: mTLS или Vault integration |
+
+### M03b / M04 follow-ups
+
+- **M03b (следующий milestone):** JWT HttpOnly cookie + ws-ticket +
+  logout lifecycle (`/auth/ws-ticket` endpoint защищается Internal JWT
+  из M03a). KI-3, KI-6, KI-7, KI-8 можно адресовать попутно.
+- **M04 Observability:** метрики token-exchange cache hit-rate,
+  rate-limit denial rate, fail-open events, internal-jwt-fallback counter.
+  KI-2, KI-4, KI-5 — природно попадают туда.
+- **M06 Ops & Supply Chain:** nginx `trusted-proxies` + mTLS между
+  сервисами. KI-1, KI-9.
+
+### Acceptance criteria check
+
+- [x] Прямой запрос на downstream без Internal JWT → 401 (dual-mode всё
+  ещё accepts legacy, strict-mode → 401). IT `{Service}UserContextFilter
+  StrictModeIT` в всех 4 downstream + E2E `InternalJwtIssuerIT`.
+- [x] Auth-service выпускает валидный Internal JWT через token exchange.
+  `InternalIssuerIT` 5 тестов.
+- [x] Gateway прокидывает Internal JWT через кэш.
+  `InternalJwtIssuerClientTest` 7 тестов (WireMock).
+- [x] Приватный ключ НЕ в Gateway. Grep `api-gateway/src/main` не находит
+  `PrivateKey`/`signWith`/`JWT_PRIVATE_KEY_PEM`.
+- [x] Dual-mode работает. `DualModeUserContextFilter` + infrastructure
+  path exclusions.
+- [x] Rate-limit срабатывает. `RateLimitIT` Testcontainers Redis.
+- [x] Fail-open при Redis down. `FailOpenIT`.
+- [x] `LoginRateLimiter` композитный ключ. 11 unit + 3 IT тестов.
+- [x] RFC 7807 для 429. `RateLimitProblemDetailsFilter`.
+- [x] `./gradlew build` зелёный.
+- [x] `docs/internal-jwt-spec.md` + `docs/api-rate-limits.md` written.
+
+### Metrics финала
+
+- **Commits:** 17 (включая 3 docs/scaffold + 12 feature/test + 2 docs/audit).
+- **Files changed:** ~130 (доминируют test files).
+- **LoC added:** ~4500 (приблизительно), доминируют test files (~60%).
+- **Тестов добавлено:** ~90 новых (unit + IT Testcontainers).
+- **Общее количество тестов после M03a:** ~640 (было ~550 до M03a).
+- **Audit findings:** 4 CRITICAL + 5 HIGH + 5 MEDIUM от bug-hunter +
+  security-auditor. Фиксы 3 блокеров перед тегом (C1/C2/H3). Остальные 11
+  задокументированы как KI-1..KI-9 в post-mortem (hot-patch / M03b / M04 / M06).

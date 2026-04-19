@@ -131,17 +131,18 @@ CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWE
 
 ## Группа 8 — Logout lifecycle (C0-5 полный)
 
-- [ ] `AuthController#logout` дополняется: удаляет ws-ticket'ы
+- [x] `AuthController#logout` дополняется: удаляет ws-ticket'ы
   пользователя (Redis KEYS `ws_ticket:*` где userId matches — через
   отдельный index-set `ws_ticket_user:<userId>` → `Set<ticketId>`).
-- [ ] Push subscription отвязка — `DELETE /api/notifications/push/
-  subscriptions/me` уже существует? Проверить, в frontend logout handler
-  обязательно вызвать.
-- [ ] Event `user.logged-out` через shared-outbox (academic или auth —
-  где ownership session) — для M04 audit.
-- [ ] IT `LogoutLifecycleIT` — после POST /logout: refresh-token в
-  Redis deleted, ws-tickets deleted, push DELETE called, cookie has
-  Max-Age=0
+- [x] Push subscription отвязка — `DELETE /api/notifications/push/subscribe`
+  существует (`PushApi#unsubscribe`), frontend PWA/web-panel вызывают
+  через `clearAllClientState` (P0-5 закрыт в Группах 6/7).
+- [x] Event `user.logged-out` отложен в M04 per DECISIONS 2026-04-20 —
+  в M03b структурный лог `auth.logout userId=... revoked_tickets=...`
+  покрывает audit-trail до появления event-infra.
+- [x] IT `LogoutLifecycleIT` — POST /logout: refresh-token revoked,
+  ws-tickets deleted (Redis keys `ws_ticket:*` + `ws_ticket_user:<id>`
+  исчезли), cookie имеет Max-Age=0. Два теста: с Bearer и cookie-only.
 
 ## Группа 9 — KI-3/6/8 hot-patches из M03a post-mortem
 

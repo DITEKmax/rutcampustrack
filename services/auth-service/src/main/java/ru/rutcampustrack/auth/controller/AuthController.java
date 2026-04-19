@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +28,14 @@ import ru.rutcampustrack.auth.security.AuthCookies;
 import ru.rutcampustrack.auth.service.AuthService;
 import ru.rutcampustrack.auth.service.OtpService;
 import ru.rutcampustrack.auth.service.TmaService;
+import ru.rutcampustrack.auth.service.WsTicketService;
 
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Authentication", description = "JWT authentication endpoints")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     /**
      * Жёсткая дата deprecation'а для /auth/refresh-body. Установлена через
@@ -42,15 +47,18 @@ public class AuthController {
     private final OtpService otpService;
     private final TmaService tmaService;
     private final JwtProperties jwtProperties;
+    private final WsTicketService wsTicketService;
 
     public AuthController(AuthService authService,
                           OtpService otpService,
                           TmaService tmaService,
-                          JwtProperties jwtProperties) {
+                          JwtProperties jwtProperties,
+                          WsTicketService wsTicketService) {
         this.authService = authService;
         this.otpService = otpService;
         this.tmaService = tmaService;
         this.jwtProperties = jwtProperties;
+        this.wsTicketService = wsTicketService;
     }
 
     @Operation(summary = "Login with credentials", description = "Authenticate with login and password, returns JWT token pair + refresh cookie")
@@ -94,12 +102,31 @@ public class AuthController {
         return respondWithCookie(authService.refresh(new RefreshRequest(refreshCookie)));
     }
 
-    @Operation(summary = "Logout", description = "Invalidate refresh token and clear refresh cookie")
+    @Operation(summary = "Logout", description = "Invalidate refresh token, ws-tickets, and clear refresh cookie")
     @ApiResponse(responseCode = "204", description = "Successfully logged out")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @CookieValue(name = AuthCookies.REFRESH_COOKIE_NAME, required = false) String refreshCookie,
-            @RequestBody(required = false) RefreshRequest body) {
+            @RequestBody(required = false) RefreshRequest body,
+            Authentication authentication) {
+        // M03b Группа 8: инвалидируем активные ws-ticket'ы пользователя до revoke refresh —
+        // если access-JWT доступен (Bearer прошёл JwtAuthenticationFilter). Если чистый
+        // cookie-logout без Bearer — пропускаем, ticket'ы истекут сами через 30s.
+        // DECISIONS 2026-04-20: event `user.logged-out` отложен в M04 — структурный лог
+        // здесь покрывает audit до появления event-infra.
+        long userId = -1;
+        int revokedTickets = 0;
+        if (authentication != null && authentication.isAuthenticated()) {
+            try {
+                userId = Long.parseLong(authentication.getName());
+                revokedTickets = wsTicketService.invalidateAllFor(userId);
+            } catch (NumberFormatException ignored) {
+                // anonymous / malformed principal — пропускаем
+            }
+        }
+        log.info("auth.logout userId={} revoked_tickets={} cookie_logout={}",
+                userId, revokedTickets, refreshCookie != null && !refreshCookie.isBlank());
+
         // Best-effort: revoke cookie token if present, иначе — body (legacy TMA).
         String token = refreshCookie != null && !refreshCookie.isBlank()
                 ? refreshCookie

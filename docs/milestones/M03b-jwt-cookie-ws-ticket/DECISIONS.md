@@ -80,6 +80,22 @@ issue), либо periodic sweep. Выберу TTL на set = max(ticket TTL) * 2
 `Sunset: ...`. Планирую удаление в M04 (или M05 если M04 занят
 observability-первоочерёдностями).
 
+## 2026-04-20 — Event `user.logged-out` отложен в M04
+
+**Выбрано:** НЕ publish event в M03b, откладываем в M04 Observability
+**Отвергнуто:** publish через новый модуль в auth-service (shared-outbox,
+RabbitMQ direct, Redis pub/sub)
+**Причина:** auth-service — stateless issuer без БД/outbox (по архитектуре
+M01-M03a). Добавление publish-инфраструктуры только ради одного audit-event
+требует 300+ LoC (outbox-module + Flyway migration + publisher job + consumer),
+что раздувает scope M03b. M04 Observability уже включает structured logging +
+OTel tracing, где audit-event можно сделать через single `log.info("auth.logout",
+mdc={user_id, ip, ticket_count_revoked, session_duration})` — zero infra cost.
+**Последствия:** до M04 audit-trail logout'а не виден в аналитике. Access log
+Gateway (`POST /api/auth/logout 204`) + structured log в auth-service
+(добавляется в этой группе) покрывают 80% use-case. В M04 добавим явный
+event при переходе на Alertmanager/Tempo.
+
 ---
 
 _Формат записи (после подтверждения):_

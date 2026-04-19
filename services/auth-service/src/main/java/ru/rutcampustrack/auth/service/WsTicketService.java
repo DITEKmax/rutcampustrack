@@ -94,16 +94,20 @@ public class WsTicketService {
 
     /**
      * Для Группы 8 (logout): invalidate все tickets пользователя.
-     * SMEMBERS + batch DEL + DEL user-set.
+     * SMEMBERS + batch DEL + DEL user-set. Возвращает число удалённых
+     * ticket'ов для audit-log.
      */
-    public void invalidateAllFor(long userId) {
+    public int invalidateAllFor(long userId) {
         String userSetKey = USER_SET_PREFIX + userId;
         var tickets = redisTemplate.opsForSet().members(userSetKey);
+        int count = 0;
         if (tickets != null && !tickets.isEmpty()) {
+            count = tickets.size();
             var keys = tickets.stream().map(t -> KEY_PREFIX + t).toList();
             redisTemplate.delete(keys);
         }
         redisTemplate.delete(userSetKey);
+        return count;
     }
 
     private Optional<TicketClaims> parsePayload(String payload) {

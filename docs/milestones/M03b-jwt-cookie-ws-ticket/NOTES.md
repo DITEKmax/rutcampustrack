@@ -87,6 +87,28 @@ WsTicketController парсит access-JWT через JwtService.parseToken() ч
 
 Обратная совместимость: не требуется, endpoint добавлен в M03b.
 
+## 2026-04-20 — Surprise: /auth/logout был authenticated-only, добавлен в permitAll
+
+Hand-off блок предполагал что `/auth/logout` уже в permit-all (и
+JwtAuthenticationFilter всё равно парсит Bearer если есть). Реальность:
+SecurityConfig авторизовал `/auth/logout` через `.anyRequest().authenticated()`,
+и Gateway тоже требовал Bearer (не в PUBLIC_PATHS).
+
+Edge-case: access истёк, refresh в cookie — клиент не может logout без
+предварительного refresh → revoke refresh-token в Redis не происходит.
+
+**Решение:** `/auth/logout` добавлен в permitAll обеих (auth-service
+SecurityConfig + Gateway JwtAuthenticationFilter PUBLIC_PATHS). Опционально
+Bearer — если есть, JwtAuthenticationFilter выставит Authentication и
+we invalidate ws-ticket'ы; если нет (cookie-only) — пропускаем invalidation
+(ticket'ы TTL 30s).
+
+Безопасность: logout — идемпотентная операция на переданном refresh-token.
+Злоумышленник может логаутнуть валидный cookie, но для этого уже нужен
+cookie (CSRF закрывается SameSite=Strict, same-origin).
+
+LogoutLifecycleIT покрывает оба пути (с Bearer / cookie-only).
+
 ## 2026-04-20 — Hand-off для следующей сессии (конец дня)
 
 **Прогресс M03b: 6 из 13 групп закрыто + Группа 5 reserved.**

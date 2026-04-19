@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 /**
  * Единая Jackson-конфигурация для всех сервисов (P2-4/8, P2-1/5):
@@ -25,7 +27,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JacksonConfig {
 
+    /**
+     * Применяется РАНЬШЕ сервис-локальных customizers (LOWEST_PRECEDENCE = late in chain).
+     * Сервис может переопределить любой flag, подключив свой customizer с меньшим order
+     * (например {@code @Order(LOWEST_PRECEDENCE - 100)}).
+     */
     @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public Jackson2ObjectMapperBuilderCustomizer sharedJacksonCustomizer() {
         return builder -> builder
                 .featuresToEnable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)

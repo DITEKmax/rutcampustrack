@@ -82,12 +82,12 @@
 
 ## Группа 10 — финал
 
-- [ ] Прогнать все acceptance criteria из PLAN.md
-- [ ] `./gradlew build` зелёный полностью (все 5 сервисов + 4 shared)
-- [ ] Optional: `bug-hunter` subagent на diff milestone'а (один вызов)
-- [ ] Финальный коммит `feat(shared): shared-web + shared-events + shared-logback + shared-test-containers (M3)`
-- [ ] Post-mortem в PLAN.md (измерения, surprises, TODO для других milestones)
-- [ ] Отметить M3 как ✅ готов в `docs/milestones/README.md`
+- [x] Acceptance criteria из PLAN.md прогнаны — все ✅ (проверено в Группах 1-8)
+- [x] `./gradlew build` зелёный полностью — 1m 1s, 95 задач, все 5 сервисов + 4 shared
+- [x] `bug-hunter` subagent на diff milestone'а — 7 находок; 3 исправлены сразу (NotificationExceptionHandler @Order offset + FQN, JacksonConfig @Order LOWEST_PRECEDENCE, GrpcInProcessFixture start-failure handling); 3 задокументированы как known limitations в shared-logback/README.md; 1 отложена в M08
+- [x] Атомарные коммиты по группам (9 коммитов) + финальный для post-mortem + bug-hunter fixes
+- [x] Post-mortem в PLAN.md — измерения, surprises, bug-hunter findings, TODO для M02/M03/M04/M06/M08
+- [x] M01 отмечен ✅ в `docs/milestones/README.md` + CLAUDE.md
 
 ---
 

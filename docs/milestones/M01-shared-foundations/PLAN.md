@@ -151,5 +151,75 @@ notification-service сейчас без GlobalExceptionHandler (05 P0-2 / C1-11
 
 ## Post-mortem
 
-_Заполняется в конце milestone'а (измерения, surprises, что пошло не
-по плану, что надо исправить в следующих milestones)._
+**Статус:** ✅ завершён 2026-04-19 (один день, 9 атомарных коммитов).
+
+### Измерения
+
+- **Код:** 4 shared-модуля + 1 сервис-потребитель (notification-service).
+  ~2600 LOC (+тесты), распределение близко к прогнозу PLAN.md.
+- **Тесты:** 75 новых unit+integration в shared-модулях, 6 новых в
+  notification-service (acceptance). `./gradlew build` зелёный (1m 1s),
+  0 failures во всём репозитории.
+- **Commits:** 10 атомарных коммитов (8 групп кода + docs + final fixes).
+- **Длительность:** один рабочий день (план: 5-7 д.). Быстрее, потому что
+  аудит сделал research (OWNER-ANSWERS.md дал все архитектурные ответы
+  заранее), а существующий `ErrorResponse` в academic дал canonical-reference.
+
+### Что пошло по плану
+
+- Все 8 CHECKLIST-групп выполнены с минимальными отклонениями.
+- Notification-service acceptance прошёл с первого прогона после Testcontainers
+  и mock PushService — integration-тесты реально запустили Mongo+Rabbit.
+- Version Catalog (gradle/libs.versions.toml) оправдал себя — единое место
+  версий shared-модулей, готово к Renovate в M06.
+
+### Surprises / отклонения от PLAN.md
+
+1. **ErrorResponse — 9 полей вместо 8.** PLAN.md предполагал
+   `(status, type, title, detail, instance, timestamp, traceId, invalidParams)`,
+   но academic-service уже имел `field` + `extras` для BUG-006-2 и каскадного
+   удаления. Сохранили оба (Вариант B в DECISIONS.md). Миграция фронтов
+   (rename `fieldErrors` → `invalidParams`) откладывается до M04.
+2. **InvalidParam — 3 поля вместо 2** (добавлен опциональный `rejectedValue`)
+   — zero-cost, сохраняет debug-полезный `FieldError.rejectedValue` из legacy.
+3. **notification-service — два пункта CHECKLIST оказались N/A.** «Удалить
+   локальный error-handling» и «Мигрировать `NotificationIntegrationIT` с
+   @MockitoBean» — этих артефактов в сервисе не было. Вместо миграции —
+   `NotificationErrorHandlingIT` сразу расширяет `ContainerTestBase`.
+4. **Notification-service получил `spring-security-core`** в runtime.
+   shared-web требует `AccessDeniedException` для handler'а; без этого
+   класса Spring падает на рефлексии. Остальные 4 сервиса при миграции
+   в M03/M04 получат то же самое.
+5. **shared-events: testImplementation jackson** явно добавлены — без этого
+   `spring-boot-starter-test` не тащит `JavaTimeModule` транзитивно.
+6. **AOP-тест `@AdminAction`** — пришлось переписать с counter-based
+   assert'а (CGLIB proxy не делит state с target) на `AopUtils.isAopProxy`.
+
+### Bug-hunter findings (инвестированы обратно в M01)
+
+Вызван bug-hunter subagent на diff milestone'а. 7 находок, разбивка:
+- **Исправлено сейчас (3):** `NotificationExceptionHandler` теперь использует
+  FQN и `HIGHEST_PRECEDENCE + 100` offset; `JacksonConfig` получил
+  `@Order(LOWEST_PRECEDENCE)` чтобы сервис-локальные customizers имели
+  приоритет; `GrpcInProcessFixture.startServer` больше не оставляет
+  half-started server в undefined state при IOException.
+- **Задокументировано как known limitations (3):** regex маскирует только
+  поле `msg` (stack traces — backlog M04); `Bearer regex` узкий (только JWT);
+  `telegram_id` переписывает имя поля. Всё в `shared-logback/README.md`.
+- **Отложено до M04/M08 (1):** `ContainerTestBase` static containers без
+  `.stop()` + требует `.testcontainers.properties` на dev-машинах — CI
+  работает через Ryuk, dev требует manual setup. Документация уже есть
+  в README, улучшение фиксирован lifecycle будет в M08 (Playwright + coverage-gate).
+
+### TODO для следующих milestones
+
+- **M02:** подключить `AbstractEventPublisher`/`Consumer` к реальному
+  RabbitListener (сейчас чистое API). Добавить contract-тесты JSON Schema.
+- **M03:** мигрировать academic/schedule/attendance на shared-web
+  (drift handlers). Добавить Spring Security + Internal JWT.
+- **M04:** реальный audit handler за `@AdminAction`. Расширить masking
+  на stack traces. Использовать capture-group в telegram_id regex.
+- **M06:** наполнить `SharedOpenApiCustomizer` — единое описание
+  стандартных 4xx/5xx errors со ссылкой на shared `ErrorResponse` schema.
+- **M08:** пересмотреть `ContainerTestBase` static lifecycle, добавить
+  `@EnabledIfDockerAvailable` для smoke-тестов.

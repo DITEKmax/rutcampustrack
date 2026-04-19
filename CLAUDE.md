@@ -24,7 +24,7 @@ RutCampusTrack — микросервисная система учёта пос
 
 | # | Milestone | Содержание |
 |---|-----------|------------|
-| M01 | Shared Foundations | 4 shared-модуля (web/events/logback/test-containers) |
+| M01 | Shared Foundations | ✅ 4 shared-модуля (web/events/logback/test-containers) — завершён 2026-04-19 |
 | M02 | Reliable Eventing | ShedLock + in-app outbox + contract-тесты events |
 | M03 | Secure Boundaries | Internal JWT + JWT HttpOnly cookie + WS-ticket + logout lifecycle |
 | M04 | Observability | OTel+Tempo tracing + Alertmanager + JSON-логи + retention |

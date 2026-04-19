@@ -26,12 +26,14 @@ import java.time.Instant;
  * — наш доменный класс, Spring shared handler его не знает — нужен свой.
  */
 @RestControllerAdvice
-@Order(Ordered.HIGHEST_PRECEDENCE)
+// +100 offset — оставляем место для будущих security-advice в M03 (wrap Spring AccessDeniedException).
+@Order(Ordered.HIGHEST_PRECEDENCE + 100)
 public class NotificationExceptionHandler {
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex,
-                                                             HttpServletRequest request) {
+    @ExceptionHandler(ru.rutcampustrack.notification.exception.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            ru.rutcampustrack.notification.exception.AccessDeniedException ex,
+            HttpServletRequest request) {
         ErrorResponse body = new ErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
                 ErrorResponse.PROBLEM_BASE + "access-denied",

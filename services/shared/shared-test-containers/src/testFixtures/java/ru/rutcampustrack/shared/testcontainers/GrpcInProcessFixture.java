@@ -43,8 +43,17 @@ public class GrpcInProcessFixture implements AutoCloseable {
         for (BindableService service : services) {
             builder.addService(service);
         }
-        server = builder.build().start();
-        channel = InProcessChannelBuilder.forName(channelName)
+        Server built = builder.build();
+        try {
+            built.start();
+        } catch (IOException | RuntimeException e) {
+            // Если start() упал, Server остаётся в undefined state — гасим его
+            // принудительно и снимаем ссылку, чтобы shutdown() не трогал half-started.
+            built.shutdownNow();
+            throw e;
+        }
+        this.server = built;
+        this.channel = InProcessChannelBuilder.forName(channelName)
                 .directExecutor()
                 .build();
     }

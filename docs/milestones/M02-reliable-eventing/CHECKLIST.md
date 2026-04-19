@@ -34,12 +34,15 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 4 — Outbox infrastructure (Entity + Repository + Publisher)
 
-- [ ] `OutboxEntity` (JPA для PG) / `OutboxDocument` (Mongo для attendance)
-- [ ] `OutboxRepository` + `findPendingBatch(limit)` запрос
-- [ ] `OutboxPublisherJob` — `@Scheduled(fixedDelay=5000)` + `@SchedulerLock(name="outbox-publisher")` + `@Transactional`
-- [ ] Publisher: read batch → send через `RabbitTemplate` → mark sent в той же tx
-- [ ] Error handling: `status=failed`, `retry_count++`, `last_error` (exponential backoff в публикации не делаем в M02 — fixed 5s pull)
-- [ ] Unit-тесты `OutboxPublisherJobTest` (mock RabbitTemplate)
+- [x] `OutboxEntity` — JPA `@MappedSuperclass` в shared-outbox. Подклассы будут в сервисах (Группа 5).
+- [x] `JpaOutboxStorage<E extends OutboxEntity>` — EntityManager queries, параметризован типом сущности
+- [x] `MongoOutboxStorage` — native MongoTemplate + Document (без shared `@Document` класса, коллекция — параметр конструктора). `ensureIndexes()` для hot-path'ов.
+- [x] `OutboxEventSender` — functional interface (callback для транспорта). Сервис передаёт в конструктор PublisherJob.
+- [x] `OutboxPublisherJob` — `@Scheduled(fixedDelayString="${...:5000}")` + `@SchedulerLock(name="outbox-publisher")` + `@Transactional`. `publishBatch()` выделен для unit-тестов.
+- [x] Publisher: read batch (100) → sender.send() → markSent/markFailed в той же tx
+- [x] Error handling: `markFailed` → `status=failed, retry_count++, last_error` (truncated до 2000 chars). Retry выполняется automatically — sender Exception откатывает tx, row остаётся pending, следующий tick подхватит.
+- [x] `OutboxPublisherJobTest` — 6/6 зелёных (empty batch, all success, sender throws, partial failure, ordering, lock-name)
+- [x] N/A — Integration-тесты JpaOutboxStorage / MongoOutboxStorage отложены в Группу 5 (там естественно покрыто через реальный сервисный context)
 
 ## Группа 5 — Refactor существующих publisher'ов на outbox
 

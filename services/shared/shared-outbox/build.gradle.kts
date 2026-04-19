@@ -41,7 +41,9 @@ dependencies {
     testImplementation("org.springframework:spring-context")
     testImplementation("org.springframework:spring-tx")
     testImplementation("org.springframework.boot:spring-boot-starter-amqp")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     testImplementation(libs.shedlock.spring)
     testImplementation("jakarta.persistence:jakarta.persistence-api")
+    testImplementation("org.mongodb:bson")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

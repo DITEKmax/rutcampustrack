@@ -15,80 +15,70 @@ OWNER-ANSWERS.md. Каждая запись — 5-10 строк, не больш
 
 ---
 
-## ОТКРЫТО — развилки к подтверждению до кодинга
+## 2026-04-20 — Cookie Path scope
 
-Эти записи владелец подтверждает в Группе 1 (Discovery) до старта
-кодинга. Когда решение принято — переоформить в обычный
-`## YYYY-MM-DD —` блок.
+**Выбрано:** `Path=/api/auth` (как в OWNER-ANSWERS 02-Q-frontend-security)
+**Отвергнуто:** `/api/auth/refresh`, `/`
+**Причина:** OWNER-ANSWERS 2026-04-18 уже зафиксировал `Path=/api/auth` —
+cookie доступна на всех auth endpoints (login/refresh/logout). Узкий
+`Path=/api/auth/refresh` был бы плюсом, но требует лишней настройки на
+logout-endpoint (пришлось бы для clear-cookie тоже слать Path=/api/auth/refresh).
+**Последствия:** cookie видна на любом `/api/auth/**` endpoint'е. Для
+mutating endpoint'ов same-origin + SameSite=Strict закрывают CSRF-риск.
 
-### ОТКРЫТО — Cookie Path scope
+## 2026-04-20 — SameSite attribute
 
-**Варианты:**
-- (a) `Path=/api/auth/refresh` — cookie отправляется ТОЛЬКО на refresh
-  endpoint. Минимизирует surface для accidental CSRF.
-- (b) `Path=/api/auth` — cookie на любой auth endpoint.
-- (c) `Path=/` — cookie везде. Удобнее для frontend, но CSRF-атака
-  может использовать любой mutating endpoint downstream.
+**Выбрано:** `SameSite=Strict` (как в OWNER-ANSWERS 02-Q-frontend-security)
+**Отвергнуто:** `Lax`
+**Причина:** OWNER-ANSWERS 2026-04-18 зафиксировал `SameSite=Strict`.
+Мы 100% same-origin (`ruttrack.site` отдаёт и frontend, и `/api` через
+общий nginx) — Strict не мешает UX. OAuth-интеграция не планируется до
+v1.0. Strict полностью закрывает cross-origin CSRF, поэтому отдельный
+CSRF-token не нужен.
+**Последствия:** WebView (Telegram Mini App) должны отправлять cookie
+на same-origin requests — это их default behavior. Если в будущем
+появится OAuth cross-site redirect, переключаемся на Lax с добавлением
+double-submit token (зафиксировать в M07 или v1.0).
 
-**Рекомендация:** (a) `Path=/api/auth/refresh`. CSRF защита минимизирована
-per-endpoint. Frontend не нуждается в cookie на других routes.
+## 2026-04-20 — CSRF mechanism
 
-### ОТКРЫТО — SameSite attribute
+**Выбрано:** NONE — same-origin + `SameSite=Strict` достаточно
+**Отвергнуто:** double-submit cookie, sync-token
+**Причина:** OWNER-ANSWERS NEW-14 — «при same-origin это не нужно...
+Решить при имплементации». `ruttrack.site` — единственный origin,
+`SameSite=Strict` запрещает cookie на любой cross-site request. Доп.
+double-submit token добавил бы ~100 LoC (filter + frontend interceptor)
+без real security benefit.
+**Последствия:** если в будущем фронтенд будет на другом домене (или
+OAuth-callback потребует переход на Lax) — добавить double-submit
+token. Пометить в Post-mortem M03b как «follow-up conditional».
 
-**Варианты:**
-- (a) `SameSite=Lax` — cookie отправляется на top-level navigation
-  (например OAuth callback), не отправляется на cross-origin mutating.
-- (b) `SameSite=Strict` — cookie НЕ отправляется на любую cross-origin
-  request, даже top-level navigation.
+## 2026-04-20 — WS-ticket storage key scheme
 
-**Рекомендация:** (a) `Lax`. Совместим с потенциальным OAuth flow,
-достаточно защищает от CSRF при modern browsers. Для legacy browsers
-(которых RUT MIIT целевой аудитории почти нет) добавить double-submit
-CSRF token.
+**Выбрано:** (c) комбинация `ws_ticket:<uuid>` (value JSON) +
+`ws_ticket_user:<userId>` (Set<uuid>)
+**Отвергнуто:** opaque-uuid только, composite-key с KEYS-scan
+**Причина:** Группа 8 требует invalidate всех ticket'ов пользователя
+при logout без `KEYS` (production-safe). Atomic consume через Lua-script
+(GET+DEL на `ws_ticket:<uuid>` + SREM из `ws_ticket_user:<userId>` в одном
+shot).
+**Последствия:** два ключа на ticket; cleanup осиротевших членов set'а
+при expiry ticket'ов требует либо отдельного TTL на set (refresh на каждый
+issue), либо periodic sweep. Выберу TTL на set = max(ticket TTL) * 2 = 60s
+с refresh при каждом новом ticket'е для userId.
 
-### ОТКРЫТО — CSRF mechanism
+## 2026-04-20 — /auth/refresh-body deprecation timeline
 
-**Варианты:**
-- (a) Double-submit cookie pattern: `rct_csrf` cookie (non-HttpOnly) +
-  `X-CSRF-Token` header на mutating. Frontend читает cookie, добавляет
-  в header. Сервер сравнивает.
-- (b) Sync-token pattern: server генерирует token в session, отдаёт в
-  response body, клиент хранит в memory, шлёт в header. Требует state
-  на сервере (Redis session).
-- (c) `SameSite=Strict` only, без CSRF token. Modern browsers достаточно
-  защищают.
-
-**Рекомендация:** (a) Double-submit. Stateless (Redis не нужен),
-защищает от CSRF даже при SameSite=Lax (при cross-origin
-top-navigation). Frontend overhead минимален (interceptor).
-
-### ОТКРЫТО — WS-ticket storage key scheme
-
-**Варианты:**
-- (a) `ws_ticket:<opaque-uuid>` → value `{userId, role, expiresAt}`
-  (JSON). Простой consume через GET+DEL.
-- (b) `ws_ticket:<userId>:<jti>` → value `<ticket-blob>`. Позволяет
-  быстро invalidate все tickets пользователя при logout через `KEYS
-  ws_ticket:<userId>:*` (дорого при большом Redis).
-- (c) Комбинация: `ws_ticket:<uuid>` → value + отдельный set
-  `ws_ticket_user:<userId>` → `Set<uuid>`. Удобно для logout
-  invalidation, сложнее в поддержке.
-
-**Рекомендация:** (c) — нужно для logout lifecycle (Группа 8
-invalidation всех user'а tickets). Atomic consume через Lua-script
-(GET+DEL+SREM one shot).
-
-### ОТКРЫТО — /auth/refresh-body deprecation timeline
-
-**Варианты:**
-- (a) Удалить в финальном коммите M03b (нет backward-compat).
-- (b) Оставить 1 milestone (M04) с `Deprecation: true` header, удалить
-  в M04/M05.
-- (c) Оставить навсегда для hypothetical mobile native apps.
-
-**Рекомендация:** (b). Даёт frontend'у 1 milestone переходный период.
-Native mobile apps НЕ запланированы в v0.0.0-v1.0 — отсутствие
-cookie-stack там не актуально.
+**Выбрано:** (b) оставить 1 milestone с `Deprecation: true` header,
+удалить в M04 или M05
+**Отвергнуто:** удалить в M03b (breaking), оставить навсегда
+**Причина:** frontend получает переходный период — даже если PWA/web-panel
+сразу мигрируют, integration-тесты и старые клиенты/админские скрипты
+успеют заметить warning-header. Native mobile не запланирован до v1.0.
+**Последствия:** в M03b оставляем старый `POST /auth/refresh` с body
+{refreshToken} и header `Deprecation: Tue, 01 Jun 2026 00:00:00 GMT` +
+`Sunset: ...`. Планирую удаление в M04 (или M05 если M04 занят
+observability-первоочерёдностями).
 
 ---
 

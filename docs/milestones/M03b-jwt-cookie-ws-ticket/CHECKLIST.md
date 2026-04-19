@@ -1,45 +1,44 @@
 # M03b Checklist
 
 Порядок: auth-service cookie+ws-ticket endpoints → notification-web
-handshake → frontend migration → logout lifecycle → CSRF → hot-patches из
+handshake → frontend migration → logout lifecycle → hot-patches из
 M03a post-mortem (KI-3/6/7/8) → документация → финал.
+
+CSRF-инфраструктура удалена из scope (DECISIONS 2026-04-20:
+same-origin + `SameSite=Strict`). Группа 5 переформатирована на
+«reserved» с пустым content — для сохранения нумерации.
 
 ## Группа 1 — Discovery + архитектурные решения
 
-- [ ] Прочитать docs/milestones/M03a-internal-jwt-ratelimit/PLAN.md
+- [x] Прочитать docs/milestones/M03a-internal-jwt-ratelimit/PLAN.md
   «Post-mortem» — Known Issues KI-1..KI-9 (какие попадают в M03b, какие
   в M04/M06)
-- [ ] Прочитать `02-Q-frontend-security` в OWNER-ANSWERS.md — Часть А
+- [x] Прочитать `02-Q-frontend-security` в OWNER-ANSWERS.md — Часть А
   (cookie) + Часть Б (clearAllClientState)
-- [ ] Прочитать 09-frontend-pwa.md, 10-frontend-web-panel.md отчёты
+- [x] Прочитать 09-frontend-pwa.md, 10-frontend-web-panel.md отчёты
   (P0-1/2/4/5 в обоих)
-- [ ] DECISIONS.md: cookie Path — `/api/auth/refresh` (узкий scope) vs
-  `/api/auth` (шире, удобнее proxy-кэширование). Выбрать.
-- [ ] DECISIONS.md: SameSite — `Lax` vs `Strict`. `Lax` совместим с
-  OAuth-редиректами (если появятся), `Strict` безопаснее
-- [ ] DECISIONS.md: CSRF token storage — double-submit cookie vs
-  SameSite-only (SameSite=Strict достаточна для ModernBrowser, CSRF token
-  — legacy-compat)
-- [ ] DECISIONS.md: ws-ticket storage — Redis с TTL 30s single-use;
-  схема ключа `ws_ticket:<userId>:<jti>` или `ws_ticket:<opaque-uuid>`
-- [ ] DECISIONS.md: deprecation path для `/auth/refresh-body` — 1
-  milestone (M03b→M04 removed) или оставить навсегда для mobile native
-  apps (если они когда-нибудь появятся)
+- [x] DECISIONS.md: cookie Path — выбран `/api/auth` (из OWNER-ANSWERS)
+- [x] DECISIONS.md: SameSite — выбран `Strict` (из OWNER-ANSWERS)
+- [x] DECISIONS.md: CSRF token storage — NONE (same-origin + SameSite=Strict)
+- [x] DECISIONS.md: ws-ticket storage — (c) `ws_ticket:<uuid>` +
+  `ws_ticket_user:<userId>` Set, atomic consume via Lua
+- [x] DECISIONS.md: deprecation path для `/auth/refresh-body` — 1
+  milestone с `Deprecation:` header, удалить в M04/M05
 
 ## Группа 2 — Auth-service: cookie endpoints
 
 - [ ] `AuthController#login` — добавить `Set-Cookie` на successful login
-  (cookie `rct_refresh` с refresh-token, HttpOnly+Secure+SameSite=Lax+
-  Path=...+Max-Age=<refreshTtl>)
+  (cookie `rct_refresh` с refresh-token, HttpOnly+Secure+SameSite=Strict+
+  Path=/api/auth+Max-Age=<refreshTtl>)
 - [ ] `AuthController#refresh` — новый `@PostMapping("/refresh")` читает
   `@CookieValue("rct_refresh")`, возвращает new access + cookie rotate
 - [ ] `AuthController#refresh-body` — deprecated (оставляется на 1
   milestone с header `Deprecation: true`)
 - [ ] `AuthController#logout` — в Set-Cookie пишет cookie с Max-Age=0
-  (clear), revokes refresh в Redis как раньше
+  и тем же Path=/api/auth (clear), revokes refresh в Redis как раньше
 - [ ] Unit/IT: `AuthIntegrationTest` расширить — cookie присутствует,
-  `rct_refresh=...; HttpOnly; Secure; SameSite=Lax; Max-Age=N`. Refresh
-  через cookie works.
+  `rct_refresh=...; HttpOnly; Secure; SameSite=Strict; Path=/api/auth;
+  Max-Age=N`. Refresh через cookie works.
 - [ ] `docs/auth-flow.md` scaffold с cookie flow diagram
 
 ## Группа 3 — Auth-service: ws-ticket endpoint
@@ -66,18 +65,12 @@ M03a post-mortem (KI-3/6/7/8) → документация → финал.
 - [ ] IT `WsHandshakeIT` (Testcontainers) — valid ticket → handshake 101;
   invalid/used → 401
 
-## Группа 5 — CSRF infrastructure
+## Группа 5 — (reserved — was CSRF, removed per DECISIONS 2026-04-20)
 
-- [ ] `CsrfTokenFilter` в auth-service — на login/refresh ставит
-  non-HttpOnly cookie `rct_csrf` (random UUID), на mutating requests
-  валидирует `X-CSRF-Token` header == cookie value (double-submit pattern)
-- [ ] SecurityConfig — filter order: CSRF перед
-  UsernamePasswordAuthenticationFilter
-- [ ] Unit-тест: POST без X-CSRF-Token → 403; mismatched → 403; valid
-  match → passthrough
-- [ ] Gateway — проверить что cookie `rct_csrf` forward'ится downstream
-  (и что CSRF check применяется в auth-service, не в Gateway — Gateway
-  stateless)
+Группа удалена из scope M03b. Same-origin + `SameSite=Strict` закрывают
+CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWERS
+02-Q-frontend-security). Нумерация следующих групп сохранена для
+целостности ссылок.
 
 ## Группа 6 — Frontend PWA: cookie+ticket миграция
 
@@ -90,8 +83,8 @@ M03a post-mortem (KI-3/6/7/8) → документация → финал.
   unsubscribe + DELETE /api/notifications/push/subscriptions/me
 - [ ] `WebSocketClient` — перед connect: POST /auth/ws-ticket → получает
   ticket → `new WebSocket(..?ticket=${t})`. Без query-JWT.
-- [ ] axios/fetch interceptor — читает cookie `rct_csrf`, добавляет
-  `X-CSRF-Token: <value>` на всех mutating requests
+- [ ] axios/fetch interceptor — `credentials: 'include'` на всех
+  `/api/auth/**` requests (чтобы браузер слал cookie)
 - [ ] Удалить `localStorage.setItem('rct.auth.v1', ...)` везде. Migration
   helper на старте: если видит старый ключ → удалить + redirect to login
 - [ ] Vitest: useAuth flow, clearAllClientState interaction с SW
@@ -100,11 +93,11 @@ M03a post-mortem (KI-3/6/7/8) → документация → финал.
 ## Группа 7 — Frontend web-panel: миграция (Angular)
 
 - [ ] `core/auth/auth.service.ts` — breaking rewrite: те же принципы
-  (cookie+memory), HttpInterceptor для CSRF
+  (cookie+memory)
 - [ ] `core/auth/clear-all-client-state.service.ts` — Angular-версия
   helper'а (sessionStorage clear + reset NgRx/Signals state)
-- [ ] `AuthInterceptor` — CSRF header из cookie, credentials: 'include'
-  на всех requests
+- [ ] `AuthInterceptor` — `withCredentials: true` на `/api/auth/**`
+  requests (HttpClient по умолчанию НЕ шлёт cookie)
 - [ ] Удалить `localStorage` refs для auth. Migration helper на старте.
 - [ ] Jasmine/Vitest: auth flow tests
 
@@ -147,7 +140,7 @@ M03a post-mortem (KI-3/6/7/8) → документация → финал.
 ## Группа 11 — Tests + security audit
 
 - [ ] Expanded IT suite: JwtCookieRefreshIT, WsTicketIT, LogoutLifecycleIT,
-  CsrfIT, AuthFlowE2EIT (mock-based, Playwright в M08)
+  AuthFlowE2EIT (mock-based, Playwright в M08)
 - [ ] bug-hunter subagent на полный diff
 - [ ] security-auditor subagent (C0-5 + C0-7 — высокая цена бага)
 - [ ] Все CRITICAL/HIGH — fix в milestone, MEDIUM/LOW — в NOTES как KI

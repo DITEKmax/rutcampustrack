@@ -14,6 +14,28 @@
 
 ---
 
+## 2026-04-20 — Resolution: выбран вариант A из OWNER-ANSWERS
+
+Владелец подтвердил выравнивание с OWNER-ANSWERS 02-Q-frontend-security
+(2026-04-18):
+
+- Cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=604800`
+- CSRF token НЕ нужен (same-origin покрывает)
+
+**Последствия для PLAN.md / CHECKLIST.md:**
+- Группа 5 (CSRF infrastructure) — удаляется полностью
+- PLAN.md раздел «5. CSRF infrastructure» — удаляется
+- Acceptance criterion "CSRF: mutating request без X-CSRF-Token → 403" — удаляется
+- Axios/Angular interceptor для CSRF — не пишем
+- Scope M03b уменьшается на ~1 день
+
+**Conditional follow-up (НЕ в scope M03b):** если в v1.0+ появится
+второй origin (отдельный домен для backend / OAuth callback) —
+переключаемся на SameSite=Lax + добавляем double-submit CSRF token.
+Зафиксировать в Post-mortem как conditional future work.
+
+---
+
 ## Backlog из M03a post-mortem (для рассмотрения в Группах 9-10)
 
 Известные issues, которые попадут в M03b или будут документированы как

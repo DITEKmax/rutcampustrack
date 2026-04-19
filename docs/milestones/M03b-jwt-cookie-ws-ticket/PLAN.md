@@ -1,7 +1,7 @@
 # M03b — JWT HttpOnly Cookie + WebSocket Ticket + Logout Lifecycle
 
-**Статус:** ⬜ не начат
-**Старт / финиш:** — / —
+**Статус:** ⏳ в работе
+**Старт / финиш:** 2026-04-20 / —
 **Estimate:** 8-12 человеко-дней
 
 ---
@@ -16,7 +16,8 @@ logout lifecycle.
 **Закрывает (сверка с `15-cross-cutting-issues.md` + `OWNER-ANSWERS.md`):**
 
 - **Кластер C0-7** — JWT HttpOnly cookie + ws-ticket (09 P0-1/2, 10 P0-1/2,
-  4 P0 + CSRF) — **самый дорогой кластер**.
+  4 P0) — **самый дорогой кластер**. CSRF token НЕ реализуется
+  (DECISIONS 2026-04-20, same-origin + `SameSite=Strict`).
 - **Кластер C0-5** — logout lifecycle (09 P0-4/5, 10 P0-4, 3 P0):
   `clearAllClientState()` в PWA/web-panel + SW cache wipe + push
   subscription отвязка.
@@ -41,27 +42,27 @@ logout lifecycle.
 ### 1. Auth-service — cookie endpoints + ws-ticket
 
 - `AuthController#refresh` — новый mode: читает refresh-token из cookie
-  `rct_refresh`, пишет new refresh в cookie (`HttpOnly; Secure; SameSite=Lax;
-  Path=/api/auth/refresh; Max-Age=<refresh-ttl>`), access в body JSON.
+  `rct_refresh`, пишет new refresh в cookie (`HttpOnly; Secure; SameSite=Strict;
+  Path=/api/auth; Max-Age=<refresh-ttl>`), access в body JSON.
   Оставляет `refresh-body` endpoint на 1 milestone как deprecation-path.
 - `POST /auth/ws-ticket` — **новый endpoint**. Требует Internal JWT (из
   M03a). Возвращает короткоживущий ticket (30 sec), хранится в Redis
-  `ws_ticket:<userId>:<jti>` с TTL 30 sec, single-use.
+  `ws_ticket:<uuid>` + индекс `ws_ticket_user:<userId>` (Set<uuid>) —
+  см. DECISIONS 2026-04-20 WS-ticket storage.
 - `POST /auth/logout` — в дополнение к revoke refresh: удаляет ticket'ы
-  пользователя, пушит событие logout (используется в M04 для audit).
-- CSRF защита для cookie-endpoint'ов: double-submit token pattern (header
-  `X-CSRF-Token` + cookie `rct_csrf`), валидация в фильтре на
-  `/auth/refresh` + `/auth/logout`.
+  пользователя (SMEMBERS → DEL + DEL set), очищает cookie
+  (`Max-Age=0; Path=/api/auth`), пушит событие logout (используется в
+  M04 для audit).
 
-### 2. Api-gateway — cookie/CSRF forwarding
+### 2. Api-gateway — cookie forwarding
 
-- Убирает из cookie `rct_refresh` информацию при proxy на downstream —
-  cookie должен быть ТОЛЬКО на `/api/auth/*` пути (Path=/api/auth/refresh
-  в SetCookie гарантирует это на стороне browser'а; Gateway просто
-  forward'ит).
+- Cookie `rct_refresh` автоматически ограничивается `Path=/api/auth` на
+  стороне browser'а, Gateway просто forward'ит Set-Cookie header обратно
+  клиенту и input cookie downstream.
 - WebSocket routes `/api/ws/**` — добавляет ticket validation фильтр
   до notification-web (или notification-web сам валидирует через
   Internal JWT + ticket-check).
+- CSRF НЕ реализуется (DECISIONS 2026-04-20: same-origin + SameSite=Strict).
 
 ### 3. Notification-web — WS handshake ticket
 
@@ -87,31 +88,22 @@ logout lifecycle.
 - WebSocket connect flow: `POST /auth/ws-ticket` → получить ticket →
   `new WebSocket("wss://.../ws?ticket=<short-lived>")` → ticket списывается.
 
-### 5. CSRF infrastructure
-
-- Gateway / auth-service — `CsrfTokenFilter`: на login/refresh ставит
-  cookie `rct_csrf` (не HttpOnly, чтобы JS мог прочитать), на mutating
-  requests (POST/PUT/DELETE/PATCH) требует header `X-CSRF-Token` совпадающий
-  с cookie. Fallback для GET/HEAD/OPTIONS без CSRF.
-- Frontend interceptor читает cookie `rct_csrf`, добавляет в `X-CSRF-Token`
-  header на всех mutating requests.
-
-### 6. Tests
+### 5. Tests
 
 - IT `JwtCookieRefreshIT` (auth-service, Testcontainers) — cookie set
-  правильно, Max-Age match refresh-TTL, reusable без body.
+  правильно (HttpOnly+Secure+SameSite=Strict+Path=/api/auth+Max-Age),
+  reusable без body.
 - IT `WsTicketIT` — ticket single-use, invalidation, expired → 401.
 - IT `LogoutLifecycleIT` — cookie cleared + refresh-token revoked +
   ws-ticket'ы удалены.
 - E2E `FrontendAuthFlowPlaywrightIT` (web-panel, deferred to M08) —
   login → refresh в фоне → logout → verify storage cleared + SW
   unregistered.
-- CSRF тесты — mutating request без X-CSRF-Token → 403.
 
 ## Acceptance criteria
 
 - [ ] `/auth/login` response ставит cookie `rct_refresh` (HttpOnly+Secure+
-  SameSite+Path+Max-Age), access в body JSON.
+  SameSite=Strict+Path=/api/auth+Max-Age=refreshTtl), access в body JSON.
 - [ ] `/auth/refresh` без body читает cookie → возвращает новый access +
   rotates cookie. Body-mode deprecated с warning header.
 - [ ] `POST /auth/ws-ticket` с Internal JWT возвращает ticket. Ticket
@@ -119,7 +111,6 @@ logout lifecycle.
 - [ ] WebSocket connect через ticket (не external JWT).
 - [ ] Logout: cookie cleared + refresh invalidated + ws-tickets удалены +
   push subscription отвязана + `clearAllClientState()` отработал.
-- [ ] CSRF: mutating request без `X-CSRF-Token` → 403.
 - [ ] Frontend: `localStorage['rct.auth.v1']` пуст после login/refresh.
   `git grep` не находит `localStorage.setItem.*rct.auth` (кроме migration
   helper на 1 релиз).
@@ -142,7 +133,6 @@ logout lifecycle.
 ## Artifacts
 
 - `services/auth-service/.../WsTicketController.java` + IT.
-- `services/auth-service/.../CsrfTokenFilter.java` + IT.
 - `services/notification-service/.../security/TicketHandshakeInterceptor.java`.
 - `frontends/pwa/src/lib/auth/clearAllClientState.ts`.
 - `frontends/pwa/src/lib/auth/useAuth.ts` — breaking rewrite.

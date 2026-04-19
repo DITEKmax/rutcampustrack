@@ -4,14 +4,12 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
-import reactor.util.retry.Retry;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClient;
 
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
-import java.time.Duration;
 import java.util.Base64;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -20,24 +18,25 @@ import java.util.concurrent.atomic.AtomicReference;
  * and caches it in memory. Refreshed hourly (configurable via
  * {@link InternalJwtProperties#publicKeyRefreshMinutes()}).
  *
- * Mirrors the pattern from {@code api-gateway/PublicKeyConfig} — each downstream
- * instance holds its own {@link AtomicReference}, no distributed lock needed.
+ * Uses {@link RestClient} — servlet-friendly, works in both Spring MVC and WebFlux stacks.
+ * Each downstream instance holds its own {@link AtomicReference}, no distributed lock
+ * needed (per-instance cache by design; coordinated refresh would break key rotation).
  */
 public class PublicKeyProvider {
 
     private static final Logger log = LoggerFactory.getLogger(PublicKeyProvider.class);
 
     private final InternalJwtProperties properties;
-    private final WebClient webClient;
+    private final RestClient restClient;
     private final AtomicReference<PublicKey> publicKeyRef = new AtomicReference<>();
 
     public PublicKeyProvider(InternalJwtProperties properties) {
-        this(properties, WebClient.create());
+        this(properties, RestClient.builder().baseUrl(properties.authServiceUrl()).build());
     }
 
-    PublicKeyProvider(InternalJwtProperties properties, WebClient webClient) {
+    PublicKeyProvider(InternalJwtProperties properties, RestClient restClient) {
         this.properties = properties;
-        this.webClient = webClient;
+        this.restClient = restClient;
     }
 
     @PostConstruct
@@ -63,13 +62,10 @@ public class PublicKeyProvider {
 
     private void fetchAndCache() {
         try {
-            PublicKeyResponse response = webClient.get()
-                    .uri(properties.authServiceUrl() + "/auth/public-key")
+            PublicKeyResponse response = restClient.get()
+                    .uri("/auth/public-key")
                     .retrieve()
-                    .bodyToMono(PublicKeyResponse.class)
-                    .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5))
-                            .filter(e -> e instanceof WebClientRequestException))
-                    .block(Duration.ofSeconds(30));
+                    .body(PublicKeyResponse.class);
 
             if (response == null || response.publicKey() == null) {
                 throw new IllegalStateException("Auth Service returned empty public key");
@@ -79,9 +75,11 @@ public class PublicKeyProvider {
             publicKeyRef.set(key);
             log.info("Internal JWT public key fetched from {}", properties.authServiceUrl());
 
+        } catch (ResourceAccessException e) {
+            log.error("Auth Service unreachable: {}", e.getMessage());
+            // Do not crash on refresh failure — keep existing key cached (may be null on first run).
         } catch (Exception e) {
             log.error("Failed to fetch public key from Auth Service: {}", e.getMessage());
-            // Do not crash on refresh failure — keep existing key cached.
         }
     }
 

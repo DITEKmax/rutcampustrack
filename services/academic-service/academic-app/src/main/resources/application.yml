@@ -53,6 +53,16 @@ grpc:
       address: static://schedule-service:19092
       negotiation-type: plaintext
 
+rutcampustrack:
+  security:
+    internal-jwt:
+      # M03a: pull RSA public key from auth-service /auth/public-key.
+      auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
+      public-key-refresh-minutes: 60
+      clock-skew-seconds: 30
+      # Dual-mode: accept legacy X-User-* headers until strict toggle (end of M03a).
+      legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:true}
+
 cache:
   ttl:
     groups: PT5M

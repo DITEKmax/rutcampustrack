@@ -28,19 +28,15 @@ dependencies {
     // Spring-аннотации + OncePerRequestFilter. compileOnly — сервис приносит.
     compileOnly("org.springframework:spring-context")
     compileOnly("org.springframework:spring-web")
-    compileOnly("org.springframework:spring-webflux")
     compileOnly("org.springframework.boot:spring-boot-autoconfigure")
     compileOnly("org.springframework.security:spring-security-core")
     compileOnly("jakarta.servlet:jakarta.servlet-api")
+    compileOnly("jakarta.annotation:jakarta.annotation-api")
     compileOnly("org.slf4j:slf4j-api")
 
-    // WebClient для PublicKeyProvider (pull из auth-service /auth/public-key)
-    compileOnly("org.springframework.boot:spring-boot-starter-webflux")
-
-    // Testing
+    // Testing — используем starter-web (servlet) т.к. RestClient не требует webflux.
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-web")
-    testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation("org.springframework.boot:spring-boot-starter-security")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 

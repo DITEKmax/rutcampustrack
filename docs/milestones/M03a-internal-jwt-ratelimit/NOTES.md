@@ -67,3 +67,36 @@ Gateway получает file read access к секрету, но они уже 
 через docker-compose.
 
 **Вопрос владельцу:** (a1 / a2 / a3)? Жду решения.
+
+**Ответ:** выбран (a3) Token Exchange endpoint — индустриальный стандарт
+(RFC 8693, Google Cloud IAM signJwt). Приватный ключ только в auth-service.
+
+## 2026-04-19 — SURPRISE Группа 5: WebClient требует webflux, academic — MVC
+
+**Проблема:** при попытке подключить `shared-security` в academic-app контекст
+не поднимается: `NoClassDefFoundError: WebClient`. `PublicKeyProvider` был
+написан на Reactor WebClient, а academic/schedule/attendance/notification-web
+используют Spring MVC (`starter-web`), не `starter-webflux`.
+
+**Варианты:**
+- (a) Добавить `starter-webflux` в downstream — но MVC+WebFlux на classpath
+  вместе даёт Spring Boot автоматический переключатель в reactive mode →
+  ломает существующие REST-контроллеры.
+- (b) Переписать `PublicKeyProvider` на синхронный `RestClient` (Spring 6.1+).
+  Servlet-friendly, не требует Reactor, работает в обоих stack (Gateway WebFlux
+  тоже поддерживает RestClient).
+
+**Выбрано: (b)** — `RestClient` в `PublicKeyProvider`. Изменения:
+- `shared/shared-security/PublicKeyProvider` — WebClient → RestClient,
+  синхронный retrieve(), unchecked exception instead of Mono.error
+- `shared-security/build.gradle.kts` — убраны `starter-webflux` + `spring-webflux`
+  compileOnly/testImplementation; добавлен `jakarta.annotation-api` явно
+  (раньше приходил транзитивно через webflux)
+- 18 unit-тестов shared-security всё ещё зелёные
+
+Gateway `InternalJwtIssuerClient` по-прежнему на WebClient (api-gateway
+нативно reactive). Gateway `PublicKeyConfig` собственный, НЕ трогаем.
+
+**Последствия:** во всех 4 downstream-сервисах НЕ нужен webflux dep. Пятница
+уже добавляла тесты с `starter-webflux` testImplementation в shared-security —
+это удалено. Academic build зелёный (197 тестов, +9 новых filter IT).

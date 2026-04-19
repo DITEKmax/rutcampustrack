@@ -23,3 +23,11 @@ management:
       enabled: false
     rabbit:
       enabled: false
+
+rutcampustrack:
+  security:
+    internal-jwt:
+      auth-service-url: http://localhost:9999
+      public-key-refresh-minutes: 60
+      clock-skew-seconds: 30
+      legacy-headers-enabled: true

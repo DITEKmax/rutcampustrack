@@ -60,12 +60,17 @@
 
 ## Группа 5 — Downstream миграция (academic)
 
-- [ ] `services/academic-service/academic-app/build.gradle.kts` — `implementation(project(":services:shared:shared-security"))`
-- [ ] `application.yml` — `rutcampustrack.security.internal-jwt.public-key-url: ...`, `legacy-headers-enabled: true`
-- [ ] `UserContextFilter` — либо удалить и использовать `DualModeUserContextFilter`, либо сохранить и перенацелить
-- [ ] `RequestContext` читается из `SecurityContext` / `Authentication.getPrincipal()`
-- [ ] IT `InternalJwtBypassIT`: прямой `MockMvc` запрос без Internal JWT → 401
-- [ ] IT `LegacyHeadersIT`: `legacy-headers-enabled=true` → X-User-* принимается; `=false` → 401
+- [x] `services/academic-service/academic-app/build.gradle.kts` — `implementation(project(":services:shared:shared-security"))` + `testImplementation(testFixtures(...))`
+- [x] `shared-security/PublicKeyProvider` мигрирован с `WebClient` на `RestClient` — servlet-friendly, работает в обоих stack (surprise Группа 5, 3 лишних байта в NOTES)
+- [x] `application.yml` — секция `rutcampustrack.security.internal-jwt` (auth-service-url, public-key-refresh-minutes, clock-skew-seconds, legacy-headers-enabled=true default + ENV override)
+- [x] `application-test.yml` — test-specific internal-jwt config (localhost:9999 URL — реальных HTTP-запросов к auth-service в IT не будет)
+- [x] Удалён старый `UserContextFilter`, создан `AcademicUserContextFilter extends DualModeUserContextFilter` с hooks applyInternalJwt / applyLegacyHeaders в `RequestContext` через `UserRole.valueOf(claims.role())`
+- [x] `InternalJwtConfig @Configuration` — @Bean PublicKeyProvider + InternalJwtValidator + @EnableConfigurationProperties
+- [x] `InternalJwtTestConfig @TestConfiguration` — @Primary PublicKeyProvider subclass с no-op init/refresh и ключом из InternalJwtTestFactory
+- [x] `AbstractAcademicIntegrationTest` — `@Import(InternalJwtTestConfig.class)` (валидно для всех существующих IT и новых)
+- [x] IT `AcademicUserContextFilterIT` (6): invalid/expired/wrong-signature Internal JWT → 401, valid token passes filter (no 401), Internal JWT takes precedence over legacy, legacy headers work while dual-mode on
+- [x] IT `AcademicUserContextFilterStrictModeIT` (3): `legacy-headers-enabled=false` → no headers 401, legacy headers 401, valid Internal JWT passes
+- [x] `./gradlew :services:academic-service:academic-app:build` зелёный — 197 тестов (было 185, +9 новых filter IT + 3 strict mode)
 
 ## Группа 6 — Downstream миграция (schedule)
 

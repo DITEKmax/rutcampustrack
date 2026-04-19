@@ -23,6 +23,9 @@ dependencies {
     implementation(libs.shedlock.spring)
     implementation(libs.shedlock.provider.jdbc.template)
 
+    // M03a — shared-security (Internal JWT validator + dual-mode filter)
+    implementation(project(":services:shared:shared-security"))
+
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -73,6 +76,7 @@ dependencies {
     testImplementation("org.testcontainers:rabbitmq")
     testImplementation(libs.json.schema.validator)
     testImplementation(libs.archunit.junit5)
+    testImplementation(testFixtures(project(":services:shared:shared-security")))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

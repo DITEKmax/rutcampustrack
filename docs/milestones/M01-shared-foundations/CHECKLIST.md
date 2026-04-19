@@ -75,10 +75,10 @@
 
 ## Группа 9 — документация
 
-- [ ] `docs/architecture.md` → раздел «Shared modules» (4 модуля × 3-5 строк)
-- [ ] `docs/shared-modules-usage.md` — 1-страничный quick-start для разработчика
-- [ ] `CHANGELOG.md` → `## [Unreleased]` → `### Added` запись
-- [ ] `CLAUDE.md` → упомянуть shared-модули в разделе «Структура репозитория»
+- [x] `docs/architecture.md` → раздел «Shared modules» (+ структура монорепо: `services/shared/` с 4 модулями)
+- [x] `docs/shared-modules-usage.md` — 1-страничный quick-start (TL;DR + 6 секций + частые ошибки)
+- [x] `CHANGELOG.md` создан с `[Unreleased]` → Added/Changed/Fixed для M01
+- [x] `CLAUDE.md` → структура репозитория обновлена (`gradle/libs.versions.toml` + `services/shared/` с 4 модулями)
 
 ## Группа 10 — финал
 

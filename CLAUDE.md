@@ -132,7 +132,14 @@ rutcampustrack/
 │   ├── architecture.md                ← детальная архитектура
 │   ├── job-stories.md                 ← все user/job stories
 │   └── database-schema.md            ← схема БД
+├── gradle/
+│   └── libs.versions.toml              ← Version Catalog (shared-модули, M01)
 ├── services/
+│   ├── shared/                         ← shared foundations (M01, см. docs/shared-modules-usage.md)
+│   │   ├── shared-web/                    ← RFC 9457 ErrorResponse, handlers, validation, JacksonConfig
+│   │   ├── shared-events/                 ← DomainEvent base, publisher/consumer MDC helpers
+│   │   ├── shared-logback/                ← JSON appender + masking (Bearer/telegram_id/FCM)
+│   │   └── shared-test-containers/        ← java-test-fixtures модуль: ContainerTestBase + gRPC + WireMock
 │   ├── api-gateway/                    ← Spring Cloud Gateway
 │   ├── auth-service/                   ← JWT, OTP
 │   ├── academic-service/

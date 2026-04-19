@@ -664,6 +664,11 @@ rut-uit/
 │   ├── attendance.marked.json
 │   └── attendance.session.closed.json
 ├── services/
+│   ├── shared/                         ← shared foundations (M01)
+│   │   ├── shared-web/                    RFC 9457 ErrorResponse + handlers + validation
+│   │   ├── shared-events/                 DomainEvent base + publisher/consumer MDC
+│   │   ├── shared-logback/                JSON appender + secrets masking
+│   │   └── shared-test-containers/        Testcontainers fixtures (testFixtures scope)
 │   ├── api-gateway/                    (Java Spring Boot)
 │   ├── auth-service/                   (Java Spring Boot)
 │   ├── academic-service/               (Java Spring Boot)
@@ -686,6 +691,39 @@ rut-uit/
 │       └── deploy.yml
 └── README.md
 ```
+
+### Shared modules (M01)
+
+Четыре `java-library` модуля под `services/shared/` — foundations, на которых
+строятся все 5 Java-сервисов. Подключаются как обычные зависимости, без
+Spring Boot autoconfiguration (правило NEW-34). Подробный quick-start —
+`docs/shared-modules-usage.md`.
+
+- **`shared-web`** — централизованный RFC 9457 `ErrorResponse` + `GlobalExceptionHandler`
+  (9 стандартных Spring MVC handlers + catch-all), cross-field validation
+  аннотации (`@StartBeforeEnd`, `@DateRangeValid`, `@ValidFile`), `JacksonConfig`
+  (READ_UNKNOWN_ENUM_VALUES_AS_NULL / FAIL_ON_UNKNOWN_PROPERTIES=false /
+  WRITE_DATES_AS_TIMESTAMPS=false), `@AdminAction` + aspect-заглушка (audit в M04),
+  `SharedOpenApiCustomizer` заглушка (обогащение спеки в M06).
+- **`shared-events`** — `DomainEvent` abstract base (`event_version`, `trace_id`,
+  `occurred_at`, `source` в snake_case JSON), `@EventVersion` marker (reflection,
+  default 1, inheritable), `AbstractEventPublisher.fillDefaults()` auto-заполняет
+  из MDC/reflection/clock, `AbstractEventConsumer.withTraceContext()` put/restore MDC
+  с cleanup на exception-path. Без привязки к AMQP — интеграция в M02.
+- **`shared-logback`** — `shared/logback-base.xml` (JSON stdout через
+  `LoggingEventCompositeJsonEncoder` с полями ts/level/logger/thread/msg/service/
+  MDC[traceId,userId,eventType]/stack) + `MaskingJsonProvider` с regex-маскированием
+  Bearer JWT / telegram_id / FCM endpoint в поле `msg`. Подключается одной
+  строкой `<include resource="shared/logback-base.xml"/>`.
+- **`shared-test-containers`** — `java-test-fixtures` модуль (подключается через
+  `testImplementation(testFixtures(project(...)))`): `ContainerTestBase` со всеми
+  4 контейнерами (Postgres 16 / Mongo 7 / Redis 7 / RabbitMQ 3.13, `reuse=true`)
+  + `@DynamicPropertySource`, `GrpcInProcessFixture` (real gRPC round-trip без
+  сети), `WireMockFixture` (динамический порт), `MigrationTestUtils` (поэтапный
+  прогон Flyway).
+
+Первый сервис-потребитель — `notification-web` (M01 Группа 8 acceptance).
+Миграция остальных 4 сервисов — в M03/M04/M08.
 
 ---
 

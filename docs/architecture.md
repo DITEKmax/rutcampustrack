@@ -794,6 +794,61 @@ payload из outbox против JSON Schema в `event-schemas/`:
 (`eventId`, `occurredAt`, `traceId`, `eventVersion`, `lessonNumber`). 19 схем
 используют их через `$ref` (versioning policy — `docs/event-schemas.md`).
 
+### Internal JWT и rate-limiting (M03a)
+
+**Цель:** устранить plain-text trust boundary между Gateway и downstream
+(Zero Trust Level 2) + защитить sensitive endpoints от brute/DoS.
+
+**Token Exchange pipeline** — индустриальный pattern RFC 8693, GCP `iam.signJwt`:
+
+```
+Client → Gateway → auth-service.POST /internal/issue-internal-jwt
+                   (X-Internal-Issuer-Secret, timing-safe compare)
+         ↓
+         Caffeine cache (userId,role) → IssuedToken (TTL 240s)
+         ↓ cache miss / expiry
+         Gateway получает подписанный RSA-256 Internal JWT (TTL 5 мин)
+         ↓
+         Downstream получает X-Internal-Token
+         ↓
+         shared-security/InternalJwtValidator:
+         - проверяет signature через /auth/public-key
+         - проверяет iss="rutcampustrack-auth", aud="rutcampustrack-internal"
+         - exp + clock-skew 30s
+         ↓
+         DualModeUserContextFilter → RequestContext
+```
+
+**Ключевые инварианты:**
+- Приватный ключ ТОЛЬКО в auth-service. Gateway — read-only consumer
+  публичного ключа. Компрометация Gateway не даёт выпустить Internal JWT.
+- Dual-mode (M03a deploy): Gateway шлёт `X-Internal-Token` **и** legacy
+  `X-User-*` — downstream принимает любой (переходный период).
+- Strict-mode (M03a финальный commit, v0.0.0-alpha.3): Gateway strip'ает
+  `X-User-*`, downstream отвергает запросы без Internal JWT.
+- Полная спецификация: `docs/internal-jwt-spec.md`.
+
+**Rate-limiting** через Spring Cloud Gateway `RedisRateLimiter`:
+
+- `/api/auth/otp/request` — 1 req / burst per IP (SMS-cost guard)
+- `/api/auth/otp/verify-by-code` — 5 / burst per IP
+- `/api/auth/login` — 5 per IP + 10 per `(ip, login)` composite (X-Login header)
+- `/api/auth/refresh` — 30 per userId
+- `/api/attendance/check-in` — 10 per userId
+- `/api/{academic,schedule,attendance,push}/**` — 600 per IP (DDoS guard)
+
+При 429: RFC 7807 Problem Details + `Retry-After: 60`.
+
+**Fail-open:** при Redis outage `FailOpenRateLimiter` пропускает
+запросы с WARN-логом, чтобы не DoS-нуть свой же сервис.
+
+**Composite login key** (`LoginRateLimiter` в auth-service):
+прогрессивная блокировка на composite `(ip, login)` — 5/10/20 fails
+→ 5min/30min/2h block. Атакующий с одного IP больше не может DoS-
+лочить чужой аккаунт.
+
+Полная таблица лимитов и клиентские рекомендации: `docs/api-rate-limits.md`.
+
 ---
 
 ## 8. Сценарии взаимодействия

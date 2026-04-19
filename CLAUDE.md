@@ -26,7 +26,8 @@ RutCampusTrack — микросервисная система учёта пос
 |---|-----------|------------|
 | M01 | Shared Foundations | ✅ 4 shared-модуля (web/events/logback/test-containers) — завершён 2026-04-19 |
 | M02 | Reliable Eventing | ✅ ShedLock + shared-outbox + contract-тесты + ArchUnit — завершён 2026-04-19 |
-| M03 | Secure Boundaries | Internal JWT + JWT HttpOnly cookie + WS-ticket + logout lifecycle |
+| M03a | Internal JWT + Rate-limit | ✅ shared-security + token-exchange + Gateway issuer + downstream dual-mode + RL 6 роутов + composite login key — завершён 2026-04-20 |
+| M03b | Secure Boundaries Part B | JWT HttpOnly cookie + WS-ticket + logout lifecycle (зависит от M03a) |
 | M04 | Observability | OTel+Tempo tracing + Alertmanager + JSON-логи + retention |
 | M05 | Performance | Composite indexes + Caffeine cache + @EntityGraph + batch endpoints |
 | M06 | Ops & Supply Chain | SHA tagging + Trivy/Gitleaks + HEALTHCHECK + Renovate |
@@ -140,7 +141,8 @@ rutcampustrack/
 │   │   ├── shared-events/                 ← DomainEvent base, publisher/consumer MDC helpers
 │   │   ├── shared-logback/                ← JSON appender + masking (Bearer/telegram_id/FCM)
 │   │   ├── shared-test-containers/        ← java-test-fixtures модуль: ContainerTestBase + gRPC + WireMock
-│   │   └── shared-outbox/                 ← M02: OutboxStorage (Jpa/Mongo) + PublisherJob + CleanupJob + Metrics
+│   │   ├── shared-outbox/                 ← M02: OutboxStorage (Jpa/Mongo) + PublisherJob + CleanupJob + Metrics
+│   │   └── shared-security/               ← M03a: Internal JWT validator (PublicKeyProvider + DualModeUserContextFilter + testFixtures InternalJwtTestFactory)
 │   ├── api-gateway/                    ← Spring Cloud Gateway
 │   ├── auth-service/                   ← JWT, OTP
 │   ├── academic-service/

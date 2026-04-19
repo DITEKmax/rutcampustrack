@@ -9,6 +9,71 @@
 
 ### Added
 
+- **M03a Internal JWT + Rate-limiting** — Zero Trust Level 2 + brute/DoS защита
+  (tag `v0.0.0-alpha.3`). Закрывает 02-Q2, кластер C0-1, C0-4, NEW-3, NEW-4,
+  NEW-9, NEW-11, 14 P1-1, 14 P1-2.
+  - `services/shared/shared-security/` — Internal JWT validator библиотека
+    (`InternalJwtValidator`, `PublicKeyProvider` RestClient,
+    `DualModeUserContextFilter` abstract, `InternalJwtTestFactory` testFixtures,
+    `InternalJwtProperties`). 18 unit-тестов.
+  - `auth-service` — `POST /internal/issue-internal-jwt` token-exchange endpoint
+    (RFC 8693 pattern). `InternalIssuerSecretFilter` с timing-safe
+    `MessageDigest.isEqual`. `JwtService.generateInternalToken` (RS256, TTL 5
+    мин, aud=`rutcampustrack-internal`). 11 тестов.
+  - `api-gateway` — `InternalJwtIssuerClient` (WebClient + Caffeine `AsyncCache`
+    `(userId, role) → IssuedToken` TTL 240s) + `InternalJwtIssuerFilter`
+    (GlobalFilter order=-50) прокидывает `X-Internal-Token` downstream.
+    Error 503 на недоступность auth-service. 19 тестов через WireMock.
+  - **Downstream миграция** (academic/schedule/attendance/notification):
+    каждый имеет `{Service}UserContextFilter extends DualModeUserContextFilter`,
+    `InternalJwtConfig` (+PublicKeyProvider bean), `InternalJwtTestConfig`
+    (@Primary in-memory keypair для IT). IT-тесты dual-mode + strict-mode
+    (9+3 per service). Build: academic 197, schedule 108, attendance 157,
+    notification 59 тестов.
+  - **Rate-limiting Gateway** (Spring Cloud Gateway `RedisRateLimiter`):
+    - 4 `KeyResolver` бина: ip / userId (X-User-Id) / login (X-Login) /
+      `ip+login` composite.
+    - `@Primary FailOpenRateLimiter` обёртка — на Redis-outage
+      (`RedisConnectionFailureException`, Lettuce timeouts) возвращает
+      `allowed=true` + WARN + `X-RateLimit-FailOpen: true`.
+    - 6 rate-limited роутов: `/auth/otp/request` 1/burst IP, `otp/verify-by-code`
+      5/burst IP, `/auth/login` 5 IP + 10 composite, `/auth/refresh[-body]`
+      30/user, `/attendance/check-in` 10/user, `/api/{academic,schedule,
+      attendance,push}/**` 600/IP DDoS guard.
+    - `RateLimitProblemDetailsFilter` response-decorator (perехватывает
+      `setComplete()` от `RequestRateLimiter`): 429 → `application/problem+json`
+      body + `Retry-After: 60`.
+  - **`LoginRateLimiter` рефактор** (01 P0-6): composite `(ip, login)` Redis
+    key, AuthService/Controller прокидывают IP из `X-Forwarded-For`. Фикс
+    DoS-by-rate-limit — атакующий с одного IP больше не может залочить
+    чужой аккаунт. 14 тестов (11 unit + 3 IT).
+  - **Strict-mode toggle** (Группа 14): `InternalIssuerClientProperties.stripLegacyHeaders`
+    (env `GATEWAY_STRIP_LEGACY_HEADERS`, default false). При `true` Gateway
+    удаляет `X-User-Id/Role/Group-Id/Is-Headman` после issue — downstream
+    работает только через Internal JWT. Парный флаг downstream
+    `RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false`.
+  - **Contract-тесты** (14 P1-1): `InternalJwtIssuerIT` — E2E через WireMock
+    (auth-service + downstream). Валидный JWT → downstream видит
+    X-Internal-Token; невалидная подпись/истекший/нет header → 401
+    без вызова downstream. 4 теста.
+  - **Rate-limit тесты** (14 P1-2): `RateLimitIT` (Testcontainers Redis,
+    429 + Problem Details + Retry-After, composite isolation),
+    `FailOpenIT` (Redis connection refused → 10 запросов проходят),
+    `CompositeLoginKeyResolverIT`. 5 тестов.
+  - **Документация:**
+    - `docs/internal-jwt-spec.md` (NEW-3) — формат, claims, ключи,
+      token-exchange flow, dual/strict mode, downstream-валидация.
+    - `docs/api-rate-limits.md` (NEW-11) — таблица лимитов, 429 поведение,
+      fail-open, клиентские рекомендации retry-with-backoff и `X-Login`.
+    - `docs/architecture.md` — раздел «Internal JWT и rate-limiting» после
+      «Reliable eventing».
+  - **3 критичных фикса context startup** (обнаружены первым @SpringBootTest
+    Gateway): `@Primary` на `ipKeyResolver` (RequestRateLimiterGatewayFilterFactory
+    требует уникальный default bean), `@Autowired` на primary-конструктор
+    `InternalJwtIssuerClient` (2 конструктора без аннотации давали
+    NoSuchMethodException), `RateLimitProblemDetailsFilter` перехватывает
+    `setComplete()` (RequestRateLimiter не вызывает writeWith на denied path).
+
 - **M02 Reliable Eventing** — гарантированная доставка событий RabbitMQ:
   - `services/shared/shared-outbox/` — storage-agnostic API `OutboxStorage` с
     двумя реализациями (`JpaOutboxStorage<E>` для PG, `MongoOutboxStorage` для

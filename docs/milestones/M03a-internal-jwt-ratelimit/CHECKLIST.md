@@ -156,13 +156,13 @@
 
 ## Группа 15 — Документация + artifacts
 
-- [ ] `docs/internal-jwt-spec.md` (NEW-3) — формат, claims, TTL, ключи, dual-mode, миграционный путь
-- [ ] `docs/api-rate-limits.md` (NEW-11) — таблица лимитов, 429 поведение, Retry-After, клиентский backoff
-- [ ] `docs/architecture.md` → раздел «Internal JWT и rate-limiting» после «Reliable eventing»
-- [ ] `CHANGELOG.md [Unreleased]` → Added (shared-security, Internal JWT issuer, rate-limit 6 routes) + Changed (`UserContextFilter` → Internal JWT, `LoginRateLimiter` composite key)
-- [ ] `CLAUDE.md` — статус M03a → ✅ + обновить архитектурный раздел (порт 8080 теперь issuer, shared-security в структуре)
-- [ ] `docs/milestones/README.md` → M03a ✅ (если M03 строка — заменить на M03a/M03b)
-- [ ] Закрыть пункты COVERAGE-AUDIT.md, relevant to M03a: колонка «Closed in» — commit SHA
+- [x] `docs/internal-jwt-spec.md` (NEW-3) — формат, claims, TTL, ключи, token-exchange flow, dual/strict mode, downstream-валидация, security properties, roadmap
+- [x] `docs/api-rate-limits.md` (NEW-11) — семантика token-bucket, таблица лимитов, 429 Problem Details, Retry-After, fail-open, LoginRateLimiter composite key, клиентские рекомендации (retry-with-backoff + X-Login header)
+- [x] `docs/architecture.md` → раздел «Internal JWT и rate-limiting» после «Reliable eventing (M02)» — token exchange pipeline, ключевые инварианты, rate-limit таблица
+- [x] `CHANGELOG.md [Unreleased]` → M03a секция (Added) с детализацией shared-security, token-exchange, Gateway issuer, downstream миграция, rate-limiting, LoginRateLimiter, strict-mode toggle, contract-тесты, документация, 3 critical fixes
+- [x] `CLAUDE.md` — таблица milestones: M03 строка разделена на M03a ✅ 2026-04-20 + M03b; shared-security добавлен в структуру репозитория
+- [x] `docs/milestones/README.md` → M03a ✅ 2026-04-20
+- [x] COVERAGE-AUDIT.md — политика файла «не добавлять колонку Closed in, grep по git log» (см. лид статьи, feedback_audit_markup_economy.md)
 
 ## Группа 16 — Финал
 

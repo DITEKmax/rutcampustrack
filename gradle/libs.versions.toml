@@ -10,6 +10,11 @@ grpc = "1.63.0"
 wiremock = "3.9.1"
 springdocOpenapi = "2.8.6"
 
+# M02 — reliable eventing (ShedLock + outbox + contract-тесты)
+shedlock = "5.16.0"
+jsonSchemaValidator = "1.5.4"
+archunit = "1.3.0"
+
 [libraries]
 # shared-logback
 logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashLogback" }
@@ -23,3 +28,14 @@ wiremock-standalone = { module = "org.wiremock:wiremock-standalone", version.ref
 
 # shared-web (OpenAPI — заглушка OpenApiCustomizer для M06)
 springdoc-openapi-starter-common = { module = "org.springdoc:springdoc-openapi-starter-common", version.ref = "springdocOpenapi" }
+
+# M02 — ShedLock (distributed cluster locks для @Scheduled)
+shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
+shedlock-provider-jdbc-template = { module = "net.javacrumbs.shedlock:shedlock-provider-jdbc-template", version.ref = "shedlock" }
+shedlock-provider-mongo = { module = "net.javacrumbs.shedlock:shedlock-provider-mongo", version.ref = "shedlock" }
+
+# M02 — JSON Schema validation (contract-тесты events)
+json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "jsonSchemaValidator" }
+
+# M02 — ArchUnit (NEW-28 — @Scheduled должен иметь @SchedulerLock)
+archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }

@@ -15,35 +15,26 @@ OWNER-ANSWERS.md. Каждая запись — 5-10 строк, не больш
 
 ---
 
-## 2026-?? — Initial scaffold
+## 2026-04-19 — Старт M02
 
-_(Заполняется при старте milestone'а.)_
+**Выбрано:** Начало milestone'а M02 по PLAN.md (ShedLock → outbox → contract-тесты).
+**Причина:** M01 закрыт, dependency graph разрешает старт. Внешних блокеров нет.
 
-## ОТКРЫТО — shared-outbox модуль vs copy-paste (NEW-6)
+## 2026-04-19 — shared-outbox модуль (NEW-6)
 
-**Развилка:** outbox infrastructure (Entity, Repository, PublisherJob,
-CleanupJob) — один shared модуль `services/shared/shared-outbox` или
-копия в каждом из 3 backend-сервисов?
-
-**Контекст:**
-- 2 из 3 сервисов — PG (JPA), 1 — Mongo. Нужны две реализации storage.
-- PublisherJob / CleanupJob — одинаковые по логике, различаются только
-  репозиторием и RabbitTemplate wiring.
-- M01 показал что shared-* модули работают (NEW-34: без autoconfig,
-  через component scan).
-
-**Предварительная рекомендация (2026-04-19):** (a) shared-outbox модуль
-со strategy interface `OutboxStorage` + 2 реализации (Jpa/Mongo).
-Publisher/Cleanup jobs — shared. Entity — `abstract` + конкретные классы
-per storage.
-
-**Причина:** уменьшает drift (NEW-6 мотивация), M01 доказал паттерн
-working. Overhead на abstraction минимален (2 реализации OutboxStorage).
-
-**Альтернатива (b):** copy-paste по 3 сервисам — проще в M02 (меньше
-абстракций), но при починке bugs нужно править 3 места.
-
-**Решение:** подтвердить при старте Группы 3.
+**Выбрано:** (a) shared-outbox модуль — `services/shared/shared-outbox` с
+  strategy interface `OutboxStorage` + 2 реализации (Jpa для
+  academic/schedule, Mongo для attendance). `OutboxPublisherJob` и
+  `OutboxCleanupJob` — общие. `OutboxEntity` — `abstract` + конкретные
+  классы per storage.
+**Отвергнуто:** (b) copy-paste по 3 сервисам.
+**Причина:** M01 доказал что shared-* pattern работает (component scan
+  без autoconfig). Drift от копипасты дороже, чем 1 абстракция с двумя
+  реализациями. PublisherJob и CleanupJob — идентичны по логике.
+**Последствия:** Группа 3 CHECKLIST начнётся с scaffold'а `shared-outbox`
+  (build.gradle.kts, settings.gradle.kts include) + определение
+  `OutboxStorage` API. Attendance integration будет тестироваться тщательно
+  (Mongo-specific path).
 
 ---
 

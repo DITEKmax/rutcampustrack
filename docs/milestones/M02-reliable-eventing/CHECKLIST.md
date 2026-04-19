@@ -5,12 +5,13 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 1 — ShedLock в schedule-service (canonical)
 
-- [ ] `schedule-app/build.gradle.kts` → `shedlock-spring` + `shedlock-provider-jdbc-template` (версия — через `libs.versions.toml`)
-- [ ] Flyway `V{N}__shedlock_table.sql` в schedule → таблица `shedlock(name PK, lock_until, locked_at, locked_by)`
-- [ ] `ScheduleAppApplication` → `@EnableSchedulerLock(defaultLockAtMostFor = "PT5M")`
-- [ ] `@SchedulerLock(name=...)` на `LessonGenerationService.regenerateUpcoming()`
-- [ ] `@SchedulerLock(name=...)` на `OneOffLessonReconciler.reconcile()`
-- [ ] Smoke integration-тест: 2 инстанса → событие публикуется один раз
+- [x] `schedule-app/build.gradle.kts` → `shedlock-spring` + `shedlock-provider-jdbc-template` (версия — через `libs.versions.toml`)
+- [x] Flyway `V10__shedlock_table.sql` в schedule → таблица `shedlock(name PK, lock_until, locked_at, locked_by)`
+- [x] `SchedulingConfig` → `@EnableSchedulerLock(defaultLockAtMostFor = "PT5M")` + `LockProvider` bean (JdbcTemplate, usingDbTime)
+- [x] N/A — `LessonGenerationService.regenerateUpcoming()` не существует (см. NOTES 2026-04-19)
+- [x] N/A — `OneOffLessonReconciler.reconcile()` не существует (см. NOTES 2026-04-19)
+- [x] `@SchedulerLock(name="lesson-status-transition", lockAtMostFor=PT2M, lockAtLeastFor=PT10S)` на `LessonStatusTransitionJob.runTransitions()`
+- [x] Smoke IT `ShedLockSmokeIntegrationTest`: 2 провайдера → только первый держит lock, second.lock() empty; lockAtLeastFor семантика
 
 ## Группа 2 — ShedLock в academic + attendance (NEW-28 аудит)
 

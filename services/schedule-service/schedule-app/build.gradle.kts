@@ -31,6 +31,10 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
 
+    // M02 — ShedLock (distributed cluster locks для @Scheduled)
+    implementation(libs.shedlock.spring)
+    implementation(libs.shedlock.provider.jdbc.template)
+
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 

@@ -1,6 +1,7 @@
 package ru.rutcampustrack.schedule.lesson;
 
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -51,6 +52,9 @@ public class LessonStatusTransitionJob {
     }
 
     @Scheduled(fixedDelay = 60_000)
+    @SchedulerLock(name = "lesson-status-transition",
+                   lockAtMostFor = "PT2M",
+                   lockAtLeastFor = "PT10S")
     @Transactional
     public void runTransitions() {
         LocalDateTime nowMoscow = LocalDateTime.now(clock);

@@ -23,3 +23,29 @@
   (NEW-6). Рекомендация в DECISIONS.md — shared модуль (меньше drift, M01
   показал что паттерн работает для shared-web). Подтвердить при старте.
 - Stubs для остальных NOTES: measurements + surprises заполняются по ходу.
+
+## 2026-04-19 — Surprise: @Scheduled в schedule-service (Группа 1)
+
+PLAN.md упоминает `LessonGenerationService.regenerateUpcoming()` и
+`OneOffLessonReconciler.reconcile()` как цели `@SchedulerLock`, но в
+реальном коде этих методов нет (grep подтвердил).
+
+**Реальное состояние schedule-service:**
+- Единственный `@Scheduled` метод — `LessonStatusTransitionJob.runTransitions()`
+  (fixedDelay=60_000, `services/schedule-service/schedule-app/src/main/java/
+  ru/rutcampustrack/schedule/lesson/LessonStatusTransitionJob.java:53`).
+- `SchedulingConfig` гардится через `@Profile("!test")` — тесты не
+  триггерят job.
+- `LessonGenerationService` существует, но генерация вызывается
+  reactively (при создании ScheduleItem), не по расписанию.
+- `IsoParityReconciler` существует, но запускается через Flyway
+  migration marker (V7/V8/V9), не через `@Scheduled`.
+
+**Вывод:** PLAN.md устарел относительно кода (вероятно написан до
+финальной реализации v3.0 Schedule). Корректирую scope Группы 1 на
+реальный метод `LessonStatusTransitionJob.runTransitions()`. NEW-28
+аудит academic/attendance — без изменений.
+
+**Решение:** продолжаю с `@SchedulerLock` на `runTransitions()`.
+Acceptance criteria PLAN.md не меняются (они по outbox/events, не
+по конкретным методам).

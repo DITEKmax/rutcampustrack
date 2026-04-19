@@ -3,6 +3,8 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { Subject } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
+import { AuthApi } from '../auth/auth.api';
+import { buildWsUrl } from '../auth/ws-ticket';
 
 /**
  * Единый источник правды для всех STOMP-уведомлений в веб-панели.
@@ -81,6 +83,7 @@ export interface NotificationRecord {
 @Injectable({ providedIn: 'root' })
 export class NotificationCenterService {
   private readonly auth = inject(AuthService);
+  private readonly authApi = inject(AuthApi);
 
   private client: Client | null = null;
   private connectedKey: string | null = null; // `${userId}:${groupId}:${isHeadman}`
@@ -130,9 +133,9 @@ export class NotificationCenterService {
     this.disconnect();
     this.connectedKey = key;
 
-    const token = this.auth.accessToken() ?? '';
+    // M03b Группа 7: ticket-based handshake. Каждый reconnect свежий ticket.
     this.client = new Client({
-      webSocketFactory: () => new SockJS(`/api/ws?token=${token}`),
+      webSocketFactory: async () => new SockJS(await buildWsUrl(this.authApi)),
       reconnectDelay: 2000,
       onConnect: () => {
         this.client?.subscribe(`/topic/group/${groupId}`, message => this.handleFrame(message.body, userId));

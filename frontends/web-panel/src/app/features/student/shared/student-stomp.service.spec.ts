@@ -1,22 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { of } from 'rxjs';
 
 // ---- Module-level mocks -----------------------------------------------------
 // We capture: (a) the config passed to `new Client(...)`, (b) the function
-// handed to the `subscribe` call so the test can drive incoming STOMP frames,
-// and (c) the URL passed to the SockJS constructor.
+// handed to the `subscribe` call, and (c) the URL passed to SockJS.
 //
-// The service under test imports these as ES-module defaults / named exports,
-// so we mock them via vi.mock hoisted to the top of the module graph.
-//
-// @stomp/stompjs exports `Client` as a named export.
-// sockjs-client exports the constructor as the default export.
+// M03b Группа 7: webSocketFactory теперь async (pre-fetch ws-ticket).
 
 type StompCallback = (message: { body: string }) => void;
 
 interface CapturedClient {
   config: {
-    webSocketFactory: () => unknown;
+    webSocketFactory: () => Promise<unknown> | unknown;
     reconnectDelay: number;
     onConnect: () => void;
     onStompError?: (frame: { headers: Record<string, string> }) => void;
@@ -67,52 +63,60 @@ vi.mock('sockjs-client', () => {
   };
 });
 
-// Import the service AFTER the mocks are declared so the module resolves to
-// the mocked versions.
 import { StudentStompService } from './student-stomp.service';
+import { AuthApi } from '../../../core/auth/auth.api';
 
-describe('StudentStompService', () => {
+describe('StudentStompService (M03b ws-ticket)', () => {
   let service: StudentStompService;
+  let mockAuthApi: Partial<AuthApi>;
 
   beforeEach(() => {
     capturedClients.length = 0;
     capturedSockJsUrls.length = 0;
-    TestBed.configureTestingModule({ providers: [StudentStompService] });
+    mockAuthApi = {
+      acquireWsTicket: vi.fn().mockReturnValue(
+        of({ ticket: 'uuid-42', expiresAt: '2026-04-20T00:00:30Z' }),
+      ),
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        StudentStompService,
+        { provide: AuthApi, useValue: mockAuthApi },
+      ],
+    });
     service = TestBed.inject(StudentStompService);
   });
 
-  it('connect() constructs a Client with reconnectDelay 1000 and a SockJS factory pointing at /api/ws?token=...', () => {
-    service.connect(5, () => 'fake-token');
+  it('connect() constructs a Client with reconnectDelay 1000 and ws factory pre-fetches ticket', async () => {
+    service.connect(5);
 
     expect(capturedClients).toHaveLength(1);
     const client = capturedClients[0];
     expect(client.config.reconnectDelay).toBe(1000);
     expect(client.activate).toHaveBeenCalledTimes(1);
 
-    // Invoke the SockJS factory to capture the URL it constructs.
-    client.config.webSocketFactory();
-    expect(capturedSockJsUrls).toContain('/api/ws?token=fake-token');
+    // Invoke the SockJS factory — async (Promise). Ticket URL instead of token.
+    await client.config.webSocketFactory();
+    expect(mockAuthApi.acquireWsTicket).toHaveBeenCalled();
+    expect(capturedSockJsUrls).toContain('/api/ws?ticket=uuid-42');
   });
 
   it('on onConnect, subscribes to /topic/group/{groupId}', () => {
-    service.connect(5, () => 'fake-token');
+    service.connect(5);
     const client = capturedClients[0];
-
-    // Drive the onConnect callback as the underlying stompjs Client would.
     client.config.onConnect();
 
     expect(client.subscribe).toHaveBeenCalledWith('/topic/group/5', expect.any(Function));
   });
 
   it('emits attendance.marked payloads from marked$ when the subscribe callback receives a matching envelope', () => {
-    service.connect(5, () => 'fake-token');
+    service.connect(5);
     const client = capturedClients[0];
     client.config.onConnect();
 
     const received: unknown[] = [];
     service.marked$.subscribe(payload => received.push(payload));
 
-    // Feed an envelope to the subscribe callback.
     const payload = {
       lesson_id: 12,
       user_id: 34,
@@ -128,7 +132,7 @@ describe('StudentStompService', () => {
   });
 
   it('ignores envelopes with a non-attendance.marked type', () => {
-    service.connect(5, () => 'fake-token');
+    service.connect(5);
     const client = capturedClients[0];
     client.config.onConnect();
 
@@ -143,7 +147,7 @@ describe('StudentStompService', () => {
   });
 
   it('ignores malformed JSON frames without throwing', () => {
-    service.connect(5, () => 'fake-token');
+    service.connect(5);
     const client = capturedClients[0];
     client.config.onConnect();
 
@@ -157,7 +161,7 @@ describe('StudentStompService', () => {
   });
 
   it('disconnect() calls deactivate() on the client', () => {
-    service.connect(5, () => 'fake-token');
+    service.connect(5);
     const client = capturedClients[0];
 
     service.disconnect();
@@ -166,9 +170,8 @@ describe('StudentStompService', () => {
   });
 
   it('is idempotent — calling connect() twice for the same group does not create a second client', () => {
-    service.connect(5, () => 'fake-token');
-    // Simulate a successful activation (the mock sets active=true on activate()).
-    service.connect(5, () => 'fake-token');
+    service.connect(5);
+    service.connect(5);
 
     expect(capturedClients).toHaveLength(1);
   });

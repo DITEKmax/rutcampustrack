@@ -147,9 +147,9 @@ export class StudentCheckinComponent implements OnInit, OnDestroy {
       return;
     }
     this.fetchToday(groupId);
-    // STOMP connect — pass a lazy getter so the component never reads
-    // the token directly (T-51-20 mitigation).
-    this.stomp.connect(groupId, () => this.auth.accessToken());
+    // M03b Группа 7: STOMP connect — токен уходит только в POST /auth/ws-ticket
+    // (через authInterceptor), не в WebSocket URL.
+    this.stomp.connect(groupId);
     // BUG-008: оборачиваем подписку в next/error, чтобы STOMP-ошибка не
     // обрушивала компонент целиком (страница «не открывается»).
     this.stomp.marked$

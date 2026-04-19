@@ -10,7 +10,8 @@ import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dial
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import type { ExcuseTicket } from '../shared/student-schedule.types';
 
 const mockApiService = {
@@ -64,6 +65,8 @@ describe('StudentExcusesComponent', () => {
     await render(StudentExcusesComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -79,6 +82,8 @@ describe('StudentExcusesComponent', () => {
     await render(StudentExcusesComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -96,6 +101,8 @@ describe('StudentExcusesComponent', () => {
     await render(StudentExcusesComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -111,6 +118,8 @@ describe('StudentExcusesComponent', () => {
     await render(StudentExcusesComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },
@@ -129,6 +138,8 @@ describe('StudentExcusesComponent', () => {
     const { fixture } = await render(StudentExcusesComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: MatDialog, useValue: mockDialog },
         { provide: MatSnackBar, useValue: mockSnackBar },

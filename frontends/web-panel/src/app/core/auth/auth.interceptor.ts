@@ -56,18 +56,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       isRefreshing = true;
-      const refreshToken = authService.getRefreshToken();
 
-      if (!refreshToken) {
-        isRefreshing = false;
-        authService.clearTokens();
-        router.navigate(['/login']);
-        return throwError(() => error);
-      }
-
-      return authApi.refresh(refreshToken).pipe(
+      // M03b Группа 7: cookie-based refresh. Если refresh failed — 401
+      // всплывает из authApi.refresh() (cookie отсутствует/expired).
+      return authApi.refresh().pipe(
         switchMap((tokens) => {
-          authService.setTokens(tokens.accessToken, tokens.refreshToken);
+          authService.setAccessToken(tokens.accessToken);
           isRefreshing = false;
           pendingRequests.forEach((p) => p.resolve(tokens.accessToken));
           pendingRequests = [];

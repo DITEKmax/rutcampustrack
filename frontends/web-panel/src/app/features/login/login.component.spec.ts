@@ -32,6 +32,7 @@ describe('LoginComponent', () => {
 
     mockAuthService = {
       setTokens: vi.fn(),
+      setAccessToken: vi.fn(),
       currentUser: vi.fn().mockReturnValue(null),
       isAuthenticated: vi.fn().mockReturnValue(false) as any,
       resolveDashboardFor: vi.fn((user: any) => {
@@ -141,7 +142,7 @@ describe('LoginComponent', () => {
     await user.type(screen.getByLabelText('Пароль'), 'password123');
     await user.click(screen.getByRole('button', { name: /войти/i }));
 
-    expect(mockAuthService.setTokens).toHaveBeenCalledWith(TEACHER_TOKEN, REFRESH_TOKEN);
+    expect(mockAuthService.setAccessToken).toHaveBeenCalledWith(TEACHER_TOKEN);
     expect(mockRouter.navigateByUrl).toHaveBeenCalledWith('/teacher/dashboard');
   });
 

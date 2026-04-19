@@ -6,7 +6,8 @@ import { StudentApiService } from '../shared/student-api.service';
 import { SubjectCacheService } from '../shared/subject-cache.service';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import type { AttendanceRecord } from '../shared/student-schedule.types';
 
 const mockRecord = (lessonId: number, status: string): AttendanceRecord => ({
@@ -42,6 +43,8 @@ describe('StudentLateCheckinComponent', () => {
     await render(StudentLateCheckinComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],
@@ -58,6 +61,8 @@ describe('StudentLateCheckinComponent', () => {
     await render(StudentLateCheckinComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],
@@ -72,6 +77,8 @@ describe('StudentLateCheckinComponent', () => {
     await render(StudentLateCheckinComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],
@@ -92,6 +99,8 @@ describe('StudentLateCheckinComponent', () => {
     await render(StudentLateCheckinComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],
@@ -111,6 +120,8 @@ describe('StudentLateCheckinComponent', () => {
     await render(StudentLateCheckinComponent, {
       providers: [
         provideNoopAnimations(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: StudentApiService, useValue: mockApiService },
         { provide: SubjectCacheService, useValue: mockSubjectCache },
       ],

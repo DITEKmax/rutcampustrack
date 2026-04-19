@@ -199,7 +199,7 @@ export class HeadmanLateCheckinComponent implements OnInit, OnDestroy {
     this.fetch(groupId);
 
     if (groupId != null) {
-      this.stomp.connect(groupId, () => this.auth.accessToken());
+      this.stomp.connect(groupId);
       this.realtimeSub = this.stomp.lateCheckinRequested$.subscribe(payload => {
         // Append if not already present (duplicates possible on reconnect replays).
         const existing = this.requests();

@@ -1,10 +1,11 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideAppInitializer, inject, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
+import { AuthService } from './core/auth/auth.service';
 import {
   Chart,
   BarController,
@@ -39,5 +40,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
     provideNativeDateAdapter(),
+    // M03b Группа 7: cookie-based bootstrap — попытка восстановить сессию
+    // через /auth/refresh (HttpOnly cookie) до того как guards начнут работать.
+    provideAppInitializer(() => inject(AuthService).bootstrap()),
   ],
 };

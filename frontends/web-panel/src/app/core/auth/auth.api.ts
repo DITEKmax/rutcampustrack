@@ -4,31 +4,69 @@ import { Observable } from 'rxjs';
 
 export interface TokenResponse {
   accessToken: string;
-  refreshToken: string;
+  /**
+   * Отдаётся backend'ом для TMA/legacy, но web-panel игнорирует — refresh
+   * token живёт в HttpOnly cookie `rct_refresh` (M03b Группа 2). Планируется
+   * удалить вместе с `/auth/refresh-body` в M04/M05.
+   */
+  refreshToken?: string;
   expiresIn: number;
+}
+
+export interface WsTicketResponse {
+  ticket: string;
+  expiresAt: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthApi {
   private http = inject(HttpClient);
 
+  /**
+   * POST /auth/login — `withCredentials: true` обязательно, чтобы браузер
+   * сохранил HttpOnly cookie `rct_refresh`. Access token — в body.
+   */
   login(credentials: { login: string; password: string }): Observable<TokenResponse> {
-    return this.http.post<TokenResponse>('/api/auth/login', credentials);
+    return this.http.post<TokenResponse>('/api/auth/login', credentials, {
+      withCredentials: true,
+    });
   }
 
   verifyOtpByCode(code: string): Observable<TokenResponse> {
-    return this.http.post<TokenResponse>('/api/auth/otp/verify-by-code', { code });
+    return this.http.post<TokenResponse>('/api/auth/otp/verify-by-code', { code }, {
+      withCredentials: true,
+    });
   }
 
-  refresh(refreshToken: string): Observable<TokenResponse> {
-    return this.http.post<TokenResponse>('/api/auth/refresh', { refreshToken });
+  /**
+   * POST /auth/refresh — без body (cookie автоматически летит через
+   * `withCredentials`). Возвращает новый access + rotated cookie.
+   */
+  refresh(): Observable<TokenResponse> {
+    return this.http.post<TokenResponse>('/api/auth/refresh', null, {
+      withCredentials: true,
+    });
   }
 
-  logout(refreshToken: string): Observable<void> {
-    return this.http.post<void>('/api/auth/logout', { refreshToken });
+  /**
+   * POST /auth/logout — revoke refresh token + clear cookie. Body опционально
+   * для legacy TMA, но web-panel шлёт только cookie.
+   */
+  logout(): Observable<void> {
+    return this.http.post<void>('/api/auth/logout', null, {
+      withCredentials: true,
+    });
   }
 
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
     return this.http.post<void>('/api/auth/change-password', { currentPassword, newPassword });
+  }
+
+  /**
+   * POST /auth/ws-ticket — issue short-lived (30s, single-use) ticket для
+   * WebSocket handshake. Защищён access-JWT (Bearer auto через authInterceptor).
+   */
+  acquireWsTicket(): Observable<WsTicketResponse> {
+    return this.http.post<WsTicketResponse>('/api/auth/ws-ticket', null);
   }
 }

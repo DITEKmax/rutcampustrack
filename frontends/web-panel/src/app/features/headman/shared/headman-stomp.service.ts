@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { Observable, Subject } from 'rxjs';
+import { AuthApi } from '../../../core/auth/auth.api';
+import { buildWsUrl } from '../../../core/auth/ws-ticket';
 import type { LateCheckinRequestedEvent } from '../late-checkin/late-checkin.types';
 
 /**
@@ -13,18 +15,20 @@ import type { LateCheckinRequestedEvent } from '../late-checkin/late-checkin.typ
  * that plain group subscribers never see them — see
  * services/notification-service/.../EventConsumer.java (HEADMAN_ONLY_EVENTS).
  *
- * This service is a narrower sibling of StudentStompService. Same connection
- * URL (`/api/ws?token=...`), same security posture (never log the URL or
- * token), but subscribes to a different destination.
+ * This service is a narrower sibling of StudentStompService. M03b Группа 7:
+ * теперь использует single-use ws-ticket вместо JWT в query (замена
+ * `?token=<jwt>` → `?ticket=<uuid>`).
  *
  * Lifecycle:
- * - `connect(groupId, getAccessToken)` — idempotent per groupId.
+ * - `connect(groupId)` — idempotent per groupId. Access token автоматически
+ *   отправляется через `authInterceptor` при запросе ws-ticket.
  * - `lateCheckinRequested$` — stream of envelopes from the sub-topic filtered
  *   to the `late_checkin.requested` type.
  * - `disconnect()` — release the client (call from ngOnDestroy).
  */
 @Injectable({ providedIn: 'root' })
 export class HeadmanStompService {
+  private readonly authApi = inject(AuthApi);
   private client: Client | null = null;
   private currentGroupId: number | null = null;
   private readonly lateCheckinSubject = new Subject<LateCheckinRequestedEvent['payload']>();
@@ -32,7 +36,7 @@ export class HeadmanStompService {
   readonly lateCheckinRequested$: Observable<LateCheckinRequestedEvent['payload']> =
     this.lateCheckinSubject.asObservable();
 
-  connect(groupId: number, getAccessToken: () => string | null): void {
+  connect(groupId: number): void {
     if (this.currentGroupId === groupId && this.client !== null) {
       return;
     }
@@ -41,7 +45,7 @@ export class HeadmanStompService {
     }
     this.currentGroupId = groupId;
     this.client = new Client({
-      webSocketFactory: () => new SockJS(`/api/ws?token=${getAccessToken() ?? ''}`),
+      webSocketFactory: async () => new SockJS(await buildWsUrl(this.authApi)),
       reconnectDelay: 1000,
       onConnect: () => {
         this.client?.subscribe(`/topic/group/${groupId}/headman`, message => {

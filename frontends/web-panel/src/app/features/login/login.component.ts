@@ -50,7 +50,7 @@ export class LoginComponent {
     const { login, password } = this.form.getRawValue();
     this.authApi.login({ login: login!, password: password! }).subscribe({
       next: (tokens) => {
-        this.authService.setTokens(tokens.accessToken, tokens.refreshToken);
+        this.authService.setAccessToken(tokens.accessToken);
         const target = this.authService.resolveDashboardFor(this.authService.currentUser());
         this.router.navigateByUrl(target);
       },
@@ -74,7 +74,7 @@ export class LoginComponent {
     const code = this.otpForm.getRawValue().code!;
     this.authApi.verifyOtpByCode(code).subscribe({
       next: (tokens) => {
-        this.authService.setTokens(tokens.accessToken, tokens.refreshToken);
+        this.authService.setAccessToken(tokens.accessToken);
         const target = this.authService.resolveDashboardFor(this.authService.currentUser());
         this.router.navigateByUrl(target);
       },

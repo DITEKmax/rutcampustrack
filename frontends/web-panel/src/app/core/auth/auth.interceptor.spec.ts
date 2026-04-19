@@ -86,10 +86,11 @@ describe('authInterceptor', () => {
     const firstReq = httpMock.expectOne('/api/users');
     firstReq.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
 
-    // Interceptor calls refresh
+    // M03b Группа 7: refresh cookie-based, body=null, withCredentials
     const refreshReq = httpMock.expectOne('/api/auth/refresh');
-    expect(refreshReq.request.body).toEqual({ refreshToken: REFRESH_TOKEN });
-    refreshReq.flush({ accessToken: NEW_ACCESS_TOKEN, refreshToken: NEW_REFRESH_TOKEN, expiresIn: 3600 });
+    expect(refreshReq.request.body).toBeNull();
+    expect(refreshReq.request.withCredentials).toBe(true);
+    refreshReq.flush({ accessToken: NEW_ACCESS_TOKEN, expiresIn: 3600 });
 
     // Interceptor replays original with new token
     const retryReq = httpMock.expectOne('/api/users');

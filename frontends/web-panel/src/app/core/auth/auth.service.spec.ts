@@ -44,11 +44,6 @@ describe('AuthService', () => {
     expect(service.accessToken()).toBe(ACCESS_TOKEN);
   });
 
-  it('getRefreshToken() returns the refresh token after setTokens', () => {
-    service.setTokens(ACCESS_TOKEN, REFRESH_TOKEN);
-    expect(service.getRefreshToken()).toBe(REFRESH_TOKEN);
-  });
-
   it('clearTokens() makes isAuthenticated() return false', () => {
     service.setTokens(ACCESS_TOKEN, REFRESH_TOKEN);
     service.clearTokens();
@@ -86,17 +81,17 @@ describe('AuthService', () => {
     expect(user!.role).toBe('ADMIN');
   });
 
-  it('logout() calls AuthApi.logout with refresh token, then clearTokens', async () => {
-    const mockAuthApi = { logout: vi.fn().mockReturnValue({ subscribe: vi.fn() }) } as unknown as AuthApi;
+  it('logout() calls AuthApi.logout (cookie-based), then clearTokens', async () => {
     const mockRouter = { navigate: vi.fn() } as unknown as Router;
-    // Use rxjs of for a proper observable
     const { of } = await import('rxjs');
-    (mockAuthApi as any).logout = vi.fn().mockReturnValue(of(undefined));
+    const mockAuthApi = {
+      logout: vi.fn().mockReturnValue(of(undefined)),
+    } as unknown as AuthApi;
 
     service.setTokens(ACCESS_TOKEN, REFRESH_TOKEN);
     await service.logout(mockAuthApi, mockRouter);
 
-    expect(mockAuthApi.logout).toHaveBeenCalledWith(REFRESH_TOKEN);
+    expect(mockAuthApi.logout).toHaveBeenCalledWith();
     expect(service.isAuthenticated()).toBe(false);
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
   });
@@ -167,40 +162,18 @@ describe('AuthService', () => {
     ).toBe('/headman/dashboard');
   });
 
-  it('setTokens persists tokens to localStorage', () => {
-    service.setTokens(ACCESS_TOKEN, REFRESH_TOKEN);
-    const raw = localStorage.getItem('rct.auth.v1');
-    expect(raw).not.toBeNull();
-    expect(JSON.parse(raw!)).toEqual({
-      accessToken: ACCESS_TOKEN,
-      refreshToken: REFRESH_TOKEN,
-    });
-  });
+  // M03b Группа 7: refresh token больше не в localStorage (HttpOnly cookie).
+  // Tests на persist/restore удалены — session восстанавливается через
+  // APP_INITIALIZER + AuthService.bootstrap() вызовом /auth/refresh.
 
-  it('clearTokens removes persisted tokens', () => {
-    service.setTokens(ACCESS_TOKEN, REFRESH_TOKEN);
-    service.clearTokens();
-    expect(localStorage.getItem('rct.auth.v1')).toBeNull();
-  });
-
-  it('restores tokens from localStorage on construction', () => {
+  it('removes legacy rct.auth.v1 blob on construction (migration helper)', () => {
     localStorage.setItem(
       'rct.auth.v1',
-      JSON.stringify({ accessToken: ADMIN_ACCESS_TOKEN, refreshToken: 'persisted-refresh' }),
+      JSON.stringify({ accessToken: 'legacy', refreshToken: 'legacy' }),
     );
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({ providers: [AuthService] });
-    const restored = TestBed.inject(AuthService);
-    expect(restored.isAuthenticated()).toBe(true);
-    expect(restored.accessToken()).toBe(ADMIN_ACCESS_TOKEN);
-    expect(restored.getRefreshToken()).toBe('persisted-refresh');
-  });
-
-  it('ignores malformed localStorage payload on construction', () => {
-    localStorage.setItem('rct.auth.v1', 'not-json');
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [AuthService] });
-    const restored = TestBed.inject(AuthService);
-    expect(restored.isAuthenticated()).toBe(false);
+    TestBed.inject(AuthService);
+    expect(localStorage.getItem('rct.auth.v1')).toBeNull();
   });
 });

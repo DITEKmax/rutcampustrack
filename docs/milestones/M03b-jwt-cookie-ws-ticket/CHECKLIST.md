@@ -111,14 +111,23 @@ CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWE
 
 ## Группа 7 — Frontend web-panel: миграция (Angular)
 
-- [ ] `core/auth/auth.service.ts` — breaking rewrite: те же принципы
-  (cookie+memory)
-- [ ] `core/auth/clear-all-client-state.service.ts` — Angular-версия
-  helper'а (sessionStorage clear + reset NgRx/Signals state)
-- [ ] `AuthInterceptor` — `withCredentials: true` на `/api/auth/**`
-  requests (HttpClient по умолчанию НЕ шлёт cookie)
-- [ ] Удалить `localStorage` refs для auth. Migration helper на старте.
-- [ ] Jasmine/Vitest: auth flow tests
+- [x] `core/auth/auth.service.ts` — breaking rewrite: access-only (refresh
+  в cookie), `setTokens` legacy shim, migration удаляет rct.auth.v1.
+  `bootstrap()` метод вызывается через `provideAppInitializer` в app.config.
+- [x] `core/auth/clear-all-client-state.ts` — helper: localStorage.clear +
+  sessionStorage.clear. Закрывает 10 P0-4.
+- [x] `core/auth/auth.api.ts` + `core/auth/ws-ticket.ts` — cookie-based
+  endpoints (`withCredentials: true`), `acquireWsTicket()`, `buildWsUrl()`.
+- [x] Переведены 3 STOMP-сервиса (student-stomp, headman-stomp,
+  notification-center) на ticket-based handshake. Component call-sites
+  (`.connect(groupId)` без второго аргумента) обновлены.
+- [x] `AuthInterceptor` — cookie-based refresh (`authApi.refresh()` без
+  body, withCredentials). `setAccessToken` вместо `setTokens`.
+- [x] Удалены `localStorage` refs для auth. Migration helper в
+  AuthService constructor.
+- [x] Vitest: 444/444 тестов зелёные (обновлены auth.service,
+  auth.interceptor, login.component, student-stomp, student-excuses,
+  student-late-checkin). `npm run build` зелёный.
 
 ## Группа 8 — Logout lifecycle (C0-5 полный)
 

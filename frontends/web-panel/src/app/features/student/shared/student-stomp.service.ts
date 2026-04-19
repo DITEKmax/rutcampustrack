@@ -7,6 +7,8 @@ import type {
   StompEnvelope,
 } from './student-schedule.types';
 import { StudentNotificationBadgeService } from './student-notification-badge.service';
+import { AuthApi } from '../../../core/auth/auth.api';
+import { buildWsUrl } from '../../../core/auth/ws-ticket';
 
 const STORED_TYPES = [
   'lesson.started',
@@ -62,6 +64,7 @@ export class StudentStompService {
   private readonly markedSubject = new Subject<AttendanceMarkedPayload>();
   private readonly onAnySubject = new Subject<StompEnvelope<Record<string, unknown>>>();
   private readonly badgeService = inject(StudentNotificationBadgeService);
+  private readonly authApi = inject(AuthApi);
 
   /** Reactive stream of attendance.marked payloads. */
   readonly marked$: Observable<AttendanceMarkedPayload> = this.markedSubject.asObservable();
@@ -72,8 +75,11 @@ export class StudentStompService {
   /**
    * Connect to /api/ws for a given group. Idempotent per (groupId).
    * Switching groups tears down the prior client.
+   *
+   * M03b Группа 7: ticket-based handshake. Access token уходит только в
+   * `POST /auth/ws-ticket` (через authInterceptor), не в WebSocket URL.
    */
-  connect(groupId: number, getAccessToken: () => string | null): void {
+  connect(groupId: number): void {
     if (this.currentGroupId === groupId && this.client !== null) {
       // Already connected or connecting for this group.
       return;
@@ -85,7 +91,7 @@ export class StudentStompService {
 
     this.currentGroupId = groupId;
     this.client = new Client({
-      webSocketFactory: () => new SockJS(`/api/ws?token=${getAccessToken() ?? ''}`),
+      webSocketFactory: async () => new SockJS(await buildWsUrl(this.authApi)),
       reconnectDelay: 1000,
       onConnect: () => {
         this.client?.subscribe(`/topic/group/${groupId}`, message => {

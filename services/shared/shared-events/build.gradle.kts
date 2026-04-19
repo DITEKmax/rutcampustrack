@@ -21,5 +21,7 @@ dependencies {
     compileOnly("org.slf4j:slf4j-api")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind")
+    testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

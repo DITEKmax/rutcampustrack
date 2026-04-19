@@ -38,11 +38,11 @@
 
 ## Группа 5 — shared-events
 
-- [ ] Abstract record / class `DomainEvent` (event_version int, trace_id String, occurred_at Instant, source String)
-- [ ] `EventVersion` annotation + default `=1`
-- [ ] `AbstractEventPublisher` — auto-fill MDC → фабрика для Producer'ов (без привязки к AMQP, чистое API)
-- [ ] `AbstractEventConsumer` — extract trace_id из payload → MDC.put перед handler
-- [ ] Unit-тесты: publisher заполняет trace_id, consumer ставит в MDC
+- [x] `DomainEvent` abstract class (event_version, trace_id, occurred_at, source) с `@JsonProperty` snake_case
+- [x] `@EventVersion` annotation (value default 1) — read via reflection включая inherited
+- [x] `AbstractEventPublisher.fillDefaults()` — auto-fill MDC/reflection/clock, не перезаписывает explicit
+- [x] `AbstractEventConsumer.withTraceContext()` — MDC put/restore с previous value, cleanup при исключении
+- [x] Unit-тесты (13 тестов: JSON round-trip + publisher + consumer + MDC lifecycle, 0 failures)
 
 ## Группа 6 — shared-logback
 

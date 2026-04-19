@@ -112,13 +112,13 @@
 
 ## Группа 10 — Rate-limit routes
 
-- [ ] `/api/auth/otp/request` — RL 1 req/min per IP
-- [ ] `/api/auth/otp/verify-by-code` — RL 5 req/min per IP
-- [ ] `/api/auth/login` — RL 5 req/min per IP + 10 req/min per login (два последовательных фильтра)
-- [ ] `/api/auth/refresh` — RL 30 req/min per user (UserIdKeyResolver из Internal JWT)
-- [ ] `/api/attendance/check-in` — RL 10 req/min per user
-- [ ] `/api/**` — глобальный RL 600 req/min per IP (последний — DDoS guard)
-- [ ] RFC 7807 Problem Details для 429: `type=...rate-limit`, `title="Too Many Requests"`, `status=429`, `detail`, `Retry-After` header
+- [x] `/api/auth/otp/request` — RL 1 req/min per IP (новый роут `auth-otp-request` с Method=POST)
+- [x] `/api/auth/otp/verify-by-code` — RL 5 req/min per IP (`auth-otp-verify`)
+- [x] `/api/auth/login` — RL 5 req/min per IP + 10 req/min per `ip+login` composite (два последовательных RL-фильтра, `auth-login`). X-Login header от клиента, при отсутствии — fallback на IP (документируется в Группе 15)
+- [x] `/api/auth/refresh` (+`/refresh-body`) — RL 30 req/min per user (`auth-refresh`, userIdKeyResolver)
+- [x] `/api/attendance/check-in` — RL 10 req/min per user (`attendance-checkin`)
+- [x] Глобально per-downstream — 600 req/min per IP на `academic`/`schedule`/`attendance`/`push` (DDoS guard через `ipKeyResolver`)
+- [x] RFC 7807 Problem Details для 429: `RateLimitProblemDetailsFilter` — response-decorator, `type=https://ruttrack.site/problems/rate-limit-exceeded`, `title/status/detail`, `Retry-After: 60` (5 unit-тестов)
 
 ## Группа 11 — LoginRateLimiter рефактор (01 P0-6)
 

@@ -41,6 +41,93 @@ spring:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
       routes:
+        # === Rate-limited routes (specific first, wins over generic auth-service) ===
+
+        # /api/auth/otp/request — 1 req/min per IP (жёсткий SMS-cost guard)
+        - id: auth-otp-request
+          uri: http://auth-service:9090
+          predicates:
+            - Path=/api/auth/otp/request
+            - Method=POST
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # /api/auth/otp/verify-by-code — 5 req/min per IP
+        - id: auth-otp-verify
+          uri: http://auth-service:9090
+          predicates:
+            - Path=/api/auth/otp/verify-by-code
+            - Method=POST
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # /api/auth/login — 5 req/min per IP + 10 req/min per ip+login (композитный)
+        # Два последовательных RL-фильтра: IP-уровень останавливает distributed brute,
+        # ip+login — target-specific (клиент дубликатом шлёт X-Login header).
+        - id: auth-login
+          uri: http://auth-service:9090
+          predicates:
+            - Path=/api/auth/login
+            - Method=POST
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 10
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipLoginKeyResolver}"
+
+        # /api/auth/refresh — 30 req/min per user (из X-User-Id после JwtAuthenticationFilter)
+        - id: auth-refresh
+          uri: http://auth-service:9090
+          predicates:
+            - Path=/api/auth/refresh,/api/auth/refresh-body
+            - Method=POST
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 30
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@userIdKeyResolver}"
+
+        # /api/attendance/check-in — 10 req/min per user (предотвращает multi-mark)
+        - id: attendance-checkin
+          uri: http://attendance-service:9093
+          predicates:
+            - Path=/api/attendance/check-in
+            - Method=POST
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 10
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@userIdKeyResolver}"
+
+        # === Regular routes (unchanged) ===
+
         - id: auth-service
           uri: http://auth-service:9090
           predicates:
@@ -54,6 +141,13 @@ spring:
             - Path=/api/academic/**
           filters:
             - StripPrefix=1
+            # Глобальный DDoS-guard: 600 req/min per IP для academic endpoint'ов
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 600
+                redis-rate-limiter.burstCapacity: 600
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         - id: schedule-service
           uri: http://schedule-service:9092
@@ -61,6 +155,12 @@ spring:
             - Path=/api/schedule/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 600
+                redis-rate-limiter.burstCapacity: 600
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         - id: attendance-service
           uri: http://attendance-service:9093
@@ -68,6 +168,12 @@ spring:
             - Path=/api/attendance/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 600
+                redis-rate-limiter.burstCapacity: 600
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         - id: notification-web
           uri: http://notification-web:9094
@@ -82,6 +188,12 @@ spring:
             - Path=/api/push/**
           filters:
             - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 600
+                redis-rate-limiter.burstCapacity: 600
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         - id: auth-service-openapi
           uri: http://auth-service:9090

@@ -134,3 +134,34 @@ headers={X-RateLimit-FailOpen: true})` + WARN. `RequestRateLimiterGatewayFilter`
 Gateway там стартовал с dev-default секретом из application.yml, что = FAIL в prod,
 т.к. auth-service уже требует его). Добавил `REDIS_HOST/PORT/PASSWORD` +
 `INTERNAL_ISSUER_SECRET` + `depends_on: redis` в один commit с Группой 9.
+
+## 2026-04-19 — Группа 10: routes + 429 Problem Details
+
+**Принятый trade-off для `/api/auth/login` composite key:** в WebFlux
+Gateway тело запроса — streaming Publisher, читается один раз. Для корректного
+извлечения `login` из JSON body необходим `CacheRequestBody` + кастомный
+filter, прокидывающий поле в attribute/header → overkill для M03a. Вместо
+этого `ipLoginKeyResolver` читает `X-Login` header; клиент frontend
+(PWA/web-panel) дублирует `{login}` из body в header при POST /auth/login.
+При отсутствии header resolver fallback'ится на только-IP ключ — защита
+от брута сохраняется (IP-RL 5/min + composite RL становится дубликатом).
+Документируется в `docs/api-rate-limits.md` (Группа 15) как контракт для
+клиентов. Фронтенд-миграция — отдельный small commit в M07 либо hotfix.
+
+**RFC 7807 через ResponseDecorator:** `RequestRateLimiterGatewayFilterFactory`
+пишет только status 429 + headers, не body. `RateLimitProblemDetailsFilter`
+(order=-40) оборачивает response; на commit с status=429 меняет body на
+Problem Details JSON + Content-Type `application/problem+json` +
+`Retry-After: 60`. Работает поверх writeWith/writeAndFlushWith (оба маршрута
+сброса буфера в WebFlux).
+
+**Per-downstream 600/min:** глобальный `/api/**` DDoS-guard из PLAN
+реализован как per-downstream (academic/schedule/attendance/push — каждый
+со своим RL-фильтром ipKeyResolver 600/min). Это даёт ту же защиту, но
+позволяет в будущем настраивать лимиты отдельно по домену. `/api/auth/**`
+намеренно без global guard — SMS/login уже имеют специфичные лимиты; auth
+public endpoints (public-key, health) не DoS-sensitive.
+
+**Результат:** 52 Gateway-теста (было 47, +5 RateLimitProblemDetailsFilter).
+Build зелёный. Фактическое поведение 429+Problem Details будет провалидировано
+Testcontainers-тестом в Группе 12.

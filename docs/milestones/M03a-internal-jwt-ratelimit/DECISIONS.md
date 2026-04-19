@@ -30,21 +30,44 @@ endpoint защиты). README.md обновляется — M03 → M03a/M03b �
 
 ---
 
-## 2026-04-19 — Shared RSA keypair для Internal JWT
+## 2026-04-19 — Token Exchange endpoint (a3) — исходное решение пересмотрено после Group 1 discovery
 
-**Выбрано:** (a) Shared RSA keypair auth-service + Gateway. Приватный ключ в
-env var `JWT_PRIVATE_KEY_PEM` читается обоими сервисами. Публичный ключ
-downstream тянут из существующего `/internal/jwt-public-key` на auth-service
-(с периодическим refresh).
-**Отвергнуто:** (b) отдельная Gateway keypair; (c) Gateway pull приватного
-ключа из auth-service через internal endpoint.
-**Причина:** Минимум движущихся частей — одна keypair, одна env var для
-ротации, auth-service уже публикует public key и downstream готовы
-потреблять. Gateway и auth-service и так в одной docker private-net — shared
-secret приемлем для v0.0.0.
-**Последствия:** `.env.prod.example` (M06) документирует `JWT_PRIVATE_KEY_PEM`
-как shared. Ротация ключа — рестарт обоих сервисов синхронно. `InternalJwtIssuer`
-в Gateway и `JwtTokenService` в auth-service читают из одного property.
+**Выбрано:** (a3) **Token Exchange паттерн** — приватный ключ остаётся
+ТОЛЬКО в auth-service. Gateway НЕ подписывает Internal JWT сам — вместо этого
+дёргает новый endpoint `POST /internal/issue-internal-jwt` на auth-service с
+shared secret (`INTERNAL_ISSUER_SECRET` env var). Gateway кэширует
+полученный JWT per-user на ~4 минуты (TTL < 5 мин токена) в in-memory
+cache — на cache miss +1 network hop (~2-5ms в private-net), на cache hit
+zero overhead. Инвалидация кэша при logout — Redis pub/sub (scope M03b).
+**Отвергнуто:**
+- (a1) shared env `JWT_PRIVATE_KEY_PEM` — breaking миграция auth-service с
+  keyDir auto-gen на env var; env вариант — антипаттерн на prod (нет audit,
+  попадает в `docker inspect`, CI logs).
+- (a2) shared docker volume `/opt/rutcampustrack/keys` — Gateway получает
+  file-level access к приватному ключу без audit, backup volume содержит
+  секрет, масштабируется плохо.
+**Причина:** Token exchange — индустриальный стандарт (RFC 8693, Google Cloud
+IAM `iam.serviceAccounts.signJwt`, AWS STS). Principle of least privilege:
+компрометация Gateway не даёт атакующему выпустить Internal JWT с
+произвольными claims. Миграционный путь простой — когда (если) проект
+дорастёт до Vault/STS, (a3) с shared secret мигрирует в (a3) с mTLS без
+переписывания логики кэширования. (a1)/(a2) — shortcuts, создающие tech debt.
+**Последствия:**
+- Auth-service: новый endpoint `POST /internal/issue-internal-jwt`
+  (authenticated by shared secret header `X-Internal-Issuer-Secret`), принимает
+  claims `userId/role/groupId/isHeadman`, возвращает подписанный JWT с
+  `iss=rutcampustrack-auth`, `aud=rutcampustrack-internal`, TTL 5 мин.
+- Auth-service `JwtService` расширяется методом `generateInternalToken(claims)`.
+- Gateway: новый компонент `InternalJwtIssuerClient` — WebClient + Caffeine
+  cache (`user:${userId}:${role}` → JWT, expireAfterWrite 4 мин).
+- Gateway filter `InternalJwtIssuerFilter`: на каждый request достаёт JWT из
+  cache либо дёргает endpoint.
+- `.env.prod.example` (M06) документирует `INTERNAL_ISSUER_SECRET` (32 bytes)
+  — рядом с существующим `GRPC_SECRET`. Ротация — sync restart обоих сервисов.
+- PLAN.md Группа «Gateway issuer» переименовывается в «Gateway issuer client»,
+  Группа «Auth-service issuer endpoint» — новая, 4-6 задач.
+- Estimate +1 день (token exchange тесты сложнее: нужно мокировать WebClient
+  в Gateway и тестировать cache semantics).
 
 ## 2026-04-19 — Default `legacy-headers-enabled=true` + strict toggle последним commit'ом
 

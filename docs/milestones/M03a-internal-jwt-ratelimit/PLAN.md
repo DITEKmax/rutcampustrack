@@ -2,7 +2,7 @@
 
 **Статус:** ⏳ в работе
 **Старт / финиш:** 2026-04-19 / —
-**Estimate:** 5-8 человеко-дней
+**Estimate:** 6-9 человеко-дней (+1д против оригинала из-за token exchange, см. DECISIONS 2026-04-19 «Token Exchange endpoint»)
 
 ---
 
@@ -11,11 +11,16 @@
 Первая половина секьюрити-hardening'а перед релизом v0.0.0. Две независимые
 по коду, но связанные по тесту линии:
 
-1. **Internal JWT (C0-1)** — Gateway после валидации внешнего JWT выпускает
-   короткоживущий внутренний JWT (RSA, TTL ~5 мин, claims
-   `userId/role/groupId`). Downstream-сервисы (academic/schedule/attendance/
-   notification-web) валидируют подписью, перестают доверять `X-User-*`
-   заголовкам. Двойной режим на период раскатки, потом strict.
+1. **Internal JWT (C0-1)** — **token exchange паттерн** (DECISIONS 2026-04-19):
+   auth-service экспонирует `POST /internal/issue-internal-jwt` (аутентификация
+   через shared secret `INTERNAL_ISSUER_SECRET`); Gateway дёргает его после
+   валидации внешнего JWT, получает короткоживущий Internal JWT (RSA, TTL 5
+   мин, claims `userId/role/groupId/isHeadman`), кэширует per-user на ~4 мин
+   и прокидывает downstream через `Authorization: Internal <jwt>`.
+   Downstream-сервисы (academic/schedule/attendance/notification-web)
+   валидируют подписью через существующий `/auth/public-key`, перестают
+   доверять `X-User-*` заголовкам. Двойной режим на период раскатки, потом
+   strict. Приватный ключ остаётся ТОЛЬКО в auth-service.
 2. **Rate-limiting (C0-4)** — Spring Cloud Gateway `redis-rate-limiter` на
    чувствительных endpoint'ах. Fail-open при недоступности Redis.
    `LoginRateLimiter` переключается на ключ `(ip, login)`.
@@ -53,33 +58,45 @@ lifecycle — зависит от M03a (Internal JWT — prerequisite для coo
 ### 1. Shared-security библиотека (Internal JWT validator)
 
 - `services/shared/shared-security/` — новый Gradle java-library модуль.
-  - `InternalJwtValidator` — парсит `Authorization: Internal <jwt>`, валидирует подписью через RSA public key.
-  - `InternalJwtFilter` — Spring `OncePerRequestFilter`, ставит `Authentication` с `userId/role/groupId` claims в `SecurityContext`.
-  - `InternalJwtProperties` — `@ConfigurationProperties("rutcampustrack.security.internal-jwt")` (publicKeyUrl, clockSkew).
+  - `InternalJwtValidator` — парсит `Authorization: Internal <jwt>`, валидирует подписью через RSA public key (pull из auth-service `/auth/public-key`, переиспользуя pattern `PublicKeyConfig` из Gateway).
+  - `InternalJwtFilter` — Spring `OncePerRequestFilter`, ставит `Authentication` с `userId/role/groupId/isHeadman` claims в `SecurityContext`.
+  - `InternalJwtProperties` — `@ConfigurationProperties("rutcampustrack.security.internal-jwt")` (authServiceUrl, publicKeyRefreshMinutes, clockSkewSeconds, legacyHeadersEnabled, requireAudience=`rutcampustrack-internal`, requireIssuer=`rutcampustrack-auth`).
   - `InternalJwtAutoConfiguration` — `@AutoConfiguration` в `META-INF/spring/...AutoConfiguration.imports`.
-  - `DualModeUserContextFilter` — на период раскатки принимает и Internal JWT, и legacy `X-User-*`. Property `rutcampustrack.security.legacy-headers-enabled: true/false` (default true в M03a).
+  - `DualModeUserContextFilter` — на период раскатки принимает и Internal JWT, и legacy `X-User-*`. Property `rutcampustrack.security.legacy-headers-enabled: true/false` (default true в M03a, toggle в strict — Группа 13).
 - `gradle/libs.versions.toml` — версия jjwt (уже есть у auth-service) переиспользуется.
 
-### 2. Gateway issuer
+### 2. Auth-service: token exchange endpoint (NEW — из DECISIONS 2026-04-19)
 
-- `services/api-gateway/src/main/java/.../security/InternalJwtIssuerFilter.java` — новый `GlobalFilter`:
-  - Читает внешний JWT из `Authorization: Bearer`, парсит claims.
-  - Генерирует внутренний JWT с теми же RSA-ключами (той же keypair, что auth-service — уже есть `PublicKeyConfig`).
-  - TTL 5 мин, claims `userId/role/groupId` + `iss=rutcampustrack-gateway`, `aud=rutcampustrack-internal`.
-  - Добавляет `Authorization: Internal <jwt>` И ПОКА ОСТАВЛЯЕТ старые `X-User-*` для dual-mode (NEW-4).
-  - После `strict` переключения — `X-User-*` strip.
-- `InternalJwtIssuer` — сервис, использует приватный ключ (shared с auth-service через env var / secret path).
-- Gateway нужен доступ к приватному ключу (или публикует auth-service через endpoint + Gateway запрашивает). Решение в DECISIONS.md.
+- `services/auth-service/.../JwtService.java` — новый метод `generateInternalToken(InternalJwtClaims claims)`: подписывает тем же приватным ключом, TTL 5 мин, `iss=rutcampustrack-auth`, `aud=rutcampustrack-internal`, claims `userId/role/groupId/isHeadman`.
+- `services/auth-service/.../InternalIssuerController.java` — новый REST endpoint `POST /internal/issue-internal-jwt`:
+  - Защищён `InternalIssuerSecretFilter` — проверяет header `X-Internal-Issuer-Secret` против env `INTERNAL_ISSUER_SECRET` (MessageDigest.isEqual timing-safe).
+  - Body: `InternalIssueRequest` record с claims.
+  - Response: `InternalIssueResponse { token, expiresAt }`.
+- `services/auth-service/.../config/InternalIssuerProperties.java` — `@ConfigurationProperties("rutcampustrack.security.internal-issuer")` (secret). Fail-fast на старте если empty (mirror pattern с `GRPC_SECRET` в gRPC).
+- `services/auth-service/.../SecurityConfig.java` — `/internal/**` добавляется в permit-all с custom filter (secret header check).
 
-### 3. Downstream-сервисы (4 адаптации)
+### 3. Gateway issuer client
+
+- `services/api-gateway/src/main/java/.../security/InternalJwtIssuerClient.java` — новый компонент:
+  - `WebClient` call на `POST http://auth-service:9090/internal/issue-internal-jwt` с `X-Internal-Issuer-Secret`.
+  - **Caffeine cache** `user:${userId}:${role}` → `{ token, expiresAt }`, `expireAfterWrite 4 мин` (< 5 мин TTL токена, safe margin).
+  - Cache miss → запрос к auth-service; cache hit → return cached (zero network).
+  - Обработка ошибок: auth-service down → 503 клиенту (fail-closed — без Internal JWT нет шансов валидно прокрастись), WARN в лог.
+- `services/api-gateway/src/main/java/.../security/InternalJwtIssuerFilter.java` — `GlobalFilter, Ordered` (после `JwtAuthenticationFilter`):
+  - Читает внешние JWT claims (уже лежат в `ServerWebExchange.attributes` после `JwtAuthenticationFilter`).
+  - Вызывает `issuerClient.issueFor(userId, role, groupId, isHeadman)`.
+  - Добавляет `Authorization: Internal <jwt>` в downstream request; ПОКА оставляет `X-User-*` (dual-mode, NEW-4).
+  - Strict toggle (Группа 13) — один flag `strip-legacy-headers` → Gateway strip'ает `X-User-*` перед proxy.
+- `services/api-gateway/build.gradle.kts` — `com.github.ben-manes.caffeine:caffeine` dep.
+
+### 4. Downstream-сервисы (4 адаптации)
 
 - `services/academic-service/academic-app/build.gradle.kts` — `implementation(project(":services:shared:shared-security"))`.
-- `services/academic-service/.../security/UserContextFilter.java` → удалить (или оставить на dual-mode, заменить на `InternalJwtFilter`).
-- `application.yml` — `rutcampustrack.security.internal-jwt.public-key-url: http://api-gateway:8080/internal/jwt-public-key` (или direct RSA строка).
+- `services/academic-service/.../security/UserContextFilter.java` → заменить на `DualModeUserContextFilter` из shared-security.
+- `application.yml` — `rutcampustrack.security.internal-jwt.auth-service-url: http://auth-service:9090`, `legacy-headers-enabled: true` (dev default).
 - Аналогично в schedule/attendance/notification-web.
-- `application.yml` в dev — `legacy-headers-enabled: true` (чтобы локальный dev-stack не сломался мгновенно).
 
-### 4. Rate-limiting в Gateway
+### 5. Rate-limiting в Gateway
 
 - `services/api-gateway/build.gradle.kts` — `spring-cloud-starter-gateway` redis-rate-limiter dep (Redis client уже есть? проверить; если нет — `spring-boot-starter-data-redis-reactive`).
 - `application.yml` routes — `RequestRateLimiter` фильтр на чувствительных маршрутах:
@@ -93,20 +110,21 @@ lifecycle — зависит от M03a (Internal JWT — prerequisite для coo
 - Fail-open (NEW-9): кастомный `RateLimiter` wrapper ловит Redis connection exception → пропускает запрос + логирует WARN.
 - RFC 7807 `ErrorResponse` для 429 (использовать shared-web utility / WebFlux-вариант).
 
-### 5. LoginRateLimiter рефактор (01 P0-6)
+### 6. LoginRateLimiter рефактор (01 P0-6)
 
 - `services/auth-service/.../service/LoginRateLimiter.java` — ключ `login_attempts:<login>` → `login_attempts:<ip>:<login>` (composite).
 - Отдельный IP-only счётчик в Gateway (см. выше) — защищает от distributed brute-force.
 - Тест: попытка логина из 100 разных IP с одним `login` — Gateway global-RL остановит; попытка с одного IP на 100 разных `login` — Gateway `/auth/login` по IP остановит; точечный login+IP — LoginRateLimiter.
 
-### 6. Contract-тесты (14 P1-1, 14 P1-2)
+### 7. Contract-тесты (14 P1-1, 14 P1-2)
 
 - `services/shared/shared-security/src/testFixtures/` — helper для генерации валидных / невалидных Internal JWT (wrong signature, expired, missing claims).
 - `services/{academic,schedule,attendance,notification-web}/src/test/.../security/InternalJwtBypassIT.java` — Testcontainers + прямой запрос к порту сервиса (в обход Gateway) без/с кривым Internal JWT → 401.
 - `services/api-gateway/src/test/.../RateLimitIT.java` — Testcontainers Redis, 11 запросов на `/otp/verify-by-code` за минуту → 11-й получает 429.
-- `services/api-gateway/src/test/.../InternalJwtIssuerIT.java` — запрос с валидным внешним JWT → downstream получает Internal JWT в header.
+- `services/api-gateway/src/test/.../InternalJwtIssuerClientIT.java` — WireMock mock auth-service endpoint; проверка cache semantics (2 запроса one user → 1 network call), cache-expiry (после 4 мин — refetch), error flow (auth-service down → 503).
+- `services/auth-service/src/test/.../InternalIssuerControllerIT.java` — endpoint test: valid secret + claims → signed JWT; wrong secret → 401; missing secret → 401; malformed body → 400.
 
-### 7. ArchUnit / documentation
+### 8. ArchUnit / documentation
 
 - `docs/internal-jwt-spec.md` (NEW-3) — формат токена, claims, TTL, ротация ключей, dual-mode flag, миграционный путь.
 - `docs/api-rate-limits.md` (NEW-11) — таблица лимитов, 429 поведение, Retry-After header, рекомендации клиенту.
@@ -117,7 +135,9 @@ lifecycle — зависит от M03a (Internal JWT — prerequisite для coo
 ## Acceptance criteria
 
 - [ ] **Прямой запрос на downstream без Internal JWT → 401.** IT для всех 4 сервисов (academic/schedule/attendance/notification-web). Contract-тест поймает bypass.
-- [ ] **Gateway генерирует валидный Internal JWT.** IT: внешний JWT → Gateway → downstream получает `Authorization: Internal <jwt>` с claims `userId/role/groupId`, подпись совпадает с публичным ключом.
+- [ ] **Auth-service выпускает валидный Internal JWT через token exchange.** IT `InternalIssuerControllerIT`: правильный `X-Internal-Issuer-Secret` + claims → подписанный JWT с правильной аудиторией/эмитентом/TTL; неправильный secret → 401; пустой secret — сервис fail-fast на старте.
+- [ ] **Gateway прокидывает Internal JWT через кэш.** IT `InternalJwtIssuerClientIT` (WireMock auth-service): 2 последовательных запроса одного user → 1 network call (cache hit); после cache-expiry (tightened TTL в тесте) — refetch; auth-service down → 503 клиенту + WARN.
+- [ ] **Приватный ключ НЕ в Gateway.** Архитектурный инвариант: grep по `api-gateway/src/main` не находит `PrivateKey`, `signWith`, `JWT_PRIVATE_KEY_PEM`. Закрепляется ArchUnit rule (Группа 8) либо comment в PLAN post-mortem.
 - [ ] **Dual-mode работает.** `legacy-headers-enabled=true` → downstream принимает и Internal JWT, и старые `X-User-*` (переходный период). `legacy-headers-enabled=false` → только Internal JWT.
 - [ ] **Rate-limit срабатывает.** 11 `/auth/otp/verify-by-code` за минуту → 11-й возвращает 429 с `Retry-After`. Testcontainers Redis.
 - [ ] **Fail-open при Redis down.** Testcontainers Redis → `docker stop redis` → запрос проходит + WARN в логе.

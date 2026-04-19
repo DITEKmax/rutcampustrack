@@ -94,10 +94,11 @@ ShedLock, contract-тесты валидируют уже работающий f
 
 ## Группа 10 — Документация
 
-- [ ] `docs/event-schemas.md` (NEW-48) — создать с versioning policy + `$defs` разделом
-- [ ] `docs/architecture.md` → раздел «Reliable eventing»: диаграмма outbox flow (listener → outbox tx → publisher job → Rabbit → consumer)
-- [ ] `CHANGELOG.md` → `[Unreleased]` → `### Added` (ShedLock, outbox, contract-тесты) + `### Changed` (publisher-flow через outbox)
-- [ ] `CLAUDE.md` → статус M02 ✅ + упомянуть outbox в архитектуре (если уместно)
+- [x] `docs/event-schemas.md` (NEW-48) — versioning policy + bump процедура + $defs таблица + tooling (networknt) + «как добавить новое событие».
+- [x] `docs/architecture.md` → раздел «Reliable eventing» после M01 shared-modules: ASCII-диаграмма outbox flow (listener → outbox tx → publisher job → Rabbit → consumer), ключевые гарантии, список событий и contract-тестов.
+- [x] `CHANGELOG.md [Unreleased]` → `### Added` M02 (shared-outbox, Flyway, ShedLock, Micrometer, event-schemas, contract-тесты, ArchUnit) + `### Changed` (publisher-flow через outbox, @JdbcTypeCode).
+- [x] `CLAUDE.md` статус M02 → ✅ 2026-04-19 + shared-outbox добавлен в структуру репо.
+- [x] `docs/milestones/README.md` → M02 ✅ 2026-04-19.
 
 ## Группа 11 — Финал
 

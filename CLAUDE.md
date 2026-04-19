@@ -25,7 +25,7 @@ RutCampusTrack — микросервисная система учёта пос
 | # | Milestone | Содержание |
 |---|-----------|------------|
 | M01 | Shared Foundations | ✅ 4 shared-модуля (web/events/logback/test-containers) — завершён 2026-04-19 |
-| M02 | Reliable Eventing | ShedLock + in-app outbox + contract-тесты events |
+| M02 | Reliable Eventing | ✅ ShedLock + shared-outbox + contract-тесты + ArchUnit — завершён 2026-04-19 |
 | M03 | Secure Boundaries | Internal JWT + JWT HttpOnly cookie + WS-ticket + logout lifecycle |
 | M04 | Observability | OTel+Tempo tracing + Alertmanager + JSON-логи + retention |
 | M05 | Performance | Composite indexes + Caffeine cache + @EntityGraph + batch endpoints |
@@ -135,11 +135,12 @@ rutcampustrack/
 ├── gradle/
 │   └── libs.versions.toml              ← Version Catalog (shared-модули, M01)
 ├── services/
-│   ├── shared/                         ← shared foundations (M01, см. docs/shared-modules-usage.md)
+│   ├── shared/                         ← shared foundations (M01+M02)
 │   │   ├── shared-web/                    ← RFC 9457 ErrorResponse, handlers, validation, JacksonConfig
 │   │   ├── shared-events/                 ← DomainEvent base, publisher/consumer MDC helpers
 │   │   ├── shared-logback/                ← JSON appender + masking (Bearer/telegram_id/FCM)
-│   │   └── shared-test-containers/        ← java-test-fixtures модуль: ContainerTestBase + gRPC + WireMock
+│   │   ├── shared-test-containers/        ← java-test-fixtures модуль: ContainerTestBase + gRPC + WireMock
+│   │   └── shared-outbox/                 ← M02: OutboxStorage (Jpa/Mongo) + PublisherJob + CleanupJob + Metrics
 │   ├── api-gateway/                    ← Spring Cloud Gateway
 │   ├── auth-service/                   ← JWT, OTP
 │   ├── academic-service/

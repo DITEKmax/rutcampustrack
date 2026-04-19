@@ -725,6 +725,75 @@ Spring Boot autoconfiguration (правило NEW-34). Подробный quick-
 Первый сервис-потребитель — `notification-web` (M01 Группа 8 acceptance).
 Миграция остальных 4 сервисов — в M03/M04/M08.
 
+### Reliable eventing (M02)
+
+Доставка событий между сервисами через RabbitMQ гарантируется
+**transactional outbox**-паттерном. Листенер пишет событие в таблицу
+`{service}_outbox` в той же `@Transactional`, что и доменная операция;
+отдельный `OutboxPublisherJob` читает `pending` и публикует в Rabbit.
+Закрыто в M02 (cм. `docs/milestones/M02-reliable-eventing/`).
+
+```
+┌────────────┐
+│ Service    │   @Transactional BEGIN
+│ (academic, │      domain write  (rows in PG/Mongo)
+│  schedule, │      applicationEventPublisher.publishEvent(event)
+│  attendance)│          │
+└────────────┘          ▼
+         DomainEventListener @TransactionalEventListener(BEFORE_COMMIT)
+                             outboxStorage.save(eventType, json)      // row в {service}_outbox
+                         @Transactional COMMIT (либо rollback → outbox rollback вместе)
+                         │
+                         │ async, раз в 5s
+                         ▼
+                  OutboxPublisherJob @Scheduled + @SchedulerLock("outbox-publisher")
+                    findPending(100) → for each: sender.send() → markSent
+                    ошибка транспорта → markFailed (retry_count++)
+                         │
+                         ▼
+                    RabbitTemplate.send(rut-uit.events, payload, Content-Type=application/json)
+                         │
+                         ▼
+                    RabbitMQ fanout exchange → 3+ consumer queues
+```
+
+**Ключевые гарантии:**
+- **Atomicity** — outbox.save идёт в той же tx что и доменная запись. Откат
+  одного = откат другого (решено 02 P0-6 message loss).
+- **At-least-once delivery** — если Rabbit недоступен, row остаётся `pending`,
+  следующий tick публикует. `markSent` выполняется только после успеха sender'а.
+- **Cluster safety** — `@SchedulerLock` (ShedLock) исключает конкурентную публикацию
+  при scale-out (решено 03 P0-2 double-publish race). Lock name `outbox-publisher`
+  — у каждого сервиса своя ShedLock-таблица в своей БД, так что 3 сервиса не
+  конкурируют.
+- **Retention** — `OutboxCleanupJob` (cron 3am) удаляет `sent` rows старше 7 дней
+  (NEW-7). Настраивается через `rutcampustrack.outbox.retention-days:7`.
+- **Observability** — Micrometer: `outbox.lag` (gauge, pending count),
+  `outbox.published.total` / `outbox.failed.total` (counter, tag event_type).
+- **Архитектурный инвариант** — ArchUnit `ScheduledMustHaveSchedulerLockTest`
+  проверяет что любой `@Scheduled` метод имеет `@SchedulerLock` или явный
+  `@SuppressWarnings("SingleInstance")` (NEW-28).
+
+**shared-outbox** (`services/shared/shared-outbox/`) предоставляет:
+- `OutboxStorage` — storage-agnostic API (save/findPending/markSent/markFailed/
+  deleteSentBefore/countPending).
+- `JpaOutboxStorage<E extends OutboxEntity>` — для PG (academic/schedule).
+- `MongoOutboxStorage` — для Mongo (attendance), через `MongoTemplate`.
+- `OutboxPublisherJob` — scheduled tick + SchedulerLock.
+- `OutboxCleanupJob` — retention scheduler.
+- `OutboxMetrics` — Micrometer gauge.
+
+**Contract-тесты** (`*ContractIT` в каждом сервисе) валидируют реальный
+payload из outbox против JSON Schema в `event-schemas/`:
+- lesson.started + lesson.closed (schedule)
+- lesson.cancelled (schedule)
+- group.updated (academic)
+- attendance.marked (attendance)
+
+**JSON Schema $defs** — `event-schemas/_common.json` содержит shared-определения
+(`eventId`, `occurredAt`, `traceId`, `eventVersion`, `lessonNumber`). 19 схем
+используют их через `$ref` (versioning policy — `docs/event-schemas.md`).
+
 ---
 
 ## 8. Сценарии взаимодействия

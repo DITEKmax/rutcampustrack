@@ -37,7 +37,7 @@ subagent на diff в конце milestone'а.
 | # | Milestone | Зависит от | Estimate | Статус |
 |---|-----------|------------|----------|--------|
 | M01 | [Shared Foundations](M01-shared-foundations/PLAN.md) | — | ~5-7д | ✅ 2026-04-19 |
-| M02 | [Reliable Eventing (ShedLock + outbox + contract-тесты)](M02-reliable-eventing/PLAN.md) | M01 | ~8-10д | ⏳ в работе |
+| M02 | [Reliable Eventing (ShedLock + outbox + contract-тесты)](M02-reliable-eventing/PLAN.md) | M01 | ~8-10д | ✅ 2026-04-19 |
 | M03 | Secure Boundaries (Internal JWT + JWT cookie + logout) | M01, M02 | ~14-18д | ⬜ |
 | M04 | Observability (Tracing, Alertmanager, JSON-логи) | M01 | ~5-7д | ⬜ |
 | M05 | Performance (Indexes, Caffeine, EntityGraph, batch) | M01 | ~6-7д | ⬜ |

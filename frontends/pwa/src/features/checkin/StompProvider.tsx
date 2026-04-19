@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { useStompCheckin } from './useStompCheckin'
 import type { AttendanceMarkedPayload } from './types'
@@ -13,15 +13,9 @@ interface StompContextValue {
 const StompContext = createContext<StompContextValue | null>(null)
 
 export function StompProvider({ children }: { children: ReactNode }) {
-  const { user, accessToken } = useAuth()
+  const { user } = useAuth()
   const groupId = user?.groupId ?? 0
   const userId = user?.id ?? 0
-
-  // Keep accessToken ref in sync for STOMP factory (Pitfall 7)
-  const accessTokenRef = useRef(accessToken)
-  useEffect(() => {
-    accessTokenRef.current = accessToken
-  }, [accessToken])
 
   const [attendanceCounts, setAttendanceCounts] = useState<Record<number, number>>({})
   const [personalStatuses, setPersonalStatuses] = useState<Record<number, AttendanceStatus | null>>({})
@@ -42,7 +36,8 @@ export function StompProvider({ children }: { children: ReactNode }) {
     [userId]
   )
 
-  useStompCheckin(groupId, () => accessTokenRef.current, handleMarked)
+  // M03b Группа 6: useStompCheckin сам запрашивает ticket (не access token).
+  useStompCheckin(groupId, handleMarked)
 
   const markPersonalStatus = useCallback((lessonId: number, status: AttendanceStatus) => {
     setPersonalStatuses((prev) => ({ ...prev, [lessonId]: status }))

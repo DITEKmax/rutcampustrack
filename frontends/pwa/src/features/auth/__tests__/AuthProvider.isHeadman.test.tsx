@@ -12,9 +12,12 @@ vi.mock('@/shared/lib/axios', () => ({
     },
   },
   setAccessTokenGetter: vi.fn(),
-  setRefreshTokenGetter: vi.fn(),
   setTokenRefreshCallback: vi.fn(),
   setAuthLogoutCallback: vi.fn(),
+}))
+
+vi.mock('../clearAllClientState', () => ({
+  clearAllClientState: vi.fn().mockResolvedValue(undefined),
 }))
 
 // Helper: base64url-encode an object (mirrors JWT format)
@@ -42,6 +45,8 @@ describe('AuthProvider — isHeadman from JWT is_headman claim', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
+    // bootstrap refresh fails — no live cookie в тестовом окружении
+    mockedPost.mockRejectedValue({ response: { status: 401 } })
   })
 
   it('sets isHeadman=true when JWT payload contains is_headman: true', async () => {
@@ -51,9 +56,11 @@ describe('AuthProvider — isHeadman from JWT is_headman claim', () => {
       groupId: 7,
       is_headman: true,
     })
-    mockedPost.mockResolvedValueOnce({
-      data: { accessToken: fakeToken, refreshToken: 'refresh-abc', expiresIn: 900 },
-    })
+    mockedPost
+      .mockRejectedValueOnce({ response: { status: 401 } }) // bootstrap
+      .mockResolvedValueOnce({
+        data: { accessToken: fakeToken, expiresIn: 900 },
+      })
 
     const { result } = renderHook(() => useAuth(), { wrapper })
 
@@ -71,9 +78,11 @@ describe('AuthProvider — isHeadman from JWT is_headman claim', () => {
       groupId: 3,
       is_headman: false,
     })
-    mockedPost.mockResolvedValueOnce({
-      data: { accessToken: fakeToken, refreshToken: 'refresh-abc', expiresIn: 900 },
-    })
+    mockedPost
+      .mockRejectedValueOnce({ response: { status: 401 } })
+      .mockResolvedValueOnce({
+        data: { accessToken: fakeToken, expiresIn: 900 },
+      })
 
     const { result } = renderHook(() => useAuth(), { wrapper })
 
@@ -91,9 +100,11 @@ describe('AuthProvider — isHeadman from JWT is_headman claim', () => {
       groupId: 2,
       // is_headman intentionally absent
     })
-    mockedPost.mockResolvedValueOnce({
-      data: { accessToken: fakeToken, refreshToken: 'refresh-abc', expiresIn: 900 },
-    })
+    mockedPost
+      .mockRejectedValueOnce({ response: { status: 401 } })
+      .mockResolvedValueOnce({
+        data: { accessToken: fakeToken, expiresIn: 900 },
+      })
 
     const { result } = renderHook(() => useAuth(), { wrapper })
 

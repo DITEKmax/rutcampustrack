@@ -11,6 +11,7 @@ import {
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { buildWsUrl } from '@/features/auth/wsTicket'
 import {
   loadPrefs,
   shouldStoreInHistory,
@@ -261,17 +262,12 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
     persist(items)
   }, [items])
 
-  const tokenRef = useRef(accessToken)
-  useEffect(() => {
-    tokenRef.current = accessToken
-  }, [accessToken])
-
   useEffect(() => {
     if (!groupId || !userId || !accessToken) return
 
     const client = new Client({
-      webSocketFactory: () =>
-        new SockJS(`/api/ws?token=${tokenRef.current ?? ''}`),
+      // M03b Группа 6: pre-connect fetch single-use ticket из /auth/ws-ticket.
+      webSocketFactory: async () => new SockJS(await buildWsUrl()),
       reconnectDelay: 2000,
       onConnect: () => {
         const handle = (body: string) => {

@@ -88,21 +88,26 @@ CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWE
 
 ## Группа 6 — Frontend PWA: cookie+ticket миграция
 
-- [ ] `frontends/pwa/src/lib/auth/useAuth.ts` — breaking rewrite: login
-  через POST body → cookie auto-set → access в memory state (Zustand).
-  Refresh через POST без body (cookie auto-send). Logout → POST +
-  clearAllClientState.
-- [ ] `clearAllClientState.ts` — helper функция: очищает
-  localStorage/sessionStorage, unregister SW, caches.delete all, push
-  unsubscribe + DELETE /api/notifications/push/subscriptions/me
-- [ ] `WebSocketClient` — перед connect: POST /auth/ws-ticket → получает
-  ticket → `new WebSocket(..?ticket=${t})`. Без query-JWT.
-- [ ] axios/fetch interceptor — `credentials: 'include'` на всех
-  `/api/auth/**` requests (чтобы браузер слал cookie)
-- [ ] Удалить `localStorage.setItem('rct.auth.v1', ...)` везде. Migration
-  helper на старте: если видит старый ключ → удалить + redirect to login
-- [ ] Vitest: useAuth flow, clearAllClientState interaction с SW
-  (mocked)
+- [x] `frontends/pwa/src/features/auth/AuthProvider.tsx` — breaking rewrite:
+  login → POST с credentials → cookie auto-set → access в memory
+  (React state + tokenRef). Refresh через POST без body (cookie auto-send,
+  bootstrap на mount). Logout → POST + clearAllClientState.
+- [x] `features/auth/clearAllClientState.ts` — helper: очищает
+  localStorage/sessionStorage, удаляет runtime caches (headman-api-cache*),
+  push unsubscribe + DELETE /api/notifications/push/subscribe.
+- [x] `features/auth/wsTicket.ts` (+ использование в useStompCheckin,
+  NotificationCenter) — `buildWsUrl()` pre-fetch'ит ticket через
+  `POST /auth/ws-ticket` перед WebSocket connect. Замена `?token=<JWT>`
+  на `?ticket=<uuid>`.
+- [x] `shared/lib/axios.ts` — `withCredentials: true` ставится per-call
+  в api.ts для `/auth/*`. Refresh interceptor использует body=null + cookie.
+  `setRefreshTokenGetter` удалён (refresh больше не в JS памяти).
+- [x] Удалён `localStorage.setItem('rct.auth.v1', ...)`. Migration helper
+  в `AuthProvider` — удаляет legacy blob на mount.
+- [x] Vitest: все 122 теста PWA прошли. AuthProvider.test (cookie flow,
+  migration, logout), AuthProvider.isHeadman (JWT claim parsing),
+  PWAHeadmanRole (bottom-nav role routing), useStompCheckin (ws-ticket
+  factory). `npm run build` зелёный.
 
 ## Группа 7 — Frontend web-panel: миграция (Angular)
 

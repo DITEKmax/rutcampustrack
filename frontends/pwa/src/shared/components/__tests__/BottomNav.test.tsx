@@ -58,6 +58,7 @@ describe('BottomNav', () => {
       isAuthenticated: true,
       user: { id: 1, role: 'STUDENT', groupId: 5, isHeadman: false },
       accessToken: 'token',
+      isBootstrapping: false,
       login: vi.fn(),
       logout: vi.fn(),
     })
@@ -76,6 +77,7 @@ describe('BottomNav', () => {
       isAuthenticated: true,
       user: { id: 42, role: 'STUDENT', groupId: 7, isHeadman: true },
       accessToken: 'token',
+      isBootstrapping: false,
       login: vi.fn(),
       logout: vi.fn(),
     })

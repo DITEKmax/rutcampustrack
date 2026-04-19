@@ -23,9 +23,12 @@ vi.mock('@/shared/lib/axios', () => ({
     },
   },
   setAccessTokenGetter: vi.fn(),
-  setRefreshTokenGetter: vi.fn(),
   setTokenRefreshCallback: vi.fn(),
   setAuthLogoutCallback: vi.fn(),
+}))
+
+vi.mock('@/features/auth/clearAllClientState', () => ({
+  clearAllClientState: vi.fn().mockResolvedValue(undefined),
 }))
 
 // BottomNav reads the NotificationCenter for the unread badge. Stub the
@@ -69,9 +72,12 @@ function wrapper({ children }: { children: ReactNode }) {
 // Render the full app shell (AuthProvider + BottomNav) with a pre-configured login mock
 async function renderWithLogin(jwtPayload: Record<string, unknown>) {
   const token = createFakeJwt(jwtPayload)
-  mockedPost.mockResolvedValueOnce({
-    data: { accessToken: token, refreshToken: 'refresh-token', expiresIn: 900 },
-  })
+  // bootstrap refresh fails, затем login → accessToken
+  mockedPost
+    .mockRejectedValueOnce({ response: { status: 401 } })
+    .mockResolvedValueOnce({
+      data: { accessToken: token, expiresIn: 900 },
+    })
 
   // Use renderHook to get the auth context, then reuse same wrapper for BottomNav
   const { result } = renderHook(() => useAuth(), { wrapper })
@@ -86,6 +92,7 @@ async function renderWithLogin(jwtPayload: Record<string, unknown>) {
 describe('PWAHeadmanRole — JWT is_headman → user.isHeadman parsing', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockedPost.mockRejectedValue({ response: { status: 401 } })
   })
 
   it('is_headman=true in JWT → user.isHeadman is true → BottomNav renders correct tab count', async () => {
@@ -126,6 +133,7 @@ describe('PWAHeadmanRole — JWT is_headman → user.isHeadman parsing', () => {
 describe('PWAHeadmanRole — BottomNav tab rendering by isHeadman state', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockedPost.mockRejectedValue({ response: { status: 401 } })
   })
 
   it('BottomNav shows Группа tab (6 links) when isHeadman=true', async () => {
@@ -135,9 +143,11 @@ describe('PWAHeadmanRole — BottomNav tab rendering by isHeadman state', () => 
       groupId: 7,
       is_headman: true,
     })
-    mockedPost.mockResolvedValueOnce({
-      data: { accessToken: headmanToken, expiresIn: 900 },
-    })
+    mockedPost
+      .mockRejectedValueOnce({ response: { status: 401 } })
+      .mockResolvedValueOnce({
+        data: { accessToken: headmanToken, expiresIn: 900 },
+      })
 
     // We need a single provider instance shared between the hook and BottomNav.
     // Render the whole tree together and use a trigger component.
@@ -188,9 +198,11 @@ describe('PWAHeadmanRole — BottomNav tab rendering by isHeadman state', () => 
       role: 'STUDENT',
       groupId: 2,
     })
-    mockedPost.mockResolvedValueOnce({
-      data: { accessToken: plainToken, expiresIn: 900 },
-    })
+    mockedPost
+      .mockRejectedValueOnce({ response: { status: 401 } })
+      .mockResolvedValueOnce({
+        data: { accessToken: plainToken, expiresIn: 900 },
+      })
 
     function TestApp() {
       const { login } = useAuth()

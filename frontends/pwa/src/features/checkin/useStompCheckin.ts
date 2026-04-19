@@ -1,11 +1,17 @@
 import { useEffect, useRef } from 'react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
+import { buildWsUrl } from '@/features/auth/wsTicket'
 import type { AttendanceMarkedPayload } from './types'
 
+/**
+ * M03b Группа 6: webSocketFactory теперь pre-fetch'ит single-use ticket
+ * из /auth/ws-ticket вместо передачи JWT в query. Параметр
+ * `getAccessToken` удалён — access-token нужен только для endpoint'а
+ * ws-ticket (axios interceptor ставит Bearer автоматически).
+ */
 export function useStompCheckin(
   groupId: number,
-  getAccessToken: () => string | null,
   onMarked: (payload: AttendanceMarkedPayload) => void
 ) {
   const onMarkedRef = useRef(onMarked)
@@ -17,7 +23,7 @@ export function useStompCheckin(
     if (!groupId) return
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`/api/ws?token=${getAccessToken() ?? ''}`),
+      webSocketFactory: async () => new SockJS(await buildWsUrl()),
       reconnectDelay: 1000,
       onConnect: () => {
         client.subscribe(`/topic/group/${groupId}`, (message) => {
@@ -41,5 +47,5 @@ export function useStompCheckin(
     return () => {
       client.deactivate()
     }
-  }, [groupId]) // getAccessToken is a factory (stable ref), not a dependency
+  }, [groupId])
 }

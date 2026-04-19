@@ -11,27 +11,26 @@ const flushQueue = (token: string | null, error: unknown = null) => {
   pendingQueue = []
 }
 
+/**
+ * Базовый axios-клиент PWA. M03b Группа 6 — `withCredentials: true` ставится
+ * per-call на `/auth/*` endpoints (см. api.ts), чтобы HttpOnly cookie
+ * `rct_refresh` уходила. На остальных запросах access token в
+ * `Authorization: Bearer` хватает — cookie туда не нужна.
+ */
 export const apiClient = axios.create({
   baseURL: '/api',
 })
 
-// Token getters — set by AuthProvider
+// Token getter — set by AuthProvider
 let getAccessToken: () => string | null = () => null
 export const setAccessTokenGetter = (fn: () => string | null) => {
   getAccessToken = fn
 }
 
-let getRefreshToken: () => string | null = () => null
-export const setRefreshTokenGetter = (fn: () => string | null) => {
-  getRefreshToken = fn
-}
-
-// Token setter — called by interceptor after refresh; delivers both tokens
-// so AuthProvider can persist the rotated refresh_token.
-let onTokenRefreshed: ((accessToken: string, refreshToken: string) => void) | null = null
-export const setTokenRefreshCallback = (
-  fn: (accessToken: string, refreshToken: string) => void
-) => {
+// Token setter — called by interceptor after refresh; accessToken only.
+// Refresh-token теперь живёт в HttpOnly cookie, JS его не видит.
+let onTokenRefreshed: ((accessToken: string) => void) | null = null
+export const setTokenRefreshCallback = (fn: (accessToken: string) => void) => {
   onTokenRefreshed = fn
 }
 
@@ -50,7 +49,7 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-// Response interceptor: silent refresh on 401
+// Response interceptor: silent refresh on 401 (cookie-based)
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -72,14 +71,14 @@ apiClient.interceptors.response.use(
 
       isRefreshing = true
       try {
-        const refreshToken = getRefreshToken()
-        if (!refreshToken) {
-          throw new Error('No refresh token available')
-        }
-        const { data } = await axios.post('/api/auth/refresh', { refreshToken })
+        // Cookie-based refresh — body empty, withCredentials передаст cookie.
+        const { data } = await axios.post(
+          '/api/auth/refresh',
+          null,
+          { withCredentials: true }
+        )
         const newAccess = data.accessToken
-        const newRefresh = data.refreshToken
-        onTokenRefreshed?.(newAccess, newRefresh)
+        onTokenRefreshed?.(newAccess)
         flushQueue(newAccess)
         original.headers['Authorization'] = `Bearer ${newAccess}`
         return apiClient(original)

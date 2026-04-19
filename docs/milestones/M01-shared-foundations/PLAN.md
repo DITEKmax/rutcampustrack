@@ -1,4 +1,4 @@
-# M3 — Shared Foundations
+# M01 — Shared Foundations
 
 **Статус:** ⏳ в работе
 **Старт / финиш:** 2026-04-19 / —
@@ -104,15 +104,15 @@ include(
 )
 ```
 
-### 6. Миграция notification-service (единственная в M3)
+### 6. Миграция notification-service (единственная в M01)
 
 notification-service сейчас без GlobalExceptionHandler (05 P0-2 / C1-11).
 Подключаем shared-web первым — это acceptance-тест что shared-web работает.
 
 Остальные 3 сервиса (academic, schedule, attendance) у них уже есть свои
-копии handler'ов. Миграция на shared-web — отдельная задача в M4 (чтобы не
-раздувать M3). В M3 — только подключение без замены. Drift между копиями
-handler'ов остаётся до M4.
+копии handler'ов. Миграция на shared-web — отдельная задача в M04 (чтобы
+не раздувать M01). В M01 — только подключение без замены. Drift между
+копиями handler'ов остаётся до M04.
 
 ## Acceptance criteria
 
@@ -133,9 +133,9 @@ handler'ов остаётся до M4.
 
 ## Dependencies
 
-- **Блокирует:** M1, M2, M4, M5, M6, M7 (все опираются на shared-*).
+- **Блокирует:** M02, M03, M04, M05, M07, M08 (все опираются на shared-*).
 - **Блокируется:** ничем (foundation layer).
-- **Parallel safe:** M8 (ops & supply chain — полностью независим).
+- **Parallel safe:** M06 (ops & supply chain — полностью независим).
 
 ## Artifacts
 

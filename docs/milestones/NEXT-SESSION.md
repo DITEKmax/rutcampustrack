@@ -1,0 +1,69 @@
+# Промпт для следующей сессии
+
+Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Этого достаточно —
+Opus сам откроет файлы и поймёт где мы остановились.
+
+---
+
+Продолжай работу над v0.0.0 milestones.
+
+Контекст:
+1. Архитектурный аудит завершён, зафиксирован в `docs/report-before-v0.0.0/`
+   (16 отчётов + OWNER-ANSWERS.md 6400 строк + COVERAGE-AUDIT.md 354
+   пункта + 99-executive-summary.md roadmap).
+2. Рабочий процесс — lightweight milestones без GSD-orchestrator'а.
+   Индекс: `docs/milestones/README.md`.
+3. Активный milestone указан в таблице того README как ⏳ в работе.
+   Внутри каталога — PLAN.md (scope), CHECKLIST.md (атомарные задачи),
+   NOTES.md (живой лог), DECISIONS.md (micro-ADR).
+
+Что делать:
+1. Прочитай `docs/milestones/README.md` — найди активный milestone.
+2. Прочитай `PLAN.md` + `CHECKLIST.md` + `NOTES.md` + `DECISIONS.md`
+   активного milestone'а.
+3. Прочитай `git log --oneline -15` — посмотри последние коммиты,
+   понять где остановился по CHECKLIST.
+4. Продолжай с первой невыполненной галочки `[ ]` в CHECKLIST.md.
+5. Работай сам — пиши код, запускай `./gradlew build`, правь если
+   упало, коммить после каждой логической группы из CHECKLIST.
+6. После каждой завершённой группы — отчитайся коротко (1-2 строки)
+   и жди подтверждения перед следующей. Это для контроля, не для
+   разрешения (если пользователь говорит «go» — работай молча дальше).
+
+Правила:
+- Русский язык в отчётах/NOTES/ответах пользователю (технические
+  термины и код — оригинал).
+- Не звать `gsd-*` агентов. Вместо этого при необходимости: `Explore`
+  для «найти все X», `bug-hunter` / `code-reviewer` на итоговый diff
+  milestone'а.
+- Surprise / отклонение от плана → сразу в NOTES.md + спросить
+  пользователя до продолжения.
+- Micro-решение (не в OWNER-ANSWERS, но нужно зафиксировать) →
+  в DECISIONS.md.
+- Закрываешь пункт из CHECKLIST → ставишь `[x]` в том же файле
+  Edit'ом (не через write).
+- Закрываешь пункт из `COVERAGE-AUDIT.md` → в колонке «Closed in»
+  пиши commit SHA.
+- `CHANGELOG.md` → `[Unreleased]` → обновляй при значимых изменениях
+  (не каждый коммит).
+- Hook-reminder-ы «READ-BEFORE-EDIT» часто ложные — если файл уже
+  был прочитан в этой сессии, Edit пройдёт. Игнорируй их.
+
+Когда milestone закрыт:
+1. Все пункты CHECKLIST отмечены `[x]`.
+2. Все acceptance criteria в PLAN.md пройдены.
+3. Post-mortem секция дописана в PLAN.md.
+4. Статус в `docs/milestones/README.md` → ✅ готов.
+5. Тег `git tag v0.0.0-alpha.{N}` на последнем коммите milestone'а.
+6. Сообщить пользователю финальный summary + ссылку на следующий
+   milestone по dependency graph.
+
+Не делать без явного `go`:
+- `git push` на origin.
+- Удалять/rm файлы в production-коде.
+- Менять scope milestone'а (только через NOTES + подтверждение).
+- Пропускать acceptance criteria.
+
+Старт:
+> Читаю README.md → активный milestone → PLAN → CHECKLIST → git log.
+> Через минуту скажу где остановились и какая первая задача.

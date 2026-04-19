@@ -14,8 +14,27 @@ RutCampusTrack — микросервисная система учёта пос
 - **v6.0**: ЗАВЕРШЕНА (PWA + Web Push) — фазы 27-32
 - **v7.0**: ЗАВЕРШЕНА (Frontends — Mini App, Web Panel, Landing) — фазы 33-40
 - **v8.0**: ЗАВЕРШЕНА (CI/CD, Deployment & Documentation) — фазы 41-48
-- **v9.0**: В РАБОТЕ (Frontend Unification — Single Login & Role-Based Web Clients) — фазы 49-57 + Phase 58 (BUG-006 Admin Fixes) completed 2026-04-14 + Phase 59 (Excuse Tickets Backend) completed 2026-04-14 + Phase 60 (Headman Schedule Management) completed 2026-04-14
-- Полный план: `.planning/ROADMAP.md`, отчёты: `docs/phase-{N}-report.md`
+- **v9.0**: ЗАВЕРШЕНА (Frontend Unification — Single Login & Role-Based Web Clients) — фазы 49-57 + Phase 58 (BUG-006 Admin Fixes) + Phase 59 (Excuse Tickets Backend) + Phase 60 (Headman Schedule Management)
+- **v0.0.0**: В РАБОТЕ (Pre-release hardening по аудиту) — 8 milestones в `docs/milestones/`, активный — см. `docs/milestones/README.md`
+- Полный план v0.0.0: `docs/report-before-v0.0.0/99-executive-summary.md`
+- Исходный аудит: `docs/report-before-v0.0.0/` (16 отчётов, OWNER-ANSWERS.md, COVERAGE-AUDIT.md)
+- Полный план v1.0-v9.0: `.planning/ROADMAP.md`, отчёты: `docs/phase-{N}-report.md`
+
+### v0.0.0 Milestones
+
+| # | Milestone | Содержание |
+|---|-----------|------------|
+| M01 | Shared Foundations | 4 shared-модуля (web/events/logback/test-containers) |
+| M02 | Reliable Eventing | ShedLock + in-app outbox + contract-тесты events |
+| M03 | Secure Boundaries | Internal JWT + JWT HttpOnly cookie + WS-ticket + logout lifecycle |
+| M04 | Observability | OTel+Tempo tracing + Alertmanager + JSON-логи + retention |
+| M05 | Performance | Composite indexes + Caffeine cache + @EntityGraph + batch endpoints |
+| M06 | Ops & Supply Chain | SHA tagging + Trivy/Gitleaks + HEALTHCHECK + Renovate |
+| M07 | Frontend Hardening | CSP self-host + a11y + openapi-typescript + UX fixes |
+| M08 | Test Infrastructure | Playwright e2e + golden tests + coverage-gate 60/50/50 + diff 80% |
+
+Начало и порядок выполнения: `docs/milestones/README.md`. Workflow
+описан там же — per milestone ведётся PLAN + CHECKLIST + NOTES + DECISIONS.
 
 ### URL Layout (v9.0)
 
@@ -46,7 +65,7 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 | Academic Service | 9091 | Spring Boot | PostgreSQL (academic_db) + Redis cache |
 | Schedule Service | 9092 | Spring Boot | PostgreSQL (schedule_db) |
 | Attendance Service | 9093 | Spring Boot | MongoDB (attendance_db) |
-| Notification Web | 9094 | Spring Boot WebSocket (STOMP) | — (stateless event forwarder) |
+| Notification Web | 9094 | Spring Boot WebSocket (STOMP) | — (stateless event forwarder, становится stateful после M04 — см. NEW-168) |
 | Notification Bot | — | Python Aiogram 3 | Redis (reminder msgs) |
 
 Между сервисами: gRPC. Асинхронные события: RabbitMQ (fanout exchange).

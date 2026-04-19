@@ -25,27 +25,29 @@ subagent на diff в конце milestone'а.
 - **Explore** / **general-purpose** — «найди все места где X» (дешевле чем разбираться руками).
 - **bug-hunter** — после большого PR, один вызов на весь diff milestone'а.
 - **code-reviewer** — перед финальным merge milestone'а.
-- **security-auditor** — для M1 (Secure Boundaries), там цена бага выше цены токенов.
+- **security-auditor** — для M03 (Secure Boundaries), там цена бага выше цены токенов.
 
 Не звать: `gsd-*` (дороже без пропорциональной выгоды, research уже готов).
 
 ## Порядок milestones
 
-Порядок определяется зависимостями (см. 99-executive-summary.md dependency graph).
+Нумерация = **порядок выполнения** (1 → 8), определённый dependency graph
+из 99-executive-summary.md. Название отражает содержание, не приоритет.
 
 | # | Milestone | Зависит от | Estimate | Статус |
 |---|-----------|------------|----------|--------|
-| M3 | [Shared Foundations](M3-shared-foundations/PLAN.md) | — | ~5-7д | ⏳ в работе |
-| M2 | Reliable Eventing (ShedLock + outbox + contract-тесты) | M3 | ~8-10д | ⬜ |
-| M1 | Secure Boundaries (Internal JWT + JWT cookie + logout) | M3, M2 | ~14-18д | ⬜ |
-| M4 | Observability (Tracing, Alertmanager, JSON-логи) | M3 | ~5-7д | ⬜ |
-| M5 | Performance (Indexes, Caffeine, EntityGraph, batch) | M3 | ~6-7д | ⬜ |
-| M6 | Frontend Hardening (CSP, a11y, UX, openapi-typescript) | M1 | ~10-12д | ⬜ |
-| M7 | Test Infrastructure (Playwright, golden, coverage-gate) | M3, M2, M1 | ~10-12д | ⬜ |
-| M8 | Ops & Supply Chain (SHA tagging, Trivy, HEALTHCHECK) | — | ~3-4д | ⬜ |
+| M01 | [Shared Foundations](M01-shared-foundations/PLAN.md) | — | ~5-7д | ⏳ в работе |
+| M02 | Reliable Eventing (ShedLock + outbox + contract-тесты) | M01 | ~8-10д | ⬜ |
+| M03 | Secure Boundaries (Internal JWT + JWT cookie + logout) | M01, M02 | ~14-18д | ⬜ |
+| M04 | Observability (Tracing, Alertmanager, JSON-логи) | M01 | ~5-7д | ⬜ |
+| M05 | Performance (Indexes, Caffeine, EntityGraph, batch) | M01 | ~6-7д | ⬜ |
+| M06 | Ops & Supply Chain (SHA tagging, Trivy, HEALTHCHECK) | — | ~3-4д | ⬜ |
+| M07 | Frontend Hardening (CSP, a11y, UX, openapi-typescript) | M03 | ~10-12д | ⬜ |
+| M08 | Test Infrastructure (Playwright, golden, coverage-gate) | M01, M02, M03 | ~10-12д | ⬜ |
 
-**Parallel tracks:** M4 и M5 можно делать параллельно с M1 (не блокируют).
-M8 полностью независим — можно делать когда угодно.
+**Parallel tracks:** M04 и M05 можно делать одновременно с M03 (независимы
+по коду). M06 полностью независим — можно делать когда угодно, даже
+параллельно M01.
 
 ## Правила
 

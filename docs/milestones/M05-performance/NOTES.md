@@ -21,9 +21,91 @@
 
 ## Открытые развилки для D1..DN
 
-_Ни одной на старт — все решения из OWNER-ANSWERS недвусмысленны.
-Писать сюда если возникнут micro-решения (например, конкретный cache-
-key format, formula pool-size для более слабого VPS)._
+### 2026-04-20 — Расхождения между PLAN.md Группы 1 и фактической схемой БД
+
+Перед seed-датасетом провёл аудит фактических схем — обнаружены 3
+расхождения с текстом в `PLAN.md → Миграции Flyway` и CHECKLIST Группы
+1. Прошу владельца подтвердить правку scope до коммитов.
+
+**1. schedule_db — `lessons.group_id` колонки НЕ существует.**
+
+- `V1__baseline.sql:27-36` — `lessons (id, schedule_item_id,
+  date, status, is_geo_blocked, cancel_reason, ...)`. `group_id`
+  доступен только JOIN'ом `lessons.schedule_item_id →
+  schedule_items.group_id`.
+- `LessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn`
+  (`LessonService.java:230`) — hot query для week-journal. План говорит
+  «`(group_id, date) WHERE status != 'cancelled'` на lessons» —
+  невозможно без денормализации.
+
+  **Варианты:**
+  - **A.** Денормализовать `group_id` в `lessons` (миграция + trigger
+    `BEFORE INSERT/UPDATE` или app-level copy при create). Index
+    `(group_id, date) WHERE status != 'cancelled'` работает как
+    задумано. Схема прирастает одной колонкой (~8 байт/lesson).
+  - **B.** Оставить как есть, индексировать
+    `lessons(schedule_item_id, date)` partial, дополнительно
+    `schedule_items(group_id)` (уже есть `idx_si_group_semester`).
+    Запрос остаётся как сейчас — `IN (itemIds)` + `BETWEEN`, planner
+    использует composite на `(schedule_item_id, date)`.
+  - **C.** Добавить индекс на `(date, status)` без group_id —
+    selectivity даты узкая (неделя = 7 значений), но по группе не
+    фильтрует.
+
+  **Рекомендация:** B (без денормализации). Запрос уже работает
+  через `schedule_item_id IN (...)`, planner быстро найдёт lessons по
+  composite `(schedule_item_id, date)`. Денормализация group_id усложняет
+  write-path (trigger/app-copy при перевыставлении schedule_item.group_id).
+
+**2. schedule_db — unique `(group_id, lesson_number, date)` на
+`schedule_one_off_lessons` уже есть.**
+
+- `V4__one_off_lessons.sql:18` — `CONSTRAINT uq_one_off_slot UNIQUE
+  (group_id, date, lesson_number)`. Дублировать не нужно. Пункт в
+  CHECKLIST Группы 1 — закрыть как «уже есть, no-op».
+
+**3. academic_db — таблицы `user_groups` НЕТ.**
+
+- Связь user↔group живёт в `users.group_id`
+  (V1:33 — `FK REFERENCES groups(id) ON DELETE SET NULL`).
+- `student_group_history(user_id, group_id, joined_at, left_at)` —
+  только история, без `semester_id`.
+- `UserRepository.findByGroupId(groupId)` — hot query для get-group-
+  members, **не фильтрует по semester**. Composite `(group_id,
+  semester_id)` на `user_groups` бессмыслен — таблицы нет.
+- Запросы, где `(group_id, semester_id)` реально совместные:
+  - `TeacherSubjectGroupRepository.findByGroupIdAndSemesterId` (теперь
+    без index — есть только `idx_tsg_group` + `idx_tsg_semester`).
+  - `HomeworkRepository.findByGroupIdAndSemesterId` (есть
+    `idx_hw_group_subject (group_id, subject_id)` — не подходит).
+
+  **Варианты:**
+  - **A.** Composite `teacher_subject_groups(group_id, semester_id)`
+    и `homeworks(group_id, semester_id)` — два индекса вместо одного на
+    несуществующий user_groups. Hot query для teacher-dashboard + для
+    homework-list.
+  - **B.** Оставить scope PLAN.md буквальным — тогда academic часть
+    Группы 1 отпадает, P2-10/1 не закрывает academic.
+
+  **Рекомендация:** A — индексы кладутся на реальные hot queries,
+  покрывают оба случая из grep'а.
+
+**Summary вариантов на утверждение:**
+
+- **schedule:** composite `lessons(schedule_item_id, date)` partial
+  `WHERE status != 'cancelled'`. `schedule_one_off_lessons` — no-op (уже
+  UNIQUE).
+- **attendance:** `(group_id, lesson_id)` + `(group_id, status,
+  created_at DESC)` на коллекцию `attendances` через
+  `AttendanceIndexInitializer` (Mongo — не Flyway).
+  *Но ещё проверю:* late-checkin collection отдельная (`late_checkin_requests`)
+  или те же `attendances`?
+- **academic:** `teacher_subject_groups(group_id, semester_id)` +
+  `homeworks(group_id, semester_id)` как замена несуществующему
+  `user_groups(group_id, semester_id)`.
+
+**Ожидаю подтверждения** перед Flyway миграциями и seed-датасетом.
+PLAN.md не переписываю до `go` владельца.
 
 ## Правила работы (без изменений с M04)
 

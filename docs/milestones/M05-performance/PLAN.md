@@ -1,7 +1,7 @@
 # M05 — Performance (Indexes + Caffeine + EntityGraph + Batch)
 
-**Статус:** ⬜ не начат
-**Старт / финиш:** — / —
+**Статус:** ⏳ в работе
+**Старт / финиш:** 2026-04-20 / —
 **Estimate:** ~5-6 человеко-дней (P2-10 пачка из аудита)
 
 ---
@@ -24,11 +24,24 @@
 
 ## Модули / изменения
 
-### Миграции Flyway
+### Миграции Flyway / индексы (уточнено 2026-04-20, см. DECISIONS D1-D3)
 
-- `academic_db`: `V{N}__add_performance_indexes.sql` — `(group_id, semester_id)` в user_groups.
-- `schedule_db`: `V{N}__add_performance_indexes.sql` — partial index `(group_id, date) WHERE status != 'cancelled'`, unique `(group_id, lesson_number, date)` на one_off_lessons.
-- `attendance_db` (Mongo): index `(group_id, lesson_id)`, `(group_id, status, created_at DESC)` на late-checkin collection.
+- `academic_db`: `V{N}__add_performance_indexes.sql` —
+  `idx_tsg_group_semester` на `teacher_subject_groups(group_id, semester_id)`
+  + `idx_hw_group_semester` на `homeworks(group_id, semester_id)`. Таблицы
+  `user_groups` не существует — OWNER-ANSWERS 3682 реинтерпретирован на
+  реальные hot queries (см. D2).
+- `schedule_db`: `V{N}__add_performance_indexes.sql` — partial
+  `idx_lessons_item_date ON lessons (schedule_item_id, date) WHERE status !=
+  'cancelled'`. `lessons.group_id` не существует; композит на
+  `schedule_item_id` покрывает фактический `IN + BETWEEN` запрос без
+  денормализации (D1). `schedule_one_off_lessons` уже имеет UNIQUE в V4 —
+  no-op.
+- `attendance_db` (Mongo, через `MongoConfig.initIndexes` или
+  `AttendanceIndexInitializer`): compound `{group_id:1, status:1,
+  created_at:1}` на `late_checkin_requests` — закрывает 04 P2-9.
+  `(group_id, lesson_id)` на `attendances` **отложено** (D3) — нет hot
+  query-потребителя в коде; решение записано в Future-ideas.
 
 ### Caching
 

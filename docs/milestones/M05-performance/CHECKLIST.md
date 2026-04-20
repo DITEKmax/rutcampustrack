@@ -4,16 +4,39 @@
 
 ## Группа 1 — Composite indexes + perf baseline (P2-10/1)
 
-- [ ] Baseline: seed-dataset на 10k+ rows в dev-compose (lessons, attendance, users). Скрипт `docs/milestones/M05-performance/seed-perf.sql` или Python-script.
-- [ ] EXPLAIN ANALYZE «before» для 3 hot queries — записать в `docs/performance-indexes.md`:
-  1. `getWeekLessons(groupId, dateFrom, dateTo)` — schedule.
-  2. `getHeadmanDashboardLateCheckins(groupId, status)` — attendance.
-  3. `getGroupMembers(groupId, semesterId)` — academic.
-- [ ] Flyway миграция `schedule_db`: partial `idx_lessons_group_dates (group_id, date) WHERE status != 'cancelled'` + unique `idx_oneoff_dedup (group_id, lesson_number, date)`.
-- [ ] Flyway миграция `attendance_db` (MongoDB — скрипт в `AttendanceIndexInitializer`): `(group_id, lesson_id)` + `(group_id, status, created_at DESC)` на late-checkin.
-- [ ] Flyway миграция `academic_db`: `(group_id, semester_id)` на user_groups.
+_Уточнено 2026-04-20 по результатам аудита схемы — см. DECISIONS D1-D3._
+
+- [ ] Baseline: seed-dataset на 10k+ rows в dev-compose (lessons,
+      late_checkin_requests, teacher_subject_groups, homeworks). Скрипт
+      `docs/milestones/M05-performance/seed-perf.sql` или Python-script.
+- [ ] EXPLAIN ANALYZE «before» для 3 hot queries — записать в
+      `docs/performance-indexes.md`:
+  1. `LessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn`
+     (schedule, через `LessonService.getLessonsForGroup`).
+  2. `LateCheckinRepository.findByGroupIdAndStatusOrderByCreatedAtAsc`
+     (attendance Mongo).
+  3. `TeacherSubjectGroupRepository.findByGroupIdAndSemesterId` +
+     `HomeworkRepository.findByGroupIdAndSemesterId` (academic).
+- [ ] Flyway миграция `schedule_db`: partial
+      `idx_lessons_item_date ON lessons (schedule_item_id, date) WHERE status != 'cancelled'`.
+      (D1 — `group_id` в `lessons` нет, композит на `schedule_item_id`
+      покрывает фактический `IN + BETWEEN`.)
+- [ ] `schedule_one_off_lessons` — **no-op**, V4 уже содержит
+      `UNIQUE (group_id, date, lesson_number)`. Проверить и зафиксировать
+      в `performance-indexes.md`.
+- [ ] Mongo index для `late_checkin_requests`: compound
+      `{group_id:1, status:1, created_at:1}` через `@CompoundIndex` на
+      entity или `MongoConfig`. Закрывает 04 P2-9.
+- [ ] Flyway миграция `academic_db`:
+      `idx_tsg_group_semester (group_id, semester_id)` на
+      `teacher_subject_groups` + `idx_hw_group_semester (group_id, semester_id)`
+      на `homeworks`. (D2 — `user_groups` таблицы нет; индексы на реальных
+      hot queries.)
+- [ ] `(group_id, lesson_id)` на `attendances` — **отложено** (D3), no-op
+      в M05. Фиксация в `docs/future-ideas.md` (NEW-146).
 - [ ] EXPLAIN «after» + сравнение p50/p99 в `performance-indexes.md`.
-- [ ] Integration-тест (per-сервис): query < 50ms regression guard на seed-dataset.
+- [ ] Integration-тест (per-сервис): query < 50ms regression guard на
+      seed-dataset.
 
 ## Группа 2 — N+1 fixes через @EntityGraph / projection (P2-10/2)
 

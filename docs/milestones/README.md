@@ -41,7 +41,7 @@ subagent на diff в конце milestone'а.
 | M03a | [Internal JWT + Rate-limit](M03a-internal-jwt-ratelimit/PLAN.md) | M01, M02 | ~5-8д | ✅ 2026-04-20 |
 | M03b | [Secure Boundaries Part B (JWT cookie + ws-ticket + logout)](M03b-jwt-cookie-ws-ticket/PLAN.md) | M03a | ~8-12д | ✅ 2026-04-20 |
 | M04 | [Observability (Tracing, Alertmanager, JSON-логи)](M04-observability/PLAN.md) | M01 | ~5-7д | ✅ 2026-04-20 |
-| M05 | Performance (Indexes, Caffeine, EntityGraph, batch) | M01 | ~6-7д | ⬜ |
+| M05 | Performance (Indexes, Caffeine, EntityGraph, batch) | M01 | ~6-7д | ⏳ 2026-04-20 |
 | M06 | Ops & Supply Chain (SHA tagging, Trivy, HEALTHCHECK) | — | ~3-4д | ⬜ |
 | M07 | Frontend Hardening (CSP, a11y, UX, openapi-typescript) | M03b | ~10-12д | ⬜ |
 | M08 | Test Infrastructure (Playwright, golden, coverage-gate) | M01, M02, M03b | ~10-12д | ⬜ |

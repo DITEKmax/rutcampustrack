@@ -78,17 +78,67 @@ pattern + docs._
 - [x] `./gradlew test` зелёный: schedule 111/111, academic 201/201,
       attendance 158/158.
 
-## Группа 3 — Caffeine cache для справочников и RBAC (P2-10/3)
+## Группа 3 — Redis cache дополнения для справочников и RBAC (P2-10/3)
 
-- [ ] Caffeine dep в `services/shared/shared-web/build.gradle.kts` (api — чтобы `@EnableCaching` видел namespace).
-- [ ] `CacheConfig` bean per-сервис (или в shared-web с namespace-per-service). Cache-specific TTLs: `semester` 5м, `subject`/`group` 10м, `rbac` 1м.
-- [ ] `@Cacheable("semester") getActiveSemester()` в academic-service.
-- [ ] `@Cacheable(value="rbac", key="#userId + ':' + #groupId") isHeadmanFor()` в academic.
-- [ ] `@Cacheable("subject")` + `@Cacheable("group")` на read-side academic.
-- [ ] `@CacheEvict` на `activateSemester`, `update/delete subject/group`, `changeHeadman`.
-- [ ] Micrometer binding: `CaffeineCacheMetrics.monitor(meterRegistry, cache, name)` — gauges `cache.size`, `cache.gets{result=hit|miss}` доступны в Grafana.
-- [ ] Unit-тест: `@Cacheable` сам по себе сложно (Spring proxy нужен) — integration-тест с SpringBootTest, проверить counter hits.
-- [ ] `docs/caching-strategy.md` (NEW-144): TTL matrix, invalidation triggers, consistency trade-offs, раздел «Migration на Redis при multi-instance».
+_Scope переформулирован 2026-04-20 по результатам аудита — см.
+DECISIONS D6. Caffeine НЕ вводится. Academic-service уже имеет Redis
+`CacheManager` + 5 namespaces из ранних фаз (59/60). M05 добивает
+пробелы: rbac, subject, metrics, docs._
+
+### Уже сделано ранее (фиксируем как baseline)
+
+- [x] `@EnableCaching` + Redis `CacheManager` — `CacheConfig.java:24-94`.
+- [x] Namespaces `groups` (5м), `group_members` (5м), `users` (5м),
+      `active_semester` (10м), `campus_geofence` (60м).
+- [x] `@Cacheable` на `AcademicReadService` — `fetchGroup`,
+      `fetchGroupMembers`, `fetchActiveSemester`, `fetchCampusGeofence`,
+      `fetchUserById`.
+- [x] `@CacheEvict` на `UserService` (updateUser/patchUser/archiveUser/
+      transferStudent), `GroupService` (updateGroup/deleteGroup),
+      `SemesterService.activateSemester` (allEntries).
+- [x] Программатический `cacheManager.getCache("groups"/"group_members")
+      .evict(groupId)` в `UserService.patchUser:225-233` при смене
+      `is_headman` + в `transferStudent:287-296` при смене группы.
+
+### Добавляется в M05 Группе 3
+
+- [x] `CacheConfig`: добавить namespaces `rbac` (TTL 1м) и `subject`
+      (TTL 10м). `application.yml` → `cache.ttl.rbac=PT1M`,
+      `cache.ttl.subject=PT10M`.
+- [x] `AcademicReadService.isHeadmanOf(Long userId, Long groupId)` —
+      новый метод с `@Cacheable(value="rbac", key="#userId + ':' + #groupId")`.
+- [x] `AcademicGrpcServiceImpl.isHeadman` — переключить на вызов
+      `academicReadService.isHeadmanOf(...)`. Удалить комментарий
+      «Not cached (per D-02)», заменить на «Cached via rbac namespace
+      (M05 D6)».
+- [x] `SubjectService.getSubject` — `@Cacheable(value="subject", key="#id")`.
+- [x] `SubjectService.updateSubject` / `deleteSubject` —
+      `@CacheEvict(value="subject", key="#id")`.
+- [x] `UserService.patchUser` — программатическое eviction `rbac`
+      cache при смене `is_headman` или `group_id`. Ключ —
+      `#userId + ':' + #oldGroupId` и `#userId + ':' + #newGroupId`
+      (evict обоих при переходе). Рядом с существующим groups/group_members
+      eviction (:225-233).
+- [x] `UserService.transferStudent` — evict `rbac` для старого и
+      нового groupId аналогично.
+- [~] **Deferred:** `MetricsCacheManagerDecorator` — попытка wrap
+      `CacheManager` для hit/miss counter'ов ломает namespace-specific
+      TTL в `RedisCacheManager` (reproducible regression в
+      `getActiveSemester_ttlMatchesConfiguredValue`). Root cause
+      требует глубокого изучения pre-configured cache vs dynamic
+      creation в Spring. Отложено в backlog (см. NOTES секция
+      «Группа 3 deferred»). Альтернатива — `@Aspect` подход,
+      зафиксирован в future-ideas.
+- [x] Integration-тест `RbacCacheIT`: 4 теста — isHeadman_secondCall
+      (Redis key presence), patchUser_revoke (programmatic evict),
+      isHeadman_negative (false кешируется), ttlMatchesConfiguredValue
+      (TTL 55-60s). Counter-based hit-rate пришлось заменить на key-
+      presence из-за deferred metrics биндинга (см. выше).
+- [x] `docs/caching-strategy.md` (NEW-144): TTL matrix (7 namespaces),
+      invalidation triggers (declarative + programmatic), consistency
+      trade-offs (Q13b race activateSemester), Redis-as-L1 rationale
+      (D6), observability секция с deferred metrics, migration plan
+      на managed Redis / Sentinel / Caffeine L1+L2 гибрид.
 
 ## Группа 4 — Batch endpoints (P2-10/4)
 

@@ -40,6 +40,12 @@ public class CacheConfig {
     @Value("${cache.ttl.campus-geofence:PT1H}")
     private Duration campusGeofenceTtl;
 
+    @Value("${cache.ttl.rbac:PT1M}")
+    private Duration rbacTtl;
+
+    @Value("${cache.ttl.subject:PT10M}")
+    private Duration subjectTtl;
+
     /**
      * Redis-backed CacheManager when RedisConnectionFactory is available, NoOpCacheManager otherwise.
      * Using ObjectProvider avoids @ConditionalOnBean timing issues in user @Configuration classes:
@@ -90,6 +96,8 @@ public class CacheConfig {
                 .withCacheConfiguration("users", base.entryTtl(usersTtl))
                 .withCacheConfiguration("active_semester", base.entryTtl(activeSemesterTtl))
                 .withCacheConfiguration("campus_geofence", base.entryTtl(campusGeofenceTtl))
+                .withCacheConfiguration("rbac", base.entryTtl(rbacTtl))
+                .withCacheConfiguration("subject", base.entryTtl(subjectTtl))
                 .build();
     }
 }

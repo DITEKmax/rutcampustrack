@@ -1,5 +1,7 @@
 package ru.rutcampustrack.academic.subject;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -107,6 +109,7 @@ public class SubjectService {
         return saved;
     }
 
+    @Cacheable(value = "subject", key = "#id")
     @Transactional(readOnly = true)
     public Subject getSubject(Long id) {
         return subjectRepository.findById(id)
@@ -128,6 +131,7 @@ public class SubjectService {
         return subjectRepository.findByGroupId(groupId, pageable);
     }
 
+    @CacheEvict(value = "subject", key = "#id")
     @Transactional
     public Subject updateSubject(Long id, UpdateSubjectRequest request) {
         Long groupId = requireHeadmanGroupId();
@@ -149,6 +153,7 @@ public class SubjectService {
      * → schedule-service слушает и дропает schedule_items + one-off → это
      * триггерит {@code lesson.deleted} → attendance-service чистит docs.
      */
+    @CacheEvict(value = "subject", key = "#id")
     @Transactional
     public void deleteSubject(Long id, boolean force) {
         Long groupId = requireHeadmanGroupId();

@@ -154,6 +154,134 @@ AndDateBetween(...)`. **Один** SELECT для всей недели вмес�
   no JPA relations» by convention + ссылки на образец из
   `massCancelLessons`.
 
+## 2026-04-20 — Группа 3 аудит: кеш уже реализован на Redis (не Caffeine)
+
+**Surprise перед стартом Группы 3.** Explore-агент прошёл по academic-
+service и нашёл рабочую реализацию кеша, существенно расходящуюся с
+PLAN.md и OWNER-ANSWERS (3756-3810).
+
+### Что уже есть (academic-service)
+
+- `@EnableCaching` + **Redis** `CacheManager` в `CacheConfig.java:24-94`.
+  Fallback на `NoOpCacheManager` если `RedisConnectionFactory` недоступен.
+- Namespaces + TTL (`CacheConfig:88-92` дублирует в `application.yml:66-72`):
+  - `groups` — 5м
+  - `group_members` — 5м
+  - `users` — 5м
+  - `active_semester` — 10м
+  - `campus_geofence` — 60м
+- `@Cacheable` на всех 5 read-методах `AcademicReadService` (строки 41-64):
+  `fetchGroup`, `fetchGroupMembers`, `fetchActiveSemester`,
+  `fetchCampusGeofence`, `fetchUserById`.
+- `@CacheEvict` на всех write-side: `UserService` (updateUser,
+  patchUser, archiveUser, transferStudent), `GroupService` (updateGroup,
+  deleteGroup через `@Caching`), `SemesterService.activateSemester`
+  (`allEntries=true`).
+- Программатическое eviction при смене `is_headman` флага —
+  `UserService.patchUser:225-233` (evict groups + group_members).
+- Сериализация: `GenericJackson2JsonRedisSerializer` +
+  `Hibernate6Module` + `JavaTimeModule`.
+
+### Что расходится с PLAN.md / OWNER-ANSWERS
+
+| Пункт | PLAN.md / OWNER-ANSWERS | Факт |
+|-------|-------------------------|------|
+| Cache impl | Caffeine in-memory | Redis (уже внедрён ранее) |
+| Namespaces | semester / subject / group / rbac | groups / group_members / users / active_semester / campus_geofence |
+| `subject` namespace | 10м, @Cacheable на `getSubject(id)` | Отсутствует. `SubjectService.getSubject:111` без @Cacheable |
+| `rbac` namespace | 1м, @Cacheable на `isHeadmanFor(userId, groupId)` | Отсутствует. Прямого метода в Service нет, проверка через `requestContext.isHeadman()` (request-scope). |
+| Metrics | `CaffeineCacheMetrics.monitor(...)` | Нет — для Redis нативного биндинга нет |
+| Scope | «in-memory, single-instance ok для v0.0.0» | Redis — cross-instance консистентный, *лучше* чем required |
+
+### Мотивация OWNER-ANSWERS: что реально закрыто по факту
+
+- **03 P2-7** (getActiveSemester 10+ req/day на одно значение) — ✅ закрыт
+  через `fetchActiveSemester` c TTL 10м.
+- **03 P2-6, 04 P2-2** (sync gRPC `isHeadmanFor` per-request) — ⚠️
+  **НЕ закрыт**. Метода `isHeadmanFor(userId, groupId)` в Service нет,
+  проверка через request-scope context (не кэшируется между запросами).
+- **02 P2-5** (Subject/Group cache без TTL → memory leak) — ✅ частично:
+  `groups` с TTL есть. `subject` ещё нет.
+- **02 P2-7** (RBAC без кэша) — ⚠️ **НЕ закрыт**.
+
+### Варианты scope для Группы 3
+
+**A. Оставить Redis, добавить недостающее (рекомендация).**
+- + Не ломать работающий кеш.
+- + Redis уже в deps, single-instance контейнер в compose.
+- + Кросс-инстансная консистентность (лучше требуемого).
+- + `patchUser:225-233` manual eviction уже аккуратный.
+- Работа: (1) добавить `subject` + `rbac` namespaces в `CacheConfig`,
+  (2) добавить метод `isHeadmanFor(userId, groupId)` в User/RbacService
+  с `@Cacheable("rbac", key="#userId + ':' + #groupId")`, (3) @Cacheable
+  на `SubjectService.getSubject`, (4) @CacheEvict на Subject write-side +
+  RBAC write-side (changeHeadman), (5) Redis cache metrics биндинг
+  через `MeterRegistry` (RedisCache не экспонирует hit/miss нативно —
+  нужен CacheEventListener или custom wrapper), (6)
+  `docs/caching-strategy.md`.
+
+**B. Заменить Redis на Caffeine** (буквальная читка OWNER-ANSWERS).
+- – Снести работающий кеш = регрессионный риск.
+- – Потерять cross-instance консистентность (нужна будет при первом
+  scale-out, а OWNER-ANSWERS обещает её на v0.1 через миграцию).
+- – Сериализация Redis для `Semester`/`Group`/`User` с Hibernate6Module
+  уже отлажена.
+- + Буквально следует тексту OWNER-ANSWERS.
+
+**C. Гибрид Caffeine L1 + Redis L2** (`CompositeCacheManager`).
+- – Сложность outweighs выгоду на v0.0.0.
+- – Двойная инвалидация, extra code paths.
+
+**D. Признать Группу 3 частично готовой, закрыть пробелы +
+документировать Redis-как-решение.**
+- Подвариант A, но с явной фиксацией в DECISIONS D6, что Redis
+  заменил Caffeine ещё до M05 и это корректно для v0.0.0 single-node.
+- Scope: subject+rbac namespaces, isHeadmanFor метод, metrics,
+  caching-strategy.md, обновление CHECKLIST Группы 3 (3-4 пункта
+  убрать как уже сделанное).
+
+**Рекомендация: D** — по принципу «что реально требуется для motivation'а
+OWNER-ANSWERS» и CLAUDE.md «Don't add features beyond what the task
+requires». OWNER-ANSWERS мотивация — TTL + invalidation + метрики;
+Redis обеспечивает всё это.
+
+**Ожидаю подтверждение владельца** перед кодингом.
+
+---
+
+## 2026-04-20 — Группа 3 deferred: Redis cache metrics биндинг
+
+**Что пробовали.** Написан `MetricsCacheManagerDecorator` — обёртка
+`CacheManager`, возвращающая wrapped `Cache` с counter'ами
+`cache.gets{result=hit|miss, cache=...}` через Micrometer.
+Регистрировался как wrapper внутри `@Bean cacheManager`.
+
+**Что сломалось.** При wrapping `CacheManager.getCache(name)` Spring
+получает `MetricsCache` → делегирующий в `RedisCache`. Существующий
+`CacheIntegrationTest.getActiveSemester_ttlMatchesConfiguredValue`
+начал падать: `active_semester` Redis key получает TTL **300s** (default)
+вместо заданных **600s** (`PT10M`). Воспроизводимо только при обёртке;
+baseline без обёртки — TTL 600s как ожидалось. Root cause не вычислен
+за 30 минут — предположительно `RedisCacheManager` имеет особенности
+handling pre-configured vs dynamic cache creation при wrapping.
+
+**Решение.** Metrics биндинг **отложен** в backlog (пункт M05 Группы
+3 снят без потери scope acceptance — rbac namespace и invalidation
+работают, что и есть главная ценность OWNER-ANSWERS motivation). В
+CHECKLIST остаётся галочка как вычеркнутая с reference на этот раздел.
+
+**Future idea:** зафиксировать в `docs/future-ideas.md` вариант:
+
+- Подход через `@Aspect` над `CacheAspectSupport` без wrapping
+  `CacheManager`/`Cache`. Minimally invasive — не ломает Redis TTL
+  resolution.
+- Альтернатива: переход на Spring Boot 3.5 + Micrometer native
+  `CacheMeterBinder` для Redis (когда/если появится — сейчас только
+  Caffeine/EhCache поддержаны нативно).
+
+`docs/caching-strategy.md` описывает факт отсутствия hit/miss counter
+для Redis в v0.0.0 + этот workaround-план.
+
 ## Правила работы (без изменений с M04)
 
 - Русский в отчётах / NOTES / ответах.

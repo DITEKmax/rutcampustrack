@@ -43,11 +43,37 @@
   `(group_id, lesson_id)` на `attendances` **отложено** (D3) — нет hot
   query-потребителя в коде; решение записано в Future-ideas.
 
-### Caching
+### Caching (уточнено 2026-04-20, см. DECISIONS D6)
 
-- `services/shared/shared-web/` (или per-service `config/CacheConfig.java`) — Caffeine `@EnableCaching`, namespaces `semester` (TTL 5м), `subject`/`group` (10м), `rbac` (1м).
-- `@Cacheable` на `getActiveSemester()`, `isHeadmanFor()`, `getSubject()`, `getGroupById()`.
-- `@CacheEvict` на `activateSemester`, `update/delete` subject/group, changeHeadman.
+**Scope переформулирован:** Caffeine НЕ вводится. В academic-service
+уже работает Spring `@EnableCaching` + Redis `CacheManager` (ранние
+фазы 59/60) с namespaces `groups`/`group_members`/`users`/
+`active_semester`/`campus_geofence`. M05 Группа 3 добавляет
+**пробелы** поверх существующего решения.
+
+- **`CacheConfig.java`** (academic-service) — добавить namespaces
+  `rbac` (TTL 1м) + `subject` (TTL 10м). `application.yml`
+  `cache.ttl.rbac=PT1M`, `cache.ttl.subject=PT10M`.
+- **`AcademicReadService.isHeadmanOf(Long userId, Long groupId)`** —
+  новый метод с `@Cacheable(value="rbac", key="#userId + ':' + #groupId")`.
+  Делегирует в `userRepository.findById(userId)` + поле `isHeadman`.
+  `AcademicGrpcServiceImpl.isHeadman` (ранее «Not cached per D-02» —
+  D6 переопределяет) переключается на этот метод.
+- **`SubjectService.getSubject`** — `@Cacheable("subject", key="#id")`.
+- **`SubjectService.updateSubject` / `deleteSubject`** —
+  `@CacheEvict("subject", key="#id")`.
+- **`UserService.patchUser`** — программатический `rbacCache.evict(...)`
+  при смене `is_headman` или `group_id` (по аналогии с существующим
+  eviction `groups`/`group_members` в строках 225-233).
+- **`UserService.transferStudent`** — `rbacCache.evict` для старого
+  и нового groupId пользователя.
+- **Redis metrics биндинг.** Spring RedisCache нативно не
+  экспонирует hit/miss. Реализация: тонкий wrapper
+  `MetricsCacheManagerDecorator implements CacheManager`, делегирующий
+  в RedisCacheManager и инкрементящий
+  `MeterRegistry.counter("cache.gets", "result", hit|miss, "cache", name)`.
+  Gauge `cache.size` опустить (Redis Cache.size() возвращает -1 без
+  дорогого KEYS scan).
 
 ### N+1 fixes
 
@@ -97,13 +123,19 @@
 - [ ] Все миграции Flyway применены, schema validate проходит.
 - [ ] `docs/performance-indexes.md` (NEW-142) — таблица «запрос → indexes → p50 до → p50 после» с EXPLAIN ANALYZE на 10k+ rows.
 - [ ] Integration-тесты: query time assertion `< 50ms` (regression guard) для 3 hot queries.
-- [ ] `docs/caching-strategy.md` (NEW-144) — TTL matrix, invalidation triggers, trade-offs + migration-план на Redis (v0.1).
+- [ ] `docs/caching-strategy.md` (NEW-144) — TTL matrix
+      (groups/group_members/users/active_semester/campus_geofence/rbac/subject),
+      invalidation triggers, trade-offs, Redis-as-L1 rationale (D6),
+      future-ideas «Caffeine L1+L2 при multi-instance».
 - [ ] `docs/connection-pool-tuning.md` (NEW-147) — формулы, текущие значения, Grafana alert.
 - [ ] `docs/data-retention-policy.md` (NEW-148) — таблица хранения: push-subs 90д, refresh-tokens 7д, OTP 5м, attendance history accept.
 - [ ] ArchUnit rule NEW-143 (repo → Pageable/EntityGraph/projection) в `check` phase, ловит violation fake commit.
 - [ ] CI-lint NEW-149 (gRPC deadline required) в `check` phase.
 - [ ] Bulk mark-attendance: 30 отметок через `/batch` endpoint < 500ms (до было 6000ms через sequential await).
-- [ ] Caffeine gauges exposed: `cache.size`, `cache.gets{result=hit|miss}` — hit-rate > 80% после warm-up в Grafana.
+- [ ] Redis cache metrics exposed: `cache.gets{result=hit|miss, cache=...}`
+      counter через `MetricsCacheManagerDecorator` (D6 — Caffeine не
+      используется, nativные Caffeine gauges неприменимы). Integration-
+      тест на `rbac` cache: 2+ вызовов `isHeadmanOf` → hits counter >= 1.
 - [ ] `./gradlew build` зелёный (включая integration tests + ArchUnit + CI-lint).
 
 ## Dependencies

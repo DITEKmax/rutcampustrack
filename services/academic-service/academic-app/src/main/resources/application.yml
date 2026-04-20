@@ -70,6 +70,8 @@ cache:
     users: PT5M
     active-semester: PT10M
     campus-geofence: PT1H
+    rbac: PT1M
+    subject: PT10M
 
 # M04 QA1: INFO-default для secure-by-default. DEBUG включается через
 # application-dev.yml (SPRING_PROFILES_ACTIVE=dev) или env-override.

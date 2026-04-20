@@ -74,4 +74,23 @@ public class AcademicReadService {
     public Optional<User> fetchUserByTelegramId(Long telegramId) {
         return userRepository.findByTelegramId(telegramId);
     }
+
+    /**
+     * M05 Группа 3 / D6: RBAC-проверка «пользователь — староста указанной группы».
+     * Hot-path для synchronous gRPC {@code AcademicGrpcService.isHeadman}
+     * (вызывается schedule-service / attendance-service на каждую операцию
+     * старосты). Кеш namespace {@code rbac} с TTL 1 минута — балансирует
+     * между латентностью и скоростью инвалидации при смене флага
+     * {@code is_headman} администратором. Программатическое eviction
+     * в {@link ru.rutcampustrack.academic.user.UserService#patchUser}
+     * мгновенно инвалидирует запись при изменении флага.
+     */
+    @Cacheable(value = "rbac", key = "#userId + ':' + #groupId")
+    public boolean isHeadmanOf(Long userId, Long groupId) {
+        return userRepository.findById(userId)
+                .map(user -> user.isHeadman()
+                        && user.getGroupId() != null
+                        && user.getGroupId().equals(groupId))
+                .orElse(false);
+    }
 }

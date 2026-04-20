@@ -122,17 +122,17 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
     /**
      * GRPC-04: Check if a user is headman of a given group.
-     * Not cached (per D-02).
+     *
+     * <p>Cached via {@code rbac} namespace (M05 D6 — Redis TTL 1 минута).
+     * Ранее метод был некешируемым (phase-60 D-02 scope); M05 Группа 3
+     * вводит rbac-кеш для hot-path RBAC-проверок. Invalidation —
+     * программатическая в {@link ru.rutcampustrack.academic.user.UserService}
+     * при смене {@code is_headman}/{@code group_id}.
      */
     @Override
     public void isHeadman(HeadmanCheckRequest request, StreamObserver<HeadmanCheckResponse> responseObserver) {
-        Optional<User> userOpt = userRepository.findById(request.getUserId());
-
-        boolean isHeadman = userOpt.map(user ->
-                user.isHeadman()
-                        && user.getGroupId() != null
-                        && user.getGroupId().equals(request.getGroupId())
-        ).orElse(false);
+        boolean isHeadman = academicReadService.isHeadmanOf(
+                request.getUserId(), request.getGroupId());
 
         HeadmanCheckResponse response = HeadmanCheckResponse.newBuilder()
                 .setIsHeadman(isHeadman)

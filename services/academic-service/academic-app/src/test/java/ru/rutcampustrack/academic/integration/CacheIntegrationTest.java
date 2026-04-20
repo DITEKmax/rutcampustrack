@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
@@ -72,7 +72,7 @@ class CacheIntegrationTest extends AbstractAcademicCacheIntegrationTest {
     private StringRedisTemplate redisTemplate;
 
     @Autowired
-    private RedisCacheManager cacheManager;
+    private CacheManager cacheManager;
 
     @Autowired
     private UserService userService;

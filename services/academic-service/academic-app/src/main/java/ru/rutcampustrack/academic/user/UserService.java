@@ -184,6 +184,7 @@ public class UserService {
     @Transactional
     public User patchUser(Long id, PatchUserRequest request) {
         User user = findUserById(id);
+        Long oldGroupId = user.getGroupId();
 
         if (request.lastName() != null) {
             user.setLastName(request.lastName());
@@ -230,6 +231,25 @@ public class UserService {
             Cache groupMembersCache = cacheManager.getCache("group_members");
             if (groupMembersCache != null) {
                 groupMembersCache.evict(user.getGroupId());
+            }
+        }
+
+        // M05 D6: rbac cache invalidation при смене is_headman или group_id.
+        // Ключи rbac-namespace — "<userId>:<groupId>". Evict'им для всех
+        // затронутых групп (старая и новая, если изменились).
+        boolean headmanChanged = request.isHeadman() != null;
+        boolean groupChanged = request.groupId() != null
+                && !java.util.Objects.equals(oldGroupId, user.getGroupId());
+        if ((headmanChanged || groupChanged) && cacheManager != null) {
+            Cache rbacCache = cacheManager.getCache("rbac");
+            if (rbacCache != null) {
+                if (oldGroupId != null) {
+                    rbacCache.evict(id + ":" + oldGroupId);
+                }
+                if (user.getGroupId() != null
+                        && !java.util.Objects.equals(oldGroupId, user.getGroupId())) {
+                    rbacCache.evict(id + ":" + user.getGroupId());
+                }
             }
         }
 
@@ -292,6 +312,16 @@ public class UserService {
             Cache usersCache = cacheManager.getCache("users");
             if (usersCache != null) {
                 usersCache.evict(id);
+            }
+            // M05 D6: rbac cache invalidation при смене группы студента.
+            // Если был старостой — запись (id, oldGroupId) теперь невалидна;
+            // новая запись (id, newGroupId) также должна быть свежей.
+            Cache rbacCache = cacheManager.getCache("rbac");
+            if (rbacCache != null) {
+                if (oldGroupId != null) {
+                    rbacCache.evict(id + ":" + oldGroupId);
+                }
+                rbacCache.evict(id + ":" + request.newGroupId());
             }
         }
 

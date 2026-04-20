@@ -173,3 +173,77 @@ features, refactor beyond what the task requires» из CLAUDE.md:**
   guardrail).
 
 **Estimate:** ~1-2 часа вместо ~1 дня.
+
+## 2026-04-20 — D6: Redis вместо Caffeine для Группы 3 (отход от OWNER-ANSWERS)
+
+**Выбрано:** оставить существующий Redis-кеш в academic-service и
+**не** вводить Caffeine. Scope Группы 3 превращается в: добавить
+недостающие namespaces (`rbac`, `subject`) + публичный метод
+`isHeadmanFor(userId, groupId)` + `@CacheEvict` на соответствующих
+write-side методах + Redis cache metrics биндинг + `docs/caching-strategy.md`.
+
+**Контекст расхождения.** OWNER-ANSWERS 3756-3810 предписывает
+Caffeine in-memory TTL+size для v0.0.0 («Single-instance ok»).
+Audit перед стартом M05 Группы 3 (Explore-agent,
+`NOTES.md → Группа 3 аудит`) показал, что в academic-service
+**уже** реализован Spring `@EnableCaching` + Redis-backed
+`CacheManager` с пятью namespaces (`groups`/`group_members`/`users`/
+`active_semester`/`campus_geofence`), TTL-matrix, `@Cacheable` в
+`AcademicReadService`, `@CacheEvict` на write-side, программатическое
+eviction при смене `is_headman` флага (`UserService.patchUser:225-233`).
+Это сделано в ранних фазах (phase 59/60, через D-01/D-02 этих фаз).
+
+**Почему НЕ заменять на Caffeine:**
+
+1. **Zero регрессионный риск.** Работающий кеш, integration-tests
+   зелёные с прошлых фаз, eviction logic в `patchUser:225-233` хрупкий,
+   сериализация `Semester`/`Group`/`User` через Hibernate6Module отлажена.
+2. **Redis уже в прод-зависимостях.** Используется auth-service
+   (OTP, refresh-tokens `refresh:<hash>`), notification-bot (reminders).
+   Второй кеш-бэкенд (Caffeine) = 2 места для debug'а.
+3. **Cross-instance консистентность бесплатно.** OWNER-ANSWERS 3800
+   обещает миграцию на Redis при multi-instance v0.1 — это уже сделано.
+   Caffeine потом всё равно пришлось бы переписывать назад.
+4. **Мотивация OWNER-ANSWERS закрывается Redis'ом:**
+   - 03 P2-7 (getActiveSemester) — ✅ `fetchActiveSemester` TTL 10м.
+   - 02 P2-5 (Subject/Group cache без TTL → memory leak) — ✅ partial:
+     `groups` TTL 5м. `subject` добавляется в M05.
+   - 03 P2-6 / 04 P2-2 / 02 P2-7 (RBAC без кэша) — ⚠️ в M05 закрывается
+     через новый `rbac` namespace + метод `isHeadmanFor`.
+5. **Redis-single-instance contract.** В `docker-compose.prod.yml`
+   единственный Redis-контейнер `rct-redis` — не distributed. Условие
+   OWNER-ANSWERS «single-instance ok для v0.0.0» выполнено буквально.
+
+**Почему НЕ гибрид L1 Caffeine + L2 Redis** (вариант C из NOTES):
+Преждевременно при single-instance deploy. Sync-инвалидация двух
+уровней — trap при `patchUser:225-233`-образной логике. Отложить до
+появления > 2 инстансов в одном сервисе.
+
+**Scope Группы 3 (финальный):**
+
+| Пункт | Статус |
+|-------|--------|
+| Cache-impl: Spring `@EnableCaching` + Redis `CacheManager` | ✅ уже есть |
+| Namespaces `groups`/`group_members`/`users`/`active_semester`/`campus_geofence` + TTL | ✅ уже есть |
+| `@Cacheable` на `fetchGroup`/`fetchGroupMembers`/`fetchActiveSemester`/`fetchUserById`/`fetchCampusGeofence` | ✅ уже есть |
+| `@CacheEvict` на UserService/GroupService/SemesterService write-side | ✅ уже есть |
+| Программатическое eviction при `is_headman` смене | ✅ уже есть |
+| **`rbac` namespace (TTL 1м) + `isHeadmanFor(userId, groupId)`** | ⬜ **добавляется в M05** |
+| **`subject` namespace (TTL 10м) + `@Cacheable getSubject`** | ⬜ **добавляется в M05** |
+| **`@CacheEvict("subject")` на updateSubject/deleteSubject** | ⬜ **добавляется в M05** |
+| **`@CacheEvict("rbac")` при смене `is_headman`/`group_id` в patchUser** | ⬜ **добавляется в M05** |
+| **Redis cache metrics через `MeterRegistry` (hit/miss counter)** | ⬜ **добавляется в M05** |
+| **`docs/caching-strategy.md` (NEW-144)** | ⬜ **добавляется в M05** |
+| **Integration-тест hit-rate на rbac cache** | ⬜ **добавляется в M05** |
+
+**Обновление устаревшего решения:** `AcademicGrpcServiceImpl.isHeadman:127`
+содержит комментарий «Not cached (per D-02)». D-02 принадлежит phase-60
+scope (Subject cascade), не запрет на RBAC cache per se. M05 D6
+переопределяет: isHeadman в academic-service **теперь кешируется**
+через делегирование в `AcademicReadService.isHeadmanOf(userId, groupId)`
+с `@Cacheable("rbac")`.
+
+**Миграция на Caffeine в будущем** не предусмотрена. Если
+прод-операции покажут, что Redis RTT (~0.5ms loopback docker network)
+становится bottleneck'ом на hot-path — рассмотрим L1+L2. Сейчас
+необоснованно.

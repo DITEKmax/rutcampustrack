@@ -78,109 +78,130 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
-## Hand-off для следующей сессии (2026-04-20 вечер, Opus 4.7)
+## Hand-off для следующей сессии (2026-04-20 ночь, после закрытия M03b)
 
-**Состояние M03b:** ⏳ в работе. 6 из 13 групп закрыто + Группа 5
-reserved. Tag `v0.0.0-alpha.4` **ещё НЕ установлен** — ставится в
-Группе 13 на финальном коммите.
+**Состояние M03b:** ✅ **ЗАКРЫТ.** Tag `v0.0.0-alpha.4` установлен
+(БЕЗ push — жду `go` пользователя). 13/13 групп завершены (Группа 5
+удалена, CSRF не нужен).
 
-**Закрыто в этой сессии (7 коммитов):**
+**Закрыто в этой сессии (7 новых коммитов + финал):**
 
 | # | Коммит | Группа |
 |---|--------|--------|
-| 1 | `d3a03df` | 1 — Discovery + 5 decisions зафиксированы |
-| 2 | `835b79b` | 2 — Auth-service cookie endpoints (login/refresh/logout/refresh-body) |
-| 3 | `afe1928` | 3 — WS-ticket endpoint + Redis Lua atomic consume |
-| 4 | `7c4fa6d` | 4 — notification-service TicketHandshakeInterceptor |
-| 5 | `bc8fb3e` | 6 — PWA cookie+ws-ticket migration + clearAllClientState |
-| 6 | `16915bc` | 7 — web-panel cookie+ws-ticket migration + clearAllClientState |
+| 1 | `b1fbfcc` | 8 — Logout lifecycle (ws-ticket invalidate + cookie clear + refresh revoke) |
+| 2 | `9286809` | 9 — KI-3 / KI-6 / KI-8 hot-patches |
+| 3 | `dff9ea1` | 10 — KI-7 bcrypt DoS Semaphore N=20 |
+| 4 | `acf989b` | 11 — bug-hunter HIGH-2 + security-auditor MEDIUM-1 fixes |
+| 5 | `140d7d4` | 12 — docs (auth-flow + architecture + CHANGELOG + CLAUDE + README) |
+| 6 | `eb125c4` | 13 — финальный коммит + tag `v0.0.0-alpha.4` |
 
-Группа 5 (CSRF) — удалена per DECISIONS 2026-04-20 (same-origin +
-SameSite=Strict достаточно).
+Итого в M03b (13 коммитов с `081d3b0..eb125c4`). Предыдущая сессия
+закрыла Группы 1-7, эта — 8-13.
 
-**Остаётся (6 групп):**
+**Audit итог:**
+- bug-hunter: 0 CRITICAL, 0 HIGH (real), 10 MEDIUM/LOW. Один HIGH →
+  MEDIUM (уже защищён), один real HIGH-2 запатчен (atomic SADD+EXPIRE
+  в WsTicketService).
+- security-auditor: 24/24 checks PASS, 0 CRITICAL/HIGH, 2 MEDIUM +
+  3 LOW. Один MEDIUM запатчен (Bearer в DELETE push/subscribe при
+  logout — cross-user push leak).
+- Остальные MEDIUM/LOW — в backlog M04/M06 (см. NOTES.md пост-audit блок).
 
-| # | Группа | Что делать |
-|---|--------|------------|
-| 8 | Logout lifecycle (C0-5) | `AuthController#logout` → `wsTicketService.invalidateAllFor(userId)`; проверить что push DELETE endpoint существует; IT `LogoutLifecycleIT` |
-| 9 | KI-3/6/8 hot-patches из M03a | Token-cache expiry check (Gateway); Redis TTL race fix (LoginRateLimiter Lua/SETEXNX); Gateway CacheRequestBody для X-Login |
-| 10 | KI-7 bcrypt DoS | Варианты (a/b/c в CHECKLIST) — лучше Bucket4j semaphore N=20 на `AuthService#login`. IT с 50 concurrent invalid-password |
-| 11 | Expanded IT + bug-hunter + security-auditor | LogoutLifecycleIT, AuthFlowE2EIT (mock); bug-hunter + security-auditor на финальный diff M03b |
-| 12 | docs + CHANGELOG + architecture | `docs/auth-flow.md` дополнить (Группа 2 уже scaffold), `docs/architecture.md` раздел, `CHANGELOG.md [Unreleased]` BREAKING CHANGES, `CLAUDE.md` статус M03b |
-| 13 | финал + tag v0.0.0-alpha.4 | acceptance criteria все `[x]`, `./gradlew build` + `npm run build` всех фронтов, smoke-тест, Post-mortem в PLAN.md, статус в README.md → ✅, `git tag v0.0.0-alpha.4` БЕЗ push |
+**Состояние тестов (всё зелёное на момент финального тэга):**
+- auth-service: все тесты ✅ (включая WsTicketIT 6, LogoutLifecycleIT 2,
+  BcryptDoSMitigationIT 1, обновлённые LoginRateLimiterTest под Lua).
+- api-gateway: все тесты ✅ (включая CompositeLoginKeyResolverIT 3 с KI-8,
+  InternalJwtIssuerClientTest 8 с KI-3 near-expiry).
+- notification-service: все тесты ✅.
+- PWA: 122/122 vitest ✅, `npm run build` ✅.
+- web-panel: 444/444 vitest ✅, `npm run build` ✅.
 
-**Ключевой контекст для Группы 8 (следующая первая задача):**
+### Действия ожидающие `go` пользователя
 
-1. `AuthController#logout` (services/auth-service/.../AuthController.java:99)
-   — УЖЕ поддерживает cookie+body. Нужно добавить извлечение userId из
-   `Authentication` (если доступен) и вызвать
-   `wsTicketService.invalidateAllFor(userId)` ПЕРЕД revoke refresh.
-   Метод `WsTicketService.invalidateAllFor(long)` уже существует
-   (`services/auth-service/.../WsTicketService.java:98`).
-2. Нюанс: `/auth/logout` в permit-all SecurityConfig. Если user шлёт
-   `Authorization: Bearer <access>`, JwtAuthenticationFilter выставит
-   Authentication → userId доступен. Если нет Bearer — пропускаем
-   invalidation (ticket'ы истекут через 30s естественно).
-3. Проверить PushController в notification-service — есть ли
-   `DELETE /api/notifications/push/subscribe` для разрыва push
-   subscription. PWA/web-panel уже его вызывают через clearAllClientState.
-   Если нет — создать (разведка: `grep -rn "DELETE.*push\\|deleteSubscription" services/notification-service`).
-4. IT `LogoutLifecycleIT` — проверить: cookie cleared + refresh revoked
-   в Redis + ws-tickets удалены из `ws_ticket:*` ключей.
+1. `git push origin main` — 14 коммитов M03b ещё не на origin.
+2. `git push origin v0.0.0-alpha.4` — tag ещё локальный.
+3. Старт следующего milestone.
 
-**Что делать в новой сессии (первая задача):**
+### Следующий milestone — выбор пользователя
 
-1. Прочитать `docs/milestones/M03b-jwt-cookie-ws-ticket/CHECKLIST.md`
-   (Группа 8 — следующая, без галочек) + `NOTES.md` (особенно
-   «Hand-off для следующей сессии» блок + surprise'ы Групп 2-7).
-2. Прочитать `git log --oneline -8` — увидеть последние M03b коммиты.
-3. Продолжить с Группы 8. Коммит после каждой группы, отчёт 1-2 строки,
-   ждать «go» или молча продолжать.
-4. **Не забыть:** перед bug-hunter/security-auditor в Группе 11 сделать
-   `./gradlew build` полный + `npm run build` PWA+web-panel — чтобы
-   агенты работали на зелёном коде.
+Dependency graph после M03b:
 
-**Правила работы (без изменений):**
-- Русский в отчётах/NOTES, технические термины/код — оригинал.
+| Milestone | Зависит от | Parallel-safe с M03b-наследником | Рекомендация |
+|-----------|-----------|-----------------------------------|--------------|
+| **M04 Observability** (OTel+Tempo+Alertmanager+JSON-логи) | M01 | да | **Рекомендую первым.** Нужен для prod-ready state + закрывает `event user.logged-out` (отложено из M03b) + KI-2 (dual-mode silent fallback без метрики) + KI-4 (PublicKeyProvider readiness) |
+| **M05 Performance** (composite indexes, Caffeine, @EntityGraph, batch) | M01 | да | Parallel-safe. Можно параллелить с M04, если два трека. |
+| **M06 Ops & Supply Chain** (SHA tagging, Trivy, Gitleaks, HEALTHCHECK, Renovate, mTLS) | — | полностью | Полностью независим. Можно в любой момент. Закрывает KI-1 (X-Forwarded-For spoofing), KI-9 (INTERNAL_ISSUER_SECRET → mTLS). |
+| **M07 Frontend Hardening** (CSP self-host, a11y, openapi-typescript, UX fixes) | M03b ✅ | нет (затрагивает PWA+panel) | Теперь разблокирован. |
+| **M08 Test Infrastructure** (Playwright e2e, golden tests, coverage-gate, diff 80%) | M01, M02, M03b ✅ | нет (нужен стабильный код) | Закрывает deferred E2E `FrontendAuthFlowPlaywrightIT` из M03b. |
+
+**Мой рекомендованный порядок:** M04 → M06 → M05 → M07 → M08.
+Причина: M04+M06 снимают большую часть ops/prod рисков, M05 —
+оптимизация (не критично для alpha), M07 полирует UX после observability
+(чтобы перфорации frontend'а заметны), M08 валидирует всё E2E.
+
+### Что делать в новой сессии (первая задача)
+
+1. Прочитать `docs/milestones/README.md` — увидеть что M03b ✅.
+2. **Спросить пользователя:** какой milestone следующий (M04 / M06 /
+   другой). Не начинать без подтверждения — выбор влияет на
+   parallel-tracks с другими сессиями.
+3. Когда выбран — прочитать `docs/report-before-v0.0.0/99-executive-summary.md`
+   секцию соответствующую milestone'у.
+4. Создать каталог `docs/milestones/M{NN}-{slug}/` со скелетом из
+   `_TEMPLATE/` (PLAN.md + CHECKLIST.md + NOTES.md + DECISIONS.md).
+5. Заполнить PLAN.md из OWNER-ANSWERS + 99-executive-summary +
+   connected отчётов в `docs/report-before-v0.0.0/`.
+6. Обновить `docs/milestones/README.md` — новый milestone ⏳ в работе.
+7. Прикрепить commit `docs(mNN): scaffold milestone + hand-off`.
+8. Начинать работу по CHECKLIST.
+
+### Правила работы (без изменений)
+
+- Русский в отчётах / NOTES / ответах пользователю. Технические термины /
+  код — оригинал.
 - READ-BEFORE-EDIT reminder'ы ложные (после Read в той же сессии) —
   игнорируй.
 - Коммит после каждой логической группы (`feat/fix/test/docs` scope:
-  `<service>/<module>` + `(M03b Группа N)`).
+  `<service>/<module>` + `(M{NN} Группа N)`).
 - Не звать `gsd-*` агентов. `Explore` для «найти все X», `bug-hunter` +
-  `security-auditor` — в Группе 11.
-- Surprise / отклонение от плана → NOTES.md + спросить владельца.
-- Micro-решение → DECISIONS.md.
-- Закрыл пункт CHECKLIST → `[x]` через Edit (не write-rewrite).
+  `security-auditor` / `code-reviewer` — в финальной группе audit'а.
+- Surprise / отклонение от плана → NOTES.md + спросить владельца до
+  продолжения.
+- Micro-решение (не в OWNER-ANSWERS) → DECISIONS.md.
+- Закрыл пункт CHECKLIST → `[x]` через Edit.
+- `CHANGELOG.md` → `[Unreleased]` → обновляй при значимых изменениях.
 
-**Состояние тестов (всё зелёное на момент передачи):**
-- auth-service: весь test suite + AuthIntegrationTest + WsTicketIT ✅
-- notification-service: весь test suite + TicketHandshakeInterceptorTest ✅
-- PWA: 122/122 vitest ✅, `npm run build` ✅
-- web-panel: 444/444 vitest ✅, `npm run build` ✅
+### Последние коммиты (git log --oneline -10)
 
-**После Группы 13 (финал M03b):**
-- `git tag v0.0.0-alpha.4` на финальном коммите (БЕЗ push — жду «go»).
-- Следующий milestone по dependency graph — M07 (Frontend Hardening,
-  блокируется M03b) либо M04 Observability (parallel-safe, не зависит).
+```
+eb125c4 chore(m03b): close cookie + ws-ticket + logout milestone
+140d7d4 docs(m03b): auth-flow runbook + architecture + CHANGELOG (M03b Группа 12)
+acf989b fix(auth,pwa): hotfixes из bug-hunter + security-auditor (M03b Группа 11)
+dff9ea1 feat(auth): KI-7 bcrypt DoS — Semaphore N=20 guard (M03b Группа 10)
+9286809 feat(gateway,auth): KI-3/6/8 hot-patches из M03a (M03b Группа 9)
+b1fbfcc feat(auth): logout lifecycle — ws-ticket invalidation + cookie clear + refresh revoke (M03b Группа 8)
+b1dd975 docs(m03b): hand-off для следующей сессии — 7/13 групп закрыто
+16915bc feat(web-panel): cookie-based refresh + WS ticket + clearAllClientState (M03b Группа 7)
+bc8fb3e feat(pwa): cookie-based refresh + WS ticket + clearAllClientState (M03b Группа 6)
+7c4fa6d feat(notification): WS ticket handshake replaces raw-JWT in query (M03b Группа 4)
+```
 
-**Последние коммиты (git log --oneline -8):**
+Tag: `v0.0.0-alpha.4` на `eb125c4` (локально, без push).
 
-- `16915bc` feat(web-panel): cookie-based refresh + WS ticket + clearAllClientState (M03b Группа 7)
-- `bc8fb3e` feat(pwa): cookie-based refresh + WS ticket + clearAllClientState (M03b Группа 6)
-- `7c4fa6d` feat(notification): WS ticket handshake replaces raw-JWT in query (M03b Группа 4)
-- `afe1928` feat(auth): ws-ticket endpoint + atomic consume via Lua (M03b Группа 3)
-- `835b79b` feat(auth): cookie-based refresh — HttpOnly+Secure+SameSite=Strict (M03b Группа 2)
-- `d3a03df` docs(m03b): start milestone — 5 decisions + CSRF removed per OWNER-ANSWERS (M03b Группа 1)
-- `081d3b0` docs(m03b): scaffold M03b + hand-off для следующей сессии
-- `a6d491a` chore(m03a): close Internal JWT + rate-limit milestone (M03a Группа 16)
+### Source of truth
 
-**Source of truth для M03b:**
+Для M03b (закрыт, historical reference):
+- `docs/milestones/M03b-jwt-cookie-ws-ticket/PLAN.md` — + Post-mortem
+- `docs/milestones/M03b-jwt-cookie-ws-ticket/CHECKLIST.md` — 13/13 ✅
+- `docs/milestones/M03b-jwt-cookie-ws-ticket/NOTES.md` — 6 surprise-записей
+  + 2 hand-off блока + audit-result блок + backlog MEDIUM/LOW
+- `docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md` — 7 решений
+- `docs/auth-flow.md` — полный runbook cookie+ticket+logout
+- `docs/architecture.md` раздел «Auth flow (cookie + ws-ticket + logout lifecycle)»
+- `CHANGELOG.md [Unreleased]` — M03b секция: Added/Changed(breaking)/Fixed/Documentation
 
-- `docs/milestones/M03b-jwt-cookie-ws-ticket/PLAN.md` — scope + acceptance criteria (CSRF раздел удалён)
-- `docs/milestones/M03b-jwt-cookie-ws-ticket/CHECKLIST.md` — 13 групп, 1-7 + 5 закрыты
-- `docs/milestones/M03b-jwt-cookie-ws-ticket/NOTES.md` — 4 surprise-записи + hand-off блок + backlog KI-3/6/7/8
-- `docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md` — 5 решений зафиксированы (2026-04-20)
-- `docs/auth-flow.md` — scaffold cookie+ticket runbook (нужно дополнить в Группе 12)
-- `docs/report-before-v0.0.0/99-executive-summary.md` секция «C0-7»
-- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` → `02-Q-frontend-security` (Часть А + Часть Б)
-- `docs/milestones/M03a-internal-jwt-ratelimit/PLAN.md` Post-mortem → Known Issues KI-1..KI-9
+Для всех milestones:
+- `docs/report-before-v0.0.0/99-executive-summary.md` — roadmap + cluster IDs
+- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` — решения владельца
+- `docs/report-before-v0.0.0/COVERAGE-AUDIT.md` — 354 пункта, «Closed in» колонка
+- `docs/milestones/README.md` — индекс milestones + статусы

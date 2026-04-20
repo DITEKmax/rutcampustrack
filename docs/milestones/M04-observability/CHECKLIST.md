@@ -142,18 +142,18 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 - [x] Отложено (пометки в NOTES.md для M05/M06): SHOULD #1 AlertPublisher extends AbstractEventPublisher, SHOULD #2 DTO-based webhook parsing, timezone подтверждение (на деле правильный).
 - [x] Тесты после патчей: 154/154 bot, attendance CheckinService/ExcuseService/ArchUnit ✅, notification-web alert test ✅.
 
-## Группа 12 — Documentation + закрытие milestone
+## Группа 12 — Documentation + закрытие milestone ✅
 
-- [ ] `docs/observability.md` runbook (новый, ~200-250 строк).
-- [ ] `docs/alerts.md` каталог алертов (новый).
-- [ ] `docs/architecture.md` — раздел «Observability stack».
-- [ ] `docs/logging-conventions.md` — финализировать.
-- [ ] `CHANGELOG.md [Unreleased]` — M04 секция Added/Changed/Fixed/Documentation.
-- [ ] `CLAUDE.md` — обновить «Текущий статус» → M04 ✅.
-- [ ] `docs/milestones/README.md` — статус M04 → ✅ + дата.
-- [ ] PLAN.md → Post-mortem секция.
-- [ ] `git tag v0.0.0-alpha.5` (без push).
-- [ ] Hand-off для следующей сессии в NOTES.md (выбор M05/M06/M07).
+- [x] `docs/observability.md` runbook (~210 строк) — стек, связь signals через trace_id, типичные PromQL/LogQL/Tempo запросы, troubleshooting, deferred items.
+- [x] `docs/alerts.md` каталог — 8 алертов с runbook-действиями, silencing, quiet hours.
+- [x] `docs/architecture.md` — добавлен раздел «Observability stack (M04)» в секцию «Протоколы и коммуникации».
+- [x] `docs/logging-conventions.md` — новый (~160 строк): уровни, JSON формат Java/Python, PII masking, trace_id correlation chain.
+- [x] `CHANGELOG.md [Unreleased]` — большая секция M04 (tag `v0.0.0-alpha.5`).
+- [x] `CLAUDE.md` — M04 статус ✅ + дата 2026-04-20.
+- [x] `docs/milestones/README.md` — M04 ✅ + дата.
+- [x] PLAN.md Post-mortem — surprises, decisions, deferred items, artefacts.
+- [x] Hand-off для M05/M06/M07 уже в NOTES.md (секция «Hand-off после G9+G10»).
+- [ ] `git tag v0.0.0-alpha.5` — создан после финального коммита G12 (commit hash будет ниже).
 
 ---
 

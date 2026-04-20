@@ -28,7 +28,7 @@ RutCampusTrack — микросервисная система учёта пос
 | M02 | Reliable Eventing | ✅ ShedLock + shared-outbox + contract-тесты + ArchUnit — завершён 2026-04-19 |
 | M03a | Internal JWT + Rate-limit | ✅ shared-security + token-exchange + Gateway issuer + downstream dual-mode + RL 6 роутов + composite login key — завершён 2026-04-20 |
 | M03b | Secure Boundaries Part B | ✅ HttpOnly cookie + WS-ticket + logout lifecycle + KI-3/6/7/8 hot-patches — завершён 2026-04-20 |
-| M04 | Observability | OTel+Tempo tracing + Alertmanager + JSON-логи + retention |
+| M04 | Observability | ✅ OTel+Tempo tracing + Alertmanager → bot → Telegram + JSON-логи + 8 counter'ов + 3 gauge'а + retention 14d + Grafana business-kpis dashboard — завершён 2026-04-20 |
 | M05 | Performance | Composite indexes + Caffeine cache + @EntityGraph + batch endpoints |
 | M06 | Ops & Supply Chain | SHA tagging + Trivy/Gitleaks + HEALTHCHECK + Renovate |
 | M07 | Frontend Hardening | CSP self-host + a11y + openapi-typescript + UX fixes |

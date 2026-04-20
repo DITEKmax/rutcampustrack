@@ -932,6 +932,35 @@ Event `user.logged-out` через shared-outbox отложен в M04 (structur
 
 Полный runbook: `docs/auth-flow.md`.
 
+### Observability stack (M04)
+
+**Три signals:** метрики (Prometheus + Micrometer), логи (Loki +
+structlog/logback JSON), трейсы (Tempo + OTel SDK). Все связываются
+через `trace_id` (UUID v4): Java-сервисы через Micrometer Tracing
+bridge, Python-бот через structlog contextvars, события RabbitMQ
+несут `trace_id` в unified envelope (`shared-events.DomainEvent`).
+
+**Бизнес-метрики:** `shared-observability/BusinessMetrics` даёт
+fluent-helper для counter'ов (`auth.login{role}`, `attendance.checkin{status}`,
+`excuse.created{kind}`, `internal_jwt.fallback{from,to}` — KI-2).
+Три gauge'а: `attendance.students_in_red_zone` (RedZoneGauge scheduled
+5 мин + @SchedulerLock), `notification.active_ws_sessions` (через
+Spring `SessionConnected/DisconnectEvent`), `outbox.lag.seconds`
+(JpaOutboxStorage/MongoOutboxStorage `oldestPendingAgeSeconds()`).
+
+**Alerting:** Prometheus rules → Alertmanager → webhook
+`notification-web:9094/internal/alert` → RabbitMQ `alert.fired` →
+notification-bot → Telegram админы. Тихий час 22-08 MSK применяется
+только к `warning`; `critical` fire'ит всегда. 8 правил в 4 группах
+(service-health, outbox-eventing, infra, business-anomaly) —
+полный каталог в `docs/alerts.md`.
+
+**Retention:** Prometheus 14d, Loki 336h (14d, compactor enabled),
+Tempo 14d.
+
+**Документация:** `docs/observability.md` (runbook) + `docs/alerts.md`
+(каталог).
+
 ---
 
 ## 8. Сценарии взаимодействия

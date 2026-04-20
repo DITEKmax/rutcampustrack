@@ -1,7 +1,7 @@
 # M04 — Observability (Tracing + JSON-логи + Metrics + Alertmanager + Health)
 
-**Статус:** ⏳ в работе
-**Старт / финиш:** 2026-04-20 / —
+**Статус:** ✅ завершён
+**Старт / финиш:** 2026-04-20 / 2026-04-20
 **Estimate:** ~5-7 человеко-дней (P1-A пачка по аудиту = 4-5д + интеграция с
 M03a/M03b долгами + Python instrumentation)
 
@@ -101,4 +101,75 @@ readiness).
 
 ## Post-mortem
 
-_Заполняется при закрытии milestone'а._
+**Старт:** 2026-04-20 (после M03b `eb125c4` tag `v0.0.0-alpha.4`).
+**Закрытие:** 2026-04-20 — в одну крупную сессию, ~14 коммитов.
+
+### Что пошло как планировалось
+
+- 12/12 групп закрыты. Ключевые коммиты: `b08490e` (G7 bot), `1e9112e`
+  (G8 metrics), `6b8a233` (G9 alerts), `7f18104` (G10 retention),
+  `4321184` (G11 hot-patches).
+- Audit нашёл 5 HIGH + 2 MEDIUM — все применены fix'ами в G11.
+- Все финальные tests зелёные: 154/154 bot, attendance 157/157,
+  notification-web Java ✅, остальные сервисы ✅.
+
+### Surprises (см. NOTES.md детали)
+
+1. **G6 D5(a) — полная миграция DomainEvent на shared-events** — spec
+   в QA3 описывал retrofit (вариант b), но владелец выбрал полную
+   migration; 47 файлов затронуто. Получили cleaner envelope и единую
+   точку для `trace_id`.
+2. **G7 protobuf conflict** — OTel 1.27 требовал `protobuf<5`, а bot
+   уже имеет `grpcio-tools==1.73.0 → protobuf 6.31`. Upgrade OTel до
+   1.41.0 / 0.62b0.
+3. **G8 SuppressWarnings RetentionPolicy.SOURCE** — `@SuppressWarnings
+   ("SingleInstance")` не видится ArchUnit (bytecode scan). Решение:
+   `@SchedulerLock` для RedZoneGauge (правильно по NEW-28 anyway).
+4. **G11 H1 RedZoneGauge self-invocation** — `@PostConstruct init()`
+   вызывал `refresh()` через `this`, обходя Spring proxy. Без proxy
+   `@SchedulerLock` не срабатывал. Fix: убран `@PostConstruct`,
+   `initialDelayString=10s` позволяет AOP встать.
+
+### Decisions (все 5 в DECISIONS.md)
+
+- **D1**(a) shared-observability как отдельный модуль.
+- **D2**(a) `POST /internal/alert` webhook в notification-web →
+  RabbitMQ → bot (не прямой aiogram endpoint).
+- **D3**(a) fixed 22:00-08:00 MSK quiet hours через `time_intervals`
+  v0.27+.
+- **D4**(b) GrpcClientHealthIndicator per-channel — отложен в backlog
+  (grpc-client-spring-boot-starter уже даёт свои indicators).
+- **D5**(a) полная migration DomainEvent на shared-events.
+
+### Deferred → followups
+
+| Item | Куда |
+|------|------|
+| `/actuator/**` исключить из tracing sampling | M05 или отдельный patch |
+| docker-compose healthcheck directives | M06 |
+| AlertPublisher extends AbstractEventPublisher | M05 (envelope consistency) |
+| Typed DTO для Alertmanager webhook | M06 |
+| mTLS вместо Bearer secret | M06 |
+| Per-subject/per-group thresholds для red zone | Future (cross-service join) |
+| Grafana dashboard для tracing workflows | M07 (frontend-adjacent) |
+| E2E smoke: kill RabbitMQ → health DOWN, kill auth → alert в Telegram | M06 с docker-compose окружением |
+| `EventSchemaRefTest` pre-existing failure (envelope без trace_id) | Отдельный фикс test seeds |
+| `ExcuseEventContractIT.createExcuse` pre-existing business-rule failure | Отдельный фикс attendance test seeds |
+
+### Artefacts
+
+- 14+ коммитов (full M04 scope).
+- 5 новых infra файлов: `infra/alertmanager/alertmanager.yml`,
+  `infra/prometheus/rules/service-health.yml`,
+  `infra/grafana/provisioning/dashboards/business-kpis.json`,
+  + tempo/loki config обновления.
+- Docs: `docs/observability.md`, `docs/alerts.md`,
+  `docs/logging-conventions.md` (3 новых), раздел в
+  `docs/architecture.md`.
+- 8 counter'ов + 3 gauge'а зарегистрированы в Prometheus scrape.
+- 8 alert rules + Alertmanager routing + webhook endpoint.
+
+### Tag
+
+`v0.0.0-alpha.5` на финальном коммите G12 (локально, без push — по
+решению владельца push откладывается до конца v0.0.0).

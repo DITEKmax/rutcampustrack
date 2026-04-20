@@ -9,6 +9,63 @@
 
 ### Added
 
+- **M04 Observability** (tag `v0.0.0-alpha.5`) — end-to-end наблюдаемость.
+  - **shared-observability** модуль — `BusinessMetrics` fluent-helper,
+    `MetricNames` единые имена, `MdcKeys`, `GrpcClientHealthIndicator`,
+    `PublicKeyHealthIndicator`. testFixtures: `MetricsTestSupport`.
+  - **JSON-логи во всех 6 сервисах** — logstash-logback-encoder схема
+    `{ts, v, level, logger, thread, msg, service, <MDC>}`. Masking
+    Bearer / telegram_id / FCM через shared-logback. CI-check
+    `verifyLogbackJsonInAllServices` + `verifyNoDebugInProd`.
+  - **Health endpoints** — `show-details: always` во всех 6 сервисах,
+    `probes.enabled: true`, `PublicKeyHealthIndicator` в api-gateway,
+    `git.properties` генерация через `generateGitProperties` task.
+  - **Distributed tracing OTel + Tempo** — `micrometer-tracing-bridge-otel`
+    + OTLP exporter в 6 сервисах, Python-бот через `opentelemetry-sdk`
+    1.41 + auto-instrumentation aio-pika/aiohttp/grpc/redis. Tempo
+    container (grafana/tempo:2.3.1) с retention 14d.
+  - **Unified event envelope** (`shared-events.DomainEvent`) — поля
+    `trace_id`, `event_version`, `source` добавлены required во все
+    19 event-schemas. 3 Java publisher'а мигрированы на
+    `AbstractEventPublisher.fillDefaults()`; Python `event_publisher.py`
+    пишет тот же envelope. `AbstractEventConsumer.withTraceContext()`
+    восстанавливает MDC на стороне consumer'а. Cross-service trace
+    correlation Java ↔ Python ↔ RabbitMQ.
+  - **Python-бот observability** — `bot/observability.py`: structlog
+    JSON-processor + stdlib bridge (aiogram/aio_pika/grpcio один
+    формат) + OTLP tracer + auto-instrumentation. `bind_trace_context`
+    context manager; `ObservabilityMiddleware` на `dp.update` с
+    user_id/callback_type/trace_id. `_mask_pii` processor маскирует
+    Telegram ID (M04 G11).
+  - **Business metrics** — 8 counter'ов (`auth.login{role}`,
+    `auth.logout{cause}`, `otp.request{channel}`, `otp.verify{outcome}`,
+    `attendance.checkin{status}`, `excuse.created{kind}`,
+    `late_checkin.created`, `internal_jwt.fallback{from,to}` для KI-2)
+    + 3 gauge (`attendance.students_in_red_zone` через RedZoneGauge
+    с @Scheduled + @SchedulerLock, `notification.active_ws_sessions`
+    через SessionConnected/DisconnectEvent, `outbox.lag.seconds` через
+    новый `OutboxStorage.oldestPendingAgeSeconds()`).
+  - **Alertmanager end-to-end** — `prom/alertmanager:v0.27.0` контейнер,
+    `alertmanager.yml` с routing (critical всегда, warning muted
+    22-08 MSK через `time_intervals` v0.27+), 8 alert rules в 4
+    группах (service-health / outbox-eventing / infra / business-anomaly).
+    `POST /internal/alert` в notification-web (Bearer auth, constant-time
+    secret check) → RabbitMQ `alert.fired` → notification-bot handler
+    → Telegram админам (`ADMIN_TELEGRAM_IDS`). HTML-escape + truncate
+    description до 3500 chars. 7 Java + 7 Python unit-тестов.
+  - **Retention** — Prometheus 14d, Loki 336h + compactor, Tempo 14d.
+  - **Grafana dashboard** `business-kpis-m04` — 8 панелей (checkin/login
+    rate, red zone stat, WS sessions stat, outbox lag, JVM heap %,
+    RabbitMQ queue depth, KI-2 fallback rate).
+  - **Audit** — bug-hunter / security-auditor / code-reviewer subagents.
+    0 BLOCKER/CRITICAL. 5 HIGH (все пофикшены: RedZoneGauge
+    self-invocation, AlertController unchecked cast, CheckinRateZero
+    absent() branch, PII masking, Telegram description truncate).
+    Подробности в `docs/milestones/M04-observability/NOTES.md`.
+  - **Документация** — `docs/observability.md` runbook,
+    `docs/alerts.md` каталог, раздел Observability в
+    `docs/architecture.md`, `docs/logging-conventions.md`.
+
 - **M03b Secure Boundaries Part B** — JWT HttpOnly cookie + WS-ticket
   handshake + logout lifecycle + hot-patches из M03a (tag
   `v0.0.0-alpha.4`). Закрывает C0-5, C0-7, KI-3/6/7/8.

@@ -1,0 +1,224 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "M04 Группа 10 — бизнес-KPI и health сигналы. Панели в порядке приоритета: user-facing KPIs → eventing health → infra.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Гео-отметки (checkin rate)",
+      "description": "rate(attendance.checkin_total[5m]) по статусам. Пик в 09:10 / 10:20 / 11:30 MSK = нормальный паттерн начала пар.",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (status) (rate(attendance_checkin_total[5m]))",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "reqps"
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Логины / OTP verify rate",
+      "description": "rate(auth_login_total) + rate(otp_verify_total). Пик утром (OTP login session) — норма. Обрыв днём = Gateway / auth-service проблема.",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (role) (rate(auth_login_total[5m]))",
+          "legendFormat": "login {{role}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (outcome) (rate(otp_verify_total[5m]))",
+          "legendFormat": "otp {{outcome}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "palette-classic"}, "unit": "reqps"}
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Студентов в красной зоне",
+      "description": "attendance.students_in_red_zone — упрощённое определение: >= 3 absent за 30 дней. Обновляется каждые 5 мин (RedZoneGauge).",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 8},
+      "id": 3,
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "max(attendance_students_in_red_zone)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 20},
+              {"color": "red", "value": 50}
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "colorMode": "background",
+        "graphMode": "area"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Active WebSocket sessions",
+      "description": "notification.active_ws_sessions — STOMP sessions, tracked через SessionConnected/DisconnectEvent.",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 8},
+      "id": 4,
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "max(notification_active_ws_sessions)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "graphMode": "area"
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Outbox lag (seconds)",
+      "description": "max(now - oldest pending.created_at) per service. > 300с = alert OutboxLagHigh.",
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 8},
+      "id": 5,
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "max by (job) (outbox_lag_seconds)",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 60},
+              {"color": "red", "value": 300}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "JVM heap usage",
+      "description": "jvm.memory.used / max(area=heap). > 90% = JvmHeapPressure alert. Tracking heap trend полезен для утечек.",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+      "id": 6,
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (application) (jvm_memory_used_bytes{area=\"heap\"}) / sum by (application) (jvm_memory_max_bytes{area=\"heap\"})",
+          "legendFormat": "{{application}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "RabbitMQ queue depth",
+      "description": "rabbitmq_queue_messages — если consumer отстаёт, depth растёт. .dlq queues особенно показательны.",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+      "id": 7,
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (queue) (rabbitmq_queue_messages)",
+          "legendFormat": "{{queue}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "palette-classic"}, "unit": "short"}
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "KI-2 internal JWT fallback rate",
+      "description": "rate(internal_jwt_fallback_total) — silent downgrade на legacy X-User-* headers. Должно быть близко к 0 в M03a+. Ненулевое значение = регрессия внедрения Internal JWT.",
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 22},
+      "id": 8,
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (job, from, to) (rate(internal_jwt_fallback_total[5m]))",
+          "legendFormat": "{{job}} {{from}}→{{to}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "palette-classic"}, "unit": "reqps"}
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["business", "m04", "observability"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Business KPIs & Health (M04)",
+  "uid": "business-kpis-m04",
+  "version": 1,
+  "weekStart": "monday"
+}

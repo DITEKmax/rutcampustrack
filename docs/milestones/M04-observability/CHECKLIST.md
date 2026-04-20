@@ -117,14 +117,14 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 - [ ] `docs/alerts.md` — каталог alerts + runbook → Группа 12 (общая documentation pass).
 - [ ] E2E: kill auth → alert в Telegram — Группа 11 audit (требует docker-compose).
 
-## Группа 10 — Retention + Grafana dashboard (QA5 + NEW-66)
+## Группа 10 — Retention + Grafana dashboard (QA5 + NEW-66) ✅
 
-- [ ] `infra/observability/loki.yaml` — `limits_config.retention_period: 336h`.
-- [ ] `infra/observability/prometheus.yml` — `--storage.tsdb.retention.time=14d`.
-- [ ] `infra/observability/tempo.yaml` — retention 14d (если не сделано в Группе 5).
-- [ ] `infra/observability/grafana/dashboards/business-kpis.json` — 6-8 панелей: checkin rate, login rate, OTP success rate, students_in_red_zone, active_ws_sessions, outbox lag, JVM heap, RabbitMQ queue depth.
-- [ ] Disk-usage alert > 80% (через cadvisor exporter, должен быть в инфре).
-- [ ] `docs/future-ideas.md` — NEW-66 запись «retention review trigger».
+- [x] `infra/loki/loki.yml` — `retention_period: 336h` (было 168h). Добавлен `compactor` block (`retention_enabled: true`) — без него Loki не удаляет старые chunks. `ruler.alertmanager_url` исправлен на `alertmanager:9093`.
+- [x] `docker-compose.prod.yml` prometheus — `--storage.tsdb.retention.time=14d` (было 30d, QA5 spec).
+- [x] Tempo retention 14d уже настроен в G5 (336h в `infra/tempo/tempo.yml`).
+- [x] `infra/grafana/provisioning/dashboards/business-kpis.json` — 8 панелей: checkin rate by status, login/OTP rate by role/outcome, students_in_red_zone stat, active_ws_sessions stat, outbox_lag_seconds by job, JVM heap %, RabbitMQ queue depth, KI-2 fallback rate. UID `business-kpis-m04`, автообновление 30s, окно now-6h. JSON валиден.
+- [x] DiskUsageHigh alert > 80% уже в G9 rules (`service-health.yml` infra group).
+- [ ] `docs/future-ideas.md` NEW-66 → Группа 12 docs pass.
 
 ## Группа 11 — Audit (bug-hunter + security-auditor + code-reviewer)
 

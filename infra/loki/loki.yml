@@ -34,7 +34,16 @@ schema_config:
         period: 24h
 
 ruler:
-  alertmanager_url: http://localhost:9093
+  alertmanager_url: http://alertmanager:9093
 
+# M04 Группа 10 — retention 14d (QA5). Alert rules пуш через
+# alertmanager:9093 (в alertmanager.yml routed на notification-web
+# webhook → Telegram).
 limits_config:
-  retention_period: 168h
+  retention_period: 336h
+
+compactor:
+  working_directory: /loki/compactor
+  compaction_interval: 10m
+  retention_enabled: true
+  delete_request_store: filesystem

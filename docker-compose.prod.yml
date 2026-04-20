@@ -420,7 +420,11 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=30d'
+      # M04 Группа 10 — retention 14d (QA5). 30d было дефолт после
+      # первичной инсталляции, но для наших 6 сервисов 14d достаточно
+      # (incident analysis + weekly review). NEW-66: review по
+      # накоплению disk usage.
+      - '--storage.tsdb.retention.time=14d'
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       # M04 Группа 9 — rule files подключаются через prometheus.yml

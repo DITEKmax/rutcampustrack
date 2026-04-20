@@ -13,3 +13,11 @@
   1. shared-observability модуль vs duplication по сервисам.
   2. Alert receiver: новый endpoint `/internal/alert` в notification-service vs прямой Aiogram bot endpoint.
   3. Тихий час: фиксированный 22:00-08:00 (MSK) vs configurable per-alert.
+
+## 2026-04-20 — развилки закрыты владельцем
+
+- D1=(a) shared-observability модуль.
+- D2=(a) `POST /internal/alert` в notification-service → RabbitMQ event → bot.
+- D3=(a) фиксированный 22:00-08:00 MSK через `mute_time_intervals`.
+
+Подробности в DECISIONS.md. Стартую Группу 1.

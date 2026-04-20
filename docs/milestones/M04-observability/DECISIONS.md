@@ -5,7 +5,54 @@ Micro-ADR per решение. Формат: `## YYYY-MM-DD — заголово�
 
 ---
 
-## ОТКРЫТО — D1: shared-observability модуль vs дублирование по сервисам
+## 2026-04-20 — D1: shared-observability модуль (a)
+
+**Решение владельца:** **(a)** Новый Gradle-модуль `services/shared/shared-observability/`.
+
+**Обоснование:** прецедент в M01 (4 shared-модуля), цена +1 модуля
+несоизмеримо меньше цены drift'а в 6 сервисах. testFixtures даст
+`MetricsTestSupport` бесплатно для всех тестов.
+
+**Применение:** Группа 1 CHECKLIST — создать модуль, подключить во все
+6 backend-сервисов через `implementation(libs.shared.observability)`.
+
+---
+
+## 2026-04-20 — D2: Alertmanager receiver — POST /internal/alert в notification-service (a)
+
+**Решение владельца:** **(a)** Java endpoint в `notification-service`,
+forward в Telegram через RabbitMQ event → notification-bot consumer.
+
+**Обоснование:** единственный вариант, который не теряет алерты при
+инцидентах (RabbitMQ buffer/dedup при падении bot'а). Реиспользует
+internal-JWT auth из M03a. Сохраняет паттерн bot=consumer-only.
+Audit trail в Loki бесплатно. Цена лишнего hop'а ~80мс несущественна
+для алертов с порогом ≥30с.
+
+**Применение:** Группа 9 CHECKLIST — `POST /internal/alert` контроллер
+в `notification-service`, новая RabbitMQ event schema `alert.fired`,
+consumer в notification-bot форматирует и шлёт в Telegram.
+
+---
+
+## 2026-04-20 — D3: Тихий час — фиксированный 22:00-08:00 MSK (a)
+
+**Решение владельца:** **(a)** Фиксированный интервал 22:00-08:00 MSK
+для всех «низких» алертов через `mute_time_intervals` в alertmanager.yml.
+
+**Обоснование:** для ~10 алертов M04 гибкость per-alert не оправдана.
+Триггер пересмотра в `docs/future-ideas.md` — если pet-проект вырастет
+в production с дежурствами.
+
+**Применение:** Группа 9 CHECKLIST — секция `mute_time_intervals` в
+alertmanager.yml, label-based routing (severity=critical обходит mute,
+severity=warning/info попадает под mute).
+
+---
+
+## (исторический раздел — изначально открытые развилки, для справки)
+
+## ЗАКРЫТО — D1: shared-observability модуль vs дублирование по сервисам
 
 **Контекст:** QA2/QA4/QA6/QA7 требуют идентичной обвязки в 6 Spring-сервисах
 (tracing config, MDC keys, BusinessMetrics helper, GrpcClientHealthIndicator,
@@ -28,7 +75,7 @@ PublicKeyHealthIndicator). Без shared-модуля — drift между се�
 
 ---
 
-## ОТКРЫТО — D2: Alertmanager receiver — новый endpoint в notification-service vs новый endpoint в notification-bot
+## ЗАКРЫТО — D2: Alertmanager receiver — новый endpoint в notification-service vs новый endpoint в notification-bot
 
 **Контекст:** QA4/NEW-62 — Alertmanager webhook → forward в Telegram админу.
 Где разместить receiver?
@@ -49,7 +96,7 @@ events → bot), переиспользует internal-secret из M03a. Лиш�
 
 ---
 
-## ОТКРЫТО — D3: Тихий час — фиксированный vs configurable per-alert
+## ЗАКРЫТО — D3: Тихий час — фиксированный vs configurable per-alert
 
 **Контекст:** QA4/NEW-64 — не будить админа ночью некритичными алертами.
 TZ — Москва (UTC+3, по большинству пользователей).

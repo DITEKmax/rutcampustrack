@@ -1,6 +1,8 @@
 package ru.rutcampustrack.attendance.marking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -30,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +68,8 @@ public class MarkingService {
     private final AttendanceEventPublisher eventPublisher;
     private final SemesterCacheService semesterCacheService;
     private final RequestContext requestContext;
+    @Qualifier("grpcTaskExecutor")
+    private final TaskExecutor grpcTaskExecutor;
 
     /**
      * Marks attendance for a student on a lesson.
@@ -168,23 +173,29 @@ public class MarkingService {
 
         Long headmanGroupId = requestContext.getGroupId();
 
-        // 1 gRPC per уникальный lessonId (обычно 1 на batch). Проверяем
-        // principal'ом lesson.group_id == headmanGroupId на каждом.
+        // M05 G8: N уникальных getLessonById + 1 getGroupMembers fan-out
+        // параллельно через grpcTaskExecutor. Deadline 3s enforced на stub.
         Set<Long> uniqueLessonIds = items.stream()
                 .map(MarkBatchItem::lessonId)
                 .collect(Collectors.toSet());
-        Map<Long, LessonResponse> lessonsById = new HashMap<>(uniqueLessonIds.size());
+        Map<Long, CompletableFuture<LessonResponse>> lessonFuts = new HashMap<>(uniqueLessonIds.size());
         for (Long lessonId : uniqueLessonIds) {
-            LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
+            lessonFuts.put(lessonId, CompletableFuture.supplyAsync(
+                    () -> scheduleGrpcClient.getLessonById(lessonId), grpcTaskExecutor));
+        }
+        CompletableFuture<GroupMembersResponse> membersFut = CompletableFuture.supplyAsync(
+                () -> academicGrpcClient.getGroupMembers(headmanGroupId), grpcTaskExecutor);
+
+        Map<Long, LessonResponse> lessonsById = new HashMap<>(uniqueLessonIds.size());
+        for (Map.Entry<Long, CompletableFuture<LessonResponse>> e : lessonFuts.entrySet()) {
+            LessonResponse lesson = unwrap(e.getValue());
             if (!headmanGroupId.equals(lesson.getGroupId())) {
                 throw new AccessDeniedException(
-                        "Нельзя отмечать студентов чужой группы (lessonId=" + lessonId + ")");
+                        "Нельзя отмечать студентов чужой группы (lessonId=" + e.getKey() + ")");
             }
-            lessonsById.put(lessonId, lesson);
+            lessonsById.put(e.getKey(), lesson);
         }
-
-        // 1 gRPC getGroupMembers на весь batch
-        GroupMembersResponse members = academicGrpcClient.getGroupMembers(headmanGroupId);
+        GroupMembersResponse members = unwrap(membersFut);
         Set<Long> allowedStudentIds = new HashSet<>(members.getStudentsList().size());
         members.getStudentsList().forEach(s -> allowedStudentIds.add(s.getUserId()));
 
@@ -230,5 +241,24 @@ public class MarkingService {
         }
 
         return result;
+    }
+
+    /**
+     * M05 G8: распаковывает {@link CompletableFuture#join()} — при ошибке
+     * supplyAsync task'а (`*GrpcClient` кидает {@code StatusRuntimeException}
+     * / {@code ScheduleServiceUnavailableException}) CompletionException
+     * оборачивает cause, нам нужен оригинальный RuntimeException для
+     * существующих handler'ов.
+     */
+    private static <T> T unwrap(CompletableFuture<T> future) {
+        try {
+            return future.join();
+        } catch (java.util.concurrent.CompletionException ce) {
+            Throwable cause = ce.getCause();
+            if (cause instanceof RuntimeException re) {
+                throw re;
+            }
+            throw ce;
+        }
     }
 }

@@ -449,3 +449,120 @@ shedlock-provider-jdbc-template = tech-debt (не требуется для др
   записей без поля (bootstrap через `$set` на null last_seen). Это
   даёт плавный переход без массового удаления живых подписок в
   первый запуск job'а.
+
+## 2026-04-20 — D11: Группа 8 — scope ограничен после аудита gRPC callsite'ов
+
+**Выбрано:** Группа 8 сводится к (1) preventive ArchUnit-guard deadline
++ (2) параллелизация `LessonEventService.processLessonClosed` +
+(3) custom `GrpcClientMetricsInterceptor` + (4) Grafana dashboard +
+(5) integration-тест параллелизации. **Убраны** пункты PLAN.md про
+`CheckinService.checkin` parallelization и про grpc-micrometer library.
+
+**Почему отступление от PLAN.md.**
+
+- **`CheckinService.checkin`** делает **1 gRPC call** (`getActiveLesson`).
+  Параллелить нечего. PLAN.md гипотеза «параллельно scheduleClient +
+  academicClient» в checkin — неверна: `semesterCacheService` — локальный
+  Redis cache, `geofenceService.getCampusGeofence` ушёл в отдельный path
+  и тоже кешируется. Ограничиваю scope реальными hot-path'ами.
+- **Deadline audit** — аудит показал что `.withDeadlineAfter(3, SECONDS)`
+  присутствует на **всех** 19 callsite'ах в 4 gRPC-клиентах
+  (attendance↔schedule, attendance↔academic, academic↔schedule,
+  schedule↔academic). Ручной фикс не нужен. Ценность — в ArchUnit-guard
+  от регрессий (NEW-149).
+- **`grpc-micrometer` library** — requires `grpc-java` 1.57+ и
+  отдельную dependency, в то время как **custom ClientInterceptor**
+  (аналог `GrpcSecretClientInterceptor`) даёт те же метрики без новой
+  deps, меньше supply-chain риск, reusable across всех 4 клиентов
+  через `@GrpcGlobalClientInterceptor`. Считаем стандартные
+  `grpc.client.duration` histogram + `grpc.client.requests_total{status=<OK|UNAVAILABLE|...>}`
+  counter.
+
+**Что параллелится в `LessonEventService.processLessonClosed`:**
+
+```java
+// Было (sequential):
+LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
+GroupMembersResponse members = academicGrpcClient.getGroupMembers(groupId);
+
+// Станет (parallel):
+CompletableFuture<LessonResponse> lessonFut = CompletableFuture.supplyAsync(
+        () -> scheduleGrpcClient.getLessonById(lessonId), grpcTaskExecutor);
+CompletableFuture<GroupMembersResponse> membersFut = CompletableFuture.supplyAsync(
+        () -> academicGrpcClient.getGroupMembers(groupId), grpcTaskExecutor);
+LessonResponse lesson = lessonFut.join();
+GroupMembersResponse members = membersFut.join();
+```
+
+- `grpcTaskExecutor` — bean с bounded pool (5 threads, queue 100).
+  Используется для всех parallel-gRPC call'ов внутри attendance-app.
+- `.join()` вместо `.get(timeout)` — deadline уже enforced на gRPC
+  stub через `withDeadlineAfter(3s)`. Exception propagation через
+  `CompletionException` → `StatusRuntimeException` сохраняется.
+
+**Другие места с 2+ independent gRPC** (рассмотрены, **не включены**
+в M05 G8):
+
+- `MarkingService.markBatch:178+187` — уже был оптимизирован в G4
+  (один `getLessonById` на уникальный lessonId + один `getGroupMembers`).
+  Для typical batch size (1 lesson × 25 students) параллелить нечего —
+  только 2 вызова, одинаково `lessonFut + membersFut`. **Включаю**.
+- `ReportService.getStudentStats:85+88` — аналогично 2 вызова
+  (`getLessonById` + `getGroupMembers`). **Включаю.**
+- `ExcuseService.prepareExcuseContext` — sequential by design
+  (`studentName → validate lessonIds → subjectNames`). Each step depends
+  on previous. **Не включено.**
+- `LateCheckinService.create:79+104` — разделено промежуточной бизнес-
+  логикой (`lesson` нужен для validate, `studentName` нужен позже для
+  event). **Не включено** — риск регрессии выше выгоды.
+
+**ArchUnit rule NEW-149 подход.**
+
+Простой regex-style rule через ArchUnit: «все методы в
+`*.grpc.*Client` классах, вызывающие `*GrpcServiceBlockingStub` method,
+должны либо использовать `withDeadlineAfter`/`withDeadline` на том же
+chain, либо явно помечены `@SuppressWarnings("grpc-no-deadline")`».
+ArchUnit не умеет fluent-chain anaysis native'но, но умеет
+method-invocation scanning. Альтернатива — `@InterceptExec`
+через custom `ArchCondition` проверяющий что within method body есть
+`withDeadline*` call.
+
+**Runtime-guard подход отклонён после эксперимента:** попытка
+добавить `GrpcDeadlineEnforcingInterceptor` (global interceptor, FAIL
+если `callOptions.getDeadline()==null`) сломала 15+ integration-
+тестов (`AcademicGrpcIntegrationTest`, `CacheIntegrationTest`,
+`RbacCacheIT`). Эти тесты используют in-process gRPC stub напрямую
+без `withDeadlineAfter` — это нормально для изолированного round-trip
+теста. ArchUnit rule **достаточен** для prevention production
+regression'ов: все *production callsite'ы* в `*GrpcClient` классах
+проверены статически; деградация через reflection теоретична, но
+её цена — отсутствие deadline для одного callsite — меньше чем
+стоимость + хрупкость runtime-guard (сломанные unit/integration
+тесты + сложность debug'а).
+
+**Что делаем в итоге:**
+
+1. **ArchUnit `GrpcClientDeadlineTest`** (×3 — attendance, schedule,
+   academic) — проверяет что каждый публичный метод `*GrpcClient`
+   класса содержит `withDeadlineAfter`/`withDeadline` в своём теле
+   (method-level byte-code scan через ArchUnit).
+2. **`GrpcClientMetricsInterceptor`** (shared-observability) + per-app
+   обёртки (`@GrpcGlobalClientInterceptor`) — histogram
+   `grpc.client.duration{service, method, status}`. Counter derivable
+   через `_count` suffix. Без новой `grpc-micrometer` dependency.
+3. **Parallel refactor** — `LessonEventService.processLessonClosed`
+   (2 independent gRPC), `MarkingService.markBatch` (N уникальных
+   getLessonById + 1 getGroupMembers). `ReportService.getLessonAttendance`
+   **не параллелится** — `getGroupMembers` зависит от `lesson.groupId`.
+4. **`grpcTaskExecutor` bean** (attendance `GrpcParallelExecutorConfig`)
+   — `ThreadPoolTaskExecutor`, core=2, max=8, queue=100, thread-prefix
+   `grpc-parallel-`.
+5. **Unit test** — `LessonEventServiceParallelTest` — mock gRPC
+   клиенты с latency 200ms каждый, проверяет wall-time < 350ms
+   (параллельно) vs > 400ms (sequential baseline).
+6. **Grafana dashboard** `infra/grafana/provisioning/dashboards/grpc-latency.json`
+   — p50/p95/p99 per `(service, method)` + error-rate panel +
+   active-methods stat.
+
+**Estimate:** ~5-6ч (оценка PLAN.md ~1 день; deadline-аудит
+выполненный в G1-G4 снимает полдня).

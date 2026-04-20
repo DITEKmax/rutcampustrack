@@ -244,13 +244,56 @@ _Scope уточнён 2026-04-20 по результатам аудита — с
 
 ## Группа 8 — gRPC hot-path (P2-10/8)
 
-- [ ] `CheckinService.checkin` — `CompletableFuture.supplyAsync(..., taskExecutor)` параллельно для `scheduleClient.getActiveLesson` + `academicClient.*`. `.join()` + `.get()` с timeout.
-- [ ] Явный `taskExecutor` bean (либо reuse `TaskExecutor` из Spring Boot autoconfig).
-- [ ] `grpc-micrometer` dependency + autoconfig. `@GrpcClientInterceptor` применяется на каждый клиент.
-- [ ] Deadline audit: `.withDeadline(Deadline.after(3, SECONDS))` на каждый gRPC-call в 6 сервисах (сейчас 3 сервиса имеют gRPC clients: academic, schedule, attendance).
-- [ ] CI-lint NEW-149: ArchUnit rule — gRPC-client `*Grpc.newBlockingStub(...)` method должен быть followed by `.withDeadline(...)` в том же chain. Или regex-lint если ArchUnit не достанет.
-- [ ] Grafana dashboard «gRPC latency by method» — `grpc_client_processing_duration_seconds` histogram, p50/p95/p99 панели, error-rate panel.
-- [ ] Integration-test: `CheckinService.checkin` latency улучшилась (parallel vs sequential).
+_Scope уточнён 2026-04-21 после аудита gRPC callsite'ов — см. DECISIONS
+D11. Deadline уже везде (19 callsite'ов), параллелизация неприменима к
+`CheckinService.checkin` (только 1 gRPC-call), runtime-guard отклонён
+после сломанных integration-тестов._
+
+- [~] **Снято (D11):** `CheckinService.checkin` parallelization —
+      checkin делает **1** gRPC call (`scheduleGrpcClient.getActiveLesson`),
+      параллелить нечего. PLAN.md гипотеза «scheduleClient + academicClient»
+      не соответствует коду (`semesterCacheService` — Redis cache,
+      `geofenceService` — Redis cache).
+- [x] `grpcTaskExecutor` bean — `GrpcParallelExecutorConfig`
+      (attendance-app), `ThreadPoolTaskExecutor` core=2/max=8/queue=100,
+      prefix `grpc-parallel-`.
+- [x] Deadline audit: ✅ все 19 gRPC callsite'ов имеют
+      `.withDeadlineAfter(3, SECONDS)`. Ручной fix не требуется,
+      guard в ArchUnit.
+- [x] ArchUnit NEW-149: `GrpcClientDeadlineTest` в attendance + schedule
+      + academic. Проверяет что каждый public method `*GrpcClient` класса
+      вызывающий `*BlockingStub` содержит `withDeadlineAfter`/`withDeadline`
+      в том же методе (byte-code scan). Sanity-verify: удалён
+      `withDeadlineAfter` в `ScheduleGrpcClient.getActiveLesson` →
+      build failed с сообщением «Метод ... вызывает gRPC stub без
+      .withDeadlineAfter ...». Откачено.
+- [~] **Снято (D11):** runtime `GrpcDeadlineEnforcingInterceptor` —
+      попытка global interceptor сломала 15+ integration-тестов
+      (AcademicGrpcIntegrationTest/CacheIntegrationTest/RbacCacheIT),
+      которые легитимно не используют deadline для in-process stub'ов.
+      ArchUnit достаточен для production regression prevention.
+- [x] `GrpcClientMetricsInterceptor` в shared-observability — ClientInterceptor,
+      регистрирует `grpc.client.duration` Timer (histogram) с тегами
+      `service` / `method` / `status` для каждого outgoing gRPC-call.
+      Per-app wrapper (`@GrpcGlobalClientInterceptor`) — в attendance,
+      schedule, academic. Без новой `grpc-micrometer` dependency.
+- [x] Parallel refactor:
+  - [x] `LessonEventService.processLessonClosed` —
+        `getLessonById` + `getGroupMembers` параллельно через
+        `CompletableFuture.supplyAsync + grpcTaskExecutor + unwrap()`.
+        Wall-time ~200ms вместо ~400ms.
+  - [x] `MarkingService.markBatch` — N уникальных `getLessonById`
+        + 1 `getGroupMembers` fan-out параллельно.
+  - [~] `ReportService.getLessonAttendance` — **не параллелится**:
+        `getGroupMembers` требует `lesson.groupId` из результата
+        `getLessonById` (dependency chain).
+- [x] Grafana dashboard `infra/grafana/provisioning/dashboards/grpc-latency.json`
+      — p50/p95/p99 histogram_quantile panels per `(service, method)`
+      + error-rate panel (non-OK статусы) + active-methods stat.
+- [x] Unit-тест `LessonEventServiceParallelTest` — mock gRPC 200ms
+      каждый, wall-time < 350ms (параллельно) vs > 400ms sequential
+      baseline. Sanity: `SyncTaskExecutor` для существующих
+      correctness-тестов сохраняет детерминизм Mockito verify'ов.
 
 ## Группа 9 — Audit (bug-hunter + code-reviewer + security)
 

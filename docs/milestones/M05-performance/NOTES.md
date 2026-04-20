@@ -282,6 +282,26 @@ CHECKLIST остаётся галочка как вычеркнутая с refer
 `docs/caching-strategy.md` описывает факт отсутствия hit/miss counter
 для Redis в v0.0.0 + этот workaround-план.
 
+## 2026-04-21 — Группа 8 итоги
+
+Группа закрыта (commit в очереди). Surprise: deadline уже везде (19
+callsite'ов), parallel refactor'у доступны 2 места (не `CheckinService`),
+runtime-guard отклонён после сломавшихся integration-тестов. См. D11.
+
+- `GrpcClientMetricsInterceptor` (shared-observability) — Timer
+  histogram `grpc.client.duration` с тегами service/method/status.
+  Per-app wrappers через `@GrpcGlobalClientInterceptor`.
+- `grpcTaskExecutor` (attendance-app `GrpcParallelExecutorConfig`) —
+  ThreadPoolTaskExecutor 2-8 threads, queue 100.
+- `LessonEventService.processLessonClosed` и `MarkingService.markBatch`
+  — параллельный fan-out через `CompletableFuture.supplyAsync + unwrap`.
+- ArchUnit `GrpcClientDeadlineTest` × 3 сервиса — byte-code scan,
+  sanity-verify пройден (искусственное удаление deadline → build fail).
+- `infra/grafana/provisioning/dashboards/grpc-latency.json` — 5 panels.
+- Unit-тест параллелизации — mock latency 200ms каждый, wall-time
+  < 350ms. Существующие `LessonEventServiceTest` / `MarkingServiceTest`
+  переведены на `SyncTaskExecutor` для детерминизма.
+
 ## 2026-04-20 — Группа 7 итоги
 
 Группа закрыта (commit в очереди). Итоги:

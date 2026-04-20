@@ -1,8 +1,9 @@
 package ru.rutcampustrack.attendance.event;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.mongodb.client.result.DeleteResult;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -21,6 +22,7 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Business logic for lesson lifecycle event processing.
@@ -35,17 +37,37 @@ import java.time.LocalDate;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class LessonEventService {
 
     private final MongoTemplate mongoTemplate;
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final AcademicGrpcClient academicGrpcClient;
     private final SemesterCacheService semesterCacheService;
+    private final TaskExecutor grpcTaskExecutor;
+
+    public LessonEventService(MongoTemplate mongoTemplate,
+                              ScheduleGrpcClient scheduleGrpcClient,
+                              AcademicGrpcClient academicGrpcClient,
+                              SemesterCacheService semesterCacheService,
+                              @Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor) {
+        this.mongoTemplate = mongoTemplate;
+        this.scheduleGrpcClient = scheduleGrpcClient;
+        this.academicGrpcClient = academicGrpcClient;
+        this.semesterCacheService = semesterCacheService;
+        this.grpcTaskExecutor = grpcTaskExecutor;
+    }
 
     public void processLessonClosed(Long lessonId, Long groupId) {
-        LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
-        GroupMembersResponse members = academicGrpcClient.getGroupMembers(groupId);
+        // M05 G8: два независимых gRPC-call'а параллельно через bounded
+        // executor. Deadline (3s) уже enforced на stub-level; .join()
+        // пропагирует StatusRuntimeException как CompletionException →
+        // распаковываем для сохранения existing error handling.
+        CompletableFuture<LessonResponse> lessonFut = CompletableFuture.supplyAsync(
+                () -> scheduleGrpcClient.getLessonById(lessonId), grpcTaskExecutor);
+        CompletableFuture<GroupMembersResponse> membersFut = CompletableFuture.supplyAsync(
+                () -> academicGrpcClient.getGroupMembers(groupId), grpcTaskExecutor);
+        LessonResponse lesson = unwrap(lessonFut);
+        GroupMembersResponse members = unwrap(membersFut);
 
         if (members.getStudentsList().isEmpty()) {
             log.info("lesson.closed: no students in group {} for lesson {}, skipping", groupId, lessonId);
@@ -132,5 +154,23 @@ public class LessonEventService {
         DeleteResult result = mongoTemplate.remove(filter, AttendanceDocument.class);
         log.info("lesson.deleted: lessonIds={}, deletedCount={}",
                 lessonIds.size(), result.getDeletedCount());
+    }
+
+    /**
+     * Распаковывает {@link CompletableFuture#join()} — если таск упал с
+     * {@code StatusRuntimeException} (через `*GrpcClient` wrapper'ы),
+     * unwrap восстанавливает тип для существующего error handling
+     * (AMQP nack → DLQ).
+     */
+    private static <T> T unwrap(CompletableFuture<T> future) {
+        try {
+            return future.join();
+        } catch (java.util.concurrent.CompletionException ce) {
+            Throwable cause = ce.getCause();
+            if (cause instanceof RuntimeException re) {
+                throw re;
+            }
+            throw ce;
+        }
     }
 }

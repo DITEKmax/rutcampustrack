@@ -3,9 +3,9 @@ package ru.rutcampustrack.attendance.event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -54,11 +54,16 @@ class LessonEventServiceTest {
     @Mock
     private BulkOperations bulkOps;
 
-    @InjectMocks
     private LessonEventService lessonEventService;
 
     @BeforeEach
     void setUp() {
+        // M05 G8: SyncTaskExecutor запускает Runnable в текущем потоке —
+        // сохраняет детерминизм Mockito verify'ов, не вводя параллелизма
+        // в unit-тесте (он проверяет correctness, не latency).
+        lessonEventService = new LessonEventService(
+                mongoTemplate, scheduleGrpcClient, academicGrpcClient,
+                semesterCacheService, new SyncTaskExecutor());
         // Lenient: not all tests use bulkOps (e.g. empty group, cancellation tests)
         lenient().when(mongoTemplate.bulkOps(any(BulkOperations.BulkMode.class), eq(AttendanceDocument.class)))
                 .thenReturn(bulkOps);

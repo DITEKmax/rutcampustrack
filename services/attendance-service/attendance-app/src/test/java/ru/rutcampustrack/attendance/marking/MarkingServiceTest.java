@@ -3,11 +3,11 @@ package ru.rutcampustrack.attendance.marking;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
@@ -66,7 +66,6 @@ class MarkingServiceTest {
     @Mock
     private RequestContext requestContext;
 
-    @InjectMocks
     private MarkingService markingService;
 
     private static final Long LESSON_ID = 42L;
@@ -115,6 +114,13 @@ class MarkingServiceTest {
 
     @BeforeEach
     void setUpHappyPath() {
+        // M05 G8: SyncTaskExecutor для детерминизма unit-тестов
+        // (корректность, не latency). Реальный grpcTaskExecutor остаётся
+        // в prod-config.
+        markingService = new MarkingService(
+                scheduleGrpcClient, academicGrpcClient, mongoTemplate,
+                eventPublisher, semesterCacheService, requestContext,
+                new SyncTaskExecutor());
         // Default: headman context
         lenient().when(requestContext.isHeadman()).thenReturn(true);
         lenient().when(requestContext.getUserId()).thenReturn(HEADMAN_ID);

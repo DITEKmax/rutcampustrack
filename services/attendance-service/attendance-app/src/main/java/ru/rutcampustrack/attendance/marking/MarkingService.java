@@ -24,6 +24,7 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.observability.AsyncGrpcUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -213,7 +214,7 @@ public class MarkingService {
 
         Map<Long, LessonResponse> lessonsById = new HashMap<>(uniqueLessonIds.size());
         for (Map.Entry<Long, CompletableFuture<LessonResponse>> e : lessonFuts.entrySet()) {
-            LessonResponse lesson = unwrap(e.getValue());
+            LessonResponse lesson = AsyncGrpcUtils.joinOrUnwrap(e.getValue());
             if (!headmanGroupId.equals(lesson.getGroupId())) {
                 // M05 audit fix (security #4): без id's в message — избегаем
                 // enumeration side-channel (тайминг/текст).
@@ -221,7 +222,7 @@ public class MarkingService {
             }
             lessonsById.put(e.getKey(), lesson);
         }
-        GroupMembersResponse members = unwrap(membersFut);
+        GroupMembersResponse members = AsyncGrpcUtils.joinOrUnwrap(membersFut);
         Set<Long> allowedStudentIds = new HashSet<>(members.getStudentsList().size());
         members.getStudentsList().forEach(s -> allowedStudentIds.add(s.getUserId()));
 
@@ -279,22 +280,4 @@ public class MarkingService {
         return result;
     }
 
-    /**
-     * M05 G8: распаковывает {@link CompletableFuture#join()} — при ошибке
-     * supplyAsync task'а (`*GrpcClient` кидает {@code StatusRuntimeException}
-     * / {@code ScheduleServiceUnavailableException}) CompletionException
-     * оборачивает cause, нам нужен оригинальный RuntimeException для
-     * существующих handler'ов.
-     */
-    private static <T> T unwrap(CompletableFuture<T> future) {
-        try {
-            return future.join();
-        } catch (java.util.concurrent.CompletionException ce) {
-            Throwable cause = ce.getCause();
-            if (cause instanceof RuntimeException re) {
-                throw re;
-            }
-            throw ce;
-        }
-    }
 }

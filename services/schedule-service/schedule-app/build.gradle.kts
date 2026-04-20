@@ -62,6 +62,7 @@ dependencies {
     testImplementation(libs.json.schema.validator)
     testImplementation(libs.archunit.junit5)
     testImplementation(testFixtures(project(":services:shared:shared-security")))
+    testImplementation(testFixtures(project(":services:shared:shared-observability")))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")

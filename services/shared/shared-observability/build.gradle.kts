@@ -39,5 +39,6 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testFixturesApi("io.micrometer:micrometer-core")
+    testFixturesApi("com.tngtech.archunit:archunit-junit5:1.3.0")
     testFixturesImplementation("org.assertj:assertj-core")
 }

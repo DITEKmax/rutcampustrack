@@ -19,6 +19,7 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.observability.AsyncGrpcUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -66,8 +67,8 @@ public class LessonEventService {
                 () -> scheduleGrpcClient.getLessonById(lessonId), grpcTaskExecutor);
         CompletableFuture<GroupMembersResponse> membersFut = CompletableFuture.supplyAsync(
                 () -> academicGrpcClient.getGroupMembers(groupId), grpcTaskExecutor);
-        LessonResponse lesson = unwrap(lessonFut);
-        GroupMembersResponse members = unwrap(membersFut);
+        LessonResponse lesson = AsyncGrpcUtils.joinOrUnwrap(lessonFut);
+        GroupMembersResponse members = AsyncGrpcUtils.joinOrUnwrap(membersFut);
 
         if (members.getStudentsList().isEmpty()) {
             log.info("lesson.closed: no students in group {} for lesson {}, skipping", groupId, lessonId);
@@ -156,21 +157,4 @@ public class LessonEventService {
                 lessonIds.size(), result.getDeletedCount());
     }
 
-    /**
-     * Распаковывает {@link CompletableFuture#join()} — если таск упал с
-     * {@code StatusRuntimeException} (через `*GrpcClient` wrapper'ы),
-     * unwrap восстанавливает тип для существующего error handling
-     * (AMQP nack → DLQ).
-     */
-    private static <T> T unwrap(CompletableFuture<T> future) {
-        try {
-            return future.join();
-        } catch (java.util.concurrent.CompletionException ce) {
-            Throwable cause = ce.getCause();
-            if (cause instanceof RuntimeException re) {
-                throw re;
-            }
-            throw ce;
-        }
-    }
 }

@@ -63,6 +63,7 @@ dependencies {
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
     testImplementation(libs.json.schema.validator)
     testImplementation(testFixtures(project(":services:shared:shared-security")))
+    testImplementation(testFixtures(project(":services:shared:shared-observability")))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

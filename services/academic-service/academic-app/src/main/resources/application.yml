@@ -10,6 +10,16 @@ spring:
     username: rct_user
     password: ${POSTGRES_ACADEMIC_PASSWORD:rct_dev_pass}
     driver-class-name: org.postgresql.Driver
+    # M05 Группа 6 / P2-10/6 — HikariCP tuning. Значения обосновываются
+    # в docs/connection-pool-tuning.md (NEW-147). Пересматривать при
+    # scale-out, read-replicas или росте концурренси > 30 req/s.
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
 
   jpa:
     hibernate:

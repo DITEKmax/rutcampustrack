@@ -83,6 +83,21 @@ groups:
           summary: "JVM heap > 90% в {{ $labels.application }}"
           description: "{{ $labels.application }} heap={{ $value | humanizePercentage }}. Возможна утечка — сними heap dump."
 
+      # M05 Группа 6 / P2-10/6 — HikariCP pool exhaustion. Если >80% pool
+      # занято 5 минут — concurrent-queries растут быстрее чем pool
+      # spec'нут (n+2+diskSpindles формула в NEW-147). Решение:
+      # поднять maximum-pool-size или профилировать hot-path на leak.
+      # Метрика hikaricp_connections_active / hikaricp_connections_max
+      # экспортится Micrometer'ом автоматически из spring-boot-actuator.
+      - alert: HikariPoolExhaustion
+        expr: (hikaricp_connections_active / hikaricp_connections_max) > 0.80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HikariCP pool > 80% в {{ $labels.application }}"
+          description: "{{ $labels.application }} pool={{ $value | humanizePercentage }} занято. Риск connection-timeout. Подними maximum-pool-size или ищи долгие транзакции (leak-detection-threshold=60s)."
+
   - name: business-anomaly
     rules:
       # Если за рабочее окно (09:00-18:00 MSK) rate checkin'ов = 0 — что-то

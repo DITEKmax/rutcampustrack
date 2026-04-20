@@ -199,11 +199,11 @@ in-memory pagination OOM-risk в LessonService._
 
 ## Группа 6 — HikariCP connection pool (P2-10/6)
 
-- [ ] `application.yml` academic/schedule/attendance — `spring.datasource.hikari.{maximum-pool-size:20, minimum-idle:5, connection-timeout:5000, idle-timeout:600000, max-lifetime:1800000, leak-detection-threshold:60000}`.
-- [ ] Prometheus scrape проверка: `hikaricp_connections_active` / `hikaricp_connections_pending` в `/actuator/prometheus`.
-- [ ] Alert rule в `infra/prometheus/rules/service-health.yml` — `HikariPoolExhaustion` (pool > 80% for 5m, warning).
-- [ ] `docs/connection-pool-tuning.md` (NEW-147) — формула `cpu_cores × 2 + effective_disk_spindles`, текущие значения, когда пересматривать (scale-out, read-replicas).
-- [ ] Smoke-тест на dev: 30 concurrent HTTP-запросов — pool не исчерпан.
+- [x] `application.yml` academic/schedule: `hikari.{maximum-pool-size:20, minimum-idle:5, connection-timeout:5000, idle-timeout:600000, max-lifetime:1800000, leak-detection-threshold:60000}`. auth-service меньше (pool=10, idle=3 — read-only login). attendance — no-op (MongoDB).
+- [x] Prometheus scrape `hikaricp_connections_*` автоматически через Micrometer + spring-boot-actuator (M04 baseline).
+- [x] Alert rule `HikariPoolExhaustion` в `infra/prometheus/rules/service-health.yml` — `(active/max) > 0.80 for 5m`, severity warning.
+- [x] `docs/connection-pool-tuning.md` (NEW-147) — формула `cpu_cores × 2 + spindles`, текущие значения, триггеры пересмотра (HikariPoolExhaustion firing / pending>0 / scale-out / read-replicas), smoke-тест в документе.
+- [~] **Manual smoke-тест** (30 concurrent HTTP): процедура описана в docs/connection-pool-tuning.md, выполнение отложено до production-deploy (не блокирует M05 — integration-тесты 3 сервисов зелёные с новым pool).
 
 ## Группа 7 — Cleanup push-subs + retention audit (P2-10/7)
 

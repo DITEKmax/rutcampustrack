@@ -22,6 +22,16 @@ spring:
     username: rct_user
     password: ${POSTGRES_ACADEMIC_PASSWORD:rct_dev_pass}
     driver-class-name: org.postgresql.Driver
+    # M05 Группа 6 / P2-10/6 — HikariCP tuning. auth-service делает
+    # только login-lookup'ы (1 SELECT по логину), pool 10 достаточен.
+    # См. docs/connection-pool-tuning.md (NEW-147).
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 3
+      connection-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
 
   jpa:
     hibernate:

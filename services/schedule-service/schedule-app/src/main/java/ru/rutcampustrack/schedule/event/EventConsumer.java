@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.schedule.subject.SubjectDeletedCascadeService;
+import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 
 import java.util.Map;
 
@@ -21,7 +22,7 @@ import java.util.Map;
  * nacks the message to the DLQ (see {@link RabbitConfig}).
  */
 @Component
-public class EventConsumer {
+public class EventConsumer extends AbstractEventConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(EventConsumer.class);
 
@@ -38,11 +39,15 @@ public class EventConsumer {
             log.warn("Received event without event_type, ignoring: {}", envelope);
             return;
         }
-        log.debug("Received event: {}", eventType);
-        switch (eventType) {
-            case "subject.deleted" -> handleSubjectDeleted(envelope);
-            default -> log.trace("Ignoring unknown event type: {}", eventType);
-        }
+        // M04 QA3 — extract trace_id из envelope в MDC до вызова handler'а.
+        // Логи внутри handler'а получат тот же trace_id, что и producer-side.
+        withTraceContext(envelope, () -> {
+            log.debug("Received event: {}", eventType);
+            switch (eventType) {
+                case "subject.deleted" -> handleSubjectDeleted(envelope);
+                default -> log.trace("Ignoring unknown event type: {}", eventType);
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")

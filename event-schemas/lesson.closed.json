@@ -3,19 +3,52 @@
   "title": "lesson.closed",
   "description": "Пара перешла в статус CLOSED. Генерируется Schedule Service.",
   "type": "object",
-  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
   "properties": {
-    "event_type": { "const": "lesson.closed" },
-    "event_id": { "$ref": "_common.json#/$defs/eventId" },
-    "occurred_at": { "$ref": "_common.json#/$defs/occurredAt" },
+    "event_type": {
+      "const": "lesson.closed"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
     "payload": {
       "type": "object",
-      "required": ["lesson_id", "group_id"],
+      "required": [
+        "lesson_id",
+        "group_id"
+      ],
       "properties": {
-        "lesson_id": { "type": "integer" },
-        "group_id": { "type": "integer" },
-        "subject_id": { "type": "integer" }
+        "lesson_id": {
+          "type": "integer"
+        },
+        "group_id": {
+          "type": "integer"
+        },
+        "subject_id": {
+          "type": "integer"
+        }
       }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
     }
   }
 }

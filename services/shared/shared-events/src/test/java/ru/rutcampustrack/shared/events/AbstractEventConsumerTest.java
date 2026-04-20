@@ -19,6 +19,9 @@ class AbstractEventConsumerTest {
     }
 
     static class AnyEvent extends DomainEvent {
+        AnyEvent() {
+            super("test.any", null);
+        }
     }
 
     private final TestConsumer consumer = new TestConsumer();

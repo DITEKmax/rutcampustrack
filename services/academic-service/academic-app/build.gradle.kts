@@ -18,8 +18,9 @@ dependencies {
     // Наш контракт
     implementation(project(":services:academic-service:academic-api-contract"))
 
-    // M02 — shared-outbox + ShedLock
+    // M02 — shared-outbox + ShedLock + shared-events (D5(a) единый envelope)
     implementation(project(":services:shared:shared-outbox"))
+    implementation(project(":services:shared:shared-events"))
     implementation(libs.shedlock.spring)
     implementation(libs.shedlock.provider.jdbc.template)
 

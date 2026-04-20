@@ -59,14 +59,21 @@
 - [x] Smoke: ActuatorIT в auth-service с включённым tracing autoconfig — Spring контекст поднимается, OTel autoconfig работает (соединение с tempo:4317 не нужно для unit-теста).
 - [ ] End-to-end span-tree в Grafana Tempo — отложено в Группу 11 (требует docker-compose окружение).
 
-## Группа 6 — RabbitMQ event tracing (QA3 + NEW-60/61)
+## Группа 6 — RabbitMQ event tracing (QA3 + NEW-60/61) ✅
 
-- [ ] `services/shared/shared-events/AbstractEventEnvelope` — record с `traceId`, `occurredAt`, `eventVersion` (required).
-- [ ] `AbstractEventPublisher` — fill из MDC (`MDC.get(MdcKeys.TRACE_ID)`).
-- [ ] `AbstractEventConsumer` — extract trace_id → MDC.put перед handler'ом.
-- [ ] `event-schemas/*.json` — добавить required `trace_id`, `occurred_at`, `event_version` во все 14+ schemas. Контракт-тесты M02 поймают.
-- [ ] Сделать так, чтобы все существующие event records наследовали `AbstractEventEnvelope`.
-- [ ] Тест: publish → consumer видит trace_id в MDC → log line содержит тот же trace_id.
+D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS).
+
+- [x] `shared-events.DomainEvent` расширен envelope-полями `event_type`/`event_id`/`event_version`/`trace_id`/`occurred_at`/`source`/`payload`. Extends Spring `ApplicationEvent` (один источник правды для всех сервисов).
+- [x] `AbstractEventPublisher.fillDefaults()` — fill из MDC (`MDC.get(MDC_TRACE_ID)`) с UUID-fallback когда MDC пуст (scheduled jobs / unit tests без HTTP context).
+- [x] `AbstractEventConsumer.withTraceContext(Map<String,Object> envelope, Runnable)` — extract trace_id → MDC.put перед handler'ом, restore после (даже при exception).
+- [x] 19 × `event-schemas/*.json` — добавлено `event_version`/`trace_id`/`source` в `required` envelope + properties с `$ref` на `_common.json#/$defs`. Bulk-update через Node script.
+- [x] Service-DomainEvent × 3 (academic/auth/schedule) → extends `shared.events.DomainEvent` (старая сигнатура конструктора `(source, eventType, payload)` сохранена для backward-compat подклассов).
+- [x] DomainEventListener × 3 → extends `AbstractEventPublisher` + вызывает `fillDefaults(event)` перед `objectMapper.writeValueAsString`.
+- [x] EventConsumer × 3 (schedule/attendance/notification) → extends `AbstractEventConsumer` + wraps switch routing в `withTraceContext(envelope, () -> ...)`.
+- [x] Attendance — 3 publisher'а (AttendanceEventPublisher/ExcuseEventPublisher/LateCheckinEventPublisher) рефакторены через общий `EventEnvelope.build()` helper (Map-based path с MDC + UUID-fallback).
+- [x] shared-events build.gradle.kts: добавлен `compileOnly("org.springframework:spring-context")` (DomainEvent extends ApplicationEvent).
+- [x] 4 × build.gradle.kts (academic/schedule/attendance/auth): добавлено `implementation(project(":services:shared:shared-events"))`.
+- [x] Contract-тесты M02 валидируют новый envelope: schedule (3) ✅, academic (1) ✅, attendance.marked ✅. Один pre-existing failure в excuse — unrelated business-rule (см. NOTES).
 
 ## Группа 7 — Python-бот instrumentation (QA2 + QA7 для бота)
 

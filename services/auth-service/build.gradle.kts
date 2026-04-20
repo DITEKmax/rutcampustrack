@@ -22,8 +22,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
-    // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators)
+    // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators) + shared-events (D5(a))
     implementation(project(":services:shared:shared-observability"))
+    implementation(project(":services:shared:shared-events"))
 
     // M04 QA7 — shared-logback (JSON-вывод + masking через logback-base.xml)
     implementation(project(":services:shared:shared-logback"))

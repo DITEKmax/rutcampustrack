@@ -3,27 +3,87 @@
   "title": "late_checkin.decided",
   "description": "Староста одобрил или отклонил запрос студента на подтверждение присутствия. Генерируется Attendance Service после обработки решения.",
   "type": "object",
-  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
   "properties": {
-    "event_type": { "const": "late_checkin.decided" },
-    "event_id": { "$ref": "_common.json#/$defs/eventId" },
-    "occurred_at": { "$ref": "_common.json#/$defs/occurredAt" },
+    "event_type": {
+      "const": "late_checkin.decided"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
     "payload": {
       "type": "object",
-      "required": ["request_id", "user_id", "status"],
+      "required": [
+        "request_id",
+        "user_id",
+        "status"
+      ],
       "properties": {
-        "request_id": { "type": "string" },
-        "user_id": { "type": "integer", "description": "Студент — получатель уведомления об итоге" },
-        "group_id": { "type": "integer" },
-        "lesson_id": { "type": "integer" },
-        "decision_by": { "type": ["integer", "null"], "description": "Telegram user_id старосты, принявшего решение" },
-        "status": { "enum": ["approved", "rejected"] },
-        "decided_at": { "type": "string", "format": "date-time" },
-        "lesson_date": { "type": "string", "format": "date" },
-        "lesson_number": { "type": "integer" },
-        "subject_id": { "type": "integer" },
-        "subject_name": { "type": "string" }
+        "request_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "Студент — получатель уведомления об итоге"
+        },
+        "group_id": {
+          "type": "integer"
+        },
+        "lesson_id": {
+          "type": "integer"
+        },
+        "decision_by": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Telegram user_id старосты, принявшего решение"
+        },
+        "status": {
+          "enum": [
+            "approved",
+            "rejected"
+          ]
+        },
+        "decided_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lesson_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "lesson_number": {
+          "type": "integer"
+        },
+        "subject_id": {
+          "type": "integer"
+        },
+        "subject_name": {
+          "type": "string"
+        }
       }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
     }
   }
 }

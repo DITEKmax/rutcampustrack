@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.excuse.ExcuseService;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -23,7 +24,7 @@ import java.util.Map;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class EventConsumer {
+public class EventConsumer extends AbstractEventConsumer {
 
     private final LessonEventService lessonEventService;
     private final SemesterCacheService semesterCacheService;
@@ -37,18 +38,21 @@ public class EventConsumer {
             log.warn("Received event without event_type, ignoring: {}", envelope);
             return;
         }
-        log.debug("Received event: {}", eventType);
-        switch (eventType) {
-            case "lesson.started"          -> handleLessonStarted(envelope);
-            case "lesson.closed"           -> handleLessonClosed(envelope);
-            case "lesson.cancelled"        -> handleLessonCancelled(envelope);
-            case "lesson.deleted"          -> handleLessonDeleted(envelope);
-            case "lesson.one_off.cancelled" -> handleOneOffLessonCancelled(envelope);
-            case "semester.archived"       -> handleSemesterArchived(envelope);
-            case "late_checkin.decision"   -> handleLateCheckinDecision(envelope);
-            case "excuse.decision"         -> handleExcuseDecision(envelope);
-            default -> log.debug("Ignoring unknown event type: {}", eventType);
-        }
+        // M04 QA3 — extract trace_id из envelope в MDC до handler'а.
+        withTraceContext(envelope, () -> {
+            log.debug("Received event: {}", eventType);
+            switch (eventType) {
+                case "lesson.started"          -> handleLessonStarted(envelope);
+                case "lesson.closed"           -> handleLessonClosed(envelope);
+                case "lesson.cancelled"        -> handleLessonCancelled(envelope);
+                case "lesson.deleted"          -> handleLessonDeleted(envelope);
+                case "lesson.one_off.cancelled" -> handleOneOffLessonCancelled(envelope);
+                case "semester.archived"       -> handleSemesterArchived(envelope);
+                case "late_checkin.decision"   -> handleLateCheckinDecision(envelope);
+                case "excuse.decision"         -> handleExcuseDecision(envelope);
+                default -> log.debug("Ignoring unknown event type: {}", eventType);
+            }
+        });
     }
 
     private void handleLessonStarted(Map<String, Object> envelope) {

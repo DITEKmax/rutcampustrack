@@ -6,10 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
-import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Публикует attendance-события в outbox (M02 Группа 5).
@@ -50,11 +47,7 @@ public class AttendanceEventPublisher {
                 "marked_by", doc.getSource().name().toLowerCase()
         );
 
-        Map<String, Object> envelope = new LinkedHashMap<>();
-        envelope.put("event_type", EVENT_TYPE);
-        envelope.put("event_id", UUID.randomUUID().toString());
-        envelope.put("occurred_at", Instant.now().toString());
-        envelope.put("payload", payload);
+        Map<String, Object> envelope = EventEnvelope.build(EVENT_TYPE, payload);
 
         String json;
         try {

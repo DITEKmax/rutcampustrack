@@ -17,8 +17,9 @@ dependencyManagement {
 dependencies {
     implementation(project(":services:attendance-service:attendance-api-contract"))
 
-    // M02 — shared-outbox + ShedLock (Mongo-storage)
+    // M02 — shared-outbox + ShedLock (Mongo-storage) + shared-events (D5(a) единый envelope)
     implementation(project(":services:shared:shared-outbox"))
+    implementation(project(":services:shared:shared-events"))
     implementation(libs.shedlock.spring)
     implementation(libs.shedlock.provider.mongo)
 

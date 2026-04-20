@@ -3,36 +3,109 @@
   "title": "excuse.requested",
   "description": "Студент запросил уважительную причину или подал excuse-тикет. Генерируется Attendance Service.",
   "type": "object",
-  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
   "properties": {
-    "event_type": { "const": "excuse.requested" },
-    "event_id": { "$ref": "_common.json#/$defs/eventId" },
-    "occurred_at": { "$ref": "_common.json#/$defs/occurredAt" },
+    "event_type": {
+      "const": "excuse.requested"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
     "payload": {
       "type": "object",
-      "required": ["user_id", "group_id", "excuse_type"],
+      "required": [
+        "user_id",
+        "group_id",
+        "excuse_type"
+      ],
       "properties": {
-        "user_id": { "type": "integer" },
-        "group_id": { "type": "integer" },
-        "excuse_type": { "type": "string", "enum": ["illness", "summons", "university_order", "exemption", "free_attendance", "other"] },
-        "ticket_id": { "type": "string" },
-        "lesson_ids": { "type": "array", "items": { "type": "integer" } },
+        "user_id": {
+          "type": "integer"
+        },
+        "group_id": {
+          "type": "integer"
+        },
+        "excuse_type": {
+          "type": "string",
+          "enum": [
+            "illness",
+            "summons",
+            "university_order",
+            "exemption",
+            "free_attendance",
+            "other"
+          ]
+        },
+        "ticket_id": {
+          "type": "string"
+        },
+        "lesson_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
         "lessons": {
           "type": "array",
           "description": "Обогащённые детали пар для Telegram/веб уведомления старосты. Поля могут быть null, если не удалось резолвить через schedule/academic.",
           "items": {
             "type": "object",
             "properties": {
-              "lesson_id": { "type": "integer" },
-              "lesson_number": { "type": ["integer", "null"] },
-              "date": { "type": ["string", "null"] },
-              "subject_id": { "type": ["integer", "null"] },
-              "subject_name": { "type": ["string", "null"] }
+              "lesson_id": {
+                "type": "integer"
+              },
+              "lesson_number": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "subject_id": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "subject_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
             }
           }
         },
-        "has_attachments": { "type": "boolean" }
+        "has_attachments": {
+          "type": "boolean"
+        }
       }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
     }
   }
 }

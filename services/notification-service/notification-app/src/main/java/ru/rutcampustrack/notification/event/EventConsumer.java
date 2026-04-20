@@ -5,13 +5,14 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.notification.push.WebPushDeliveryService;
+import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 
 import java.util.Map;
 import java.util.Set;
 
 @Component
 @Slf4j
-public class EventConsumer {
+public class EventConsumer extends AbstractEventConsumer {
 
     private static final Set<String> HEADMAN_ONLY_EVENTS = Set.of(
             "excuse.requested",
@@ -36,35 +37,38 @@ public class EventConsumer {
             return;
         }
 
-        Map<String, Object> payload = (Map<String, Object>) envelope.get("payload");
-        if (payload == null) {
-            log.warn("Event {} has no payload, ignoring", eventType);
-            return;
-        }
+        // M04 QA3 — extract trace_id из envelope в MDC до handler'а.
+        // Логи WebSocket-роутинга и Web Push delivery получат correlation id producer'а.
+        withTraceContext(envelope, () -> {
+            Map<String, Object> payload = (Map<String, Object>) envelope.get("payload");
+            if (payload == null) {
+                log.warn("Event {} has no payload, ignoring", eventType);
+                return;
+            }
 
-        Number groupIdNum = (Number) payload.get("group_id");
-        if (groupIdNum == null) {
-            log.debug("Event {} has no group_id in payload, skipping WebSocket routing", eventType);
-            return;
-        }
-        long groupId = groupIdNum.longValue();
+            Number groupIdNum = (Number) payload.get("group_id");
+            if (groupIdNum == null) {
+                log.debug("Event {} has no group_id in payload, skipping WebSocket routing", eventType);
+                return;
+            }
+            long groupId = groupIdNum.longValue();
 
-        // D-05, Pitfall 2: Headman-only events go to separate sub-topic
-        // so non-headman subscribers on /topic/group/{groupId} never see them
-        String destination = HEADMAN_ONLY_EVENTS.contains(eventType)
-                ? "/topic/group/" + groupId + "/headman"
-                : "/topic/group/" + groupId;
+            // D-05, Pitfall 2: Headman-only events go to separate sub-topic
+            // so non-headman subscribers on /topic/group/{groupId} never see them
+            String destination = HEADMAN_ONLY_EVENTS.contains(eventType)
+                    ? "/topic/group/" + groupId + "/headman"
+                    : "/topic/group/" + groupId;
 
-        // D-06: Wrap in {type, payload} envelope — no enrichment
-        Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
-        messagingTemplate.convertAndSend(destination, wsMessage);
-        log.debug("Routed {} to {}", eventType, destination);
+            // D-06: Wrap in {type, payload} envelope — no enrichment
+            Map<String, Object> wsMessage = Map.of("type", eventType, "payload", payload);
+            messagingTemplate.convertAndSend(destination, wsMessage);
+            log.debug("Routed {} to {}", eventType, destination);
 
-        // D-07, D-08: After STOMP delivery — trigger async Web Push for push-eligible events.
-        // sendToGroup is @Async so it returns immediately and does NOT block this RabbitMQ listener thread.
-        if (webPushDeliveryService.shouldPush(eventType)) {
-            webPushDeliveryService.sendToGroup(groupId, eventType, payload);
-            log.debug("Triggered async push for {} to group {}", eventType, groupId);
-        }
+            // D-07, D-08: After STOMP delivery — trigger async Web Push for push-eligible events.
+            if (webPushDeliveryService.shouldPush(eventType)) {
+                webPushDeliveryService.sendToGroup(groupId, eventType, payload);
+                log.debug("Triggered async push for {} to group {}", eventType, groupId);
+            }
+        });
     }
 }

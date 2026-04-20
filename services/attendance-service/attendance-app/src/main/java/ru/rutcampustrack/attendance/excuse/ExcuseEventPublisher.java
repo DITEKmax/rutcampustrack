@@ -3,16 +3,15 @@ package ru.rutcampustrack.attendance.excuse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.attendance.event.EventEnvelope;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Publishes excuse lifecycle events to the RabbitMQ fanout exchange.
@@ -135,17 +134,8 @@ public class ExcuseEventPublisher {
         saveToOutbox(EVENT_DECIDED, payload);
     }
 
-    private Map<String, Object> buildEnvelope(String eventType, Map<String, Object> payload) {
-        Map<String, Object> envelope = new LinkedHashMap<>();
-        envelope.put("event_type", eventType);
-        envelope.put("event_id", UUID.randomUUID().toString());
-        envelope.put("occurred_at", Instant.now().toString());
-        envelope.put("payload", payload);
-        return envelope;
-    }
-
     private void saveToOutbox(String eventType, Map<String, Object> payload) {
-        Map<String, Object> envelope = buildEnvelope(eventType, payload);
+        Map<String, Object> envelope = EventEnvelope.build(eventType, payload);
         String json;
         try {
             json = objectMapper.writeValueAsString(envelope);

@@ -3,23 +3,70 @@
   "title": "lesson.started",
   "description": "Пара перешла в статус ACTIVE. Генерируется Schedule Service. D-16: teacher_id removed — препод получает доступ к журналу через JOIN TeacherSubjectGroup.",
   "type": "object",
-  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
   "properties": {
-    "event_type": { "const": "lesson.started" },
-    "event_id": { "$ref": "_common.json#/$defs/eventId" },
-    "occurred_at": { "$ref": "_common.json#/$defs/occurredAt" },
+    "event_type": {
+      "const": "lesson.started"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
     "payload": {
       "type": "object",
-      "required": ["lesson_id", "group_id", "subject_id", "lesson_number", "start_time", "end_time"],
+      "required": [
+        "lesson_id",
+        "group_id",
+        "subject_id",
+        "lesson_number",
+        "start_time",
+        "end_time"
+      ],
       "properties": {
-        "lesson_id": { "type": "integer" },
-        "group_id": { "type": "integer" },
-        "subject_id": { "type": "integer" },
-        "lesson_number": { "$ref": "_common.json#/$defs/lessonNumber" },
-        "start_time": { "type": "string", "format": "time" },
-        "end_time": { "type": "string", "format": "time" },
-        "room": { "type": "string" }
+        "lesson_id": {
+          "type": "integer"
+        },
+        "group_id": {
+          "type": "integer"
+        },
+        "subject_id": {
+          "type": "integer"
+        },
+        "lesson_number": {
+          "$ref": "_common.json#/$defs/lessonNumber"
+        },
+        "start_time": {
+          "type": "string",
+          "format": "time"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "time"
+        },
+        "room": {
+          "type": "string"
+        }
       }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
     }
   }
 }

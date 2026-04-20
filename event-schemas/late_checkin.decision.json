@@ -3,19 +3,56 @@
   "title": "late_checkin.decision",
   "description": "Староста нажал кнопку одобрения/отклонения в Telegram. Публикуется notification-bot и потребляется Attendance Service для применения решения.",
   "type": "object",
-  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
   "properties": {
-    "event_type": { "const": "late_checkin.decision" },
-    "event_id": { "$ref": "_common.json#/$defs/eventId" },
-    "occurred_at": { "$ref": "_common.json#/$defs/occurredAt" },
+    "event_type": {
+      "const": "late_checkin.decision"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
     "payload": {
       "type": "object",
-      "required": ["request_id", "approved"],
+      "required": [
+        "request_id",
+        "approved"
+      ],
       "properties": {
-        "request_id": { "type": "string" },
-        "approved": { "type": "boolean" },
-        "decision_by": { "type": ["integer", "null"], "description": "Telegram user_id старосты (или null, если не удалось определить)" }
+        "request_id": {
+          "type": "string"
+        },
+        "approved": {
+          "type": "boolean"
+        },
+        "decision_by": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Telegram user_id старосты (или null, если не удалось определить)"
+        }
       }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
     }
   }
 }

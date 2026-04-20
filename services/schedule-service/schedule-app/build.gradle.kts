@@ -17,8 +17,9 @@ dependencyManagement {
 dependencies {
     implementation(project(":services:schedule-service:schedule-api-contract"))
 
-    // M02 — shared-outbox
+    // M02 — shared-outbox + shared-events (D5(a) единый envelope)
     implementation(project(":services:shared:shared-outbox"))
+    implementation(project(":services:shared:shared-events"))
 
     // M03a — shared-security (Internal JWT validator + dual-mode filter)
     implementation(project(":services:shared:shared-security"))

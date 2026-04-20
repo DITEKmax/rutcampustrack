@@ -80,6 +80,41 @@ beans. Если в Группе 11 audit найдёт missing health-coverage �
 
 ---
 
+## 2026-04-20 — D5: events tracing — полная migration на shared-events.DomainEvent (a)
+
+**Контекст:** при старте Группы 6 surprise — QA3 обещал `trace_id`/`occurred_at`/`event_version`
+required во всех 14+ event schemas + общая библиотека `shared-events.AbstractEventEnvelope`.
+Реальность: M02 поставил `shared-events.DomainEvent` (mixin: `event_version`/`trace_id`/`occurred_at`/`source`)
++ `AbstractEventPublisher.fillDefaults()` + `AbstractEventConsumer.withTraceContext()`,
+но сервисы НЕ мигрированы. Каждый сервис имеет свой `event/DomainEvent extends ApplicationEvent`.
+
+**Решение владельца:** **(a)** Полная migration сервис-DomainEvent → shared-events.DomainEvent.
+
+**Обоснование:**
+- Closes QA3 commitment как обещано в аудите. (b)/(c) — формально закрывают, фактически
+  оставляют долг неиспользованной shared-events инфраструктуры.
+- Реальный объём ~6-8 часов (не 3-5д как изначально оценил) — `shared-events.DomainEvent`
+  спроектирован как mixin совместимый с `{event_type, event_id, payload}` структурой,
+  не как замена envelope. Migration = смена `extends` + удаление дубликатов полей.
+- Drift-protection: контракт-тесты M02 после обновления schemas будут падать на каждом
+  новом event без `trace_id` — принуждение через типы. Без этого через 2-3 milestone'а
+  drift гарантирован.
+- One-time cost vs N-time cost: (b) экономит сейчас, но каждый новый event требует помнить
+  про trace_id. (a) — type-system enforcement.
+- Связано с NEW-47/48 (версионирование схем) — аудит обещал «один PR обновляет все схемы сразу»,
+  делать вместе дешевле.
+
+**Применение:** Группа 6 разбивается на под-задачи:
+1. Обновить `_common.json` schemas — `trace_id`/`event_version` → required.
+2. Обновить 15 event-schemas — добавить required envelope поля.
+3. Migration academic-DomainEvent: extends `ApplicationEvent` → composition + `shared.DomainEvent`.
+4. То же для auth/schedule/attendance.
+5. `DomainEventListener` × 4 → вызывает `AbstractEventPublisher.fillDefaults` перед outbox.save.
+6. `EventConsumer` × N → wraps в `AbstractEventConsumer.withTraceContext` перед handler.
+7. Запустить existing contract-тесты — поймать regressions, исправить.
+
+---
+
 ## (исторический раздел — изначально открытые развилки, для справки)
 
 ## ЗАКРЫТО — D1: shared-observability модуль vs дублирование по сервисам

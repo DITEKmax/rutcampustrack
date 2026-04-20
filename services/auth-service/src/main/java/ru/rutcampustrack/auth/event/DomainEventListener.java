@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.shared.events.AbstractEventPublisher;
 
 /**
  * Слушает Spring {@link DomainEvent} и отправляет в RabbitMQ fanout.
@@ -20,18 +21,21 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnBean(RabbitTemplate.class)
-public class DomainEventListener {
+public class DomainEventListener extends AbstractEventPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(DomainEventListener.class);
 
     private final RabbitTemplate rabbitTemplate;
 
     public DomainEventListener(RabbitTemplate rabbitTemplate) {
+        super("auth-service");
         this.rabbitTemplate = rabbitTemplate;
     }
 
     @EventListener
     public void onDomainEvent(DomainEvent event) {
+        // M04 QA3 — auto-fill envelope перед сериализацией Jackson'ом в AMQP message converter.
+        fillDefaults(event);
         try {
             rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "", event);
             log.debug("Published event: type={}, id={}", event.getEventType(), event.getEventId());

@@ -15,12 +15,12 @@
       "format": "date-time"
     },
     "traceId": {
-      "description": "Correlation ID, проброшенный из MDC (shared-events AbstractEventPublisher). M04 Observability использует для tracing. Опциональное поле — legacy events могут не содержать.",
+      "description": "Correlation ID, проброшенный из MDC (shared-events AbstractEventPublisher). M04 Observability QA3 — required во всех envelope (NEW-60/61). Связывает producer-side log → event payload → consumer-side log в Loki/Tempo.",
       "type": "string",
       "minLength": 1
     },
     "eventVersion": {
-      "description": "Версия schema. Текущее поколение — 1. Bump = breaking change consumer'у. См. docs/event-schemas.md (NEW-48).",
+      "description": "Версия schema. Текущее поколение — 1. Bump = breaking change consumer'у. M04 D5(a) — required во всех envelope (NEW-47/48).",
       "type": "integer",
       "minimum": 1
     },

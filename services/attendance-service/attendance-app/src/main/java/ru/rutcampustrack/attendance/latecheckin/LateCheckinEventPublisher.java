@@ -3,14 +3,13 @@ package ru.rutcampustrack.attendance.latecheckin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.attendance.event.EventEnvelope;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Publishes late-checkin lifecycle events to the fanout exchange.
@@ -84,17 +83,8 @@ public class LateCheckinEventPublisher {
         saveToOutbox(EVENT_DECIDED, payload);
     }
 
-    private Map<String, Object> buildEnvelope(String eventType, Map<String, Object> payload) {
-        Map<String, Object> envelope = new LinkedHashMap<>();
-        envelope.put("event_type", eventType);
-        envelope.put("event_id", UUID.randomUUID().toString());
-        envelope.put("occurred_at", Instant.now().toString());
-        envelope.put("payload", payload);
-        return envelope;
-    }
-
     private void saveToOutbox(String eventType, Map<String, Object> payload) {
-        Map<String, Object> envelope = buildEnvelope(eventType, payload);
+        Map<String, Object> envelope = EventEnvelope.build(eventType, payload);
         String json;
         try {
             json = objectMapper.writeValueAsString(envelope);

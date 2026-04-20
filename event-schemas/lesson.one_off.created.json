@@ -3,22 +3,68 @@
   "title": "lesson.one_off.created",
   "description": "Разовая (one-off) пара создана старостой. Генерируется Schedule Service (Phase 60-04).",
   "type": "object",
-  "required": ["event_type", "event_id", "occurred_at", "payload"],
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
   "properties": {
-    "event_type": { "const": "lesson.one_off.created" },
-    "event_id": { "$ref": "_common.json#/$defs/eventId" },
-    "occurred_at": { "$ref": "_common.json#/$defs/occurredAt" },
+    "event_type": {
+      "const": "lesson.one_off.created"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
     "payload": {
       "type": "object",
-      "required": ["one_off_lesson_id", "group_id", "subject_id", "date", "lesson_number"],
+      "required": [
+        "one_off_lesson_id",
+        "group_id",
+        "subject_id",
+        "date",
+        "lesson_number"
+      ],
       "properties": {
-        "one_off_lesson_id": { "type": "integer" },
-        "group_id": { "type": "integer" },
-        "subject_id": { "type": "integer" },
-        "date": { "type": "string", "format": "date" },
-        "lesson_number": { "$ref": "_common.json#/$defs/lessonNumber" },
-        "classroom": { "type": ["string", "null"] }
+        "one_off_lesson_id": {
+          "type": "integer"
+        },
+        "group_id": {
+          "type": "integer"
+        },
+        "subject_id": {
+          "type": "integer"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "lesson_number": {
+          "$ref": "_common.json#/$defs/lessonNumber"
+        },
+        "classroom": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
     }
   }
 }

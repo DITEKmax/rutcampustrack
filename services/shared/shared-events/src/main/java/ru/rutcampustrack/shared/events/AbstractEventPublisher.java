@@ -2,7 +2,8 @@ package ru.rutcampustrack.shared.events;
 
 import org.slf4j.MDC;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * Базовый publisher (NEW-60): заполняет стандартные поля {@link DomainEvent}
@@ -46,13 +47,18 @@ public abstract class AbstractEventPublisher {
             event.setEventVersion(resolveEventVersion(event.getClass()));
         }
         if (event.getTraceId() == null) {
-            event.setTraceId(MDC.get(MDC_TRACE_ID));
+            String mdcTrace = MDC.get(MDC_TRACE_ID);
+            // M04 QA3: trace_id required в schema. Если MDC пуст (scheduled job
+            // без активного span'а, юнит-тест без http-context), генерим fallback,
+            // чтобы JSON не упал валидацией. Реальный prod-flow заполняет MDC
+            // через Micrometer Tracing в HTTP filter / @RabbitListener interceptor.
+            event.setTraceId(mdcTrace != null ? mdcTrace : UUID.randomUUID().toString());
         }
         if (event.getOccurredAt() == null) {
-            event.setOccurredAt(Instant.now());
+            event.setOccurredAt(OffsetDateTime.now());
         }
-        if (event.getSource() == null) {
-            event.setSource(source);
+        if (event.getSourceService() == null) {
+            event.setSourceService(source);
         }
         return event;
     }

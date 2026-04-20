@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import ru.rutcampustrack.shared.events.AbstractEventPublisher;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 /**
@@ -23,7 +24,7 @@ import ru.rutcampustrack.shared.outbox.OutboxStorage;
  * асинхронно публикует pending rows в Rabbit.
  */
 @Component
-public class DomainEventListener {
+public class DomainEventListener extends AbstractEventPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(DomainEventListener.class);
 
@@ -31,12 +32,15 @@ public class DomainEventListener {
     private final ObjectMapper objectMapper;
 
     public DomainEventListener(OutboxStorage outboxStorage, ObjectMapper objectMapper) {
+        super("schedule-service");
         this.outboxStorage = outboxStorage;
         this.objectMapper = objectMapper;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void onDomainEvent(DomainEvent event) {
+        // M04 QA3 — auto-fill envelope (trace_id/event_version/occurred_at/source).
+        fillDefaults(event);
         String payload;
         try {
             payload = objectMapper.writeValueAsString(event);

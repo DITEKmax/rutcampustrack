@@ -2,6 +2,7 @@ package ru.rutcampustrack.shared.events;
 
 import org.slf4j.MDC;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -24,7 +25,21 @@ public abstract class AbstractEventConsumer {
      * @param <T>     тип события.
      */
     protected <T extends DomainEvent> void withTraceContext(T event, Consumer<T> handler) {
-        String traceId = event.getTraceId();
+        runInTraceContext(event.getTraceId(), () -> handler.accept(event));
+    }
+
+    /**
+     * Map-based вариант для consumer'ов, которые принимают envelope как
+     * {@code Map<String,Object>} (исторически — все 3 RabbitListener'а в
+     * сервисах). Извлекает {@code trace_id} из envelope, выполняет runnable,
+     * восстанавливает MDC.
+     */
+    protected void withTraceContext(Map<String, Object> envelope, Runnable handler) {
+        String traceId = envelope == null ? null : (String) envelope.get("trace_id");
+        runInTraceContext(traceId, handler);
+    }
+
+    private void runInTraceContext(String traceId, Runnable handler) {
         String previous = null;
         boolean replaced = false;
         if (traceId != null) {
@@ -33,7 +48,7 @@ public abstract class AbstractEventConsumer {
             replaced = true;
         }
         try {
-            handler.accept(event);
+            handler.run();
         } finally {
             if (replaced) {
                 if (previous == null) {

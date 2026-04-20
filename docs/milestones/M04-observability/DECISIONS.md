@@ -50,6 +50,36 @@ severity=warning/info попадает под mute).
 
 ---
 
+## 2026-04-20 — D4: GrpcClientHealthIndicator per-channel — отложен в backlog (b)
+
+**Контекст (Группа 4):** для каждого gRPC-клиента в каждом сервисе
+нужен `GrpcClientHealthIndicator` (QA6). Но `net.devh:grpc-client-spring-boot-starter`
+3.1.x уже регистрирует свои indicators при `management.health.grpc-client.enabled=true`
+(это default), и Spring Boot автоматически подключает `db`/`rabbit`/`redis`/`mongo`
+indicators когда соответствующие starters на classpath.
+
+**Варианты:**
+
+- (a) Подключить shared `GrpcClientHealthIndicator` per-channel через
+  custom configurations × 5 сервисов (academic, schedule, attendance,
+  notification + gateway если он использует gRPC). +20-30 строк
+  per service, дублирование с indicators от grpc-client-spring-boot-starter.
+- (b) Положиться на встроенные indicators (Spring Boot + grpc-client-spring-boot-starter).
+  shared `GrpcClientHealthIndicator` остаётся в shared-observability как
+  опциональная утилита для случаев где нужен fine-grained probe (например
+  cross-channel ping без trip-on-call).
+
+**Решение:** **(b)**. Дублирование без выгоды — `show-details: always`
+покажет все встроенные indicators в /actuator/health. Использовать shared
+indicator только если кому-то нужно перекрыть/расширить дефолт. KI-4
+(`PublicKeyHealthIndicator`) — отдельная история, реализован сейчас.
+
+**Применение:** Группа 4 закрыта без custom GrpcClientHealthIndicator
+beans. Если в Группе 11 audit найдёт missing health-coverage — добавим
+точечно.
+
+---
+
 ## (исторический раздел — изначально открытые развилки, для справки)
 
 ## ЗАКРЫТО — D1: shared-observability модуль vs дублирование по сервисам

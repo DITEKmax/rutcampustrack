@@ -85,8 +85,18 @@ management:
         include: health,info,prometheus
   endpoint:
     health:
-      show-details: never
+      # M04 QA6: always — partial degradation видна (DB/Rabbit/Redis/Mongo down).
+      # /actuator/health не public, детали утекают только аутентифицированным.
+      show-details: always
+      probes:
+        enabled: true
     prometheus:
+      enabled: true
+  info:
+    git:
+      enabled: true
+      mode: full
+    build:
       enabled: true
   metrics:
     tags:

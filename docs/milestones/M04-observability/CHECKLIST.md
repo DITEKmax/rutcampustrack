@@ -34,16 +34,18 @@
 - [x] Smoke verified: notification-app + auth-service test logs выдают корректный JSON с полями `ts/v/level/logger/thread/msg/service`. Pipeline работает end-to-end.
 - [x] `docs/logging-conventions.md` — отложено в Группу 12 (общая документация runbook'ом).
 
-## Группа 4 — Health endpoints + custom indicators (QA6 + NEW-67 + KI-4)
+## Группа 4 — Health endpoints + custom indicators (QA6 + NEW-67 + KI-4) ✅
 
-- [ ] `management.endpoint.health.show-details: always` + `probes.enabled: true` во всех 6 `application.yml`.
-- [ ] Включить явно в каждом сервисе indicators: `db`, `rabbit`, `redis`, `mongo` (где применимо).
-- [ ] `GrpcClientHealthIndicator` подключить в каждом сервисе с gRPC-клиентом (auth↔academic, schedule↔academic, attendance↔academic, notification↔attendance — точный список из gRPC-спека).
-- [ ] `PublicKeyHealthIndicator` подключить в api-gateway (KI-4 readiness gate).
-- [ ] `management.endpoint.info.enabled: true` + `management.info.git.enabled: true` + `management.info.build.enabled: true` (NEW-67).
-- [ ] Plugin `org.springframework.boot.experimental.thin-launcher` или Gradle `git.properties` task — генерация `git.properties` в каждом сервисе.
-- [ ] `docker-compose.prod.yml`: `healthcheck:` для каждого сервиса через `curl /actuator/health | grep UP`. `restart: unless-stopped`.
-- [ ] Тест: убить RabbitMQ контейнер → health = DOWN с `components.rabbit.status = DOWN`.
+- [x] `show-details: always` + `probes.enabled: true` во всех 6 `application.yml` (api-gateway уже имел always — добавлен probes).
+- [x] `application-prod.yml` × 6 — удалён override `show-details: never` (default уже always).
+- [x] `db`/`rabbit`/`redis`/`mongo` indicators подключаются автоматически Spring Boot когда соответствующие starters на classpath. `show-details: always` сделает их видимыми.
+- [x] D4 (DECISIONS): `GrpcClientHealthIndicator` per-channel — отложен в backlog. `grpc-client-spring-boot-starter` уже даёт свои indicators. shared-observability помощник остаётся опциональным.
+- [x] `PublicKeyHealthIndicator` подключён в api-gateway через `ObservabilityConfig` bean `publicKey`. Добавлен `PublicKeyConfig.isReady()` non-throwing probe (KI-4).
+- [x] `info.git.enabled: true` + `info.build.enabled: true` во всех 6 `application.yml` (NEW-67).
+- [x] Root Gradle task `generateGitProperties` — генерирует `git.properties` (commit.id, branch, time) в каждом `*-app/src/main/resources/`. Привязан к `processResources` через `afterEvaluate`. `.gitignore` дополнен — артефакт не коммитится.
+- [x] Smoke verified: ActuatorIT в auth-service зелёный, gateway PublicKeyConfigTest зелёный.
+- [ ] `docker-compose.prod.yml` healthcheck — отложено в M06 (Ops & Supply Chain), там же HEALTHCHECK directives и compose-config.
+- [ ] Тест «kill RabbitMQ → health DOWN» — отложено в Группу 11 audit (требует docker-compose окружения).
 
 ## Группа 5 — Distributed tracing (QA2 + NEW-58/59)
 

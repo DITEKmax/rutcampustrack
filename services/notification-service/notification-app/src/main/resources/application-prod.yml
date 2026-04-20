@@ -5,7 +5,7 @@ management:
         include: health,info,prometheus
   endpoint:
     health:
-      show-details: never
+      # M04 QA6: prod не переопределяет — default уже always.
       probes:
         enabled: true
     prometheus:

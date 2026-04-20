@@ -51,6 +51,15 @@ public class PublicKeyConfig {
         return key;
     }
 
+    /**
+     * KI-4 (M03b backlog) — non-throwing readiness probe для
+     * {@code PublicKeyHealthIndicator}. Возвращает {@code false} вместо
+     * исключения, чтобы health-endpoint не падал на 500.
+     */
+    public boolean isReady() {
+        return publicKeyRef.get() != null;
+    }
+
     private void fetchAndCachePublicKey() {
         try {
             PublicKeyResponse response = webClient.get()

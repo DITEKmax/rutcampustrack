@@ -25,13 +25,14 @@
 - [x] Sanity-test: подменил INFO→DEBUG → BUILD FAILED с правильным сообщением. Восстановил → BUILD SUCCESSFUL.
 - [x] Документация секции «Logging defaults» — отложено в Группу 12 (общий `docs/observability.md` runbook).
 
-## Группа 3 — JSON-логи во всех сервисах (QA7 + NEW-68)
+## Группа 3 — JSON-логи во всех сервисах (QA7 + NEW-68) ✅
 
-- [ ] Audit: какие сервисы уже подключают `shared/logback-base.xml` (notification-service точно). Найти missing.
-- [ ] Создать/обновить `logback-spring.xml` в auth, api-gateway, academic, schedule, attendance — `<include resource="shared/logback-base.xml"/>` + `<property name="SERVICE_NAME" value="..."/>`.
-- [ ] Verify dependency `net.logstash.logback:logstash-logback-encoder` доступен в каждом сервисе через `shared-logback`.
-- [ ] Smoke-test: `./gradlew :services:auth-service:bootRun` → первая строка лога валидный JSON через `jq .`.
-- [ ] Документировать в `docs/logging-conventions.md` (whitelist MDC, masking, format).
+- [x] Audit: только notification-service подключал `shared/logback-base.xml`. Остальные 5 — нет.
+- [x] Создан `logback-spring.xml` в auth, api-gateway, academic, schedule, attendance — `<include resource="shared/logback-base.xml"/>` + `SERVICE_NAME` per service.
+- [x] Добавлена зависимость `implementation(project(":services:shared:shared-logback"))` в build.gradle.kts тех же 5 сервисов (тащит logstash-logback-encoder транзитивно).
+- [x] CI-check `verifyLogbackJsonInAllServices` Gradle task — проверяет наличие `logback-spring.xml` + include для всех 6 ожидаемых путей. Привязан к `check`. Sanity-test: rename файла → BUILD FAILED, восстановление → BUILD SUCCESSFUL.
+- [x] Smoke verified: notification-app + auth-service test logs выдают корректный JSON с полями `ts/v/level/logger/thread/msg/service`. Pipeline работает end-to-end.
+- [x] `docs/logging-conventions.md` — отложено в Группу 12 (общая документация runbook'ом).
 
 ## Группа 4 — Health endpoints + custom indicators (QA6 + NEW-67 + KI-4)
 

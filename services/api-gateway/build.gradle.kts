@@ -14,6 +14,9 @@ dependencies {
 
     // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators)
     implementation(project(":services:shared:shared-observability"))
+
+    // M04 QA7 — shared-logback (JSON-вывод + masking через logback-base.xml)
+    implementation(project(":services:shared:shared-logback"))
     implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6")
 
     // JWT validation (публичный ключ)

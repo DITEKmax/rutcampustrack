@@ -26,6 +26,9 @@ dependencies {
     // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators)
     implementation(project(":services:shared:shared-observability"))
 
+    // M04 QA7 — shared-logback (JSON-вывод + masking через logback-base.xml)
+    implementation(project(":services:shared:shared-logback"))
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")

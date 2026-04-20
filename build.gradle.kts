@@ -74,3 +74,45 @@ tasks.register("verifyNoDebugInProd") {
 tasks.named("check") {
     dependsOn("verifyNoDebugInProd")
 }
+
+// M04 NEW-68 / QA7 — гарантирует что каждый Spring-сервис подключает
+// shared/logback-base.xml (JSON-вывод + masking). Без этого логи летят
+// в plain-text → невозможно корректно фильтровать в Loki.
+tasks.register("verifyLogbackJsonInAllServices") {
+    group = "verification"
+    description = "QA7/NEW-68 — fails build if any *-app or auth/api-gateway resources lacks logback-spring.xml with shared/logback-base.xml include"
+
+    val expectedServices = listOf(
+        "services/api-gateway/src/main/resources",
+        "services/auth-service/src/main/resources",
+        "services/academic-service/academic-app/src/main/resources",
+        "services/schedule-service/schedule-app/src/main/resources",
+        "services/attendance-service/attendance-app/src/main/resources",
+        "services/notification-service/notification-app/src/main/resources",
+    )
+    val expectedInclude = "shared/logback-base.xml"
+
+    inputs.files(expectedServices.map { rootDir.resolve("$it/logback-spring.xml") })
+
+    doLast {
+        val missing = mutableListOf<String>()
+        expectedServices.forEach { dir ->
+            val configFile = rootDir.resolve("$dir/logback-spring.xml")
+            if (!configFile.exists()) {
+                missing += "$dir/logback-spring.xml — file missing"
+            } else if (!configFile.readText().contains(expectedInclude)) {
+                missing += "$dir/logback-spring.xml — does not include $expectedInclude"
+            }
+        }
+        if (missing.isNotEmpty()) {
+            throw GradleException(
+                "QA7 violation — каждый Spring-сервис обязан подключать shared/logback-base.xml.\n" +
+                "Missing/broken:\n  " + missing.joinToString("\n  ")
+            )
+        }
+    }
+}
+
+tasks.named("check") {
+    dependsOn("verifyLogbackJsonInAllServices")
+}

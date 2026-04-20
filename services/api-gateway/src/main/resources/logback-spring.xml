@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  M04 QA7 / NEW-68: подключение shared-logback (JSON-вывод + masking)
+  через одну строчку. SERVICE_NAME попадает в каждое JSON-сообщение
+  как поле "service" — для фильтрации в Loki.
+-->
+<configuration>
+
+    <property name="SERVICE_NAME" value="api-gateway"/>
+
+    <include resource="shared/logback-base.xml"/>
+
+</configuration>

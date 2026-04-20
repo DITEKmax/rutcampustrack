@@ -9,6 +9,39 @@
 
 ### Added
 
+- **M05 Performance — Группа 1 (Composite indexes + perf baseline)**
+  — P2-10/1 из аудита v0.0.0, закрывает 04 P2-9 и раскрывает capacity
+  для v0.1 масштаба.
+  - **`schedule_db` V12** — partial composite
+    `idx_lessons_item_date ON lessons (schedule_item_id, date)
+    WHERE status != 'cancelled'` для hot query
+    `LessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn`
+    (week-journal). D1 — `group_id` в `lessons` не денормализован,
+    композит на FK к `schedule_items` покрывает фактический
+    `IN + BETWEEN` без изменения схемы.
+  - **`academic_db` V17** — `idx_tsg_group_semester` +
+    `idx_hw_group_semester` для hot queries
+    `findByGroupIdAndSemesterId` в `TeacherSubjectGroupRepository` +
+    `HomeworkRepository`. D2 — таблицы `user_groups` (из OWNER-ANSWERS)
+    не существует; индексы на реальные hot queries.
+  - **`attendance_db` Mongo** — compound
+    `lcr_group_status_created (group_id, status, created_at)` на
+    collection `late_checkin_requests` через
+    `MongoConfig.initIndexes()` (programmatic management,
+    проектная convention). Закрывает **04 P2-9**: COLLSCAN
+    → IXSCAN, docsExamined 6000 → 120 (50× reduction), SORT stage
+    ушёл (index order совпадает с ORDER BY).
+  - **Integration tests regression guard** — `LessonPerformanceIT`,
+    `AcademicPerformanceIT`, `LateCheckinPerformanceIT`. 4 запроса <
+    50ms на seed-dataset (12k lessons, 1800 TSG, 1800 homeworks,
+    6000 late_checkin). Best: 8/8/8/10 ms.
+  - **`docs/performance-indexes.md`** — runbook: seed-dataset
+    spec, EXPLAIN before/after по 4 hot queries, деферренные
+    индексы (D3 на `attendances`, D4 no-op для `one_off_lessons`),
+    expand/contract процесс для новых индексов.
+  - **`docs/milestones/M05-performance/seed-perf.sql` + `.js`** —
+    idempotent seed-скрипты (id ≥ 900000), reusable в dev + CI.
+
 - **M04 Observability** (tag `v0.0.0-alpha.5`) — end-to-end наблюдаемость.
   - **shared-observability** модуль — `BusinessMetrics` fluent-helper,
     `MetricNames` единые имена, `MdcKeys`, `GrpcClientHealthIndicator`,

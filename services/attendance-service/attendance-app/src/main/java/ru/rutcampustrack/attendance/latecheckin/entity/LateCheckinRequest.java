@@ -15,6 +15,10 @@ import java.time.Instant;
  * MongoDB document for late-checkin requests.
  * Collection: late_checkin_requests.
  * Lombok allowed in app module.
+ * <p>
+ * Indexes declared programmatically in {@code MongoConfig.initIndexes()}
+ * (proj convention — avoids dependency on
+ * {@code spring.data.mongodb.auto-index-creation=true}).
  */
 @Data
 @Builder

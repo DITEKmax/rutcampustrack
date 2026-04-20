@@ -6,37 +6,45 @@
 
 _Уточнено 2026-04-20 по результатам аудита схемы — см. DECISIONS D1-D3._
 
-- [ ] Baseline: seed-dataset на 10k+ rows в dev-compose (lessons,
+- [x] Baseline: seed-dataset на 10k+ rows в dev-compose (lessons,
       late_checkin_requests, teacher_subject_groups, homeworks). Скрипт
       `docs/milestones/M05-performance/seed-perf.sql` или Python-script.
-- [ ] EXPLAIN ANALYZE «before» для 3 hot queries — записать в
+- [x] EXPLAIN ANALYZE «before» для 4 hot queries — записано в
       `docs/performance-indexes.md`:
   1. `LessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn`
-     (schedule, через `LessonService.getLessonsForGroup`).
+     (schedule) — Hash Join via idx_lessons_date, 0.764ms.
   2. `LateCheckinRepository.findByGroupIdAndStatusOrderByCreatedAtAsc`
-     (attendance Mongo).
-  3. `TeacherSubjectGroupRepository.findByGroupIdAndSemesterId` +
-     `HomeworkRepository.findByGroupIdAndSemesterId` (academic).
-- [ ] Flyway миграция `schedule_db`: partial
+     (attendance Mongo) — COLLSCAN, 6000 docs examined, 2ms.
+  3. `TeacherSubjectGroupRepository.findByGroupIdAndSemesterId` —
+     Bitmap Scan idx_tsg_group + filter 60→30, 0.339ms.
+  4. `HomeworkRepository.findByGroupIdAndSemesterId` —
+     Bitmap Scan idx_homeworks_group_date + filter 60→30, 0.388ms.
+- [x] Flyway миграция `schedule_db` V12: partial
       `idx_lessons_item_date ON lessons (schedule_item_id, date) WHERE status != 'cancelled'`.
       (D1 — `group_id` в `lessons` нет, композит на `schedule_item_id`
       покрывает фактический `IN + BETWEEN`.)
-- [ ] `schedule_one_off_lessons` — **no-op**, V4 уже содержит
-      `UNIQUE (group_id, date, lesson_number)`. Проверить и зафиксировать
-      в `performance-indexes.md`.
-- [ ] Mongo index для `late_checkin_requests`: compound
-      `{group_id:1, status:1, created_at:1}` через `@CompoundIndex` на
-      entity или `MongoConfig`. Закрывает 04 P2-9.
-- [ ] Flyway миграция `academic_db`:
-      `idx_tsg_group_semester (group_id, semester_id)` на
-      `teacher_subject_groups` + `idx_hw_group_semester (group_id, semester_id)`
-      на `homeworks`. (D2 — `user_groups` таблицы нет; индексы на реальных
-      hot queries.)
-- [ ] `(group_id, lesson_id)` на `attendances` — **отложено** (D3), no-op
-      в M05. Фиксация в `docs/future-ideas.md` (NEW-146).
-- [ ] EXPLAIN «after» + сравнение p50/p99 в `performance-indexes.md`.
-- [ ] Integration-тест (per-сервис): query < 50ms regression guard на
-      seed-dataset.
+- [x] `schedule_one_off_lessons` — **no-op**, V4 уже содержит
+      `UNIQUE (group_id, date, lesson_number)`. Зафиксировано в
+      `performance-indexes.md` в секции «Деферренные индексы».
+- [x] Mongo index для `late_checkin_requests`: compound
+      `{group_id:1, status:1, created_at:1}` в `MongoConfig.initIndexes()`
+      (programmatic — проектная convention). Closes 04 P2-9.
+- [x] Flyway миграция `academic_db` V17:
+      `idx_tsg_group_semester (group_id, semester_id)` +
+      `idx_hw_group_semester (group_id, semester_id)`. (D2 — `user_groups`
+      таблицы нет; индексы на реальных hot queries.)
+- [x] `(group_id, lesson_id)` на `attendances` — **отложено** (D3),
+      no-op в M05. Зафиксировано в `performance-indexes.md` в секции
+      «Деферренные индексы».
+- [x] EXPLAIN «after» в `performance-indexes.md`. Q2/Q3: Bitmap Scan
+      точно через composite, Filter Rows Removed → 0. Q4 Mongo: IXSCAN,
+      docsExamined=nReturned=120 (50× reduction). Q1 schedule: planner
+      предпочёл старый план на seed-объёме — индекс «в резерве» для v0.1
+      нагрузки.
+- [x] Integration-тесты regression guard (per-сервис), query < 50ms:
+      `LessonPerformanceIT` (Q1 best=8ms), `AcademicPerformanceIT`
+      (Q2 best=8ms, Q3 best=8ms), `LateCheckinPerformanceIT` (Q4
+      best=10ms). Все зелёные.
 
 ## Группа 2 — N+1 fixes через @EntityGraph / projection (P2-10/2)
 

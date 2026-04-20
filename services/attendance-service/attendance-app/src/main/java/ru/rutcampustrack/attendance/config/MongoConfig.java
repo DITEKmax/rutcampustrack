@@ -51,5 +51,16 @@ public class MongoConfig {
         ops.ensureIndex(new Index()
                 .on("lesson_id", Sort.Direction.ASC)
                 .named("idx_lesson_id"));
+
+        // M05 Группа 1 — closes 04 P2-9.
+        // Query: LateCheckinRepository.findByGroupIdAndStatusOrderByCreatedAtAsc
+        // (headman dashboard late-checkins). До индекса — COLLSCAN +
+        // in-memory sort по created_at.
+        IndexOperations lcrOps = mongoTemplate.indexOps("late_checkin_requests");
+        lcrOps.ensureIndex(new Index()
+                .on("group_id", Sort.Direction.ASC)
+                .on("status", Sort.Direction.ASC)
+                .on("created_at", Sort.Direction.ASC)
+                .named("lcr_group_status_created"));
     }
 }

@@ -13,195 +13,159 @@ Opus сам откроет файлы и поймёт где мы останов
    пункта + 99-executive-summary.md roadmap).
 2. Рабочий процесс — lightweight milestones без GSD-orchestrator'а.
    Индекс: `docs/milestones/README.md`.
-3. Активный/следующий milestone указан в таблице того README как
-   ⏳ в работе или ⏳ следующий (готов к старту). Внутри каталога —
-   PLAN.md (scope), CHECKLIST.md (атомарные задачи), NOTES.md (живой
-   лог), DECISIONS.md (micro-ADR). Все четыре файла уже заполнены
-   из аудита (`report-before-v0.0.0/`) — читать, а не переписывать.
+3. Активный milestone: **M05 Performance** — skeleton подготовлен,
+   PLAN/CHECKLIST/NOTES/DECISIONS заполнены из OWNER-ANSWERS P2-10/1..8
+   (строки 3673-4028). Можно сразу начинать с Группы 1.
 
 Что делать:
-1. Прочитай `docs/milestones/README.md` — найди активный/следующий milestone.
-2. Прочитай `PLAN.md` + `CHECKLIST.md` + `NOTES.md` + `DECISIONS.md`
-   активного milestone'а.
-3. Прочитай `git log --oneline -15` — посмотри последние коммиты,
-   понять где остановился по CHECKLIST.
-4. **Если в DECISIONS.md есть блок `## ОТКРЫТО —...`** — это развилка,
-   которую нужно подтвердить до кодинга. Зачитай её пользователю,
-   покажи рекомендацию, жди его решение, **тогда** запиши как
-   обычный `## YYYY-MM-DD —` блок и продолжай.
-5. Если статус milestone'а `⏳ следующий` — обнови на `⏳ в работе`
-   в `docs/milestones/README.md` и впиши старт-дату в PLAN.md.
-6. Продолжай с первой невыполненной галочки `[ ]` в CHECKLIST.md.
+1. Прочитай `docs/milestones/M05-performance/PLAN.md` — scope и модули.
+2. Прочитай `docs/milestones/M05-performance/CHECKLIST.md` — 10 групп
+   задач, начни с Группы 1.
+3. Прочитай `docs/milestones/M05-performance/NOTES.md` — snapshot
+   состояния после M04, deferred items, правила.
+4. `git log --oneline -10` — последние коммиты M04 (до `135d226`).
+5. Обнови статус в `docs/milestones/README.md` с `⬜` на `⏳ в работе`
+   и впиши старт-дату в PLAN.md первой же правкой.
+6. Продолжай с первой невыполненной галочки `[ ]` в CHECKLIST.md
+   (Группа 1 — composite indexes + perf baseline).
 7. Работай сам — пиши код, запускай `./gradlew build`, правь если
    упало, коммить после каждой логической группы из CHECKLIST.
 8. После каждой завершённой группы — отчитайся коротко (1-2 строки)
-   и жди подтверждения перед следующей. Это для контроля, не для
-   разрешения (если пользователь говорит «go» — работай молча дальше).
+   и жди подтверждения перед следующей. Если пользователь говорит
+   «go» — работай молча дальше.
 
 Правила:
-- Русский язык в отчётах/NOTES/ответах пользователю (технические
-  термины и код — оригинал).
-- Не звать `gsd-*` агентов. Вместо этого при необходимости: `Explore`
-  для «найти все X», `bug-hunter` / `code-reviewer` на итоговый diff
-  milestone'а.
-- Surprise / отклонение от плана → сразу в NOTES.md + спросить
-  пользователя до продолжения.
-- Micro-решение (не в OWNER-ANSWERS, но нужно зафиксировать) →
-  в DECISIONS.md.
-- Закрываешь пункт из CHECKLIST → ставишь `[x]` в том же файле
-  Edit'ом (не через write).
-- Закрываешь пункт из `COVERAGE-AUDIT.md` → в колонке «Closed in»
-  пиши commit SHA.
-- `CHANGELOG.md` → `[Unreleased]` → обновляй при значимых изменениях
-  (не каждый коммит).
-- Hook-reminder-ы «READ-BEFORE-EDIT» часто ложные — если файл уже
-  был прочитан в этой сессии, Edit пройдёт. Игнорируй их.
+- Русский язык в отчётах / NOTES / ответах (технические термины /
+  код — оригинал).
+- Не звать `gsd-*` агентов. `Explore` для «найти все X»,
+  `bug-hunter` / `code-reviewer` / `security-auditor` — в Группе 9
+  audit'а.
+- Surprise / отклонение от плана → NOTES.md + спросить до продолжения.
+- Micro-решение (не в OWNER-ANSWERS) → DECISIONS.md.
+- Закрыл пункт CHECKLIST → `[x]` через Edit.
+- Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные.
+- Push на origin / создание PR — только с явного `go` пользователя.
+- `CHANGELOG.md [Unreleased]` обновляй при значимых изменениях.
 
 Когда milestone закрыт:
 1. Все пункты CHECKLIST отмечены `[x]`.
-2. Все acceptance criteria в PLAN.md пройдены.
+2. Все acceptance criteria в PLAN.md пройдены (`./gradlew build`
+   зелёный + integration-тесты + ArchUnit + CI-lint).
 3. Post-mortem секция дописана в PLAN.md.
 4. Статус в `docs/milestones/README.md` → ✅ готов.
-5. Тег `git tag v0.0.0-alpha.{N}` на последнем коммите milestone'а.
+5. Тег `git tag v0.0.0-alpha.6` на последнем коммите milestone'а
+   (локально, без push).
 6. Сообщить пользователю финальный summary + ссылку на следующий
-   milestone по dependency graph.
-
-Не делать без явного `go`:
-- `git push` на origin.
-- Удалять/rm файлы в production-коде.
-- Менять scope milestone'а (только через NOTES + подтверждение).
-- Пропускать acceptance criteria.
+   milestone по dependency graph (M06 Ops / M07 Frontend / M08 Tests).
 
 Старт:
-> Читаю README.md → активный milestone → PLAN → CHECKLIST → git log.
-> Через минуту скажу где остановились и какая первая задача.
+> Читаю PLAN → CHECKLIST → NOTES → git log. Через минуту скажу где
+> стартуем (Группа 1) и что буду делать первым.
 
 ---
 
-## Hand-off для следующей сессии (2026-04-20 ночь, после закрытия M03b)
+## Hand-off после M04 (2026-04-20)
 
-**Состояние M03b:** ✅ **ЗАКРЫТ.** Tag `v0.0.0-alpha.4` установлен
-(БЕЗ push — жду `go` пользователя). 13/13 групп завершены (Группа 5
-удалена, CSRF не нужен).
+**Состояние M04:** ✅ **ЗАКРЫТ.** Tag `v0.0.0-alpha.5` на `325d25d`
+(локально, без push).
 
-**Закрыто в этой сессии (7 новых коммитов + финал):**
+### M04 итоги (12/12 групп)
 
-| # | Коммит | Группа |
-|---|--------|--------|
-| 1 | `b1fbfcc` | 8 — Logout lifecycle (ws-ticket invalidate + cookie clear + refresh revoke) |
-| 2 | `9286809` | 9 — KI-3 / KI-6 / KI-8 hot-patches |
-| 3 | `dff9ea1` | 10 — KI-7 bcrypt DoS Semaphore N=20 |
-| 4 | `acf989b` | 11 — bug-hunter HIGH-2 + security-auditor MEDIUM-1 fixes |
-| 5 | `140d7d4` | 12 — docs (auth-flow + architecture + CHANGELOG + CLAUDE + README) |
-| 6 | `eb125c4` | 13 — финальный коммит + tag `v0.0.0-alpha.4` |
+- **G1-G6:** shared-observability модуль, INFO-default/dev-profile,
+  JSON-логи × 6 сервисов, health endpoints + PublicKey indicator +
+  git.properties, OTel tracing + Tempo, unified event envelope с
+  trace_id (shared-events migration, 47 файлов, D5(a)).
+- **G7:** Python-бот structlog + OTel auto-instrumentation +
+  ObservabilityMiddleware. 7 новых тестов.
+- **G8:** 8 business counter'ов + 3 gauge'а (students_in_red_zone через
+  RedZoneGauge @Scheduled @SchedulerLock, active_ws_sessions через
+  Session events, outbox.lag.seconds). BusinessMetrics beans в 5
+  сервисах.
+- **G9:** Alertmanager end-to-end chain — Prometheus rules (8 alerts
+  в 4 группах) → Alertmanager → /internal/alert → RabbitMQ → bot →
+  Telegram. 14 unit-тестов.
+- **G10:** retention 14d (Prometheus, Loki, Tempo), Grafana
+  `business-kpis-m04` dashboard (8 панелей).
+- **G11 audit:** 0 BLOCKER/CRITICAL. 5 HIGH → все пофикшены:
+  RedZoneGauge self-invocation (H1), AlertController unchecked cast
+  (H3), CheckinRateZero absent() branch (H5), PII masking в
+  structlog (M-sec-2), Telegram description truncate (M4), timing
+  attack → MessageDigest.isEqual.
+- **G12:** docs pack — `docs/observability.md` runbook,
+  `docs/alerts.md` каталог, `docs/logging-conventions.md`, раздел в
+  `docs/architecture.md`, CHANGELOG, CLAUDE.md, milestones/README.md.
 
-Итого в M03b (13 коммитов с `081d3b0..eb125c4`). Предыдущая сессия
-закрыла Группы 1-7, эта — 8-13.
+### M04 deferred → следующие milestones
 
-**Audit итог:**
-- bug-hunter: 0 CRITICAL, 0 HIGH (real), 10 MEDIUM/LOW. Один HIGH →
-  MEDIUM (уже защищён), один real HIGH-2 запатчен (atomic SADD+EXPIRE
-  в WsTicketService).
-- security-auditor: 24/24 checks PASS, 0 CRITICAL/HIGH, 2 MEDIUM +
-  3 LOW. Один MEDIUM запатчен (Bearer в DELETE push/subscribe при
-  logout — cross-user push leak).
-- Остальные MEDIUM/LOW — в backlog M04/M06 (см. NOTES.md пост-audit блок).
+| Item | Куда |
+|------|------|
+| `/actuator/**` исключить из tracing sampling | M05 Группа 8 (gRPC рядом) или отдельный patch |
+| `AlertPublisher extends AbstractEventPublisher` | M05/M06 (envelope consistency) |
+| Typed DTO для Alertmanager webhook | M06 |
+| mTLS вместо Bearer secret для /internal/alert | M06 |
+| Per-subject/per-group thresholds для red zone | Future (cross-service join) |
+| docker-compose healthcheck directives | M06 |
+| E2E smoke: kill RabbitMQ → health DOWN | M06 (docker-compose) |
 
-**Состояние тестов (всё зелёное на момент финального тэга):**
-- auth-service: все тесты ✅ (включая WsTicketIT 6, LogoutLifecycleIT 2,
-  BcryptDoSMitigationIT 1, обновлённые LoginRateLimiterTest под Lua).
-- api-gateway: все тесты ✅ (включая CompositeLoginKeyResolverIT 3 с KI-8,
-  InternalJwtIssuerClientTest 8 с KI-3 near-expiry).
-- notification-service: все тесты ✅.
-- PWA: 122/122 vitest ✅, `npm run build` ✅.
-- web-panel: 444/444 vitest ✅, `npm run build` ✅.
+### M05 Scope (подготовлен)
 
-### Действия ожидающие `go` пользователя
+P2-10/1..8 (см. `docs/milestones/M05-performance/PLAN.md`):
 
-1. `git push origin main` — 14 коммитов M03b ещё не на origin.
-2. `git push origin v0.0.0-alpha.4` — tag ещё локальный.
-3. Старт следующего milestone.
+1. **P2-10/1** Composite indexes (~3ч) — Flyway migrations × 3 сервиса + EXPLAIN ANALYZE.
+2. **P2-10/2** `@EntityGraph` / projection (~1д) — N+1 fix + ArchUnit rule NEW-143.
+3. **P2-10/3** Caffeine cache (~1д) — semester/subject/group/rbac + gauges + caching-strategy.md.
+4. **P2-10/4** Batch endpoints (~1д) — attendance/academic `/batch` + partial-success 207.
+5. **P2-10/5** SQL-aggregate (~1д) — переписать `.collect(toList())` на JPQL GROUP BY.
+6. **P2-10/6** HikariCP tuning (~2ч) — pool=20 + alert.
+7. **P2-10/7** Cleanup push-subs + refresh TTL (~3ч) — `last_seen` column + weekly @Scheduled.
+8. **P2-10/8** gRPC parallelism + deadlines + metrics (~1д) — `CompletableFuture` + grpc-micrometer + NEW-149 CI-lint.
 
-### Следующий milestone — выбор пользователя
+### Состояние тестов после M04
 
-Dependency graph после M03b:
+Всё зелёное на `325d25d`:
+- auth-service ✅ (login/logout/OTP counter'ы)
+- attendance 157/157 (CheckinService counter ∫ RedZoneGauge)
+- academic/schedule/notification ✅
+- shared-observability 15/15
+- shared-security (DualModeUserContextFilter counter) ✅
+- shared-outbox (oldestPendingAgeSeconds) — один pre-existing failure в
+  `EventSchemaRefTest` (envelope без trace_id после G6, отложен в
+  backlog)
+- notification-bot: 154/154 (alert_fired + observability)
 
-| Milestone | Зависит от | Parallel-safe с M03b-наследником | Рекомендация |
-|-----------|-----------|-----------------------------------|--------------|
-| **M04 Observability** (OTel+Tempo+Alertmanager+JSON-логи) | M01 | да | **Рекомендую первым.** Нужен для prod-ready state + закрывает `event user.logged-out` (отложено из M03b) + KI-2 (dual-mode silent fallback без метрики) + KI-4 (PublicKeyProvider readiness) |
-| **M05 Performance** (composite indexes, Caffeine, @EntityGraph, batch) | M01 | да | Parallel-safe. Можно параллелить с M04, если два трека. |
-| **M06 Ops & Supply Chain** (SHA tagging, Trivy, Gitleaks, HEALTHCHECK, Renovate, mTLS) | — | полностью | Полностью независим. Можно в любой момент. Закрывает KI-1 (X-Forwarded-For spoofing), KI-9 (INTERNAL_ISSUER_SECRET → mTLS). |
-| **M07 Frontend Hardening** (CSP self-host, a11y, openapi-typescript, UX fixes) | M03b ✅ | нет (затрагивает PWA+panel) | Теперь разблокирован. |
-| **M08 Test Infrastructure** (Playwright e2e, golden tests, coverage-gate, diff 80%) | M01, M02, M03b ✅ | нет (нужен стабильный код) | Закрывает deferred E2E `FrontendAuthFlowPlaywrightIT` из M03b. |
-
-**Мой рекомендованный порядок:** M04 → M06 → M05 → M07 → M08.
-Причина: M04+M06 снимают большую часть ops/prod рисков, M05 —
-оптимизация (не критично для alpha), M07 полирует UX после observability
-(чтобы перфорации frontend'а заметны), M08 валидирует всё E2E.
-
-### Что делать в новой сессии (первая задача)
-
-1. Прочитать `docs/milestones/README.md` — увидеть что M03b ✅.
-2. **Спросить пользователя:** какой milestone следующий (M04 / M06 /
-   другой). Не начинать без подтверждения — выбор влияет на
-   parallel-tracks с другими сессиями.
-3. Когда выбран — прочитать `docs/report-before-v0.0.0/99-executive-summary.md`
-   секцию соответствующую milestone'у.
-4. Создать каталог `docs/milestones/M{NN}-{slug}/` со скелетом из
-   `_TEMPLATE/` (PLAN.md + CHECKLIST.md + NOTES.md + DECISIONS.md).
-5. Заполнить PLAN.md из OWNER-ANSWERS + 99-executive-summary +
-   connected отчётов в `docs/report-before-v0.0.0/`.
-6. Обновить `docs/milestones/README.md` — новый milestone ⏳ в работе.
-7. Прикрепить commit `docs(mNN): scaffold milestone + hand-off`.
-8. Начинать работу по CHECKLIST.
-
-### Правила работы (без изменений)
-
-- Русский в отчётах / NOTES / ответах пользователю. Технические термины /
-  код — оригинал.
-- READ-BEFORE-EDIT reminder'ы ложные (после Read в той же сессии) —
-  игнорируй.
-- Коммит после каждой логической группы (`feat/fix/test/docs` scope:
-  `<service>/<module>` + `(M{NN} Группа N)`).
-- Не звать `gsd-*` агентов. `Explore` для «найти все X», `bug-hunter` +
-  `security-auditor` / `code-reviewer` — в финальной группе audit'а.
-- Surprise / отклонение от плана → NOTES.md + спросить владельца до
-  продолжения.
-- Micro-решение (не в OWNER-ANSWERS) → DECISIONS.md.
-- Закрыл пункт CHECKLIST → `[x]` через Edit.
-- `CHANGELOG.md` → `[Unreleased]` → обновляй при значимых изменениях.
-
-### Последние коммиты (git log --oneline -10)
+### Последние коммиты M04 (git log --oneline -10)
 
 ```
-eb125c4 chore(m03b): close cookie + ws-ticket + logout milestone
-140d7d4 docs(m03b): auth-flow runbook + architecture + CHANGELOG (M03b Группа 12)
-acf989b fix(auth,pwa): hotfixes из bug-hunter + security-auditor (M03b Группа 11)
-dff9ea1 feat(auth): KI-7 bcrypt DoS — Semaphore N=20 guard (M03b Группа 10)
-9286809 feat(gateway,auth): KI-3/6/8 hot-patches из M03a (M03b Группа 9)
-b1fbfcc feat(auth): logout lifecycle — ws-ticket invalidation + cookie clear + refresh revoke (M03b Группа 8)
-b1dd975 docs(m03b): hand-off для следующей сессии — 7/13 групп закрыто
-16915bc feat(web-panel): cookie-based refresh + WS ticket + clearAllClientState (M03b Группа 7)
-bc8fb3e feat(pwa): cookie-based refresh + WS ticket + clearAllClientState (M03b Группа 6)
-7c4fa6d feat(notification): WS ticket handshake replaces raw-JWT in query (M03b Группа 4)
+135d226 docs(m04): CHECKLIST отметка v0.0.0-alpha.5 tag (325d25d)
+325d25d docs(m04): observability runbook + alerts catalog + closure (Группа 12)
+4321184 fix(m04): hot-patches из audit'а G11
+79cb3f9 docs(m04): hand-off после G9+G10 — 10/12 групп закрыто
+7f18104 feat(observability): retention + business KPI dashboard (M04 Группа 10)
+6b8a233 feat(alerts): Alertmanager + rules + webhook → bot (M04 Группа 9)
+1fbd041 docs(m04): hand-off для следующей сессии — 8/12 групп закрыто
+1e9112e feat(metrics): business counters + 3 gauges (M04 Группа 8)
+b08490e feat(notification-bot): structlog JSON + OTel tracing (M04 Группа 7)
+19f2faf docs(m04): hand-off для следующей сессии — 6/12 групп закрыто
 ```
 
-Tag: `v0.0.0-alpha.4` на `eb125c4` (локально, без push).
+Все теги локально (не на origin): `v0.0.0-alpha.2..5`.
 
-### Source of truth
+### Действия, ожидающие `go` пользователя
 
-Для M03b (закрыт, historical reference):
-- `docs/milestones/M03b-jwt-cookie-ws-ticket/PLAN.md` — + Post-mortem
-- `docs/milestones/M03b-jwt-cookie-ws-ticket/CHECKLIST.md` — 13/13 ✅
-- `docs/milestones/M03b-jwt-cookie-ws-ticket/NOTES.md` — 6 surprise-записей
-  + 2 hand-off блока + audit-result блок + backlog MEDIUM/LOW
-- `docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md` — 7 решений
-- `docs/auth-flow.md` — полный runbook cookie+ticket+logout
-- `docs/architecture.md` раздел «Auth flow (cookie + ws-ticket + logout lifecycle)»
-- `CHANGELOG.md [Unreleased]` — M03b секция: Added/Changed(breaking)/Fixed/Documentation
+1. `git push origin main` — 70+ коммитов не на origin.
+2. `git push origin --tags` — 4 tags (`v0.0.0-alpha.2..5`) локальные.
+3. Старт M05 по CHECKLIST.
 
-Для всех milestones:
-- `docs/report-before-v0.0.0/99-executive-summary.md` — roadmap + cluster IDs
-- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` — решения владельца
-- `docs/report-before-v0.0.0/COVERAGE-AUDIT.md` — 354 пункта, «Closed in» колонка
-- `docs/milestones/README.md` — индекс milestones + статусы
+### Source of truth для всего v0.0.0
+
+- `docs/report-before-v0.0.0/99-executive-summary.md` — roadmap +
+  cluster IDs + P2-N индекс.
+- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` — 6400 строк решений
+  владельца (строки 3673-4028 для P2-10 / M05).
+- `docs/report-before-v0.0.0/COVERAGE-AUDIT.md` — 354 пункта, колонка
+  «Closed in» обновляется с commit SHA.
+- `docs/milestones/README.md` — индекс milestones + статусы + даты.
+- `docs/milestones/M{NN}-{slug}/PLAN.md` + `CHECKLIST.md` + `NOTES.md`
+  + `DECISIONS.md` — per-milestone artefacts.
+- `docs/observability.md` + `docs/alerts.md` + `docs/logging-conventions.md` —
+  M04 runbook'и.

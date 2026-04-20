@@ -116,3 +116,60 @@ matches `WHERE group_id=? AND date=?` (hot query из
 `OneOffLessonRepository.findByGroupIdAndDate*`). Добавлять второй
 index с теми же колонками в другом порядке — не имеет смысла,
 потребителей нет.
+
+## 2026-04-20 — D5: Группа 2 — урезанный scope (preventive-only)
+
+**Выбрано:** пропустить `@EntityGraph` на list-endpoints и projection
+для payload-оптимизации. Добавить только:
+
+- ArchUnit rule NEW-143 (preventive, защита от будущего N+1);
+- один reference projection-interface (whitelist в правиле);
+- запись в `docs/architecture.md` о convention «FK as Long» v0.0.0.
+
+**Почему:** OWNER-ANSWERS P2-10/2 (3714-3749) мотивирован ссылками на:
+
+- «03 P2-4» — якобы N+1 в `LessonService.getLesson`. Реальный 03 P2-4
+  = «existsBy мёртвый метод в OneOffLessonRepository».
+- «02 P2-3» — якобы N+1 group-members. Реальный 02 P2-3 = Jackson RCE
+  в Redis cache (M03b scope).
+
+Системный аудит Repository-слоя (Explore-агент): **все JPA entity в
+schedule + academic** используют FK как `Long`, без `@ManyToOne`/
+`@OneToMany`. N+1 невозможен by architecture — buyer's choice в
+проекте, зафиксированный в нескольких ранних фазах (1.x, 5-9).
+`LessonService.massCancelLessons` (schedule-app:137-142) — образец
+правильного паттерна (collect itemIds → single `findByIdIn`).
+
+**Что добавлять с пустым эффектом — против принципа «Don't add
+features, refactor beyond what the task requires» из CLAUDE.md:**
+
+- `@EntityGraph(attributePaths={})` на методы где нечего graph'ить —
+  no-op, visual noise, ухудшает читаемость.
+- Projection interface для list-endpoint с 15 simple-columns —
+  payload оптимизация на ~5-10% при текущих объёмах (23 users/group,
+  25 lessons/week). ROI нулевой, ловушка при рефакторе (новое поле в
+  entity не попадёт в projection, клиенты получат неполные данные).
+
+**Что нужно оставить:**
+
+- **ArchUnit NEW-143** — преимущество в **будущем**. Если завтра
+  потребуется добавить `@ManyToOne` (например, `Lesson.scheduleItem`
+  для denormalization optimization), rule **сразу** поймает
+  repository-метод без `@EntityGraph`/Pageable/projection в PR. Это
+  дешёвая preventive защита.
+- **Один projection-interface как reference-pattern** — когда
+  ArchUnit rule сработает на новый метод, разработчик увидит пример
+  как правильно возвращать subset полей.
+- **Docs convention** — явно запишем в `architecture.md`, что v0.0.0
+  избегает JPA relations, и показать причины (прозрачный SQL,
+  нет lazy surprises, лёгкое embrace microservices FK crossing DB
+  boundary). Новый разработчик не будет на ровном месте добавлять
+  `@ManyToOne`.
+
+**Альтернативы отклонены:**
+- Буквально следовать PLAN.md — visual шум без эффекта, противоречит
+  CLAUDE.md.
+- Полностью удалить Группу 2 — теряем ArchUnit NEW-143 (ценный
+  guardrail).
+
+**Estimate:** ~1-2 часа вместо ~1 дня.

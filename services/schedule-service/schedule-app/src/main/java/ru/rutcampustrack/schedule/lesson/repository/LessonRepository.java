@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+import ru.rutcampustrack.schedule.lesson.projection.LessonDetailsProjection;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,6 +14,33 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
+
+    /**
+     * M05 Группа 2 — reference-pattern для NEW-143 (Spring Data projection).
+     *
+     * <p>Один JOIN + SELECT subset полей вместо {@code findById(lessonId)}
+     * + {@code findById(scheduleItemId)} (2 roundtrips). Alias columns
+     * совпадают с getters в {@link LessonDetailsProjection} (case-insensitive).
+     *
+     * <p>Boolean {@code is_blocked_by_headman} выставляется с алиасом
+     * {@code isBlockedByHeadman} — Spring распознаёт {@code getIsBlockedByHeadman()}.
+     */
+    @Query(value = """
+        SELECT l.id              AS id,
+               l.date            AS date,
+               l.status::text    AS status,
+               l.is_blocked_by_headman AS isBlockedByHeadman,
+               si.group_id       AS groupId,
+               si.subject_id     AS subjectId,
+               si.lesson_number  AS lessonNumber,
+               si.start_time     AS startTime,
+               si.end_time       AS endTime,
+               si.room           AS room
+          FROM lessons l
+          JOIN schedule_items si ON si.id = l.schedule_item_id
+         WHERE l.id = :lessonId
+        """, nativeQuery = true)
+    Optional<LessonDetailsProjection> findLessonDetails(@Param("lessonId") Long lessonId);
 
     List<Lesson> findByScheduleItemIdAndDateBetween(Long scheduleItemId, LocalDate from, LocalDate to);
 

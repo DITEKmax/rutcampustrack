@@ -1048,6 +1048,76 @@ Teacher → [Web Panel] → GET /reports/group/45/subject/67 + JWT
 
 ---
 
-## 11. Дизайн-решения
+## 11. JPA convention: FK как Long, без entity relations (NEW-143)
+
+**Decision (M05 Группа 2, 2026-04-20):** все JPA entity в v0.0.0 используют
+FK как `Long`, без `@ManyToOne`, `@OneToMany`, `@OneToOne`, `@ManyToMany`.
+Инвариант защищён ArchUnit rule `RepositoryNPlusOneGuardTest` в
+schedule-service и academic-service.
+
+### Почему
+
+1. **Прозрачный SQL.** Один JPQL / native query = один SELECT. Нет
+   «невидимых» дополнительных запросов при обращении к `getX()` на
+   lazy-поле. Всё что выполняется в БД — видно в коде.
+2. **Нет lazy surprises.** `LazyInitializationException` после закрытия
+   Hibernate-сессии — частая ловушка при serialization entity для REST
+   response'ов. Конвенция устраняет проблему by design.
+3. **Пересечение gRPC-границ.** Связь `Lesson.schedule_item_id` ↔
+   `ScheduleItem` живёт в **одной** БД, но `Attendance.user_id` ↔
+   `User` — в **разных** сервисах (attendance ↔ academic). FK как
+   Long одинаково работает в обоих случаях. `@ManyToOne` с cross-service
+   FK невозможен.
+4. **Нет N+1 рисков.** Entity без relations не может вызвать N+1 при
+   list-запросе. Это архитектурный инвариант, защищённый ArchUnit.
+
+### Образец паттерна «collect itemIds → findByIdIn»
+
+`LessonService.massCancelLessons` ([ссылка на
+строки 137-142](../services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/LessonService.java)):
+
+```java
+List<ScheduleItem> items = scheduleItemRepository
+        .findByGroupId(groupId);
+List<Long> itemIds = items.stream().map(ScheduleItem::getId).toList();
+List<Lesson> lessons = lessonRepository
+        .findByScheduleItemIdInAndDateBetweenAndStatusIn(itemIds, from, to, statuses);
+```
+
+Два SELECT'а для всей операции (вместо N+1). Такой же подход в
+`ScheduleGrpcServiceImpl.getLessonsByGroup`.
+
+### Что делать, когда relation всё-таки нужна
+
+Если в будущем миграция требует relation (например, для
+cross-aggregate lock или JSONB-embedded subentity), снять инвариант
+осознанно:
+
+1. **Удалить** rule `entitiesMustNotUseJpaRelations` из
+   `RepositoryNPlusOneGuardTest`.
+2. **Оставить** rule `repositoriesReturningCollectionsMustGuardNPlusOne`
+   — он автоматически активируется на репозиторий-методы новой entity.
+3. **Защитить** hot repo-методы через:
+   - `@EntityGraph(attributePaths = {...})` — Hibernate делает JOIN
+     FETCH для указанных relations в одном SELECT;
+   - interface projection (см.
+     [LessonDetailsProjection](../services/schedule-service/schedule-app/src/main/java/ru/rutcampustrack/schedule/lesson/projection/LessonDetailsProjection.java)
+     как reference) — возвращаем subset полей без lazy-триггера;
+   - `Pageable` parameter — ограничиваем размер выборки (N+1 всё
+     равно возможен, но в ограниченной области);
+   - JPQL с `JOIN FETCH` или native с explicit `JOIN`.
+
+### Что НЕ даёт конвенция
+
+- **Не** предотвращает медленные запросы сами по себе (для этого —
+  composite indexes, см. [performance-indexes.md](performance-indexes.md)).
+- **Не** заменяет нормальный API design (DTO, HATEOAS-assembler'ы
+  остаются).
+- **Не** запрещает Spring Data projections — они безопасны и поощряются
+  для payload-optimization.
+
+---
+
+## 12. Дизайн-решения
 
 Подробные дизайн-решения (иконки, анимации, PWA, брендинг) вынесены в отдельный файл: **`docs/design-decisions.md`**.

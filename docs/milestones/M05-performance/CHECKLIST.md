@@ -46,14 +46,37 @@ _Уточнено 2026-04-20 по результатам аудита схемы
       (Q2 best=8ms, Q3 best=8ms), `LateCheckinPerformanceIT` (Q4
       best=10ms). Все зелёные.
 
-## Группа 2 — N+1 fixes через @EntityGraph / projection (P2-10/2)
+## Группа 2 — Preventive N+1 guard (P2-10/2, scope D5)
 
-- [ ] Audit repository-методов: grep `findAll`, `findBy*` в academic/schedule/attendance → таблица в NOTES.md `метод → нужен ли fix`.
-- [ ] `@EntityGraph(attributePaths = {...})` для list-endpoints: `LessonRepository.findByDateBetween`, `AttendanceRepository.findByGroupAndPeriod`, `GroupRepository.findMembers`.
-- [ ] Projection interface для mobile detail (1 entity, только needed fields): `LessonDetailsProjection`, `AttendanceDetailsProjection`.
-- [ ] ArchUnit rule NEW-143: `repository returning Collection<entity> → либо Pageable, либо @EntityGraph, либо projection`. Добавить в `arch/` каждого сервиса.
-- [ ] Verify через sanity-test: нарушение (ArchUnit-violation) rule'а → BUILD FAILED.
-- [ ] Unit/integration tests: существующие запросы возвращают правильные данные (non-breaking).
+_Переформулировано 2026-04-20 после системного аудита — см. DECISIONS
+D5 и NOTES (секция «Группа 2 аудит»). N+1 рисков в текущем коде НЕ
+обнаружено (все entity используют FK как Long, без JPA relations).
+Группа переключена на preventive-only: ArchUnit guardrail + reference
+pattern + docs._
+
+- [x] Audit repository-методов (Explore-агент): все 30+ JPA-методов в
+      schedule + academic возвращают entity с FK как Long (без
+      `@ManyToOne`/`@OneToMany`). N+1 невозможен by design. Attendance —
+      Mongo (не JPA). Результаты в NOTES.md.
+- [x] ArchUnit rule NEW-143 в schedule-service + academic-service
+      (`arch/RepositoryNPlusOneGuardTest.java`). Две подправила:
+      (1) entitiesMustNotUseJpaRelations — invariant v0.0.0;
+      (2) repositoriesReturningCollectionsMustGuardNPlusOne — guard
+      на будущее (Pageable | @EntityGraph | *Projection | JOIN FETCH).
+- [x] Reference projection — `LessonDetailsProjection` +
+      `LessonRepository.findLessonDetails(id)` (single-detail, 10
+      полей через JOIN schedule_items). Служит whitelist-образцом для
+      ArchUnit.
+- [x] Sanity-verify ArchUnit: временный `@ManyToOne` в Lesson →
+      `entitiesMustNotUseJpaRelations` упал с понятным сообщением
+      («Поле Lesson.scheduleItemRelation помечено JPA relation...»).
+      Edit откачен, build зелёный.
+- [x] `docs/architecture.md` §11 — раздел «JPA convention: FK как Long,
+      без entity relations (NEW-143)» с обоснованием +
+      образцом паттерна `collect itemIds → findByIdIn` +
+      подробным action-plan «когда relation всё-таки нужна».
+- [x] `./gradlew test` зелёный: schedule 111/111, academic 201/201,
+      attendance 158/158.
 
 ## Группа 3 — Caffeine cache для справочников и RBAC (P2-10/3)
 

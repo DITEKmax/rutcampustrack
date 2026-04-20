@@ -107,6 +107,53 @@
 **Ожидаю подтверждения** перед Flyway миграциями и seed-датасетом.
 PLAN.md не переписываю до `go` владельца.
 
+---
+
+## 2026-04-20 — Группа 2 аудит — N+1 рисков НЕ обнаружено
+
+**Основа OWNER-ANSWERS P2-10/2** (3714-3749) — «N+1 SELECT lesson-
+details/group-members». Мотивация ссылается на:
+
+- **03 P2-4** — но реальный 03 P2-4 в аудите это «`existsBy` мёртвый
+  метод в OneOffLessonRepository», не N+1. Цитата из OWNER-ANSWERS
+  3718 (`LessonService.getLesson → отдельные SELECT subject/room/group`)
+  — **не соответствует** содержанию отчёта 03-schedule-service.md.
+- **02 P2-3** — реальный 02 P2-3 это «Jackson NON_FINAL default typing
+  = RCE при компрометации Redis», не N+1.
+
+**Системный аудит Repository-слоя** (все JPA методы в 3 сервисах):
+
+- **schedule:** `Lesson`, `ScheduleItem`, `OneOffLesson` — все FK как
+  `Long`, нет `@ManyToOne/@OneToMany`. N+1 невозможен by design.
+- **academic:** `User`, `Group`, `Homework`, `TeacherSubjectGroup`,
+  `HeadmanAssistant`, `Subject`, `Semester`, `AttendanceThreshold`,
+  `HomeworkCompletion`, `StudentGroupHistory` — все FK как `Long`.
+- **attendance:** только Mongo, N+1 концептуально другой зверь
+  (document DB, embedded references).
+
+**Образец правильного паттерна** — уже в коде:
+`LessonService.massCancelLessons` (:137-142) сначала
+`findByGroupId(groupId)` → собирает `itemIds` → `findByScheduleItemIdIn
+AndDateBetween(...)`. **Один** SELECT для всей недели вместо 7×N.
+
+**Пересмотренный scope Группы 2 (D5):**
+
+- ❌ `@EntityGraph(attributePaths={...})` — не добавляем, нет LAZY
+  relations для fetch'а.
+- ❌ Projection для list-endpoints — payload-оптимизация
+  преждевременна, сейчас entity содержит ≤ 15 полей simple columns,
+  serialization стоит копейки. Добавим когда появится горячий endpoint.
+- ✅ **ArchUnit rule NEW-143** — **оставляем**. Ценность rule'а — в
+  будущем: если кто-то добавит `@ManyToOne`, правило поймает
+  repository-метод без projection/Pageable/@EntityGraph в PR. Это
+  preventive measure, бесплатная в добавлении.
+- ✅ **Projection interface** — одна штука для `LessonDetailsProjection`,
+  в качестве reference-pattern для будущего (NEW-143 rule тогда его
+  whitelists). Минимально-инвазивно.
+- ✅ **Docs update** — запись о том что в v0.0.0 проект «FK as Long,
+  no JPA relations» by convention + ссылки на образец из
+  `massCancelLessons`.
+
 ## Правила работы (без изменений с M04)
 
 - Русский в отчётах / NOTES / ответах.

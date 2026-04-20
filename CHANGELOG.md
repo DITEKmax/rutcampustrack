@@ -9,6 +9,30 @@
 
 ### Added
 
+- **M05 Performance — Группа 2 (Preventive N+1 guard, NEW-143)** —
+  P2-10/2 из аудита, переформулирован в preventive-only scope (D5)
+  после системного audit'а: все JPA entity в schedule + academic
+  используют FK как Long, без `@ManyToOne`/`@OneToMany` — N+1 невозможен
+  by design.
+  - **ArchUnit `RepositoryNPlusOneGuardTest`** — в schedule-service и
+    academic-service. Две rule'а: (1) `entitiesMustNotUseJpaRelations`
+    фиксирует convention v0.0.0; (2)
+    `repositoriesReturningCollectionsMustGuardNPlusOne` активируется
+    как только появится первая relation — требует Pageable |
+    @EntityGraph | *Projection return type | JOIN FETCH. Sanity-verify
+    пройден (fake `@ManyToOne` в Lesson → build failed с информативным
+    сообщением, откачено).
+  - **`LessonDetailsProjection`** + `LessonRepository.findLessonDetails`
+    (schedule-service) — reference-pattern для Spring Data interface
+    projection. Native JOIN lessons + schedule_items в одном SELECT,
+    вместо 2-step `findById(lessonId)` + `findById(scheduleItemId)`.
+  - **`docs/architecture.md` §11** — новый раздел «JPA convention: FK
+    как Long, без entity relations (NEW-143)» с обоснованием (прозрачный
+    SQL, нет lazy surprises, cross-service FK через gRPC), образцом
+    паттерна `collect itemIds → findByIdIn` из
+    `LessonService.massCancelLessons:137-142`, action-plan если relation
+    всё-таки потребуется.
+
 - **M05 Performance — Группа 1 (Composite indexes + perf baseline)**
   — P2-10/1 из аудита v0.0.0, закрывает 04 P2-9 и раскрывает capacity
   для v0.1 масштаба.

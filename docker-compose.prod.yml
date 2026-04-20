@@ -271,6 +271,8 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       VAPID_SUBJECT: ${VAPID_SUBJECT}
+      # M04 Группа 9 — shared secret для Alertmanager webhook в /internal/alert.
+      ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET}
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin
     volumes:
       - jwt-keys:/keys:ro
@@ -317,6 +319,9 @@ services:
       MINI_APP_URL: ${MINI_APP_URL}
       # M04 Группа 7 — distributed tracing OTLP exporter → tempo:4317.
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      # M04 Группа 9 — список Telegram ID админов (comma-separated), куда
+      # форвардить alert.fired. "0" = disabled.
+      ADMIN_TELEGRAM_IDS: ${ADMIN_TELEGRAM_IDS:-0}
       TZ: Europe/Moscow
     networks:
       - private_net
@@ -418,6 +423,9 @@ services:
       - '--storage.tsdb.retention.time=30d'
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      # M04 Группа 9 — rule files подключаются через prometheus.yml
+      # (rule_files: /etc/prometheus/rules/*.yml).
+      - ./infra/prometheus/rules:/etc/prometheus/rules:ro
       - prometheus-data:/prometheus
     expose:
       - "9090"
@@ -426,6 +434,39 @@ services:
     depends_on:
       - node-exporter
       - cadvisor
+      - alertmanager
+    restart: unless-stopped
+
+  # M04 Группа 9 — Alertmanager. Принимает fired alerts от prometheus
+  # (alertmanager:9093), через routing отсылает webhook в
+  # notification-web:9094/internal/alert. Silence 22:00-08:00 MSK
+  # для warning (critical — всегда).
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: rct-alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    environment:
+      # Токен для Authorization: Bearer в webhook. Alertmanager читает
+      # файл по пути credentials_file (см. alertmanager.yml).
+      ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET}
+    volumes:
+      - ./infra/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    # Записываем secret в volume at startup — alertmanager не поддерживает
+    # env-vars в yaml напрямую, credentials_file единственный путь.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /etc/alertmanager && \
+        echo -n "$${ALERT_WEBHOOK_SECRET}" > /etc/alertmanager/secret && \
+        exec /bin/alertmanager --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager
+    expose:
+      - "9093"
+    networks:
+      - private_net
     restart: unless-stopped
 
   # M04 QA2 — Grafana Tempo, distributed tracing storage. Retention 14d (QA5).
@@ -600,3 +641,4 @@ volumes:
   grafana-data:
   loki-data:
   tempo-data:
+  alertmanager-data:

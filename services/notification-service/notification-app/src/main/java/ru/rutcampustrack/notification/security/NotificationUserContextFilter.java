@@ -54,8 +54,12 @@ public class NotificationUserContextFilter extends DualModeUserContextFilter {
     @Override
     protected boolean isExcludedPath(HttpServletRequest request) {
         // WebSocket upgrade uses TicketHandshakeInterceptor (M03b Группа 4).
+        // /internal/alert — Alertmanager webhook, auth через Bearer secret
+        // (M04 Группа 9; M06 заменит на mTLS).
         // + infrastructure paths (actuator/api-docs/swagger-ui) from base class.
         String path = request.getRequestURI();
-        return path.startsWith("/ws") || isInfrastructurePath(request);
+        return path.startsWith("/ws")
+                || path.startsWith("/internal/alert")
+                || isInfrastructurePath(request);
     }
 }

@@ -50,6 +50,10 @@ class Settings(BaseSettings):
     # message cleanup task scheduled by /login.
     otp_ttl_seconds: int = 300
 
+    # M04 Группа 9 — Telegram ID админа (или список через запятую) куда
+    # форвардить alert.fired события от Alertmanager. "0" = disabled.
+    admin_telegram_ids: str = "0"
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 

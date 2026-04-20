@@ -43,6 +43,7 @@ class EventDispatcher:
         self._request_tracker = request_tracker
 
         # Import handlers here to avoid circular imports at module level
+        from bot.notifications.alert_fired import _parse_admin_ids, handle_alert_fired
         from bot.notifications.attendance_marked import handle_attendance_marked
         from bot.notifications.group_archived import handle_group_archived
         from bot.notifications.group_renamed import handle_group_renamed
@@ -53,6 +54,9 @@ class EventDispatcher:
         from bot.notifications.lesson_one_off_cancelled import handle_lesson_one_off_cancelled
         from bot.notifications.lesson_one_off_created import handle_lesson_one_off_created
         from bot.notifications.otp_verified import handle_otp_verified
+
+        # M04 Группа 9 — admin list parsed once при старте dispatcher'а.
+        self._admin_ids = _parse_admin_ids(getattr(config, "admin_telegram_ids", None))
 
         # Handler registry: event_type -> async callable(event: dict)
         self._handlers: dict[str, Callable[[dict], Awaitable[None]]] = {
@@ -136,6 +140,14 @@ class EventDispatcher:
                 event,
                 bot=self._bot,
                 tracker=self._otp_tracker,
+            ),
+            # M04 Группа 9: Alertmanager → notification-web → RabbitMQ →
+            # этот handler. Форвардит alert админу в Telegram.
+            "alert.fired": lambda event: handle_alert_fired(
+                event,
+                bot=self._bot,
+                send_queue=self._send_queue,
+                admin_ids=self._admin_ids,
             ),
         }
 

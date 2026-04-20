@@ -103,15 +103,19 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 - [x] Gauge `outbox.lag.seconds` — `OutboxStorage.oldestPendingAgeSeconds()` + реализации в JpaOutboxStorage и MongoOutboxStorage. shared-outbox → api dep на shared-observability. OutboxMetrics регистрирует оба gauge (`outbox.lag` legacy + `outbox.lag.seconds`).
 - [x] Smoke: CheckinServiceTest + ExcuseServiceTest — Mockito stubs на BusinessMetrics. auth-service (все тесты), attendance-service (157/157), academic/schedule/notification — зелёные.
 
-## Группа 9 — Alertmanager + alerts (QA4 + NEW-62/63/64)
+## Группа 9 — Alertmanager + alerts (QA4 + NEW-62/63/64) ✅
 
-- [ ] `docker-compose.prod.yml`: контейнер `prom/alertmanager:v0.27@sha256:...`.
-- [ ] `infra/observability/alertmanager.yml` — receivers (webhook), routing tree, `mute_time_intervals` тихий час 22:00-08:00.
-- [ ] `infra/observability/prometheus.yml` — alert rules: service down, DLQ size, outbox lag, disk > 80%, attendance rate anomaly.
-- [ ] `notification-service`: новый endpoint `POST /internal/alert` (Alertmanager webhook contract). Auth: internal-secret header (M06 заменит на mTLS).
-- [ ] Forward логика: сериализовать алерт → Telegram админу через notification-bot RabbitMQ event.
-- [ ] `docs/alerts.md` — каталог alerts + runbook.
-- [ ] Smoke: kill auth-service → alert долетает в Telegram через 30-60с (depending on Prometheus scrape).
+- [x] `docker-compose.prod.yml` + `docker-compose.yml` — контейнер `prom/alertmanager:v0.27.0` с entrypoint-wrapper'ом (записывает ALERT_WEBHOOK_SECRET в /etc/alertmanager/secret, потом exec alertmanager). Volume alertmanager-data.
+- [x] `infra/alertmanager/alertmanager.yml` — routing tree (critical → всегда; warning → mute 22:00-08:00 MSK через `time_intervals` v0.27+). Receiver webhook → notification-web:9094/internal/alert. Inhibit rule: ServiceDown подавляет HealthCheckDown.
+- [x] `infra/prometheus/prometheus.yml` — alerting block с alertmanager:9093 + rule_files /etc/prometheus/rules/*.yml. Alertmanager scrape job добавлен.
+- [x] `infra/prometheus/rules/service-health.yml` — 4 группы alerts: **service-health** (ServiceDown critical, HealthCheckDown warning), **outbox-eventing** (OutboxLagHigh, DLQBacklog), **infra** (DiskUsageHigh, JvmHeapPressure), **business-anomaly** (CheckinRateZero в рабочие часы, InternalJwtFallbackUnexpected).
+- [x] `notification-service` — `AlertController` POST `/internal/alert` с Bearer-auth (shared secret из application.yml → env ALERT_WEBHOOK_SECRET). Парсит Alertmanager v4 webhook (list alerts), мапит в `AlertPayload`, публикует каждый через `AlertPublisher` в fanout `rut-uit.events` как `alert.fired` событие с unified envelope (trace_id, event_version=1, source=notification-web).
+- [x] `NotificationUserContextFilter.isExcludedPath` — `/internal/alert` bypass'ит identity-фильтр (auth через Bearer, не Internal JWT).
+- [x] `notification-bot` — `alert_fired.py` handler: парсит admin IDs из env ADMIN_TELEGRAM_IDS (comma-separated), форматирует сообщение с HTML escape + severity emoji (🔴/🟡/🔵) + status emoji (🔔/✅), отправляет каждому админу через send_queue (rate-limit safe). Зарегистрирован в EventDispatcher registry.
+- [x] docker-compose env: ALERT_WEBHOOK_SECRET в notification-web (prod + dev), ADMIN_TELEGRAM_IDS в notification-bot (оба).
+- [x] Smoke: `AlertControllerTest` 7 тестов (happy path, auth variants, malformed body) ✅. `test_alert_fired.py` 7 тестов (format/parse/handler) ✅. Полный bot suite 153/153.
+- [ ] `docs/alerts.md` — каталог alerts + runbook → Группа 12 (общая documentation pass).
+- [ ] E2E: kill auth → alert в Telegram — Группа 11 audit (требует docker-compose).
 
 ## Группа 10 — Retention + Grafana dashboard (QA5 + NEW-66)
 

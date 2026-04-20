@@ -2,7 +2,24 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+# M04 Группа 9 — Alertmanager routing. Prometheus отсылает fired
+# алерты в alertmanager:9093, тот через routing tree выбирает webhook
+# → notification-web:9094/internal/alert → RabbitMQ → Telegram-бот
+# админу. Silence 22:00-08:00 MSK через mute_time_intervals в
+# alertmanager.yml (D3).
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
 scrape_configs:
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+
   - job_name: 'node-exporter'
     static_configs:
       - targets: ['node-exporter:9100']

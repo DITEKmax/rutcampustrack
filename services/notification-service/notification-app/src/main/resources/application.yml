@@ -32,6 +32,11 @@ rutcampustrack:
       # M03b Группа 4: consume WebSocket ticket через auth-service internal API.
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
       internal-issuer-secret: ${INTERNAL_ISSUER_SECRET:dev-internal-issuer-secret-32-bytes-for-local-testing-only}
+  alert:
+    # M04 Группа 9: shared secret между Alertmanager webhook и /internal/alert.
+    # Alertmanager заливает его в /etc/alertmanager/secret (см. docker-compose
+    # entrypoint). M06 заменит на mTLS — тогда этот property можно удалить.
+    webhook-secret: ${ALERT_WEBHOOK_SECRET:dev_alert_secret}
 
 vapid:
   public-key: ${VAPID_PUBLIC_KEY:}

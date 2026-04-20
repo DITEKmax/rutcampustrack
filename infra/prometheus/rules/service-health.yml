@@ -1,0 +1,117 @@
+# M04 Группа 9 — alert rules. QA4 + NEW-62/63/64.
+#
+# Правила группируются по domain — Prometheus oбрабатывает каждую
+# группу sequentially, но группы независимы друг от друга. Severity
+# labels routed в alertmanager.yml (critical → немедленно,
+# warning → с задержкой).
+groups:
+  - name: service-health
+    rules:
+      # up == 0 пятнадцать секунд — сервис упал или не scrape-ится.
+      # for=1m чтобы не фальсивить на рестартах (обычный рестарт
+      # укладывается в 30-40с).
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Сервис {{ $labels.job }} недоступен"
+          description: "Prometheus не может scrape {{ $labels.instance }} более 1 мин. {{ $labels.job }} либо упал, либо сеть сломана."
+
+      # Liveness probe: actuator/health сам говорит DOWN (M04 G4 добавил
+      # show-details:always + per-dep indicators). Полезно для: RabbitMQ
+      # обрыв, Postgres не отвечает, Redis unreachable — сервис up, но
+      # dependency упала.
+      - alert: HealthCheckDown
+        expr: health_status{status!="UP"} == 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} health={{ $labels.status }}"
+          description: "Actuator health endpoint возвращает {{ $labels.status }} более 2 мин. Проверь /actuator/health."
+
+  - name: outbox-eventing
+    rules:
+      # M04 Группа 8 — outbox.lag.seconds gauge. Если старейшая pending
+      # запись висит более 5 мин — publisher не справляется или
+      # RabbitMQ недоступен.
+      - alert: OutboxLagHigh
+        expr: outbox_lag_seconds > 300
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Outbox lag {{ $value | humanizeDuration }} в {{ $labels.job }}"
+          description: "Старейшее pending-событие висит > 5 мин. Проверь RabbitMQ + publisher job logs. Событие: {{ $labels.instance }}."
+
+      # DLQ накопление — consumer падает на message'ах, они улетают в
+      # DLQ-очередь. Значение > 0 уже подозрительно, > 10 точно
+      # проблема.
+      - alert: DLQBacklog
+        expr: rabbitmq_queue_messages{queue=~".*\\.dlq"} > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "DLQ {{ $labels.queue }} > 10 сообщений"
+          description: "{{ $value }} сообщений в DLQ. Consumer постоянно падает — проверь handler exceptions."
+
+  - name: infra
+    rules:
+      # cAdvisor → container_fs_usage_bytes / container_fs_limit_bytes.
+      # Для prod-VPS > 80% — начать чистку (Mongo/PG backup'ы, Docker
+      # volumes, logs).
+      - alert: DiskUsageHigh
+        expr: (container_fs_usage_bytes{device=~"/dev/.*"} / container_fs_limit_bytes) > 0.80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk {{ $labels.device }} > 80%"
+          description: "{{ $value | humanizePercentage }} использования на {{ $labels.instance }}. Почисти docker volumes / старые бэкапы."
+
+      # Heap — утечка памяти в Java-сервисах. G max JVM / heap_used
+      # уже имеется через Micrometer JVM metrics.
+      - alert: JvmHeapPressure
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JVM heap > 90% в {{ $labels.application }}"
+          description: "{{ $labels.application }} heap={{ $value | humanizePercentage }}. Возможна утечка — сними heap dump."
+
+  - name: business-anomaly
+    rules:
+      # Если за рабочее окно (09:00-18:00 MSK) rate checkin'ов = 0 — что-то
+      # случилось: либо gateway не пускает, либо клиенты offline, либо
+      # геоотметка повсеместно отваливается. Правило срабатывает только
+      # в рабочие часы (Prometheus не поддерживает time-window expr
+      # directly — используем hour() из Prometheus functions). Vector
+      # hour() возвращает UTC, поэтому 06-15 ≈ 09-18 MSK.
+      - alert: CheckinRateZero
+        expr: |
+          (rate(attendance_checkin_total[10m]) == 0)
+          and on() (hour() >= 6 and hour() <= 15)
+          and on() (day_of_week() >= 1 and day_of_week() <= 5)
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Нет гео-отметок 10 минут подряд в рабочее время"
+          description: "rate(attendance.checkin)=0 уже 10 мин. Проверь Gateway + attendance-service. Если целенаправленно сервис выкачен — silence alert."
+
+      # KI-2 silent fallback — индикатор того, что какой-то service-to-
+      # service вызов до сих пор не несёт internal JWT. Не critical,
+      # но должен в норме быть нулевой — пика rate > 0.1/s означает
+      # регрессию.
+      - alert: InternalJwtFallbackUnexpected
+        expr: rate(internal_jwt_fallback_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "KI-2 fallback rate={{ $value }}/s в {{ $labels.job }}"
+          description: "Silent fallback на legacy X-User-* headers. В M03a+ все service-calls обязаны нести X-Internal-Token. Проверь источник: `{{ $labels.from }}` → `{{ $labels.to }}`."

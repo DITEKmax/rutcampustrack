@@ -138,7 +138,7 @@ async def test_dispatch_routes_attendance_marked():
 
 
 @pytest.mark.asyncio
-async def test_dispatcher_has_eight_event_types():
+async def test_dispatcher_has_all_event_types():
     """EventDispatcher._handlers contains all registered event types."""
     dispatcher = _make_dispatcher()
     expected_types = {
@@ -161,6 +161,8 @@ async def test_dispatcher_has_eight_event_types():
         # 60-04: headman one-off lesson add/remove
         "lesson.one_off.created",
         "lesson.one_off.cancelled",
+        # M04 Группа 9: Alertmanager webhook alerts
+        "alert.fired",
     }
     assert set(dispatcher._handlers.keys()) == expected_types
 

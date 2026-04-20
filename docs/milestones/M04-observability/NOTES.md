@@ -304,6 +304,109 @@ grep -rln "import logging\|logger =" services/notification-bot/ | head
 - Tag `v0.0.0-alpha.4` на `eb125c4` локально, без push.
 - v0.0.0-alpha.5 будет на финальном коммите M04 (Группа 12).
 
+---
+
+## 2026-04-20 — Hand-off после Группы 8 (8/12 закрыто)
+
+**Состояние:** G1-G8 закрыты. Commits этой сессии: `b08490e` (G7),
+`1e9112e` (G8). Всего ahead origin ~60+.
+
+### Что осталось (G9-G12)
+
+**G9 — Alertmanager + alerts.** QA4 + NEW-62/63/64. Крупный кусок:
+- `prom/alertmanager:v0.27` контейнер в docker-compose.prod.yml
+- `infra/observability/alertmanager.yml` — receivers, routing tree,
+  mute 22:00-08:00 MSK (D3=(a))
+- `infra/observability/prometheus.yml` — alert rules: service down,
+  DLQ size, outbox.lag.seconds, disk > 80%, attendance rate anomaly
+- notification-service `POST /internal/alert` (D2=(a) webhook →
+  RabbitMQ → bot). Auth: internal-secret header (M06 заменит на mTLS)
+- bot consumer для `alert.fired` → forward Telegram админу
+- `docs/alerts.md` — каталог + runbook
+- Smoke: kill auth → alert в Telegram через 30-60с
+
+**G10 — Retention + Grafana dashboard.** QA5 + NEW-66.
+- `infra/observability/loki.yaml` retention 336h
+- `prometheus.yml` retention 14d
+- `tempo.yaml` retention 14d (если G5 не закрыл)
+- `infra/observability/grafana/dashboards/business-kpis.json` — 6-8
+  панелей по метрикам G8 (checkin/login rate, red zone, active ws,
+  outbox lag, heap, RabbitMQ queue)
+- Disk alert > 80% (cadvisor)
+- `docs/future-ideas.md` запись
+
+**G11 — Audit.** bug-hunter + security-auditor + code-reviewer на diff
+M04. Также pre-existing backlog из G1-G8:
+1. `EventSchemaRefTest` в shared-outbox — envelope без
+   trace_id/event_version/source после G6 стали required. Обновить
+   тест-payload или сделать поля optional в _common.json schema.
+2. `/actuator/**` из tracing sampling (G5 deferred)
+3. E2E span-tree через docker-compose (G5 deferred)
+4. docker-compose healthcheck (G4 deferred → M06)
+5. Kill RabbitMQ → health DOWN smoke (G4 deferred)
+6. GrpcClientHealthIndicator per-channel (G1 deferred → backlog)
+7. `ExcuseEventContractIT.createExcuse_publishesRequestedEvent_matchingBotContract`
+   pre-existing business-rule failure (G6 deferred → attendance seeds)
+
+**G12 — Documentation + закрытие.** Finishing pass:
+- `docs/observability.md` runbook (~200-250 строк, новый)
+- `docs/alerts.md` каталог (создать/финализировать, часть в G9)
+- `docs/architecture.md` раздел «Observability stack»
+- `docs/logging-conventions.md`
+- `CHANGELOG.md [Unreleased]` M04 секция
+- `CLAUDE.md` «Текущий статус» → M04 ✅
+- `docs/milestones/README.md` → ✅ + дата
+- PLAN.md Post-mortem
+- `git tag v0.0.0-alpha.5` (без push)
+- Hand-off для M05/M06/M07
+
+### Команды для быстрого orientation в новой сессии
+
+```bash
+# Читай первыми:
+cat docs/milestones/M04-observability/CHECKLIST.md
+cat docs/milestones/M04-observability/NOTES.md  # этот файл
+cat docs/milestones/M04-observability/DECISIONS.md
+
+# Посмотри последние 3 коммита M04:
+git log --oneline -5
+
+# Быстрый smoke — всё ли компилируется:
+JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9" ./gradlew.bat build -x test
+```
+
+### Контекст Группы 9 (следующая)
+
+**Spec из аудита:**
+- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` QA4 (строки 1445-1510)
+- `docs/report-before-v0.0.0/99-executive-summary.md` P1-A блок
+
+**Ключевые решения уже закрыты (см. DECISIONS.md):**
+- D2=(a) — `POST /internal/alert` в notification-service → RabbitMQ
+  `alert.fired` event → notification-bot handler. Auth: internal-secret
+  header, M06 заменит на mTLS.
+- D3=(a) — тихий час фиксированный 22:00-08:00 MSK через
+  alertmanager `mute_time_intervals`.
+
+**Что делать первым шагом G9:**
+1. Создать `infra/observability/alertmanager.yml` + `prometheus.yml`
+2. Добавить `prom/alertmanager:v0.27` контейнер в
+   `docker-compose.prod.yml` + `docker-compose.yml`
+3. Добавить port 9093 exposure для локальной проверки
+4. Написать minimal rule (service down) + test что alert долетает
+5. Далее — notification-service endpoint + bot handler
+
+### Правила работы (без изменений)
+
+- Русский в отчётах / NOTES / ответах.
+- READ-BEFORE-EDIT reminder'ы после Read в той же сессии — ложные, игнорируй.
+- Коммит после каждой логической группы (`feat/fix/test/docs` scope:
+  `<service>/<module>` + `(M04 Группа N)`).
+- `gsd-*` агенты НЕ звать. `Explore` для поиска, `bug-hunter` +
+  `security-auditor` / `code-reviewer` — в Группе 11.
+- Surprise → NOTES.md + спросить.
+- Закрыл пункт CHECKLIST → `[x]` через Edit.
+
 ### Правила работы (без изменений)
 
 - Русский в отчётах / NOTES / ответах. Технические термины / код — оригинал.

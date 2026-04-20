@@ -849,6 +849,89 @@ Client → Gateway → auth-service.POST /internal/issue-internal-jwt
 
 Полная таблица лимитов и клиентские рекомендации: `docs/api-rate-limits.md`.
 
+### Auth flow (cookie + ws-ticket + logout lifecycle) (M03b)
+
+**Цель:** устранить XSS-уязвимость через localStorage для refresh-token,
+заменить raw-JWT в WebSocket query на single-use ticket, обеспечить
+полный logout lifecycle (revoke refresh + invalidate ws-tickets + clear
+cookie + push-unsubscribe).
+
+**Cookie-based refresh:**
+
+- `rct_refresh` cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth;
+  Max-Age=604800`. `AuthCookies` factory в auth-service гарантирует
+  идентичные атрибуты для `issue()` и `clear()` (иначе браузер не
+  overwrite'ит).
+- `POST /auth/refresh` читает cookie, ротирует refresh-token в Redis,
+  возвращает новый access + rotated cookie.
+- `POST /auth/refresh-body` (deprecated) с Deprecation+Sunset headers —
+  legacy для TMA/Mini App, removal в M04/M05.
+- CSRF не нужен: same-origin `ruttrack.site` + `SameSite=Strict`
+  закрывают cross-site attacks (DECISIONS 2026-04-20).
+
+**WebSocket ticket handshake:**
+
+```
+Client → POST /auth/ws-ticket (Authorization: Bearer <access-JWT>)
+       ← {ticket: "<uuid>", expiresAt}
+       |
+       | auth-service:
+       |   SETEX ws_ticket:<uuid> payload TTL=30s
+       |   Lua atomic: SADD ws_ticket_user:<uid> <uuid> + EXPIRE 60s
+       |
+Client → wss://.../ws?ticket=<uuid>
+       |
+       | notification-web TicketHandshakeInterceptor:
+       |   REST POST auth-service:/internal/consume-ws-ticket
+       |   (X-Internal-Issuer-Secret, timing-safe)
+       |   Lua atomic: GET + DEL + SREM
+       |   ← {userId, role, groupId, isHeadman}
+       |
+       | → STOMP session attrs (used by SubscriptionAuthInterceptor)
+```
+
+Payload — pipe-separated `uid|role|grp|hd|exp`. Single-use (DEL через Lua).
+TTL 30s. Invalidate-all через `ws_ticket_user:<uid>` set при logout.
+
+**Logout lifecycle:**
+
+```
+Client → POST /auth/logout (cookie + optional Bearer)
+       |
+       | auth-service AuthController:
+       |   1) Если Bearer → WsTicketService.invalidateAllFor(userId)
+       |      (SMEMBERS + batch DEL + DEL user-set)
+       |   2) authService.logout(refreshToken) — Redis DEL refresh:<uid>:<jti>
+       |   3) Set-Cookie: rct_refresh=; Max-Age=0; ... (clear)
+       |   4) Audit log: auth.logout userId revoked_tickets cookie_logout
+       |
+       ← 204 No Content
+       |
+Client → clearAllClientState(accessToken):
+         - localStorage.clear, sessionStorage.clear
+         - SW runtime caches (headman-api-cache*)
+         - Push unsubscribe + DELETE /api/notifications/push/subscribe
+           (с Bearer, чтобы Gateway пропустил)
+```
+
+Event `user.logged-out` через shared-outbox отложен в M04 (structured log
+покрывает audit-trail до появления event-infra).
+
+**Hot-patches из M03a post-mortem:**
+
+- **KI-3** (clock drift): `InternalJwtIssuerClient` проверяет `expiresAt
+  < now+5s` → invalidate cache + retry loader.
+- **KI-6** (Redis TTL race): `LoginRateLimiter.recordFailure` → atomic
+  Lua `INCR + EXPIRE` (на первой попытке).
+- **KI-7** (bcrypt DoS): `BcryptConcurrencyGuard` — Semaphore fair N=20
+  permits вокруг bcrypt в `login` и `changePassword`. Fail-fast 429.
+- **KI-8** (composite rate-limit broken): Gateway `LoginBodyExtractionFilter`
+  (GlobalFilter order=-50) читает JSON body POST `/api/auth/login`,
+  ставит X-Login header внутренне. Composite `(ip, login)` теперь
+  реально работает.
+
+Полный runbook: `docs/auth-flow.md`.
+
 ---
 
 ## 8. Сценарии взаимодействия

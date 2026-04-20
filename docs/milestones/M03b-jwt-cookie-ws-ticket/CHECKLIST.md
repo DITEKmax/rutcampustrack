@@ -183,12 +183,14 @@ CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWE
 
 ## Группа 12 — Документация + artifacts
 
-- [ ] `docs/auth-flow.md` (NEW, полный lifecycle cookie+ticket с диаграммами)
-- [ ] `docs/architecture.md` → раздел «Auth flow (cookie + ws-ticket)»
-  после «Internal JWT и rate-limiting»
-- [ ] `CHANGELOG.md [Unreleased]` → BREAKING CHANGES + Added/Changed/Fixed
-- [ ] `CLAUDE.md` — M03b статус ✅ + обновить раздел архитектуры
-- [ ] `docs/milestones/README.md` → M03b ✅
+- [x] `docs/auth-flow.md` — полный lifecycle cookie+ticket+logout +
+  диаграммы + endpoints + rate-limits + security properties.
+- [x] `docs/architecture.md` → раздел «Auth flow (cookie + ws-ticket +
+  logout lifecycle)» после «Internal JWT и rate-limiting».
+- [x] `CHANGELOG.md [Unreleased]` → Added + Changed (breaking) + Fixed +
+  Documentation секции для M03b.
+- [x] `CLAUDE.md` — M03b статус ✅ — завершён 2026-04-20.
+- [x] `docs/milestones/README.md` → M03b ✅ 2026-04-20.
 
 ## Группа 13 — Финал
 

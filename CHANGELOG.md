@@ -9,6 +9,104 @@
 
 ### Added
 
+- **M03b Secure Boundaries Part B** — JWT HttpOnly cookie + WS-ticket
+  handshake + logout lifecycle + hot-patches из M03a (tag
+  `v0.0.0-alpha.4`). Закрывает C0-5, C0-7, KI-3/6/7/8.
+  - `services/auth-service`:
+    - `AuthCookies` — factory HttpOnly+Secure+SameSite=Strict+Path=/api/auth
+      cookie для refresh-token. Единый `baseBuilder()` для issue и clear.
+    - `POST /auth/refresh` — теперь читает `@CookieValue("rct_refresh")`,
+      ротирует cookie. Старое body-based поведение перенесено в
+      `POST /auth/refresh-body` (**DEPRECATED**, `Deprecation: true` +
+      `Sunset: Mon, 01 Jun 2026 00:00:00 GMT`, removal в M04/M05).
+    - `POST /auth/logout` — добавлен в `permitAll` (cookie-only logout
+      работает без access-JWT). Invalidate'ит все ws-ticket'ы
+      пользователя если Bearer есть, revoke'ит refresh-token, clear'ит cookie.
+    - `WsTicketController` / `WsTicketService` / `InternalWsTicketController`
+      — выдача и consume single-use 30s WebSocket ticket'ов. Storage:
+      `ws_ticket:<uuid>` + `ws_ticket_user:<uid>` Set (atomic SADD+EXPIRE
+      через Lua). Consume через Lua-script `GET + DEL + SREM`. REST
+      internal endpoint `/internal/consume-ws-ticket` защищён
+      `X-Internal-Issuer-Secret` (переиспользует паттерн M03a).
+    - `BcryptConcurrencyGuard` (KI-7) — Semaphore (fair, N=20) вокруг
+      bcrypt в `login` и `changePassword`. Fail-fast 429 при заполнении.
+    - `LoginRateLimiter` (KI-6) — atomic INCR+EXPIRE через Lua-script,
+      убирает TTL-race при network blip.
+    - `IT`: `LogoutLifecycleIT`, `WsTicketIT`, `BcryptDoSMitigationIT`.
+  - `services/api-gateway`:
+    - `LoginBodyExtractionFilter` (KI-8) — GlobalFilter order=-50,
+      читает JSON body POST `/api/auth/login`, извлекает `login`, ставит
+      X-Login header в mutated request. Composite `(ip, login)` rate-limit
+      теперь реально работает.
+    - `InternalJwtIssuerClient` (KI-3) — проверяет `expiresAt < now+5s` →
+      invalidate cache + retry loader. Защита от clock drift.
+    - `/api/auth/logout` добавлен в PUBLIC_PATHS.
+  - `services/notification-service`:
+    - `TicketHandshakeInterceptor` заменяет `JwtHandshakeInterceptor` —
+      читает `query.ticket`, вызывает internal REST `/internal/consume-ws-ticket`,
+      кладёт `userId/role/groupId/isHeadman` в STOMP session attributes.
+    - `WsTicketClient` — REST-клиент с `X-Internal-Issuer-Secret`.
+  - `frontends/pwa` (breaking):
+    - `AuthProvider` — access-token только в memory (React state + tokenRef),
+      refresh через cookie auto-send, bootstrap на mount.
+    - `clearAllClientState(accessToken?)` — очищает localStorage/sessionStorage,
+      SW runtime caches, unsubscribe + DELETE push/subscribe (с Bearer).
+    - `wsTicket.ts` — pre-fetch ticket'а перед WebSocket connect.
+    - Миграционный helper удаляет legacy `localStorage['rct.auth.v1']`.
+  - `frontends/web-panel` (breaking):
+    - `auth.service.ts` — access-only, refresh в cookie, `setAccessToken`
+      вместо `setTokens`. `bootstrap()` через `provideAppInitializer`.
+    - `clear-all-client-state.ts` — local + session storage.clear.
+    - `ws-ticket.ts` — `acquireWsTicket` + `buildWsUrl` для 3 STOMP-сервисов.
+    - `AuthInterceptor` — cookie-based refresh без body.
+
+### Changed
+
+- **CSRF infrastructure НЕ вводится** в M03b — `SameSite=Strict` +
+  same-origin deployment (`ruttrack.site`) делают double-submit token
+  избыточным (DECISIONS 2026-04-20, подтверждение OWNER-ANSWERS
+  02-Q-frontend-security). Conditional follow-up: добавить double-submit
+  token если в v1.0+ появится второй origin (OAuth callback).
+- **Breaking**: refresh-token больше не возвращается в body response
+  `/auth/login` (устарело, клиенты должны читать из cookie).
+- **Breaking**: WebSocket `?token=<JWT>` → `?ticket=<uuid>` через
+  pre-connect `POST /auth/ws-ticket`. Старые клиенты получат 401 при
+  handshake.
+- **Breaking**: `/auth/refresh` игнорирует body. TMA/Mini App на
+  `/auth/refresh-body` (deprecated).
+- `SecurityConfig` auth-service: `/auth/logout` перенесён в `permitAll`
+  (cookie-only flow без Bearer).
+
+### Fixed
+
+- **KI-3** (M03a post-mortem): clock drift edge case — `InternalJwtIssuerClient`
+  больше не возвращает токен с `expiresAt` близким к прошлому.
+- **KI-6**: Redis TTL race в `LoginRateLimiter` — atomic Lua INCR+EXPIRE.
+- **KI-7**: bcrypt DoS — concurrent invalid-password flood теперь
+  fail-fast 429 через Semaphore guard, CPU не захлёбывается до того как
+  `checkBlocked` сработает.
+- **KI-8**: composite `(ip, login)` rate-limit на `/api/auth/login` был
+  broken — клиентский `X-Login` strip'ался `JwtAuthenticationFilter`
+  (CRIT-01). Теперь `LoginBodyExtractionFilter` извлекает login из
+  body внутренне.
+- **security-audit MEDIUM-1**: PWA `clearAllClientState` DELETE
+  push/subscribe без Bearer → 401 → subscription не удалялась →
+  cross-user push leak на shared-устройстве. Фикс: передаём accessToken
+  до обнуления.
+- **bug-hunt HIGH-2**: `WsTicketService.issue()` SADD+EXPIRE был
+  неатомарным — persistent user-set без TTL при network blip. Фикс:
+  Lua-script `ADD_TO_SET_SCRIPT`.
+
+### Documentation
+
+- `docs/auth-flow.md` — полный runbook cookie + ws-ticket + logout
+  lifecycle (диаграммы, cookie контракт, endpoints, breaking changes,
+  security-свойства, rate-limits).
+- `docs/milestones/M03b-jwt-cookie-ws-ticket/` — PLAN, CHECKLIST, NOTES,
+  DECISIONS (5 micro-ADR'ов: cookie Path, SameSite, CSRF, ws-ticket
+  storage scheme, refresh-body deprecation timeline, KI-7 Semaphore
+  выбор, event `user.logged-out` откладывается в M04).
+
 - **M03a Internal JWT + Rate-limiting** — Zero Trust Level 2 + brute/DoS защита
   (tag `v0.0.0-alpha.3`). Закрывает 02-Q2, кластер C0-1, C0-4, NEW-3, NEW-4,
   NEW-9, NEW-11, 14 P1-1, 14 P1-2.

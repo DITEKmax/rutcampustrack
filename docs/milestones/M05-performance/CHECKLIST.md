@@ -305,17 +305,21 @@ D11. Deadline уже везде (19 callsite'ов), параллелизация
 
 ## Группа 10 — Documentation + закрытие milestone
 
-- [ ] `docs/performance-indexes.md` (новый, ~150 строк).
-- [ ] `docs/caching-strategy.md` (новый, ~120 строк).
-- [ ] `docs/connection-pool-tuning.md` (новый, ~80 строк).
-- [ ] `docs/data-retention-policy.md` (новый, ~80 строк).
-- [ ] `docs/architecture.md` — разделы «Caching layer» + «Batch operations» + обновлённый HikariCP sizing.
-- [ ] `CHANGELOG.md [Unreleased]` — M05 секция Added/Changed.
-- [ ] `CLAUDE.md` — статус M05 → ✅ + дата.
-- [ ] `docs/milestones/README.md` — M05 ✅ + дата.
-- [ ] PLAN.md → Post-mortem секция.
-- [ ] `git tag v0.0.0-alpha.6` (локально, без push).
-- [ ] Hand-off для M06/M07/M08 в NOTES.md.
+- [x] `docs/performance-indexes.md` (создан в G1).
+- [x] `docs/caching-strategy.md` (создан в G3).
+- [x] `docs/connection-pool-tuning.md` (создан в G6).
+- [x] `docs/data-retention-policy.md` (создан в G7).
+- [x] `docs/api-error-conventions.md` (создан в G4, sibling runbook).
+- [x] `docs/future-ideas.md` (создан в G5, sibling runbook).
+- [x] `docs/architecture.md` §11.1 — блок «Performance & Ops runbooks»
+      с 6 ссылками (обновлено в G9 hot-patches, commit `ba0b233`).
+- [x] `CHANGELOG.md [Unreleased]` — секции Added для M05 Групп 3-9
+      (commit `<G10>`).
+- [x] `CLAUDE.md` — статус M05 → ✅ 2026-04-21 (commit `<G10>`).
+- [x] `docs/milestones/README.md` — M05 ✅ 2026-04-21 (commit `<G10>`).
+- [x] PLAN.md → Post-mortem секция (commit `<G10>`).
+- [x] `git tag v0.0.0-alpha.6` (локально, без push).
+- [x] Hand-off для M06/M07/M08 в NEXT-SESSION.md (commit `<G10>`).
 
 ---
 

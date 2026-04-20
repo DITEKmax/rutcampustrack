@@ -9,6 +9,134 @@
 
 ### Added
 
+- **M05 Performance — Группа 9 Audit + hot-patches** — три внешних
+  агента (bug-hunter / security-auditor / code-reviewer) на diff M05
+  в чистом контексте. 22 findings; закрыто 10 критичных/high/medium,
+  12 отложено в M06/M07 как обоснованные accept'ы или pre-existing.
+  - **rbac afterCommit fix** (CRITICAL) — `UserService` eviction'ы
+    rbac-namespace перенесены в `TransactionSynchronization.afterCommit()`
+    helper `evictRbacAfterCommit`. Раньше concurrent `isHeadmanOf`
+    читал pre-commit snapshot и кешил stale-значение до истечения TTL
+    (60s), что позволяло ex-headman'у удерживать privileges.
+    `archiveUser` теперь тоже evict'ит rbac.
+  - **MarkingService.markBatch security hardening** —
+    (a) re-check `academicGrpcClient.isHeadman()` перед fan-out'ом
+    (source-of-truth вместо 15-минутного JWT claim'а),
+    (b) `MAX_UNIQUE_LESSONS_PER_BATCH=10` кэп защищает
+    `grpcTaskExecutor` от DoS через 100-item payload,
+    (c) `findAndModify(returnNew=true)` заменил `upsert+findOne`
+    (один round-trip на item),
+    (d) события публикуются после успешного прогона всего батча
+    (исключает duplicate-события при partial failure),
+    (e) error messages без id's (enumeration side-channel).
+  - **GrpcParallelExecutorConfig CallerRunsPolicy** — под
+    event-storm'ом AMQP consumer gracefully деградирует до sequential
+    вместо `RejectedExecutionException` и потери heartbeat'а.
+  - **WebPushDeliveryService Clock injection** — `touchLastSeen`
+    использует `Instant.now(clock)`, консистентно с `PushSubscriptionCleanupJob`.
+  - **@Scheduled zone="UTC"** в cron cleanup push-subs — зависимость
+    от JVM timezone устранена.
+
+- **M05 Performance — Группа 8 (gRPC hot-path, NEW-149)** —
+  P2-10/8 из аудита, scope уточнён по DECISIONS D11.
+  - **`GrpcClientMetricsInterceptor`** (shared-observability) —
+    ClientInterceptor на `grpc.client.duration` Timer (histogram)
+    с тегами `service` / `method` / `status`. Per-app wrappers через
+    `@GrpcGlobalClientInterceptor` в attendance/schedule/academic.
+  - **Параллельный fan-out** в `LessonEventService.processLessonClosed`
+    (`getLessonById` + `getGroupMembers` через
+    `CompletableFuture.supplyAsync + grpcTaskExecutor`, wall-time
+    ~200ms вместо ~400ms) и `MarkingService.markBatch` (N уникальных
+    `getLessonById` + 1 `getGroupMembers` параллельно).
+  - **`GrpcParallelExecutorConfig`** (attendance) — bounded
+    `ThreadPoolTaskExecutor` core=2/max=8/queue=100, `CallerRunsPolicy`.
+  - **`GrpcDeadlineArchRules`** (shared-observability testFixtures) —
+    byte-code ArchUnit rule: каждый публичный метод `*GrpcClient`
+    вызывающий `*BlockingStub` обязан содержать `withDeadlineAfter`
+    / `withDeadline` в том же методе. Вынесено из 3-кратного
+    дубликата per-service, сокращено ~150 LOC.
+  - **`AsyncGrpcUtils.joinOrUnwrap`** (shared-observability) —
+    distill `CompletableFuture.join()` → оригинальный
+    `RuntimeException`. Раньше дублировался inline в двух сервисах.
+  - **`infra/grafana/provisioning/dashboards/grpc-latency.json`** —
+    p50/p95/p99 histogram_quantile panels per `(service, method)`
+    + error-rate panel + active-methods stat.
+
+- **M05 Performance — Группа 7 (Push-subs retention + cleanup,
+  NEW-148)** — P2-10/7 из аудита, scope уточнён по DECISIONS D10
+  (MongoDB, не PostgreSQL).
+  - **`last_seen: Instant`** в `PushSubscriptionDocument` —
+    обновляется bulk `$set` через `WebPushDeliveryService.touchLastSeen`
+    (одна Mongo-op на fanout вместо N save'ов).
+  - **`idx_last_seen`** добавлен в `PushMongoConfig.initIndexes()`
+    (programmatic, конвенция проекта).
+  - **`PushSubscriptionCleanupJob`** —
+    `@Scheduled(cron="0 0 3 * * SUN", zone="UTC") @SchedulerLock`
+    с retention 90d (configurable). `PushCleanupConfig` подключает
+    `shedlock-provider-mongo` LockProvider + bootstrap
+    `backfillMissingLastSeen` на `ApplicationReadyEvent`.
+  - **`docs/data-retention-policy.md`** (NEW-148) — 12-rows matrix
+    (push-subs 90д, refresh-tokens 7д, OTP 5м, attendance accept,
+    outbox 48h, ...).
+
+- **M05 Performance — Группа 6 (HikariCP tuning, NEW-147)** —
+  P2-10/6 из аудита.
+  - **`application.yml`** academic/schedule:
+    `pool=20, idle=5, timeout=5s, idle-timeout=10m, max-lifetime=30m,
+    leak-detection=60s`. auth-service `pool=10` (read-only login).
+    Attendance — no-op (MongoDB).
+  - **Alert `HikariPoolExhaustion`** в
+    `infra/prometheus/rules/service-health.yml` — `(active/max) > 0.80
+    for 5m`, severity warning, routed через M04 Alertmanager.
+  - **`docs/connection-pool-tuning.md`** (NEW-147) — формула sizing,
+    текущие значения, триггеры пересмотра, smoke-тест процедура.
+
+- **M05 Performance — Группа 5 (Single-pass accumulators + SQL
+  pagination, NEW-146, D9)** — P2-10/5 из аудита, scope уточнён.
+  - **`ReportService.{getStudentStats, buildOverall, buildWeekly}`** —
+    single-pass `for`-loop + int counter'ы вместо 3-4× `stream.filter.count`
+    на одном списке. O(N) вместо O(K×3N).
+  - **`LessonService.getLessonsForGroup`** — SQL `LIMIT/OFFSET`
+    через Spring Data `Pageable` + native `countQuery` в
+    `LessonRepository.pageByScheduleItemIdInAndDateBetweenAndStatusIn`.
+    Устраняет OOM-risk на 2000+ lessons/semester.
+  - **`docs/future-ideas.md`** (NEW-146) — 3 варианта решения для
+    Mongo `$group` в `ReportService` (блокируется
+    `filterExistingLessons` cross-service invariant'ом; денормализация
+    `lesson_alive` как M06/M07 scope).
+
+- **M05 Performance — Группа 4 (Batch endpoints, D7, D8, NEW-145)** —
+  ядро P2-10/4.
+  - **`POST /attendance/marks/batch`** — body
+    `@Valid @Size(min=1, max=100) List<MarkBatchItem>`, pseudo-atomic
+    (validation-first). 1 gRPC `getLessonById` на уникальный lessonId
+    + 1 `getGroupMembers` + N upsert (вместо N × 3 gRPC + N upsert).
+    ~10× latency reduction на 30-student batch (~6000ms → ~500ms).
+  - **`MarkBatchItem`/`MarkBatchRequest`/`MarkBatchResponse`** DTOs
+    в `attendance-api-contract`.
+  - **PWA `useHeadmanMarkBatch`** — TanStack mutation,
+    `handleBulkMark` переключён с for-loop `await` на один batch call.
+  - **`docs/api-error-conventions.md`** (NEW-145) — RFC 7807 error
+    schema, pseudo-atomic vs partial-success patterns.
+
+- **M05 Performance — Группа 3 (Redis cache дополнения, D6, NEW-144)** —
+  P2-10/3 из аудита, scope уточнён по DECISIONS D6 (Caffeine не
+  вводится — academic-service уже имеет Redis `CacheManager` + 5
+  namespaces с Фазы 59/60).
+  - **Namespaces `rbac` (TTL 1м) и `subject` (TTL 10м)** в `CacheConfig`.
+  - **`AcademicReadService.isHeadmanOf(userId, groupId)`** —
+    `@Cacheable("rbac")`. Переключает hot-path
+    `AcademicGrpcServiceImpl.isHeadman` с «Not cached per D-02» на
+    кешируемый.
+  - **`@Cacheable("subject")`** на `SubjectService.getSubject` +
+    `@CacheEvict` на updateSubject/deleteSubject.
+  - **Programmatic rbac eviction** в `UserService.patchUser` /
+    `transferStudent` (при смене `is_headman` / `group_id`) — в M05 G9
+    перенесено в afterCommit-хук.
+  - **`docs/caching-strategy.md`** (NEW-144) — TTL matrix
+    (7 namespaces), invalidation triggers, consistency trade-offs,
+    Redis-as-L1 rationale, migration plan.
+
 - **M05 Performance — Группа 2 (Preventive N+1 guard, NEW-143)** —
   P2-10/2 из аудита, переформулирован в preventive-only scope (D5)
   после системного audit'а: все JPA entity в schedule + academic

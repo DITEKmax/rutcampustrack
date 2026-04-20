@@ -164,4 +164,95 @@ _Scope фиксирован из OWNER-ANSWERS P2-10. Отклонения — �
 
 ## Post-mortem
 
-_Заполняется при закрытии milestone'а._
+Milestone закрыт **2026-04-21**, tag `v0.0.0-alpha.6`.
+
+### Что пошло по плану
+
+- **Composite indexes (G1)** — 3 Flyway миграции + programmatic Mongo
+  index закрыли 04 P2-9 (COLLSCAN → IXSCAN, 50× reduction). Integration
+  regression-guards (`*PerformanceIT` × 3) зафиксировали invariant
+  «< 50ms на Q1-Q4».
+- **Batch endpoint (G4)** — `POST /attendance/marks/batch` пошёл
+  прямо в ядро, 10× latency reduction на 30-student batch
+  подтверждён в unit-тестах.
+- **HikariCP tuning (G6)** — 2h реализации + alert-правило уложились
+  в оценку; прод-smoke deferred до первого deploy (не блокирующе).
+- **Audit Группы 9** — три внешних агента на свежем контексте нашли
+  10 значимых findings (1 CRITICAL, 4 HIGH, 3 MEDIUM, 2 LOW), все
+  hot-patch'нуты в один commit `ba0b233`.
+
+### Ключевые отступления (D1-D11)
+
+| D | Группа | Отступление |
+|---|--------|-------------|
+| D1 | G1 | `lessons.group_id` не денормализован → индекс на `schedule_item_id` вместо `group_id` |
+| D2 | G1 | Таблицы `user_groups` не существует → индексы на `(group_id, semester_id)` для реальных hot queries |
+| D3 | G1 | `attendances (group_id, lesson_id)` — нет hot query-потребителя, отложено |
+| D4 | G1 | `schedule_one_off_lessons` UNIQUE уже в V4, no-op |
+| D5 | G2 | N+1 не существует by design → переформулирование в preventive ArchUnit guard |
+| D6 | G3 | **Caffeine не вводится** — academic уже имеет Redis L1 с Фазы 59/60. Добавили namespaces `rbac`/`subject` поверх |
+| D7 | G4 | pseudo-atomic (validation-first) вместо partial-success — headman-UX проще |
+| D8 | G4 | Academic `/homeworks/batch` + web-panel weekly-journal bulk-read отложено (ROI низкий) |
+| D9 | G5 | Mongo `$group` в ReportService блокируется cross-service invariant'ом — single-pass accumulators как best achievable, полный aggregation отложен в NEW-146 |
+| D10 | G7 | `push_subscriptions` — MongoDB, Flyway неприменим → programmatic index + `shedlock-provider-mongo` |
+| D11 | G8 | Deadline already everywhere; runtime `GrpcDeadlineEnforcingInterceptor` сломал 15+ integration-тестов → откачен, ArchUnit достаточен |
+
+### Audit findings (Группа 9 summary)
+
+Closed (commit `ba0b233`):
+- rbac afterCommit race (CRITICAL)
+- markBatch per-item event publish (HIGH)
+- deadline propagation / CallerRunsPolicy (HIGH)
+- JWT is_headman re-check (HIGH)
+- uniqueLessons DoS cap (HIGH)
+- archiveUser rbac evict (HIGH)
+- error-msg enumeration (LOW)
+- cron UTC zone (LOW)
+- Clock consistency (MINOR)
+- Javadoc `GrpcParallelExecutorConfig` / `PushSubscriptionDocument` (MINOR)
+- PLAN.md AC alignment (MAJOR doc)
+- architecture.md cross-links (MAJOR doc)
+
+DRY refactor'ы (commit `ff3d6e3`):
+- GrpcClientDeadlineTest × 3 → shared `GrpcDeadlineArchRules` (-74 LOC net)
+- `unwrap()` → shared `AsyncGrpcUtils.joinOrUnwrap`
+
+Deferred (обоснованные):
+- Redis Jackson `LaissezFaireSubTypeValidator` → M06 supply-chain
+- Mozilla/Apple push endpoint masking → M07 frontend hardening
+- `isHeadman` rate-limit → M06
+- Redis cache hit/miss metrics → M06 (`@Aspect` подход)
+- Mongo `$group` в ReportService → M07 (денормализация `lesson_alive`)
+
+### Ключевые уроки для следующих milestones
+
+1. **Audit со свежим контекстом работает.** Три независимых агента
+   (bug-hunter / security / code-review) на diff без истории
+   реализации нашли 22 findings из которых 10 критичных/значимых.
+   Повторять для M06/M07/M08.
+2. **Caffeine вводить не надо.** Redis L1 с namespaces + TTL + `@Cacheable`
+   закрывает все use-cases без L2 hybrid. Документ
+   `docs/caching-strategy.md` — single source of truth.
+3. **Lightweight milestone-workflow без GSD-агентов** сработал для
+   8-групповой M05 полностью. Сэкономил ~60-70% токенов относительно
+   M01-M03b (где был RESEARCH/VERIFICATION). Оставить формат для M06+.
+4. **ArchUnit invariant'ы > runtime enforcement** — попытка
+   `GrpcDeadlineEnforcingInterceptor` сломала 15+ integration-тестов.
+   Byte-code guard в тесте достаточен для production regression.
+5. **afterCommit-eviction для cross-service RBAC** — урок,
+   применимый ко всем `@Cacheable` на rbac/authz hot-path'ах в M07+.
+
+### Метрики milestone'а
+
+- **Commits:** 11 (включая 3 docs hand-off'а)
+- **LOC:** +2668/-59 (before audit fix), +308/-59 (audit patches),
+  +167/-241 (DRY refactor)
+- **Новые docs:** 5 (caching-strategy, performance-indexes,
+  connection-pool-tuning, data-retention-policy, api-error-conventions)
+- **Integration-тесты добавлены:** 3 (`LessonPerformanceIT`,
+  `AcademicPerformanceIT`, `LateCheckinPerformanceIT`) +
+  `RbacCacheIT` + `PushSubscriptionCleanupJobIT`
+- **Unit-тесты:** `MarkingServiceTest` расширен на BATCH-01..07,
+  `LessonEventServiceParallelTest` (wall-time ассерт parallel < 350ms)
+- **Build:** зелёный на всех 4 сервисах, ArchUnit × 5 rules passing
+- **Estimate accuracy:** ~6-7д план / ~3 сессии факт (Opus 4.7 автономный режим)

@@ -8,43 +8,59 @@ Opus сам откроет файлы и поймёт где мы останов
 Продолжай работу над v0.0.0 milestones.
 
 Контекст:
-1. Архитектурный аудит завершён, зафиксирован в `docs/report-before-v0.0.0/`
+1. Архитектурный аудит зафиксирован в `docs/report-before-v0.0.0/`
    (16 отчётов + OWNER-ANSWERS.md 6400 строк + COVERAGE-AUDIT.md 354
    пункта + 99-executive-summary.md roadmap).
 2. Рабочий процесс — lightweight milestones без GSD-orchestrator'а.
    Индекс: `docs/milestones/README.md`.
-3. Активный milestone: **M05 Performance**. Группы 1-2 ✅ закрыты,
-   следующая — **Группа 3 (Caffeine cache, ~1 день)** (P2-10/3 из
-   OWNER-ANSWERS 3756-3810).
+3. **M05 Performance ✅ закрыт 2026-04-21**, tag `v0.0.0-alpha.6`.
+   5 milestones закрыто (M01, M02, M03a, M03b, M04, M05). Осталось 3:
+   M06 Ops & Supply Chain, M07 Frontend Hardening, M08 Test Infra.
+
+**Следующий milestone по dependency graph:** **M06 Ops & Supply Chain**.
+Полностью независим (не блокируется другими), стабильный scope из
+OWNER-ANSWERS. Estimate ~3-4 дня.
+
+M06 Scope (из `docs/milestones/README.md`):
+- SHA tagging для docker-образов (reproducible builds).
+- Trivy + Gitleaks в CI.
+- HEALTHCHECK в Dockerfile (existing compose health-check → proper).
+- Renovate config для dependency updates.
+- Дополнительно из M05 audit defer'нуто:
+  - Redis Jackson `LaissezFaireSubTypeValidator` → `BasicPolymorphicTypeValidator`
+    с whitelist `ru.rutcampustrack.*` (security-auditor finding #3, M05 G9).
+  - `isHeadman` rate-limit на gRPC (security #5, M05 G9).
+  - Redis cache hit/miss metrics через `@Aspect` (caching-strategy.md
+    §Observability deferred).
+  - `GrpcClientMetricsInterceptor` Timer caching (bug-hunter 5.1) +
+    `startNs` в `start()` (5.3).
+  - `/actuator/**` excluded из tracing sampling (M04 backlog).
+
+Альтернативно: **M07 Frontend Hardening** (зависит от M03b только,
+~10-12д) — если нужна фокусировка на UX/a11y до инфраструктуры. Или
+**M08 Test Infra** (зависит от M01/M02/M03b, ~10-12д) — Playwright e2e.
 
 Что делать:
-1. Прочитай `docs/milestones/M05-performance/PLAN.md` — scope и модули.
-2. Прочитай `docs/milestones/M05-performance/CHECKLIST.md` — пункты
-   Группы 1-2 помечены `[x]`, начни с Группы 3.
-3. Прочитай `docs/milestones/M05-performance/NOTES.md` — snapshot,
-   открытые развилки, D1-D5.
-4. Прочитай `docs/milestones/M05-performance/DECISIONS.md` — micro-ADR
-   за прошлые сессии. Следующие решения пиши в том же формате (D6, D7, ...).
-5. `git log --oneline -10` — последние коммиты (`6802e7f`, `83ed387`,
-   `ea7a390`, и дальше M04).
-6. Проверь docker-compose: `docker compose ps` — контейнеры
-   postgres-academic/postgres-schedule/mongo-attendance должны быть
-   healthy. Если остановлены — `docker compose up -d postgres-academic
-   postgres-schedule mongo-attendance`. Schemas и seed уже применены
-   с прошлой сессии (id ≥ 900000).
-7. Продолжай с Группы 3 по CHECKLIST — первая невыполненная галочка.
-8. После каждой завершённой группы — отчитайся коротко (1-2 строки)
-   и жди подтверждения перед следующей. Если пользователь говорит
-   «go» — работай молча дальше.
+1. Создай `docs/milestones/M06-ops-supply-chain/` из шаблона
+   `docs/milestones/_TEMPLATE/`: PLAN.md + CHECKLIST.md + NOTES.md +
+   DECISIONS.md.
+2. PLAN.md наполни из OWNER-ANSWERS «Supply Chain» секции + M05 defer'ов
+   (см. список выше) + пройдись по `docs/report-before-v0.0.0/
+   06-supply-chain-report.md` если есть.
+3. Разбей на группы по ~3-4ч atomic (образец — M05 G1-G10).
+4. Спроси owner'а перед стартом для подтверждения scope'а.
+5. `git log --oneline -10` — последние коммиты (`v0.0.0-alpha.6` на
+   последнем M05 коммите; 90+ коммитов ahead origin; tags `v0.0.0-
+   alpha.2..6` локальные).
+6. Проверь docker-compose: `docker compose ps`. Инфра из прошлых
+   сессий уже поднята.
 
-Правила:
-- Русский язык в отчётах / NOTES / ответах (технические термины /
-  код — оригинал).
+Правила (без изменений с M05):
+- Русский язык в отчётах / NOTES / ответах.
 - Не звать `gsd-*` агентов. `Explore` для «найти все X»,
-  `bug-hunter` / `code-reviewer` / `security-auditor` — в Группе 9
-  audit'а.
-- Surprise / отклонение от плана → NOTES.md + спросить до продолжения.
-- Micro-решение (не в OWNER-ANSWERS) → DECISIONS.md (D6+).
+  `bug-hunter` / `code-reviewer` / `security-auditor` — в Группе audit'а.
+- Surprise → NOTES.md + спросить до продолжения.
+- Micro-решение → DECISIONS.md (D1+).
 - Закрыл пункт CHECKLIST → `[x]` через Edit.
 - Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные.
 - Push на origin / создание PR — только с явного `go` пользователя.
@@ -53,17 +69,74 @@ Opus сам откроет файлы и поймёт где мы останов
 Когда milestone закрыт:
 1. Все пункты CHECKLIST отмечены `[x]`.
 2. Все acceptance criteria в PLAN.md пройдены (`./gradlew build`
-   зелёный + integration-тесты + ArchUnit + CI-lint).
+   зелёный + integration + ArchUnit + CI-lint).
 3. Post-mortem секция дописана в PLAN.md.
 4. Статус в `docs/milestones/README.md` → ✅ готов.
-5. Тег `git tag v0.0.0-alpha.6` на последнем коммите milestone'а
-   (локально, без push).
-6. Сообщить пользователю финальный summary + ссылку на следующий
-   milestone по dependency graph (M06 Ops / M07 Frontend / M08 Tests).
+5. Тег `git tag v0.0.0-alpha.7` на последнем коммите milestone'а.
+6. Сообщить owner'у финальный summary + ссылку на следующий
+   milestone (M07 или M08).
 
 Старт:
-> Читаю PLAN → CHECKLIST → NOTES → DECISIONS → git log. Через минуту
-> скажу где стартуем (Группа 3) и что буду делать первым.
+> Читаю README.md → 99-executive-summary.md → M05 post-mortem →
+> 06-supply-chain-report.md. Через минуту скажу какие группы вижу
+> в scope M06.
+
+---
+
+## M05 закрыт (2026-04-21) — итоговая запись
+
+**Tag:** `v0.0.0-alpha.6` (локально, без push).
+**Последний коммит M05:** `<финальный G10 commit hash>` (docs-закрытие).
+**Closed commits M05:** от `83ed387` (G1) до финального G10 — всего
+13 коммитов (8 feat/perf + 3 audit/refactor + 2 docs).
+
+### Итоги по группам
+
+| # | Группа | Коммит | Что сделано |
+|---|--------|--------|-------------|
+| 1 | Composite indexes + perf baseline | `83ed387` | Flyway V12/V17 + programmatic Mongo index + 3 `*PerformanceIT` |
+| 2 | Preventive N+1 guard | `6802e7f` | ArchUnit `RepositoryNPlusOneGuardTest` + `LessonDetailsProjection` reference |
+| 3 | Redis cache дополнения | `50fc576` | rbac/subject namespaces + `caching-strategy.md` |
+| 4 | Batch endpoints | `e0f82de` | `POST /attendance/marks/batch` + PWA bulk-mark + `api-error-conventions.md` |
+| 5 | Single-pass + SQL pagination | `c3bd518` | `ReportService` O(N) + `LessonService` `Pageable` + `future-ideas.md` |
+| 6 | HikariCP tuning | `dbdc38c` | pool=20/idle=5/leak=60s + `HikariPoolExhaustion` alert + `connection-pool-tuning.md` |
+| 7 | Push-subs retention + cleanup | `1aa5e75` | `last_seen` + `idx_last_seen` + weekly cleanup + `data-retention-policy.md` |
+| 8 | gRPC metrics + parallel + ArchUnit | `3fae923` | `GrpcClientMetricsInterceptor` + parallel fan-out + `grpc-latency.json` |
+| 9 | Audit hot-patches | `ba0b233` | 10 fixes (rbac afterCommit, markBatch, CallerRunsPolicy, re-check isHeadman, ...) |
+| 9 DRY | Refactor | `ff3d6e3` | `GrpcDeadlineArchRules` + `AsyncGrpcUtils` (-74 LOC net) |
+| 10 | Docs + closure | `<G10>` | CHANGELOG + CLAUDE.md + README + PLAN.md post-mortem + tag |
+
+### Key deferrals → M06+
+
+| Finding | Severity | → milestone |
+|---------|----------|-------------|
+| Redis Jackson `LaissezFaireSubTypeValidator` → whitelist | MEDIUM (supply-chain) | M06 |
+| `isHeadman` rate-limit на gRPC | LOW (key-space DoS) | M06 |
+| Redis cache hit/miss metrics (`@Aspect`) | MINOR | M06 |
+| `GrpcClientMetricsInterceptor` Timer caching + startNs fix | LOW | M06 |
+| `/actuator/**` excluded из tracing | — | M06 (M04 backlog) |
+| Mozilla/Apple push endpoint masking | LOW | M07 (frontend hardening) |
+| Mongo `$group` aggregation в ReportService | — | M07 (требует denorm `lesson_alive`) |
+| Manual smoke-тест 30 concurrent HTTP (pool tuning) | — | M06/prod deploy |
+| `CREATE INDEX CONCURRENTLY` policy docs | NIT | M06 |
+
+### Действия, ожидающие `go` пользователя
+
+1. `git push origin main` — 90+ коммитов локально ahead origin.
+2. `git push origin --tags` — 5 tags (`v0.0.0-alpha.2..6`) локальные.
+3. Старт M06 по новой сессии (см. «Промпт» выше).
+
+### Source of truth для M05 (финальный)
+
+- `docs/milestones/M05-performance/{PLAN,CHECKLIST,NOTES,DECISIONS}.md` —
+  per-milestone artefacts (включая Post-mortem в PLAN.md).
+- `docs/caching-strategy.md` (NEW-144) — M05 G3.
+- `docs/performance-indexes.md` (NEW-141/142) — M05 G1.
+- `docs/api-error-conventions.md` (NEW-145) — M05 G4.
+- `docs/future-ideas.md` (NEW-146) — M05 G5 deferred.
+- `docs/connection-pool-tuning.md` (NEW-147) — M05 G6.
+- `docs/data-retention-policy.md` (NEW-148) — M05 G7.
+- `docs/architecture.md` §11.1 — блок «Performance & Ops runbooks».
 
 ---
 

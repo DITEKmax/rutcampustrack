@@ -67,10 +67,192 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
-## Hand-off после M05 Группы 2 (2026-04-20)
+## Hand-off после M05 Группы 6 (2026-04-20)
 
-**Состояние M05:** ⏳ **в работе.** 2/10 групп закрыто. Последний
-коммит `6802e7f`.
+**Состояние M05:** ⏳ **в работе.** 6/10 групп закрыто. Последний
+коммит `dbdc38c`. Остались 7, 8, 9, 10.
+
+### Итоги Группы 3 (commit `50fc576`)
+
+**Redis cache дополнения поверх существующей реализации (D6).**
+Аудит показал что academic-service уже имеет `@EnableCaching` + Redis
+`CacheManager` + 5 namespaces с ранних фаз — PLAN.md Caffeine scope
+неактуален. D6 зафиксировал Redis как v0.0.0 решение.
+
+- Namespaces `rbac` (TTL 1м) + `subject` (TTL 10м) добавлены в
+  `CacheConfig`.
+- `AcademicReadService.isHeadmanOf(userId, groupId)` —
+  `@Cacheable("rbac")`. Переключает `AcademicGrpcServiceImpl.isHeadman`
+  с «Not cached per D-02» на кешируемый hot-path.
+- `@Cacheable("subject")` на `SubjectService.getSubject` +
+  `@CacheEvict` на updateSubject/deleteSubject.
+- Programmatic rbac eviction в `UserService.patchUser` /
+  `transferStudent` (при смене `is_headman` / `group_id`).
+- `docs/caching-strategy.md` (NEW-144) — TTL matrix (7 namespaces),
+  invalidation, trade-offs, migration plan.
+- `RbacCacheIT` — 4 integration-теста зелёные.
+
+**Deferred:** Redis hit/miss counter'ы через Micrometer. Попытка
+`MetricsCacheManagerDecorator` wrapping'а ломала namespace-specific
+TTL в RedisCacheManager (reproducible regression). Зафиксировано
+в NOTES для возврата через `@Aspect` подход (не blocking'ом для M05).
+
+### Итоги Группы 4 (commit `e0f82de`)
+
+**POST /attendance/marks/batch + PWA bulk-mark (D7, D8).** Закрывает
+ядро P2-10/4 — headman отмечает N студентов одним POST-запросом.
+
+- `MarkBatchItem`/`MarkBatchRequest`/`MarkBatchResponse` DTOs в
+  `attendance-api-contract`. `@Size(min=1, max=100)` на items list.
+- `MarkingService.markBatch` — pseudo-atomic validation-first (D7):
+  все authz-check'и до любого Mongo write'а. 1 gRPC `getLesson` на
+  уникальный lessonId + 1 gRPC `getGroupMembers` + N upsert
+  (вместо N × 3 gRPC + N upsert для N single-mark вызовов). ~10×
+  latency reduction на 30-student batch (~6000ms → ~500ms).
+- `MarkingController.markBatch` — HATEOAS self-link, 5 unit-тестов
+  зелёные (happy path + 4 failure scenarios).
+- PWA: `useHeadmanMarkBatch` TanStack mutation, `handleBulkMark`
+  переключён с for-loop await на один batch call.
+- `docs/api-error-conventions.md` (NEW-145) — error schema RFC 7807,
+  pseudo-atomic vs partial-success patterns.
+
+**Deferred (D8):** `POST /academic/homeworks/batch` и web-panel
+weekly-journal bulk-read — ROI низкий, не блокирует UX.
+
+### Итоги Группы 5 (commit `c3bd518`)
+
+**Single-pass accumulators + SQL pagination (D9, NEW-146).** Полный
+Mongo `$group` pipeline заблокирован `ReportService.filterExistingLessons`
+cross-service invariant'ом — правильное решение требует денормализации
+`lesson_alive` флага (M06/M07 scope).
+
+- `ReportService`: `getStudentStats` / `buildOverall` / `buildWeekly`
+  переписаны на single-pass `for`-loop с int counter'ами вместо 3-4×
+  `stream().filter().count()` на одном списке. O(N) вместо O(3-4N).
+  `filterExistingLessons` invariant сохранён.
+- `LessonService.getLessonsForGroup` — SQL `LIMIT/OFFSET` через Spring
+  Data `Pageable` вместо in-memory `.subList(offset, end)`. Устраняет
+  OOM-risk на 2000+ lessons/semester. Native query +
+  `countQuery` в `LessonRepository.pageByScheduleItemIdInAndDateBetweenAndStatusIn`.
+  Использует composite-индекс M05 G1.
+- `docs/future-ideas.md` (NEW-146) — 3 варианта Mongo $group
+  implementation + audit-checklist для PR-review.
+
+### Итоги Группы 6 (commit `dbdc38c`)
+
+**HikariCP tuning + pool-exhaustion alert (NEW-147).**
+
+- `application.yml` academic/schedule: pool=20, idle=5, timeout=5s,
+  idle-timeout=10m, max-lifetime=30m, leak-detection=60s.
+  auth-service pool=10 (read-only login). attendance — no-op
+  (MongoDB).
+- `HikariPoolExhaustion` alert в `infra/prometheus/rules/service-health.yml`
+  — `(active/max) > 0.80 for 5m`, warning, routed в Telegram
+  через M04 Alertmanager.
+- `docs/connection-pool-tuning.md` (NEW-147) — формула, текущие
+  значения, триггеры пересмотра, smoke-тест процедура.
+
+### M05 Scope остался
+
+| # | Группа | Est | Статус |
+|---|--------|-----|--------|
+| 1 | Composite indexes + perf baseline | ~3ч | ✅ |
+| 2 | Preventive N+1 guard (NEW-143) | ~2ч | ✅ |
+| 3 | Redis cache дополнения (D6, NEW-144) | ~4ч | ✅ |
+| 4 | Batch endpoints (D7, D8, NEW-145) | ~4ч | ✅ |
+| 5 | Single-pass accumulators + SQL pagination (D9, NEW-146) | ~3ч | ✅ |
+| 6 | HikariCP tuning (NEW-147) | ~1.5ч | ✅ |
+| **7** | **Cleanup push-subs + retention audit (P2-10/7, NEW-148)** | **~3ч** | **⬜ next** |
+| 8 | gRPC hot-path: parallel + deadlines + metrics (P2-10/8, NEW-149) | ~1д | ⬜ |
+| 9 | Audit (bug-hunter + code-reviewer + security) | — | ⬜ |
+| 10 | Documentation + закрытие milestone | — | ⬜ |
+
+### Группа 7 Scope (предварительно — читай PLAN.md + OWNER-ANSWERS 3890-3940)
+
+P2-10/7 Cleanup push-subs + retention audit:
+
+- **Flyway миграция** на attendance_db (или где живёт
+  `push_subscriptions` — уточнить в коде):
+  `ALTER TABLE push_subscriptions ADD COLUMN last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()`.
+- **`WebPushDeliveryService`** — update `last_seen = NOW()` на
+  successful send. На `410 Gone` — delete (уже было до M05).
+- **`@Scheduled(cron="0 0 3 * * SUN") @SchedulerLock(name="cleanupStalePushSubs")`**
+  в notification-web: DELETE WHERE last_seen < NOW() - 90 days.
+- **Audit auth-service Redis** `refresh:<hash>` key — подтвердить
+  `EX=604800` (7d) через grep + optional тест. Если EX отсутствует
+  — фикс.
+- **`docs/data-retention-policy.md` (NEW-148)** — таблица «что →
+  retention → mechanism»: push-subs 90д, refresh-tokens 7д, OTP 5м,
+  attendance history accept, outbox 48ч (M02 cleanup).
+- **Integration-тест:** seed dead subs (`last_seen=NOW()-100d`) +
+  run scheduled → удалены.
+
+### Отложенные пункты (контекст для будущих milestones)
+
+**M06/M07 (cross-service infra):**
+- Mongo `$group` pipeline в `ReportService` (NEW-146) —
+  требует денормализации `lesson_alive` или materialized view.
+- Redis cache hit/miss metrics через `@Aspect` или native Spring
+  Boot 3.5+ `RedisCacheMeterBinder`.
+- `POST /academic/homeworks/batch` (D8) — admin-импорт homework
+  partial-success.
+- `GET /attendance/reports/lessons?ids=...` bulk-read (D8) — если
+  появится реальная p95 проблема на weekly-journal.
+
+**Прод-deployment:**
+- Manual smoke-тест 30 concurrent HTTP на dev (G6) — процедура
+  есть в `docs/connection-pool-tuning.md`, ждёт `docker compose up`
+  с полной инфраструктурой.
+
+### Состояние окружения
+
+- **Docker-compose containers:** `rct-postgres-academic`,
+  `rct-postgres-schedule`, `rct-mongo-attendance`, `rct-redis`,
+  `rct-rabbitmq` — **healthy** (запущены в этой сессии).
+  Schemas мигрированы Flyway V1..V17 / V12. Seed применён
+  (600 schedule_items, 12k lessons, 20 groups, 523 users,
+  300 subjects, 1800 TSG, 1800 homeworks, 6000 late_checkin_requests).
+- **Mongo admin:** `rct_user:rct_dev_pass` (roles: root@admin),
+  connection string в seed-perf.js.
+
+### Последние коммиты
+
+```
+dbdc38c perf(infra): HikariCP tuning + pool-exhaustion alert (M05 Группа 6, NEW-147)
+c3bd518 perf: single-pass accumulators + SQL pagination (M05 Группа 5, NEW-146)
+e0f82de feat(api): POST /attendance/marks/batch + pwa bulk-mark (M05 Группа 4, NEW-145)
+50fc576 feat(cache): rbac + subject namespaces + docs (M05 Группа 3, NEW-144)
+9f11396 docs(m05): hand-off после Группы 2 — 2/10 групп закрыто
+6802e7f feat(arch): preventive N+1 guard ArchUnit rule (M05 Группа 2, NEW-143)
+83ed387 feat(perf): composite indexes + perf baseline (M05 Группа 1)
+```
+
+76+ коммитов локально ahead origin. Tags `v0.0.0-alpha.2..5` локальные.
+Push отложен до конца v0.0.0.
+
+### Действия, ожидающие `go` пользователя
+
+1. `git push origin main` — 76+ коммитов не на origin.
+2. `git push origin --tags` — 4 tags локальные.
+3. Старт Группы 7 по CHECKLIST M05.
+
+### Source of truth для v0.0.0
+
+- `docs/report-before-v0.0.0/99-executive-summary.md` — roadmap.
+- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` (строки **3890-3940**
+  для P2-10/7 / Группа 7 Cleanup).
+- `docs/report-before-v0.0.0/COVERAGE-AUDIT.md` — 354 пункта.
+- `docs/milestones/README.md` — индекс milestones + статусы.
+- `docs/milestones/M05-performance/{PLAN,CHECKLIST,NOTES,DECISIONS}.md`
+  — per-milestone artefacts.
+- `docs/caching-strategy.md` (NEW-144) — M05 G3.
+- `docs/api-error-conventions.md` (NEW-145) — M05 G4.
+- `docs/future-ideas.md` (NEW-146) — M05 G5 deferred.
+- `docs/connection-pool-tuning.md` (NEW-147) — M05 G6.
+
+---
+
+## Hand-off после M05 Группы 2 (2026-04-20) — ИСТОРИЯ
 
 ### Итоги Группы 1 (commit `83ed387` + scope `ea7a390`)
 

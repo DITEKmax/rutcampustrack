@@ -75,13 +75,17 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 - [x] 4 × build.gradle.kts (academic/schedule/attendance/auth): добавлено `implementation(project(":services:shared:shared-events"))`.
 - [x] Contract-тесты M02 валидируют новый envelope: schedule (3) ✅, academic (1) ✅, attendance.marked ✅. Один pre-existing failure в excuse — unrelated business-rule (см. NOTES).
 
-## Группа 7 — Python-бот instrumentation (QA2 + QA7 для бота)
+## Группа 7 — Python-бот instrumentation (QA2 + QA7 для бота) ✅
 
-- [ ] `services/notification-bot/requirements.txt` — `structlog`, `opentelemetry-instrumentation-aiogram`, `opentelemetry-exporter-otlp`.
-- [ ] `services/notification-bot/observability.py` — структурный logger + OTLP setup.
-- [ ] Aiogram middleware: вставить `user_id`, `callback_type`, `trace_id` в context.
-- [ ] aio-pika: extract trace_id из event payload → context.
-- [ ] Smoke: bot отправляет сообщение → trace в Tempo, JSON log в Loki содержит trace_id.
+- [x] `requirements.txt` — добавлено: `structlog==24.4.0`, `opentelemetry-{api,sdk,exporter-otlp-proto-grpc}==1.41.0`, `opentelemetry-instrumentation-{aio-pika,aiohttp-client,grpc,redis}==0.62b0`. OTel 1.41+ — грамотный выбор: pre-1.41 требует protobuf<5, а grpcio-tools 1.73 (уже в проекте) тянет protobuf 6.31.
+- [x] `bot/observability.py` — `setup_observability()` (structlog JSON через ProcessorFormatter + stdlib bridge, OTLP tracer init через TracerProvider + BatchSpanProcessor + auto-instrumentation aio-pika/aiohttp/grpc/redis, `OTEL_SDK_DISABLED=true` skip для unit-тестов). Public API: `bind_trace_context()` context-manager и `get_logger()`. 4 unit-теста ✅.
+- [x] `bot/middlewares/observability_middleware.py` — `ObservabilityMiddleware` глобальный на `dp.update` с user_id/callback_type/callback_data[:60]/trace_id=uuid4. 3 unit-теста ✅.
+- [x] aio-pika consumer (`event_consumer.py`) — `bind_trace_context(body["trace_id"], event_type, event_id)` оборачивает dispatch. Java publisher уже заполняет `trace_id` (G6 fillDefaults).
+- [x] `event_publisher.py` — bot→RabbitMQ публикация теперь пишет unified envelope (`trace_id` из structlog contextvars + UUID-fallback, `event_version=1`, `source=notification-bot`). Symmetry с Java AbstractEventPublisher.
+- [x] `__main__.py` — `setup_observability()` вместо `logging.basicConfig` + регистрация middleware.
+- [x] `docker-compose.yml` + `docker-compose.prod.yml` — `OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317` env у notification-bot.
+- [x] Smoke: 146/146 bot unit-тестов зелёные (7 новых + 139 pre-existing unaffected).
+- [ ] E2E «bot отправляет сообщение → trace в Tempo» — отложено в Группу 11 (требует docker-compose окружения).
 
 ## Группа 8 — Business metrics + custom gauges (QA4 + KI-2 + logout)
 

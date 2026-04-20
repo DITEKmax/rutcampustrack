@@ -11,6 +11,8 @@ from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
 from bot.handlers import excuse_router, late_checkin_router, login_router, prefs_router, start_router, status_router
+from bot.middlewares import ObservabilityMiddleware
+from bot.observability import setup_observability
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.event_publisher import EventPublisher
@@ -22,10 +24,10 @@ from bot.services.reminder_scheduler import ReminderScheduler
 from bot.services.request_message_tracker import RequestMessageTracker
 from bot.services.send_queue import TelegramSendQueue
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
-)
+# M04 Группа 7 — настраивает structlog JSON-рендер, OTLP tracing и
+# auto-instrumentation aio-pika/aiohttp/grpc/redis. Заменяет старый
+# logging.basicConfig (эффект-only функция).
+setup_observability()
 logger = logging.getLogger(__name__)
 
 # Global references for health check
@@ -104,6 +106,12 @@ async def main() -> None:
     bot = Bot(token=config.bot_token)
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
+
+    # M04 Группа 7 — каждый update получает trace_id + user_id/callback_type
+    # в structlog contextvars. Регистрируется на update-уровне чтобы ловить
+    # все подтипы (message, callback_query, inline_query, …).
+    observability_mw = ObservabilityMiddleware()
+    dp.update.middleware(observability_mw)
 
     # Notification on/off prefs (Redis-backed)
     prefs_client = NotificationPrefsClient(

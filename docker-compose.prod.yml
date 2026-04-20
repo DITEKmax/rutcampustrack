@@ -315,6 +315,8 @@ services:
       AUTH_SERVICE_PORT: "9090"
       API_GATEWAY_URL: http://api-gateway:8080
       MINI_APP_URL: ${MINI_APP_URL}
+      # M04 Группа 7 — distributed tracing OTLP exporter → tempo:4317.
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
       TZ: Europe/Moscow
     networks:
       - private_net

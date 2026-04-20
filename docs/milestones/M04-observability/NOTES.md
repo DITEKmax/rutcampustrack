@@ -106,6 +106,49 @@ PR между моментом создания теста и сейчас. Pre-
 
 ---
 
+## 2026-04-20 — Группа 7 — Python-бот instrumentation
+
+**Сюрприз с зависимостями.** OTel 1.27 / 0.48b0 (первоначальный выбор)
+требует `protobuf<5`, а у бота уже `grpcio-tools==1.73.0 → protobuf 6.31`.
+`pip install` падает ResolutionImpossible. Решение: минимальная версия
+OTel 1.41.0 / 0.62b0 — совместимая с protobuf 6. Версии фиксированы в
+requirements.txt.
+
+**Архитектура решения:**
+
+- `bot/observability.py` — bootstrap. structlog конфигурируется с
+  ProcessorFormatter + stdlib bridge → все stdlib-логеры (aiogram,
+  aio_pika, aiormq, grpc) проходят через тот же JSON-рендер. Поля:
+  `ts/level/logger/msg/service + contextvars`. `event` → `msg` чтобы
+  совпало с logstash-logback-encoder в Java-сервисах.
+- `bind_trace_context(trace_id, **extra)` — context-manager, snapshot+
+  restore предыдущих contextvars (nested contexts безопасны).
+- Tracing: TracerProvider + OTLPSpanExporter(insecure=True) +
+  BatchSpanProcessor. Auto-instrumentation aio-pika/aiohttp/grpc/redis
+  под `try/except` — ImportError в unit-тестах не валит setup.
+- `OTEL_SDK_DISABLED=true` — пропускает tracing setup (используется в
+  unit-тестах чтобы не тащить сетевой клиент).
+
+**Middleware регистрируется как `dp.update.middleware(...)`** —
+глобально на update-уровне чтобы ловить message/callback_query/
+inline_query одним handler'ом.
+
+**event_publisher.py** теперь тоже пишет unified envelope (trace_id из
+contextvars + UUID-fallback, event_version=1, source=notification-bot).
+Symmetry с Java AbstractEventPublisher.fillDefaults. Цепочка
+Java-publish → bot-consume → bot-publish → Java-consume сохраняет
+trace_id.
+
+**Тесты:**
+
+- 7 новых: 4 в `test_observability.py` + 3 в `test_observability_middleware.py`.
+- 146/146 overall passed (139 pre-existing не пострадали).
+
+**Отложено в Группу 11:** E2E «bot отправляет сообщение → trace долетает
+до Grafana Tempo» — требует docker-compose окружения.
+
+---
+
 ## 2026-04-20 — Hand-off для следующей сессии (после Группы 6)
 
 **Состояние M04:** 6/12 групп закрыто. Текущая сессия упёрлась в ~50%

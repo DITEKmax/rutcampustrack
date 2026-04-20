@@ -13,10 +13,12 @@ import uuid
 from typing import Optional
 
 import aio_pika
+import structlog
 
 logger = logging.getLogger(__name__)
 
 EXCHANGE_NAME = "rut-uit.events"
+EVENT_SOURCE = "notification-bot"
 
 
 class EventPublisher:
@@ -40,9 +42,17 @@ class EventPublisher:
             )
 
     async def publish(self, event_type: str, payload: dict) -> None:
+        # M04 Группа 7 — поддерживаем unified envelope (shared-events
+        # DomainEvent): trace_id из structlog contextvars с UUID-fallback,
+        # event_version=1, source="notification-bot".
+        ctx = structlog.contextvars.get_contextvars()
+        trace_id = ctx.get("trace_id") or uuid.uuid4().hex
         envelope = {
             "event_type": event_type,
             "event_id": str(uuid.uuid4()),
+            "event_version": 1,
+            "trace_id": trace_id,
+            "source": EVENT_SOURCE,
             "occurred_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "payload": payload,
         }

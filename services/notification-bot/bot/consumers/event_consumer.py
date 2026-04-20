@@ -3,6 +3,8 @@ import logging
 
 import aio_pika
 
+from bot.observability import bind_trace_context
+
 logger = logging.getLogger(__name__)
 
 EXCHANGE_NAME = "rut-uit.events"
@@ -60,9 +62,18 @@ async def start_consumer(rabbitmq_url: str, dispatcher=None) -> aio_pika.abc.Abs
                 try:
                     body = json.loads(message.body)
                     event_type = body.get("event_type", "unknown")
-                    logger.info("[notification-bot] Received event: %s", event_type)
-                    if dispatcher:
-                        await dispatcher.dispatch(body)
+                    # M04 Группа 7: trace_id приходит в envelope от Java-сервисов
+                    # (shared-events AbstractEventPublisher.fillDefaults).
+                    # Биндим его в structlog contextvars чтобы все логи
+                    # handler'а несли один trace_id.
+                    with bind_trace_context(
+                        body.get("trace_id"),
+                        event_type=event_type,
+                        event_id=body.get("event_id"),
+                    ):
+                        logger.info("[notification-bot] Received event: %s", event_type)
+                        if dispatcher:
+                            await dispatcher.dispatch(body)
                 except json.JSONDecodeError:
                     logger.error("Failed to decode message body: %s", message.body[:200])
                 except Exception:

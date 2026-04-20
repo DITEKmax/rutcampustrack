@@ -87,14 +87,21 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 - [x] Smoke: 146/146 bot unit-тестов зелёные (7 новых + 139 pre-existing unaffected).
 - [ ] E2E «bot отправляет сообщение → trace в Tempo» — отложено в Группу 11 (требует docker-compose окружения).
 
-## Группа 8 — Business metrics + custom gauges (QA4 + KI-2 + logout)
+## Группа 8 — Business metrics + custom gauges (QA4 + KI-2 + logout) ✅
 
-- [ ] `@Counted`/`@Timed` на: `AuthService.login`, `LogoutService.logout` (метрика `user.logged-out` deferred из M03b), `OtpService.request/verify`, `AttendanceService.checkIn`, `ExcuseService.create`, `LateCheckinService.create`.
-- [ ] Counter `internal_jwt_fallback_total{from,to}` в `DualModeUserContextFilter` (KI-2).
-- [ ] Gauge `students_in_red_zone` — scheduled job каждые 5 мин в attendance-service.
-- [ ] Gauge `active_ws_sessions` — из notification-service handshake interceptor.
-- [ ] Gauge `outbox_lag_seconds` — max(now - created_at) where sent_at IS NULL — добавить в `shared-outbox/Metrics.java`.
-- [ ] Тест: mock checkin → `attendance_checkin_total{status="present"}` инкрементирован.
+- [x] BusinessMetrics bean → ObservabilityConfig в auth/attendance/academic/schedule/notification.
+- [x] `AuthService.login` → `auth.login{role}` (role downcased).
+- [x] `AuthService.logout` → `auth.logout{cause=user|invalid_token}` (замещает deferred из M03b).
+- [x] `OtpService.requestOtp` → `otp.request{channel=telegram}`.
+- [x] `OtpService.verifyOtp` + `verifyOtpByCode` → `otp.verify{outcome=success|expired|mismatch|annulled}`.
+- [x] `CheckinService.checkin` → `attendance.checkin{status=present}`.
+- [x] `ExcuseService.createExcuse` + `createExcuseWithFile` → `excuse.created{kind=illness|...}`.
+- [x] `LateCheckinService.createRequest` → `late_checkin.created`.
+- [x] KI-2 counter `internal_jwt_fallback_total{from,to}` в `DualModeUserContextFilter` (nullable BusinessMetrics в конструкторе — backward-compat tests проходят). shared-security → api dep на shared-observability. 4 downstream фильтра (academic/schedule/attendance/notification) передают BusinessMetrics через super().
+- [x] Gauge `attendance.students_in_red_zone` — `RedZoneGauge` с @Scheduled (5 мин) + @SchedulerLock (NEW-28 compliance) + @PostConstruct initial refresh. AtomicLong storage, Micrometer lazy-read. Упрощённое определение: студенты с ≥ 3 `absent` статусами за 30 дней через MongoDB `$group`-aggregation.
+- [x] Gauge `notification.active_ws_sessions` — `WsSessionGauge` через `@EventListener(SessionConnectedEvent/SessionDisconnectEvent)`. AtomicLong, guard против negative.
+- [x] Gauge `outbox.lag.seconds` — `OutboxStorage.oldestPendingAgeSeconds()` + реализации в JpaOutboxStorage и MongoOutboxStorage. shared-outbox → api dep на shared-observability. OutboxMetrics регистрирует оба gauge (`outbox.lag` legacy + `outbox.lag.seconds`).
+- [x] Smoke: CheckinServiceTest + ExcuseServiceTest — Mockito stubs на BusinessMetrics. auth-service (все тесты), attendance-service (157/157), academic/schedule/notification — зелёные.
 
 ## Группа 9 — Alertmanager + alerts (QA4 + NEW-62/63/64)
 

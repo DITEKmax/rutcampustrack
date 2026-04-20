@@ -137,4 +137,20 @@ public class JpaOutboxStorage<E extends OutboxEntity> implements OutboxStorage {
                 .setParameter("status", OutboxStatus.PENDING.name().toLowerCase())
                 .getSingleResult();
     }
+
+    @Override
+    public long oldestPendingAgeSeconds() {
+        List<Instant> rows = entityManager.createQuery(
+                        "SELECT MIN(e.createdAt) FROM " + entityName
+                                + " e WHERE e.status = :status",
+                        Instant.class)
+                .setParameter("status", OutboxStatus.PENDING.name().toLowerCase())
+                .getResultList();
+        Instant oldest = rows.isEmpty() ? null : rows.get(0);
+        if (oldest == null) {
+            return 0L;
+        }
+        long age = Instant.now().getEpochSecond() - oldest.getEpochSecond();
+        return Math.max(age, 0L);
+    }
 }

@@ -16,6 +16,7 @@ import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
 import ru.rutcampustrack.auth.exception.OtpExpiredException;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 import ru.rutcampustrack.auth.repository.UserRepository;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.security.SecureRandom;
 import java.time.Duration;
@@ -30,6 +31,7 @@ public class OtpService {
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
     private final ApplicationEventPublisher eventPublisher;
+    private final BusinessMetrics businessMetrics;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public OtpService(StringRedisTemplate redisTemplate,
@@ -37,13 +39,15 @@ public class OtpService {
                       UserRepository userRepository,
                       JwtService jwtService,
                       JwtProperties jwtProperties,
-                      ApplicationEventPublisher eventPublisher) {
+                      ApplicationEventPublisher eventPublisher,
+                      BusinessMetrics businessMetrics) {
         this.redisTemplate = redisTemplate;
         this.otpProperties = otpProperties;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.jwtProperties = jwtProperties;
         this.eventPublisher = eventPublisher;
+        this.businessMetrics = businessMetrics;
     }
 
     public String requestOtp(OtpRequest request) {
@@ -103,6 +107,10 @@ public class OtpService {
                     otpProperties.attemptsWindowSeconds(), TimeUnit.SECONDS);
         }
 
+        // M04 Группа 8 — otp.request{channel=telegram}. Единственный канал
+        // на текущий момент; SMS будет добавлен — tag выделен под это.
+        businessMetrics.otpRequestCounter("telegram").increment();
+
         return code;
     }
 
@@ -118,6 +126,7 @@ public class OtpService {
 
         String storedCode = redisTemplate.opsForValue().get("otp:" + telegramId);
         if (storedCode == null) {
+            businessMetrics.otpVerifyCounter("expired").increment();
             throw new OtpExpiredException();
         }
 
@@ -132,12 +141,16 @@ public class OtpService {
                 // Annul the OTP — force user to request a new one
                 redisTemplate.delete("otp:" + telegramId);
                 redisTemplate.delete(verifyKey);
+                businessMetrics.otpVerifyCounter("annulled").increment();
                 throw new OtpRateLimitException("Too many verification attempts. Request a new code");
             }
+            businessMetrics.otpVerifyCounter("mismatch").increment();
             throw new OtpExpiredException();
         }
 
-        return issueTokens(user, telegramId, request.code());
+        TokenResponse response = issueTokens(user, telegramId, request.code());
+        businessMetrics.otpVerifyCounter("success").increment();
+        return response;
     }
 
     public TokenResponse verifyOtpByCode(OtpVerifyByCodeRequest request) {
@@ -145,6 +158,7 @@ public class OtpService {
 
         String telegramIdStr = redisTemplate.opsForValue().get("otp_code:" + code);
         if (telegramIdStr == null) {
+            businessMetrics.otpVerifyCounter("expired").increment();
             throw new OtpExpiredException();
         }
 
@@ -157,7 +171,9 @@ public class OtpService {
             throw new InvalidCredentialsException();
         }
 
-        return issueTokens(user, telegramId, code);
+        TokenResponse response = issueTokens(user, telegramId, code);
+        businessMetrics.otpVerifyCounter("success").increment();
+        return response;
     }
 
     private TokenResponse issueTokens(User user, Long telegramId, String code) {

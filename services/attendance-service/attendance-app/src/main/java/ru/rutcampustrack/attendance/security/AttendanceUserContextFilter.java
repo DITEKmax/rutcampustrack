@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.security;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
 import ru.rutcampustrack.shared.security.DualModeUserContextFilter;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtProperties;
@@ -19,8 +20,9 @@ public class AttendanceUserContextFilter extends DualModeUserContextFilter {
 
     public AttendanceUserContextFilter(InternalJwtValidator validator,
                                        InternalJwtProperties properties,
-                                       RequestContext requestContext) {
-        super(validator, properties);
+                                       RequestContext requestContext,
+                                       BusinessMetrics businessMetrics) {
+        super(validator, properties, businessMetrics);
         this.requestContext = requestContext;
     }
 

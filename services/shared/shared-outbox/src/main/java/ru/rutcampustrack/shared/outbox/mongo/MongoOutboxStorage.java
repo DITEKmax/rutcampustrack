@@ -162,6 +162,24 @@ public class MongoOutboxStorage implements OutboxStorage {
         return mongoTemplate.count(q, collectionName);
     }
 
+    @Override
+    public long oldestPendingAgeSeconds() {
+        Query q = Query.query(Criteria.where("status")
+                        .is(OutboxStatus.PENDING.name().toLowerCase()))
+                .with(org.springframework.data.domain.Sort.by(ASC, "created_at"))
+                .limit(1);
+        Document doc = mongoTemplate.findOne(q, Document.class, collectionName);
+        if (doc == null) {
+            return 0L;
+        }
+        Instant oldest = toInstant(doc.get("created_at"));
+        if (oldest == null) {
+            return 0L;
+        }
+        long age = Instant.now().getEpochSecond() - oldest.getEpochSecond();
+        return Math.max(age, 0L);
+    }
+
     private static Instant toInstant(Object value) {
         if (value == null) return null;
         if (value instanceof Date d) return d.toInstant();

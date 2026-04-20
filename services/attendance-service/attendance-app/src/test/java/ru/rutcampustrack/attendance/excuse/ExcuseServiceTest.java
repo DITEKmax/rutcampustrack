@@ -24,6 +24,8 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
+import io.micrometer.core.instrument.Counter;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.time.Instant;
 import java.util.List;
@@ -34,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -71,6 +74,12 @@ class ExcuseServiceTest {
 
     @Mock
     private ScheduleGrpcClient scheduleGrpcClient;
+
+    @Mock
+    private BusinessMetrics businessMetrics;
+
+    @Mock
+    private Counter excuseCreatedCounterMock;
 
     @InjectMocks
     private ExcuseService excuseService;
@@ -110,6 +119,9 @@ class ExcuseServiceTest {
                     if (t.getId() == null) t.setId("new-id");
                     return t;
                 });
+        // M04 Группа 8 — counter excuse.created; kind (illness/etc) передаётся
+        // в downcase.
+        lenient().when(businessMetrics.excuseCreatedCounter(anyString())).thenReturn(excuseCreatedCounterMock);
     }
 
     // ---------------------------------------------------------------------

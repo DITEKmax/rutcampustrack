@@ -80,4 +80,15 @@ public interface OutboxStorage {
      * метрикой {@code outbox.lag}.
      */
     long countPending();
+
+    /**
+     * M04 Группа 8 — возвращает возраст самого старого PENDING-события
+     * в секундах. {@code 0} если PENDING пусто.
+     *
+     * <p>Используется gauge {@code outbox.lag.seconds}. В отличие от
+     * {@link #countPending()}, это прямой сигнал «как далеко rabbit
+     * откатился»: при стабильном publishing countPending=5 может быть
+     * нормой (batch ещё не забран), но age=300 это уже 5-минутный lag.
+     */
+    long oldestPendingAgeSeconds();
 }

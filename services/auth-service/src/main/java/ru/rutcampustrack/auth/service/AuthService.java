@@ -14,6 +14,7 @@ import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
 import ru.rutcampustrack.auth.exception.TokenRefreshException;
 import ru.rutcampustrack.auth.repository.UserRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.time.Duration;
 
@@ -27,6 +28,7 @@ public class AuthService {
     private final JwtProperties jwtProperties;
     private final LoginRateLimiter loginRateLimiter;
     private final BcryptConcurrencyGuard bcryptGuard;
+    private final BusinessMetrics businessMetrics;
 
     public AuthService(UserRepository userRepository,
                        JwtService jwtService,
@@ -34,7 +36,8 @@ public class AuthService {
                        StringRedisTemplate redisTemplate,
                        JwtProperties jwtProperties,
                        LoginRateLimiter loginRateLimiter,
-                       BcryptConcurrencyGuard bcryptGuard) {
+                       BcryptConcurrencyGuard bcryptGuard,
+                       BusinessMetrics businessMetrics) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
@@ -42,6 +45,7 @@ public class AuthService {
         this.jwtProperties = jwtProperties;
         this.loginRateLimiter = loginRateLimiter;
         this.bcryptGuard = bcryptGuard;
+        this.businessMetrics = businessMetrics;
     }
 
     public TokenResponse login(LoginRequest request, String ipAddress) {
@@ -83,6 +87,9 @@ public class AuthService {
         String redisKey = "refresh:" + user.getId() + ":" + jti;
         redisTemplate.opsForValue().set(redisKey, "valid",
                 Duration.ofSeconds(jwtProperties.refreshTokenExpiration()));
+
+        // M04 Группа 8 — auth.login{role} counter.
+        businessMetrics.loginCounter(user.getRole().name().toLowerCase()).increment();
 
         return new TokenResponse(accessToken, refreshToken, jwtProperties.accessTokenExpiration());
     }
@@ -126,8 +133,12 @@ public class AuthService {
             Long userId = jwtService.extractUserId(refreshToken);
             String jti = jwtService.extractJti(refreshToken);
             redisTemplate.delete("refresh:" + userId + ":" + jti);
+            // M04 Группа 8 — auth.logout{cause=user}. Dead-letter (403 из
+            // token blacklist) пойдёт с cause=revoked, см. SecurityConfig.
+            businessMetrics.logoutCounter("user").increment();
         } catch (Exception e) {
             // Idempotent logout — silently ignore unparseable tokens
+            businessMetrics.logoutCounter("invalid_token").increment();
         }
     }
 

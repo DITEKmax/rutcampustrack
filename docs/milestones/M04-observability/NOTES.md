@@ -149,6 +149,68 @@ trace_id.
 
 ---
 
+## 2026-04-20 — Группа 8 — Business metrics + custom gauges
+
+**Архитектура:**
+
+- 5 ObservabilityConfig'ов (auth/attendance/academic/schedule/notification)
+  создают `BusinessMetrics` bean. Сервисы ранее не имели этого bean'а,
+  несмотря на наличие shared-observability зависимости (added in G1).
+- shared-security теперь `api` зависит на shared-observability — чтобы
+  `DualModeUserContextFilter.java` принимал nullable `BusinessMetrics`
+  в конструкторе без transitive ломки downstream-тестов. Один legacy
+  двухарный конструктор сохранён (backward-compat для DualModeUserContextFilterTest).
+- shared-outbox → api dep на shared-observability (MetricNames).
+
+**KI-2 counter** — `internal_jwt_fallback_total{from="internal-jwt",to="legacy-headers"}`.
+Инкрементируется **только при успешном применении legacy headers** —
+иначе counter шумел бы от уже отваленных 401 (сигнал «fallback
+использован» важнее «header пришёл»).
+
+**students_in_red_zone gauge** — первая итерация упрощена. Настоящее
+определение красной зоны (academic-service thresholds per-subject/
+per-group из v9.0 P59-60) требует cross-service join, что для 5-минутного
+gauge слишком дорого. Baseline: «студенты с ≥ 3 absent за 30 дней»
+через MongoDB aggregation pipeline. Threshold tags (global/group/subject)
+остаются отдельными academic.threshold.* counter'ами (не scope M04).
+
+**active_ws_sessions** — через Spring event listener. Handshake-level
+counter не ловил бы TCP-обрывы (afterHandshake не даёт disconnect).
+`SessionConnectedEvent` инкремент + `SessionDisconnectEvent` декремент
+с guard против negative (rare race при multi-disconnect).
+
+**outbox.lag.seconds** — add-on к legacy `outbox.lag` (count). Secondary
+metric: при стабильном publishing countPending=5 может быть нормой
+(batch не забран), но age=300с это уже 5-минутный lag → alert triggered.
+Pure-SQL MIN(createdAt) + epochSecond diff — без sort-based query
+(MongoDB findOne with sort по index `idx_outbox_pending`).
+
+**NEW-28 compliance для RedZoneGauge** — `@SuppressWarnings("SingleInstance")`
+недостаточен (SOURCE retention, ArchUnit видит bytecode). Решение:
+`@SchedulerLock(name="RedZoneGauge-refresh", lockAtMostFor="4m",
+lockAtLeastFor="30s")` — только один pod пересчитывает в 5-мин окне,
+остальные потянут свежее значение через Prometheus remote_read. То же
+самое что в outbox/lesson-closure scheduled jobs.
+
+**Тесты:** CheckinServiceTest + ExcuseServiceTest получили `@Mock
+BusinessMetrics` + `lenient().when(...checkinCounter|excuseCreatedCounter)`
+→ возвращает Counter mock. SecurityInfrastructureTest (notification)
+обновлён под 4-арный конструктор фильтра (`null` для BusinessMetrics).
+
+**Тест-результаты:**
+- shared-security: ✅
+- auth-service: ✅
+- attendance-service: 157/157 ✅ (EventConsumerIntegrationTest flaky —
+  прошёл со второго запуска; не scope G8)
+- academic/schedule/notification: ✅
+
+**Pre-existing failure** `EventSchemaRefTest` в shared-outbox — тест
+создан в M02 Группа 7 (`bfd43eb`), подаёт envelope без trace_id/event_version/
+source, которые после G6 стали required. Unrelated G8; добавлено в
+backlog G11 audit.
+
+---
+
 ## 2026-04-20 — Hand-off для следующей сессии (после Группы 6)
 
 **Состояние M04:** 6/12 групп закрыто. Текущая сессия упёрлась в ~50%

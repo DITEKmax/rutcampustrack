@@ -19,6 +19,8 @@ dependencyManagement {
 dependencies {
     // Базовый API — минимум зависимостей в compile
     api("com.fasterxml.jackson.core:jackson-databind")
+    // M04 Группа 8 — MetricNames (OUTBOX_LAG_SECONDS) используется в OutboxMetrics.
+    api(project(":services:shared:shared-observability"))
     compileOnly("org.slf4j:slf4j-api")
 
     // Spring-аннотации (@Component/@Scheduled/@Transactional) нужны для

@@ -22,6 +22,7 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -73,6 +74,7 @@ public class ExcuseService {
     private final AttendanceWritePort attendanceWritePort;
     private final ExcuseEventPublisher excuseEventPublisher;
     private final ScheduleGrpcClient scheduleGrpcClient;
+    private final BusinessMetrics businessMetrics;
 
     public ExcuseService(ExcuseRepository excuseRepository,
                          RequestContext requestContext,
@@ -80,7 +82,8 @@ public class ExcuseService {
                          AttendanceReadPort attendanceReadPort,
                          AttendanceWritePort attendanceWritePort,
                          ExcuseEventPublisher excuseEventPublisher,
-                         ScheduleGrpcClient scheduleGrpcClient) {
+                         ScheduleGrpcClient scheduleGrpcClient,
+                         BusinessMetrics businessMetrics) {
         this.excuseRepository = excuseRepository;
         this.requestContext = requestContext;
         this.academicGrpcClient = academicGrpcClient;
@@ -88,6 +91,7 @@ public class ExcuseService {
         this.attendanceWritePort = attendanceWritePort;
         this.excuseEventPublisher = excuseEventPublisher;
         this.scheduleGrpcClient = scheduleGrpcClient;
+        this.businessMetrics = businessMetrics;
     }
 
     /**
@@ -102,6 +106,8 @@ public class ExcuseService {
         // Обогащаем payload деталями пар (номер, дата, предмет): без этого староста
         // в TG/веб видел только ID пар без контекста.
         excuseEventPublisher.publishRequested(saved, resolveLessonDetails(saved.getLessonIds()));
+        // M04 Группа 8 — excuse.created{kind}. kind = enum ExcuseType (illness, ...).
+        businessMetrics.excuseCreatedCounter(saved.getExcuseType().name().toLowerCase()).increment();
         return saved;
     }
 
@@ -117,6 +123,9 @@ public class ExcuseService {
         final long MAX_BYTES = 10L * 1024 * 1024;
         ExcuseTicket saved = createTicketInternal(request);
         List<Map<String, Object>> lessonDetails = resolveLessonDetails(saved.getLessonIds());
+        // M04 Группа 8 — excuse.created counter бампим один раз независимо
+        // от того, есть файл или нет (сам ticket уже сохранён).
+        businessMetrics.excuseCreatedCounter(saved.getExcuseType().name().toLowerCase()).increment();
         if (file == null || file.isEmpty()) {
             excuseEventPublisher.publishRequested(saved, lessonDetails);
             return saved;

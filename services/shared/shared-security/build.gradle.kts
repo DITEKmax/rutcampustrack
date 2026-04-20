@@ -25,6 +25,12 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
+    // M04 Группа 8 — KI-2 counter через BusinessMetrics. api потому что
+    // DualModeUserContextFilter принимает BusinessMetrics в публичном
+    // конструкторе (downstream сервисы обязаны его резолвить).
+    api(project(":services:shared:shared-observability"))
+    compileOnly("io.micrometer:micrometer-core")
+
     // Spring-аннотации + OncePerRequestFilter. compileOnly — сервис приносит.
     compileOnly("org.springframework:spring-context")
     compileOnly("org.springframework:spring-web")

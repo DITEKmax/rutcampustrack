@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.io.IOException;
 
@@ -23,6 +24,10 @@ import java.io.IOException;
  * Downstream services extend this filter and implement the two {@code apply*} hooks
  * to bridge into their service-specific {@code RequestContext} (which depends on
  * the service's {@code UserRole} enum from its contract module).
+ *
+ * <p>M04 Группа 8 — KI-2 counter {@code internal_jwt_fallback_total{from,to}}
+ * инкрементируется при silent fallback на legacy headers, чтобы видеть когда
+ * service-to-service calls всё ещё работают без internal JWT.
  */
 public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
 
@@ -30,11 +35,19 @@ public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
 
     private final InternalJwtValidator validator;
     private final InternalJwtProperties properties;
+    private final BusinessMetrics businessMetrics;
 
     protected DualModeUserContextFilter(InternalJwtValidator validator,
                                         InternalJwtProperties properties) {
+        this(validator, properties, null);
+    }
+
+    protected DualModeUserContextFilter(InternalJwtValidator validator,
+                                        InternalJwtProperties properties,
+                                        BusinessMetrics businessMetrics) {
         this.validator = validator;
         this.properties = properties;
+        this.businessMetrics = businessMetrics;
     }
 
     @Override
@@ -66,6 +79,14 @@ public abstract class DualModeUserContextFilter extends OncePerRequestFilter {
             if (legacyUserId != null && !legacyUserId.isBlank()) {
                 try {
                     applyLegacyHeaders(request);
+                    // M04 Группа 8 / KI-2 — silent fallback. Инкрементим только
+                    // при успешном применении legacy headers (иначе counter
+                    // шумит от уже отваленных 401). businessMetrics может
+                    // быть null в юнит-тестах — защищаемся.
+                    if (businessMetrics != null) {
+                        businessMetrics.internalJwtFallbackCounter("internal-jwt", "legacy-headers")
+                                .increment();
+                    }
                     chain.doFilter(request, response);
                     return;
                 } catch (Exception e) {

@@ -15,6 +15,7 @@ import ru.rutcampustrack.attendance.ratelimit.CheckinRateLimiter;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -48,6 +49,7 @@ public class CheckinService {
     private final AttendanceEventPublisher eventPublisher;
     private final SemesterCacheService semesterCacheService;
     private final RequestContext requestContext;
+    private final BusinessMetrics businessMetrics;
 
     public CheckinService(CheckinRateLimiter rateLimiter,
                           GeofenceService geofenceService,
@@ -55,7 +57,8 @@ public class CheckinService {
                           AttendanceRepository attendanceRepository,
                           AttendanceEventPublisher eventPublisher,
                           SemesterCacheService semesterCacheService,
-                          RequestContext requestContext) {
+                          RequestContext requestContext,
+                          BusinessMetrics businessMetrics) {
         this.rateLimiter = rateLimiter;
         this.geofenceService = geofenceService;
         this.scheduleGrpcClient = scheduleGrpcClient;
@@ -63,6 +66,7 @@ public class CheckinService {
         this.eventPublisher = eventPublisher;
         this.semesterCacheService = semesterCacheService;
         this.requestContext = requestContext;
+        this.businessMetrics = businessMetrics;
     }
 
     /**
@@ -144,6 +148,11 @@ public class CheckinService {
 
         // Step 8: Publish event (INFRA-06)
         eventPublisher.publishMarked(savedDoc);
+
+        // M04 Группа 8 — attendance.checkin{status=present}. Статус здесь
+        // всегда PRESENT (геоотметка); late/absent/excused фиксируются
+        // другими путями и не должны инкрементировать counter геоотметки.
+        businessMetrics.checkinCounter(savedDoc.getStatus().name().toLowerCase()).increment();
 
         return savedDoc;
     }

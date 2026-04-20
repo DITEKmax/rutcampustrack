@@ -15,6 +15,7 @@ import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -49,6 +50,7 @@ public class LateCheckinService {
     private final AttendanceRepository attendanceRepository;
     private final AttendanceWritePort attendanceWritePort;
     private final LateCheckinEventPublisher eventPublisher;
+    private final BusinessMetrics businessMetrics;
 
     public LateCheckinService(LateCheckinRepository repository,
                               RequestContext requestContext,
@@ -56,7 +58,8 @@ public class LateCheckinService {
                               AcademicGrpcClient academicGrpcClient,
                               AttendanceRepository attendanceRepository,
                               AttendanceWritePort attendanceWritePort,
-                              LateCheckinEventPublisher eventPublisher) {
+                              LateCheckinEventPublisher eventPublisher,
+                              BusinessMetrics businessMetrics) {
         this.repository = repository;
         this.requestContext = requestContext;
         this.scheduleGrpcClient = scheduleGrpcClient;
@@ -64,6 +67,7 @@ public class LateCheckinService {
         this.attendanceRepository = attendanceRepository;
         this.attendanceWritePort = attendanceWritePort;
         this.eventPublisher = eventPublisher;
+        this.businessMetrics = businessMetrics;
     }
 
     public LateCheckinRequest createRequest(Long lessonId) {
@@ -123,6 +127,9 @@ public class LateCheckinService {
                 lesson.getSubjectId(),
                 subjectName
         );
+
+        // M04 Группа 8 — late_checkin.created.
+        businessMetrics.lateCheckinCreatedCounter().increment();
 
         return saved;
     }

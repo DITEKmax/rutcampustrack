@@ -24,6 +24,8 @@ import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import io.micrometer.core.instrument.Counter;
+import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,6 +61,12 @@ class CheckinServiceTest {
 
     @Mock
     private RequestContext requestContext;
+
+    @Mock
+    private BusinessMetrics businessMetrics;
+
+    @Mock
+    private Counter checkinCounterMock;
 
     @InjectMocks
     private CheckinService checkinService;
@@ -96,6 +104,8 @@ class CheckinServiceTest {
         lenient().when(attendanceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         lenient().when(attendanceRepository.findByLessonIdAndUserId(anyLong(), anyLong()))
                 .thenReturn(java.util.Optional.empty());
+        // M04 Группа 8 — counter на happy path увеличивается один раз.
+        lenient().when(businessMetrics.checkinCounter(anyString())).thenReturn(checkinCounterMock);
     }
 
     // -------------------------------------------------------------------------

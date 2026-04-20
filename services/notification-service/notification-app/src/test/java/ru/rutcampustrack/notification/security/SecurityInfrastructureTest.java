@@ -52,7 +52,7 @@ class SecurityInfrastructureTest {
             }
         };
         InternalJwtValidator validator = new InternalJwtValidator(keyProvider, props);
-        filter = new NotificationUserContextFilter(validator, props, requestContext);
+        filter = new NotificationUserContextFilter(validator, props, requestContext, null);
     }
 
     // Test 1: RoleCheckAspect allows method execution when request has STUDENT role and @RequireRole({STUDENT}) is present

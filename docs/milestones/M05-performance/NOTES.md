@@ -418,8 +418,8 @@ push_subscriptions ADD COLUMN last_seen ...». Grep показал — колл�
 | 6 | LOW | security | Mozilla/Apple push endpoint masking — M07 (frontend hardening) |
 | 2.2 | MEDIUM | bug-hunter | Race pre-check vs upsert в `markBatch` (mass-transfer edge) — accepted limitation |
 | 3.2 | MEDIUM | bug-hunter | `unwrap()` interrupted handling — accepted |
-| DRY | MAJOR | code-review | `GrpcClientDeadlineTest` × 3 дубликата (~180 LOC) — в следующий commit (refactor) |
-| DRY | MINOR | code-review | `unwrap()` дублируется между `LessonEventService` / `MarkingService` — в refactor-commit |
+| DRY | MAJOR | code-review | `GrpcClientDeadlineTest` × 3 → ✅ вынесен в `GrpcDeadlineArchRules` (commit `ff3d6e3`), -74 LOC net |
+| DRY | MINOR | code-review | `unwrap()` → ✅ вынесен в `AsyncGrpcUtils.joinOrUnwrap` (commit `ff3d6e3`) |
 | Docs | MINOR | code-review | Cross-link «See also» блоки между 5 новыми M05 docs + api-error-conventions в architecture.md — дополнено, но без reverse-links между caching/retention/pool |
 | Docs | MINOR | code-review | `V12`/`V17` migrations без `CONCURRENTLY` — dev OK, prod нужно документировать явно — отложено в М05 Группа 10 |
 

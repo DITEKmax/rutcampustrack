@@ -100,5 +100,125 @@ PR между моментом создания теста и сейчас. Pre-
 - D1=(a) shared-observability модуль.
 - D2=(a) `POST /internal/alert` в notification-service → RabbitMQ event → bot.
 - D3=(a) фиксированный 22:00-08:00 MSK через `mute_time_intervals`.
+- D5=(a) — полная migration сервис-DomainEvent → shared.events.DomainEvent.
 
-Подробности в DECISIONS.md. Стартую Группу 1.
+Подробности в DECISIONS.md.
+
+---
+
+## 2026-04-20 — Hand-off для следующей сессии (после Группы 6)
+
+**Состояние M04:** 6/12 групп закрыто. Текущая сессия упёрлась в ~50%
+контекста — переключаемся ради чистоты для оставшихся 6 групп.
+
+### Закрыто в этой сессии (8 коммитов)
+
+| # | Коммит | Группа |
+|---|--------|--------|
+| 1 | `89549af` | Scaffold milestone (PLAN/CHECKLIST/NOTES/DECISIONS) |
+| 2 | `fc821a7` | Закрыты развилки D1/D2/D3 — все (a) |
+| 3 | `de72589` | G1 — shared-observability модуль (15 тестов ✅) |
+| 4 | `3fba630` | G2 — INFO-default + dev-profile + verifyNoDebugInProd CI-check |
+| 5 | `ab06c09` | G3 — JSON-логи во всех 6 сервисах + verifyLogbackJsonInAllServices |
+| 6 | `cd29e7c` | G4 — health show-details:always + PublicKeyHealthIndicator (KI-4) + git.properties |
+| 7 | `25f76c3` | G5 — distributed tracing OTel + Tempo container |
+| 8 | `08fbd1f` | G6 — D5(a) unified envelope с trace_id/event_version/source (47 файлов) |
+
+Plus коммиты до M04: `e85081a` hand-off от M03b. Tag `v0.0.0-alpha.4`
+на `eb125c4` (без push).
+
+### Что делать в новой сессии (первая команда)
+
+1. Прочитай этот файл (NOTES.md) — особенно блоки «Surprise при старте
+   Группы 6», «D5(a) решение», текущий hand-off.
+2. Прочитай `CHECKLIST.md` — для каждой группы видишь что закрыто `[x]`
+   и что осталось `[ ]`. Группа 7 первая невыполненная.
+3. Прочитай `DECISIONS.md` — все 5 решений (D1..D5) уже закрыты, новых
+   развилок не предвидится для Группы 7.
+4. **Сразу стартуй Группу 7 без подтверждения** — пользователь даст
+   `go` через сообщение "go", а не отдельным повторным вопросом.
+5. Если возникнет surprise по архитектуре Python-бота — стоп, NOTES.md,
+   спросить.
+
+### Контекст Группы 7 (Python-бот instrumentation, QA2 + QA7)
+
+**Что нужно сделать:**
+1. `services/notification-bot/requirements.txt` — добавить `structlog`,
+   `opentelemetry-instrumentation-aiogram`, `opentelemetry-exporter-otlp`.
+2. `services/notification-bot/observability.py` (новый файл) —
+   `structlog` setup с JSON-processor + OTLP tracer init.
+3. Aiogram middleware — вставлять `user_id`, `callback_type`, `trace_id`
+   в structlog context.
+4. aio-pika consumer — extract `trace_id` из `event payload['trace_id']`
+   (тот же envelope из shared-events после G6) → MDC-equivalent через
+   `structlog.contextvars`.
+5. `docker-compose.yml`/`prod.yml` — `OTEL_EXPORTER_OTLP_ENDPOINT`
+   env-var у notification-bot.
+
+**Команды для быстрого orientation:**
+
+```bash
+ls services/notification-bot/
+cat services/notification-bot/requirements.txt
+# найти место где bot обрабатывает events:
+grep -rln "aio_pika\|aio-pika" services/notification-bot/
+grep -rln "Dispatcher\|@dp.message\|@router\." services/notification-bot/ | head
+# понять где сейчас logging:
+grep -rln "import logging\|logger =" services/notification-bot/ | head
+```
+
+**Проверка:** `docker compose -f docker-compose.yml up notification-bot`
+→ `docker logs rct-notification-bot` → первая строка валидный JSON.
+
+**Spec из аудита:** `docs/report-before-v0.0.0/06-notification-bot.md` +
+`OWNER-ANSWERS.md` строки 1389-1395 (QA2 — Python instrumentation) +
+1530-1564 (QA7 — structlog).
+
+### Незакрытые backlog'и из текущей сессии
+
+1. **Pre-existing failure** в `ExcuseEventContractIT.createExcuse_publishesRequestedEvent_matchingBotContract`
+   — business rule unrelated to M04, фиксить в отдельной фазе attendance
+   test seeds. НЕ scope M04.
+2. **Group 5 deferred:** exclude `/actuator/**` из tracing sampling —
+   разобраться в Группе 11 audit (Spring Boot 3.4 не даёт out-of-box).
+3. **Group 5 deferred:** end-to-end span-tree через docker-compose →
+   Группа 11.
+4. **Group 4 deferred:** docker `healthcheck:` directive → M06 (там же
+   HEALTHCHECK + compose-config scope).
+5. **Group 4 deferred:** «kill RabbitMQ → health DOWN» smoke-test →
+   Группа 11.
+6. **Group 1 deferred:** GrpcClientHealthIndicator per-channel
+   (D4=(b) — отложен в backlog, grpc-client-spring-boot-starter уже
+   даёт свои indicators).
+
+### Состояние веток / push
+
+- **58+ коммитов ahead origin** — push отложен до конца v0.0.0
+  (по решению владельца — «не пушим в репозиторий только в конце как
+  скажу сразу всё запушим»).
+- Tag `v0.0.0-alpha.4` на `eb125c4` локально, без push.
+- v0.0.0-alpha.5 будет на финальном коммите M04 (Группа 12).
+
+### Правила работы (без изменений)
+
+- Русский в отчётах / NOTES / ответах. Технические термины / код — оригинал.
+- READ-BEFORE-EDIT reminder'ы ложные (после Read в той же сессии) —
+  игнорируй. Отличить настоящий: «File has not been read yet» в Edit
+  result означает что файл реально не Read'ался — тогда Read'ай.
+- Коммит после каждой логической группы (`feat/fix/test/docs` scope:
+  `<service>/<module>` + `(M04 Группа N)`).
+- Не звать `gsd-*` агентов. `Explore` для «найти все X», `bug-hunter` +
+  `security-auditor` / `code-reviewer` — в Группе 11.
+- Surprise → NOTES.md + спросить владельца до продолжения.
+- Micro-решение → DECISIONS.md.
+- Закрыл пункт CHECKLIST → `[x]` через Edit.
+
+### Источники истины
+
+- `docs/milestones/M04-observability/PLAN.md` — scope, acceptance criteria.
+- `docs/milestones/M04-observability/CHECKLIST.md` — 12 групп, статус каждой.
+- `docs/milestones/M04-observability/NOTES.md` — этот файл, surprises + hand-off.
+- `docs/milestones/M04-observability/DECISIONS.md` — D1..D5 закрыты.
+- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` — строки 1349-1564 (QA1..QA7).
+- `docs/report-before-v0.0.0/99-executive-summary.md` — пачка P1-A.
+- `git log --oneline -15` — последние 8 коммитов M04 + до этого M03b.

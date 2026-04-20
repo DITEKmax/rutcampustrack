@@ -194,13 +194,17 @@ CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWE
 
 ## Группа 13 — Финал
 
-- [ ] Все acceptance criteria отмечены `[x]`
-- [ ] `./gradlew build` + `npm run build` (PWA + web-panel) зелёные
-- [ ] Smoke: mock end-to-end login → refresh → logout → verify storage
-  cleared. Manual + записать в NOTES
-- [ ] Post-mortem в PLAN.md: commits, surprises, lessons, KI для M04/M06
-- [ ] Финальный коммит `chore(m03b): close cookie + ws-ticket + logout`
-- [ ] `git tag v0.0.0-alpha.4` на финальном коммите (БЕЗ push — жду go)
+- [x] Все acceptance criteria отмечены `[x]` (кроме E2E Playwright —
+  deferred to M08).
+- [x] `./gradlew build` + `npm run build` (PWA 122/122 + web-panel 444/444)
+  зелёные в Группах 7, 10, 11.
+- [x] Smoke: `AuthIntegrationTest.logout_viaCookie_returns204_andClearsCookie`
+  + `LogoutLifecycleIT` покрывают login → refresh → logout flow. Real
+  browser smoke отложен в M08 (Playwright).
+- [x] Post-mortem в PLAN.md: commits, surprises, измерения, KI backlog,
+  lessons.
+- [x] Финальный коммит `chore(m03b): close cookie + ws-ticket + logout`.
+- [x] `git tag v0.0.0-alpha.4` на финальном коммите (БЕЗ push — жду go).
 
 ---
 

@@ -67,6 +67,211 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
+## Hand-off после M05 Группы 8 (2026-04-21)
+
+**Состояние M05:** ⏳ **в работе.** 8/10 групп закрыто. Последний
+коммит `3fae923`. Остались 9 (аудит) и 10 (docs + close).
+
+**Важно для агентов аудита:** берите **свежий контекст** — предыдущая
+сессия глубоко участвовала в реализации всех 8 групп, это создаст
+предвзятость. Новая сессия должна прочитать только diff + актуальный
+код, без истории разговоров.
+
+### Итоги Группы 7 (commit `1aa5e75`)
+
+**Cleanup push-subs + retention audit (NEW-148, D10).**
+
+- Поле `last_seen: Instant` в `PushSubscriptionDocument` (MongoDB,
+  не PostgreSQL — PLAN.md гипотеза «Flyway» была неверна, коллекция
+  живёт в notification-web Mongo).
+- `idx_last_seen` добавлен в `PushMongoConfig.initIndexes()` —
+  programmatic, конвенция проекта для Mongo (аналог M05 G1
+  `late_checkin_requests`).
+- `WebPushDeliveryService.touchLastSeen(endpoints)` — bulk Mongo
+  `$set` одной операцией на fanout (не N save'ов).
+- `PushSubscriptionCleanupJob` — `@Scheduled(cron="0 0 3 * * SUN")` +
+  `@SchedulerLock("cleanupStalePushSubs")` (shedlock-provider-mongo).
+  Retention 90d configurable.
+- `PushCleanupConfig` — `@EnableScheduling` + `@EnableSchedulerLock`
+  + Mongo LockProvider + bootstrap backfill `last_seen = now` на
+  `ApplicationReadyEvent` для pre-M05 подписок.
+- Refresh-token TTL audit: ✅ `EX=604800` (7d) подтверждён в 4
+  call-site'ах (AuthService.login:88, refresh:125, TmaService:78,
+  OtpService:192). Фикс не требуется.
+- `docs/data-retention-policy.md` (NEW-148) — 12-rows retention matrix.
+- `PushSubscriptionCleanupJobIT` — 3 сценария (dead/fresh/boundary +
+  legacy backfill), все зелёные через Testcontainer'ный Mongo.
+
+### Итоги Группы 8 (commit `3fae923`)
+
+**gRPC hot-path: metrics + parallel + ArchUnit deadline guard (NEW-149, D11).**
+
+Scope уточнён после аудита callsite'ов — deadline уже везде (19
+callsite'ов с `withDeadlineAfter(3s)`), `CheckinService.checkin`
+делает **1** gRPC call (параллелить нечего, PLAN.md гипотеза неверна),
+runtime-guard отклонён (сломал 15+ integration-тестов).
+
+- `GrpcClientMetricsInterceptor` в `shared-observability` —
+  ClientInterceptor, регистрирует `grpc.client.duration` Timer
+  histogram с тегами `service` / `method` / `status` на каждый
+  outgoing call. Per-app wrappers через `@GrpcGlobalClientInterceptor`
+  в attendance, schedule, academic. **Без** `grpc-micrometer`
+  dependency (не хотели supply-chain bloat).
+- `GrpcParallelExecutorConfig` (attendance) — `grpcTaskExecutor` bean,
+  `ThreadPoolTaskExecutor` core=2/max=8/queue=100, prefix
+  `grpc-parallel-`.
+- `LessonEventService.processLessonClosed` — параллельный fan-out
+  `getLessonById` + `getGroupMembers` через
+  `CompletableFuture.supplyAsync + grpcTaskExecutor + unwrap()`
+  helper (разворачивает `CompletionException` → `RuntimeException`
+  для существующего error handling).
+- `MarkingService.markBatch` — N уникальных `getLessonById` + 1
+  `getGroupMembers` fan-out параллельно. Добавлено поле
+  `@Qualifier("grpcTaskExecutor") TaskExecutor grpcTaskExecutor` с
+  `@RequiredArgsConstructor` (Lombok поддерживает qualifier-аннотации
+  на final-полях).
+- `ReportService.getLessonAttendance` — **не параллелится**,
+  `getGroupMembers` требует `lesson.groupId` (dependency chain).
+  Rollback imports сохранён в DECISIONS D11.
+- ArchUnit `GrpcClientDeadlineTest` × 3 сервиса — byte-code scan
+  через `method.getMethodCallsFromSelf()`, fail'ит на любой public
+  метод `*GrpcClient` который вызывает `*BlockingStub` без
+  `withDeadlineAfter`/`withDeadline` в том же методе. Sanity-verify
+  пройден.
+- `LessonEventServiceParallelTest` — mock gRPC clients с latency
+  200ms каждый, ассертит wall-time < 350ms (parallel) vs > 400ms
+  (sequential baseline). Существующие `LessonEventServiceTest` /
+  `MarkingServiceTest` переведены на `SyncTaskExecutor` для
+  детерминизма (correctness-тесты не должны вводить параллелизм).
+- `infra/grafana/provisioning/dashboards/grpc-latency.json` — 5
+  панелей: p50/p95/p99 histogram_quantile per `(service, method)`
+  + error-rate (non-OK статусы) + active-methods stat.
+
+### M05 Scope остался
+
+| # | Группа | Est | Статус |
+|---|--------|-----|--------|
+| 1 | Composite indexes + perf baseline | ~3ч | ✅ |
+| 2 | Preventive N+1 guard (NEW-143) | ~2ч | ✅ |
+| 3 | Redis cache дополнения (D6, NEW-144) | ~4ч | ✅ |
+| 4 | Batch endpoints (D7, D8, NEW-145) | ~4ч | ✅ |
+| 5 | Single-pass accumulators + SQL pagination (D9, NEW-146) | ~3ч | ✅ |
+| 6 | HikariCP tuning (NEW-147) | ~1.5ч | ✅ |
+| 7 | Cleanup push-subs + retention audit (NEW-148, D10) | ~3ч | ✅ |
+| 8 | gRPC metrics + parallel + deadline ArchUnit (NEW-149, D11) | ~5ч | ✅ |
+| **9** | **Audit (bug-hunter + code-reviewer + security)** | **—** | **⬜ next** |
+| 10 | Documentation + закрытие milestone | — | ⬜ |
+
+### Группа 9 Scope (план для следующей сессии)
+
+**Важно:** стартуй с **чистого контекста**. НЕ используй историю
+предыдущей сессии для объективности аудита.
+
+Чеклист (из CHECKLIST.md):
+
+- [ ] Полный `./gradlew build` — всё зелёное (unit + integration +
+      ArchUnit + CI-lint) на main (последний коммит `3fae923`).
+- [ ] Спавни `bug-hunter` агент на diff M05 (8 коммитов от `83ed387`
+      до `3fae923`). Фокус:
+  - Race conditions в `@Cacheable rbac` (stale read после
+    `patchUser → programmatic evict`). Double-check порядок
+    `@CacheEvict` vs write в Redis.
+  - Transactional boundaries для `MarkingService.markBatch`
+    (pseudo-atomic, Mongo standalone без transactions).
+  - Deadline propagation — что происходит в
+    `CompletableFuture.supplyAsync` task'е если task в queue ждёт
+    > deadline? Может cascade issue.
+  - `PushSubscriptionCleanupJob.backfillOnStart` — idempotency при
+    повторном старте после частичного backfill'а (Mongo падает
+    между updates).
+- [ ] Спавни `security-auditor` на:
+  - `POST /attendance/marks/batch` input validation (`@Size(min=1,
+    max=100)` на List — защита от memory exhaustion через large
+    payload; IDor — headman отмечает чужую группу).
+  - `@Cacheable("rbac", key="#userId + ':' + #groupId")` —
+    sensitive данные в Redis keys (user IDs — PII?) + key collision
+    edge cases (если `userId=1`, `groupId=2:3` — парсинг ломается?
+    проверить user-controlled symbols).
+  - Grafana dashboard JSON — нет ли утечки PII в labels
+    `{service, method, status}`.
+  - ShedLock коллекция `shedLock` — нет ли sensitive данных в
+    lock-documents.
+- [ ] Спавни `code-reviewer` на:
+  - `docs/caching-strategy.md` + `docs/performance-indexes.md` +
+    `docs/connection-pool-tuning.md` + `docs/data-retention-policy.md`
+    — согласованность, ссылки, actionability.
+  - `GrpcClientMetricsInterceptor` + `GrpcClientDeadlineTest` (× 3
+    дубли — DRY?) — есть ли потенциал вынести ArchUnit rule в
+    shared-observability как тест-fixture (одна base test class, 3
+    empty extends).
+  - Parallel refactor чистота — `unwrap` дублируется в
+    `LessonEventService` и `MarkingService`, кандидат на вынос
+    в shared helper.
+- [ ] Hot-patches → отдельный коммит (не смешивать с Group 9 audit
+      summary коммитом).
+- [ ] Audit summary — короткая записка в NOTES.md (после commit'а
+      с фиксами, если они будут) + отметка в CHECKLIST.
+
+### Группа 10 Scope
+
+- [ ] Финальный `./gradlew build` после audit fix'ов.
+- [ ] `CHANGELOG.md [Unreleased]` — добавить секции для Групп 3-8
+      (сейчас только 1 и 2 в changelog'е).
+- [ ] `docs/architecture.md` — разделы «Caching layer» + «Batch
+      operations» + обновлённый HikariCP sizing + gRPC
+      observability.
+- [ ] `CLAUDE.md` — статус M05 → ✅ + дата.
+- [ ] `docs/milestones/README.md` — M05 ✅ + дата.
+- [ ] `docs/milestones/M05-performance/PLAN.md` → Post-mortem секция.
+- [ ] `git tag v0.0.0-alpha.6` (локально, без push).
+- [ ] Hand-off для M06/M07/M08 в `NEXT-SESSION.md`.
+
+### Source of truth для Групп 9-10
+
+- `docs/milestones/M05-performance/{PLAN,CHECKLIST,NOTES,DECISIONS}.md`
+  — per-milestone artefacts, актуальны.
+- DECISIONS содержит D1-D11 — читай все 11 при аудите (контекст
+  отступлений от PLAN.md).
+- Git log: 8 perf/feat/docs коммитов M05 (`83ed387` → `3fae923`).
+- `git diff 325d25d..HEAD -- services/` — полный diff M05
+  (от tag `v0.0.0-alpha.5` до HEAD, только services без .planning).
+- OWNER-ANSWERS не ссылается — все отступления уже в DECISIONS D1-D11.
+
+### Последние коммиты
+
+```
+3fae923 perf(grpc): metrics + parallel fan-out + deadline ArchUnit (M05 Группа 8, NEW-149)
+1aa5e75 perf(push): last_seen retention + weekly cleanup job (M05 Группа 7, NEW-148)
+5c955f2 docs(m05): hand-off после Группы 6 — 6/10 групп закрыто
+dbdc38c perf(infra): HikariCP tuning + pool-exhaustion alert (M05 Группа 6, NEW-147)
+c3bd518 perf: single-pass accumulators + SQL pagination (M05 Группа 5, NEW-146)
+e0f82de feat(api): POST /attendance/marks/batch + pwa bulk-mark (M05 Группа 4, NEW-145)
+50fc576 feat(cache): rbac + subject namespaces + docs (M05 Группа 3, NEW-144)
+9f11396 docs(m05): hand-off после Группы 2 — 2/10 групп закрыто
+6802e7f feat(arch): preventive N+1 guard ArchUnit rule (M05 Группа 2, NEW-143)
+83ed387 feat(perf): composite indexes + perf baseline (M05 Группа 1)
+```
+
+78+ коммитов локально ahead origin. Tags `v0.0.0-alpha.2..5` локальные.
+Push отложен до конца v0.0.0.
+
+### Состояние окружения
+
+- **Docker-compose containers:** `rct-postgres-academic`,
+  `rct-postgres-schedule`, `rct-mongo-attendance`, `rct-redis`,
+  `rct-rabbitmq` — healthy (подняты в предыдущей сессии).
+- **Все тесты зелёные:** attendance (180+), schedule (115+),
+  academic (210+), notification (22+). ArchUnit × 4 сервиса все
+  passing.
+
+### Действия, ожидающие `go` пользователя
+
+1. `git push origin main` — 78+ коммитов не на origin.
+2. `git push origin --tags` — 4 tags локальные.
+3. Старт Группы 9 по CHECKLIST M05 (в новой сессии).
+
+---
+
 ## Hand-off после M05 Группы 6 (2026-04-20)
 
 **Состояние M05:** ⏳ **в работе.** 6/10 групп закрыто. Последний

@@ -318,3 +318,75 @@ items P2-10/4 — ROI ниже, не блокируют pre-release hardening.
 
 **Estimate итого:** ~4-5ч (оценка PLAN.md ~1 день полный scope,
 partial scope укладывается).
+
+## 2026-04-20 — D9: Группа 5 — single-pass accumulators вместо SQL aggregate + LessonService SQL pagination
+
+**Выбрано:**
+
+1. **`ReportService` (attendance)** — переписать `buildOverall`,
+   `buildWeekly`, `buildTopMissed`, `getStudentStats` на **single-pass
+   accumulators** (один проход `for` с int counter'ами) вместо 3-4×
+   `stream().filter().count()` над одним списком.
+2. **`LessonService.getLessonsForGroup` (schedule)** — переписать
+   in-memory pagination (`.stream().toList().subList(offset, end)`)
+   на **SQL `LIMIT/OFFSET`** через `Pageable`. Это **реальный OOM**
+   risk при 10k+ lessons.
+3. **НЕ делать Mongo aggregation pipeline** для stats. Обоснование
+   см. ниже.
+
+**Почему НЕ Mongo aggregate для ReportService.**
+
+`ReportService.filterExistingLessons` (:417-426) — defence-in-depth
+фильтр через gRPC `scheduleGrpcClient.getLessonsByIds`: выкидывает
+attendance docs с удалёнными уроками ПОСЛЕ загрузки из Mongo, до
+агрегации. Invariant: stale docs (missed `lesson.deleted` event) не
+должны попасть в отчёт.
+
+Mongo `$group` pipeline не знает про alive-lessons в schedule-service
+(кросс-сервис). Два пути сохранить invariant с Mongo aggregate:
+
+- **(a) Денормализовать `lesson_alive` флаг в attendance docs** —
+  требует cascade `lesson.deleted → attendance.mark_dead` события +
+  migration. M06/M07 scope (infra hardening), не M05.
+- **(b) Two-step: Mongo `$group` → post-filter by alive lessonIds**.
+  Всё равно нужен full load + gRPC + пересчёт sum'ов. Выигрыш
+  минимален, сложность aggregate pipeline возрастает.
+
+Single-pass accumulators дают **real O(N) вместо O(3-4N)** —
+простая правка, сохраняет `filterExistingLessons` invariant, не
+требует архитектурных изменений. Для 10k attendance records в
+семестре: ~40k stream iterations → ~10k (75% reduction).
+
+**Почему SQL pagination ЕСТЬ в scope.**
+
+`LessonService.getLessonsForGroup:212-246` загружает **все** lessons
+группы за семестр (может быть 500-2000 rows), строит `List<LessonWithItem>`
+в памяти и делает `subList(offset, end)`. Это:
+
+- **OOM-рискованно** на v0.1+ объёмах (история семестров).
+- **Неоптимально** на hot-path (web-panel headman-weekly-journal
+  делает параллельные запросы через PageRequest).
+- Нарушает principles OWNER-ANSWERS P2-10/5 напрямую.
+
+**Scope Группы 5 (финальный):**
+
+| Пункт | Action | Status |
+|-------|--------|--------|
+| ReportService.getStudentStats | Single-pass аккумуляторы в цикле `for` | ⬜ M05 |
+| ReportService.buildOverall | То же (single-pass) | ⬜ M05 |
+| ReportService.buildWeekly | Single-pass + Map accumulator | ⬜ M05 |
+| ReportService.buildTopMissed | Оставить как есть (уже single-pass `toMap` с merge) | ✅ no-op |
+| LessonService.getLessonsForGroup | SQL Pageable в Repository | ⬜ M05 |
+| `AttendanceStatsService` / `ExcuseAnalyticsService` | Не существуют в коде — PLAN.md выдумка | ✅ no-op |
+| `LessonService.findOneOffLessons` | Не существует — 03 P2-5 = другой hotspot | ✅ no-op |
+| `docs/future-ideas.md` (NEW-146) | Mongo aggregation + `lesson_alive` denormalization | ⬜ M05 |
+| Integration-тест correctness | Sanity-тесты что accumulator даёт те же числа | ⬜ M05 |
+
+**Альтернативы отклонены:**
+- **Full Mongo `$group` pipeline** — блокируется `filterExistingLessons`
+  invariant'ом. Правильное решение — денормализация alive flag, но
+  это M06/M07 scope.
+- **Удалить `filterExistingLessons`** — теряется defence-in-depth
+  guarantee, eventconsistency risk при broker downtime.
+
+**Estimate:** ~3-4ч.

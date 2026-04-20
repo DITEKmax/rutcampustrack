@@ -178,46 +178,55 @@ public class ReportService {
         List<AttendanceRecord> allRecords = filterExistingLessons(
                 attendanceReadPort.findByUserId(userId, semesterId));
 
-        // D-10: Filter out CANCELLED — they don't count in statistics
-        Map<Long, List<AttendanceRecord>> grouped = allRecords.stream()
-                .filter(r -> r.status() != AttendanceStatus.CANCELLED)
-                .collect(Collectors.groupingBy(AttendanceRecord::subjectId));
+        // M05 D9 / P2-10/5: single-pass aggregation. Один проход для per-subject
+        // counters вместо groupingBy + 3× stream.filter.count на каждый subject.
+        // D-10: CANCELLED исключены.
+        Map<Long, int[]> bySubject = new java.util.HashMap<>();
+        for (AttendanceRecord r : allRecords) {
+            AttendanceStatus s = r.status();
+            if (s == AttendanceStatus.CANCELLED) continue;
+            int[] c = bySubject.computeIfAbsent(r.subjectId(), k -> new int[4]);
+            // Индексы: [0]=total, [1]=attended, [2]=absent, [3]=excused
+            c[0]++;
+            if (s == AttendanceStatus.PRESENT
+                    || s == AttendanceStatus.EXCUSED
+                    || s == AttendanceStatus.FREE_ATTENDANCE) {
+                c[1]++;
+            }
+            if (s == AttendanceStatus.ABSENT) {
+                c[2]++;
+            }
+            if (s == AttendanceStatus.EXCUSED || s == AttendanceStatus.FREE_ATTENDANCE) {
+                c[3]++;
+            }
+        }
+
+        if (bySubject.isEmpty()) {
+            OverallStats empty = new OverallStats(0, 0, 0, 0, 0.0);
+            return new StudentStatsResponse(List.of(), empty);
+        }
 
         // D-13: Resolve subject names via gRPC batch call
-        List<Long> subjectIds = new ArrayList<>(grouped.keySet());
+        List<Long> subjectIds = new ArrayList<>(bySubject.keySet());
         Map<Long, String> subjectNames = academicGrpcClient.getSubjectsByIds(subjectIds);
 
-        List<SubjectStats> subjectStatsList = grouped.entrySet().stream()
-                .map(entry -> {
-                    Long sid = entry.getKey();
-                    List<AttendanceRecord> subjectRecords = entry.getValue();
-                    String subjectName = subjectNames.getOrDefault(sid, "Unknown");
+        List<SubjectStats> subjectStatsList = new ArrayList<>(bySubject.size());
+        int totalOverall = 0, attendedOverall = 0, absentOverall = 0, excusedOverall = 0;
+        for (Map.Entry<Long, int[]> e : bySubject.entrySet()) {
+            int[] c = e.getValue();
+            int total = c[0], attended = c[1], absent = c[2], excused = c[3];
+            double pct = total == 0 ? 0.0 : (attended * 100.0) / total;
+            subjectStatsList.add(new SubjectStats(
+                    e.getKey(),
+                    subjectNames.getOrDefault(e.getKey(), "Unknown"),
+                    total, attended, absent, excused, pct));
+            totalOverall += total;
+            attendedOverall += attended;
+            absentOverall += absent;
+            excusedOverall += excused;
+        }
 
-                    int total = subjectRecords.size();
-                    int attended = (int) subjectRecords.stream()
-                            .filter(r -> r.status() == AttendanceStatus.PRESENT
-                                    || r.status() == AttendanceStatus.EXCUSED
-                                    || r.status() == AttendanceStatus.FREE_ATTENDANCE)
-                            .count();
-                    int absent = (int) subjectRecords.stream()
-                            .filter(r -> r.status() == AttendanceStatus.ABSENT)
-                            .count();
-                    int excused = (int) subjectRecords.stream()
-                            .filter(r -> r.status() == AttendanceStatus.EXCUSED
-                                    || r.status() == AttendanceStatus.FREE_ATTENDANCE)
-                            .count();
-                    double percentage = total == 0 ? 0.0 : (attended * 100.0) / total;
-
-                    return new SubjectStats(sid, subjectName, total, attended, absent, excused, percentage);
-                })
-                .toList();
-
-        int totalOverall = subjectStatsList.stream().mapToInt(SubjectStats::getTotal).sum();
-        int attendedOverall = subjectStatsList.stream().mapToInt(SubjectStats::getAttended).sum();
-        int absentOverall = subjectStatsList.stream().mapToInt(SubjectStats::getAbsent).sum();
-        int excusedOverall = subjectStatsList.stream().mapToInt(SubjectStats::getExcused).sum();
         double percentageOverall = totalOverall == 0 ? 0.0 : (attendedOverall * 100.0) / totalOverall;
-
         OverallStats overallStats = new OverallStats(
                 totalOverall, attendedOverall, absentOverall, excusedOverall, percentageOverall);
 
@@ -278,19 +287,23 @@ public class ReportService {
     }
 
     private OverallStats buildOverall(List<AttendanceRecord> counted) {
+        // M05 D9 / P2-10/5: single-pass accumulators (O(N) vs O(3N)).
         int total = counted.size();
-        int attended = (int) counted.stream()
-                .filter(r -> r.status() == AttendanceStatus.PRESENT
-                        || r.status() == AttendanceStatus.EXCUSED
-                        || r.status() == AttendanceStatus.FREE_ATTENDANCE)
-                .count();
-        int absent = (int) counted.stream()
-                .filter(r -> r.status() == AttendanceStatus.ABSENT)
-                .count();
-        int excused = (int) counted.stream()
-                .filter(r -> r.status() == AttendanceStatus.EXCUSED
-                        || r.status() == AttendanceStatus.FREE_ATTENDANCE)
-                .count();
+        int attended = 0, absent = 0, excused = 0;
+        for (AttendanceRecord r : counted) {
+            AttendanceStatus s = r.status();
+            if (s == AttendanceStatus.PRESENT
+                    || s == AttendanceStatus.EXCUSED
+                    || s == AttendanceStatus.FREE_ATTENDANCE) {
+                attended++;
+            }
+            if (s == AttendanceStatus.ABSENT) {
+                absent++;
+            }
+            if (s == AttendanceStatus.EXCUSED || s == AttendanceStatus.FREE_ATTENDANCE) {
+                excused++;
+            }
+        }
         double percentage = total == 0 ? 0.0 : (attended * 100.0) / total;
         return new OverallStats(total, attended, absent, excused, percentage);
     }
@@ -306,30 +319,36 @@ public class ReportService {
     }
 
     private List<WeeklyStat> buildWeekly(List<AttendanceRecord> counted, LocalDate semesterStart) {
-        // Groups records by week number relative to the semester start (Mon-based weeks).
-        Map<Integer, List<AttendanceRecord>> byWeek = new TreeMap<>();
+        // M05 D9 / P2-10/5: single-pass accumulators per week. O(N) вместо
+        // O(N + K × 3N) где K — количество недель. Храним int[] counter'ы
+        // и representative lessonDate для ISO-week resolve на выходе.
+        TreeMap<Integer, int[]> byWeek = new TreeMap<>();
+        Map<Integer, LocalDate> sampleDates = new java.util.HashMap<>();
         for (AttendanceRecord r : counted) {
             int weekOfSemester = weekNumberFrom(semesterStart, r.lessonDate());
-            byWeek.computeIfAbsent(weekOfSemester, k -> new ArrayList<>()).add(r);
+            int[] c = byWeek.computeIfAbsent(weekOfSemester, k -> new int[4]);
+            // Индексы: [0]=total, [1]=attended, [2]=absent, [3]=excused
+            c[0]++;
+            AttendanceStatus s = r.status();
+            if (s == AttendanceStatus.PRESENT
+                    || s == AttendanceStatus.EXCUSED
+                    || s == AttendanceStatus.FREE_ATTENDANCE) {
+                c[1]++;
+            }
+            if (s == AttendanceStatus.ABSENT) {
+                c[2]++;
+            }
+            if (s == AttendanceStatus.EXCUSED || s == AttendanceStatus.FREE_ATTENDANCE) {
+                c[3]++;
+            }
+            sampleDates.putIfAbsent(weekOfSemester, r.lessonDate());
         }
         List<WeeklyStat> result = new ArrayList<>(byWeek.size());
-        for (Map.Entry<Integer, List<AttendanceRecord>> e : byWeek.entrySet()) {
+        for (Map.Entry<Integer, int[]> e : byWeek.entrySet()) {
             int weekNum = e.getKey();
-            List<AttendanceRecord> rows = e.getValue();
-            int total = rows.size();
-            int attended = (int) rows.stream()
-                    .filter(r -> r.status() == AttendanceStatus.PRESENT
-                            || r.status() == AttendanceStatus.EXCUSED
-                            || r.status() == AttendanceStatus.FREE_ATTENDANCE)
-                    .count();
-            int absent = (int) rows.stream()
-                    .filter(r -> r.status() == AttendanceStatus.ABSENT)
-                    .count();
-            int excused = (int) rows.stream()
-                    .filter(r -> r.status() == AttendanceStatus.EXCUSED
-                            || r.status() == AttendanceStatus.FREE_ATTENDANCE)
-                    .count();
-            int isoWeek = rows.get(0).lessonDate()
+            int[] c = e.getValue();
+            int total = c[0], attended = c[1], absent = c[2], excused = c[3];
+            int isoWeek = sampleDates.get(weekNum)
                     .get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear());
             double pct = total == 0 ? 0.0 : (attended * 100.0) / total;
             result.add(new WeeklyStat(weekNum, isoWeek, "Н" + weekNum,

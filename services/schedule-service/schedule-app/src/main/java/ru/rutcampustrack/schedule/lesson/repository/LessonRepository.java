@@ -1,5 +1,7 @@
 package ru.rutcampustrack.schedule.lesson.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -66,6 +68,31 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
             @Param("from") LocalDate from,
             @Param("to") LocalDate to,
             @Param("statuses") List<String> statuses);
+
+    /**
+     * M05 D9 / P2-10/5: SQL-pagination вариант {@link
+     * #findByScheduleItemIdInAndDateBetweenAndStatusIn(List, LocalDate, LocalDate,
+     * List)}. Устраняет OOM-risk при загрузке всех lessons группы за семестр
+     * (500-2000+ rows) c последующей in-memory пагинацией — вместо этого
+     * PostgreSQL применяет LIMIT/OFFSET в плане запроса.
+     *
+     * <p>Native query + Pageable требует явного {@code countQuery} —
+     * Hibernate не может derive его из {@code SELECT *}.
+     *
+     * <p>Использует composite index {@code idx_lessons_item_date} (M05 Группа 1).
+     */
+    @Query(value = "SELECT * FROM lessons WHERE schedule_item_id IN :itemIds "
+            + "AND date BETWEEN :from AND :to AND status::text IN :statuses "
+            + "ORDER BY date ASC, id ASC",
+           countQuery = "SELECT COUNT(*) FROM lessons WHERE schedule_item_id IN :itemIds "
+                   + "AND date BETWEEN :from AND :to AND status::text IN :statuses",
+           nativeQuery = true)
+    Page<Lesson> pageByScheduleItemIdInAndDateBetweenAndStatusIn(
+            @Param("itemIds") List<Long> scheduleItemIds,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to,
+            @Param("statuses") List<String> statuses,
+            Pageable pageable);
 
     /**
      * Deletes all PLANNED lessons for a given schedule item starting from a given date.

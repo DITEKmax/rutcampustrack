@@ -154,15 +154,48 @@ journal bulk-read отложены в backlog._
 - [x] `docs/api-error-conventions.md` — раздел «Batch endpoint conventions» (NEW-145): pseudo-atomic rationale, schema, client error handling.
 - [x] Unit-тест `MarkingServiceTest.markBatch_*`: 5 сценариев — happy path (3 students 1 lesson = 1 gRPC + 1 groupMembers + 3 upsert), not-headman rejected, student-not-in-group rejected, CANCELLED rejected, wrong-group lesson rejected. Все зелёные.
 
-## Группа 5 — SQL-aggregate вместо in-memory stream (P2-10/5)
+## Группа 5 — Single-pass accumulators + SQL pagination (P2-10/5, D9)
 
-- [ ] Audit `*Service.java` на `.collect(toList())` → `.stream().filter().count()` где результат используется только для aggregate.
-- [ ] `AttendanceStatsService`: JPQL `SELECT new AttendanceStatsDto(a.status, COUNT(a)) ... GROUP BY a.status`.
-- [ ] `ExcuseAnalyticsService`: aggregate по `ExcuseStatus`.
-- [ ] `LessonService.findOneOffLessons` — SQL WHERE вместо `stream.filter`.
-- [ ] Admin-dashboard sparklines (10 P2-4): реальные SQL-aggregate (или Prometheus PromQL fetch).
-- [ ] Integration-тесты: корректность агрегации + query time < 100ms.
-- [ ] `docs/future-ideas.md` (NEW-146): audit-checklist для `.collect(toList())` для агрегации.
+_Scope уточнён 2026-04-20 по результатам аудита — см. DECISIONS D9.
+Mongo `$group` pipeline для ReportService блокируется
+`filterExistingLessons` cross-service invariant'ом (деферрено NEW-146).
+Реальные hotspot'ы: single-pass refactor в ReportService +
+in-memory pagination OOM-risk в LessonService._
+
+- [x] Audit `*Service.java` на `.collect(toList())` (Explore-агент) —
+      найдено 5 hotspot'ов в `ReportService` (attendance) + 1 в
+      `LessonService.getLessonsForGroup` (schedule). `AttendanceStatsService`
+      и `ExcuseAnalyticsService` **не существуют** — логика встроена
+      в `ReportService`.
+- [x] `ReportService.getStudentStats` — single-pass `Map<Long, int[]>`
+      accumulator (total/attended/absent/excused) в одном `for`-loop
+      вместо `groupingBy` + 3× `stream.filter.count` на каждый subject.
+- [x] `ReportService.buildOverall` — single-pass `int` counter'ы
+      вместо 3× `stream.filter.count` на одном списке.
+- [x] `ReportService.buildWeekly` — single-pass `TreeMap<Integer, int[]>`
+      + `sampleDates` для ISO-week resolve вместо `groupingBy` +
+      3× `stream.filter.count` на каждую неделю. O(N) вместо O(K×3N).
+- [x] `ReportService.buildTopMissed` — **no-op** (уже single-pass
+      `toMap` с merge function, оптимально).
+- [~] **Deferred (D9 / NEW-146):** `AttendanceStatsService`/
+      `ExcuseAnalyticsService` SQL `GROUP BY` — сервисов не существует,
+      а Mongo `$group` в ReportService блокируется
+      `filterExistingLessons` cross-service invariant'ом. Варианты
+      решения (denormalization, materialized view) — в
+      `docs/future-ideas.md` NEW-146.
+- [x] `LessonService.getLessonsForGroup` — переписан на SQL
+      `LIMIT/OFFSET` через Spring Data `Pageable` с native `countQuery`.
+      Новый метод `LessonRepository.pageByScheduleItemIdInAndDateBetweenAndStatusIn`.
+      Устраняет OOM-risk на 2000+ lessons/semester.
+- [~] **Deferred (D9):** `LessonService.findOneOffLessons` — метода не
+      существует. 03 P2-5 разрешён через `getLessonsForGroup` SQL pagination.
+- [~] **Deferred (v9+):** Admin-dashboard sparklines (10 P2-4) —
+      отдельный scope (NEW-94).
+- [x] Existing tests (attendance report + schedule lesson) зелёные —
+      подтверждают correctness accumulator рефактора и SQL pagination.
+- [x] `docs/future-ideas.md` NEW-146: Mongo aggregation
+      pipeline blocker + 3 варианта решения + audit-checklist
+      для `.collect(toList())` агрегаций в PR-review.
 
 ## Группа 6 — HikariCP connection pool (P2-10/6)
 

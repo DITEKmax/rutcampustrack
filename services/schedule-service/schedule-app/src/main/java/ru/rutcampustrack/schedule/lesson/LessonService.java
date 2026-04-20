@@ -207,7 +207,11 @@ public class LessonService {
      * Returns paginated lessons for a group within a date range (VIEW-01, VIEW-02, D-18).
      * Uses ALL schedule items for the group (no isActive filter — Pitfall 3).
      * Defaults to excluding CANCELLED lessons when status param is null/empty (D-18).
-     * Pagination is applied in-memory after fetching.
+     *
+     * <p>M05 D9 / P2-10/5: SQL-pagination через {@code Pageable}. Ранее
+     * pagination делалась in-memory (`all.subList(offset, end)`) после
+     * загрузки всего дата-range, что создавало OOM-risk на 2000+ lessons/
+     * semester. Теперь PostgreSQL применяет LIMIT/OFFSET в плане запроса.
      */
     @Transactional(readOnly = true)
     public Page<LessonWithItem> getLessonsForGroup(Long groupId,
@@ -227,21 +231,13 @@ public class LessonService {
             return Page.empty(pageable);
         }
 
-        List<Lesson> lessons = lessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn(
-                itemIds, from, to, effectiveStatuses);
+        Page<Lesson> lessonPage = lessonRepository
+                .pageByScheduleItemIdInAndDateBetweenAndStatusIn(
+                        itemIds, from, to, effectiveStatuses, pageable);
 
         Map<Long, ScheduleItem> itemMap = items.stream()
                 .collect(Collectors.toMap(ScheduleItem::getId, si -> si));
 
-        List<LessonWithItem> all = lessons.stream()
-                .map(l -> new LessonWithItem(l, itemMap.get(l.getScheduleItemId())))
-                .toList();
-
-        int total = all.size();
-        int offset = (int) pageable.getOffset();
-        int end = Math.min(offset + pageable.getPageSize(), total);
-        List<LessonWithItem> sublist = (offset >= total) ? List.of() : all.subList(offset, end);
-
-        return new PageImpl<>(sublist, pageable, total);
+        return lessonPage.map(l -> new LessonWithItem(l, itemMap.get(l.getScheduleItemId())));
     }
 }

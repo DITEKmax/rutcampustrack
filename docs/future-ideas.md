@@ -124,3 +124,65 @@ filtering, push-триггеры).
 В v0.0.0 фокус на студенческий core-flow.
 
 ---
+
+## NEW-146: Mongo aggregation pipeline для ReportService (M05 G5 deferred)
+
+**Origin:** M05 Группа 5 / DECISIONS D9. OWNER-ANSWERS P2-10/5
+предписывал «SQL-aggregate вместо in-memory stream», но в текущем
+коде применить нельзя без архитектурных изменений.
+
+**Blocker:** `ReportService.filterExistingLessons` (строки 417-426)
+делает defence-in-depth фильтр удалённых уроков через gRPC
+`scheduleGrpcClient.getLessonsByIds` **после** загрузки attendance
+records. Mongo `$group` pipeline не знает про alive-lesson state в
+schedule-service (кросс-сервис), поэтому полный aggregation pipeline
+нарушит invariant (stale docs попадут в отчёт при missed
+`lesson.deleted` event).
+
+**Варианты реализации в будущем:**
+
+1. **Денормализация `lesson_alive` флага в attendance docs.** При
+   `lesson.deleted` event'е attendance-service выставляет
+   `lesson_alive=false` на всех matching doc'ах (batch update). Mongo
+   pipeline фильтрует `$match: { lesson_alive: true }` и делает
+   `$group` по статусам. Trade-off: потенциальное рассогласование
+   при broker downtime (лечится reconciliation job).
+
+2. **Отдельная коллекция `dead_lessons` с TTL index.** При
+   `lesson.deleted` — insert в `dead_lessons`, pipeline делает
+   `$lookup` или `$nin`. Проще миграция, но extra collection.
+
+3. **Pre-aggregated stats collection (materialized view).** Раз в
+   N минут считаем per-user per-semester stats в отдельную Mongo
+   collection. Hot-path reads — тривиальные `findById`. Trade-off:
+   eventual consistency + scheduler complexity.
+
+**Ожидаемый выигрыш:** O(N) server RAM → O(1) + Mongo-side
+aggregation. Для студента с 200 lesson-records per semester —
+~200× reduction на network transfer (stats только, не raw records).
+
+**Когда делать:** M06 (Ops hardening) или M07 (если появится
+конкретная latency-проблема на production traffic). Сейчас
+single-pass accumulators (D9) закрывают immediate need.
+
+---
+
+## NEW-146-checklist: Аудит-чеклист для `.collect(toList())` агрегации
+
+Использовать при PR-ревью service-слоя:
+
+- [ ] Если результат `.collect(toList())` передаётся в `.stream().count()` /
+      `.stream().sum()` / `.stream().filter(...).count()` — это **hotspot**.
+      Вариант: single-pass accumulator с `for` + int counter'ами (cheap,
+      invariant-preserving) или SQL `GROUP BY` (если нет cross-service
+      validation после load'а).
+- [ ] Если результат `.collect(toList())` передаётся в `.subList(offset, end)`
+      — это **in-memory pagination hotspot**. OOM-risk на 1000+ rows.
+      Вариант: Spring Data `Pageable` с native `countQuery` (см.
+      `LessonRepository.pageByScheduleItemIdInAndDateBetweenAndStatusIn`
+      как reference в schedule-service).
+- [ ] Если результат используется как `Map<K, V>` с агрегацией
+      (count/sum) — `toMap(key, v -> seed, (a,b) -> merge)` уже
+      single-pass, менять не нужно.
+
+---

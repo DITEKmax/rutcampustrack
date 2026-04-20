@@ -52,12 +52,25 @@ public class WsTicketService {
             return payload
             """;
 
+    /**
+     * M03b Группа 11 (bug-hunt HIGH-2): atomic SADD+EXPIRE чтобы избежать
+     * orphan user-set без TTL при network blip. Аналог pattern'а из
+     * LoginRateLimiter (KI-6).
+     */
+    private static final String ADD_TO_SET_SCRIPT = """
+            redis.call('SADD', KEYS[1], ARGV[1])
+            redis.call('EXPIRE', KEYS[1], ARGV[2])
+            return 1
+            """;
+
     private final StringRedisTemplate redisTemplate;
     private final DefaultRedisScript<String> consumeScript;
+    private final DefaultRedisScript<Long> addToSetScript;
 
     public WsTicketService(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
         this.consumeScript = new DefaultRedisScript<>(CONSUME_SCRIPT, String.class);
+        this.addToSetScript = new DefaultRedisScript<>(ADD_TO_SET_SCRIPT, Long.class);
     }
 
     /**
@@ -71,8 +84,9 @@ public class WsTicketService {
 
         redisTemplate.opsForValue().set(KEY_PREFIX + ticket, payload, TICKET_TTL);
         String userSetKey = USER_SET_PREFIX + userId;
-        redisTemplate.opsForSet().add(userSetKey, ticket);
-        redisTemplate.expire(userSetKey, USER_SET_TTL);
+        redisTemplate.execute(addToSetScript,
+                List.of(userSetKey),
+                ticket, String.valueOf(USER_SET_TTL.toSeconds()));
         return new Issued(ticket, expiresAt);
     }
 

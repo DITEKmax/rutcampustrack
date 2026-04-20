@@ -170,11 +170,16 @@ CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWE
 
 ## Группа 11 — Tests + security audit
 
-- [ ] Expanded IT suite: JwtCookieRefreshIT, WsTicketIT, LogoutLifecycleIT,
-  AuthFlowE2EIT (mock-based, Playwright в M08)
-- [ ] bug-hunter subagent на полный diff
-- [ ] security-auditor subagent (C0-5 + C0-7 — высокая цена бага)
-- [ ] Все CRITICAL/HIGH — fix в milestone, MEDIUM/LOW — в NOTES как KI
+- [x] Expanded IT suite: `WsTicketIT` (6 тестов), `LogoutLifecycleIT`
+  (2 теста), `BcryptDoSMitigationIT` (1 тест, 50 concurrent),
+  `CompositeLoginKeyResolverIT` (3 теста). AuthFlowE2EIT — откладываем
+  в M08 (Playwright).
+- [x] bug-hunter subagent — 0 CRITICAL, 0 HIGH (real), 10 MEDIUM/LOW.
+  Пофиксили HIGH-2 (atomic SADD+EXPIRE в WsTicketService).
+- [x] security-auditor subagent — 24/24 checks PASS, 0 CRITICAL/HIGH,
+  2 MEDIUM + 3 LOW. Пофиксили MEDIUM-1 (Bearer в DELETE push/subscribe
+  при logout — cross-user push leak на shared-устройстве).
+- [x] CRITICAL/HIGH — fix'ы в milestone. MEDIUM/LOW — в NOTES.md.
 
 ## Группа 12 — Документация + artifacts
 

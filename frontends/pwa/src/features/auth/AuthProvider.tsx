@@ -156,6 +156,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(async () => {
+    // M03b Группа 11 (security MEDIUM-1): capture accessToken ДО logoutApi,
+    // чтобы передать в clearAllClientState для DELETE push/subscribe.
+    const tokenForCleanup = tokenRef.current
     try {
       await logoutApi()
     } catch {
@@ -164,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tokenRef.current = null
     setAccessToken(null)
     setUser(null)
-    await clearAllClientState()
+    await clearAllClientState(tokenForCleanup)
   }, [])
 
   const isAuthenticated = !!accessToken

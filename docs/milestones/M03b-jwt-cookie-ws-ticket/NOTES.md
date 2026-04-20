@@ -87,6 +87,50 @@ WsTicketController парсит access-JWT через JwtService.parseToken() ч
 
 Обратная совместимость: не требуется, endpoint добавлен в M03b.
 
+## 2026-04-20 — Группа 11: bug-hunter + security-auditor clean
+
+**Запуск:** bug-hunter + security-auditor параллельно на diff `d3a03df..HEAD`
+(10 коммитов M03b).
+
+**Результат:** 0 CRITICAL, 0 HIGH (real blockers), все checks security-auditor
+24/24 PASS.
+
+**Пофиксили немедленно (2 bug):**
+
+1. **bug-hunter HIGH-2** → `WsTicketService.issue()`: SADD+EXPIRE был
+   неатомарным. При network blip `ws_ticket_user:<userId>` оставался без
+   TTL = persistent key (тот же класс бага, что KI-6 в LoginRateLimiter).
+   Фикс: Lua-script `ADD_TO_SET_SCRIPT` выполняет SADD+EXPIRE атомарно.
+
+2. **security MEDIUM-1** → `clearAllClientState` в PWA вызывал
+   `DELETE /api/notifications/push/subscribe` без `Authorization: Bearer`.
+   Gateway возвращал 401 → backend subscription не удалялась → на
+   shared-устройстве (деканат) push-уведомления продолжали приходить
+   первому пользователю. Фикс: `AuthProvider.logout` захватывает
+   `tokenRef.current` ДО `logoutApi()` и передаёт в `clearAllClientState`.
+   Web-panel не затронут (там нет Service Worker/push).
+
+**Отложено в backlog (M04/M06):**
+
+- _bug-hunter MEDIUM_ `InternalWsTicketController.consume` — добавить `@Valid`
+  (косметика контракта, NPE уже защищён).
+- _bug-hunter MEDIUM_ `LoginBodyExtractionFilter` > 4K body → `DataBufferLimitException`
+  → 500. Нужен `onErrorResume` с 413 ProblemDetails.
+- _bug-hunter MEDIUM_ concurrent clock-skew cache race в InternalJwtIssuerClient
+  — функционально ок, оптимизация через `cache.asMap().compute(...)`.
+- _bug-hunter LOW_ `TicketHandshakeInterceptor.extractTicket()` — URL-decoding
+  для non-UUID ticket'ов.
+- _bug-hunter LOW_ `WsTicketController.extractRole()` fallback на `"UNKNOWN"` —
+  лучше бросать 403.
+- _bug-hunter LOW_ `AuthCookies` — нет `Domain=` атрибута (задокументировать
+  для будущих поддоменов).
+- _security LOW_ `/api/auth/change-password` и `/api/auth/ws-ticket` не
+  rate-limited (добавить 5/min и 30/min per-user в Gateway).
+- _security LOW_ `invalidateAllFor` race — concurrent issue во время logout
+  может оставить один orphan ticket на 30s. Low risk.
+
+Детальные отчёты в conversation log. Ни один пункт не блокирует release M03b.
+
 ## 2026-04-20 — Surprise: /auth/logout был authenticated-only, добавлен в permitAll
 
 Hand-off блок предполагал что `/auth/logout` уже в permit-all (и

@@ -160,11 +160,13 @@ CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWE
 
 ## Группа 10 — KI-7 bcrypt DoS mitigation
 
-- [ ] Варианты (DECISIONS): (a) Bucket4j semaphore N=20 на
-  AuthService#login, (b) Distributed lock `(ip, login)` перед bcrypt,
-  (c) Отложить в M05 Performance с proper benchmark
-- [ ] Реализация + IT: 50 concurrent invalid-password requests не
-  blow up CPU (MeasuredLatencyIT)
+- [x] Вариант (a): `BcryptConcurrencyGuard` — Semaphore N=20 (fair) вокруг
+  bcrypt invocations в `AuthService#login` и `#changePassword`. Запросы
+  сверх лимита получают 429 `OtpRateLimitException` fail-fast (tryAcquire
+  без timeout). Конфигурируется через `rct.auth.bcrypt.max-concurrent`.
+- [x] IT `BcryptDoSMitigationIT`: 50 concurrent invalid-password с
+  narrow guard (N=2) — часть получает 429 concurrency-limit, все 50
+  завершаются за &lt; 30s без 5xx.
 
 ## Группа 11 — Tests + security audit
 

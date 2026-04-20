@@ -4,18 +4,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.script.RedisScript;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 
 import java.time.Duration;
+import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,37 +30,45 @@ class LoginRateLimiterTest {
         when(redis.opsForValue()).thenReturn(valueOps);
     }
 
+    // M03b Группа 9 (KI-6): INCR+EXPIRE слиты в Lua. Stub для execute(..., keys, args).
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void stubLuaIncrement(String key, long returnCount) {
+        when(redis.execute(any(RedisScript.class), eq(List.of(key)), anyString()))
+                .thenReturn(returnCount);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void verifyLuaIncrementCalled(String key) {
+        verify(redis).execute(any(RedisScript.class), eq(List.of(key)), anyString());
+    }
+
     @Test
     @DisplayName("recordFailure: key формируется как login_attempts:<ip>:<login>")
     void recordFailure_compositeKey() {
-        when(valueOps.increment("login_attempts:1.2.3.4:alice")).thenReturn(1L);
+        stubLuaIncrement("login_attempts:1.2.3.4:alice", 1L);
 
         limiter.recordFailure("1.2.3.4", "alice");
 
-        verify(valueOps).increment("login_attempts:1.2.3.4:alice");
-        verify(redis).expire("login_attempts:1.2.3.4:alice", Duration.ofMinutes(60));
+        verifyLuaIncrementCalled("login_attempts:1.2.3.4:alice");
     }
 
     @Test
     @DisplayName("recordFailure: разные IP с одним login → разные ключи, НЕ аккумулируются")
     void recordFailure_differentIpsIsolated() {
-        when(valueOps.increment("login_attempts:1.1.1.1:alice")).thenReturn(1L);
-        when(valueOps.increment("login_attempts:2.2.2.2:alice")).thenReturn(1L);
+        stubLuaIncrement("login_attempts:1.1.1.1:alice", 1L);
+        stubLuaIncrement("login_attempts:2.2.2.2:alice", 1L);
 
         limiter.recordFailure("1.1.1.1", "alice");
         limiter.recordFailure("2.2.2.2", "alice");
 
-        verify(valueOps).increment("login_attempts:1.1.1.1:alice");
-        verify(valueOps).increment("login_attempts:2.2.2.2:alice");
-        // Оба ключа установили TTL (разные counters, оба с count=1)
-        verify(redis).expire("login_attempts:1.1.1.1:alice", Duration.ofMinutes(60));
-        verify(redis).expire("login_attempts:2.2.2.2:alice", Duration.ofMinutes(60));
+        verifyLuaIncrementCalled("login_attempts:1.1.1.1:alice");
+        verifyLuaIncrementCalled("login_attempts:2.2.2.2:alice");
     }
 
     @Test
     @DisplayName("recordFailure: 5 попыток → блок на 5 минут")
     void recordFailure_5thAttempt_blocks5Min() {
-        when(valueOps.increment("login_attempts:ip:login")).thenReturn(5L);
+        stubLuaIncrement("login_attempts:ip:login", 5L);
 
         limiter.recordFailure("ip", "login");
 
@@ -70,7 +78,7 @@ class LoginRateLimiterTest {
     @Test
     @DisplayName("recordFailure: 10 попыток → блок на 30 минут")
     void recordFailure_10thAttempt_blocks30Min() {
-        when(valueOps.increment(anyString())).thenReturn(10L);
+        stubLuaIncrement("login_attempts:ip:login", 10L);
 
         limiter.recordFailure("ip", "login");
 
@@ -80,7 +88,7 @@ class LoginRateLimiterTest {
     @Test
     @DisplayName("recordFailure: 20 попыток → блок на 2 часа + delete счётчика")
     void recordFailure_20thAttempt_blocks2Hours() {
-        when(valueOps.increment(anyString())).thenReturn(20L);
+        stubLuaIncrement("login_attempts:ip:login", 20L);
 
         limiter.recordFailure("ip", "login");
 
@@ -91,7 +99,7 @@ class LoginRateLimiterTest {
     @Test
     @DisplayName("recordFailure: 4 попыток → без блока")
     void recordFailure_belowThreshold_noBlock() {
-        when(valueOps.increment(anyString())).thenReturn(4L);
+        stubLuaIncrement("login_attempts:ip:login", 4L);
 
         limiter.recordFailure("ip", "login");
 
@@ -147,12 +155,13 @@ class LoginRateLimiterTest {
     @Test
     @DisplayName("null/blank IP → fallback 'unknown' в ключ (не падает)")
     void nullIp_fallbackUnknown() {
-        when(valueOps.increment(anyString())).thenReturn(1L);
+        stubLuaIncrement("login_attempts:unknown:alice", 1L);
+        stubLuaIncrement("login_attempts:unknown:bob", 1L);
 
         limiter.recordFailure(null, "alice");
         limiter.recordFailure("", "bob");
 
-        verify(valueOps).increment("login_attempts:unknown:alice");
-        verify(valueOps).increment("login_attempts:unknown:bob");
+        verifyLuaIncrementCalled("login_attempts:unknown:alice");
+        verifyLuaIncrementCalled("login_attempts:unknown:bob");
     }
 }

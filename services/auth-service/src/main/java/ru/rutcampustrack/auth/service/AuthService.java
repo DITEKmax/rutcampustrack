@@ -26,19 +26,22 @@ public class AuthService {
     private final StringRedisTemplate redisTemplate;
     private final JwtProperties jwtProperties;
     private final LoginRateLimiter loginRateLimiter;
+    private final BcryptConcurrencyGuard bcryptGuard;
 
     public AuthService(UserRepository userRepository,
                        JwtService jwtService,
                        PasswordEncoder passwordEncoder,
                        StringRedisTemplate redisTemplate,
                        JwtProperties jwtProperties,
-                       LoginRateLimiter loginRateLimiter) {
+                       LoginRateLimiter loginRateLimiter,
+                       BcryptConcurrencyGuard bcryptGuard) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.redisTemplate = redisTemplate;
         this.jwtProperties = jwtProperties;
         this.loginRateLimiter = loginRateLimiter;
+        this.bcryptGuard = bcryptGuard;
     }
 
     public TokenResponse login(LoginRequest request, String ipAddress) {
@@ -61,7 +64,11 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        // M03b Группа 10 (KI-7): bcrypt под concurrency-guard (Semaphore N=20).
+        // Запросы сверх лимита получают 429 fail-fast до того как CPU захлебнётся.
+        boolean passwordMatches = bcryptGuard.execute(() ->
+                passwordEncoder.matches(request.password(), user.getPasswordHash()));
+        if (!passwordMatches) {
             loginRateLimiter.recordFailure(ipAddress, request.login());
             throw new InvalidCredentialsException();
         }
@@ -128,11 +135,14 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(InvalidCredentialsException::new);
 
-        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+        // KI-7: bcrypt под guard'ом (два вызова — matches + encode)
+        boolean currentMatches = bcryptGuard.execute(() ->
+                passwordEncoder.matches(request.currentPassword(), user.getPasswordHash()));
+        if (!currentMatches) {
             throw new InvalidCredentialsException();
         }
 
-        String newHash = passwordEncoder.encode(request.newPassword());
+        String newHash = bcryptGuard.execute(() -> passwordEncoder.encode(request.newPassword()));
         userRepository.updatePassword(userId, newHash);
 
         // IMP-10: Revoke all refresh tokens for this user

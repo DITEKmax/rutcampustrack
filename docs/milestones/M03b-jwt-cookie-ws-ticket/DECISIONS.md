@@ -80,6 +80,26 @@ issue), либо periodic sweep. Выберу TTL на set = max(ticket TTL) * 2
 `Sunset: ...`. Планирую удаление в M04 (или M05 если M04 занят
 observability-первоочерёдностями).
 
+## 2026-04-20 — KI-7 bcrypt DoS — выбран вариант (a) Semaphore
+
+**Выбрано:** (a) `java.util.concurrent.Semaphore` N=20 fair permits в новом
+`BcryptConcurrencyGuard` компоненте вокруг `passwordEncoder.matches` /
+`.encode` в AuthService
+**Отвергнуто:** (b) distributed lock `(ip, login)` через Redis — overkill
+для instance-level concurrency-cap. (c) отложить в M05 — CVE-масштабный
+риск, откладывать нельзя
+**Причина:** семафор локальный (per-instance) и дешёвый (in-memory), fail-fast
+через `tryAcquire()` без timeout'а, не требует Redis round-trip. N=20
+подобран из расчёта: bcrypt cost 10 = ~100ms CPU на invocation, 20
+параллельных = 2-4 CPU ядра busy, что оставляет запас для других запросов
+на 4-ядерной ноде. Настраивается через `rct.auth.bcrypt.max-concurrent`.
+**Последствия:** distributed attack (botnet из множества IP) всё равно
+насытит семафор на одной ноде за счёт concurrency, но — в отличие от
+«unlimited bcrypt» — 429 фейлится быстро, LoginRateLimiter успевает
+увидеть failures и заблокировать IP на уровне composite-key. Horizontal
+scale через несколько auth-service pod'ов помогает линейно. Fine-grained
+tuning (distributed semaphore) — backlog M05/M06.
+
 ## 2026-04-20 — Event `user.logged-out` отложен в M04
 
 **Выбрано:** НЕ publish event в M03b, откладываем в M04 Observability

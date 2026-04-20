@@ -11,6 +11,9 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
+    // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators)
+    implementation(project(":services:shared:shared-observability"))
     implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6")
 
     // JWT validation (публичный ключ)

@@ -2,16 +2,18 @@
 
 Атомарные задачи в порядке выполнения. Группа = логический коммит.
 
-## Группа 1 — shared-observability модуль (фундамент)
+## Группа 1 — shared-observability модуль (фундамент) ✅
 
-- [ ] Создать Gradle-модуль `services/shared/shared-observability/` (`java-library`, версии в libs.versions.toml).
-- [ ] Добавить зависимости: `micrometer-tracing-bridge-otel`, `opentelemetry-exporter-otlp`, `spring-boot-starter-actuator`.
-- [ ] `MdcKeys.java` — константы `TRACE_ID`, `USER_ID`, `EVENT_TYPE`, `INTERNAL_JWT_FALLBACK` (для KI-2).
-- [ ] `BusinessMetrics.java` — fluent-helper `Counter incrementCheckin(String status)`, `Counter incrementLogin(String role)`, и т.д. (обёртка над MeterRegistry).
-- [ ] `GrpcClientHealthIndicator.java` — ping downstream через gRPC reflection / health protocol.
-- [ ] `PublicKeyHealthIndicator.java` (gateway-specific, но в shared с `@ConditionalOnBean(PublicKeyProvider.class)`).
-- [ ] testFixtures: `MetricsTestSupport` — assert helpers для тестов (counter incremented, timer recorded).
-- [ ] Подключить модуль во все 6 backend-сервисов (`build.gradle.kts`).
+- [x] Создать Gradle-модуль `services/shared/shared-observability/` (`java-library` + `java-test-fixtures`).
+- [x] Добавить зависимости: `micrometer-core` (api), actuator/grpc-api (compileOnly). OTLP exporter / tracing-bridge остаются в `*-app` модулях (тяжёлые, не нужны в каждом тесте).
+- [x] `MdcKeys.java` — константы `TRACE_ID`, `USER_ID`, `EVENT_TYPE`, `INTERNAL_JWT_FALLBACK` (KI-2).
+- [x] `MetricNames.java` — единые имена метрик (auth.login, attendance.checkin, otp.request/verify, internal_jwt.fallback, gauges).
+- [x] `BusinessMetrics.java` — fluent-helper `loginCounter(role)`, `checkinCounter(status)`, `internalJwtFallbackCounter(from,to)` и т.д.
+- [x] `GrpcClientHealthIndicator.java` — через `ManagedChannel.getState()` (READY→UP, IDLE/CONNECTING→UNKNOWN, TRANSIENT_FAILURE/SHUTDOWN→DOWN).
+- [x] `PublicKeyHealthIndicator.java` — принимает `BooleanSupplier` (без зависимости от shared-security, сервис связывает через лямбду).
+- [x] testFixtures: `MetricsTestSupport` — `assertCounter(registry, name, tagKey, tagValue, expectedCount)` через AssertJ.
+- [x] Тесты: 15 шт всё зелёное (6 BusinessMetrics + 4 PublicKey + 5 Grpc через Mockito).
+- [x] Подключить модуль во все 6 backend-сервисов (api-gateway, auth, academic, schedule, attendance, notification).
 
 ## Группа 2 — INFO-default + dev-profile (QA1 + NEW-57)
 

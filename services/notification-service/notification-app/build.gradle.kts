@@ -20,6 +20,9 @@ dependencies {
     // M03a — shared-security (Internal JWT validator + dual-mode filter)
     implementation(project(":services:shared:shared-security"))
 
+    // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators)
+    implementation(project(":services:shared:shared-observability"))
+
     // Spring Security Core — для shared-web AccessDeniedException handler.
     // Full spring-boot-starter-security добавляется только при реальной SecurityFilterChain
     // (в M03). Сейчас нужен только класс AccessDeniedException на classpath.

@@ -26,6 +26,9 @@ dependencies {
     // M03a — shared-security (Internal JWT validator + dual-mode filter)
     implementation(project(":services:shared:shared-security"))
 
+    // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators)
+    implementation(project(":services:shared:shared-observability"))
+
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

@@ -407,6 +407,111 @@ JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9" ./gradlew.bat build -x test
 - Surprise → NOTES.md + спросить.
 - Закрыл пункт CHECKLIST → `[x]` через Edit.
 
+---
+
+## 2026-04-20 — Hand-off после G9+G10 (10/12 закрыто)
+
+**Состояние:** G1-G10 закрыты. Остались G11 (audit) и G12 (docs + закрытие).
+Коммиты этой сессии: `6b8a233` (G9 Alertmanager), `7f18104` (G10
+retention + dashboard). Ahead origin ~65+.
+
+### Что было сделано в этой сессии
+
+**G9 — Alertmanager end-to-end chain:**
+- `infra/alertmanager/alertmanager.yml` — routing (critical всегда,
+  warning muted 19-05 UTC = 22-08 MSK через `time_intervals` v0.27+).
+  Receiver webhook → notification-web:9094/internal/alert. Inhibit
+  ServiceDown → HealthCheckDown.
+- `infra/prometheus/rules/service-health.yml` — 8 alert rules в 4
+  группах (service-health / outbox / infra / business-anomaly).
+- `infra/prometheus/prometheus.yml` — alerting block + rule_files +
+  alertmanager scrape job.
+- `prom/alertmanager:v0.27.0` контейнер в обоих compose с
+  entrypoint-wrapper (echo secret → /etc/alertmanager/secret → exec).
+  alertmanager.yml не поддерживает env vars напрямую — credentials_file
+  единственный путь.
+- notification-web: `alert/` пакет (Controller + Publisher + Payload +
+  Properties). POST /internal/alert с Bearer-auth → публикует в
+  `rut-uit.events` события `alert.fired` (unified envelope G6-стиля).
+- `NotificationUserContextFilter.isExcludedPath` — добавлен
+  `/internal/alert`.
+- notification-bot: `bot/notifications/alert_fired.py` handler +
+  регистрация в EventDispatcher. `config.py` — `admin_telegram_ids`
+  (comma-separated). HTML escape в message format.
+- docker-compose env: `ALERT_WEBHOOK_SECRET` (notification-web),
+  `ADMIN_TELEGRAM_IDS` (notification-bot) в обоих compose.
+- 7 Java unit-тестов + 7 Python unit-тестов. Bot suite 153/153.
+
+**G10 — Retention + Grafana dashboard:**
+- Loki retention 168h → 336h + добавлен `compactor` (retention_enabled:
+  true; без него Loki не удаляет старые chunks даже при limits_config).
+- Loki `ruler.alertmanager_url` исправлен с `localhost:9093` на
+  `alertmanager:9093` (в контейнере localhost — сам ruler).
+- Prometheus retention 30d → 14d (QA5 spec).
+- `infra/grafana/provisioning/dashboards/business-kpis.json` — 8
+  панелей (checkin rate, login/OTP rate, red zone stat, ws sessions
+  stat, outbox lag with thresholds 60s/300s, JVM heap %, RabbitMQ
+  queue depth, KI-2 fallback rate). UID `business-kpis-m04`,
+  автообновление 30s.
+
+### G11 — audit, прерван в текущей сессии
+
+3 background-агента были запущены параллельно (bug-hunter,
+security-auditor, code-reviewer) и остановлены пользователем до
+завершения. Reports не получены — перезапустить с нуля в следующей
+сессии.
+
+**Как возобновить G11 в новой сессии:**
+
+```
+# Полный build проверить ещё раз (он был зелёным):
+JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9" ./gradlew.bat build -x test
+
+# Запустить все 3 агента параллельно — промпты уже подготовлены,
+# можно взять из моего недавнего prompt'а (см. git log или
+# восстановить по контексту).
+```
+
+Агентам передать diff-контекст: последний pre-M04 коммит —
+`19f2faf`, M04-цепочка начинается с `89549af` (scaffold milestone).
+
+**Особые точки для агентов (что я просил проверить):**
+
+1. DualModeUserContextFilter — nullable BusinessMetrics overload
+2. RedZoneGauge — race @PostConstruct vs @Scheduled initial
+3. JpaOutboxStorage.oldestPendingAgeSeconds + Mongo аналог
+4. AlertController — parse безопасность + timing attack в secret.equals
+5. AlertPublisher — Map.of() 7 полей (limit 10, ОК)
+6. observability.py — structlog re-configure idempotent?
+7. alert_fired.py — closure late-binding в Python (я использовал
+   default args trick `cid=cid, text=text`)
+8. Prometheus rules `hour() >= 6 and hour() <= 15` — правильный UTC
+9. time_intervals v0.27 structure — правильно
+10. docker-compose entrypoint `$${ALERT_WEBHOOK_SECRET}` — двойной $$
+    для compose variable escaping
+
+### G12 — documentation + закрытие
+
+Ещё не начато. Список задач из CHECKLIST Группа 12:
+- `docs/observability.md` runbook (~200-250 строк, новый)
+- `docs/alerts.md` каталог + runbook (часть добавлена в G9 rules,
+  нужен дополнительный overview doc)
+- `docs/architecture.md` — раздел «Observability stack»
+- `docs/logging-conventions.md` финализировать
+- `CHANGELOG.md [Unreleased]` M04 секция
+- `CLAUDE.md` «Текущий статус» → M04 ✅ + дата
+- `docs/milestones/README.md` → ✅ + дата
+- `docs/future-ideas.md` NEW-66 retention review
+- PLAN.md Post-mortem секция
+- `git tag v0.0.0-alpha.5` локально (без push)
+- Hand-off для M05/M06/M07
+
+### Состояние веток / push
+
+- ~65+ коммитов ahead origin — push отложен до конца v0.0.0.
+- Tag `v0.0.0-alpha.4` на `eb125c4` локально.
+- `v0.0.0-alpha.5` будет на финальном коммите M04 (Группа 12).
+
 ### Правила работы (без изменений)
 
 - Русский в отчётах / NOTES / ответах. Технические термины / код — оригинал.

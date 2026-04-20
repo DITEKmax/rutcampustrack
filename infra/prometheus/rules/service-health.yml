@@ -92,8 +92,14 @@ groups:
       # directly — используем hour() из Prometheus functions). Vector
       # hour() возвращает UTC, поэтому 06-15 ≈ 09-18 MSK.
       - alert: CheckinRateZero
+        # G11 H5 fix: добавлен absent() branch. Без него, если counter
+        # отсутствует совсем (fresh restart, 0 отметок за retention
+        # window), rate() возвращает пустой vector и alert не fire'ит.
         expr: |
-          (rate(attendance_checkin_total[10m]) == 0)
+          (
+            (rate(attendance_checkin_total[10m]) == 0)
+            or absent(attendance_checkin_total)
+          )
           and on() (hour() >= 6 and hour() <= 15)
           and on() (day_of_week() >= 1 and day_of_week() <= 5)
         for: 10m

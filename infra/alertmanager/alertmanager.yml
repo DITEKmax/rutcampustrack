@@ -11,14 +11,15 @@ global:
   resolve_timeout: 5m
 
 # Тихий час — fixed 22:00-08:00 MSK. D3=(a).
-# `time_intervals` - v0.27+, alertmanager.yml формат.
+# `time_intervals` — v0.27+ alertmanager формат.
+# MSK = UTC+3: 22:00 MSK = 19:00 UTC, 08:00 MSK = 05:00 UTC.
 time_intervals:
   - name: quiet-hours-msk
     time_intervals:
       - times:
           - start_time: '19:00'
             end_time: '05:00'
-        location: 'UTC'  # 19-05 UTC ≈ 22-08 MSK (MSK = UTC+3).
+        location: 'UTC'
 
 route:
   receiver: 'notification-webhook'

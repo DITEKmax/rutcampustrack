@@ -117,4 +117,37 @@ class AlertControllerTest {
         assertThat(response.getBody()).isInstanceOfSatisfying(Map.class,
                 m -> assertThat(m.get("published")).isEqualTo(0));
     }
+
+    /**
+     * G11 H3 fix — labels с non-string значениями не должны ломать
+     * парсинг. До fix'а был unchecked cast + ClassCastException позже
+     * в bot'е.
+     */
+    @Test
+    void labelsWithNonStringValues_coercedSafely() {
+        java.util.Map<String, Object> labelsMixed = new java.util.LinkedHashMap<>();
+        labelsMixed.put("alertname", "X");
+        labelsMixed.put("severity", 123);
+        labelsMixed.put("count", true);
+        labelsMixed.put("nullval", null);
+
+        Map<String, Object> body = Map.of(
+                "alerts", List.of(Map.of(
+                        "status", "firing",
+                        "labels", labelsMixed,
+                        "annotations", Map.of()
+                ))
+        );
+
+        ResponseEntity<?> response = controller.receive("Bearer secret-token", body);
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+
+        var captor = forClass(AlertPayload.class);
+        verify(publisher).publishFired(captor.capture());
+        AlertPayload p = captor.getValue();
+        assertThat(p.name()).isEqualTo("X");
+        assertThat(p.severity()).isEqualTo("123");
+        assertThat(p.labels()).containsEntry("count", "true");
+        assertThat(p.labels()).containsEntry("nullval", "");
+    }
 }

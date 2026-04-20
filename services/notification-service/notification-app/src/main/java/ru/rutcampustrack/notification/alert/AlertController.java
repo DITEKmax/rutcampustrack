@@ -93,15 +93,19 @@ public class AlertController {
             return false;
         }
         String provided = auth.substring("Bearer ".length()).trim();
-        return secret.equals(provided);
+        // G11 LOW fix: constant-time сравнение, защита от timing attack
+        // (low risk в private_net, но тривиально исправляется).
+        return java.security.MessageDigest.isEqual(
+                secret.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                provided.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
-    @SuppressWarnings("unchecked")
     private AlertPayload toPayload(Map<?, ?> alert) {
-        Map<String, String> labels = alert.get("labels") instanceof Map<?, ?> m
-                ? (Map<String, String>) m : Map.of();
-        Map<String, String> annotations = alert.get("annotations") instanceof Map<?, ?> m
-                ? (Map<String, String>) m : Map.of();
+        // G11 H3 fix: coerce к Map<String,String> безопасно. Unchecked
+        // cast тихо пропускал non-string значения и падал позже в
+        // подписчике (bot) при HTML-escape / JSON десериализации.
+        Map<String, String> labels = coerceStringMap(alert.get("labels"));
+        Map<String, String> annotations = coerceStringMap(alert.get("annotations"));
         return new AlertPayload(
                 labels.get("alertname"),
                 labels.get("severity"),
@@ -110,5 +114,19 @@ public class AlertController {
                 annotations.get("description"),
                 labels
         );
+    }
+
+    private static Map<String, String> coerceStringMap(Object raw) {
+        if (!(raw instanceof Map<?, ?> src)) {
+            return Map.of();
+        }
+        java.util.LinkedHashMap<String, String> out = new java.util.LinkedHashMap<>(src.size());
+        for (Map.Entry<?, ?> e : src.entrySet()) {
+            if (e.getKey() == null) continue;
+            String k = e.getKey().toString();
+            String v = e.getValue() == null ? "" : e.getValue().toString();
+            out.put(k, v);
+        }
+        return out;
     }
 }

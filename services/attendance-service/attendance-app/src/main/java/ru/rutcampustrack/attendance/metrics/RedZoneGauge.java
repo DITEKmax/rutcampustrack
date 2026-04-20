@@ -2,7 +2,6 @@ package ru.rutcampustrack.attendance.metrics;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import jakarta.annotation.PostConstruct;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,20 +50,19 @@ public class RedZoneGauge {
                 .register(registry);
     }
 
-    @PostConstruct
-    void init() {
-        // Первичный расчёт при старте, чтобы gauge не висел на 0 до первого
-        // scheduled прогона (5 мин — долго для smoke-тестов).
-        refresh();
-    }
-
+    // G11 H1 fix: убран @PostConstruct init() — он вызывал refresh() напрямую
+    // через this, обходя Spring proxy, и @SchedulerLock не срабатывал.
+    // initialDelayString=10s даёт первый прогон через proxied-вызов (после
+    // того как Spring поднимет AOP) вместо немедленного старта; gauge
+    // отдаст 0 первые 10 секунд — приемлемо (prometheus scrape 15s).
+    //
     // NEW-28: gauge безопасен при scale-out (read-only aggregation), но
     // дублированный query на Mongo × N pods бесполезен. SchedulerLock
     // гарантирует что только один pod будет пересчитывать в 5-минутном
     // окне, остальные подхватят свежее значение gauge через Prometheus
     // remote_read (в Grafana dashboards видно единое значение).
     @Scheduled(fixedDelayString = "${attendance.red-zone.refresh-ms:300000}",
-            initialDelayString = "${attendance.red-zone.refresh-ms:300000}")
+            initialDelayString = "${attendance.red-zone.initial-delay-ms:10000}")
     @SchedulerLock(name = "RedZoneGauge-refresh", lockAtMostFor = "4m", lockAtLeastFor = "30s")
     public void refresh() {
         try {

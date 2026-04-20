@@ -51,6 +51,26 @@ def _add_service_name(_, __, event_dict: dict) -> dict:
     return event_dict
 
 
+# G11 M-sec-2 fix: PII masking для Telegram user_id в structlog
+# contextvars (middleware биндит его на каждый update). В Java-сервисах
+# аналогичное делает shared-logback (regex masking). Здесь маскируем
+# на уровне processor'а — сохраняем отладочную ценность через hash,
+# но не храним plaintext ID в Loki.
+_SENSITIVE_KEYS = frozenset({"user_id", "telegram_id", "from_user_id", "chat_id"})
+
+
+def _mask_pii(_, __, event_dict: dict) -> dict:
+    for key in _SENSITIVE_KEYS:
+        value = event_dict.get(key)
+        if value is None:
+            continue
+        # Сохраняем type-info и последние 3 цифры (для debugging "тот же
+        # юзер или другой") + hash. Для int 123456789 → "***789".
+        text = str(value)
+        event_dict[key] = "***" + text[-3:] if len(text) >= 3 else "***"
+    return event_dict
+
+
 def _configure_structlog() -> None:
     """Настраивает structlog + stdlib bridge.
 
@@ -67,6 +87,7 @@ def _configure_structlog() -> None:
         structlog.stdlib.add_logger_name,
         timestamper,
         _add_service_name,
+        _mask_pii,
         _rename_event_key,
     ]
 

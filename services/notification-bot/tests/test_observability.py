@@ -80,7 +80,8 @@ def test_bind_trace_context_injects_and_restores():
     outside = next(line for line in lines if line["msg"] == "outside")
 
     assert inside["trace_id"] == "trace-abc"
-    assert inside["user_id"] == 42
+    # G11 M-sec-2: user_id маскируется — plaintext 42 не сохраняется.
+    assert inside["user_id"] == "***"
     assert inside["callback_type"] == "message"
     assert "trace_id" not in outside
     assert "user_id" not in outside

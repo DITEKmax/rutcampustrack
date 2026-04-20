@@ -49,12 +49,28 @@ def _parse_admin_ids(raw: str | None) -> list[int]:
     return out
 
 
+# G11 M4 fix: Telegram sendMessage лимит 4096. Длинный Alertmanager
+# description (runbook + stack trace) разрывал формирование сообщения.
+# Ограничение 3500 оставляет буфер на header + summary + markup.
+_MAX_DESCRIPTION_CHARS = 3500
+_TRUNCATION_SUFFIX = "…\n<i>[truncated]</i>"
+
+
+def _truncate(text: str, limit: int) -> str:
+    if len(text) <= limit:
+        return text
+    return text[: limit - len(_TRUNCATION_SUFFIX)] + _TRUNCATION_SUFFIX
+
+
 def _format_message(payload: dict) -> str:
     name = html.escape(str(payload.get("name", "unknown")))
     severity = str(payload.get("severity", "unknown")).lower()
     status = str(payload.get("status", "unknown")).lower()
     summary = html.escape(str(payload.get("summary") or ""))
-    description = html.escape(str(payload.get("description") or ""))
+    description = _truncate(
+        html.escape(str(payload.get("description") or "")),
+        _MAX_DESCRIPTION_CHARS,
+    )
 
     status_prefix = STATUS_EMOJI.get(status, "❓")
     severity_marker = SEVERITY_EMOJI.get(severity, "⚪")

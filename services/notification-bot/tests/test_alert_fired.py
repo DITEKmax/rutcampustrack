@@ -51,6 +51,18 @@ def test_format_message_resolved():
     assert "[WARNING]" in msg
 
 
+def test_format_message_truncates_long_description():
+    msg = _format_message({
+        "name": "Foo",
+        "severity": "warning",
+        "status": "firing",
+        "description": "x" * 5000,
+    })
+    # 3500 char cap + suffix должен сработать
+    assert len(msg) < 5000
+    assert "[truncated]" in msg
+
+
 def test_format_message_escapes_html():
     msg = _format_message({
         "name": "Test<script>",

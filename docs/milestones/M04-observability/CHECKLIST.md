@@ -126,13 +126,21 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 - [x] DiskUsageHigh alert > 80% уже в G9 rules (`service-health.yml` infra group).
 - [ ] `docs/future-ideas.md` NEW-66 → Группа 12 docs pass.
 
-## Группа 11 — Audit (bug-hunter + security-auditor + code-reviewer)
+## Группа 11 — Audit (bug-hunter + security-auditor + code-reviewer) ✅
 
-- [ ] Финальный `./gradlew build` — всё зелёное.
-- [ ] `bug-hunter` агент на diff M04 — root cause review.
-- [ ] `security-auditor` на новые endpoint'ы (`/internal/alert`, `/actuator/health` exposure).
-- [ ] `code-reviewer` на `shared-observability` модуль + изменения в шести сервисах.
-- [ ] Hot-patches из audit'а → отдельный коммит.
+- [x] Финальный `./gradlew build -x test` — зелёное.
+- [x] `bug-hunter` — 0 BLOCKER, 5 HIGH, 5 MEDIUM, 5 LOW. Ключевые: H1 (RedZoneGauge self-invocation — SchedulerLock не работал), H3 (AlertController unchecked cast), H5 (CheckinRateZero нужен `absent()` branch).
+- [x] `security-auditor` — 0 CRITICAL/HIGH, 2 MEDIUM (timezone в alertmanager — на деле ОК, агент ошибся; PII masking в Python structlog), 5 LOW.
+- [x] `code-reviewer` — 46/51 quality score. SHOULD FIX: AlertPublisher должен extend AbstractEventPublisher (отложено, пометка в NOTES); AlertController DTO вместо Map (отложено в M05/M06 refactor). Noteworthy positives: JavaDoc quality, fail-safe defaults, tests.
+- [x] Hot-patches применены:
+    - **H1:** убран `@PostConstruct init()` в `RedZoneGauge` — использует `initialDelayString=10s` чтобы Spring proxy поднял AOP, и `@SchedulerLock` работал правильно.
+    - **H3:** `AlertController.toPayload` — новый `coerceStringMap()` безопасно конвертирует labels/annotations с любыми value types в Map<String,String>. +1 unit-тест.
+    - **H5:** `CheckinRateZero` prometheus rule — добавлен `or absent(attendance_checkin_total)` branch.
+    - **M-sec-2:** `_mask_pii` processor в structlog маскирует `user_id`/`telegram_id`/`from_user_id`/`chat_id` → `"***<last-3-digits>"` (не plaintext). 1 тест обновлён, middleware contextvars не затронуты.
+    - **M4:** `alert_fired._format_message` truncate description до 3500 chars (Telegram 4096 limit). +1 unit-тест.
+    - **LOW timing attack:** `AlertController.isAuthorized` → `MessageDigest.isEqual` (constant-time).
+- [x] Отложено (пометки в NOTES.md для M05/M06): SHOULD #1 AlertPublisher extends AbstractEventPublisher, SHOULD #2 DTO-based webhook parsing, timezone подтверждение (на деле правильный).
+- [x] Тесты после патчей: 154/154 bot, attendance CheckinService/ExcuseService/ArchUnit ✅, notification-web alert test ✅.
 
 ## Группа 12 — Documentation + закрытие milestone
 

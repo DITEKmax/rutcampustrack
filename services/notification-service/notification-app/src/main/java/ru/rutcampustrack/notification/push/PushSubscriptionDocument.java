@@ -64,8 +64,11 @@ public class PushSubscriptionDocument {
      * {@code last_seen < now() - 90d} (subscription либо отозвана без
      * 410 Gone, либо устройство давно не подключается к сети).
      *
-     * Для docs, созданных до M05 G7, backfill: {@code last_seen =
-     * createdAt} (см. PushSubscriptionCleanupJob.backfillMissingLastSeen).
+     * Для docs, созданных до M05 G7 (поле отсутствует), bootstrap-миграция
+     * проставляет {@code last_seen = now()} — нормализует схему. Pre-M05
+     * подписки считаются «видимыми на момент запуска»; если устройство
+     * действительно тихо, cleanup удалит их через retention-окно (90d).
+     * См. {@link PushSubscriptionCleanupJob#backfillMissingLastSeen()}.
      */
     @Field("last_seen")
     private Instant lastSeen;

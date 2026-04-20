@@ -63,7 +63,7 @@ public class PushSubscriptionCleanupJob {
      * <p>Индекс {@code idx_last_seen} (см. PushMongoConfig) обеспечивает
      * IXSCAN — без полного коллекционного scan'а.
      */
-    @Scheduled(cron = "${rutcampustrack.push.cleanup.cron:0 0 3 * * SUN}")
+    @Scheduled(cron = "${rutcampustrack.push.cleanup.cron:0 0 3 * * SUN}", zone = "UTC")
     @SchedulerLock(name = "cleanupStalePushSubs", lockAtMostFor = "PT10M", lockAtLeastFor = "PT1M")
     public void cleanupStalePushSubs() {
         Instant cutoff = Instant.now(clock).minus(Duration.ofDays(retentionDays));

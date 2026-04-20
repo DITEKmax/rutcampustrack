@@ -1118,6 +1118,28 @@ cross-aggregate lock или JSONB-embedded subentity), снять инвариа
 
 ---
 
+## 11.1. Performance & Ops runbooks (M05)
+
+Оперативные runbook'и, порождённые M05 «Performance»:
+
+- [`performance-indexes.md`](performance-indexes.md) — composite indexes
+  PG/Mongo, EXPLAIN before/after, процесс добавления новых.
+- [`caching-strategy.md`](caching-strategy.md) — 7 Redis namespaces, TTL
+  matrix, invalidation triggers, migration plan.
+- [`connection-pool-tuning.md`](connection-pool-tuning.md) — HikariCP
+  sizing формула, триггеры пересмотра, alert
+  `HikariPoolExhaustion`.
+- [`data-retention-policy.md`](data-retention-policy.md) — таблица 12
+  видов данных (push-subs 90д, refresh-tokens 7д, OTP 5м, ...), mechanism,
+  триггеры.
+- [`api-error-conventions.md`](api-error-conventions.md) — RFC 7807 error
+  schema, pseudo-atomic vs partial-success для batch-endpoint'ов.
+- [`future-ideas.md`](future-ideas.md) — отложенные варианты (Mongo
+  `$group` aggregation в ReportService, cache hit/miss metrics через
+  `@Aspect`).
+
+---
+
 ## 12. Дизайн-решения
 
 Подробные дизайн-решения (иконки, анимации, PWA, брендинг) вынесены в отдельный файл: **`docs/design-decisions.md`**.

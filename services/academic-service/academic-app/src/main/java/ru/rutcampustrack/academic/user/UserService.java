@@ -12,6 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
@@ -234,23 +236,15 @@ public class UserService {
             }
         }
 
-        // M05 D6: rbac cache invalidation при смене is_headman или group_id.
-        // Ключи rbac-namespace — "<userId>:<groupId>". Evict'им для всех
-        // затронутых групп (старая и новая, если изменились).
+        // M05 audit fix (bug-hunter 1.1): rbac evict должен идти AFTER COMMIT,
+        // иначе concurrent isHeadmanOf читает pre-commit snapshot и кешит
+        // старое значение — ex-headman сохраняет privileges до истечения TTL.
         boolean headmanChanged = request.isHeadman() != null;
         boolean groupChanged = request.groupId() != null
                 && !java.util.Objects.equals(oldGroupId, user.getGroupId());
-        if ((headmanChanged || groupChanged) && cacheManager != null) {
-            Cache rbacCache = cacheManager.getCache("rbac");
-            if (rbacCache != null) {
-                if (oldGroupId != null) {
-                    rbacCache.evict(id + ":" + oldGroupId);
-                }
-                if (user.getGroupId() != null
-                        && !java.util.Objects.equals(oldGroupId, user.getGroupId())) {
-                    rbacCache.evict(id + ":" + user.getGroupId());
-                }
-            }
+        if (headmanChanged || groupChanged) {
+            Long newGroupId = user.getGroupId();
+            evictRbacAfterCommit(id, oldGroupId, newGroupId);
         }
 
         user.setUpdatedAt(OffsetDateTime.now());
@@ -264,6 +258,11 @@ public class UserService {
         user.setStatus(AccountStatus.ARCHIVED);
         user.setUpdatedAt(OffsetDateTime.now());
         userRepository.save(user);
+        // M05 audit fix (bug-hunter 1.2): archive tоже должен evict rbac —
+        // иначе ex-headman держит privileges до истечения TTL (60s).
+        if (user.isHeadman() && user.getGroupId() != null) {
+            evictRbacAfterCommit(id, user.getGroupId(), null);
+        }
     }
 
     @CacheEvict(value = "group_members", key = "#request.newGroupId()")
@@ -313,17 +312,11 @@ public class UserService {
             if (usersCache != null) {
                 usersCache.evict(id);
             }
-            // M05 D6: rbac cache invalidation при смене группы студента.
-            // Если был старостой — запись (id, oldGroupId) теперь невалидна;
-            // новая запись (id, newGroupId) также должна быть свежей.
-            Cache rbacCache = cacheManager.getCache("rbac");
-            if (rbacCache != null) {
-                if (oldGroupId != null) {
-                    rbacCache.evict(id + ":" + oldGroupId);
-                }
-                rbacCache.evict(id + ":" + request.newGroupId());
-            }
         }
+        // M05 audit fix (bug-hunter 1.1): rbac evict переносится в afterCommit —
+        // concurrent isHeadmanOf иначе закеширует стейл-значение из pre-commit
+        // snapshot'а и дальнейшие RBAC-проверки пройдут по старой группе.
+        evictRbacAfterCommit(id, oldGroupId, request.newGroupId());
 
         User saved = userRepository.save(user);
         eventPublisher.publishEvent(new GroupUpdatedEvent(this, oldGroupId));
@@ -391,5 +384,43 @@ public class UserService {
             sb.append(CHARSET.charAt(secureRandom.nextInt(CHARSET.length())));
         }
         return sb.toString();
+    }
+
+    /**
+     * M05 audit fix (bug-hunter 1.1/1.2): evict rbac-cache ключи
+     * {@code <userId>:<groupId>} только ПОСЛЕ commit'а транзакции.
+     *
+     * <p>Если evict'ить внутри @Transactional — concurrent isHeadmanOf читает
+     * pre-commit snapshot из БД и перезаписывает cache старым значением до
+     * истечения TTL (60s), что позволяет ex-headman'у сохранять privileges.
+     *
+     * <p>Fallback вне активной транзакции — немедленный evict (сценарий
+     * unit-тестов и прямых вызовов из non-@Transactional-context).
+     */
+    private void evictRbacAfterCommit(Long userId, Long oldGroupId, Long newGroupId) {
+        if (cacheManager == null) {
+            return;
+        }
+        Runnable evict = () -> {
+            Cache rbac = cacheManager.getCache("rbac");
+            if (rbac == null) {
+                return;
+            }
+            if (oldGroupId != null) {
+                rbac.evict(userId + ":" + oldGroupId);
+            }
+            if (newGroupId != null && !java.util.Objects.equals(oldGroupId, newGroupId)) {
+                rbac.evict(userId + ":" + newGroupId);
+            }
+        };
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override public void afterCommit() {
+                    evict.run();
+                }
+            });
+        } else {
+            evict.run();
+        }
     }
 }

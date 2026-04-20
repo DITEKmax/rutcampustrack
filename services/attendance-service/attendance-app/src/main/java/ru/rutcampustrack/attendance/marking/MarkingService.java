@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.marking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -154,6 +155,15 @@ public class MarkingService {
      * (3 gRPC round-trip вместо ~90, 30 Mongo upsert вместо 30 +
      * round-trip per upsert).
      */
+    /**
+     * M05 audit fix (security #1): ограничение fan-out'а одним запросом.
+     * Headman в реальных сценариях отмечает посещаемость одного урока
+     * (bulk-mark на экране журнала одной пары). Кэп защищает
+     * {@code grpcTaskExecutor} (core=2 / max=8 / queue=100) от
+     * DoS'а через 100-item payload со 100 уникальными lessonId'ами.
+     */
+    private static final int MAX_UNIQUE_LESSONS_PER_BATCH = 10;
+
     public List<AttendanceDocument> markBatch(MarkBatchRequest request) {
         List<MarkBatchItem> items = request.items();
 
@@ -166,18 +176,33 @@ public class MarkingService {
             }
         }
 
-        // D-12: headman role
+        // D-12: headman role (из JWT claim'а)
         if (!requestContext.isHeadman()) {
             throw new AccessDeniedException("Только староста может отмечать посещаемость");
         }
 
         Long headmanGroupId = requestContext.getGroupId();
+        Long callerId = requestContext.getUserId();
+
+        // M05 audit fix (security #2): re-check isHeadman через source-of-truth
+        // (academic-service). JWT claim is_headman валиден до истечения токена
+        // (~15 мин), revoke в academic не виден здесь без cross-service
+        // invalidation. Re-check обслуживается rbac-кэшем → ~O(60s) window,
+        // приемлемый компромисс между latency и RBAC-freshness.
+        if (!academicGrpcClient.isHeadman(callerId, headmanGroupId).getIsHeadman()) {
+            throw new AccessDeniedException("Только староста может отмечать посещаемость");
+        }
 
         // M05 G8: N уникальных getLessonById + 1 getGroupMembers fan-out
         // параллельно через grpcTaskExecutor. Deadline 3s enforced на stub.
         Set<Long> uniqueLessonIds = items.stream()
                 .map(MarkBatchItem::lessonId)
                 .collect(Collectors.toSet());
+        if (uniqueLessonIds.size() > MAX_UNIQUE_LESSONS_PER_BATCH) {
+            throw new BadRequestException(
+                    "Батч должен содержать items не более чем для "
+                            + MAX_UNIQUE_LESSONS_PER_BATCH + " различных уроков");
+        }
         Map<Long, CompletableFuture<LessonResponse>> lessonFuts = new HashMap<>(uniqueLessonIds.size());
         for (Long lessonId : uniqueLessonIds) {
             lessonFuts.put(lessonId, CompletableFuture.supplyAsync(
@@ -190,8 +215,9 @@ public class MarkingService {
         for (Map.Entry<Long, CompletableFuture<LessonResponse>> e : lessonFuts.entrySet()) {
             LessonResponse lesson = unwrap(e.getValue());
             if (!headmanGroupId.equals(lesson.getGroupId())) {
-                throw new AccessDeniedException(
-                        "Нельзя отмечать студентов чужой группы (lessonId=" + e.getKey() + ")");
+                // M05 audit fix (security #4): без id's в message — избегаем
+                // enumeration side-channel (тайминг/текст).
+                throw new AccessDeniedException("Нельзя отмечать студентов чужой группы");
             }
             lessonsById.put(e.getKey(), lesson);
         }
@@ -201,8 +227,7 @@ public class MarkingService {
 
         for (MarkBatchItem item : items) {
             if (!allowedStudentIds.contains(item.userId())) {
-                throw new AccessDeniedException(
-                        "Студент не принадлежит вашей группе (userId=" + item.userId() + ")");
+                throw new AccessDeniedException("Студент не принадлежит вашей группе");
             }
         }
 
@@ -210,10 +235,18 @@ public class MarkingService {
         // не поддерживает multi-doc transactions (M06 scope — replica set).
         // Partial-failure из-за infra остаётся edge-case (idempotent upsert
         // переживает retry).
+        //
+        // M05 audit fix (bug-hunter 2.1): события публикуются ПОСЛЕ успешного
+        // upsert'а всех items. Если N-й upsert падает — уже накопленные k-1
+        // доки не триггерят attendance.marked, client retry'ит весь batch и
+        // получает 0 дубликатов событий (upsert идемпотентен по данным).
+        // Плюс findAndModify(returnNew=true) вместо upsert+findOne — один
+        // round-trip на item вместо двух.
         Long semesterId = semesterCacheService.getActiveSemesterId();
         Instant now = Instant.now();
         Long markedBy = requestContext.getUserId();
         List<AttendanceDocument> result = new ArrayList<>(items.size());
+        FindAndModifyOptions opts = FindAndModifyOptions.options().returnNew(true).upsert(true);
 
         for (MarkBatchItem item : items) {
             LessonResponse lesson = lessonsById.get(item.lessonId());
@@ -233,10 +266,13 @@ public class MarkingService {
                     .setOnInsert("lesson_number", lesson.getLessonNumber())
                     .setOnInsert("lesson_date", LocalDate.parse(lesson.getDate()))
                     .setOnInsert("created_at", now);
-            mongoTemplate.upsert(filter, update, AttendanceDocument.class);
-
-            AttendanceDocument doc = mongoTemplate.findOne(filter, AttendanceDocument.class);
+            AttendanceDocument doc = mongoTemplate.findAndModify(
+                    filter, update, opts, AttendanceDocument.class);
             result.add(doc);
+        }
+
+        // Публикация событий — после того как весь batch персистирован.
+        for (AttendanceDocument doc : result) {
             eventPublisher.publishMarked(doc);
         }
 

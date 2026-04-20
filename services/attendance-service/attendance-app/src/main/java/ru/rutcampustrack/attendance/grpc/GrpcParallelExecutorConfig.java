@@ -1,5 +1,7 @@
 package ru.rutcampustrack.attendance.grpc;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -7,7 +9,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 /**
  * M05 G8 (NEW-149): bounded executor для параллельного fan-out двух
  * independent gRPC-call'ов (`LessonEventService.processLessonClosed`,
- * `MarkingService.markBatch`, `ReportService.getStudentStats`).
+ * `MarkingService.markBatch`).
  *
  * <p>Sizing:
  * <ul>
@@ -18,10 +20,19 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  *       встают в очередь, а не создают новые потоки.</li>
  * </ul>
  *
- * <p>Deadline propagation: gRPC stub уже имеет
- * {@code withDeadlineAfter(3, SECONDS)}, поэтому task'и fail-fast даже
- * если их долго держит queue. `.join()` в caller'е трансформирует
- * `CompletionException` → `StatusRuntimeException`.
+ * <p>M05 audit fix (bug-hunter 3.1): {@link ThreadPoolExecutor.CallerRunsPolicy}
+ * при переполнении очереди — task выполняется на caller-thread'е
+ * (RabbitMQ consumer / HTTP worker). Это гарантирует, что под event-storm'ом
+ * AMQP consumer не теряет heartbeat из-за RejectedExecutionException'а,
+ * а gracefully деградирует до sequential выполнения. Альтернатива
+ * (AbortPolicy default) роняет весь processLessonClosed и messages
+ * возвращаются в очередь бесконечно.
+ *
+ * <p>Deadline: callers всё равно оборачивают gRPC-stub в
+ * {@code withDeadlineAfter(3s)}, но время ожидания в queue его не
+ * включает (стартует внутри таска). Под перегрузкой это может растянуть
+ * wall-time обработки; accept'им trade-off — CallerRunsPolicy лучше чем
+ * падение heartbeat.
  */
 @Configuration
 public class GrpcParallelExecutorConfig {
@@ -35,6 +46,7 @@ public class GrpcParallelExecutorConfig {
         executor.setThreadNamePrefix("grpc-parallel-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(5);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         executor.initialize();
         return executor;
     }

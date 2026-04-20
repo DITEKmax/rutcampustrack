@@ -345,6 +345,84 @@ push_subscriptions ADD COLUMN last_seen ...». Grep показал — колл�
   `TmaService:78`, `OtpService:192`. Значение `604800` (7d) в
   `application.yml:57`. Audit закрыт без правок.
 
+## Группа 9 — Audit (2026-04-21)
+
+Три агента со свежим контекстом (без истории реализации) отработали
+параллельно на diff `83ed387..3fae923` (~2668 LOC, 8 коммитов). Полные
+отчёты остались в tool-results сессии; ниже — сводка + действия.
+
+### Findings
+
+| # | Severity | Источник | Fix |
+|---|----------|----------|-----|
+| 1.1 | CRITICAL | bug-hunter | rbac evict в `@Transactional` — concurrent `isHeadmanOf` кешит pre-commit snapshot → ex-headman держит privileges до 60s TTL |
+| 1.2 | HIGH | bug-hunter | `archiveUser` не evict'ил rbac |
+| 2.1 | HIGH | bug-hunter | `markBatch` publish per-item — partial-failure + client retry = дубликаты событий. Плюс double round-trip `upsert+findOne` |
+| 3.1 | HIGH | bug-hunter + security #1 | `withDeadlineAfter(3s)` в lambda — queue wait не считается. Плюс 100 unique lessonIds × 8 worker'ов DoS'ит executor |
+| 2 | HIGH | security | JWT `is_headman` claim доверяется 15m TTL → ex-headman batch-mark'ает до expiry |
+| 4 | LOW | security | `AccessDeniedException` включает `userId=`/`lessonId=` — enumeration side-channel |
+| — | MAJOR | code-review | PLAN.md AC vs `caching-strategy.md` — противоречие про cache metrics |
+| D | MAJOR | code-review | `GrpcParallelExecutorConfig` Javadoc врёт про `ReportService` |
+| 4.2 | LOW | bug-hunter | Cron без `zone=` — зависит от JVM TZ |
+| D | MINOR | code-review | `WebPushDeliveryService.touchLastSeen` не использует injected `Clock` |
+| 4.1 | MEDIUM | bug-hunter | `PushSubscriptionDocument` Javadoc обещал `last_seen=created_at`, код ставил `now()` |
+
+### Hot-patches (commit `fix(m05): hot-patches after audit`)
+
+- **UserService:** rbac evict → `TransactionSynchronization.afterCommit()`
+  helper `evictRbacAfterCommit(userId, oldGroupId, newGroupId)`. Вызовы
+  из `patchUser` / `transferStudent` / `archiveUser`. Fallback на
+  immediate evict вне транзакции (unit-тесты).
+- **MarkingService.markBatch:**
+  - Re-check `academicGrpcClient.isHeadman(callerId, groupId)` перед
+    fan-out'ом (cache-hit в 99% случаев, ~60s freshness vs JWT 15m).
+  - Кэп `MAX_UNIQUE_LESSONS_PER_BATCH=10` — защита `grpcTaskExecutor`
+    от DoS'а.
+  - `findAndModify(returnNew=true)` вместо `upsert+findOne` — один
+    round-trip на item.
+  - Events публикуются после успешного прогона всех items, не в loop'е.
+  - Error messages без id's (enumeration side-channel).
+- **GrpcParallelExecutorConfig:** `CallerRunsPolicy` вместо дефолтного
+  `AbortPolicy` — под event-storm'ом AMQP consumer gracefully
+  деградирует до sequential вместо rollback'а. Javadoc убрал упоминание
+  `ReportService` (никогда не использует executor).
+- **WebPushDeliveryService:** инжектирует `Clock` (systemUTC bean в
+  `PushCleanupConfig`), `touchLastSeen` использует `Instant.now(clock)`.
+- **PushSubscriptionCleanupJob:** `@Scheduled(cron=..., zone="UTC")`
+  явный timezone.
+- **PushSubscriptionDocument:** Javadoc синхронизирован с реальным
+  поведением (`last_seen=now()` на bootstrap).
+- **PLAN.md AC:** «cache.gets hit/miss» помечен `[~] Deferred`, ссылки
+  на `caching-strategy.md §Observability` и `future-ideas.md`.
+- **architecture.md §11.1:** блок «Performance & Ops runbooks» с 6
+  ссылками на новые M05 docs.
+
+### Тесты
+
+- `MarkingServiceTest`: добавлены BATCH-06 (academic says not-headman)
+  и BATCH-07 (> 10 unique lessons). Существующие BATCH-01/02/04/05
+  обновлены под `findAndModify` + без id в error-message.
+- Single-mark path (markAttendance) не тронут — остался на
+  `upsert+findOne`.
+- `WebPushDeliveryServiceTest`: конструктор с `Clock.systemUTC()`.
+- Все 4 сервиса: `./gradlew build` зелёный после fix'ов (unit +
+  integration + ArchUnit + CI-lint).
+
+### Отложено (не критично для M05 close)
+
+| # | Severity | Источник | Defer to |
+|---|----------|----------|----------|
+| 5.1–5.4 | LOW+NIT | bug-hunter | Timer cache, unbounded tag cardinality в `GrpcClientMetricsInterceptor` — M06 |
+| 3 | MEDIUM | security | Redis Jackson `LaissezFaireSubTypeValidator` — supply-chain, M06 |
+| 5 | LOW | security | Redis key-space DoS rate-limit на `isHeadman` — M06 |
+| 6 | LOW | security | Mozilla/Apple push endpoint masking — M07 (frontend hardening) |
+| 2.2 | MEDIUM | bug-hunter | Race pre-check vs upsert в `markBatch` (mass-transfer edge) — accepted limitation |
+| 3.2 | MEDIUM | bug-hunter | `unwrap()` interrupted handling — accepted |
+| DRY | MAJOR | code-review | `GrpcClientDeadlineTest` × 3 дубликата (~180 LOC) — в следующий commit (refactor) |
+| DRY | MINOR | code-review | `unwrap()` дублируется между `LessonEventService` / `MarkingService` — в refactor-commit |
+| Docs | MINOR | code-review | Cross-link «See also» блоки между 5 новыми M05 docs + api-error-conventions в architecture.md — дополнено, но без reverse-links между caching/retention/pool |
+| Docs | MINOR | code-review | `V12`/`V17` migrations без `CONCURRENTLY` — dev OK, prod нужно документировать явно — отложено в М05 Группа 10 |
+
 ## Правила работы (без изменений с M04)
 
 - Русский в отчётах / NOTES / ответах.

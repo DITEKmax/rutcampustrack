@@ -297,11 +297,11 @@ D11. Deadline уже везде (19 callsite'ов), параллелизация
 
 ## Группа 9 — Audit (bug-hunter + code-reviewer + security)
 
-- [ ] Полный `./gradlew build` — всё зелёное (unit + integration + ArchUnit + CI-lint).
-- [ ] `bug-hunter` на diff M05 — фокус: race conditions в @Cacheable (stale read после update), transactional boundaries для batch, deadline propagation.
-- [ ] `security-auditor` на batch endpoints (input validation, @Size limits, PII в errors), Caffeine cache leak (sensitive data в `@Cacheable("rbac")` ключах).
-- [ ] `code-reviewer` на repository audit + caching-strategy.md + performance-indexes.md.
-- [ ] Hot-patches → отдельный коммит.
+- [x] Полный `./gradlew build` — всё зелёное (unit + integration + ArchUnit + CI-lint) на `3fae923` HEAD.
+- [x] `bug-hunter` на diff M05 — 8 findings (1 CRITICAL, 3 HIGH, 2 MEDIUM, 4 LOW/NIT). Детали в NOTES.md «Группа 9 — Audit».
+- [x] `security-auditor` на batch + rbac + Grafana dashboard + ShedLock — 8 findings (2 HIGH, 1 MEDIUM, 2 LOW, 3 INFO).
+- [x] `code-reviewer` на docs + DRY + parallel refactor — 6 priority-fixes (2 MAJOR, 4 MINOR).
+- [x] Hot-patches → отдельный коммит `fix(m05): hot-patches after audit`.
 
 ## Группа 10 — Documentation + закрытие milestone
 

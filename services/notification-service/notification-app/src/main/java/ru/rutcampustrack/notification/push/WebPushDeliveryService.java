@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,15 +66,18 @@ public class WebPushDeliveryService {
     private final PushService webPushService;
     private final ObjectMapper objectMapper;
     private final MongoTemplate mongoTemplate;
+    private final Clock clock;
 
     public WebPushDeliveryService(PushSubscriptionRepository repository,
                                    PushService webPushService,
                                    ObjectMapper objectMapper,
-                                   MongoTemplate mongoTemplate) {
+                                   MongoTemplate mongoTemplate,
+                                   Clock clock) {
         this.repository = repository;
         this.webPushService = webPushService;
         this.objectMapper = objectMapper;
         this.mongoTemplate = mongoTemplate;
+        this.clock = clock;
     }
 
     /**
@@ -138,7 +142,7 @@ public class WebPushDeliveryService {
             return;
         }
         Query query = new Query(Criteria.where("endpoint").in(endpoints));
-        Update update = new Update().set("last_seen", Instant.now());
+        Update update = new Update().set("last_seen", Instant.now(clock));
         mongoTemplate.updateMulti(query, update, PushSubscriptionDocument.class);
     }
 

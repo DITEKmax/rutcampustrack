@@ -132,10 +132,13 @@
 - [ ] ArchUnit rule NEW-143 (repo → Pageable/EntityGraph/projection) в `check` phase, ловит violation fake commit.
 - [ ] CI-lint NEW-149 (gRPC deadline required) в `check` phase.
 - [ ] Bulk mark-attendance: 30 отметок через `/batch` endpoint < 500ms (до было 6000ms через sequential await).
-- [ ] Redis cache metrics exposed: `cache.gets{result=hit|miss, cache=...}`
-      counter через `MetricsCacheManagerDecorator` (D6 — Caffeine не
-      используется, nativные Caffeine gauges неприменимы). Integration-
-      тест на `rbac` cache: 2+ вызовов `isHeadmanOf` → hits counter >= 1.
+- [~] **Deferred (M05 Группа 3, CHECKLIST строки 124-131):** Redis cache
+      metrics `cache.gets{result=hit|miss, cache=...}` не экспонированы.
+      Попытка `MetricsCacheManagerDecorator` сломала namespace-specific
+      TTL в `RedisCacheManager`. Обоснование и альтернатива
+      (`@Aspect`-подход) зафиксированы в `docs/caching-strategy.md`
+      §«Observability» и `docs/future-ideas.md`. Integration-тест
+      `RbacCacheIT` проверяет presence key'ев + TTL вместо counter'ов.
 - [ ] `./gradlew build` зелёный (включая integration tests + ArchUnit + CI-lint).
 
 ## Dependencies

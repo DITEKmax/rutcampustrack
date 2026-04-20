@@ -23,6 +23,10 @@ dependencies {
     // M04 — shared-observability (MdcKeys + BusinessMetrics + HealthIndicators)
     implementation(project(":services:shared:shared-observability"))
 
+    // M04 QA2 — distributed tracing OTel + OTLP exporter → grafana/tempo
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
     // Spring Security Core — для shared-web AccessDeniedException handler.
     // Full spring-boot-starter-security добавляется только при реальной SecurityFilterChain
     // (в M03). Сейчас нужен только класс AccessDeniedException на classpath.

@@ -31,6 +31,10 @@ dependencies {
     // M04 QA7 — shared-logback (JSON-вывод + masking через logback-base.xml)
     implementation(project(":services:shared:shared-logback"))
 
+    // M04 QA2 — distributed tracing OTel + OTLP exporter → grafana/tempo
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-validation")

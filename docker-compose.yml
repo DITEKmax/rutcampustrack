@@ -99,6 +99,24 @@ services:
       retries: 5
 
   # ============================================================
+  # OBSERVABILITY (M04 QA2 — local Tempo for tracing dev)
+  # ============================================================
+
+  tempo:
+    image: grafana/tempo:2.3.1
+    container_name: rct-tempo
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    volumes:
+      - ./infra/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"  # HTTP — Grafana datasource (если запускаешь grafana локально)
+      - "4317:4317"  # OTLP gRPC — приёмник spans от Spring-сервисов на хосте
+    networks:
+      - private_net
+    restart: unless-stopped
+
+  # ============================================================
   # NOTIFICATION SERVICES
   # ============================================================
 
@@ -117,6 +135,8 @@ services:
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:noreply@rut.ru}
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER:-rct_user}:${MONGO_PASSWORD:-rct_dev_pass}@mongo-attendance:27017/attendance_db?authSource=admin
+      # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     volumes:
       - jwt-keys:/keys:ro
     expose:
@@ -249,3 +269,4 @@ volumes:
   redis-data:
   rabbitmq-data:
   jwt-keys:
+  tempo-data:

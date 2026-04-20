@@ -1,0 +1,31 @@
+apiVersion: 1
+
+datasources:
+  - name: Tempo
+    type: tempo
+    uid: tempo
+    access: proxy
+    url: http://tempo:3200
+    isDefault: false
+    version: 1
+    editable: false
+    jsonData:
+      # Связка trace → logs (в Loki). Кликая по span'у, Grafana откроет
+      # логи с traceId={{__trace.traceId}} (поле MDC из shared/logback-base.xml).
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: '-1m'
+        spanEndTimeShift: '1m'
+        filterByTraceID: true
+        tags:
+          - key: service.name
+            value: service
+      # Связка trace → metrics (в Prometheus).
+      tracesToMetrics:
+        datasourceUid: PBFA97CFB590B2093
+        spanStartTimeShift: '-1m'
+        spanEndTimeShift: '1m'
+      serviceMap:
+        datasourceUid: PBFA97CFB590B2093
+      nodeGraph:
+        enabled: true

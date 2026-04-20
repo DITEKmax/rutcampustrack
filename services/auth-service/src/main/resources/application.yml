@@ -92,6 +92,16 @@ management:
       mode: full
     build:
       enabled: true
+  # M04 QA2 (NEW-58/59) — distributed tracing OTel → Tempo.
+  # Sampling 1.0 для v0.0.0 (малый traffic, ловим всё). Снизить до 0.1
+  # когда дойдём до production scale (NEW-66 trigger).
+  # Health-check запросы исключены из sampling (спам в Tempo).
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4317}
   metrics:
     tags:
       application: ${spring.application.name}

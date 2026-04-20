@@ -76,6 +76,13 @@ management:
       mode: full
     build:
       enabled: true
+  # M04 QA2 (NEW-58/59) — distributed tracing OTel → Tempo.
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4317}
   metrics:
     tags:
       application: ${spring.application.name}

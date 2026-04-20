@@ -47,15 +47,17 @@
 - [ ] `docker-compose.prod.yml` healthcheck — отложено в M06 (Ops & Supply Chain), там же HEALTHCHECK directives и compose-config.
 - [ ] Тест «kill RabbitMQ → health DOWN» — отложено в Группу 11 audit (требует docker-compose окружения).
 
-## Группа 5 — Distributed tracing (QA2 + NEW-58/59)
+## Группа 5 — Distributed tracing (QA2 + NEW-58/59) ✅
 
-- [ ] Конфиг во всех 6 сервисах: `management.tracing.sampling.probability: 1.0`, `management.otlp.tracing.endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4317}`.
-- [ ] `docker-compose.prod.yml` + `docker-compose.yml`: контейнер `grafana/tempo:2.3@sha256:...` + persistent volume + `tempo.yaml` config.
-- [ ] `infra/observability/tempo.yaml` — retention 336h.
-- [ ] Grafana datasource provisioning для Tempo.
-- [ ] `OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317` в env во всех Spring-сервисах в compose.
-- [ ] Health-check requests исключить из sampling (`management.tracing.sampling.exclude-path-patterns: /actuator/**`).
-- [ ] Smoke: запрос через gateway → trace в Grafana Tempo с full span-tree.
+- [x] 6 × `application.yml`: `management.tracing.sampling.probability: 1.0` + `management.otlp.tracing.endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4317}`.
+- [x] 6 × `build.gradle.kts`: `micrometer-tracing-bridge-otel` + `opentelemetry-exporter-otlp` (Spring Boot BOM версии).
+- [x] `infra/tempo/tempo.yml` — retention 336h (14d), local storage backend, OTLP gRPC :4317 + HTTP :4318 receivers.
+- [x] `infra/grafana/provisioning/datasources/tempo.yml` — Grafana datasource + traces↔logs (Loki) + traces↔metrics (Prometheus) cross-linking + serviceMap + nodeGraph.
+- [x] `docker-compose.prod.yml`: контейнер `grafana/tempo:2.3.1` (ungit'd digest pin отложен в M06 NEW-16) + tempo-data volume + `OTEL_EXPORTER_OTLP_ENDPOINT` env во всех 6 app-сервисах + `grafana depends_on tempo`.
+- [x] `docker-compose.yml` (dev): tempo контейнер + порт 4317 на хост (для локальной разработки) + OTLP env в notification-web.
+- [ ] Health-check requests исключить из sampling — отложено: Spring Boot 3.4 не имеет out-of-box `exclude-path-patterns`. Альтернативные подходы (`tracing.enabled: false` для actuator, custom `Sampler`) — реализую в Группе 11 audit, если spam в Tempo действительно появится.
+- [x] Smoke: ActuatorIT в auth-service с включённым tracing autoconfig — Spring контекст поднимается, OTel autoconfig работает (соединение с tempo:4317 не нужно для unit-теста).
+- [ ] End-to-end span-tree в Grafana Tempo — отложено в Группу 11 (требует docker-compose окружение).
 
 ## Группа 6 — RabbitMQ event tracing (QA3 + NEW-60/61)
 

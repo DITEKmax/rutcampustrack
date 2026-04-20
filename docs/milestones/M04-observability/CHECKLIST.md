@@ -153,7 +153,7 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 - [x] `docs/milestones/README.md` — M04 ✅ + дата.
 - [x] PLAN.md Post-mortem — surprises, decisions, deferred items, artefacts.
 - [x] Hand-off для M05/M06/M07 уже в NOTES.md (секция «Hand-off после G9+G10»).
-- [ ] `git tag v0.0.0-alpha.5` — создан после финального коммита G12 (commit hash будет ниже).
+- [x] `git tag v0.0.0-alpha.5` — создан на `325d25d` (локально, без push по решению владельца).
 
 ---
 

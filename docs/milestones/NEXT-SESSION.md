@@ -13,23 +13,26 @@ Opus сам откроет файлы и поймёт где мы останов
    пункта + 99-executive-summary.md roadmap).
 2. Рабочий процесс — lightweight milestones без GSD-orchestrator'а.
    Индекс: `docs/milestones/README.md`.
-3. Активный milestone: **M05 Performance** — skeleton подготовлен,
-   PLAN/CHECKLIST/NOTES/DECISIONS заполнены из OWNER-ANSWERS P2-10/1..8
-   (строки 3673-4028). Можно сразу начинать с Группы 1.
+3. Активный milestone: **M05 Performance**. Группы 1-2 ✅ закрыты,
+   следующая — **Группа 3 (Caffeine cache, ~1 день)** (P2-10/3 из
+   OWNER-ANSWERS 3756-3810).
 
 Что делать:
 1. Прочитай `docs/milestones/M05-performance/PLAN.md` — scope и модули.
-2. Прочитай `docs/milestones/M05-performance/CHECKLIST.md` — 10 групп
-   задач, начни с Группы 1.
-3. Прочитай `docs/milestones/M05-performance/NOTES.md` — snapshot
-   состояния после M04, deferred items, правила.
-4. `git log --oneline -10` — последние коммиты M04 (до `135d226`).
-5. Обнови статус в `docs/milestones/README.md` с `⬜` на `⏳ в работе`
-   и впиши старт-дату в PLAN.md первой же правкой.
-6. Продолжай с первой невыполненной галочки `[ ]` в CHECKLIST.md
-   (Группа 1 — composite indexes + perf baseline).
-7. Работай сам — пиши код, запускай `./gradlew build`, правь если
-   упало, коммить после каждой логической группы из CHECKLIST.
+2. Прочитай `docs/milestones/M05-performance/CHECKLIST.md` — пункты
+   Группы 1-2 помечены `[x]`, начни с Группы 3.
+3. Прочитай `docs/milestones/M05-performance/NOTES.md` — snapshot,
+   открытые развилки, D1-D5.
+4. Прочитай `docs/milestones/M05-performance/DECISIONS.md` — micro-ADR
+   за прошлые сессии. Следующие решения пиши в том же формате (D6, D7, ...).
+5. `git log --oneline -10` — последние коммиты (`6802e7f`, `83ed387`,
+   `ea7a390`, и дальше M04).
+6. Проверь docker-compose: `docker compose ps` — контейнеры
+   postgres-academic/postgres-schedule/mongo-attendance должны быть
+   healthy. Если остановлены — `docker compose up -d postgres-academic
+   postgres-schedule mongo-attendance`. Schemas и seed уже применены
+   с прошлой сессии (id ≥ 900000).
+7. Продолжай с Группы 3 по CHECKLIST — первая невыполненная галочка.
 8. После каждой завершённой группы — отчитайся коротко (1-2 строки)
    и жди подтверждения перед следующей. Если пользователь говорит
    «go» — работай молча дальше.
@@ -41,7 +44,7 @@ Opus сам откроет файлы и поймёт где мы останов
   `bug-hunter` / `code-reviewer` / `security-auditor` — в Группе 9
   audit'а.
 - Surprise / отклонение от плана → NOTES.md + спросить до продолжения.
-- Micro-решение (не в OWNER-ANSWERS) → DECISIONS.md.
+- Micro-решение (не в OWNER-ANSWERS) → DECISIONS.md (D6+).
 - Закрыл пункт CHECKLIST → `[x]` через Edit.
 - Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные.
 - Push на origin / создание PR — только с явного `go` пользователя.
@@ -59,113 +62,145 @@ Opus сам откроет файлы и поймёт где мы останов
    milestone по dependency graph (M06 Ops / M07 Frontend / M08 Tests).
 
 Старт:
-> Читаю PLAN → CHECKLIST → NOTES → git log. Через минуту скажу где
-> стартуем (Группа 1) и что буду делать первым.
+> Читаю PLAN → CHECKLIST → NOTES → DECISIONS → git log. Через минуту
+> скажу где стартуем (Группа 3) и что буду делать первым.
 
 ---
 
-## Hand-off после M04 (2026-04-20)
+## Hand-off после M05 Группы 2 (2026-04-20)
 
-**Состояние M04:** ✅ **ЗАКРЫТ.** Tag `v0.0.0-alpha.5` на `325d25d`
-(локально, без push).
+**Состояние M05:** ⏳ **в работе.** 2/10 групп закрыто. Последний
+коммит `6802e7f`.
 
-### M04 итоги (12/12 групп)
+### Итоги Группы 1 (commit `83ed387` + scope `ea7a390`)
 
-- **G1-G6:** shared-observability модуль, INFO-default/dev-profile,
-  JSON-логи × 6 сервисов, health endpoints + PublicKey indicator +
-  git.properties, OTel tracing + Tempo, unified event envelope с
-  trace_id (shared-events migration, 47 файлов, D5(a)).
-- **G7:** Python-бот structlog + OTel auto-instrumentation +
-  ObservabilityMiddleware. 7 новых тестов.
-- **G8:** 8 business counter'ов + 3 gauge'а (students_in_red_zone через
-  RedZoneGauge @Scheduled @SchedulerLock, active_ws_sessions через
-  Session events, outbox.lag.seconds). BusinessMetrics beans в 5
-  сервисах.
-- **G9:** Alertmanager end-to-end chain — Prometheus rules (8 alerts
-  в 4 группах) → Alertmanager → /internal/alert → RabbitMQ → bot →
-  Telegram. 14 unit-тестов.
-- **G10:** retention 14d (Prometheus, Loki, Tempo), Grafana
-  `business-kpis-m04` dashboard (8 панелей).
-- **G11 audit:** 0 BLOCKER/CRITICAL. 5 HIGH → все пофикшены:
-  RedZoneGauge self-invocation (H1), AlertController unchecked cast
-  (H3), CheckinRateZero absent() branch (H5), PII masking в
-  structlog (M-sec-2), Telegram description truncate (M4), timing
-  attack → MessageDigest.isEqual.
-- **G12:** docs pack — `docs/observability.md` runbook,
-  `docs/alerts.md` каталог, `docs/logging-conventions.md`, раздел в
-  `docs/architecture.md`, CHANGELOG, CLAUDE.md, milestones/README.md.
+**Composite indexes + perf baseline (P2-10/1).** Уточнения scope
+зафиксированы в DECISIONS D1-D4.
 
-### M04 deferred → следующие milestones
+- **schedule_db V12** — partial composite `idx_lessons_item_date ON
+  lessons (schedule_item_id, date) WHERE status != 'cancelled'`. D1 —
+  `lessons.group_id` не существует; композит на FK покрывает IN+BETWEEN.
+- **academic_db V17** — `idx_tsg_group_semester` +
+  `idx_hw_group_semester` на `(group_id, semester_id)`. D2 — таблицы
+  `user_groups` нет; индексы на реальных hot queries
+  `findByGroupIdAndSemesterId`.
+- **attendance Mongo** — compound `lcr_group_status_created (group_id,
+  status, created_at)` на `late_checkin_requests` через
+  `MongoConfig.initIndexes()`. **Закрывает 04 P2-9:** COLLSCAN →
+  IXSCAN, docsExamined 6000 → 120 (50× reduction), SORT ушёл.
+- **Деферрено:** D3 (group_id, lesson_id) на Mongo `attendances` —
+  нет hot query-потребителя. D4 `schedule_one_off_lessons` UNIQUE
+  уже в V4.
+- **Regression-guard tests:** `LessonPerformanceIT`,
+  `AcademicPerformanceIT`, `LateCheckinPerformanceIT`. Best times:
+  8 / 8 / 8 / 10 ms на лимите 50 ms.
+- **Runbook:** `docs/performance-indexes.md` — EXPLAIN before/after
+  по 4 hot queries, процесс добавления новых индексов.
+- **Seed:** `docs/milestones/M05-performance/seed-perf.sql` +
+  `seed-perf.js` — idempotent, id ≥ 900000. Применён к dev-БД в
+  docker-compose.
 
-| Item | Куда |
-|------|------|
-| `/actuator/**` исключить из tracing sampling | M05 Группа 8 (gRPC рядом) или отдельный patch |
-| `AlertPublisher extends AbstractEventPublisher` | M05/M06 (envelope consistency) |
-| Typed DTO для Alertmanager webhook | M06 |
-| mTLS вместо Bearer secret для /internal/alert | M06 |
-| Per-subject/per-group thresholds для red zone | Future (cross-service join) |
-| docker-compose healthcheck directives | M06 |
-| E2E smoke: kill RabbitMQ → health DOWN | M06 (docker-compose) |
+### Итоги Группы 2 (commit `6802e7f`)
 
-### M05 Scope (подготовлен)
+**Preventive N+1 guard (P2-10/2, NEW-143).** Системный аудит
+Repository-слоя (Explore) показал: все JPA entity в schedule +
+academic используют FK как Long, нет `@ManyToOne/@OneToMany`. N+1
+невозможен by design. Scope переформулирован на preventive-only (D5).
 
-P2-10/1..8 (см. `docs/milestones/M05-performance/PLAN.md`):
+- **ArchUnit `RepositoryNPlusOneGuardTest`** в
+  `schedule/arch/` + `academic/arch/`. Две rule'а:
+  1. `entitiesMustNotUseJpaRelations` — фиксирует v0.0.0 invariant.
+  2. `repositoriesReturningCollectionsMustGuardNPlusOne` —
+     активируется при появлении первой relation; требует Pageable /
+     @EntityGraph / *Projection / JOIN FETCH.
+- **Sanity-verify:** временный `@ManyToOne` в `Lesson` →
+  `entitiesMustNotUseJpaRelations` failed с сообщением «Поле
+  `Lesson.scheduleItemRelation` помечено JPA relation...» → edit
+  откачен, build зелёный.
+- **Reference projection:** `LessonDetailsProjection` +
+  `LessonRepository.findLessonDetails` — native JOIN `lessons` +
+  `schedule_items` в одном SELECT (10 полей), whitelist'ится ArchUnit.
+- **Docs:** `architecture.md §11` — runbook «JPA convention: FK как
+  Long, без entity relations (NEW-143)» с rationale, образцом
+  `collect itemIds → findByIdIn` (`LessonService.massCancelLessons:137-142`),
+  action-plan «когда relation всё-таки нужна».
+- **Tests:** schedule 111/111, academic 201/201, attendance 158/158 ✅.
 
-1. **P2-10/1** Composite indexes (~3ч) — Flyway migrations × 3 сервиса + EXPLAIN ANALYZE.
-2. **P2-10/2** `@EntityGraph` / projection (~1д) — N+1 fix + ArchUnit rule NEW-143.
-3. **P2-10/3** Caffeine cache (~1д) — semester/subject/group/rbac + gauges + caching-strategy.md.
-4. **P2-10/4** Batch endpoints (~1д) — attendance/academic `/batch` + partial-success 207.
-5. **P2-10/5** SQL-aggregate (~1д) — переписать `.collect(toList())` на JPQL GROUP BY.
-6. **P2-10/6** HikariCP tuning (~2ч) — pool=20 + alert.
-7. **P2-10/7** Cleanup push-subs + refresh TTL (~3ч) — `last_seen` column + weekly @Scheduled.
-8. **P2-10/8** gRPC parallelism + deadlines + metrics (~1д) — `CompletableFuture` + grpc-micrometer + NEW-149 CI-lint.
+### M05 Scope остался
 
-### Состояние тестов после M04
+| # | Группа | Est | Статус |
+|---|--------|-----|--------|
+| 1 | Composite indexes + perf baseline | ~3ч | ✅ |
+| 2 | Preventive N+1 guard (NEW-143) | ~2ч | ✅ |
+| **3** | **Caffeine cache для справочников + RBAC (P2-10/3)** | **~1д** | **⬜ next** |
+| 4 | Batch endpoints (P2-10/4) | ~1д | ⬜ |
+| 5 | SQL-aggregate vs stream (P2-10/5) | ~1д | ⬜ |
+| 6 | HikariCP tuning (P2-10/6) | ~2ч | ⬜ |
+| 7 | Cleanup push-subs + retention (P2-10/7) | ~3ч | ⬜ |
+| 8 | gRPC hot-path: parallel + deadlines + metrics (P2-10/8) | ~1д | ⬜ |
+| 9 | Audit (bug-hunter + code-reviewer + security) | — | ⬜ |
+| 10 | Documentation + закрытие milestone | — | ⬜ |
 
-Всё зелёное на `325d25d`:
-- auth-service ✅ (login/logout/OTP counter'ы)
-- attendance 157/157 (CheckinService counter ∫ RedZoneGauge)
-- academic/schedule/notification ✅
-- shared-observability 15/15
-- shared-security (DualModeUserContextFilter counter) ✅
-- shared-outbox (oldestPendingAgeSeconds) — один pre-existing failure в
-  `EventSchemaRefTest` (envelope без trace_id после G6, отложен в
-  backlog)
-- notification-bot: 154/154 (alert_fired + observability)
+### Группа 3 Scope (предварительно — читай PLAN.md и OWNER-ANSWERS 3756-3810)
 
-### Последние коммиты M04 (git log --oneline -10)
+P2-10/3 Caffeine cache:
+
+- Caffeine dep в shared-web (api) или per-сервис `CacheConfig`.
+- Namespaces + TTL: `semester` (5м), `subject`/`group` (10м),
+  `rbac` (1м).
+- `@Cacheable` на:
+  - `getActiveSemester()` в academic — часто зовётся.
+  - `isHeadmanFor(userId, groupId)` — RBAC hotspot (hundred/min).
+  - `getSubject(id)`, `getGroupById(id)` — справочники.
+- `@CacheEvict` на write-side: `activateSemester`,
+  `update/delete subject/group`, `changeHeadman`.
+- `CaffeineCacheMetrics.monitor(meterRegistry, cache, name)` — gauges
+  `cache.size`, `cache.gets{result=hit|miss}` в Grafana.
+- Integration-тест: counter hits > misses после warm-up.
+- `docs/caching-strategy.md` (NEW-144) — TTL matrix + invalidation
+  triggers + migration-plan на Redis при multi-instance.
+
+Ожидаемый выигрыш: снижение latency P2-10/8 (hot-path gRPC
+`isHeadmanFor` per-request → cached per 60s).
+
+### Состояние окружения
+
+- Docker-compose containers: `rct-postgres-academic`,
+  `rct-postgres-schedule`, `rct-mongo-attendance` — **healthy**.
+  Schemas мигрированы Flyway V1..V17 / V12. Seed применён
+  (600 schedule_items, 12k lessons, 20 groups, 523 users, 300 subjects,
+  1800 TSG, 1800 homeworks, 6000 late_checkin_requests).
+- Mongo admin user создан через localhost exception:
+  `rct_user:rct_dev_pass` (roles: root@admin). В seed-perf.js указан
+  connection string.
+
+### Последние коммиты
 
 ```
+6802e7f feat(arch): preventive N+1 guard ArchUnit rule (M05 Группа 2, NEW-143)
+83ed387 feat(perf): composite indexes + perf baseline (M05 Группа 1)
+ea7a390 docs(m05): уточнение scope Группы 1 после аудита схемы БД (D1-D4)
+1d5a203 docs(m05): scaffold milestone + hand-off после M04
 135d226 docs(m04): CHECKLIST отметка v0.0.0-alpha.5 tag (325d25d)
-325d25d docs(m04): observability runbook + alerts catalog + closure (Группа 12)
-4321184 fix(m04): hot-patches из audit'а G11
-79cb3f9 docs(m04): hand-off после G9+G10 — 10/12 групп закрыто
-7f18104 feat(observability): retention + business KPI dashboard (M04 Группа 10)
-6b8a233 feat(alerts): Alertmanager + rules + webhook → bot (M04 Группа 9)
-1fbd041 docs(m04): hand-off для следующей сессии — 8/12 групп закрыто
-1e9112e feat(metrics): business counters + 3 gauges (M04 Группа 8)
-b08490e feat(notification-bot): structlog JSON + OTel tracing (M04 Группа 7)
-19f2faf docs(m04): hand-off для следующей сессии — 6/12 групп закрыто
 ```
 
-Все теги локально (не на origin): `v0.0.0-alpha.2..5`.
+72+ коммитов локально ahead origin. Tags `v0.0.0-alpha.2..5` локальные.
+Push отложен до конца v0.0.0.
 
 ### Действия, ожидающие `go` пользователя
 
-1. `git push origin main` — 70+ коммитов не на origin.
-2. `git push origin --tags` — 4 tags (`v0.0.0-alpha.2..5`) локальные.
-3. Старт M05 по CHECKLIST.
+1. `git push origin main` — 72+ коммитов не на origin.
+2. `git push origin --tags` — 4 tags локальные.
+3. Старт Группы 3 по CHECKLIST M05.
 
-### Source of truth для всего v0.0.0
+### Source of truth для v0.0.0
 
-- `docs/report-before-v0.0.0/99-executive-summary.md` — roadmap +
-  cluster IDs + P2-N индекс.
-- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` — 6400 строк решений
-  владельца (строки 3673-4028 для P2-10 / M05).
-- `docs/report-before-v0.0.0/COVERAGE-AUDIT.md` — 354 пункта, колонка
-  «Closed in» обновляется с commit SHA.
-- `docs/milestones/README.md` — индекс milestones + статусы + даты.
-- `docs/milestones/M{NN}-{slug}/PLAN.md` + `CHECKLIST.md` + `NOTES.md`
-  + `DECISIONS.md` — per-milestone artefacts.
-- `docs/observability.md` + `docs/alerts.md` + `docs/logging-conventions.md` —
-  M04 runbook'и.
+- `docs/report-before-v0.0.0/99-executive-summary.md` — roadmap.
+- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` (строки 3756-3810 для
+  P2-10/3 / Группа 3 Caffeine).
+- `docs/report-before-v0.0.0/COVERAGE-AUDIT.md` — 354 пункта.
+- `docs/milestones/README.md` — индекс milestones + статусы.
+- `docs/milestones/M05-performance/{PLAN,CHECKLIST,NOTES,DECISIONS}.md`
+  — per-milestone artefacts.
+- `docs/performance-indexes.md` — runbook M05 G1.
+- `docs/architecture.md §11` — JPA convention runbook (M05 G2).

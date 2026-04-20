@@ -5,9 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import org.apache.http.client.HttpResponseException;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,13 +64,16 @@ public class WebPushDeliveryService {
     private final PushSubscriptionRepository repository;
     private final PushService webPushService;
     private final ObjectMapper objectMapper;
+    private final MongoTemplate mongoTemplate;
 
     public WebPushDeliveryService(PushSubscriptionRepository repository,
                                    PushService webPushService,
-                                   ObjectMapper objectMapper) {
+                                   ObjectMapper objectMapper,
+                                   MongoTemplate mongoTemplate) {
         this.repository = repository;
         this.webPushService = webPushService;
         this.objectMapper = objectMapper;
+        this.mongoTemplate = mongoTemplate;
     }
 
     /**
@@ -97,10 +106,12 @@ public class WebPushDeliveryService {
         String body = buildBody(eventType, payload);
         byte[] payloadBytes = buildPayloadJson(title, body, eventType, payload);
 
+        List<String> deliveredEndpoints = new ArrayList<>(targets.size());
         for (PushSubscriptionDocument sub : targets) {
             try {
                 Notification notification = createNotification(sub, payloadBytes);
                 webPushService.send(notification);
+                deliveredEndpoints.add(sub.getEndpoint());
                 log.debug("Push sent to {} for event {}", sub.getEndpoint(), eventType);
             } catch (Exception e) {
                 if (isGone(e)) {
@@ -113,7 +124,22 @@ public class WebPushDeliveryService {
                 }
             }
         }
+        touchLastSeen(deliveredEndpoints);
         return CompletableFuture.completedFuture(null);
+    }
+
+    /**
+     * M05 G7 (NEW-148): single bulk {@code $set} обновляет {@code last_seen}
+     * для всех endpoint'ов с успешной доставкой. Одна Mongo-operation на
+     * fanout вместо N save'ов (write amplification × N).
+     */
+    private void touchLastSeen(List<String> endpoints) {
+        if (endpoints.isEmpty()) {
+            return;
+        }
+        Query query = new Query(Criteria.where("endpoint").in(endpoints));
+        Update update = new Update().set("last_seen", Instant.now());
+        mongoTemplate.updateMulti(query, update, PushSubscriptionDocument.class);
     }
 
     /**

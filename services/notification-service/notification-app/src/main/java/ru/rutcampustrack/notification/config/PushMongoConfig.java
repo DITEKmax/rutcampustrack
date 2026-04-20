@@ -35,5 +35,10 @@ public class PushMongoConfig {
         ops.ensureIndex(new Index()
                 .on("group_id", Sort.Direction.ASC)
                 .named("idx_group_id"));
+        // M05 G7 (NEW-148): ускоряет cleanup-запрос
+        // DELETE WHERE last_seen < (now - 90d).
+        ops.ensureIndex(new Index()
+                .on("last_seen", Sort.Direction.ASC)
+                .named("idx_last_seen"));
     }
 }

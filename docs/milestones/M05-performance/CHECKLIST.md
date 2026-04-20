@@ -207,12 +207,40 @@ in-memory pagination OOM-risk в LessonService._
 
 ## Группа 7 — Cleanup push-subs + retention audit (P2-10/7)
 
-- [ ] Flyway V{N+1} на `attendance_db` или где живёт push: `ALTER TABLE push_subscriptions ADD COLUMN last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()`.
-- [ ] `WebPushDeliveryService` — update `last_seen = NOW()` на successful send. На `410 Gone` — сразу delete (уже было до M05).
-- [ ] `@Scheduled(cron="0 0 3 * * SUN") @SchedulerLock(name="cleanupStalePushSubs") cleanupStalePush()` в notification-web: DELETE > 90 дней.
-- [ ] Audit auth-service Redis `refresh:<hash>`: подтвердить `EX=604800` (7d). Grep + тест. Если EX отсутствует — фикс.
-- [ ] `docs/data-retention-policy.md` (NEW-148): таблица «что → retention → mechanism».
-- [ ] Integration-тест: seed dead subs (last_seen=now()-100d) + run scheduled → удалены.
+_Scope уточнён 2026-04-20 по результатам аудита — см. DECISIONS D10.
+`push_subscriptions` живёт в MongoDB (не PostgreSQL), Flyway неприменим.
+Использована конвенция проекта — programmatic `ensureIndex` +
+`shedlock-provider-mongo`._
+
+- [~] **Снято (D10):** Flyway V{N+1} на `attendance_db`. `push_subscriptions` —
+      MongoDB коллекция в notification-web. Вместо миграции — поле
+      `last_seen: Instant` в `PushSubscriptionDocument` + `ensureIndex
+      idx_last_seen` в `PushMongoConfig.initIndexes()` (та же конвенция
+      что M05 G1 для `late_checkin_requests`).
+- [x] `WebPushDeliveryService` — bulk `$set last_seen=NOW()` через
+      `mongoTemplate.updateMulti` для всех endpoint'ов с successful send
+      (одна Mongo-op на fanout, не N save'ов). HTTP 410 Gone → мгновенный
+      delete (D-10 было до M05).
+- [x] `@Scheduled(cron="0 0 3 * * SUN") @SchedulerLock(name="cleanupStalePushSubs")`
+      в `PushSubscriptionCleanupJob.cleanupStalePushSubs()` —
+      `repository.deleteByLastSeenBefore(now - retention)`. Retention-days
+      configurable (`rutcampustrack.push.cleanup.retention-days=90`).
+- [x] `PushCleanupConfig` — `@EnableScheduling` + `@EnableSchedulerLock`
+      + Mongo LockProvider + bootstrap `backfillMissingLastSeen` на
+      `ApplicationReadyEvent`.
+- [x] Audit auth-service Redis `refresh:<hash>`: ✅ `EX=604800` (7d)
+      подтверждено в 4 call-site'ах: `AuthService.login:88` /
+      `AuthService.refresh:125` / `TmaService:78` / `OtpService:192`.
+      `refresh-token-expiration=604800` в `application.yml:57`. Фикс не
+      требуется.
+- [x] `docs/data-retention-policy.md` (NEW-148): таблица с 12 видами
+      данных — retention, mechanism, триггеры пересмотра. Bootstrap
+      backfill описан, deferred items M06+ зафиксированы.
+- [x] Integration-тест `PushSubscriptionCleanupJobIT` (ContainerTestBase):
+      3 сценария — `cleanup_deletesDeadSubs_keepsFreshOnes` (dead/fresh/
+      89d boundary), `cleanup_onExactBoundary_treats90daysAsEligible`,
+      `backfill_setsLastSeenForDocsMissingField` (legacy doc без поля).
+      Все зелёные.
 
 ## Группа 8 — gRPC hot-path (P2-10/8)
 

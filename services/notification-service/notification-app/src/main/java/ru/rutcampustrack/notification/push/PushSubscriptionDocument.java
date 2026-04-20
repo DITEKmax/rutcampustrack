@@ -55,4 +55,18 @@ public class PushSubscriptionDocument {
 
     @Field("created_at")
     private Instant createdAt;
+
+    /**
+     * M05 G7 (NEW-148): последняя успешная доставка Web Push.
+     *
+     * Обновляется в {@link WebPushDeliveryService} на каждый successful
+     * {@code webPushService.send(...)}. Cleanup job удаляет подписки с
+     * {@code last_seen < now() - 90d} (subscription либо отозвана без
+     * 410 Gone, либо устройство давно не подключается к сети).
+     *
+     * Для docs, созданных до M05 G7, backfill: {@code last_seen =
+     * createdAt} (см. PushSubscriptionCleanupJob.backfillMissingLastSeen).
+     */
+    @Field("last_seen")
+    private Instant lastSeen;
 }

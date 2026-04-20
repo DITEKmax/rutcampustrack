@@ -390,3 +390,62 @@ Single-pass accumulators дают **real O(N) вместо O(3-4N)** —
   guarantee, eventconsistency risk при broker downtime.
 
 **Estimate:** ~3-4ч.
+
+## 2026-04-20 — D10: push_subscriptions — MongoDB (не Flyway), ShedLock-Mongo для cleanup
+
+**Выбрано:**
+
+1. **Схема `last_seen`** — добавить поле в `PushSubscriptionDocument`
+   (`@Field("last_seen") Instant lastSeen;`), **не** Flyway миграция.
+2. **Индекс** `{last_seen: 1}` на коллекции `push_subscriptions` —
+   добавить в существующий `PushMongoConfig.initIndexes()` (programmatic,
+   аналогично M05 G1 паттерну `MongoConfig.initIndexes()` для
+   `late_checkin_requests`).
+3. **Cleanup job** — `@Scheduled(cron="0 0 3 * * SUN")` +
+   `@SchedulerLock(name="cleanupStalePushSubs")` в новом
+   `PushSubscriptionCleanupJob` внутри notification-app. Использует
+   **`shedlock-provider-mongo`** (ref уже в `libs.versions.toml:35`,
+   attendance-app потребитель).
+4. **`@EnableScheduling` + `@EnableSchedulerLock(defaultLockAtMostFor = "PT5M")`**
+   — добавить в `NotificationWebApplication` или отдельный `@Configuration`.
+   Сейчас планировщик отключён в notification-app (нет @Scheduled).
+
+**Почему отступление от CHECKLIST/PLAN.md.**
+
+`PLAN.md:110-111` формулирует: «`push_subscriptions.last_seen` column
+(Flyway V{N+1})». Это предположение автора PLAN было неверным —
+`push_subscriptions` живёт в MongoDB (`PushSubscriptionDocument` с
+`@Document(collection = "push_subscriptions")`, коллекция создана в
+phase 27 / `PushMongoConfig`), а не в PostgreSQL
+`attendance_db`/`academic_db`. Flyway управляет только реляционными
+схемами — для Mongo конвенция проекта (M05 G1 late_checkin_requests,
+Phase 27 PushMongoConfig) — programmatic `ensureIndex` в
+`@Configuration @PostConstruct`.
+
+**Почему ShedLock-Mongo (не JDBC):**
+
+Notification-app уже имеет зависимость только на MongoDB (`spring-
+boot-starter-data-mongodb`), без DataSource. Подключать JDBC +
+shedlock-provider-jdbc-template = tech-debt (не требуется для других
+нужд сервиса). `shedlock-provider-mongo` существует в
+`libs.versions.toml` и работает с той же Mongo-инстанс, где
+коллекция `shedLock` автосоздаётся.
+
+**Альтернативы отклонены:**
+
+- **Flyway-миграция на новом relational-хранилище для push-subs** —
+  перемещение push-subs из Mongo в PG, scope × 10, M06+ только.
+- **Hard-coded таймер без ShedLock** — multi-instance notification-web
+  в проде (пусть пока single, но будущий scale-out) → N×cleanup
+  одновременно, гонка delete. `CleanupJob` в shared-outbox уже
+  использует ShedLock — та же конвенция.
+- **`@Scheduled(fixedRate=...)` без cron** — cron `0 0 3 * * SUN`
+  соответствует требованию PLAN «раз в неделю, 3 утра».
+
+**Retention policy:**
+- Порог **90 дней** из PLAN/OWNER-ANSWERS 3890-3940.
+- Запрос: `DELETE WHERE last_seen < NOW() - 90d`.
+- Миграция существующих docs: seed `last_seen = createdAt` для
+  записей без поля (bootstrap через `$set` на null last_seen). Это
+  даёт плавный переход без массового удаления живых подписок в
+  первый запуск job'а.

@@ -55,6 +55,12 @@ dependencies {
     // NEW: MongoDB for push_subscriptions
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
+    // M05 G7 (NEW-148): ShedLock для cleanupStalePushSubs scheduled job.
+    // Mongo provider переиспользует существующий MongoTemplate (коллекция
+    // `shedLock` автосоздаётся).
+    implementation(libs.shedlock.spring)
+    implementation(libs.shedlock.provider.mongo)
+
     // NEW: AOP for @RequireRole
     implementation("org.springframework.boot:spring-boot-starter-aop")
 

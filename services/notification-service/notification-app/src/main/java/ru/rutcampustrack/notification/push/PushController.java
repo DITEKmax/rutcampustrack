@@ -52,6 +52,7 @@ public class PushController implements PushApi {
     @Override
     @RequireRole({UserRole.STUDENT})
     public ResponseEntity<Void> subscribe(@Valid @RequestBody SubscribeRequest request) {
+        Instant now = Instant.now();
         PushSubscriptionDocument doc = PushSubscriptionDocument.builder()
                 .userId(requestContext.getUserId())
                 .groupId(requestContext.getGroupId())
@@ -59,7 +60,8 @@ public class PushController implements PushApi {
                 .p256dh(request.keys().p256dh())
                 .auth(request.keys().auth())
                 .headman(requestContext.isHeadman())
-                .createdAt(Instant.now())
+                .createdAt(now)
+                .lastSeen(now)
                 .build();
         repository.save(doc);
         return ResponseEntity.status(HttpStatus.CREATED).build();

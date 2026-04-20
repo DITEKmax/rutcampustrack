@@ -282,6 +282,49 @@ CHECKLIST остаётся галочка как вычеркнутая с refer
 `docs/caching-strategy.md` описывает факт отсутствия hit/miss counter
 для Redis в v0.0.0 + этот workaround-план.
 
+## 2026-04-20 — Группа 7 итоги
+
+Группа закрыта (commit в очереди). Итоги:
+
+- `PushSubscriptionDocument.lastSeen` + `idx_last_seen` index в
+  `PushMongoConfig.initIndexes()`. Обе правки оставлены в Java (не
+  Flyway — Mongo collection, см. D10).
+- `WebPushDeliveryService.touchLastSeen(List<String> endpoints)` —
+  bulk `$set` одной Mongo-op на fanout вместо N save'ов.
+  `deliveredEndpoints` накапливает только successful sends (410 Gone →
+  delete, сразу исключён из списка).
+- `PushSubscriptionCleanupJob` + `PushCleanupConfig`: `@Scheduled(cron=
+  "0 0 3 * * SUN")` + `@SchedulerLock(name="cleanupStalePushSubs",
+  lockAtMostFor="PT10M")` + Mongo LockProvider. Bootstrap backfill
+  `lastSeen = now` для pre-M05 подписок на `ApplicationReadyEvent`.
+- `PushSubscriptionRepository.deleteByLastSeenBefore(Instant)` — Spring
+  Data derived query, ускорено новым index'ом.
+- Integration-тест `PushSubscriptionCleanupJobIT` — 3 сценария, все
+  зелёные с Testcontainer'ным Mongo. Fixed `Clock` для детерминизма
+  retention-boundary тестов.
+- Refresh-token TTL audit закрыт без правок: `EX=604800` (7d)
+  подтверждён grep'ом + чтение `AuthService.java`.
+- `docs/data-retention-policy.md` (NEW-148) — 12-rows retention matrix.
+
+## 2026-04-20 — Группа 7 audit surprise: push_subscriptions в MongoDB
+
+**PLAN.md/CHECKLIST ошибка.** Пункт Группы 7 формулирует:
+«Flyway V{N+1} на `attendance_db` или где живёт push: ALTER TABLE
+push_subscriptions ADD COLUMN last_seen ...». Grep показал — коллекция
+живёт в **MongoDB** (`PushSubscriptionDocument` с
+`@Document(collection="push_subscriptions")` в notification-app), не
+в PostgreSQL.
+
+**Исход:**
+- Scope Группы 7 адаптирован — см. DECISIONS D10.
+- Добавление поля → Mongo document + programmatic `ensureIndex`.
+- Cleanup job → `shedlock-provider-mongo` (notification-app пока не
+  подключён к ShedLock, подключаем в этой группе).
+- Refresh-token audit: ✅ `Duration.ofSeconds(jwtProperties.
+  refreshTokenExpiration())` работает корректно в `AuthService:88/125`,
+  `TmaService:78`, `OtpService:192`. Значение `604800` (7d) в
+  `application.yml:57`. Audit закрыт без правок.
+
 ## Правила работы (без изменений с M04)
 
 - Русский в отчётах / NOTES / ответах.

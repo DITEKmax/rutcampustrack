@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -35,11 +36,14 @@ class WebPushDeliveryServiceTest {
     @Mock
     private Notification mockNotification;
 
+    @Mock
+    private MongoTemplate mongoTemplate;
+
     private WebPushDeliveryService service;
 
     @BeforeEach
     void setUp() throws Exception {
-        service = spy(new WebPushDeliveryService(repository, webPushService, new ObjectMapper()));
+        service = spy(new WebPushDeliveryService(repository, webPushService, new ObjectMapper(), mongoTemplate));
         // Stub createNotification to avoid real EC key parsing in all tests
         doReturn(mockNotification).when(service).createNotification(any(PushSubscriptionDocument.class), any(byte[].class));
     }

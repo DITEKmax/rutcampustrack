@@ -6,6 +6,7 @@ import type { LessonResponse } from './types'
 import {
   useLessonAttendance,
   useHeadmanMarkAttendance,
+  useHeadmanMarkBatch,
   type AttendanceSource,
   type HeadmanAttendanceStatus,
   type LessonAttendanceEntry,
@@ -52,6 +53,7 @@ export function HeadmanLessonSheet({
   const [tab, setTab] = useState<Tab>('roster')
   const attendance = useLessonAttendance(lesson?.id ?? null)
   const markMutation = useHeadmanMarkAttendance()
+  const markBatchMutation = useHeadmanMarkBatch()
   const [pendingUserId, setPendingUserId] = useState<number | null>(null)
 
   const entries = attendance.data?.entries ?? []
@@ -102,22 +104,22 @@ export function HeadmanLessonSheet({
     const targets = entries.filter((e) => e.status !== next)
     if (targets.length === 0) return
     triggerHaptic()
-    let failed = 0
-    for (const entry of targets) {
-      try {
-        await markMutation.mutateAsync({
-          lessonId: lesson.id,
-          userId: entry.userId,
-          status: next,
-        })
-      } catch {
-        failed++
-      }
-    }
-    if (failed > 0) {
-      onToast('error', `Не удалось сохранить ${failed} из ${targets.length}`)
-    } else {
+    try {
+      // M05 P2-10/4: один POST /attendance/marks/batch вместо N serial PUT'ов.
+      // Pseudo-atomic — либо все отметки сохранены, либо ни одна.
+      await markBatchMutation.mutateAsync({
+        lessonId: lesson.id,
+        items: targets.map((e) => ({ userId: e.userId, status: next })),
+      })
       onToast('success', 'Готово')
+    } catch (e: unknown) {
+      const status = (e as { response?: { status?: number } })?.response?.status
+      onToast(
+        'error',
+        status === 403
+          ? 'Нет прав на это действие'
+          : `Не удалось сохранить ${targets.length} отметок`,
+      )
     }
   }
 

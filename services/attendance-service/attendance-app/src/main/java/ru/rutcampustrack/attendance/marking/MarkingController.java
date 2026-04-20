@@ -5,10 +5,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.contract.api.MarkingApi;
+import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest;
+import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchResponse;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkResponse;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.security.RequireRole;
+
+import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -45,5 +49,24 @@ public class MarkingController implements MarkingApi {
                 linkTo(methodOn(MarkingController.class).mark(lessonId, userId, null)).withSelfRel());
 
         return ResponseEntity.ok(model);
+    }
+
+    @Override
+    @RequireRole(UserRole.STUDENT)
+    public ResponseEntity<MarkBatchResponse> markBatch(MarkBatchRequest request) {
+        List<AttendanceDocument> docs = markingService.markBatch(request);
+
+        List<MarkResponse> items = docs.stream()
+                .map(doc -> new MarkResponse(
+                        doc.getStatus(),
+                        doc.getLessonId(),
+                        doc.getUserId(),
+                        doc.getUpdatedAt()))
+                .toList();
+
+        MarkBatchResponse response = new MarkBatchResponse(items, items.size());
+        response.add(linkTo(methodOn(MarkingController.class).markBatch(null)).withSelfRel());
+
+        return ResponseEntity.ok(response);
     }
 }

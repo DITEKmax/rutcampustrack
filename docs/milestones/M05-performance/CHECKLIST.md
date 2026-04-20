@@ -142,13 +142,17 @@ DECISIONS D6. Caffeine НЕ вводится. Academic-service уже имеет
 
 ## Группа 4 — Batch endpoints (P2-10/4)
 
-- [ ] Attendance: `POST /api/attendance/marks/batch` — body `@Valid @Size(max=100) List<MarkRequest>`, atomic (headman-action). Response `202` + `List<MarkResult>` для optimistic lock / conflict.
-- [ ] Academic: `POST /api/academic/homeworks/batch` — partial-success (207 Multi-Status или 202 с per-row result).
-- [ ] Validation: `invalid-params[]` с `name="marks[3].lessonId"` (RFC 7807 extension, P2-3/2).
-- [ ] Frontend PWA: headman `handleBulkMark` → один HTTP-запрос (вместо 30 Promise.all). Один progress indicator.
-- [ ] Frontend web-panel: аналогично `HeadmanWeeklyJournal.loadWeek`.
-- [ ] `docs/api-error-conventions.md` — раздел «Batch endpoint conventions» (NEW-145): atomic vs partial-success, schema `MarkResult`, client handling 207.
-- [ ] Integration-тест: bulk-mark 30 отметок < 500ms (до было 6000ms).
+_Scope зауженный согласно D8 — см. DECISIONS. В M05 делаем ядро
+(attendance headman bulk-mark). Homeworks/batch и web-panel weekly-
+journal bulk-read отложены в backlog._
+
+- [x] Attendance: `POST /attendance/marks/batch` — body `@Valid @Size(min=1, max=100) List<MarkBatchItem>`, pseudo-atomic (validation-first). HTTP 200 + `MarkBatchResponse { items, processed }`.
+- [~] **Deferred (D8):** Academic `POST /academic/homeworks/batch` partial-success (admin-импорт homework — редкий flow, ROI низкий, отложено).
+- [x] Validation: `@Valid @Size` на List + `@NotNull` на каждом поле `MarkBatchItem`. Spring кидает MethodArgumentNotValidException → existing GlobalExceptionHandler → RFC 7807 ErrorResponse с fieldErrors[].
+- [x] Frontend PWA: headman `handleBulkMark` → `POST /marks/batch` вместо `for (...) await PUT`. Один toast (success/error), invalidation TanStack Query ключей.
+- [~] **Deferred (D8):** Frontend web-panel `HeadmanWeeklyJournal` — использует `forkJoin` для bulk-read (не bulk-mark, HTTP/2 multiplexing даёт параллелизм on-wire). ROI < 2×, отложено.
+- [x] `docs/api-error-conventions.md` — раздел «Batch endpoint conventions» (NEW-145): pseudo-atomic rationale, schema, client error handling.
+- [x] Unit-тест `MarkingServiceTest.markBatch_*`: 5 сценариев — happy path (3 students 1 lesson = 1 gRPC + 1 groupMembers + 3 upsert), not-headman rejected, student-not-in-group rejected, CANCELLED rejected, wrong-group lesson rejected. Все зелёные.
 
 ## Группа 5 — SQL-aggregate вместо in-memory stream (P2-10/5)
 

@@ -10,9 +10,12 @@ import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest;
+import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchResponse;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkResponse;
 import ru.rutcampustrack.attendance.contract.exception.ErrorResponse;
@@ -43,4 +46,24 @@ public interface MarkingApi {
             @PathVariable Long lessonId,
             @PathVariable Long userId,
             @Valid @RequestBody MarkRequest request);
+
+    @Operation(
+            summary = "Пакетная отметка посещаемости (M05 P2-10/4)",
+            description = "Староста отмечает N студентов одним запросом. "
+                    + "Pseudo-atomic: authorization-check'и выполняются до любого "
+                    + "write'а. При любой ошибке авторизации весь batch отклонён."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Все отметки сохранены"),
+            @ApiResponse(responseCode = "400", description = "Неверный запрос "
+                    + "(пустой batch, размер > 100, CANCELLED status)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещён — "
+                    + "не староста, пара чужой группы или студент не в группе",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Пара не найдена",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/marks/batch")
+    ResponseEntity<MarkBatchResponse> markBatch(@Valid @RequestBody MarkBatchRequest request);
 }

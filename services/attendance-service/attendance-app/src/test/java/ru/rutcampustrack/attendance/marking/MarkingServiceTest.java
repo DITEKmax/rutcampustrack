@@ -13,6 +13,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
+import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchItem;
+import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
@@ -27,6 +29,7 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -235,5 +238,113 @@ class MarkingServiceTest {
                 LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.EXCUSED));
 
         verify(eventPublisher).publishMarked(result);
+    }
+
+    // -------------------------------------------------------------------------
+    // Batch-tests (M05 D7 / P2-10/4)
+    // -------------------------------------------------------------------------
+
+    private MarkBatchItem item(Long lessonId, Long userId, AttendanceStatus status) {
+        return new MarkBatchItem(lessonId, userId, status);
+    }
+
+    /**
+     * BATCH-01: типичный batch 3 студента одной пары — один gRPC getLesson,
+     * один gRPC getGroupMembers, три upsert'а.
+     */
+    @Test
+    void markBatch_threeStudentsOneLesson_upsertsAllPublishesEach() {
+        when(academicGrpcClient.getGroupMembers(GROUP_ID))
+                .thenReturn(buildGroupMembers(99L, 100L, 101L));
+
+        MarkBatchRequest request = new MarkBatchRequest(List.of(
+                item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
+                item(LESSON_ID, 100L, AttendanceStatus.ABSENT),
+                item(LESSON_ID, 101L, AttendanceStatus.EXCUSED)
+        ));
+
+        List<AttendanceDocument> result = markingService.markBatch(request);
+
+        assertThat(result).hasSize(3);
+        verify(scheduleGrpcClient, org.mockito.Mockito.times(1)).getLessonById(LESSON_ID);
+        verify(academicGrpcClient, org.mockito.Mockito.times(1)).getGroupMembers(GROUP_ID);
+        verify(mongoTemplate, org.mockito.Mockito.times(3))
+                .upsert(any(), any(), eq(AttendanceDocument.class));
+        verify(eventPublisher, org.mockito.Mockito.times(3)).publishMarked(any());
+    }
+
+    /**
+     * BATCH-02: non-headman — весь batch отклонён до gRPC.
+     */
+    @Test
+    void markBatch_notHeadman_throwsBeforeAnyWrite() {
+        when(requestContext.isHeadman()).thenReturn(false);
+
+        MarkBatchRequest request = new MarkBatchRequest(List.of(
+                item(LESSON_ID, 99L, AttendanceStatus.PRESENT)));
+
+        assertThatThrownBy(() -> markingService.markBatch(request))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
+        verify(eventPublisher, never()).publishMarked(any());
+    }
+
+    /**
+     * BATCH-03: студент вне группы среди items — весь batch отклонён,
+     * ни один upsert не выполнен (validation-first atomic).
+     */
+    @Test
+    void markBatch_oneStudentNotInGroup_rejectsWholeBatchNoUpserts() {
+        when(academicGrpcClient.getGroupMembers(GROUP_ID))
+                .thenReturn(buildGroupMembers(99L, 100L)); // 200 НЕ в группе
+
+        MarkBatchRequest request = new MarkBatchRequest(List.of(
+                item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
+                item(LESSON_ID, 100L, AttendanceStatus.PRESENT),
+                item(LESSON_ID, 200L, AttendanceStatus.PRESENT) // посторонний
+        ));
+
+        assertThatThrownBy(() -> markingService.markBatch(request))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("200");
+
+        verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
+        verify(eventPublisher, never()).publishMarked(any());
+    }
+
+    /**
+     * BATCH-04: CANCELLED в любом item → BadRequestException до любого
+     * write'а (validation-first).
+     */
+    @Test
+    void markBatch_anyCancelledStatus_rejectsBatch() {
+        MarkBatchRequest request = new MarkBatchRequest(List.of(
+                item(LESSON_ID, 99L, AttendanceStatus.PRESENT),
+                item(LESSON_ID, 100L, AttendanceStatus.CANCELLED)
+        ));
+
+        assertThatThrownBy(() -> markingService.markBatch(request))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("CANCELLED");
+
+        verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
+    }
+
+    /**
+     * BATCH-05: lesson из чужой группы — весь batch отклонён.
+     */
+    @Test
+    void markBatch_lessonFromOtherGroup_rejectsBatch() {
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(buildLesson(999L));
+
+        MarkBatchRequest request = new MarkBatchRequest(List.of(
+                item(LESSON_ID, 99L, AttendanceStatus.PRESENT)));
+
+        assertThatThrownBy(() -> markingService.markBatch(request))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("чужой");
+
+        verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
     }
 }

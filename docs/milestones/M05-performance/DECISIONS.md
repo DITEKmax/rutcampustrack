@@ -247,3 +247,74 @@ scope (Subject cascade), не запрет на RBAC cache per se. M05 D6
 прод-операции покажут, что Redis RTT (~0.5ms loopback docker network)
 становится bottleneck'ом на hot-path — рассмотрим L1+L2. Сейчас
 необоснованно.
+
+## 2026-04-20 — D7: Batch mark endpoint — validation-first atomic semantics
+
+**Выбрано:** `POST /attendance/marks/batch` — *pseudo-atomic* семантика
+через validation-first подход:
+
+1. Все pre-check'и (headman role, lesson/group match, each
+   student-in-group) выполняются **перед** любым write'ом в Mongo.
+2. Если любой pre-check падает — весь batch отклонён с HTTP 403/400,
+   Mongo не тронут.
+3. Если все pre-check'и прошли — выполняется N upsert'ов последовательно.
+4. Один gRPC `getGroupMembers` + lesson fetch на весь batch (не N раз).
+
+**Почему не настоящая Mongo transaction:** Mongo multi-document
+transactions требуют replica set (v4.0+) или sharded cluster (v4.2+).
+В `docker-compose.yml` attendance-service использует standalone Mongo
+контейнер — transactions недоступны. Переход на replica set — M06 scope
+(infra hardening), не M05.
+
+**Почему pseudo-atomic достаточно:** из 3 типов ошибок в single-mark:
+
+- **Authorization** (403) — детерминирован, одинаков для всех студентов
+  группы. Если valid для одного — valid для всех. Pre-check один раз.
+- **Lesson/group mismatch** (403) — lesson один на весь batch. Pre-check
+  один раз.
+- **Student not in group** (403) — gRPC `getGroupMembers` один раз,
+  потом set-lookup per student.
+
+Все остальные failure'ы (Mongo connection drop, disk full, ...) —
+infrastructure-level и не типичны для business flow. В случае partial
+failure (N/M marks saved) — следующий batch от headman перезапишет
+upsert'ом (idempotent).
+
+**Response schema:** `MarkBatchResponse { items: List<MarkResponse>,
+processed: int }`. HTTP 200. Per-item error mid-batch из-за infra
+(Mongo unavailable) — 500 общий, clients retry весь batch.
+
+**Size limit:** `@Valid @Size(min=1, max=100) List<MarkBatchItem>`.
+OWNER-ANSWERS 3826-3829 = 100; типичный batch = 25-30 студентов.
+
+**Альтернативы отклонены:**
+- **207 Multi-Status** (per-item success/failure) — incorrect semantics
+  для headman-bulk, где expectation всё-или-ничего.
+- **Настоящая Mongo transaction** — требует M06 replica-set setup,
+  преждевременно.
+- **Backend-side chunking с per-chunk atomic** — overcomplicated для
+  30-item typical batch.
+
+## 2026-04-20 — D8: Группа 4 — partial scope (attendance mark only)
+
+**Выбрано:** в M05 Группе 4 сделать только **attendance `/marks/batch`**
+и закрыть его полностью (backend + integration tests + PWA frontend +
+docs). **Отложить** в backlog (`docs/future-ideas.md`):
+
+- `POST /academic/homeworks/batch` (partial-success для admin-импорта) —
+  не влияет на headman UX, admin-импорт редкий.
+- `GET /attendance/reports/lessons?ids=...` — bulk-read для web-panel
+  `HeadmanWeeklyJournal.loadWeek` (10 P2-14). Технически это `forkJoin`
+  а не serial loop — browser уже параллелит N requests через HTTP/2
+  multiplexing. Фактический выигрыш от bulk-read < 2× (против 10× для
+  bulk-mark). ROI низкий, отложено.
+- Web-panel adoption batch-mark — web-panel `headman-journal-grid`
+  делает per-cell single mark, не bulk. Нет callsite для адаптации.
+
+**Почему partial:** CLAUDE.md «Don't add features, refactor, or introduce
+abstractions beyond what the task requires». Ядро P2-10/4 — headman
+bulk-mark, 30 serial → 1 call, ~12× latency wins — закрыто. Остальные
+items P2-10/4 — ROI ниже, не блокируют pre-release hardening.
+
+**Estimate итого:** ~4-5ч (оценка PLAN.md ~1 день полный scope,
+partial scope укладывается).

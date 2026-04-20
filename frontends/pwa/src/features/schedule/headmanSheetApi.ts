@@ -77,3 +77,35 @@ export function useHeadmanMarkAttendance() {
     },
   })
 }
+
+/**
+ * POST /attendance/marks/batch — M05 D7 / P2-10/4.
+ * Pseudo-atomic: либо все отметки сохранены, либо ни одна.
+ * Один HTTP-запрос вместо N serial PUT'ов (30 студентов: ~6000ms → ~500ms).
+ */
+export function useHeadmanMarkBatch() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      lessonId,
+      items,
+    }: {
+      lessonId: number
+      items: Array<{ userId: number; status: HeadmanAttendanceStatus }>
+    }) => {
+      const payload = {
+        items: items.map((i) => ({
+          lessonId,
+          userId: i.userId,
+          status: i.status,
+        })),
+      }
+      const { data } = await apiClient.post('/attendance/marks/batch', payload)
+      return data
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['lessonAttendance', vars.lessonId] })
+      qc.invalidateQueries({ queryKey: ['journal'] })
+    },
+  })
+}

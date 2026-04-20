@@ -8,6 +8,8 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
+import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchItem;
+import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
@@ -22,7 +24,13 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Orchestrates headman manual marking of student attendance.
@@ -120,5 +128,107 @@ public class MarkingService {
         eventPublisher.publishMarked(doc);
 
         return doc;
+    }
+
+    /**
+     * M05 D7 / P2-10/4: pseudo-atomic batch mark.
+     *
+     * <p>Все authorization-checks выполняются <b>до</b> любого Mongo write.
+     * Если любой check падает — весь batch отклонён с 400/403, Mongo не тронут.
+     *
+     * <p>Оптимизации относительно N single-mark вызовов:
+     * <ul>
+     *   <li>1 gRPC {@code scheduleGrpcClient.getLessonById} на уникальный lessonId
+     *       (обычно все items одного урока — 1 вызов вместо N).</li>
+     *   <li>1 gRPC {@code academicGrpcClient.getGroupMembers} (один вызов на
+     *       всю группу старосты) вместо N.</li>
+     *   <li>1 cache-hit {@code semesterCacheService.getActiveSemesterId} на batch.</li>
+     * </ul>
+     *
+     * <p>Ожидаемый выигрыш: для 30-student batch ~10× снижение latency
+     * (3 gRPC round-trip вместо ~90, 30 Mongo upsert вместо 30 +
+     * round-trip per upsert).
+     */
+    public List<AttendanceDocument> markBatch(MarkBatchRequest request) {
+        List<MarkBatchItem> items = request.items();
+
+        // D-14: validate statuses (CANCELLED forbidden)
+        for (MarkBatchItem item : items) {
+            if (!ALLOWED_STATUSES.contains(item.status())) {
+                throw new BadRequestException(
+                        "Недопустимый статус: " + item.status()
+                                + ". CANCELLED устанавливается только системой");
+            }
+        }
+
+        // D-12: headman role
+        if (!requestContext.isHeadman()) {
+            throw new AccessDeniedException("Только староста может отмечать посещаемость");
+        }
+
+        Long headmanGroupId = requestContext.getGroupId();
+
+        // 1 gRPC per уникальный lessonId (обычно 1 на batch). Проверяем
+        // principal'ом lesson.group_id == headmanGroupId на каждом.
+        Set<Long> uniqueLessonIds = items.stream()
+                .map(MarkBatchItem::lessonId)
+                .collect(Collectors.toSet());
+        Map<Long, LessonResponse> lessonsById = new HashMap<>(uniqueLessonIds.size());
+        for (Long lessonId : uniqueLessonIds) {
+            LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
+            if (!headmanGroupId.equals(lesson.getGroupId())) {
+                throw new AccessDeniedException(
+                        "Нельзя отмечать студентов чужой группы (lessonId=" + lessonId + ")");
+            }
+            lessonsById.put(lessonId, lesson);
+        }
+
+        // 1 gRPC getGroupMembers на весь batch
+        GroupMembersResponse members = academicGrpcClient.getGroupMembers(headmanGroupId);
+        Set<Long> allowedStudentIds = new HashSet<>(members.getStudentsList().size());
+        members.getStudentsList().forEach(s -> allowedStudentIds.add(s.getUserId()));
+
+        for (MarkBatchItem item : items) {
+            if (!allowedStudentIds.contains(item.userId())) {
+                throw new AccessDeniedException(
+                        "Студент не принадлежит вашей группе (userId=" + item.userId() + ")");
+            }
+        }
+
+        // Все pre-check'и прошли — выполняем upsert'ы. Mongo standalone
+        // не поддерживает multi-doc transactions (M06 scope — replica set).
+        // Partial-failure из-за infra остаётся edge-case (idempotent upsert
+        // переживает retry).
+        Long semesterId = semesterCacheService.getActiveSemesterId();
+        Instant now = Instant.now();
+        Long markedBy = requestContext.getUserId();
+        List<AttendanceDocument> result = new ArrayList<>(items.size());
+
+        for (MarkBatchItem item : items) {
+            LessonResponse lesson = lessonsById.get(item.lessonId());
+            Query filter = Query.query(
+                    Criteria.where("lesson_id").is(item.lessonId())
+                            .and("user_id").is(item.userId()));
+            Update update = new Update()
+                    .set("status", item.status())
+                    .set("source", AttendanceSource.HEADMAN)
+                    .set("marked_by", markedBy)
+                    .set("updated_at", now)
+                    .setOnInsert("lesson_id", item.lessonId())
+                    .setOnInsert("user_id", item.userId())
+                    .setOnInsert("group_id", lesson.getGroupId())
+                    .setOnInsert("subject_id", lesson.getSubjectId())
+                    .setOnInsert("semester_id", semesterId)
+                    .setOnInsert("lesson_number", lesson.getLessonNumber())
+                    .setOnInsert("lesson_date", LocalDate.parse(lesson.getDate()))
+                    .setOnInsert("created_at", now);
+            mongoTemplate.upsert(filter, update, AttendanceDocument.class);
+
+            AttendanceDocument doc = mongoTemplate.findOne(filter, AttendanceDocument.class);
+            result.add(doc);
+            eventPublisher.publishMarked(doc);
+        }
+
+        return result;
     }
 }

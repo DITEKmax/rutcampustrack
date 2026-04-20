@@ -1,0 +1,10 @@
+# M04 QA1: профиль dev — DEBUG-логи + tracing 1.0 для локальной отладки.
+# Активируется через SPRING_PROFILES_ACTIVE=dev (IDE run config / docker-compose.yml).
+logging:
+  level:
+    ru.rutcampustrack: DEBUG
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0

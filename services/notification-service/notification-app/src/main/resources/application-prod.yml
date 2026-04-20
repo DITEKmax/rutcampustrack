@@ -14,7 +14,4 @@ management:
     tags:
       application: ${spring.application.name}
 
-logging:
-  level:
-    ru.rutcampustrack: INFO
-    root: INFO
+# M04 QA1: prod не переопределяет ru.rutcampustrack — default уже INFO.

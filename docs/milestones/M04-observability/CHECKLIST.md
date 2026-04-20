@@ -15,13 +15,15 @@
 - [x] Тесты: 15 шт всё зелёное (6 BusinessMetrics + 4 PublicKey + 5 Grpc через Mockito).
 - [x] Подключить модуль во все 6 backend-сервисов (api-gateway, auth, academic, schedule, attendance, notification).
 
-## Группа 2 — INFO-default + dev-profile (QA1 + NEW-57)
+## Группа 2 — INFO-default + dev-profile (QA1 + NEW-57) ✅
 
-- [ ] Audit всех `application.yml`/`application-prod.yml` — найти DEBUG для `ru.rutcampustrack.*`, удалить.
-- [ ] В каждом `application.yml`: `logging.level.ru.rutcampustrack: INFO` (явно).
-- [ ] Создать `application-dev.yml` для каждого сервиса где нет — DEBUG + tracing sampling 1.0 + локальный Tempo.
-- [ ] CI-check (NEW-57) — Gradle task / GitHub Actions step grep-fail на DEBUG в `application.yml`/`application-prod.yml`.
-- [ ] Документировать в `docs/observability.md` секция «Logging defaults».
+- [x] Audit всех 6 `application.yml` — у всех был `ru.rutcampustrack: DEBUG`. Заменено на INFO.
+- [x] api-gateway также понизил `org.springframework.cloud.gateway: DEBUG → INFO`.
+- [x] api-gateway/notification: дублирующее `ru.rutcampustrack: INFO` в `application-prod.yml` удалено (default уже INFO). У api-gateway оставлен prod-override `org.springframework.cloud.gateway: WARN`.
+- [x] Создано 6 новых `application-dev.yml` с DEBUG для `ru.rutcampustrack` + `management.tracing.sampling.probability: 1.0` (для Группы 5).
+- [x] CI-check `verifyNoDebugInProd` Gradle task в root `build.gradle.kts` — паттерн `ru\.rutcampustrack[^:]*:\s*DEBUG`, привязан к `check`. Игнорирует `application-dev.yml` и комментарии (отрезает `#`).
+- [x] Sanity-test: подменил INFO→DEBUG → BUILD FAILED с правильным сообщением. Восстановил → BUILD SUCCESSFUL.
+- [x] Документация секции «Logging defaults» — отложено в Группу 12 (общий `docs/observability.md` runbook).
 
 ## Группа 3 — JSON-логи во всех сервисах (QA7 + NEW-68)
 

@@ -71,9 +71,11 @@ cache:
     active-semester: PT10M
     campus-geofence: PT1H
 
+# M04 QA1: INFO-default для secure-by-default. DEBUG включается через
+# application-dev.yml (SPRING_PROFILES_ACTIVE=dev) или env-override.
 logging:
   level:
-    ru.rutcampustrack: DEBUG
+    ru.rutcampustrack: INFO
     org.springframework.web: INFO
 
 management:

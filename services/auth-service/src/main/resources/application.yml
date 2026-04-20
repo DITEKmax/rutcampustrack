@@ -66,9 +66,11 @@ tma:
   bot-token: ${TMA_BOT_TOKEN}
   auth-date-max-age-seconds: 86400
 
+# M04 QA1: INFO-default для secure-by-default. DEBUG включается через
+# application-dev.yml (SPRING_PROFILES_ACTIVE=dev) или env-override.
 logging:
   level:
-    ru.rutcampustrack: DEBUG
+    ru.rutcampustrack: INFO
 
 management:
   endpoints:

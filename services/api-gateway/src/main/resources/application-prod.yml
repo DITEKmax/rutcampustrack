@@ -31,8 +31,8 @@ management:
       probes:
         enabled: true
 
+# M04 QA1: prod не переопределяет ru.rutcampustrack — default уже INFO.
+# Здесь только prod-специфичный override для шумного gateway-логгера.
 logging:
   level:
     org.springframework.cloud.gateway: WARN
-    ru.rutcampustrack: INFO
-    root: INFO

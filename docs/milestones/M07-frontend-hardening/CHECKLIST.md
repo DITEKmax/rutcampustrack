@@ -234,12 +234,27 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 
 ## Группа 8 — Lazy-loading per-role (QC5) — ~3ч
 
-- [ ] web-panel: refactor `/admin/*`, `/teacher/*`, `/student/*`,
-      `/headman/*` как lazy-loaded feature modules
-- [ ] Route guards проверяют role перед загрузкой
-- [ ] Bundle analyzer: initial chunk < 500KB per role
-- [ ] PWA: `React.lazy(() => import(...))` для role-specific pages
-- [ ] Commit: `refactor(web-panel): lazy-loading per-role (M07 Группа 8, QC5)`
+- [x] web-panel: `app.routes.ts` разбит через `loadChildren` на
+      `features/{admin,teacher,student,headman}/{role}.routes.ts` —
+      297 LOC → 76 LOC в корневом файле. Per-role chunks теперь имеют
+      явную entry point, Angular build эмитит их через
+      `@angular/build:application` как отдельные файлы.
+- [x] Route guards проверяют role перед loadChildren (parent-level
+      canActivate). `headmanGuard` double-guards на child-уровне
+      удалены (D8 — lazy-overhead без security benefit).
+- [x] Bundle analysis: per-role chunks **< 100KB** каждый (самый
+      большой `groups-page-component` = 77KB). Initial total = 874KB
+      raw / **224KB transfer (gzip)** — shared Angular Material +
+      RxJS + polyfills. Budget поднят до 900KB raw (D7).
+- [x] PWA: `main.tsx` уже использует `React.lazy()` для всех 15
+      route-level компонентов. Headman-routes (`GroupHub`, `Overview`,
+      `StudentsList`, `SubjectsList`, `JournalPage`, `ExcusesPage`,
+      `LateCheckinPage`, `StatsPage`) живут в отдельных chunks;
+      student+shared (`HomeDashboard`, `SchedulePage`, `HomeworkPage`,
+      `CheckInScreen`, `ProfilePage`, `NotificationsPage`) — в других.
+      Роли не пересекаются.
+- [x] Build зелёный, 470/470 unit-тесты passing.
+- [x] Commit `<pending>`: `refactor(web-panel): lazy-loading per-role (M07 Группа 8, QC5)`
 
 ## Группа 9 — StatsPage aggregate + sparklines placeholder (QC6, QC7) — ~2ч
 

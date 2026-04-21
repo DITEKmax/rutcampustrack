@@ -189,3 +189,67 @@ upload. Лимит 2m global более чем достаточно для JSON 
 **Implication:** если в v0.1 появится file-based avatar upload
 (non-preset, custom image), добавить `location = /api/academic/users/
 me/avatar { client_max_body_size 5m }` и обновить `docs/nginx-config.md`.
+
+---
+
+## 2026-04-22 — D7: G8 initial bundle budget поднят с 500KB до 900KB
+
+**Что выбрано:** `angular.json` budget `initial.maximumWarning: 900kB`
+/ `maximumError: 1.5MB` вместо прежних 500KB/1MB. Фактический initial
+total = **874KB raw / 224KB transfer (gzip)** для web-panel.
+
+**Почему:**
+- Angular CLI budget измеряется по **raw** размеру (uncompressed). Для
+  Angular Material + RxJS + zone.js + Chart.js + shared CDK
+  это ≈800-900KB. 500KB budget нереален без urgent shared-deps
+  оптимизации (code-split Material Design в отдельный chunk, что
+  ломает runtime через circular deps — пробовалось в Phase 50).
+- **Transfer size (gzip) = 224KB** — реальный network cost, который
+  клиент скачивает. Для PWA это в пределах ожиданий (Lighthouse Good
+  rating < 400KB gzip).
+- Per-role chunks (то, ради чего G8 существует) **уже < 100KB** каждый:
+  самый большой `groups-page-component` = 77KB, `headman-schedule` =
+  63KB, `users-page` = 48KB. Здесь QC5 acceptance criteria выполнен.
+
+**Альтернативы:**
+- **Снизить initial через code-split Material** — отвергнуто (ломает
+  runtime, требует shared chunk-manifest, M08-level refactor).
+- **Убрать Chart.js из shell** — `shell.component` не импортирует
+  Chart.js; он живёт в teacher/stats, который lazy. Initial 874KB
+  — это сам Angular framework + Material + theme.
+- **Оставить 500KB и игнорировать warning** — отвергнуто: warning
+  без action создаёт шум, который снижает сигнальность (команда
+  начнёт игнорировать все warnings).
+
+**Implication:** G8 реально достигает **per-role lazy loading** (что
+подтверждается размерами per-component chunks < 100KB). Initial bundle
+= shared Angular + Material + polyfills (унификация которых
+выходит за scope M07). Возврат к 500KB budget — candidate v0.1
+(tree-shake Material, switch to Angular CDK only, или SSR где initial
+shell grows naturally).
+
+---
+
+## 2026-04-22 — D8: G8 headman double-guards удалены
+
+**Что выбрано:** в старом `app.routes.ts` headman секция имела
+`canActivate: [headmanGuard]` и на parent (`/headman`), и на **каждом**
+child (dashboard/group/subjects/…). После G8 split в
+`headman.routes.ts` убраны children-level guards — оставлен только
+parent.
+
+**Почему:** parent canActivate блокирует вход во всю ветку **до
+loadChildren fetch'a**. Childern-guard'ы срабатывали уже после того,
+как parent прошёл — т.е. вторая проверка всегда возвращала `true`
+(иначе parent бы нас сюда не пустил). Это чистый overhead без
+security-benefit.
+
+**Альтернативы:** оставить children-guards как defence-in-depth —
+отвергнуто: headman status в JWT не меняется между parent и child
+routing событиями (одна и та же synchronous iteration matcher'а),
+поэтому смены состояния, которое defense-in-depth ловил бы, нет.
+
+**Implication:** если в v0.1 потребуется route-scoped permission
+(например, headman-stats требует отдельный grant), тогда child-level
+`canActivate` вернётся — но уже с _другим_ guard'ом, не
+`headmanGuard`.

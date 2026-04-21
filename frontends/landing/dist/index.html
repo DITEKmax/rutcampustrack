@@ -29,16 +29,14 @@
     })();
   </script>
 
-  <!-- Brand fonts: Fontshare (Clash Display, General Sans) + Google (DM Sans, JetBrains Mono) -->
-  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=general-sans@500,600&display=swap" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <!-- Brand fonts: Fontshare (Clash Display, General Sans) + Google (DM Sans, JetBrains Mono).
+       Self-hosted 2026-04-21 (M07 G1, C0-6). См. frontends/landing/dist/assets/ + docs/milestones/M07-frontend-hardening/NOTES.md -->
+  <link rel="stylesheet" href="assets/css/fontshare.css" />
+  <link rel="stylesheet" href="assets/css/google-fonts.css" />
 
-  <!-- Phosphor Icons -->
-  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+  <!-- Phosphor Icons — self-hosted woff2 -->
+  <link rel="stylesheet" href="assets/vendor/phosphor/duotone.css" />
+  <link rel="stylesheet" href="assets/vendor/phosphor/regular.css" />
 
   <!-- Unified RutTrack brand favicon (gradient R) -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -1463,9 +1461,9 @@
     </style>
   </noscript>
 
-  <!-- GSAP + ScrollTrigger -->
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+  <!-- GSAP + ScrollTrigger — self-hosted 2026-04-21 (M07 G1, C0-6) -->
+  <script src="assets/vendor/gsap/gsap.min.js" defer></script>
+  <script src="assets/vendor/gsap/ScrollTrigger.min.js" defer></script>
 
   <script>
     // Flag: JS is enabled — allow initial-state styles

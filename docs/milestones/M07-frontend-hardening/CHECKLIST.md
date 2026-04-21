@@ -8,18 +8,32 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 
 ## Группа 1 — Landing CSP self-host (C0-6, 12 P0-1, 13 P0-4) — ~1д
 
-- [ ] Аудит всех CDN-запросов из `frontends/landing/index.html` и
-      `styles/*.css` (Fontshare, Google Fonts, unpkg GSAP, jsdelivr)
-- [ ] Скачать woff2 шрифты + CSS Fontshare → `dist/assets/fonts/` +
-      `dist/assets/css/fontshare.css`
-- [ ] Скачать GSAP + ScrollTrigger min.js → `dist/assets/vendor/gsap/`
-- [ ] Переписать `<link>` и `<script>` на локальные пути
-- [ ] Smoke local: `python3 -m http.server` в dist/ — визуально
-      идентично online-версии
+- [x] Аудит всех CDN-запросов из `frontends/landing/index.html` — 9
+      внешних ресурсов: 3 preconnect + 4 stylesheet (Fontshare CSS,
+      Google Fonts CSS, unpkg Phosphor duotone + regular) + 2 script
+      (jsdelivr GSAP + ScrollTrigger).
+- [x] Скачать woff2 шрифты + CSS Fontshare → `dist/assets/fonts/fontshare/`
+      (4 файла: ClashDisplay 600/700 + GeneralSans 500/600) +
+      `dist/assets/css/fontshare.css` (local paths)
+- [x] Скачать woff2 + CSS Google Fonts → `dist/assets/fonts/google/`
+      (8 уникальных файлов: DM Sans latin + latin-ext variable,
+      JetBrains Mono × 6 subsets cyrillic/cyr-ext/greek/vietnamese/
+      latin/latin-ext) + `dist/assets/css/google-fonts.css`
+- [x] Скачать Phosphor Icons woff2 + CSS → `dist/assets/vendor/phosphor/`
+      (2 файла: Phosphor.woff2 + Phosphor-Duotone.woff2, CSS stripped
+      до woff2-only)
+- [x] Скачать GSAP + ScrollTrigger min.js → `dist/assets/vendor/gsap/`
+- [x] Переписать `<link>` и `<script>` в index.html на локальные пути;
+      удалить 3 preconnect'а
+- [x] Smoke local: `py -m http.server` в dist/ — все 11 ресурсов
+      отдают HTTP 200 с корректными размерами; CSS-relative `url(...)`
+      пути резолвятся
 - [ ] Deploy smoke (dev): открыть `/presentation/` и убедиться что
-      CSP не блокирует (DevTools → Console)
-- [ ] Удалить/архивировать CDN-URL'ы в `index.html` (для audit trail
-      оставить comment)
+      CSP не блокирует (DevTools → Console) — пост-G11 после reload
+      nginx, сейчас dev-инфра не трогается
+- [x] CDN-URL'ы удалены из index.html (grep `cdn\.|unpkg|fontshare\.com|
+      googleapis|gstatic|jsdelivr` → пусто). Контекст сохранён в
+      commit message + DECISIONS.
 - [ ] Commit: `feat(landing): self-host CDN assets (M07 Группа 1, C0-6)`
 
 ## Группа 2 — Landing meta + a11y (QE3, QE4, P2-7B/3) — ~3ч

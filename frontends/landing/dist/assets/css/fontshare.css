@@ -1,0 +1,36 @@
+/* Fontshare — self-hosted (M07 Группа 1, C0-6).
+ * Source: https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=general-sans@500,600
+ * Downloaded 2026-04-21; woff2 only (woff/ttf dropped — всех современных браузеров достаточно).
+ */
+
+/* Clash Display */
+@font-face {
+  font-family: 'Clash Display';
+  src: url('../fonts/fontshare/ClashDisplay-600.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Clash Display';
+  src: url('../fonts/fontshare/ClashDisplay-700.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+  font-style: normal;
+}
+
+/* General Sans */
+@font-face {
+  font-family: 'General Sans';
+  src: url('../fonts/fontshare/GeneralSans-500.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'General Sans';
+  src: url('../fonts/fontshare/GeneralSans-600.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+  font-style: normal;
+}

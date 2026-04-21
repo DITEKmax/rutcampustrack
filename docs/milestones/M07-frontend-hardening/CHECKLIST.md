@@ -34,7 +34,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 - [x] CDN-URL'ы удалены из index.html (grep `cdn\.|unpkg|fontshare\.com|
       googleapis|gstatic|jsdelivr` → пусто). Контекст сохранён в
       commit message + DECISIONS.
-- [ ] Commit: `feat(landing): self-host CDN assets (M07 Группа 1, C0-6)`
+- [x] Commit `c93b6ee`: `feat(landing): self-host CDN assets (M07 Группа 1, C0-6)`
 
 ## Группа 2 — Landing meta + a11y (QE3, QE4, P2-7B/3) — ~3ч
 
@@ -60,24 +60,52 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       index.html 70KB
 - [ ] Smoke: Telegram Preview / Twitter Card Validator на staging URL
       — deferred до deploy в dev (G11 closure)
-- [ ] Commit: `feat(landing): meta + prefers-reduced-motion (M07 Группа 2, QE3/4)`
+- [x] Commit `8a20c91`: `feat(landing): meta + prefers-reduced-motion (M07 Группа 2, QE3/4)`
 
 ## Группа 3 — openapi-typescript type-gen (QC2) — ~2д
 
-- [ ] `frontends/pwa` install `openapi-typescript` + `openapi-fetch` deps
-- [ ] `frontends/web-panel` install
+### G3a — foundation (commit `c20ed50`) ✅
+
+- [x] `frontends/pwa` install `openapi-typescript` (dev) + `openapi-fetch`
+      (dep) — ^7.13.0 / ^0.17.0
+- [x] `frontends/web-panel` install (same versions)
 - [~] ~~`frontends/mini-app` install~~ — **skipped by owner (2026-04-21):**
       mini-app будет мигрирован copy+adapt из PWA после M12, см.
       `docs/future-ideas.md` → "Mini-app unification"
-- [ ] npm script `generate:types` в PWA + web-panel — fetch `/v3/api-docs`
-      каждого из 5 сервисов, типизировать в `src/api/generated/{svc}.types.ts`
-- [ ] Интегрировать generated types в 1 frontend (PWA) как pilot
-- [ ] Миграция web-panel на generated types (удалить ручные interface
-      копии)
-- [~] ~~mini-app миграция~~ — **deferred to post-M12 copy+adapt**
-- [ ] Drift-guard CI check: diff generated vs committed → fail если
-      changed без update
-- [ ] Commit: `feat(frontend): openapi-typescript type-gen (M07 Группа 3, QC2)`
+- [x] npm script `generate:types` + `generate:types:offline` в PWA +
+      web-panel — fetch `/api-docs` (не `/v3/api-docs`!) каждого из 4
+      REST-сервисов (auth/academic/schedule/attendance; gateway = proxy).
+- [x] Commit `.json` specs в `docs/openapi/{svc}.json` — single source
+      of truth для CI drift-guard (NEW-84). ~207KB total.
+- [x] Commit generated `.types.ts` в `frontends/pwa/src/api/generated/`
+      + `frontends/web-panel/src/app/api/generated/`. ~190KB total каждый.
+- [x] Infra: `docker-compose.override.yml` (локальный, в .gitignore) +
+      `scripts/m07-g3-{launch,stop}-services.sh` для поднятия 5 Java-
+      сервисов через gradle bootRun на host с правильными env-overrides.
+- [x] Discovery: Prometheus exemplars + Lettuce deadlock при host-local
+      startup — env `MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=false`
+      обходит (только local dev, НЕ на VPS).
+- [x] Commit `c20ed50`: `feat(frontend): openapi-typescript foundation + generated types (M07 G3a, QC2)`
+
+### G3b — migration callsite'ов (следующая сессия)
+
+- [ ] PWA pilot: мигрировать 1 feature (например useSchedule hook +
+      schedule page) с ручных interfaces на
+      `components['schemas']['Lesson']` через `openapi-fetch createClient`.
+      Проверить `tsc -b` проходит.
+- [ ] PWA widespread: мигрировать все оставшиеся data-fetching хуки
+      (TanStack Query) + компоненты. Grep по `interface.*{` в PWA api-
+      папках — удалить ручные копии.
+- [ ] web-panel pilot: 1 Angular feature (admin или headman) —
+      HttpInterceptor + 1 service на generated types.
+- [ ] web-panel widespread: все feature-модули.
+- [ ] Drift-guard CI: `.github/workflows/openapi-drift.yml` — запускает
+      `npm run generate:types:offline` в PWA + web-panel + `git diff
+      --exit-code src/api/generated/` (fail если diff). Также при PR
+      что меняет backend DTO — reminder в PR-template "run generate:types".
+- [ ] **Rename `fieldErrors` → `invalidParams`** — потенциально часть
+      G3b если generated types содержат этот field, иначе в G4.
+- [ ] Commit: `feat(frontend): migrate PWA + web-panel to generated types (M07 G3b, QC2)`
 
 ## Группа 4 — RFC 7807 error interceptor (QC3) — ~4ч
 

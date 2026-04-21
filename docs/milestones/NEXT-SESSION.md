@@ -5,96 +5,153 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
-Продолжай работу над v0.0.0 milestones.
+Продолжай работу над M07 Frontend Hardening (v0.0.0).
 
-Контекст:
-1. Архитектурный аудит зафиксирован в `docs/report-before-v0.0.0/`
-   (16 отчётов + OWNER-ANSWERS.md 6400 строк + COVERAGE-AUDIT.md 354
-   пункта + 99-executive-summary.md roadmap).
-2. Рабочий процесс — lightweight milestones без GSD-orchestrator'а.
-   Индекс: `docs/milestones/README.md`.
-3. **M06 Ops & Supply Chain ✅ закрыт 2026-04-21**, tag `v0.0.0-alpha.7`.
-   6 milestones закрыто (M01-M06). Осталось 3:
-   M07 Frontend Hardening, M08 Test Infra, M09 Prod Release Blockers.
+**Текущий прогресс M07 (2026-04-21, 4 коммита):**
 
-**Следующий milestone по dependency graph:** **M07 Frontend Hardening**
-(зависит от M03b, который закрыт). ~10-12д. Scope — CSP self-host,
-a11y, openapi-typescript, UX фиксы. Альтернатива — **M09 Prod Release
-Blockers** (зависит от M02+M03a, оба закрыты), ~4-5д, точечные P0 из
-Фазы 3. Parallel safe — можно делать M09 параллельно с M07.
+| Группа | Статус | Commit |
+|--------|--------|--------|
+| G1 Landing CSP self-host | ✅ | `c93b6ee` |
+| G2 Landing meta + prefers-reduced-motion | ✅ | `8a20c91` |
+| G3a openapi-typescript foundation + generated types | ✅ | `c20ed50` |
+| G3b migration callsite'ов (pilot → widespread) | ⬜ **NEXT** | — |
+| G4 RFC 7807 error interceptor | ⬜ | — |
+| G5 NotificationCenter unified | ⬜ | — |
+| G6 UX P2-7A/1..8 | ⬜ | — |
+| G7 ConfirmWithReasonDialog | ⬜ | — |
+| G8 Lazy-loading per-role | ⬜ | — |
+| G9 StatsPage aggregate + sparklines placeholder | ⬜ | — |
+| G10 a11y axe-core baseline | ⬜ | — |
+| G11 nginx per-location + PR-template | ⬜ | — |
+| G12 Audit + docs close + tag alpha.8 | ⬜ | — |
 
-**М06 defer'ы для M07/M09:**
-- Redis cache hit/miss metrics через `RedisCacheMeterBinder` (MINOR).
-- `/actuator/**` excluded from tracing (custom OTel Sampler bean).
-- isHeadman principal-based userId (gRPC proto redesign, breaking).
-- nginx / postgres / mongo / redis / rabbitmq digest-pin.
-- rct-nginx 5-min background reload → `nginx -t` + Loki alerting.
-- SBOM generation + cosign signing (M08).
-- Trivy action sha-digest pin (M08).
+Есть также scope-commit `56d879c` (D1 decisions + PLAN/NOTES/CHECKLIST update).
 
-M07 Scope (из `99-executive-summary.md` P1-C + Фаза 5 P2-7A/7B):
-- CSP self-host лендинг-ресурсов (C0-6, 12 P0-1, 13 P0-4) — склонировать
-  Fontshare/Google Fonts/unpkg/jsdelivr в `frontends/landing/dist/assets/
-  vendor/`, CSP `'self'` без whitelist'а внешних CDN.
-- openapi-typescript для PWA/web-panel (QC2) — типы из Swagger spec
-  вместо ручных interface-копий.
-- a11y audit: semantic HTML, axe-core в Playwright, jsx-a11y ESLint,
-  prefers-reduced-motion (QC*), SMIL→CSS (QE3).
-- UX фиксы: pull-to-refresh, useSwipeHandler, useDateNavigation,
-  geolocation high-accuracy (P2-7A).
-- QE4 landing meta-тегов (og/twitter/canonical/robots/JSON-LD).
-- M06 defer'ы из списка выше (Redis cache metrics, /actuator/** tracing,
-  nginx digest-pin, принципиально-нужные для frontend hardening).
+**Начинай с G3b — миграция callsite'ов:**
 
-Альтернативно: **M09 Prod Release Blockers** (~4-5д, последний фаза-3
-P0 cleanup: OTP через RabbitMQ, MessageDigest, cleanupOrphans, landing
-deep-link, latecheckin/bot tests). Parallel safe с M07.
+Generated types уже готовы в git:
+- `frontends/pwa/src/api/generated/{auth,academic,schedule,attendance}.types.ts`
+- `frontends/web-panel/src/app/api/generated/{same}.types.ts`
+- `docs/openapi/{svc}.json` — baseline для drift-guard.
 
-Что делать:
-1. **Scaffold M07 уже создан** в `docs/milestones/M07-frontend-hardening/`
-   (PLAN + CHECKLIST + NOTES + DECISIONS). Прочитай PLAN.md целиком —
-   там 12 групп подготовлены по образцу M06.
-2. Прочитай `NOTES.md` — **5 вопросов к owner'у перед стартом**
-   (brand og-image, mini-app scope, axe-core baseline, sparklines
-   backend, schedule navigation bounds). Спроси до коммитов.
-3. `git log --oneline -15` — последние коммиты (`v0.0.0-alpha.7` на
-   `847a994` M06 closure; 100+ коммитов ahead origin; tags `v0.0.0-
-   alpha.2..7` локальные).
-4. Проверь docker-compose: `docker compose ps`. Инфра из прошлых
-   сессий уже поднята (rct-postgres-academic/schedule, rct-mongo-
-   attendance, rct-redis, rct-rabbitmq — healthy).
-5. Первая активная группа — **G1 CSP self-host landing** (~1д): скачать
-   Fontshare/GSAP в `frontends/landing/dist/assets/vendor/`, переписать
-   `<link>`/`<script>` → локальные пути. CSP `'self'` в nginx остаётся.
-6. Расскажи owner'у финальный scope после чтения PLAN.md + получения
-   ответов на NOTES-вопросы. Дожидайся `go` перед коммитами.
+Первый шаг — найти ручные interfaces в PWA (grep по `interface.*{` в
+`frontends/pwa/src/api/` + features), выбрать pilot feature (рекомендую
+useSchedule hook + schedule page), мигрировать на `openapi-fetch +
+components['schemas']['...']`, убедиться что `tsc -b` проходит, затем
+widespread. См. `docs/milestones/M07-frontend-hardening/CHECKLIST.md` → G3b.
 
-Правила (без изменений с M05):
+## Запуск backend для regeneration (если нужно)
+
+В G3b generated types уже committed, backend для dev **не обязателен**.
+Regeneration требуется только при смене backend DTO:
+
+```bash
+# 1. Infra (docker-compose.override.yml exposed ports on host):
+docker compose up -d postgres-academic postgres-schedule mongo-attendance redis rabbitmq
+
+# 2. Java services (5 штук через gradle bootRun):
+bash scripts/m07-g3-launch-services.sh
+
+# 3. Ждать Started в /tmp/rct-logs/{svc}.log, проверить /actuator/health:
+for p in 9090 9091 9092 9093 8080; do curl -sS -o /dev/null -w "$p: %{http_code}\n" http://localhost:$p/actuator/health; done
+
+# 4. Regenerate types:
+cd frontends/pwa && npm run generate:types
+cd ../web-panel && npm run generate:types
+
+# 5. Stop services:
+bash scripts/m07-g3-stop-services.sh
+```
+
+Scripts обрабатывают critical env-override (AUTH_SERVICE_URL, gRPC
+addresses, **MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=false** для
+обхода Lettuce+Prometheus deadlock, **SPRING_FLYWAY_BASELINE_ON_MIGRATE=
+true** safety net). Все env только local dev, НЕ применяются на VPS.
+
+## После G3b → G4..G12
+
+Большинство не требует backend:
+- **G4 (RFC 7807)** — pure TS interceptor + rename `fieldErrors →
+  invalidParams`. Проверь — generated types уже могут содержать корректное
+  `invalidParams` (если backend в M01 обновил @Schema); тогда rename ≈
+  бесплатный. Если нет — ручной rename.
+- **G5 (NotificationCenter unified)** — STOMP reconnect logic в
+  `web-panel/src/app/core/services/notification.service.ts` pilot.
+  Thin-client per M07 scope, stateful pagination → M10.
+- **G6 (UX P2-7A/1..8)** — React hooks: `useSwipeHandler`,
+  `useDateNavigation`, `PullToRefresh`, schedule bounds (D1 решение 5:
+  активный семестр + info-screen), scroll preservation, forkJoin fix,
+  DrawerMenu, geolocation high-accuracy. ~2д.
+- **G7 (ConfirmWithReasonDialog)** — 1 shared component PWA + web-panel
+  material dialog. Replace все `window.prompt`. ~2ч.
+- **G8 (Lazy-loading per-role)** — Angular `loadChildren` per-role
+  в web-panel routes + React.lazy для PWA role-specific pages.
+  Bundle analyzer < 500KB per role. ~3ч.
+- **G9 (StatsPage aggregate + sparklines placeholder)** —
+  batch endpoint из M05 (проверить что существует, возможно `POST
+  /attendance/reports/batch` или `/stats/aggregate`). Sparklines
+  placeholder text: **«Графики посещаемости появятся в следующем релизе»**
+  (D1 решение 4) + skeleton UI. ~2ч.
+- **G10 (a11y axe-core)** — semantic HTML audit PWA/web-panel, SMIL→CSS
+  keyframes где возможно, axe-core CLI → **CRITICAL+SERIOUS=0** (D1
+  решение 3), MODERATE/MINOR → `docs/a11y-checklist.md` "pass 2" для v0.1.
+  ~1д.
+- **G11 (nginx per-location + PR-template)** — `client_max_body_size`
+  per-location в `nginx/nginx.conf`, `.github/pull_request_template.md`
+  (NEW-74), labels `landing-review/docs-review`, `docs/contributing.md`
+  (NEW-108). ~2ч.
+- **G12 (Audit + close)** — `security-auditor` + `code-reviewer` на diff
+  M07, hot-patches, CHANGELOG [Unreleased], PLAN.md post-mortem,
+  README.md M07→✅, CLAUDE.md статус, `git tag v0.0.0-alpha.8`. ~3ч.
+
+**Общий estimate G3b..G12:** ~5-7 дней (возможно 2-3 новые сессии).
+
+## После M07 — M08/M09/M10/M11/M12
+
+См. `docs/milestones/README.md` dependency graph. Следующий после M07 —
+M08 (Test Infrastructure: Playwright + golden + coverage-gate + SBOM).
+Parallel с M08 можно M09 (Prod Release Blockers), M10 (Notification
+History), M11 (OpenAPI Polish), M12 (Auth Contract refactor).
+
+## Альтернатива: **M09 Prod Release Blockers** (~4-5д)
+
+Parallel safe с оставшимися M07 группами. Scope — OTP через RabbitMQ,
+MessageDigest, cleanupOrphans, landing deep-link, latecheckin/bot tests.
+См. `docs/milestones/M09-prod-release-blockers/PLAN.md`.
+
+## Правила (без изменений с M05)
+
 - Русский язык в отчётах / NOTES / ответах.
+- **Ветка `dev`**. Push на `main` — НЕ делать до отдельного указания.
+  Коммитим в `dev`, пушим в `dev` после закрытия milestone.
 - Не звать `gsd-*` агентов. `Explore` для «найти все X»,
-  `bug-hunter` / `code-reviewer` / `security-auditor` — в Группе audit'а.
+  `bug-hunter` / `code-reviewer` / `security-auditor` — в G12 audit.
 - Surprise → NOTES.md + спросить до продолжения.
-- Micro-решение → DECISIONS.md (D1+).
-- Закрыл пункт CHECKLIST → `[x]` через Edit.
-- Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные.
+- Micro-решение → DECISIONS.md. D1 уже содержит 5 стартовых решений
+  (og-image SVG-first, mini-app defer to M12, axe-core baseline,
+  sparklines placeholder text, schedule bounds). Следующие — D2+.
+- Закрыл пункт CHECKLIST → `[x]` через Edit (commit hash в описании).
+- **Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные.**
 - Push на origin / создание PR — только с явного `go` пользователя.
-- `CHANGELOG.md [Unreleased]` обновляй при значимых изменениях.
+- `CHANGELOG.md [Unreleased]` обновляй при значимых изменениях (G12).
 
-Когда milestone закрыт:
-1. Все пункты CHECKLIST отмечены `[x]`.
-2. Все acceptance criteria в PLAN.md пройдены (`./gradlew build`
-   зелёный + integration + ArchUnit + CI-lint).
+## Когда M07 закрыт
+
+1. Все пункты CHECKLIST отмечены `[x]` или `[~]` (skipped explicit).
+2. Acceptance criteria в PLAN.md пройдены (axe-core CRITICAL+SERIOUS=0,
+   TypeScript compilation зелёный, landing visually identical).
 3. Post-mortem секция дописана в PLAN.md.
-4. Статус в `docs/milestones/README.md` → ✅ готов.
-5. Тег `git tag v0.0.0-alpha.8` на последнем коммите milestone'а
-   (alpha.7 — M06, alpha.8 — M07, alpha.9 — M08, `v0.0.0` — после M09).
-6. Сообщить owner'у финальный summary + ссылку на следующий
-   milestone (M08 или M09).
+4. `docs/milestones/README.md` → M07 ✅ + дата.
+5. `CLAUDE.md` статус M07 → ✅.
+6. `git tag v0.0.0-alpha.8` на последнем коммите M07 (локально, без push).
+7. Hand-off в `NEXT-SESSION.md` для M08/M09/M10/M11/M12.
 
-Старт (дословно скопируй как первое сообщение):
-> Читаю README → 99-executive-summary → M06 post-mortem → M07 PLAN →
-> 09-frontend-pwa + 10-frontend-web-panel + 12-frontend-landing + 13
-> P0-4 (CSP). Через минуту скажу какие группы вижу в scope M07.
+## Старт (дословно скопируй как первое сообщение)
+
+> Читаю NEXT-SESSION → M07 CHECKLIST → DECISIONS D1 → PLAN.md. Стартую
+> с G3b migration (generated types уже в git, backend не обязателен для
+> миграции). Первый шаг — grep ручных interfaces в PWA, выбрать pilot
+> feature.
 
 ---
 

@@ -29,6 +29,42 @@
 4. `GrpcClientMetricsInterceptor` Timer caching + `startNs` в `start()` — LOW (bug-hunter 5.1+5.3).
 5. `/actuator/**` excluded from tracing sampling — M04 backlog.
 
+### Группа 9 audit — security hot-patches
+
+security-auditor нашёл 5 HIGH + 7 MEDIUM. Hot-patches применены:
+
+- **H1 deploy.yml strict guards** — `if:` добавил explicit
+  `head_branch == main` + `event == push` + required `commit_sha`
+  input для `workflow_dispatch` (fork-PR bypass закрыт).
+- **H2 concurrency: production-deploy** — serialize deploys, избегаем
+  параллельный `openssl genrsa` race, который invalidated бы active
+  JWT sessions.
+- **H3 CacheConfig whitelist narrow** — заменил `java.util.*` на
+  explicit collection types (`ArrayList`, `HashMap`, `Optional`, и т.д.),
+  убрал `java.lang.*` (final types не нужны в whitelist). Block'ирует
+  gadget-chains через `ServiceLoader$LazyIterator`, `PriorityQueue`,
+  `FutureTask`.
+
+Accepted as trade-off (НЕ fix'им сейчас):
+
+- **H4 headmanBuckets.clear() race** — `clear()` thread-safe,
+  race между `size()` и `clear()` lossy (rate-limit state —
+  reset quota приемлем). Principal-based userId source —
+  **M07 scope** (требует gRPC proto redesign: `isHeadman` должен
+  читать userId из `UserContextFilter`-populated principal,
+  не из request body; это breaking change gRPC contract).
+- **H5 rct-nginx 5-min background reload** — pre-existing pattern
+  (Phase 50.1 safety-net, не внесено M06). Отдельный M07/M09
+  hardening.
+
+### Pre-existing test failure unrelated к M06
+
+`shared-outbox:EventSchemaRefTest.lessonStarted_validPayload_passesValidation()`
+fail'ит т.к. M04 Группа 6 (commit `08fbd1f`) добавил required
+`event_version`/`trace_id`/`source` в envelope schema, а test payload'ы
+не были обновлены. G9 hot-patch — добавил три поля в обе test fixture'ы
+(`valid` + `invalidLessonNumber_9`), fixed.
+
 ### Группа 8c — deferred в M07/v0.1
 
 Redis cache hit/miss metrics через `@Aspect` — MINOR finding:

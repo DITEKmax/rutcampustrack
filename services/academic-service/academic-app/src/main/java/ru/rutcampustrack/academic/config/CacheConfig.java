@@ -73,17 +73,32 @@ public class CacheConfig {
         Hibernate6Module hibernate6Module = new Hibernate6Module();
         hibernate6Module.enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING);
 
-        // M06 G8a (M05 security #3): whitelist polymorphic validator вместо
-        // LaissezFaireSubTypeValidator. Допускаем только доменные классы
-        // (ru.rutcampustrack.*) и стандартные JDK-типы для коллекций /
-        // даты / примитивов. Block'ирует gadget-chains через произвольные
-        // ClassPath-классы в @class поле Redis-payload'а.
+        // M06 G8a + G9 hot-patch (security-audit H3): narrow polymorphic
+        // whitelist. `java.util.` was too broad — пропускало gadget-классы
+        // типа ServiceLoader$LazyIterator, PriorityQueue с custom Comparator,
+        // FutureTask. Теперь — explicit список collection-типов, дат и BigDecimal.
+        //
+        // Block'ирует gadget-chains через произвольные ClassPath-классы в
+        // @class поле Redis-payload'а (защита от attacker с RW access к Redis).
+        // String/Integer/Long/Boolean — final, не требуют @class; не в списке.
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                 .allowIfSubType("ru.rutcampustrack.")
-                .allowIfSubType("java.util.")
+                // Collection types — нужны для List/Set/Map поля в DTO.
+                .allowIfSubType("java.util.ArrayList")
+                .allowIfSubType("java.util.LinkedList")
+                .allowIfSubType("java.util.HashMap")
+                .allowIfSubType("java.util.LinkedHashMap")
+                .allowIfSubType("java.util.TreeMap")
+                .allowIfSubType("java.util.HashSet")
+                .allowIfSubType("java.util.LinkedHashSet")
+                .allowIfSubType("java.util.TreeSet")
+                .allowIfSubType("java.util.Collections$")
+                .allowIfSubType("java.util.Optional")
+                // java.time types для OffsetDateTime/Instant/LocalDate.
                 .allowIfSubType("java.time.")
-                .allowIfSubType("java.lang.")
-                .allowIfSubType("java.math.")
+                // BigDecimal/BigInteger для numeric-полей.
+                .allowIfSubType("java.math.BigDecimal")
+                .allowIfSubType("java.math.BigInteger")
                 .build();
 
         ObjectMapper om = new ObjectMapper()

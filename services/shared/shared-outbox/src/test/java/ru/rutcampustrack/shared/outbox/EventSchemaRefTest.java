@@ -47,10 +47,16 @@ class EventSchemaRefTest {
     void lessonStarted_validPayload_passesValidation() throws Exception {
         JsonSchema schema = loadSchema("lesson.started.json");
         ObjectMapper mapper = new ObjectMapper();
+        // M06 G9 hot-patch: envelope fields (event_version/trace_id/source) added
+        // в M04 Группа 6 (commit 08fbd1f), но test payload'ы не обновлены →
+        // pre-existing failure выплыл на M06 build. Добавлены обязательные поля.
         JsonNode json = mapper.readTree("""
                 {
                   "event_type": "lesson.started",
                   "event_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "event_version": 1,
+                  "trace_id": "00000000000000000000000000000001",
+                  "source": "schedule-service",
                   "occurred_at": "2026-04-19T12:00:00Z",
                   "payload": {
                     "lesson_id": 1,
@@ -80,6 +86,9 @@ class EventSchemaRefTest {
                 {
                   "event_type": "lesson.started",
                   "event_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "event_version": 1,
+                  "trace_id": "00000000000000000000000000000001",
+                  "source": "schedule-service",
                   "occurred_at": "2026-04-19T12:00:00Z",
                   "payload": {
                     "lesson_id": 1,

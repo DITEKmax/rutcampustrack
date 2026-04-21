@@ -17,22 +17,40 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      commit_sha:
+        description: 'Commit SHA для emergency deploy (обязателен, audit trail)'
+        required: true
+        type: string
       reason:
-        description: 'Почему emergency deploy без CI (audit trail)'
+        description: 'Почему emergency deploy без CI'
         required: true
         type: string
 
+# M06 G9 H2 (security-audit): serialize deploys — избегаем concurrent JWT-keys
+# generation race (openssl genrsa между двумя SSH-сессиями одновременно
+# уничтожает active sessions). `cancel-in-progress: false` — не отменяем
+# уже идущий deploy, просто ждём.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 env:
-  DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+  DEPLOY_SHA: ${{ github.event.inputs.commit_sha || github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
   build-push:
     name: Build and Push to GHCR
-    # workflow_run fires on BOTH success + failure — filter here.
-    # workflow_dispatch always runs (manual override).
+    # M06 G9 H1 (security-audit): strict event/branch guards —
+    # workflow_run fires on BOTH success + failure; event может быть
+    # pull_request от fork'а (не наш main). Explicit check:
+    #   1. event_name = 'workflow_dispatch' (manual, с required input commit_sha), ИЛИ
+    #   2. workflow_run.conclusion = 'success' И head_branch = 'main' И event = 'push'
+    # Fork-PR'ы и feature-branch'и НЕ дают deploy даже если CI green.
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -29,4 +29,22 @@
 4. `GrpcClientMetricsInterceptor` Timer caching + `startNs` в `start()` — LOW (bug-hunter 5.1+5.3).
 5. `/actuator/**` excluded from tracing sampling — M04 backlog.
 
+### Группа 1 — сделано
+
+- **Surprise:** `docker-compose.prod.yml` уже содержал полноценные
+  healthcheck'и на всех 7 сервисах через `wget -qO-` (M04). Dockerfile-
+  директивы **добавлены поверх** — дублирование намеренное (метаданные
+  живут с образом, `docker run` без compose тоже работает).
+- **Решение D1:** `wget` вместо `curl` — alpine-jre уже имеет busybox
+  wget, curl добавил бы ~7MB без compensating value.
+- **notification-bot** — `curl` уже установлен в Dockerfile:3 (apt-get),
+  health endpoint реальный: `bot/__main__.py:38-54` (HTTP server на
+  port 8081 проверяет watchdog + polling tasks).
+- **Smoke full-build отменён** — `docker build auth-service` провисел
+  40+ минут без cache (gradle + transitive deps), сбросил. Вместо
+  этого использовал `docker buildx build --check` для 7 Dockerfile'ов —
+  все synтактически валидны (`Check complete, no warnings found`).
+- `docs/dockerfile-conventions.md` (NEW-150) содержит полную
+  таблицу start-period + endpoint per service.
+
 ---

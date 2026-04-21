@@ -44,4 +44,8 @@ COPY --from=extractor /app/application/ ./
 
 USER app
 EXPOSE 9094
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD wget -qO- http://localhost:9094/actuator/health/liveness || exit 1
+
 ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

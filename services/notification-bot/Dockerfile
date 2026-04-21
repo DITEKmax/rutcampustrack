@@ -14,5 +14,8 @@ RUN chown -R app:app /app
 
 USER app
 
+HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=5 \
+    CMD curl -fsS http://localhost:8081/health || exit 1
+
 CMD ["python", "-m", "bot"]
 # Note: python -m bot invokes bot/__main__.py as asyncio entry point

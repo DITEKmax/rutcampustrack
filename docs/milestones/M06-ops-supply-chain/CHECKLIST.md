@@ -3,20 +3,20 @@
 Атомарные задачи в порядке выполнения. Одна строка = одна единица работы
 (~30 мин - 2 часа). Отмечаются `[x]` после коммита.
 
-## Группа 1 — Dockerfile HEALTHCHECK + curl (P2-9/1, NEW-150) — ~2ч
+## Группа 1 — Dockerfile HEALTHCHECK (P2-9/1, NEW-150) — ~2ч ✅
 
-- [ ] Аудит 7 Dockerfile'ов: какие alpine/какие debian/slim, есть ли `curl`/`wget`
-- [ ] `auth-service/Dockerfile` — HEALTHCHECK + curl (или wget, если alpine)
-- [ ] `academic-service/academic-app/Dockerfile` — HEALTHCHECK + curl
-- [ ] `schedule-service/schedule-app/Dockerfile` — HEALTHCHECK + curl
-- [ ] `attendance-service/attendance-app/Dockerfile` — HEALTHCHECK + curl
-- [ ] `notification-service/notification-app/Dockerfile` — HEALTHCHECK + curl
-- [ ] `api-gateway/Dockerfile` — HEALTHCHECK + curl
-- [ ] `notification-bot/Dockerfile` — HEALTHCHECK через `pgrep -f aiogram`
-- [ ] `docker-compose.prod.yml` — gateway `depends_on: service_healthy` для 5 backend
-- [ ] `docs/dockerfile-conventions.md` — NEW-150 runbook
-- [ ] Smoke: `docker compose up -d --wait` (или manual build одного образа и проверка)
-- [ ] Commit: `feat(ops): HEALTHCHECK + curl во всех Dockerfile (M06 Группа 1, P2-9/1, NEW-150)`
+- [x] Аудит 7 Dockerfile'ов: 6 Java на alpine-jre (`wget` уже есть), bot на debian-slim (`curl` уже есть). D1: без доп. установки `curl`, используем `wget` в Java
+- [x] `auth-service/Dockerfile` — HEALTHCHECK wget /actuator/health
+- [x] `academic-service/academic-app/Dockerfile` — HEALTHCHECK wget /actuator/health
+- [x] `schedule-service/schedule-app/Dockerfile` — HEALTHCHECK wget /actuator/health
+- [x] `attendance-service/attendance-app/Dockerfile` — HEALTHCHECK wget /actuator/health
+- [x] `notification-service/notification-app/Dockerfile` — HEALTHCHECK wget /actuator/health/liveness
+- [x] `api-gateway/Dockerfile` — HEALTHCHECK wget /actuator/health
+- [x] `notification-bot/Dockerfile` — HEALTHCHECK curl /health (bot/__main__.py:38 реальный endpoint)
+- [x] `docker-compose.prod.yml` — уже имеет `depends_on: service_healthy` matrix (M04), нет изменений
+- [x] `docs/dockerfile-conventions.md` — NEW-150 runbook
+- [x] Smoke: `docker buildx build --check` × 7 Dockerfile, `Check complete, no warnings found` × 7
+- [ ] Commit: `feat(ops): HEALTHCHECK в 7 Dockerfile (M06 Группа 1, P2-9/1, NEW-150)`
 
 ## Группа 2 — SHA-tagging + IMAGE_TAG параметризация (QD1, 13 P1-1/4) — ~2ч
 

@@ -44,15 +44,15 @@
 - [x] `docker-compose.prod.yml` — `prom/node-exporter:v1.8.2`
 - [x] `docs/runbooks/loki-major-upgrade.md` — NEW-151 (expand-contract schema procedure)
 - [x] Smoke: `compose config --quiet` exit=0; нет `:latest` в prod compose кроме infra tag'ов (postgres:16, mongo:7, и т.д.)
-- [ ] Commit: `feat(ops): semver-pin observability images (M06 Группа 4, P2-9/2, NEW-151)`
+- [x] Commit: `7ca263d feat(ops): semver-pin observability images (M06 Группа 4, P2-9/2, NEW-151)`
 
-## Группа 5 — Renovate + Dependabot (QD4 + QD6 + NEW-105) — ~2.5ч
+## Группа 5 — Renovate + Dependabot (QD4 + QD6 + NEW-105) — ~2.5ч ✅
 
-- [ ] `renovate.json` в корне — `extends: config:recommended`, `packageRules` для patch auto-merge, `schedule`, groupings (Spring Boot, Angular), `timezone`
-- [ ] `.github/dependabot.yml` — gradle, npm × 3, pip (bot), docker, github-actions (security-only)
-- [ ] Validate: `npx --package renovate -- renovate-config-validator`
-- [ ] `docs/ci-cd.md` — NEW-105 (GitHub Actions + Renovate + Dependabot + Trivy + deploy flow)
-- [ ] Commit: `feat(ops): Renovate + Dependabot config (M06 Группа 5, QD4/QD6, NEW-105)`
+- [x] `renovate.json` в корне — `extends: config:recommended`, auto-merge patch/pin/digest, manual minor/major, groupings (Spring Boot, Angular, React, TanStack), schedule after 22:00 MSK, loki major manual rule, cadvisor/promtail digest auto-merge
+- [x] `.github/dependabot.yml` — gradle, npm × 3 (pwa/web-panel/mini-app), pip (bot), docker, github-actions (security-only)
+- [x] `renovate-config-validator` — `Config validated successfully`
+- [x] `docs/ci-cd.md` — NEW-105 (полный CI/CD flow: ci.yml + deploy.yml + security.yml + Renovate + Dependabot + rollback procedure)
+- [ ] Commit: `feat(ops): Renovate + Dependabot + ci-cd.md (M06 Группа 5, QD6, NEW-105)`
 
 ## Группа 6 — Trivy + Gitleaks + SECURITY.md (QD5, NEW-103) — ~3ч
 

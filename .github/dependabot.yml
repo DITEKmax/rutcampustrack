@@ -1,0 +1,69 @@
+# Dependabot — security-only updates.
+# Общие bump'ы делает Renovate (renovate.json, M06 QD6). Dependabot
+# здесь отвечает только за CVE-патчи в supply-chain (QD5).
+# Разделение concerns: Renovate = freshness, Dependabot = security.
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels: ["security", "dependencies"]
+    commit-message:
+      prefix: "fix(deps)"
+    versioning-strategy: "auto"
+
+  - package-ecosystem: "npm"
+    directory: "/frontends/pwa"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels: ["security", "dependencies", "frontend-pwa"]
+    commit-message:
+      prefix: "fix(deps-pwa)"
+
+  - package-ecosystem: "npm"
+    directory: "/frontends/web-panel"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels: ["security", "dependencies", "frontend-web-panel"]
+    commit-message:
+      prefix: "fix(deps-web-panel)"
+
+  - package-ecosystem: "npm"
+    directory: "/frontends/mini-app"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels: ["security", "dependencies", "frontend-mini-app"]
+    commit-message:
+      prefix: "fix(deps-mini-app)"
+
+  - package-ecosystem: "pip"
+    directory: "/services/notification-bot"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels: ["security", "dependencies", "bot"]
+    commit-message:
+      prefix: "fix(deps-bot)"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 3
+    labels: ["security", "dependencies", "docker"]
+    commit-message:
+      prefix: "fix(deps-docker)"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    labels: ["security", "dependencies", "github-actions"]
+    commit-message:
+      prefix: "fix(deps-ci)"

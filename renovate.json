@@ -1,0 +1,95 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":rebaseStalePrs",
+    ":timezone(Europe/Moscow)"
+  ],
+  "schedule": ["after 22:00 every weekday", "every weekend"],
+  "timezone": "Europe/Moscow",
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Renovate — dependency dashboard",
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "commitMessagePrefix": "chore(deps):",
+  "packageRules": [
+    {
+      "description": "Auto-merge patch updates after green CI",
+      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Manual review for minor/major",
+      "matchUpdateTypes": ["minor", "major"],
+      "automerge": false
+    },
+    {
+      "description": "Group Spring Boot updates",
+      "matchPackagePatterns": ["^org\\.springframework\\.boot"],
+      "groupName": "Spring Boot",
+      "groupSlug": "spring-boot"
+    },
+    {
+      "description": "Group Angular updates",
+      "matchPackagePatterns": ["^@angular/"],
+      "groupName": "Angular",
+      "groupSlug": "angular"
+    },
+    {
+      "description": "Group React updates (PWA + mini-app)",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"],
+      "groupName": "React",
+      "groupSlug": "react"
+    },
+    {
+      "description": "Group TanStack Query updates",
+      "matchPackagePatterns": ["^@tanstack/"],
+      "groupName": "TanStack",
+      "groupSlug": "tanstack"
+    },
+    {
+      "description": "Loki major upgrade — manual only (schema migration)",
+      "matchPackageNames": ["grafana/loki"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "prBodyNotes": [":warning: Major Loki upgrade — follow `docs/runbooks/loki-major-upgrade.md` (expand-contract schema)."]
+    },
+    {
+      "description": "cadvisor/promtail digest bump — auto-merge patch (digest-pinned per M06 D2)",
+      "matchPackageNames": ["gcr.io/cadvisor/cadvisor", "grafana/promtail"],
+      "matchUpdateTypes": ["digest"],
+      "automerge": true
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  },
+  "gradle": {
+    "enabled": true,
+    "timezone": "Europe/Moscow"
+  },
+  "docker-compose": {
+    "enabled": true,
+    "managerFilePatterns": ["/^docker-compose.*\\.ya?ml$/"]
+  },
+  "dockerfile": {
+    "enabled": true,
+    "managerFilePatterns": ["/(^|/)Dockerfile[^/]*$/"]
+  },
+  "github-actions": {
+    "enabled": true,
+    "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"]
+  },
+  "pip_requirements": {
+    "enabled": true,
+    "managerFilePatterns": ["/(^|/)requirements\\.txt$/"]
+  },
+  "pre-commit": {
+    "enabled": true
+  }
+}

@@ -168,3 +168,24 @@ shape берётся первым (см. `coerceInvalidParams`). Когда вс
 
 **Implication:** если в G6 (PullToRefresh/swipe) или будущих PWA
 фичах появится необходимость reason-диалога — сделать inline.
+
+---
+
+## 2026-04-22 — D6: G11 avatar 5m per-location отложен
+
+**Что выбрано:** добавить только 25m per-location для
+`/api/attendance/excuses/with-file` (multipart excuse upload).
+Отдельный 5m per-location для avatar **не создавать**.
+
+**Почему:** эндпоинт `PATCH /api/academic/users/me/avatar` принимает
+JSON `{ avatarId: string }` — это preset-id (см.
+`frontends/web-panel/src/app/core/profile/preset-avatars.ts`), не file
+upload. Лимит 2m global более чем достаточно для JSON ~50 байт.
+
+**Альтернативы:**
+- Добавить 5m «на всякий случай» — отвергнуто (YAGNI, лишний location
+  block под несуществующий use-case).
+
+**Implication:** если в v0.1 появится file-based avatar upload
+(non-preset, custom image), добавить `location = /api/academic/users/
+me/avatar { client_max_body_size 5m }` и обновить `docs/nginx-config.md`.

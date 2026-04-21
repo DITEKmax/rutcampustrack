@@ -245,15 +245,23 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 
 ## Группа 11 — nginx per-location + PR-template (P2-9/3, NEW-74) — ~2ч
 
-- [ ] `nginx/nginx.conf` global `client_max_body_size 2m`
-- [ ] `/api/attendance/excuse/` → 25m per-location
-- [ ] `/api/academic/users/` → 5m (avatar)
-- [ ] `docs/nginx-config.md` (NEW-152)
-- [ ] `.github/pull_request_template.md` (NEW-74) — `landing-review` +
-      `docs-review` checkboxes
-- [ ] GitHub labels `landing-review`, `docs-review` (manual UI)
-- [ ] `docs/contributing.md` (NEW-108) — когда ревизовать лендинг/docs
-- [ ] Commit: `feat(ops): nginx per-location + PR-template (M07 Группа 11, P2-9/3)`
+- [x] `nginx/nginx.conf` global `client_max_body_size 2m` (было 12m).
+- [x] `/api/attendance/excuses/with-file` → 25m per-location (prefix-
+      match побеждает generic `/api/` через nginx precedence).
+- [~] ~~`/api/academic/users/me/avatar` → 5m~~ — **отложено** (D6).
+      Endpoint принимает JSON preset-id, не multipart; 2m global
+      достаточно. Вернуться при появлении file-based avatar upload.
+- [x] `docs/nginx-config.md` (NEW-152) — runbook: limits, security
+      headers, CSP, upstream routing, reload checklist, troubleshooting.
+- [x] `.github/pull_request_template.md` (NEW-74) — scope, areas
+      touched, verification, risk — с labels `landing-review` и
+      `docs-review`.
+- [~] GitHub labels `landing-review`, `docs-review` manual UI —
+      создадутся при первом использовании в PR (owner setup).
+- [x] `docs/contributing.md` (NEW-108) — branches, commits,
+      PR-labels, когда ревизовать лендинг/docs, Flyway rules,
+      OpenAPI drift recovery.
+- [x] Commit `8aa7a22`: `feat(ops): nginx per-location + PR-template (M07 Группа 11, P2-9/3)`
 
 ## Группа 12 — Audit + docs close — ~3ч
 

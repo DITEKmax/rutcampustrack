@@ -193,11 +193,24 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 
 ## Группа 7 — ConfirmWithReasonDialog (QC4) — ~2ч
 
-- [ ] PWA shared component с Tailwind стилями
-- [ ] web-panel Angular component (Material dialog)
-- [ ] Заменить все `window.prompt` calls на этот component
-- [ ] Reason validation: non-empty, maxLength 500
-- [ ] Commit: `feat(frontend): ConfirmWithReasonDialog (M07 Группа 7, QC4)`
+- [~] ~~PWA shared component с Tailwind стилями~~ — **отложено** (D5).
+      В PWA нет `window.prompt` call site'ов (grep пустой), preemptive
+      shared-компонент = YAGNI. Создать inline когда появится
+      потребность.
+- [x] web-panel Angular component (Material dialog) —
+      `shared/confirm-with-reason-dialog/`. Standalone-компонент с
+      textarea, inline validation (non-empty + maxLength),
+      destructive-акцент, focus-trap через MatDialog.
+- [x] Заменить `window.prompt` в web-panel — единственный call site
+      в `headman-lessons.component.ts::onCancel()`. Spec обновлён
+      под dialog-поток.
+- [x] Reason validation: non-empty + auto-trim + maxLength
+      (default 500, configurable).
+- [x] Unit-тесты: 8 кейсов dialog (пустое поле → disabled, trim на
+      confirm, cancel → null, initialReason, destructive button,
+      custom maxLength) + 3 переписанных case'а в headman-lessons
+      spec.
+- [x] Commit `ac51b90`: `feat(frontend): ConfirmWithReasonDialog (M07 Группа 7, QC4)`
 
 ## Группа 8 — Lazy-loading per-role (QC5) — ~3ч
 

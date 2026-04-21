@@ -141,3 +141,30 @@ schedule + `invalidParams` shared-web M11) и нормализующий на
 shape берётся первым (см. `coerceInvalidParams`). Когда все сервисы
 переедут на shared-web, legacy branch мёртвой не будет — просто
 никогда не сработает, и удаляется в любой момент.
+
+---
+
+## 2026-04-22 — D5: G7 ConfirmWithReasonDialog только в web-panel
+
+**Что выбрано:** создать Material dialog в web-panel
+(`shared/confirm-with-reason-dialog/`), заменить единственный
+`window.prompt` в headman-lessons. PWA shared-компонент **не
+создавать** в G7.
+
+**Почему:**
+- Grep по `window\.prompt\(` в PWA — ноль вхождений, т.е. нет call
+  site'ов для замены.
+- PWA `confirm()` (1 call в `LessonHomeworkSection`) — это confirm без
+  reason, не в scope QC4.
+- Preemptive создание неиспользуемого компонента — over-engineering.
+  Когда PWA потребуется reason-диалог, он будет создан по образу
+  web-panel'овского (≤30 мин).
+
+**Альтернативы:**
+- Создать PWA shared-компонент заранее — отвергнуто (YAGNI, не
+  оправдано scope в OWNER-ANSWERS QC4).
+- Заменить PWA `confirm()` тоже в G7 — отвергнуто (другая UX-форма,
+  отдельный scope).
+
+**Implication:** если в G6 (PullToRefresh/swipe) или будущих PWA
+фичах появится необходимость reason-диалога — сделать inline.

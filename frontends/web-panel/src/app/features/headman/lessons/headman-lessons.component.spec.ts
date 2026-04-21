@@ -8,6 +8,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { HeadmanLessonsComponent } from './headman-lessons.component';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ConfirmWithReasonDialogComponent } from '../../../shared/confirm-with-reason-dialog/confirm-with-reason-dialog.component';
 
 const LESSONS = [
   {
@@ -50,7 +51,14 @@ function setup(apiOverrides: Partial<HeadmanApiService> = {}): {
     currentUser: () => ({ id: 1, role: 'STUDENT', isHeadman: true, groupId: 5 }),
   } as unknown as AuthService;
   const snackBar = { open: vi.fn() };
-  const dialog = { open: vi.fn(() => ({ afterClosed: () => of(true) })) };
+  // Dialog-мок различает ConfirmWithReasonDialog (возвращает reason string)
+  // и ConfirmDialog (возвращает true/false для restore-потока).
+  const dialog = {
+    open: vi.fn((cmp: unknown) => ({
+      afterClosed: () =>
+        of(cmp === ConfirmWithReasonDialogComponent ? 'Болезнь' : true),
+    })),
+  };
   TestBed.configureTestingModule({
     imports: [HeadmanLessonsComponent],
     providers: [
@@ -89,32 +97,26 @@ describe('HeadmanLessonsComponent', () => {
     expect(component.isClosed({ status: 'closed' } as any)).toBe(true);
   });
 
-  it('onCancel does NOT call API when user dismisses prompt', () => {
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue(null);
+  it('onCancel does NOT call API when dialog returns null (cancel)', () => {
     const { component, api } = setup();
+    // Override global dialog mock для этого теста — вернуть null.
+    (component as unknown as { dialog: { open: ReturnType<typeof vi.fn> } }).dialog.open =
+      vi.fn(() => ({ afterClosed: () => of(null) }));
     component.onCancel(LESSONS[0] as any);
     expect(api.cancelLesson).not.toHaveBeenCalled();
-    promptSpy.mockRestore();
   });
 
-  it('onCancel rejects empty/whitespace reason and shows snackBar', () => {
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('   ');
-    const { component, api, snackBar } = setup();
+  it('onCancel calls cancelLesson with dialog reason и обновляет local статус optimistically', () => {
+    const { component, api, dialog } = setup();
     component.onCancel(LESSONS[0] as any);
-    expect(api.cancelLesson).not.toHaveBeenCalled();
-    expect(snackBar.open).toHaveBeenCalled();
-    promptSpy.mockRestore();
-  });
-
-  it('onCancel calls cancelLesson and updates local lesson status optimistically', () => {
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('Болезнь');
-    const { component, api } = setup();
-    component.onCancel(LESSONS[0] as any);
+    expect(dialog.open).toHaveBeenCalledWith(
+      ConfirmWithReasonDialogComponent,
+      expect.objectContaining({ data: expect.objectContaining({ destructive: true }) }),
+    );
     expect(api.cancelLesson).toHaveBeenCalledWith(100, 'Болезнь');
     const updated = component.lessons().find(l => l.id === 100);
     expect(updated?.status).toBe('CANCELLED');
     expect(updated?.cancelReason).toBe('Болезнь');
-    promptSpy.mockRestore();
   });
 
   it('onRestore confirms via dialog and calls restoreLesson, sets status PLANNED', () => {
@@ -127,14 +129,12 @@ describe('HeadmanLessonsComponent', () => {
   });
 
   it('shows snackBar with 403 message when cancel returns 403', () => {
-    const promptSpy = vi.spyOn(window, 'prompt').mockReturnValue('reason');
     const { component, snackBar } = setup({
       cancelLesson: vi.fn(() => throwError(() => ({ status: 403 }))),
     });
     component.onCancel(LESSONS[0] as any);
     const arg = snackBar.open.mock.calls[snackBar.open.mock.calls.length - 1][0];
     expect(arg).toContain('прав');
-    promptSpy.mockRestore();
   });
 
   it('error from getGroupLessons sets error signal', () => {

@@ -15,6 +15,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
+import {
+  ConfirmWithReasonDialogComponent,
+  type ConfirmWithReasonDialogData,
+} from '../../../shared/confirm-with-reason-dialog/confirm-with-reason-dialog.component';
 import { addDays, formatDate } from '../../student/schedule/week-utils';
 import type { LessonResponse } from '../../../api/schema';
 
@@ -47,8 +51,8 @@ const DEFAULT_RANGE_DAYS = 14;
  * - Группировка по дням, дни без пар скрыты.
  * - Кнопка «Отменить» доступна для статусов PLANNED/ACTIVE.
  * - Для уже отменённых — кнопка «Восстановить» (PATCH .../restore).
- * - Reason берётся через window.prompt() — без отдельного диалога, чтобы не
- *   плодить компоненты под одну форму.
+ * - Reason собирается через ConfirmWithReasonDialog (M07 G7, QC4) —
+ *   focus-trap, inline validation non-empty + maxLength 500.
  */
 @Component({
   selector: 'app-headman-lessons',
@@ -355,20 +359,32 @@ export class HeadmanLessonsComponent implements OnInit {
   }
 
   onCancel(lesson: Lesson): void {
-    const reason = window.prompt(
-      `Причина отмены пары «${this.subjectName(lesson.subjectId)}» ` +
-      `(${this.dayLabel(lesson.date)}, № ${lesson.lessonNumber}):`,
-    );
-    if (reason === null) return;
-    const trimmed = reason.trim();
-    if (!trimmed) {
-      this.snackBar.open('Причина отмены не может быть пустой.', undefined, { duration: 4000 });
-      return;
-    }
-    if (trimmed.length > 512) {
-      this.snackBar.open('Причина не должна превышать 512 символов.', undefined, { duration: 4000 });
-      return;
-    }
+    // M07 G7 (QC4): Material ConfirmWithReasonDialog вместо window.prompt —
+    // focus-trap, inline validation, 500-char limit, destructive-акцент.
+    const ref = this.dialog.open<
+      ConfirmWithReasonDialogComponent,
+      ConfirmWithReasonDialogData,
+      string | null
+    >(ConfirmWithReasonDialogComponent, {
+      data: {
+        title: 'Отмена пары',
+        message:
+          `«${this.subjectName(lesson.subjectId)}» — ` +
+          `${this.dayLabel(lesson.date)}, № ${lesson.lessonNumber}`,
+        reasonLabel: 'Причина отмены',
+        reasonPlaceholder: 'Например: «Преподаватель на больничном»',
+        confirmLabel: 'Отменить пару',
+        destructive: true,
+        maxLength: 500,
+      },
+    });
+    ref.afterClosed().subscribe((trimmed) => {
+      if (!trimmed) return;
+      this.doCancel(lesson, trimmed);
+    });
+  }
+
+  private doCancel(lesson: Lesson, trimmed: string): void {
     this.busy.set(lesson.id);
     this.headmanApi.cancelLesson(lesson.id, trimmed).subscribe({
       next: () => {

@@ -44,13 +44,15 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 
 - [ ] `frontends/pwa` install `openapi-typescript` + `openapi-fetch` deps
 - [ ] `frontends/web-panel` install
-- [ ] `frontends/mini-app` install
-- [ ] npm script `generate:types` per frontend — fetch `/v3/api-docs`
+- [~] ~~`frontends/mini-app` install~~ — **skipped by owner (2026-04-21):**
+      mini-app будет мигрирован copy+adapt из PWA после M12, см.
+      `docs/future-ideas.md` → "Mini-app unification"
+- [ ] npm script `generate:types` в PWA + web-panel — fetch `/v3/api-docs`
       каждого из 5 сервисов, типизировать в `src/api/generated/{svc}.types.ts`
 - [ ] Интегрировать generated types в 1 frontend (PWA) как pilot
 - [ ] Миграция web-panel на generated types (удалить ручные interface
       копии)
-- [ ] mini-app миграция (минимальный scope, только auth + schedule)
+- [~] ~~mini-app миграция~~ — **deferred to post-M12 copy+adapt**
 - [ ] Drift-guard CI check: diff generated vs committed → fail если
       changed без update
 - [ ] Commit: `feat(frontend): openapi-typescript type-gen (M07 Группа 3, QC2)`

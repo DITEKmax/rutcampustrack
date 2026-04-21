@@ -125,6 +125,43 @@ filtering, push-триггеры).
 
 ---
 
+### Mini-app unification: copy+adapt from PWA after M12
+
+**Текущее состояние (v0.0.0, accepted by owner 2026-04-21, M07 старт):**
+Telegram Mini App (`frontends/mini-app/`) живёт как отдельный React-проект
+с ручными TypeScript interfaces скопированными из backend DTO. M07 G3
+(openapi-typescript) затронул только PWA + web-panel — mini-app
+**осознанно опущен**, чтобы избежать двойной работы при предстоящем
+переезде.
+
+**План миграции:**
+1. Дождаться закрытия всех v0.0.0 milestones (M07→M12), стабилизации PWA
+   в проде.
+2. После M12 — скопировать `frontends/pwa/` → `frontends/mini-app/` как
+   новый baseline (с openapi-ts, RFC 7807 interceptor, axe-core baseline,
+   ConfirmWithReasonDialog, `useSwipeHandler`/`useDateNavigation`/
+   `PullToRefresh`, unified DrawerMenu — всё из M07).
+3. Адаптировать под Telegram WebApp SDK constraints:
+   - `window.Telegram.WebApp` init (viewport, theme, BackButton, MainButton).
+   - Auth через `initData` (HMAC-verify на backend) вместо login-формы.
+   - Geolocation через `Telegram.WebApp.requestLocation` (не browser API).
+   - Haptic feedback через `Telegram.WebApp.HapticFeedback`.
+4. Провести security-audit + code-review diff'а для Telegram-specific кода.
+
+**Что закрывается:**
+- Дублирование interfaces между PWA и mini-app.
+- Drift-guard наконец начинает защищать mini-app от breaking DTO changes.
+- Технический долг v0.0.0: mini-app на ручных interfaces, на которые не
+  распространяется CI drift-check.
+
+**Trigger:** после tag `v0.0.0` (вся M07-M12 закрыта) и после минимум
+2 недель стабилизации PWA в проде без критичных багов.
+
+**Estimate:** ~3-5 дней (copy = 1д, Telegram SDK adapter = 1-2д,
+security/code review + hot-patches = 1-2д).
+
+---
+
 ## NEW-146: Mongo aggregation pipeline для ReportService (M05 G5 deferred)
 
 **Origin:** M05 Группа 5 / DECISIONS D9. OWNER-ANSWERS P2-10/5

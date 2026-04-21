@@ -5,25 +5,27 @@
 
 ---
 
-## Вопросы к owner'у до старта
+## Вопросы к owner'у до старта — ОТВЕЧЕНЫ (2026-04-21)
 
-1. **Brand og-image** (Группа 2, QE4): нужен `1200×630` PNG с логотипом
-   + слоганом + превью скриншота. У нас есть brand-гайд
-   (`docs/Rutcampustrack brandbook.md`)? Или дизайн с нуля?
-2. **mini-app scope** (Группа 3): мигрируем ли mini-app полностью на
-   openapi-ts, или только critical-path (auth + schedule)? Mini-app
-   ограничен Telegram viewport, сокращённый API surface.
-3. **axe-core baseline** (Группа 10): WCAG 2.1 AA — `CRITICAL + SERIOUS`
-   ноль, или включаем `MODERATE + MINOR` тоже? Первое реалистичнее на
-   10-12д, второе может занять +3-5д.
-4. **Real sparklines backend** (Группа 9): `admin-dashboard` требует
-   time-series агрегатов (по дням/неделям attendance-rate). Для
-   real-sparklines нужен новый endpoint `/attendance/stats/timeseries`.
-   Это выходит за scope M07 → можно отложить в v0.1, оставить псевдо
-   с "(coming in v0.1)" label?
-5. **Schedule navigation bounds** (Группа 6, P2-7A/4): bounds =
-   семестр? Как вести себя при переходе семестра в середине недели —
-   показать «нет данных» или next semester week?
+1. **Brand og-image** (G2, QE4): ответ **(b) SVG-first → PNG через
+   sharp/resvg**. SVG коммитится в git, PNG генерируется из него
+   npm-скриптом. Если brandbook не найду или не содержит RGB — вернуться
+   к owner'у с уточняющим вопросом.
+2. **mini-app scope** (G3): **(a) не трогаем mini-app в M07**. Owner
+   planned path: после M12 закрытия + стабилизация PWA в проде →
+   mini-app мигрируется **copy+adapt** из PWA. G3 scope = только
+   PWA + web-panel (2 frontend'а). Запись про план — в
+   `docs/future-ideas.md` → "Mini-app unification: copy+adapt from PWA
+   after M12".
+3. **axe-core baseline** (G10): **(a) CRITICAL + SERIOUS = 0**.
+   MODERATE/MINOR трекаем в `docs/a11y-checklist.md` как "a11y pass 2"
+   (v0.1), не блокируем M07.
+4. **Sparklines placeholder text** (G9): **(e) "Графики посещаемости
+   появятся в следующем релизе"** + skeleton UI + info-badge.
+5. **Schedule navigation bounds** (G6, P2-7A/4): **(d) bounds =
+   активный семестр + info-screen** ("Семестр начнётся Y" /
+   "Семестр закончился X, новый — Y"). Edge-case «каникулы без
+   активного семестра» → отдельное D1-решение в DECISIONS.md.
 
 ## Ожидаемые surprises
 

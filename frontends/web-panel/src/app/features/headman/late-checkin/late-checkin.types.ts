@@ -1,36 +1,28 @@
 /**
- * View model for a late-checkin request, returned by
- * `GET /api/attendance/late-checkin/pending` and used in the headman cabinet.
+ * View model for a late-checkin request (headman cabinet).
  *
- * Shape mirrors {@code LateCheckinRequestResponse} from the backend contract
- * (services/attendance-service/attendance-api-contract) minus the HATEOAS
- * `_links` wrapper. Status arrives lowercase to match Mongo / event payloads.
- *
- * Поля {@code lessonNumber} / {@code lessonDate} / {@code subjectName} —
- * клиентское обогащение поверх REST-ответа: бэкенд отдаёт только {@code lessonId},
- * а деталей пары нет; мы подтягиваем их из schedule-service для отображения
- * «№3 Матанализ, пн 14.04 10:30» вместо «Пара #123».
+ * M07 G3b (D3): базовые DTO-поля re-export'ятся из `@/api/schema`
+ * (generated из LateCheckinRequestResponse). Enrichment-поля
+ * (lessonNumber, lessonDate, subjectId, subjectName) — клиентское
+ * обогащение из schedule-service/STOMP, остаются ручными как
+ * intersection.
  */
-export type LateCheckinRequestStatus = 'pending' | 'approved' | 'rejected';
 
-export interface LateCheckinRequestView {
-  id: string;
-  studentId: number;
-  groupId: number;
-  lessonId: number;
-  studentName: string;
-  status: LateCheckinRequestStatus;
-  decisionBy: number | null;
-  decisionAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+import type {
+  LateCheckinRequest,
+  LateCheckinRequestStatus,
+} from '../../../api/schema';
+
+export type { LateCheckinRequestStatus };
+
+export type LateCheckinRequestView = LateCheckinRequest & {
   /** Обогащение из STOMP payload или schedule-service. Необязательное. */
   lessonNumber?: number | null;
   /** YYYY-MM-DD. */
   lessonDate?: string | null;
   subjectId?: number | null;
   subjectName?: string | null;
-}
+};
 
 /**
  * STOMP envelope shape for the `/topic/group/{groupId}/headman` channel.

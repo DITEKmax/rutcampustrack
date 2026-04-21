@@ -18,7 +18,7 @@ const MOCK_PENDING: ExcuseTicket = {
   groupId: 42,
   studentName: 'Иванов Иван',
   lessonIds: [1001, 1002],
-  excuseType: 'illness',
+  excuseType: 'ILLNESS',
   comment: 'Простуда',
   status: 'submitted',
   decisionBy: null,

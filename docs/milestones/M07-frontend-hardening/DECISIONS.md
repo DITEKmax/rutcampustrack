@@ -61,3 +61,53 @@ OWNER-ANSWERS QC1-7 (строки 1809-2053), QE3/4 (2430-2510), P2-7A/1..8
    не часть prev/next. Альтернативы: disabled-кнопки — UX ambiguity;
    auto-cross-semester navigation — требует backend endpoint
    `/semesters/adjacent` (overkill для prev/next).
+
+---
+
+## 2026-04-21 — D2: G3b rename `fieldErrors → invalidParams` отложен в G4
+
+**Что выбрано:** rename `fieldErrors → invalidParams` **НЕ** делаем в
+G3b. Обоснование: (а) generated types показывают `fieldErrors` — backend
+в M01 поле не переименовал (grep в `docs/openapi/attendance.json` +
+`attendance.types.ts:389` подтверждает); (б) во frontend-коде
+`fieldErrors`/`invalidParams` **не используется** (0 совпадений в
+`frontends/pwa/src` и `frontends/web-panel/src` кроме generated); (в)
+переименование имеет смысл только когда появится error-interceptor,
+который парсит ProblemDetails — это G4. В G4 делаем post-parse adapter
+`fieldErrors → invalidParams` (или backend-rename в M11 OpenAPI Polish).
+
+**Альтернатива:** переименовать backend `@Schema` сейчас — отвергнуто:
+выходит за scope G3b (touches backend DTO), провоцирует лишний CI-цикл,
+M11 как раз отдельный milestone для OpenAPI polish.
+
+---
+
+## 2026-04-21 — D3: G3b подход — types-only, axios остаётся
+
+**Что выбрано:** pragmatic minimum — импортируем `components['schemas']['...']`
+как type в существующие axios-клиенты (`apiClient.get<T>()`), удаляем
+ручные interface-копии. `openapi-fetch` **не подключаем** в runtime
+клиенты — dep остаётся установленной из G3a для будущих features.
+
+**Почему:** (а) PLAN.md acceptance «используют generated types в API-
+клиентах; ручные interface-копии удалены» — про types, не про fetch
+implementation. (б) `shared/lib/axios.ts` содержит ~95 LOC
+refresh-token interceptor (cookie-based, M03b); полная замена на
+openapi-fetch = 1-2д сверх scope + риск регрессии auth-flow.
+(в) web-panel — Angular HttpClient с собственным interceptor-стеком,
+те же соображения.
+
+**Альтернативы:**
+- **B. Full openapi-fetch swap** — отвергнут: ломает рабочий refresh,
+  требует отдельной session.
+- **C. Hybrid (new features на openapi-fetch)** — эквивалентен A на
+  M07 timeframe; если в v0.1 появится новая feature → можно попробовать
+  openapi-fetch там как pilot.
+
+**Implication для acceptance:** критерий «используют generated types
+в API-клиентах» выполняется через type-parameter в существующих axios
+вызовах. Ручные interface-копии удаляются.
+
+**Pilot feature:** `features/schedule/` (types.ts + api.ts +
+headmanSheetApi.ts + lessonActionsApi.ts) — самая изолированная,
+3 ручных DTO-типа, generated types полностью покрывают.

@@ -1,46 +1,31 @@
 /**
  * Excuse-ticket DTO types for headman-side views.
  *
- * Field names MUST match backend `ExcuseTicketResponse` (plan 59-01):
- * services/attendance-service/attendance-api-contract/
- *   src/main/java/ru/rutcampustrack/attendance/contract/dto/excuse/ExcuseTicketResponse.java
+ * M07 G3b (D3): DTO-types re-export'ятся из `@/api/schema` (generated
+ * OpenAPI). Ручной `ExcuseType` был lowercase — runtime bug (backend
+ * отдавал UPPERCASE из Java enum). После миграции UPPERCASE, tsc
+ * покажет любое lowercase lookup'ание как ошибку.
  *
- * Kept local to the headman feature on purpose — plan 59-07 updates the
- * student-side types in parallel; we intentionally avoid cross-feature
- * coupling until both plans merge.
+ * LessonBrief и PagedExcuseResponse — frontend-aggregate shapes, не
+ * backend DTO; оставлены ручными.
  */
 
-export type ExcuseType =
-  | 'illness'
-  | 'summons'
-  | 'university_order'
-  | 'exemption'
-  | 'free_attendance'
-  | 'other';
+import type {
+  ExcuseTicket as BaseExcuseTicket,
+  ExcuseType,
+  ExcuseTicketStatus,
+} from '../../../api/schema';
 
-export type ExcuseTicketStatus = 'submitted' | 'approved' | 'rejected' | 'draft';
+export type { ExcuseType, ExcuseTicketStatus };
 
-export interface ExcuseTicket {
-  id: string;
-  studentId: number;
-  groupId: number;
-  studentName: string;
-  lessonIds: number[];
-  excuseType: ExcuseType;
-  comment: string | null;
-  status: ExcuseTicketStatus;
-  decisionBy: number | null;
-  decisionComment: string | null;
-  decisionAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+export type ExcuseTicket = BaseExcuseTicket & {
   /**
-   * Клиентское обогащение — детали пар, которые бэкенд не возвращает в ответе
-   * (в отличие от события excuse.requested, где они уже есть).
+   * Клиентское обогащение — детали пар, которые бэкенд не возвращает в
+   * ответе (в отличие от события excuse.requested, где они уже есть).
    * Заполняется компонентом через schedule-service + SubjectCacheService.
    */
   lessons?: LessonBrief[];
-}
+};
 
 export interface LessonBrief {
   lessonId: number;
@@ -61,14 +46,14 @@ export interface PagedExcuseResponse {
   page?: { totalElements: number; totalPages: number; size: number; number: number };
 }
 
-/** Russian labels for ExcuseType (D-21). */
+/** Russian labels for ExcuseType — backend UPPERCASE values. */
 export const EXCUSE_TYPE_LABELS: Record<ExcuseType, string> = {
-  illness: 'Болезнь',
-  summons: 'Повестка',
-  university_order: 'Приказ университета',
-  exemption: 'Освобождение',
-  free_attendance: 'Свободное посещение',
-  other: 'Другое',
+  ILLNESS: 'Болезнь',
+  SUMMONS: 'Повестка',
+  UNIVERSITY_ORDER: 'Приказ университета',
+  EXEMPTION: 'Освобождение',
+  FREE_ATTENDANCE: 'Свободное посещение',
+  OTHER: 'Другое',
 };
 
 /** Russian labels for ExcuseTicketStatus. */

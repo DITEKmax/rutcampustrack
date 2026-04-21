@@ -12,8 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { AuthService } from '../../../core/auth/auth.service';
-
-type SubjectType = 'LECTURE' | 'PRACTICE' | 'LAB';
+import type { SubjectType } from '../../../api/schema';
 
 interface StatsRow {
   subjectId: number;

@@ -1,0 +1,75 @@
+name: OpenAPI Drift Guard
+
+# M07 G3b (QC2, NEW-84): detects drift между committed generated types
+# и committed OpenAPI specs (docs/openapi/*.json).
+#
+# Флоу:
+# 1. Разработчик обновил backend DTO → регенерировал OpenAPI spec через
+#    `./gradlew bootRun` + curl → committed в `docs/openapi/*.json`.
+# 2. CI запускает `npm run generate:types:offline` (reads docs/openapi
+#    без запуска backend) в PWA + web-panel.
+# 3. Если `src/api/generated/*.types.ts` расходятся с только что
+#    сгенерированными — fail: разработчик забыл регенерировать types.
+#
+# Runtime < 30s (no gradle, no backend, offline npm script).
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'docs/openapi/**'
+      - 'frontends/pwa/src/api/generated/**'
+      - 'frontends/pwa/package.json'
+      - 'frontends/pwa/scripts/generate-types.mjs'
+      - 'frontends/web-panel/src/app/api/generated/**'
+      - 'frontends/web-panel/package.json'
+      - 'frontends/web-panel/scripts/generate-types.mjs'
+      - '.github/workflows/openapi-drift.yml'
+  pull_request:
+    branches: ['**']
+    paths:
+      - 'docs/openapi/**'
+      - 'frontends/pwa/src/api/generated/**'
+      - 'frontends/pwa/package.json'
+      - 'frontends/pwa/scripts/generate-types.mjs'
+      - 'frontends/web-panel/src/app/api/generated/**'
+      - 'frontends/web-panel/package.json'
+      - 'frontends/web-panel/scripts/generate-types.mjs'
+
+jobs:
+  drift-check:
+    name: OpenAPI ↔ generated types drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install PWA deps
+        working-directory: frontends/pwa
+        run: npm ci --no-audit --no-fund
+
+      - name: Install web-panel deps
+        working-directory: frontends/web-panel
+        run: npm ci --no-audit --no-fund
+
+      - name: Regenerate PWA types (offline)
+        working-directory: frontends/pwa
+        run: npm run generate:types:offline
+
+      - name: Regenerate web-panel types (offline)
+        working-directory: frontends/web-panel
+        run: npm run generate:types:offline
+
+      - name: Fail if generated types drifted
+        run: |
+          if ! git diff --exit-code -- \
+            frontends/pwa/src/api/generated \
+            frontends/web-panel/src/app/api/generated; then
+            echo "::error::Committed generated types are out of sync with docs/openapi/*.json."
+            echo "::error::Run 'npm run generate:types:offline' in frontends/pwa and frontends/web-panel, then commit the updated .types.ts files."
+            exit 1
+          fi
+          echo "OpenAPI specs and generated types are in sync."

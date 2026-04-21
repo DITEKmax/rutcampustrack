@@ -13,8 +13,7 @@ import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { HeadmanApiService } from '../../shared/headman-api.service';
 import type { JournalCell, JournalColumn, JournalResponse, JournalStudentRow } from '../../../teacher/journal/types';
-
-type AttendanceStatus = 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled';
+import type { AttendanceStatus } from '../../../../api/schema';
 
 const STATUS_SYMBOLS: Record<AttendanceStatus, string> = {
   present: '+',

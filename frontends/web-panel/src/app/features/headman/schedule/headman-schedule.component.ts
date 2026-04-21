@@ -11,26 +11,10 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { ScheduleSlotDialogComponent } from './schedule-slot-dialog.component';
 import { OneOffDialogComponent } from './one-off-dialog.component';
+import type { ScheduleItemResponse, SubjectResponse } from '../../../api/schema';
 
-interface ScheduleItem {
-  id: number;
-  groupId: number;
-  subjectId: number;
-  semesterId: number;
-  dayOfWeek: number;
-  lessonNumber: number;
-  startTime: string;
-  endTime: string;
-  weekType: string; // ALL | ODD | EVEN
-  room?: string;
-  active?: boolean;
-}
-
-interface Subject {
-  id: number;
-  name: string;
-  type?: string;
-}
+type ScheduleItem = ScheduleItemResponse & { active?: boolean; room?: string };
+type Subject = Pick<SubjectResponse, 'id' | 'name' | 'type'>;
 
 const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 const SLOTS = [1, 2, 3, 4, 5, 6, 7, 8];

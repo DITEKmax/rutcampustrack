@@ -46,7 +46,7 @@ function pendingTicket(overrides: Partial<ExcuseTicket> = {}): ExcuseTicket {
     groupId: 1,
     studentName: 'Петров П.П.',
     lessonIds: [501, 502],
-    excuseType: 'illness',
+    excuseType: 'ILLNESS',
     comment: 'Болею',
     status: 'submitted',
     decisionBy: null,

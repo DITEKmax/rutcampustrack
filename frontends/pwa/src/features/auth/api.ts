@@ -1,32 +1,23 @@
 import { apiClient } from '@/shared/lib/axios'
+import type {
+  LoginRequest,
+  TokenResponse,
+  WsTicketResponse,
+} from '@/api/schema'
 
-export interface LoginRequest {
-  login: string
-  password: string
-}
+export type { LoginRequest, TokenResponse }
+/** Kept legacy alias — `WsTicket` is PWA-facing name for `WsTicketResponse`. */
+export type WsTicket = WsTicketResponse
 
-export interface TokenResponse {
-  accessToken: string
-  /**
-   * Отдаётся для обратной совместимости (TMA/refresh-body), но PWA
-   * игнорирует — refresh token живёт в HttpOnly cookie `rct_refresh`
-   * (M03b Группа 2). Поле планируется удалить вместе с `/auth/refresh-body`
-   * в M04/M05.
-   */
-  refreshToken?: string
-  expiresIn: number
-}
-
+/**
+ * Frontend-derived claims из JWT access token — не backend DTO,
+ * не присутствует в OpenAPI. Остаётся ручным типом (M07 G3b, D3).
+ */
 export interface AuthUser {
   id: number
   role: string
   groupId?: number
   isHeadman: boolean  // derived from JWT is_headman claim
-}
-
-export interface WsTicket {
-  ticket: string
-  expiresAt: string
 }
 
 /**

@@ -1,13 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/shared/lib/axios'
+import type { ExcuseType } from '@/api/schema'
 
-export type ExcuseType =
-  | 'ILLNESS'
-  | 'SUMMONS'
-  | 'UNIVERSITY_ORDER'
-  | 'EXEMPTION'
-  | 'FREE_ATTENDANCE'
-  | 'OTHER'
+export type { ExcuseType }
 
 export const EXCUSE_TYPES: { value: ExcuseType; label: string }[] = [
   { value: 'ILLNESS', label: 'Болезнь' },

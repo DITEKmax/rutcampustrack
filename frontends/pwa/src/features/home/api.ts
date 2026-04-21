@@ -1,48 +1,29 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/shared/lib/axios'
+import type {
+  GroupResponse,
+  OverallStats,
+  StatusBreakdown,
+  StudentDashboard,
+  TopMissedSubject,
+  WeeklyStat,
+} from '@/api/schema'
 
-export interface OverallStats {
-  total: number
-  attended: number
-  absent: number
-  excused: number
-  percentage: number
+export type {
+  OverallStats,
+  StatusBreakdown,
+  WeeklyStat,
+  TopMissedSubject,
+  StudentDashboard,
+  GroupResponse,
 }
 
-export interface StatusBreakdown {
-  present: number
-  absent: number
-  excused: number
-  freeAttendance: number
-  forgotToCheckin: number
-  cancelled: number
-}
-
-export interface WeeklyStat {
-  weekOfSemester: number
-  isoWeek: number
-  label: string
-  total: number
-  attended: number
-  absent: number
-  excused: number
-  percentage: number
-}
-
-export interface TopMissedSubject {
-  subjectId: number
-  subjectName: string
-  absent: number
-  total: number
-}
-
-export interface StudentDashboard {
-  overall: OverallStats
-  breakdown: StatusBreakdown
-  weekly: WeeklyStat[]
-  topMissed: TopMissedSubject[]
-}
-
+/**
+ * Frontend-specific shape для `/academic/users/me` — backend отдаёт
+ * расширенный user payload с `headman` / `avatarId`, но в generated
+ * `EntityModelUserResponse` эти поля могут отсутствовать. Оставляем
+ * ручной тип до OpenAPI polish (M11).
+ */
 export interface MeResponse {
   id: number
   login: string
@@ -53,11 +34,6 @@ export interface MeResponse {
   groupId: number | null
   headman: boolean
   avatarId: string | null
-}
-
-export interface GroupResponse {
-  id: number
-  name: string
 }
 
 async function fetchDashboard(): Promise<StudentDashboard> {

@@ -1,37 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/shared/lib/axios'
+import type {
+  AttendanceSource,
+  HeadmanAttendanceStatus,
+  LessonAttendance,
+  LessonAttendanceEntry,
+} from '@/api/schema'
 
-export type HeadmanAttendanceStatus =
-  | 'present'
-  | 'absent'
-  | 'excused'
-  | 'free_attendance'
-  | 'cancelled'
-
-export type AttendanceSource =
-  | 'student_geo'
-  | 'headman'
-  | 'auto_scheduler'
-  | 'late_checkin'
-  | 'headman_excuse'
-
-export interface LessonAttendanceEntry {
-  userId: number
-  displayName: string
-  status: HeadmanAttendanceStatus
-  symbol: string
-  /** null if no attendance doc yet. */
-  source: AttendanceSource | null
-  /** Populated only for excused / free_attendance from approved excuse tickets. */
-  excuseReason?: string | null
-}
-
-export interface LessonAttendance {
-  lessonId: number
-  groupId: number
-  subjectId: number
-  lessonDate: string
-  entries: LessonAttendanceEntry[]
+export type {
+  AttendanceSource,
+  HeadmanAttendanceStatus,
+  LessonAttendance,
+  LessonAttendanceEntry,
 }
 
 async function fetchLessonAttendance(lessonId: number): Promise<LessonAttendance> {

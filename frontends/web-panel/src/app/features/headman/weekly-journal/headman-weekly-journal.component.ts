@@ -16,19 +16,13 @@ import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { addDays, formatDate, getMonday, isSameWeek } from '../../student/schedule/week-utils';
+import type { AttendanceStatus } from '../../../api/schema';
 
-type AttendanceStatus = 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled';
+import type { LessonResponse } from '../../../api/schema';
 
-interface Lesson {
-  id: number;
-  subjectId: number;
-  date: string;
-  status: string;
-  lessonNumber: number;
-  startTime: string;
-  endTime: string;
+type Lesson = Pick<LessonResponse, 'id' | 'subjectId' | 'date' | 'status' | 'lessonNumber' | 'startTime' | 'endTime'> & {
   weekType?: string;
-}
+};
 
 interface Student {
   userId: number;

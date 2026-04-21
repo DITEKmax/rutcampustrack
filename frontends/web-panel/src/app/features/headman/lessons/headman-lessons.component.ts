@@ -16,20 +16,9 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
 import { addDays, formatDate } from '../../student/schedule/week-utils';
+import type { LessonResponse } from '../../../api/schema';
 
-interface Lesson {
-  id: number;
-  groupId: number;
-  subjectId: number;
-  date: string; // ISO YYYY-MM-DD
-  status: string; // PLANNED | ACTIVE | CLOSED | CANCELLED (или lowercase)
-  lessonNumber: number;
-  startTime: string;
-  endTime: string;
-  weekType: string;
-  room?: string;
-  cancelReason?: string;
-}
+type Lesson = LessonResponse & { cancelReason?: string };
 
 interface DayGroup {
   date: string;

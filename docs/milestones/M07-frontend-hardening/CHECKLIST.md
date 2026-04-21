@@ -87,24 +87,39 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       обходит (только local dev, НЕ на VPS).
 - [x] Commit `c20ed50`: `feat(frontend): openapi-typescript foundation + generated types (M07 G3a, QC2)`
 
-### G3b — migration callsite'ов (следующая сессия)
+### G3b — migration callsite'ов (✅ 2026-04-21)
 
-- [ ] PWA pilot: мигрировать 1 feature (например useSchedule hook +
-      schedule page) с ручных interfaces на
-      `components['schemas']['Lesson']` через `openapi-fetch createClient`.
-      Проверить `tsc -b` проходит.
-- [ ] PWA widespread: мигрировать все оставшиеся data-fetching хуки
-      (TanStack Query) + компоненты. Grep по `interface.*{` в PWA api-
-      папках — удалить ручные копии.
-- [ ] web-panel pilot: 1 Angular feature (admin или headman) —
-      HttpInterceptor + 1 service на generated types.
-- [ ] web-panel widespread: все feature-модули.
-- [ ] Drift-guard CI: `.github/workflows/openapi-drift.yml` — запускает
-      `npm run generate:types:offline` в PWA + web-panel + `git diff
-      --exit-code src/api/generated/` (fail если diff). Также при PR
-      что меняет backend DTO — reminder в PR-template "run generate:types".
-- [ ] **Rename `fieldErrors` → `invalidParams`** — потенциально часть
-      G3b если generated types содержат этот field, иначе в G4.
+Фактический подход — **types-only** (D3): axios/HttpClient runtime
+остаётся, `openapi-fetch` client не подключается. `components['schemas']['...']`
+импортируется как type через shared `api/schema.ts` (Strict-wrapper
+поверх HATEOAS-optionality).
+
+- [x] PWA pilot: `features/schedule/` (types.ts + api.ts +
+      headmanSheetApi.ts + lessonActionsApi.ts) мигрирован на
+      `@/api/schema`; ручные copies удалены; `tsc -b` зелёный.
+- [x] PWA widespread: `features/{auth,home,checkin,homework,headman,push}/*`
+      + `features/headman/shared/types.ts` — все DTO-копии заменены
+      на re-export из `schema.ts`. `npm test` 122 зелёных, build зелёный.
+      Discovery: `ExcuseType` был lowercase в frontend vs UPPERCASE в
+      backend — runtime bug зафиксирован, после миграции тесты
+      обновлены на UPPERCASE.
+- [x] web-panel pilot: `core/auth/auth.api.ts` — TokenResponse +
+      WsTicketResponse из generated.
+- [x] web-panel widespread: `features/admin/shared/types.ts`,
+      `features/student/shared/student-schedule.types.ts`,
+      `features/teacher/journal/types.ts`, `features/headman/{excuses,
+      late-checkin,homework,stats,schedule,lessons,weekly-journal,journal}/*`
+      + `core/profile/profile.service.ts`. `ng build` зелёный,
+      `npm test` 444 зелёных.
+- [x] Drift-guard CI: `.github/workflows/openapi-drift.yml` —
+      `npm run generate:types:offline` в PWA + web-panel →
+      `git diff --exit-code` на `src/api/generated/`. Проверено
+      локально: zero diff после offline-regen.
+- [~] ~~Rename `fieldErrors → invalidParams`~~ — **отложено в G4**
+      (D2). Generated types содержат `fieldErrors` (backend M01 @Schema
+      не переименовал); во frontend-коде `fieldErrors`/`invalidParams`
+      не используется. Rename станет post-parse adapter'ом в G4
+      error-interceptor'е.
 - [ ] Commit: `feat(frontend): migrate PWA + web-panel to generated types (M07 G3b, QC2)`
 
 ## Группа 4 — RFC 7807 error interceptor (QC3) — ~4ч

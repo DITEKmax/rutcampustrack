@@ -1,5 +1,9 @@
 import { apiClient } from '@/shared/lib/axios'
 
+/**
+ * notification-web VAPID key endpoint — не проходит через backend OpenAPI
+ * (отдельный сервис). Ручной тип до M11 OpenAPI polish.
+ */
 interface VapidPublicKeyResponse {
   publicKey: string
 }

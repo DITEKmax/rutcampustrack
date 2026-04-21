@@ -1,27 +1,20 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import type { UserResponse } from '../../api/schema';
 
 /**
  * Profile reflects the academic-service `/me` response (BUG-004 / BUG-006).
  * Kept separate from AuthService.currentUser (parsed from JWT) because we need
  * server-side fields like avatarId and full name for the profile dialog.
+ *
+ * M07 G3b (D3): тип привязан к generated UserResponse + добавляет avatarId,
+ * который бекенд отдаёт, но generated types помечают как optional — у /me
+ * оно всегда null или строка, поэтому узким Strict здесь не нужен.
  */
-export interface ProfileResponse {
-  id: number;
-  login: string;
-  lastName: string;
-  firstName: string;
-  middleName: string | null;
-  role: 'ADMIN' | 'TEACHER' | 'STUDENT';
-  status: string;
-  groupId: number | null;
-  headman: boolean;
-  employeeNumber: string | null;
-  telegramId: number | null;
-  createdAt: string;
+export type ProfileResponse = UserResponse & {
   avatarId: string | null;
-}
+};
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {

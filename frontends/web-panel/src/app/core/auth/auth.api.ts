@@ -1,22 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import type { TokenResponse, WsTicketResponse } from '../../api/schema';
 
-export interface TokenResponse {
-  accessToken: string;
-  /**
-   * Отдаётся backend'ом для TMA/legacy, но web-panel игнорирует — refresh
-   * token живёт в HttpOnly cookie `rct_refresh` (M03b Группа 2). Планируется
-   * удалить вместе с `/auth/refresh-body` в M04/M05.
-   */
-  refreshToken?: string;
-  expiresIn: number;
-}
-
-export interface WsTicketResponse {
-  ticket: string;
-  expiresAt: string;
-}
+export type { TokenResponse, WsTicketResponse };
 
 @Injectable({ providedIn: 'root' })
 export class AuthApi {

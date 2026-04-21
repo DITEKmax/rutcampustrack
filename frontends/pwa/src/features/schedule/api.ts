@@ -1,17 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { apiClient } from '@/shared/lib/axios'
-import type { LessonResponse, SubjectResponse, AttendanceStatus } from './types'
+import type {
+  AttendanceRecord,
+  LessonResponse,
+  SubjectResponse,
+} from '@/api/schema'
 
-export interface AttendanceRecord {
-  lessonId: number
-  subjectId: number
-  lessonDate: string
-  lessonNumber: number
-  status: AttendanceStatus | 'cancelled'
-  symbol: string
-  source: string
-}
+export type { AttendanceRecord }
 
 export function useWeekSchedule(groupId: number, weekStart: string, weekEnd: string) {
   return useQuery<LessonResponse[]>({

@@ -1,44 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import type {
+  CreateHomeworkRequest,
+  HomeworkResponse,
+  UpdateHomeworkRequest,
+} from '../../../api/schema';
 
-/**
- * Create request — aligns 1:1 with backend CreateHomeworkRequest
- * (services/academic-service/academic-api-contract/.../CreateHomeworkRequest.java).
- */
-export interface CreateHomeworkRequest {
-  title: string;
-  description: string | null;
-  link: string | null;
-  subjectId: number;
-  groupId: number;
-  semesterId: number;
-  lessonDate: string; // YYYY-MM-DD (ISO LocalDate)
-  lessonNumber: number;
-}
-
-/** Update request — PUT semantics, lesson binding is immutable post-create (D-01). */
-export interface UpdateHomeworkRequest {
-  title: string;
-  description: string | null;
-  link: string | null;
-}
-
-/** Response shape returned by POST/PUT/GET /api/academic/homeworks. */
-export interface HomeworkResponse {
-  id: number;
-  title: string;
-  description: string | null;
-  link: string | null;
-  subjectId: number;
-  groupId: number;
-  semesterId: number;
-  publishedBy: number;
-  completed: boolean;
-  createdAt: string;
-  lessonDate: string;
-  lessonNumber: number;
-}
+export type { CreateHomeworkRequest, UpdateHomeworkRequest, HomeworkResponse };
 
 interface PagedHomeworkResponse {
   _embedded?: { homeworkResponseList?: HomeworkResponse[] };

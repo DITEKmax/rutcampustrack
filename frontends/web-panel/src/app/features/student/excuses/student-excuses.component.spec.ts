@@ -42,7 +42,7 @@ const sampleTicket: ExcuseTicket = {
   groupId: 1,
   studentName: 'Иванов Иван',
   lessonIds: [101, 102],
-  excuseType: 'illness',
+  excuseType: 'ILLNESS',
   comment: 'Болел ОРВИ',
   status: 'submitted',
   decisionBy: null,
@@ -191,15 +191,15 @@ describe('ExcuseFormDialogComponent', () => {
     const { fixture } = await renderDialog();
     const cmp = fixture.componentInstance;
     expect(cmp.excuseTypes).toEqual([
-      'illness',
-      'summons',
-      'university_order',
-      'exemption',
-      'free_attendance',
-      'other',
+      'ILLNESS',
+      'SUMMONS',
+      'UNIVERSITY_ORDER',
+      'EXEMPTION',
+      'FREE_ATTENDANCE',
+      'OTHER',
     ]);
-    expect(cmp.excuseTypeLabels.illness).toBe('Болезнь');
-    expect(cmp.excuseTypeLabels.free_attendance).toBe('Свободное посещение');
+    expect(cmp.excuseTypeLabels.ILLNESS).toBe('Болезнь');
+    expect(cmp.excuseTypeLabels.FREE_ATTENDANCE).toBe('Свободное посещение');
     // mat-select trigger should be rendered
     const select = fixture.nativeElement.querySelector('mat-select');
     expect(select).toBeTruthy();
@@ -218,7 +218,7 @@ describe('ExcuseFormDialogComponent', () => {
   it('submit без выбранных занятий → validationError', async () => {
     const { fixture } = await renderDialog();
     const cmp = fixture.componentInstance;
-    cmp.excuseTypeControl.setValue('illness');
+    cmp.excuseTypeControl.setValue('ILLNESS');
     cmp.submit();
     expect(cmp.validationError()).toBe('Выберите хотя бы одно занятие');
     expect(mockApiService.submitExcuse).not.toHaveBeenCalled();
@@ -229,12 +229,12 @@ describe('ExcuseFormDialogComponent', () => {
     const { fixture } = await renderDialog();
     const cmp = fixture.componentInstance;
     cmp.toggleLesson(101);
-    cmp.excuseTypeControl.setValue('illness');
+    cmp.excuseTypeControl.setValue('ILLNESS');
     cmp.commentControl.setValue('Болел ОРВИ');
     cmp.submit();
     expect(mockApiService.submitExcuse).toHaveBeenCalledWith(
       [101],
-      'illness',
+      'ILLNESS',
       'Болел ОРВИ',
     );
     expect(mockDialogRef.close).toHaveBeenCalledWith(true);
@@ -245,12 +245,12 @@ describe('ExcuseFormDialogComponent', () => {
     const { fixture } = await renderDialog();
     const cmp = fixture.componentInstance;
     cmp.toggleLesson(101);
-    cmp.excuseTypeControl.setValue('free_attendance');
+    cmp.excuseTypeControl.setValue('FREE_ATTENDANCE');
     cmp.commentControl.setValue('   ');
     cmp.submit();
     expect(mockApiService.submitExcuse).toHaveBeenCalledWith(
       [101],
-      'free_attendance',
+      'FREE_ATTENDANCE',
       null,
     );
   });

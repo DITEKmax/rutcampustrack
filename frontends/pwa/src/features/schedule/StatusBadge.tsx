@@ -26,6 +26,7 @@ const config: Record<StatusKey, { label: string; tone: string; strikethrough?: b
   absent:          { label: STATUS_SYMBOLS.absent,          tone: 'status-absent' },
   excused:         { label: STATUS_SYMBOLS.excused,         tone: 'status-excused' },
   free_attendance: { label: STATUS_SYMBOLS.free_attendance, tone: 'status-free' },
+  cancelled:       { label: 'Отменена',      tone: 'lesson-muted', strikethrough: true },
   ACTIVE:          { label: 'Идёт',          tone: 'lesson-active' },
   PLANNED:         { label: 'Запланировано', tone: 'lesson-planned' },
   CANCELLED:       { label: 'Отменена',      tone: 'lesson-muted', strikethrough: true },

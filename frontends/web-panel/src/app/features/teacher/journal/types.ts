@@ -1,3 +1,21 @@
+/**
+ * Teacher journal types.
+ *
+ * M07 G3b (D3): AttendanceStatus, SubjectResponse, GroupResponse,
+ * PagedResponse — re-export из `@/api/schema`. Journal-specific shapes
+ * (JournalResponse, JournalStudentRow, JournalCell, JournalColumn,
+ * AssignmentResponse) — frontend-aggregate, остаются ручными.
+ */
+
+import type {
+  AttendanceStatus,
+  GroupResponse,
+  PagedResponse,
+  SubjectResponse,
+} from '../../../api/schema';
+
+export type { GroupResponse, PagedResponse, SubjectResponse };
+
 export interface JournalResponse {
   groupId: number;
   subjectId: number;
@@ -15,23 +33,10 @@ export interface JournalCell {
   lessonId?: number;  // Phase 55: headman marking support (D-01); optional — teacher grid ignores
   date: string;
   lessonNumber: number;
-  status: 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled';
+  status: AttendanceStatus;
   symbol: string;
   /** Human-readable excuse reason — present only for excused/free_attendance. */
   excuseReason?: string | null;
-}
-
-export interface GroupResponse {
-  id: number;
-  name: string;
-  code: string;
-  active: boolean;
-  createdAt: string;
-}
-
-export interface SubjectResponse {
-  id: number;
-  name: string;
 }
 
 export interface AssignmentResponse {
@@ -39,11 +44,6 @@ export interface AssignmentResponse {
   groupId: number;
   subjectId: number;
   teacherId: number;
-}
-
-export interface PagedResponse<T> {
-  _embedded: Record<string, T[]>;
-  page: { totalElements: number; totalPages: number; size: number; number: number };
 }
 
 /** Column definition for the journal grid */

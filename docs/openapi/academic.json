@@ -1,0 +1,3949 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9091",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Assistants",
+      "description": "Управление помощниками старосты"
+    },
+    {
+      "name": "Assignments",
+      "description": "Назначения преподавателей на предметы и группы"
+    },
+    {
+      "name": "Groups",
+      "description": "Управление учебными группами"
+    },
+    {
+      "name": "Subjects",
+      "description": "Управление предметами"
+    },
+    {
+      "name": "Users",
+      "description": "Управление пользователями системы"
+    },
+    {
+      "name": "Homeworks",
+      "description": "Управление домашними заданиями"
+    },
+    {
+      "name": "Semesters",
+      "description": "Управление семестрами"
+    },
+    {
+      "name": "Dashboard",
+      "description": "Сводная статистика для администратора"
+    },
+    {
+      "name": "Thresholds",
+      "description": "Управление порогами посещаемости"
+    }
+  ],
+  "paths": {
+    "/academic/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Получить пользователя по ID",
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Пользователь найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Пользователь не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Полное обновление пользователя (PUT). Только ADMIN.",
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Пользователь обновлён",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Пользователь не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Архивировать пользователя (soft delete). Только ADMIN.",
+        "operationId": "archiveUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Пользователь архивирован"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Пользователь не найден"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Частичное обновление пользователя (PATCH)",
+        "description": "Обновляет только переданные поля. Используется для смены головы, перевода, статуса.",
+        "operationId": "patchUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Пользователь обновлён",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Пользователь не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/thresholds/subject": {
+      "put": {
+        "tags": [
+          "Thresholds"
+        ],
+        "summary": "Установить порог для предмета в группе (HEADMAN/ADMIN)",
+        "description": "Наиболее специфичный порог — переопределяет группу и глобальный.",
+        "operationId": "setSubjectThreshold",
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetThresholdRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Порог установлен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/thresholds/group": {
+      "put": {
+        "tags": [
+          "Thresholds"
+        ],
+        "summary": "Установить порог для группы (HEADMAN/ADMIN)",
+        "description": "Переопределяет глобальный порог для указанной группы.",
+        "operationId": "setGroupThreshold",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetThresholdRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Порог установлен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/thresholds/global": {
+      "put": {
+        "tags": [
+          "Thresholds"
+        ],
+        "summary": "Установить глобальный порог посещаемости (ADMIN)",
+        "description": "Применяется ко всем группам и предметам, если не переопределён на уровне группы или предмета.",
+        "operationId": "setGlobalThreshold",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetThresholdRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Порог установлен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/subjects/{id}": {
+      "get": {
+        "tags": [
+          "Subjects"
+        ],
+        "summary": "Получить предмет по ID",
+        "operationId": "getSubject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Предмет найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Предмет не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Subjects"
+        ],
+        "summary": "Полное обновление предмета (PUT, HEADMAN/ADMIN)",
+        "operationId": "updateSubject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubjectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Предмет обновлён",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Предмет не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Subjects"
+        ],
+        "summary": "Удалить предмет (HEADMAN/ADMIN)",
+        "description": "Если у предмета есть уроки с историей посещаемости, возвращается 409 со счётчиками в extras. Повторный запрос с force=true пропускает pre-check и удаляет данные каскадно.",
+        "operationId": "deleteSubject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Предмет удалён"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Предмет не найден"
+          },
+          "409": {
+            "description": "Предмет используется в расписании (есть посещаемость)"
+          }
+        }
+      }
+    },
+    "/academic/semesters/{id}": {
+      "get": {
+        "tags": [
+          "Semesters"
+        ],
+        "summary": "Получить семестр по ID",
+        "operationId": "getSemester",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Семестр найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Семестр не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Semesters"
+        ],
+        "summary": "Полное обновление семестра (PUT, ADMIN)",
+        "operationId": "updateSemester",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSemesterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Семестр обновлён",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Семестр не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Semesters"
+        ],
+        "summary": "Удалить семестр с подтверждением (ADMIN)",
+        "description": "Требует фразу подтверждения для защиты от случайного удаления активного семестра.",
+        "operationId": "deleteSemester",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteSemesterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Семестр удалён"
+          },
+          "400": {
+            "description": "Неверная фраза подтверждения"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Семестр не найден"
+          }
+        }
+      }
+    },
+    "/academic/homeworks/{id}": {
+      "get": {
+        "tags": [
+          "Homeworks"
+        ],
+        "summary": "Получить задание по ID",
+        "operationId": "getHomework",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Задание найдено",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Задание не найдено",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Homeworks"
+        ],
+        "summary": "Полное обновление задания (PUT, HEADMAN, только автор)",
+        "operationId": "updateHomework",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHomeworkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Задание обновлено",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Задание не найдено",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Homeworks"
+        ],
+        "summary": "Удалить задание (HEADMAN, только автор)",
+        "operationId": "deleteHomework",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Задание удалено"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Задание не найдено"
+          }
+        }
+      }
+    },
+    "/academic/groups/{id}": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Получить группу по ID",
+        "operationId": "getGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Группа найдена",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Группа не найдена",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Полное обновление группы (PUT, ADMIN)",
+        "operationId": "updateGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGroupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Группа обновлена",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Группа не найдена",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Удалить группу (ADMIN)",
+        "operationId": "deleteGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Группа удалена"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Группа не найдена"
+          },
+          "409": {
+            "description": "Группа содержит студентов"
+          }
+        }
+      }
+    },
+    "/academic/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Список пользователей",
+        "description": "Постраничный список с опциональным поиском и фильтрами. Только ADMIN. Пример: /academic/users?search=иван&role=STUDENT&page=0&size=20",
+        "operationId": "listUsers",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Case-insensitive поиск по login / ФИО / telegramId (contains). BUG-006-1.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ADMIN",
+                "TEACHER",
+                "STUDENT"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "EXPELLED",
+                "SUSPENDED",
+                "ARCHIVED"
+              ]
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerUserResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список пользователей",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelUserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Создать пользователя",
+        "description": "Создаёт нового пользователя с автоматической генерацией логина и начального пароля. Только ADMIN.",
+        "operationId": "createUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Пользователь создан",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserCreatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserCreatedResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserCreatedResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт данных",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserCreatedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/users/{id}/transfer": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Перевести студента в другую группу",
+        "operationId": "transferStudent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferStudentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Студент переведён",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Пользователь или группа не найдены",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/subjects": {
+      "get": {
+        "tags": [
+          "Subjects"
+        ],
+        "summary": "Список предметов (HEADMAN — только своя группа, ADMIN — все)",
+        "operationId": "listSubjects",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerSubjectResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список предметов",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelSubjectResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Subjects"
+        ],
+        "summary": "Создать предмет (HEADMAN/ADMIN)",
+        "operationId": "createSubject",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubjectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Предмет создан",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/subjects/{id}/teachers/{teacherId}": {
+      "post": {
+        "tags": [
+          "Subjects"
+        ],
+        "summary": "Добавить преподавателя к предмету (HEADMAN/ADMIN)",
+        "operationId": "addTeacher",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "teacherId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Преподаватель добавлен"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Предмет не найден"
+          },
+          "409": {
+            "description": "Преподаватель уже назначен"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Subjects"
+        ],
+        "summary": "Удалить преподавателя из предмета (HEADMAN/ADMIN)",
+        "operationId": "removeTeacher",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "teacherId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Преподаватель удалён"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Назначение не найдено"
+          }
+        }
+      }
+    },
+    "/academic/semesters": {
+      "get": {
+        "tags": [
+          "Semesters"
+        ],
+        "summary": "Список семестров",
+        "operationId": "listSemesters",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerSemesterResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список семестров",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelSemesterResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Semesters"
+        ],
+        "summary": "Создать семестр (ADMIN)",
+        "operationId": "createSemester",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSemesterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Семестр создан",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/homeworks": {
+      "get": {
+        "tags": [
+          "Homeworks"
+        ],
+        "summary": "Список заданий для группы и семестра",
+        "operationId": "listHomeworks",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "semesterId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerHomeworkResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список заданий",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelHomeworkResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Homeworks"
+        ],
+        "summary": "Создать домашнее задание (HEADMAN)",
+        "operationId": "createHomework",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHomeworkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Задание создано",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/homeworks/{id}/complete": {
+      "post": {
+        "tags": [
+          "Homeworks"
+        ],
+        "summary": "Отметить задание выполненным (STUDENT)",
+        "description": "Создаёт запись HomeworkCompletion для текущего студента.",
+        "operationId": "markComplete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Задание отмечено выполненным"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Задание не найдено"
+          },
+          "409": {
+            "description": "Задание уже выполнено"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Homeworks"
+        ],
+        "summary": "Снять отметку выполнения (STUDENT)",
+        "operationId": "unmarkComplete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Отметка снята"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Задание или отметка не найдены"
+          }
+        }
+      }
+    },
+    "/academic/groups": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Список групп: фильтр по статусу + поиск (ADMIN/TEACHER)",
+        "operationId": "listGroups",
+        "parameters": [
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerGroupResponse"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ACTIVE",
+              "enum": [
+                "ACTIVE",
+                "ARCHIVED",
+                "ALL"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список групп",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Создать группу (ADMIN)",
+        "operationId": "createGroup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Группа создана",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Группа с таким кодом уже существует",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/groups/promote": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Выполнить промоушен групп (ADMIN). Запускать после preview.",
+        "operationId": "promote",
+        "responses": {
+          "200": {
+            "description": "Результат промоушена",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionSummary"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/groups/promote/preview": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Preview промоушена групп (dry-run, ADMIN)",
+        "operationId": "promotePreview",
+        "responses": {
+          "200": {
+            "description": "План промоушена",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionSummary"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/assistants": {
+      "get": {
+        "tags": [
+          "Assistants"
+        ],
+        "summary": "Список помощников старосты для группы",
+        "operationId": "listAssistants",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список помощников",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionModelEntityModelAssistantResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Assistants"
+        ],
+        "summary": "Назначить помощника старосты (HEADMAN/ADMIN)",
+        "operationId": "assignAssistant",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignAssistantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Помощник назначен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Студент или группа не найдены",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Студент уже является помощником в этой группе",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/assignments": {
+      "get": {
+        "tags": [
+          "Assignments"
+        ],
+        "summary": "Список назначений для группы и семестра",
+        "operationId": "listAssignments",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "semesterId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerAssignmentResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список назначений",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Assignments"
+        ],
+        "summary": "Назначить преподавателя на предмет/группу/семестр (HEADMAN/ADMIN)",
+        "operationId": "assignTeacher",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignTeacherRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Назначение создано",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssignmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssignmentResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssignmentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Преподаватель/предмет/группа/семестр не найдены",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssignmentResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Назначение уже существует",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/users/me/avatar": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Сменить аватар текущего пользователя (BUG-004)",
+        "description": "Сохраняет идентификатор пресета. Передайте пустой avatarId чтобы сбросить.",
+        "operationId": "updateMyAvatar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAvatarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Аватар обновлён",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверный avatarId",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/semesters/{id}/activate": {
+      "patch": {
+        "tags": [
+          "Semesters"
+        ],
+        "summary": "Активировать семестр (ADMIN)",
+        "description": "Деактивирует все остальные семестры и активирует указанный.",
+        "operationId": "activateSemester",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Семестр активирован",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Семестр не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/assistants/{id}/permissions": {
+      "patch": {
+        "tags": [
+          "Assistants"
+        ],
+        "summary": "Обновить права помощника (HEADMAN/ADMIN)",
+        "operationId": "updatePermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssistantPermissionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Права обновлены",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Помощник не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/users/teachers": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Список преподавателей (без постраничной разбивки)",
+        "description": "Возвращает всех активных преподавателей. Доступно студентам (для выбора преподавателя предмета).",
+        "operationId": "listTeachers",
+        "responses": {
+          "200": {
+            "description": "Список преподавателей",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionModelEntityModelUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Получить профиль текущего пользователя (из X-User-Id header)",
+        "operationId": "getMe",
+        "responses": {
+          "200": {
+            "description": "Профиль получен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/thresholds": {
+      "get": {
+        "tags": [
+          "Thresholds"
+        ],
+        "summary": "Список всех настроенных порогов",
+        "operationId": "listThresholds",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerThresholdResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список порогов",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelThresholdResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/thresholds/resolve": {
+      "get": {
+        "tags": [
+          "Thresholds"
+        ],
+        "summary": "Разрешить эффективный порог",
+        "description": "Возвращает применяемый порог для комбинации группа/предмет согласно иерархии.",
+        "operationId": "resolveThreshold",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Эффективный порог",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelResolvedThresholdResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/semesters/overlap": {
+      "get": {
+        "tags": [
+          "Semesters"
+        ],
+        "summary": "Проверка пересечения дат семестра (ADMIN)",
+        "description": "Используется frontend async-валидатором semester-dialog для предварительной проверки дат перед сабмитом.",
+        "operationId": "checkOverlap",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "excludeId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Результат проверки",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverlapCheckResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverlapCheckResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/groups/my/members": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Участники группы текущего пользователя (STUDENT/HEADMAN)",
+        "operationId": "getMyGroupMembers",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerUserResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список участников",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/dashboard/stats": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Сводная статистика системы (ADMIN)",
+        "description": "Возвращает количество пользователей, групп, активный семестр и другие ключевые показатели.",
+        "operationId": "getStats",
+        "responses": {
+          "200": {
+            "description": "Статистика получена",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelDashboardStatsResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelDashboardStatsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/assignments/my": {
+      "get": {
+        "tags": [
+          "Assignments"
+        ],
+        "summary": "Мои назначения (TEACHER)",
+        "description": "Возвращает все предметы и группы текущего преподавателя для активного семестра.",
+        "operationId": "getMyAssignments",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerAssignmentResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список назначений",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelAssignmentResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/academic/assistants/{id}": {
+      "delete": {
+        "tags": [
+          "Assistants"
+        ],
+        "summary": "Отозвать помощника (HEADMAN/ADMIN)",
+        "operationId": "revokeAssistant",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Помощник отозван"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Помощник не найден"
+          }
+        }
+      }
+    },
+    "/academic/assignments/{id}": {
+      "delete": {
+        "tags": [
+          "Assignments"
+        ],
+        "summary": "Удалить назначение (HEADMAN/ADMIN)",
+        "operationId": "removeAssignment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Назначение удалено"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Назначение не найдено"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "lastName": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "firstName": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "middleName": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "TEACHER",
+              "STUDENT"
+            ]
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "employeeNumber": {
+            "type": "string"
+          },
+          "telegramId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "EntityModelUserResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "login": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "middleName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "TEACHER",
+              "STUDENT"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "EXPELLED",
+              "SUSPENDED",
+              "ARCHIVED"
+            ]
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "headman": {
+            "type": "boolean"
+          },
+          "employeeNumber": {
+            "type": "string"
+          },
+          "telegramId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "avatarId": {
+            "type": "string"
+          },
+          "initialPassword": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "SetThresholdRequest": {
+        "type": "object",
+        "properties": {
+          "minPercentage": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 100,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "minPercentage"
+        ]
+      },
+      "EntityModelThresholdResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "minPercentage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "UpdateSubjectRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "LECTURE",
+              "PRACTICE",
+              "LAB"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "EntityModelSubjectResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "LECTURE",
+              "PRACTICE",
+              "LAB"
+            ]
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "teacherIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "UpdateSemesterRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dateFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "dateFrom",
+          "dateTo"
+        ]
+      },
+      "EntityModelSemesterResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dateFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "UpdateHomeworkRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 0
+          },
+          "link": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 0
+          }
+        }
+      },
+      "EntityModelHomeworkResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "semesterId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "publishedBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lessonDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "UpdateGroupRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 8,
+            "minLength": 0,
+            "pattern": "^[А-ЯЁ][А-ЯЁа-яё]{1,3}-\\d{3}$"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EntityModelGroupResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "properties": {
+          "lastName": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "firstName": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "middleName": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "TEACHER",
+              "STUDENT"
+            ]
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "employeeNumber": {
+            "type": "string"
+          },
+          "telegramId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "EntityModelUserCreatedResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "login": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "middleName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "TEACHER",
+              "STUDENT"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "EXPELLED",
+              "SUSPENDED",
+              "ARCHIVED"
+            ]
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "headman": {
+            "type": "boolean"
+          },
+          "employeeNumber": {
+            "type": "string"
+          },
+          "telegramId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "initialPassword": {
+            "type": "string"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "TransferStudentRequest": {
+        "type": "object",
+        "properties": {
+          "newGroupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "newGroupId"
+        ]
+      },
+      "CreateSubjectRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "LECTURE",
+              "PRACTICE",
+              "LAB"
+            ]
+          },
+          "teacherIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "required": [
+          "teacherIds",
+          "type"
+        ]
+      },
+      "CreateSemesterRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dateFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "dateFrom",
+          "dateTo"
+        ]
+      },
+      "CreateHomeworkRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 0
+          },
+          "link": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 0
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "semesterId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lessonDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 8,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "groupId",
+          "lessonDate",
+          "lessonNumber",
+          "semesterId",
+          "subjectId"
+        ]
+      },
+      "CreateGroupRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 8,
+            "minLength": 0,
+            "pattern": "^[А-ЯЁ][А-ЯЁа-яё]{1,3}-\\d{3}$"
+          }
+        }
+      },
+      "PrefixConflict": {
+        "type": "object",
+        "properties": {
+          "prefix": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "groupIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      },
+      "PromotionPreviewItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "PROMOTE",
+              "ARCHIVE"
+            ]
+          }
+        }
+      },
+      "PromotionSummary": {
+        "type": "object",
+        "properties": {
+          "toPromote": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PromotionPreviewItem"
+            }
+          },
+          "toArchive": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PromotionPreviewItem"
+            }
+          },
+          "conflicts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrefixConflict"
+            }
+          },
+          "dryRun": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": "boolean"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "AssignAssistantRequest": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MARK_ATTENDANCE",
+                "MANAGE_EXCUSES",
+                "MANAGE_HOMEWORK",
+                "CANCEL_LESSONS",
+                "VIEW_STATS"
+              ]
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "groupId",
+          "studentId"
+        ]
+      },
+      "EntityModelAssistantResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "studentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "login": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MARK_ATTENDANCE",
+                "MANAGE_EXCUSES",
+                "MANAGE_HOMEWORK",
+                "CANCEL_LESSONS",
+                "VIEW_STATS"
+              ]
+            }
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "assignedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revokedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "AssignTeacherRequest": {
+        "type": "object",
+        "properties": {
+          "employeeNumber": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "semesterId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "groupId",
+          "semesterId",
+          "subjectId"
+        ]
+      },
+      "EntityModelAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "teacherId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "teacherName": {
+            "type": "string"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subjectName": {
+            "type": "string"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "semesterId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "PatchUserRequest": {
+        "type": "object",
+        "properties": {
+          "lastName": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "firstName": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "middleName": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 0
+          },
+          "isHeadman": {
+            "type": "boolean"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "employeeNumber": {
+            "type": "string"
+          },
+          "telegramId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "EXPELLED",
+              "SUSPENDED",
+              "ARCHIVED"
+            ]
+          }
+        }
+      },
+      "UpdateAvatarRequest": {
+        "type": "object",
+        "properties": {
+          "avatarId": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 0,
+            "pattern": "^(avatar_[0-9]{2})?$"
+          }
+        }
+      },
+      "UpdateAssistantPermissionsRequest": {
+        "type": "object",
+        "properties": {
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MARK_ATTENDANCE",
+                "MANAGE_EXCUSES",
+                "MANAGE_HOMEWORK",
+                "CANCEL_LESSONS",
+                "VIEW_STATS"
+              ]
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PagedResourcesAssemblerUserResponse": {
+        "type": "object",
+        "properties": {
+          "forceFirstAndLastRels": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "PageMetadata": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "PagedModelEntityModelUserResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "userResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "CollectionModelEntityModelUserResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "userResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelUserResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "PagedResourcesAssemblerThresholdResponse": {
+        "type": "object",
+        "properties": {
+          "forceFirstAndLastRels": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "PagedModelEntityModelThresholdResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "thresholdResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelThresholdResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "EntityModelResolvedThresholdResponse": {
+        "type": "object",
+        "properties": {
+          "minPercentage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "level": {
+            "type": "string"
+          },
+          "sourceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "PagedResourcesAssemblerSubjectResponse": {
+        "type": "object",
+        "properties": {
+          "forceFirstAndLastRels": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "PagedModelEntityModelSubjectResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "subjectResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelSubjectResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "PagedResourcesAssemblerSemesterResponse": {
+        "type": "object",
+        "properties": {
+          "forceFirstAndLastRels": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "PagedModelEntityModelSemesterResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "semesterResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelSemesterResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "OverlapCheckResponse": {
+        "type": "object",
+        "properties": {
+          "overlaps": {
+            "type": "boolean"
+          },
+          "conflictingName": {
+            "type": "string"
+          }
+        }
+      },
+      "PagedResourcesAssemblerHomeworkResponse": {
+        "type": "object",
+        "properties": {
+          "forceFirstAndLastRels": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "PagedModelEntityModelHomeworkResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "homeworkResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelHomeworkResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "PagedResourcesAssemblerGroupResponse": {
+        "type": "object",
+        "properties": {
+          "forceFirstAndLastRels": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "PagedModelEntityModelGroupResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "groupResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelGroupResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "EntityModelDashboardStatsResponse": {
+        "type": "object",
+        "properties": {
+          "totalStudents": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalTeachers": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalGroups": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activeGroups": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activeSemesterName": {
+            "type": "string"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "CollectionModelEntityModelAssistantResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "assistantResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelAssistantResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "PagedResourcesAssemblerAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "forceFirstAndLastRels": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "PagedModelEntityModelAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "assignmentResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelAssignmentResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "DeleteSemesterRequest": {
+        "type": "object",
+        "properties": {
+          "confirmation": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "Link": {
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string"
+          },
+          "hreflang": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "deprecation": {
+            "type": "string"
+          },
+          "profile": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "templated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Links": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Link"
+        }
+      }
+    }
+  }
+}

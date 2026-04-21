@@ -1,0 +1,1490 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9092",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Lessons",
+      "description": "Управление уроками и расписание"
+    },
+    {
+      "name": "One-off Lessons",
+      "description": "Разовые пары старосты"
+    },
+    {
+      "name": "Schedule Items",
+      "description": "Управление шаблонами расписания"
+    }
+  ],
+  "paths": {
+    "/schedule/items/{id}": {
+      "get": {
+        "tags": [
+          "Schedule Items"
+        ],
+        "summary": "Получить шаблон по ID",
+        "operationId": "getScheduleItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Шаблон найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Шаблон не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Schedule Items"
+        ],
+        "summary": "Полное обновление шаблона (PUT, HEADMAN/ADMIN)",
+        "operationId": "updateScheduleItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScheduleItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Шаблон обновлён",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Шаблон не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Конфликт данных",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Academic Service недоступен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Schedule Items"
+        ],
+        "summary": "Деактивировать шаблон расписания (HEADMAN/ADMIN)",
+        "operationId": "deleteScheduleItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Шаблон деактивирован"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Шаблон не найден"
+          }
+        }
+      }
+    },
+    "/schedule/one-off-lessons": {
+      "get": {
+        "tags": [
+          "One-off Lessons"
+        ],
+        "summary": "Список разовых пар для группы в диапазоне дат",
+        "operationId": "listOneOffLessons",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список разовых пар",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionModelEntityModelOneOffLessonResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "One-off Lessons"
+        ],
+        "summary": "Создать разовую пару (HEADMAN)",
+        "operationId": "createOneOffLesson",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOneOffLessonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Разовая пара создана",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelOneOffLessonResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelOneOffLessonResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа (не староста этой группы)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelOneOffLessonResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Слот занят активным шаблоном или дубль разовой пары",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelOneOffLessonResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Academic Service недоступен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelOneOffLessonResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/lessons/{id}/blockage": {
+      "post": {
+        "tags": [
+          "Lessons"
+        ],
+        "summary": "Заблокировать пару старостой — запретить геоотметку, посещаемость ставит только староста вручную (HEADMAN)",
+        "operationId": "blockLesson",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Пара заблокирована",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Урок не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Нельзя заблокировать прошедшую или отменённую пару",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Lessons"
+        ],
+        "summary": "Снять блокировку пары старостой (HEADMAN)",
+        "operationId": "unblockLesson",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Блокировка снята",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Урок не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/lessons/mass-cancel": {
+      "post": {
+        "tags": [
+          "Lessons"
+        ],
+        "summary": "Массовая отмена уроков для группы (HEADMAN/ADMIN)",
+        "operationId": "massCancelLessons",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MassCancelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Уроки отменены",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MassCancelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MassCancelResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MassCancelResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Academic Service недоступен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MassCancelResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/items": {
+      "get": {
+        "tags": [
+          "Schedule Items"
+        ],
+        "summary": "Список шаблонов расписания для группы и семестра",
+        "operationId": "listScheduleItems",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "semesterId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerScheduleItemResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список шаблонов",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelScheduleItemResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Schedule Items"
+        ],
+        "summary": "Создать шаблон расписания (HEADMAN/ADMIN)",
+        "operationId": "createScheduleItem",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateScheduleItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Шаблон создан",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Academic Service недоступен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/lessons/{id}/restore": {
+      "patch": {
+        "tags": [
+          "Lessons"
+        ],
+        "summary": "Восстановить отменённый урок (HEADMAN/ADMIN)",
+        "operationId": "restoreLesson",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Урок восстановлен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Урок не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Недопустимый переход статуса",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/lessons/{id}/geo-block": {
+      "patch": {
+        "tags": [
+          "Lessons"
+        ],
+        "summary": "Включить/выключить гео-блокировку урока (HEADMAN/ADMIN)",
+        "operationId": "toggleGeoBlock",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeoBlockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Гео-блокировка изменена",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Урок не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/lessons/{id}/cancel": {
+      "patch": {
+        "tags": [
+          "Lessons"
+        ],
+        "summary": "Отменить урок (HEADMAN/ADMIN). Допускается отмена PLANNED/ACTIVE/CLOSED.",
+        "operationId": "cancelLesson",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelLessonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Урок отменён",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет прав доступа",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Урок не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Урок уже отменён",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/health-check": {
+      "get": {
+        "tags": [
+          "health-check-controller"
+        ],
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/groups/{groupId}/lessons": {
+      "get": {
+        "tags": [
+          "Lessons"
+        ],
+        "summary": "Получить расписание группы за диапазон дат (все роли)",
+        "operationId": "getLessons",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "PLANNED",
+                  "ACTIVE",
+                  "CLOSED",
+                  "CANCELLED"
+                ]
+              }
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          },
+          {
+            "name": "assembler",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PagedResourcesAssemblerLessonResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Расписание группы",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedModelEntityModelLessonResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule/one-off-lessons/{id}": {
+      "delete": {
+        "tags": [
+          "One-off Lessons"
+        ],
+        "summary": "Удалить разовую пару (HEADMAN, любая дата D-22)",
+        "operationId": "deleteOneOffLesson",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Разовая пара удалена"
+          },
+          "403": {
+            "description": "Нет прав доступа"
+          },
+          "404": {
+            "description": "Разовая пара не найдена"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateScheduleItemRequest": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dayOfWeek": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 7,
+            "minimum": 1
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 8,
+            "minimum": 1
+          },
+          "startTime": {
+            "type": "string",
+            "example": "14:30:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "14:30:00"
+          },
+          "weekType": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "ODD",
+              "EVEN"
+            ]
+          },
+          "room": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "endTime",
+          "lessonNumber",
+          "startTime",
+          "subjectId",
+          "weekType"
+        ]
+      },
+      "EntityModelScheduleItemResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "semesterId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dayOfWeek": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "14:30:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "14:30:00"
+          },
+          "weekType": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "ODD",
+              "EVEN"
+            ]
+          },
+          "room": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "CreateOneOffLessonRequest": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 8,
+            "minimum": 1
+          },
+          "classroom": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "date",
+          "groupId",
+          "lessonNumber",
+          "subjectId"
+        ]
+      },
+      "EntityModelOneOffLessonResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "semesterId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "classroom": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "EntityModelLessonResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "scheduleItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PLANNED",
+              "ACTIVE",
+              "CLOSED",
+              "CANCELLED"
+            ]
+          },
+          "dayOfWeek": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "14:30:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "14:30:00"
+          },
+          "weekType": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "ODD",
+              "EVEN"
+            ]
+          },
+          "room": {
+            "type": "string"
+          },
+          "geoBlocked": {
+            "type": "boolean"
+          },
+          "blockedByHeadman": {
+            "type": "boolean"
+          },
+          "blockedByUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "blockedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cancelReason": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "MassCancelRequest": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dateFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "dateTo": {
+            "type": "string",
+            "format": "date"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "dateFrom",
+          "dateTo",
+          "groupId"
+        ]
+      },
+      "MassCancelResponse": {
+        "type": "object",
+        "properties": {
+          "cancelledCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CreateScheduleItemRequest": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "semesterId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "dayOfWeek": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 7,
+            "minimum": 1
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 8,
+            "minimum": 1
+          },
+          "startTime": {
+            "type": "string",
+            "example": "14:30:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "14:30:00"
+          },
+          "weekType": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "ODD",
+              "EVEN"
+            ]
+          },
+          "room": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "endTime",
+          "groupId",
+          "lessonNumber",
+          "semesterId",
+          "startTime",
+          "subjectId",
+          "weekType"
+        ]
+      },
+      "GeoBlockRequest": {
+        "type": "object",
+        "properties": {
+          "blocked": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "blocked"
+        ]
+      },
+      "CancelLessonRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 0
+          }
+        }
+      },
+      "CollectionModelEntityModelOneOffLessonResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "oneOffLessonResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelOneOffLessonResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PagedResourcesAssemblerScheduleItemResponse": {
+        "type": "object",
+        "properties": {
+          "forceFirstAndLastRels": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "PageMetadata": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "PagedModelEntityModelScheduleItemResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "scheduleItemResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "PagedResourcesAssemblerLessonResponse": {
+        "type": "object",
+        "properties": {
+          "forceFirstAndLastRels": {
+            "type": "boolean",
+            "writeOnly": true
+          }
+        }
+      },
+      "PagedModelEntityModelLessonResponse": {
+        "type": "object",
+        "properties": {
+          "_embedded": {
+            "type": "object",
+            "properties": {
+              "lessonResponseList": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/EntityModelLessonResponse"
+                }
+              }
+            }
+          },
+          "_links": {
+            "$ref": "#/components/schemas/Links"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "Link": {
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string"
+          },
+          "hreflang": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "deprecation": {
+            "type": "string"
+          },
+          "profile": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "templated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Links": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Link"
+        }
+      }
+    }
+  }
+}

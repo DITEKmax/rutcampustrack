@@ -51,20 +51,23 @@ P0 cleanup: OTP через RabbitMQ, MessageDigest, cleanupOrphans, landing
 deep-link, latecheckin/bot tests). Parallel safe с M07.
 
 Что делать:
-1. Создай `docs/milestones/M07-frontend-hardening/` из шаблона
-   `docs/milestones/_TEMPLATE/`: PLAN.md + CHECKLIST.md + NOTES.md +
-   DECISIONS.md.
-2. PLAN.md наполни из OWNER-ANSWERS «Frontend» секций (QC1..7, QE3/4) +
-   M06 defer'ы (см. список выше) + `docs/report-before-v0.0.0/
-   09-frontend-pwa.md`, `10-frontend-web-panel.md`, `12-frontend-
-   landing.md`, `13-infra-docker-ci.md` CSP section.
-3. Разбей на группы по ~3-4ч atomic (образец — M06 G1-G9).
-4. Спроси owner'а перед стартом для подтверждения scope'а.
-5. `git log --oneline -15` — последние коммиты (`v0.0.0-alpha.7` на
-   последнем M06 коммите; 100+ коммитов ahead origin; tags `v0.0.0-
+1. **Scaffold M07 уже создан** в `docs/milestones/M07-frontend-hardening/`
+   (PLAN + CHECKLIST + NOTES + DECISIONS). Прочитай PLAN.md целиком —
+   там 12 групп подготовлены по образцу M06.
+2. Прочитай `NOTES.md` — **5 вопросов к owner'у перед стартом**
+   (brand og-image, mini-app scope, axe-core baseline, sparklines
+   backend, schedule navigation bounds). Спроси до коммитов.
+3. `git log --oneline -15` — последние коммиты (`v0.0.0-alpha.7` на
+   `847a994` M06 closure; 100+ коммитов ahead origin; tags `v0.0.0-
    alpha.2..7` локальные).
-6. Проверь docker-compose: `docker compose ps`. Инфра из прошлых
-   сессий уже поднята.
+4. Проверь docker-compose: `docker compose ps`. Инфра из прошлых
+   сессий уже поднята (rct-postgres-academic/schedule, rct-mongo-
+   attendance, rct-redis, rct-rabbitmq — healthy).
+5. Первая активная группа — **G1 CSP self-host landing** (~1д): скачать
+   Fontshare/GSAP в `frontends/landing/dist/assets/vendor/`, переписать
+   `<link>`/`<script>` → локальные пути. CSP `'self'` в nginx остаётся.
+6. Расскажи owner'у финальный scope после чтения PLAN.md + получения
+   ответов на NOTES-вопросы. Дожидайся `go` перед коммитами.
 
 Правила (без изменений с M05):
 - Русский язык в отчётах / NOTES / ответах.
@@ -88,10 +91,73 @@ deep-link, latecheckin/bot tests). Parallel safe с M07.
 6. Сообщить owner'у финальный summary + ссылку на следующий
    milestone (M08 или M09).
 
-Старт:
-> Читаю README.md → 99-executive-summary.md → M05 post-mortem →
-> 06-supply-chain-report.md. Через минуту скажу какие группы вижу
-> в scope M06.
+Старт (дословно скопируй как первое сообщение):
+> Читаю README → 99-executive-summary → M06 post-mortem → M07 PLAN →
+> 09-frontend-pwa + 10-frontend-web-panel + 12-frontend-landing + 13
+> P0-4 (CSP). Через минуту скажу какие группы вижу в scope M07.
+
+---
+
+## M06 закрыт (2026-04-21) — итоговая запись
+
+**Tag:** `v0.0.0-alpha.7` (локально, без push).
+**Последний коммит M06:** `847a994` (docs-закрытие).
+**Closed commits M06:** 12 коммитов от `b6a0cc3` (scaffold) до `847a994`
+(closure) — 9 групп scope + G9 hot-patch.
+
+### Итоги по группам
+
+| # | Группа | Коммит | Что сделано |
+|---|--------|--------|-------------|
+| 1 | HEALTHCHECK × 7 Dockerfile | `29bfbdc` | wget/curl health probes, `docs/dockerfile-conventions.md` (NEW-150) |
+| 2 | SHA-tagging + deploy.yml | `3c84765` | `${IMAGE_TAG:-latest}` × 11 образов, убран двойной `up -d` |
+| 3 | Digest-пин cadvisor + promtail | `30a1046` | multi-arch manifest digests, `docs/infra/container-trust.md` (NEW-102) |
+| 4 | Observability semver-pin | `7ca263d` | loki 3.2.1 + prometheus v2.55.1 + grafana 11.3.1 + node-exporter v1.8.2, `docs/runbooks/loki-major-upgrade.md` (NEW-151) |
+| 5 | Renovate + Dependabot + ci-cd.md | `bab4eb7` | auto-merge patch/pin/digest, 7 dependabot ecosystems, `docs/ci-cd.md` (NEW-105) |
+| 6 | Trivy + Gitleaks + SECURITY.md | `5acffdb` | 4 jobs в security.yml, pre-commit, `SECURITY.md` (NEW-103) |
+| 7 | workflow_run gate + DEPLOY_SHA | `7c74b3a` | deploy.yml gated на CI success, paths-ignore в ci.yml, env DEPLOY_SHA |
+| 8a | Redis Jackson whitelist | `47039cf` | `BasicPolymorphicTypeValidator` вместо Laissez — block gadgets |
+| 8b | gRPC isHeadman rate-limit | `7208b11` | 120/min per user token bucket + heap cap |
+| 8d | GrpcClientMetricsInterceptor | `cf983fa` | Timer cache по (service,method,status), startNs fix |
+| 9 audit | security-audit hot-patches | `e0e1881` | H1 deploy guards + H2 concurrency + H3 narrow whitelist + EventSchemaRefTest pre-existing fix |
+| 9 close | Docs + closure | `847a994` | CHANGELOG + post-mortem + hand-off |
+
+### Deferred из M06 → M07/M08/v0.1
+
+| Finding | Severity | → milestone |
+|---------|----------|-------------|
+| Redis cache hit/miss через `@Aspect` | MINOR | v0.1 |
+| `/actuator/**` excluded from tracing | MINOR | M07 |
+| isHeadman principal-based userId | LOW (security) | v0.1 (gRPC proto redesign) |
+| `headmanBuckets.clear()` race | LOW | accept as trade-off |
+| rct-nginx 5-min reload | LOW | M07/M09 (nginx -t gate + Loki alert) |
+| nginx/postgres/mongo/redis/rabbitmq digest | MEDIUM | M08 |
+| SBOM + cosign | MEDIUM | M08 |
+| Trivy action sha-digest pin | MEDIUM | M08 |
+
+### Действия, ожидающие `go` пользователя
+
+1. `git push origin main` — 100+ коммитов локально ahead origin.
+2. `git push origin --tags` — 6 tags (`v0.0.0-alpha.2..7`) локальные.
+3. Старт M07 (Frontend Hardening, ~10-12д) — scaffold готов в
+   `docs/milestones/M07-frontend-hardening/`.
+4. Alternative: старт M09 (Prod Release Blockers, ~4-5д) параллельно
+   M07 — снимает public-alpha safety блокер.
+
+### Источники правды для M07 старта
+
+- `docs/milestones/M07-frontend-hardening/PLAN.md` — scope с 12 группами
+- `docs/milestones/M07-frontend-hardening/CHECKLIST.md` — task breakdown
+- `docs/milestones/M07-frontend-hardening/NOTES.md` — вопросы к owner'у
+  ДО старта (og-image, axe-core baseline, mini-app scope, etc.)
+- `docs/report-before-v0.0.0/OWNER-ANSWERS.md`:
+  - QC1-7 (1809-2053): frontend reuse
+  - QE3/4 (2430-2510): landing a11y + meta
+  - P2-7A/1..8 (5215-5365): UX fixes
+  - P2-7B/1..4 (5366-5550): a11y
+- `docs/report-before-v0.0.0/{09,10,12,13}-*.md` — frontend + infra reports
+- `docs/milestones/M06-ops-supply-chain/PLAN.md` — Post-mortem ссылка
+  на M07 defer'ы
 
 ---
 

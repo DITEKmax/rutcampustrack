@@ -25,14 +25,15 @@
 - [x] `deploy.yml` mini-app build — добавить `:${{ github.sha }}` к тегам (13 P1-4)
 - [x] `deploy.yml` — убрать дублирующий `up -d` после `sleep 30` (13 P1-2), заменён на `--wait --wait-timeout 120`
 - [x] Smoke: `IMAGE_TAG=abc123 docker compose config` — резолвится в 11 образах; `config --quiet` exit=0
-- [ ] Commit: `feat(ops): SHA-tagging + deploy.yml cleanup (M06 Группа 2, QD1, 13 P1-1/2/4)`
+- [x] Commit: `3c84765 feat(ops): SHA-tagging + deploy.yml cleanup (M06 Группа 2, QD1, 13 P1-1/2/4)`
 
-## Группа 3 — Digest-пин cadvisor + promtail (QD4, NEW-102) — ~1.5ч
+## Группа 3 — Digest-пин cadvisor + promtail (QD4, NEW-102) — ~1.5ч ✅
 
-- [ ] `docker manifest inspect` actual digest для `gcr.io/cadvisor/cadvisor:v0.49.1` (или latest current)
-- [ ] `docker manifest inspect` actual digest для `grafana/promtail:3.2.1`
-- [ ] `docker-compose.prod.yml` — `cadvisor@sha256:...` + `promtail@sha256:...`
-- [ ] `docs/infra/container-trust.md` — NEW-102 policy doc
+- [x] `docker buildx imagetools inspect` → cadvisor v0.49.1 `sha256:3cde6faf...`
+- [x] `docker buildx imagetools inspect` → promtail 3.2.1 `sha256:bf617e9d...`
+- [x] `docker-compose.prod.yml` — `cadvisor:v0.49.1@sha256:...` + `promtail:3.2.1@sha256:...`
+- [x] `docs/infra/container-trust.md` — NEW-102 policy doc
+- [x] Smoke: `docker compose config --quiet` exit=0
 - [ ] Commit: `feat(ops): digest-пин cadvisor + promtail (M06 Группа 3, QD4, NEW-102)`
 
 ## Группа 4 — Observability semver pins (P2-9/2, 13 P2-2) — ~1.5ч

@@ -399,7 +399,10 @@ services:
     restart: unless-stopped
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    # M06 D2: digest-пин обязателен — privileged: true + mounts /:/rootfs + /sys.
+    # Supply-chain compromise = full host access. Bump digest через Renovate (QD6).
+    # Version: v0.49.1. Update: `docker buildx imagetools inspect gcr.io/cadvisor/cadvisor:<ver>`
+    image: gcr.io/cadvisor/cadvisor:v0.49.1@sha256:3cde6faf0791ebf7b41d6f8ae7145466fed712ea6f252c935294d2608b1af388
     container_name: rct-cadvisor
     volumes:
       - /:/rootfs:ro
@@ -525,7 +528,10 @@ services:
     restart: unless-stopped
 
   promtail:
-    image: grafana/promtail:latest
+    # M06 D2: digest-пин обязателен — mounts /var/run/docker.sock:ro.
+    # Socket compromise = docker daemon control (= root host). Bump через Renovate (QD6).
+    # Version: 3.2.1. Update: `docker buildx imagetools inspect grafana/promtail:<ver>`
+    image: grafana/promtail:3.2.1@sha256:bf617e9d67e80247a59f717f9c1ad388d7d32dc0a1d29abd5799516d15e0a9b5
     container_name: rct-promtail
     command: -config.file=/etc/promtail/promtail.yml
     volumes:

@@ -1,4 +1,5 @@
 import { motion } from 'motion/react'
+import { useSwipeHandler } from '@/shared/hooks/useSwipeHandler'
 import { cn } from '@/lib/utils'
 
 const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'] as const
@@ -16,6 +17,9 @@ interface WeekDayTabsProps {
   weekDates: Date[] // array of 6 Date objects for Mon-Sat
   onSwipeWeek: (direction: 'prev' | 'next') => void
   hasOfflineBanner?: boolean
+  /** Guards for swipe-to-switch week — respects semester bounds (M07 G6/4). */
+  canSwipePrev?: boolean
+  canSwipeNext?: boolean
 }
 
 export function WeekDayTabs({
@@ -24,9 +28,21 @@ export function WeekDayTabs({
   weekDates,
   onSwipeWeek,
   hasOfflineBanner,
+  canSwipePrev = true,
+  canSwipeNext = true,
 }: WeekDayTabsProps) {
   const today = new Date()
   const todayYmd = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
+
+  const onDragEnd = useSwipeHandler({
+    horizontalThreshold: 80,
+    onSwipeLeft: () => {
+      if (canSwipeNext) onSwipeWeek('next')
+    },
+    onSwipeRight: () => {
+      if (canSwipePrev) onSwipeWeek('prev')
+    },
+  })
 
   return (
     <motion.div
@@ -35,10 +51,7 @@ export function WeekDayTabs({
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.2}
-      onDragEnd={(_e, info) => {
-        if (info.offset.x < -80) onSwipeWeek('next')
-        else if (info.offset.x > 80) onSwipeWeek('prev')
-      }}
+      onDragEnd={onDragEnd}
       className={cn(
         'sticky z-[var(--z-dropdown)]',
         'flex items-stretch gap-1 px-3 py-2',

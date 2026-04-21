@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { BookOpen, Funnel } from '@phosphor-icons/react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { SkeletonList } from '@/shared/components/Skeleton'
+import { PullToRefresh } from '@/shared/components/PullToRefresh'
 import { addDays, formatDate, getMonday } from '@/shared/lib/dateUtils'
 import {
   useActiveSemesterId,
@@ -85,7 +87,13 @@ export default function HomeworkPage() {
 
   const isLoading = semesterLoading || listLoading
 
+  const queryClient = useQueryClient()
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['homeworks'] })
+  }, [queryClient])
+
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="flex min-h-full flex-col gap-3 px-4 pb-4 pt-3">
       <div className="flex items-center gap-2">
         <ModeSwitcher value={mode} onChange={setMode} />
@@ -174,6 +182,7 @@ export default function HomeworkPage() {
         </AnimatePresence>
       )}
     </div>
+    </PullToRefresh>
   )
 }
 

@@ -99,6 +99,23 @@ describe('SchedulePage', () => {
     vi.clearAllMocks()
   })
 
+  /** Active semester mock — now required for bounds check (M07 G6/4). */
+  const mockSemesters = {
+    data: {
+      _embedded: {
+        semesterResponseList: [
+          {
+            id: 1,
+            name: 'Весна 2026',
+            dateFrom: '2026-02-01',
+            dateTo: '2026-06-30',
+            active: true,
+          },
+        ],
+      },
+    },
+  }
+
   it('renders lesson cards when data is returned', async () => {
     const backendDow = getTodayBackendDow()
     const lessons = makeLessons(backendDow, 2)
@@ -106,6 +123,9 @@ describe('SchedulePage', () => {
     mockedGet.mockImplementation(async (url: string) => {
       if (url.includes('/schedule/groups/')) {
         return { data: { _embedded: { lessonResponseList: lessons } } }
+      }
+      if (url.includes('/academic/semesters')) {
+        return mockSemesters
       }
       if (url.includes('/academic/subjects/')) {
         const id = Number(url.split('/').pop())
@@ -127,6 +147,9 @@ describe('SchedulePage', () => {
       if (url.includes('/schedule/groups/')) {
         return { data: {} } // No _embedded means empty
       }
+      if (url.includes('/academic/semesters')) {
+        return mockSemesters
+      }
       return { data: {} }
     })
 
@@ -144,6 +167,9 @@ describe('SchedulePage', () => {
     mockedGet.mockImplementation(async (url: string) => {
       if (url.includes('/schedule/groups/')) {
         return { data: { _embedded: { lessonResponseList: mondayLessons } } }
+      }
+      if (url.includes('/academic/semesters')) {
+        return mockSemesters
       }
       if (url.includes('/academic/subjects/')) {
         return { data: { id: 10, name: 'Monday Subject' } }

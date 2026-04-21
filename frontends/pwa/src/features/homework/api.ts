@@ -14,21 +14,54 @@ export const homeworkKeys = {
   list: (groupId: number, semesterId: number) =>
     ['homeworks', groupId, semesterId] as const,
   activeSemester: ['homeworks', 'active-semester'] as const,
+  semesters: ['semesters', 'all'] as const,
+}
+
+async function fetchSemesters(): Promise<SemesterResponse[]> {
+  const { data } = await apiClient.get('/academic/semesters', {
+    params: { size: 100 },
+  })
+  return data?._embedded?.semesterResponseList ?? []
 }
 
 /**
- * Active semester — needed because the homeworks endpoint requires a
+ * Active semester (full object) — содержит dateFrom/dateTo для bounds-
+ * проверок навигации (M07 G6/4). Возвращает null, если семестр
+ * сейчас не активен («каникулы»).
+ */
+export function useActiveSemester() {
+  return useQuery<SemesterResponse | null>({
+    queryKey: homeworkKeys.semesters,
+    queryFn: async () => {
+      const list = await fetchSemesters()
+      return list.find((s) => s.active) ?? null
+    },
+    staleTime: 24 * 60 * 60 * 1000,
+  })
+}
+
+/**
+ * All semesters — needed for the "next semester starts on Y" info screen
+ * when the user navigates past the end of the active semester. Cached
+ * together with useActiveSemester (same query key prefix).
+ */
+export function useAllSemesters() {
+  return useQuery<SemesterResponse[]>({
+    queryKey: [...homeworkKeys.semesters, 'list'] as const,
+    queryFn: fetchSemesters,
+    staleTime: 24 * 60 * 60 * 1000,
+  })
+}
+
+/**
+ * Active semester id — needed because the homeworks endpoint requires a
  * semesterId param. Cached for 24h; semesters rotate at most twice a year.
  */
 export function useActiveSemesterId() {
   return useQuery<number | null>({
     queryKey: homeworkKeys.activeSemester,
     queryFn: async () => {
-      const { data } = await apiClient.get('/academic/semesters', {
-        params: { size: 100 },
-      })
-      const list: SemesterResponse[] =
-        data?._embedded?.semesterResponseList ?? []
+      const list = await fetchSemesters()
       return list.find((s) => s.active)?.id ?? null
     },
     staleTime: 24 * 60 * 60 * 1000,

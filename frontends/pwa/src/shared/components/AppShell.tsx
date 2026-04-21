@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { AppHeader } from './AppHeader'
@@ -6,6 +6,7 @@ import { BottomNav } from './BottomNav'
 import { DrawerMenu } from './DrawerMenu'
 import { OfflineBanner } from './OfflineBanner'
 import { LoadingSpinner } from './LoadingSpinner'
+import { useScrollRestoration } from '@/shared/hooks/useScrollRestoration'
 
 /**
  * RutCampusTrack — PWA shell (brandbook §7, §5.4)
@@ -20,6 +21,8 @@ export function AppShell() {
   const location = useLocation()
   const reduceMotion = useReducedMotion()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const mainRef = useRef<HTMLElement>(null)
+  useScrollRestoration(mainRef)
 
   return (
     <div className="flex h-dvh flex-col bg-background text-foreground">
@@ -28,6 +31,7 @@ export function AppShell() {
       <DrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <main
+        ref={mainRef}
         className="relative flex-1 overflow-x-hidden overflow-y-auto"
         style={{
           // Reserve room for the fixed bottom nav (52px + safe-area)

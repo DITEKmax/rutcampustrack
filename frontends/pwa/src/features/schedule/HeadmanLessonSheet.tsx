@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
-import { X, Broom, CheckCircle } from '@phosphor-icons/react'
+import { motion } from 'motion/react'
+import { Broom, CheckCircle } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
+import { BottomSheet } from '@/shared/components/BottomSheet'
 import type { LessonResponse } from './types'
 import {
   useLessonAttendance,
@@ -128,110 +129,46 @@ export function HeadmanLessonSheet({
     setTimeout(() => setTab('roster'), 300)
   }
 
+  const isOpen = open && !!lesson
+
   return (
-    <AnimatePresence>
-      {open && lesson && (
+    <BottomSheet
+      open={isOpen}
+      onClose={handleClose}
+      title="Ручное проставление посещаемости"
+      heading={lesson ? subjectName : undefined}
+      subtitle={
+        lesson
+          ? `Ауд. ${lesson.room} · ${lesson.startTime.slice(0, 5)}–${lesson.endTime.slice(0, 5)}`
+          : undefined
+      }
+    >
+      {lesson && (
         <>
-          <motion.div
-            key="bd"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={handleClose}
-            className="fixed inset-0 z-[var(--z-overlay)] bg-black/60 backdrop-blur-sm"
-            aria-hidden="true"
-          />
-          <motion.div
-            key="sh"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Ручное проставление посещаемости"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0.3 }}
-            onDragEnd={(_e, info) => {
-              if (info.offset.y > 140) handleClose()
-            }}
-            className={cn(
-              'fixed inset-x-0 bottom-0 z-[var(--z-modal)]',
-              'rounded-t-[var(--radius-lg)] border-t',
-              'h-[92vh]',
-              'flex flex-col pb-[env(safe-area-inset-bottom)]',
-            )}
-            style={{
-              background: 'var(--bg-elevated)',
-              borderColor: 'var(--border-default)',
-              boxShadow: 'var(--shadow-lg)',
-            }}
-          >
-            <div className="flex justify-center pt-2 pb-1">
-              <span
-                aria-hidden="true"
-                className="block h-1 w-10 rounded-full"
-                style={{ background: 'var(--border-default)' }}
+          <Tabs tab={tab} onTab={setTab} />
+
+          <div className="px-[var(--space-4)] pb-[var(--space-5)] pt-[var(--space-3)]">
+            {tab === 'roster' && (
+              <RosterTab
+                entries={entries}
+                isLoading={attendance.isLoading}
+                error={!!attendance.error}
+                pendingUserId={pendingUserId}
+                onMark={handleMark}
               />
-            </div>
-
-            <div className="flex items-start gap-[var(--space-3)] px-[var(--space-5)] pb-[var(--space-3)]">
-              <div className="min-w-0 flex-1">
-                <h2
-                  className="line-clamp-2 text-[var(--text-lg)] font-semibold leading-snug"
-                  style={{
-                    color: 'var(--text-primary)',
-                    fontFamily: 'var(--font-heading)',
-                  }}
-                >
-                  {subjectName}
-                </h2>
-                <p
-                  className="text-[var(--text-xs)]"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  Ауд. {lesson.room} · {lesson.startTime.slice(0, 5)}–
-                  {lesson.endTime.slice(0, 5)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleClose}
-                aria-label="Закрыть"
-                className="grid size-9 place-items-center rounded-full"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                <X size={18} weight="bold" />
-              </button>
-            </div>
-
-            <Tabs tab={tab} onTab={setTab} />
-
-            <div className="flex-1 overflow-y-auto px-[var(--space-4)] pb-[var(--space-5)] pt-[var(--space-3)]">
-              {tab === 'roster' && (
-                <RosterTab
-                  entries={entries}
-                  isLoading={attendance.isLoading}
-                  error={!!attendance.error}
-                  pendingUserId={pendingUserId}
-                  onMark={handleMark}
-                />
-              )}
-              {tab === 'manage' && (
-                <ManageTab
-                  onAllPresent={() => handleBulkMark('present')}
-                  onClear={() => handleBulkMark('absent')}
-                  isBusy={markMutation.isPending}
-                />
-              )}
-              {tab === 'report' && <ReportTab summary={summary} />}
-            </div>
-          </motion.div>
+            )}
+            {tab === 'manage' && (
+              <ManageTab
+                onAllPresent={() => handleBulkMark('present')}
+                onClear={() => handleBulkMark('absent')}
+                isBusy={markMutation.isPending}
+              />
+            )}
+            {tab === 'report' && <ReportTab summary={summary} />}
+          </div>
         </>
       )}
-    </AnimatePresence>
+    </BottomSheet>
   )
 }
 

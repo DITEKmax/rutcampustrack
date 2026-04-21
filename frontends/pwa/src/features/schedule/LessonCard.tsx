@@ -7,7 +7,6 @@ import {
   LockOpen,
   MapPin,
 } from '@phosphor-icons/react'
-import { useSubjectName } from './api'
 import { StatusBadge } from './StatusBadge'
 import { CheckInButton } from '@/features/checkin/CheckInButton'
 import { Skeleton } from '@/shared/components/Skeleton'
@@ -25,6 +24,12 @@ import type { LessonResponse, AttendanceStatus } from './types'
  */
 interface LessonCardProps {
   lesson: LessonResponse
+  /**
+   * Subject display name — передаётся родителем через batch-query
+   * `useSubjectMap` (M07 G6/6). `undefined` на пока не загруженном
+   * subject'е → показывается skeleton.
+   */
+  subjectName: string | undefined
   attendanceCount?: number
   personalStatus?: AttendanceStatus | null
   onCheckin?: () => void
@@ -57,6 +62,7 @@ function dotColor(lesson: LessonResponse, personal: AttendanceStatus | null | un
 
 export function LessonCard({
   lesson,
+  subjectName,
   attendanceCount,
   personalStatus,
   onCheckin,
@@ -68,7 +74,7 @@ export function LessonCard({
   isBlockable,
   homeworkPreview,
 }: LessonCardProps) {
-  const { data: subjectName, isLoading: subjectLoading } = useSubjectName(lesson.subjectId)
+  const subjectLoading = subjectName === undefined
   const isCancelled = lesson.status === 'CANCELLED'
   const isActive = lesson.status === 'ACTIVE'
   const isBlockedByHeadman = !!lesson.blockedByHeadman

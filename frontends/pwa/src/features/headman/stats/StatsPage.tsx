@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useReducer } from 'react'
+import { useCallback, useEffect, useMemo, useReducer } from 'react'
 import { Link } from 'react-router'
 import { ArrowLeft } from '@phosphor-icons/react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/AuthProvider'
 import {
   useGroupSubjects,
@@ -8,6 +9,7 @@ import {
   useResolveThreshold,
 } from '@/features/headman/shared/headmanApi'
 import type { JournalCell, Subject } from '@/features/headman/shared/types'
+import { PullToRefresh } from '@/shared/components/PullToRefresh'
 import { SubjectStatsCard } from './SubjectStatsCard'
 
 const DEFAULT_THRESHOLD = 75
@@ -260,7 +262,17 @@ export function StatsPage() {
       .filter((x): x is SubjectStats => Boolean(x)),
   )
 
+  const queryClient = useQueryClient()
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['groupSubjects'] }),
+      queryClient.invalidateQueries({ queryKey: ['journal'] }),
+      queryClient.invalidateQueries({ queryKey: ['threshold'] }),
+    ])
+  }, [queryClient])
+
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="p-6">
       <Link to="/group" aria-label="Назад" className="inline-flex items-center gap-2 mb-4">
         <ArrowLeft size={20} /> Назад
@@ -291,5 +303,6 @@ export function StatsPage() {
         />
       ))}
     </div>
+    </PullToRefresh>
   )
 }

@@ -5,6 +5,7 @@ import { StatCards } from './StatCards'
 import { StatusDonut } from './StatusDonut'
 import { WeeklyChart } from './WeeklyChart'
 import { TopMissedList } from './TopMissedList'
+import { PullToRefresh } from '@/shared/components/PullToRefresh'
 
 function SkeletonBlock({ height }: { height: number }) {
   return (
@@ -34,7 +35,12 @@ export default function HomeDashboard() {
   const loading = dashQuery.isLoading
   const error = dashQuery.error
 
+  const handleRefresh = async () => {
+    await Promise.all([meQuery.refetch(), groupQuery.refetch(), dashQuery.refetch()])
+  }
+
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="mx-auto flex w-full max-w-md flex-col gap-[var(--space-4)] px-[var(--space-4)] pb-[var(--space-6)] pt-[var(--space-5)]">
       <ProfileHeader
         me={meQuery.data}
@@ -73,5 +79,6 @@ export default function HomeDashboard() {
         </>
       )}
     </div>
+    </PullToRefresh>
   )
 }

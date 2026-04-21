@@ -180,16 +180,36 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 
 ## Группа 6 — UX P2-7A/1..8 — ~2д
 
-- [ ] PWA `PullToRefresh` (P2-7A/1) — TanStack Query refetch
-- [ ] `useSwipeHandler` hook + configurable threshold (P2-7A/2)
-- [ ] `useDateNavigation` single source-of-truth (P2-7A/3)
-- [ ] Schedule navigation bounds (P2-7A/4) — prev/next ограничены
-      семестром
-- [ ] Scroll position preservation (P2-7A/5) — sessionStorage per route
-- [ ] forkJoin waterfall fix для subject lookup (P2-7A/6)
-- [ ] Unified DrawerMenu PWA (P2-7A/7)
-- [ ] Geolocation high-accuracy + loading UX (P2-7A/8) — spinner + timeout
-- [ ] Commit: `feat(pwa): UX improvements P2-7A/1..8 (M07 Группа 6)`
+- [x] PWA `PullToRefresh` (P2-7A/1) — `shared/components/PullToRefresh.tsx`
+      + TanStack `invalidateQueries` refetch; применено в Home/Schedule/
+      Homework/Stats.
+- [x] `useSwipeHandler` hook + configurable threshold (P2-7A/2) —
+      `shared/hooks/useSwipeHandler.ts`; унифицирует 5 inline onDragEnd
+      (SchedulePage day, WeekDayTabs, NotificationsPage, 2 sheets via
+      BottomSheet). Поддерживает velocity threshold (fast flick).
+- [x] `useDateNavigation` single source-of-truth (P2-7A/3) —
+      `shared/hooks/useDateNavigation.ts`; применён в DayView/WeekView/
+      MonthView/SchedulePage. unit = day/week/month, bounds opt-in.
+- [x] Schedule navigation bounds (P2-7A/4) — prev/next ограничены
+      активным семестром (`useActiveSemester`), за границей показываем
+      `ScheduleBoundsNotice` (D1 решение 5) с info-screen и кнопкой
+      возврата. Disable кнопок на границе.
+- [x] Scroll position preservation (P2-7A/5) —
+      `shared/hooks/useScrollRestoration.ts`; sessionStorage per
+      pathname, POP=restore/PUSH=top, 3-rAF attempts для lazy chunks.
+- [x] forkJoin waterfall fix (P2-7A/6) — `useSubjectMap` batch-lookup
+      в schedule/api.ts, LessonCard принимает `subjectName` как prop,
+      больше не вызывает `useSubjectName` сам. Устраняет двойной render.
+- [x] Unified BottomSheet PWA (P2-7A/7) —
+      `shared/components/BottomSheet.tsx`; рефакторит LessonActionsSheet
+      и HeadmanLessonSheet на shared backdrop + slide-up + swipe-down-
+      to-close + Escape + header template. `prefers-reduced-motion`
+      уважается.
+- [x] Geolocation high-accuracy + loading UX (P2-7A/8) —
+      `enableHighAccuracy: true` + timeout 15s + `mapGeolocationError`
+      (denied/timeout/unavailable) в CheckInButton + feature-detection
+      для отсутствующего geolocation API.
+- [x] Commit `<pending>`: `feat(pwa): UX improvements P2-7A/1..8 (M07 Группа 6)`
 
 ## Группа 7 — ConfirmWithReasonDialog (QC4) — ~2ч
 

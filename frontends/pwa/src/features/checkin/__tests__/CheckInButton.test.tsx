@@ -44,6 +44,14 @@ vi.mock('@/features/checkin/api', () => ({
       default: return 'Ошибка сервера. Попробуйте ещё раз'
     }
   },
+  mapGeolocationError: (err: { code?: number }) => {
+    switch (err?.code) {
+      case 1: return 'Нет доступа к GPS. Разрешите доступ в настройках браузера'
+      case 2: return 'Не удалось определить местоположение. Проверь GPS и попробуй ещё раз'
+      case 3: return 'Слишком долго ищем GPS. Попробуй ещё раз в открытом пространстве'
+      default: return 'Не удалось получить координаты'
+    }
+  },
 }))
 
 import { CheckInButton } from '../CheckInButton'

@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
+import { motion } from 'motion/react'
 import {
   FileText,
   HandWaving,
-  X,
   Paperclip,
   CheckCircle,
 } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
+import { BottomSheet } from '@/shared/components/BottomSheet'
 import type { LessonResponse } from './types'
 import {
   EXCUSE_TYPES,
@@ -105,137 +105,65 @@ export function LessonActionsSheet({
     setFile(f)
   }
 
+  const isOpen = open && !!lesson
+
   return (
-    <AnimatePresence>
-      {open && lesson && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            key="sheet-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={handleClose}
-            className="fixed inset-0 z-[var(--z-overlay)] bg-black/55 backdrop-blur-sm"
-            aria-hidden="true"
-          />
+    <BottomSheet
+      open={isOpen}
+      onClose={handleClose}
+      title="Действия с парой"
+      heading={lesson ? subjectName : undefined}
+      subtitle={
+        lesson
+          ? `Ауд. ${lesson.room} · ${lesson.startTime.slice(0, 5)}–${lesson.endTime.slice(0, 5)}`
+          : undefined
+      }
+    >
+      {lesson && (
+        <div className="px-[var(--space-5)] pb-[var(--space-5)]">
+          {screen === 'menu' && (
+            <MenuScreen
+              onExcuse={() => setScreen('excuse')}
+              onLateCheckin={handleLateCheckin}
+              lessonStatus={lesson.status}
+              personalStatus={personalStatus ?? null}
+              isLateCheckinLoading={lateCheckinMutation.isPending}
+            />
+          )}
 
-          {/* Sheet */}
-          <motion.div
-            key="sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Действия с парой"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0.35 }}
-            onDragEnd={(_e, info) => {
-              if (info.offset.y > 120) handleClose()
-            }}
-            className={cn(
-              'fixed inset-x-0 bottom-0 z-[var(--z-modal)]',
-              'rounded-t-[var(--radius-lg)] border-t',
-              'max-h-[92vh] overflow-hidden',
-              'pb-[env(safe-area-inset-bottom)]',
-            )}
-            style={{
-              background: 'var(--bg-elevated)',
-              borderColor: 'var(--border-default)',
-              boxShadow: 'var(--shadow-lg)',
-            }}
-          >
-            {/* Drag handle */}
-            <div className="flex justify-center pt-[var(--space-2)] pb-[var(--space-1)]">
-              <span
-                aria-hidden="true"
-                className="block h-1 w-10 rounded-full"
-                style={{ background: 'var(--border-default)' }}
-              />
-            </div>
+          {screen === 'excuse' && (
+            <ExcuseForm
+              excuseType={excuseType}
+              onExcuseType={setExcuseType}
+              comment={comment}
+              onComment={setComment}
+              file={file}
+              onFileChange={onFileChange}
+              onSubmit={handleExcuseSubmit}
+              onBack={() => setScreen('menu')}
+              isSubmitting={excuseMutation.isPending}
+            />
+          )}
 
-            {/* Header */}
-            <div className="flex items-start gap-[var(--space-3)] px-[var(--space-5)] pb-[var(--space-3)]">
-              <div className="min-w-0 flex-1">
-                <h2
-                  className="truncate text-[var(--text-lg)] font-semibold"
-                  style={{
-                    color: 'var(--text-primary)',
-                    fontFamily: 'var(--font-heading)',
-                  }}
-                >
-                  {subjectName}
-                </h2>
-                <p
-                  className="text-[var(--text-xs)]"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  Ауд. {lesson.room} · {lesson.startTime.slice(0, 5)}–
-                  {lesson.endTime.slice(0, 5)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleClose}
-                aria-label="Закрыть"
-                className="grid size-9 place-items-center rounded-full"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                <X size={18} weight="bold" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="max-h-[calc(92vh-80px)] overflow-y-auto px-[var(--space-5)] pb-[var(--space-5)]">
-              {screen === 'menu' && (
-                <MenuScreen
-                  onExcuse={() => setScreen('excuse')}
-                  onLateCheckin={handleLateCheckin}
-                  lessonStatus={lesson.status}
-                  personalStatus={personalStatus ?? null}
-                  isLateCheckinLoading={lateCheckinMutation.isPending}
-                />
-              )}
-
-              {screen === 'excuse' && (
-                <ExcuseForm
-                  excuseType={excuseType}
-                  onExcuseType={setExcuseType}
-                  comment={comment}
-                  onComment={setComment}
-                  file={file}
-                  onFileChange={onFileChange}
-                  onSubmit={handleExcuseSubmit}
-                  onBack={() => setScreen('menu')}
-                  isSubmitting={excuseMutation.isPending}
-                />
-              )}
-
-              {(screen === 'excuse-success' ||
-                screen === 'late-checkin-success') && (
-                <SuccessScreen
-                  title={
-                    screen === 'excuse-success'
-                      ? 'Тикет отправлен'
-                      : 'Запрос отправлен'
-                  }
-                  text={
-                    screen === 'excuse-success'
-                      ? 'Староста получит уведомление и примет решение.'
-                      : 'Староста подтвердит или отклонит в ближайшее время.'
-                  }
-                  onClose={handleClose}
-                />
-              )}
-            </div>
-          </motion.div>
-        </>
+          {(screen === 'excuse-success' ||
+            screen === 'late-checkin-success') && (
+            <SuccessScreen
+              title={
+                screen === 'excuse-success'
+                  ? 'Тикет отправлен'
+                  : 'Запрос отправлен'
+              }
+              text={
+                screen === 'excuse-success'
+                  ? 'Староста получит уведомление и примет решение.'
+                  : 'Староста подтвердит или отклонит в ближайшее время.'
+              }
+              onClose={handleClose}
+            />
+          )}
+        </div>
       )}
-    </AnimatePresence>
+    </BottomSheet>
   )
 }
 

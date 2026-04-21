@@ -27,3 +27,20 @@ export function mapCheckinError(status: number): string {
       return 'Ошибка сервера. Попробуйте ещё раз'
   }
 }
+
+/**
+ * Маппинг браузерного GeolocationPositionError на понятные сообщения.
+ * Коды: 1 PERMISSION_DENIED, 2 POSITION_UNAVAILABLE, 3 TIMEOUT.
+ */
+export function mapGeolocationError(error: GeolocationPositionError): string {
+  switch (error.code) {
+    case 1:
+      return 'Нет доступа к GPS. Разрешите доступ в настройках браузера'
+    case 2:
+      return 'Не удалось определить местоположение. Проверь GPS и попробуй ещё раз'
+    case 3:
+      return 'Слишком долго ищем GPS. Попробуй ещё раз в открытом пространстве'
+    default:
+      return 'Не удалось получить координаты'
+  }
+}

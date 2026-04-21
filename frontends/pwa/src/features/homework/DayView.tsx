@@ -1,6 +1,7 @@
 import { CaretLeft, CaretRight, BookOpen } from '@phosphor-icons/react'
 import { motion } from 'motion/react'
-import { addDays, formatLongDate, DAY_NAMES_FULL } from '@/shared/lib/dateUtils'
+import { formatLongDate, DAY_NAMES_FULL } from '@/shared/lib/dateUtils'
+import { useDateNavigation } from '@/shared/hooks/useDateNavigation'
 import { cn } from '@/lib/utils'
 import type { HomeworkResponse } from './types'
 import { HomeworkCard } from './HomeworkCard'
@@ -25,6 +26,12 @@ export function DayView({
   onToggleComplete,
   toggling,
 }: DayViewProps) {
+  const { goPrev, goNext } = useDateNavigation({
+    unit: 'day',
+    value: date,
+    onChange: onDateChange,
+  })
+
   return (
     <div className="flex flex-col gap-3">
       <div
@@ -36,7 +43,7 @@ export function DayView({
       >
         <button
           type="button"
-          onClick={() => onDateChange(addDays(date, -1))}
+          onClick={goPrev}
           className="grid size-10 place-items-center rounded-full"
           style={{ color: 'var(--text-secondary)' }}
           aria-label="Предыдущий день"
@@ -59,7 +66,7 @@ export function DayView({
         </div>
         <button
           type="button"
-          onClick={() => onDateChange(addDays(date, 1))}
+          onClick={goNext}
           className="grid size-10 place-items-center rounded-full"
           style={{ color: 'var(--text-secondary)' }}
           aria-label="Следующий день"

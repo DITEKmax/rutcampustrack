@@ -7,6 +7,7 @@ import {
   formatWeekRange,
   MONTH_ABBREV,
 } from '@/shared/lib/dateUtils'
+import { useDateNavigation } from '@/shared/hooks/useDateNavigation'
 import type { HomeworkResponse } from './types'
 import { HomeworkCard } from './HomeworkCard'
 
@@ -47,6 +48,12 @@ export function WeekView({
     return days
   }, [monday, homeworks])
 
+  const { goPrev, goNext } = useDateNavigation({
+    unit: 'week',
+    value: monday,
+    onChange: onMondayChange,
+  })
+
   return (
     <div className="flex flex-col gap-3">
       <div
@@ -58,7 +65,7 @@ export function WeekView({
       >
         <button
           type="button"
-          onClick={() => onMondayChange(addDays(monday, -7))}
+          onClick={goPrev}
           className="grid size-10 place-items-center rounded-full"
           style={{ color: 'var(--text-secondary)' }}
           aria-label="Предыдущая неделя"
@@ -81,7 +88,7 @@ export function WeekView({
         </div>
         <button
           type="button"
-          onClick={() => onMondayChange(addDays(monday, 7))}
+          onClick={goNext}
           className="grid size-10 place-items-center rounded-full"
           style={{ color: 'var(--text-secondary)' }}
           aria-label="Следующая неделя"

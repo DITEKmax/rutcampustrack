@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Fingerprint, CircleNotch } from '@phosphor-icons/react'
-import { useCheckin, mapCheckinError } from './api'
+import { useCheckin, mapCheckinError, mapGeolocationError } from './api'
 import { useNetworkStatus } from '@/shared/hooks/useNetworkStatus'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +28,11 @@ export function CheckInButton({ onSuccess, onError, disabled }: CheckInButtonPro
   const isDisabled = Boolean(disabled) || !isOnline || isLoading
 
   const handleClick = () => {
+    if (!('geolocation' in navigator)) {
+      onError?.('Устройство не поддерживает геолокацию')
+      return
+    }
+
     setIsCapturing(true)
 
     navigator.geolocation.getCurrentPosition(
@@ -48,11 +53,19 @@ export function CheckInButton({ onSuccess, onError, disabled }: CheckInButtonPro
           },
         )
       },
-      () => {
+      (geoError) => {
         setIsCapturing(false)
-        onError?.('Нет доступа к GPS. Разрешите доступ в настройках браузера')
+        onError?.(mapGeolocationError(geoError))
       },
-      { timeout: 10000, maximumAge: 30000 },
+      /**
+       * M07 G6/8 — enableHighAccuracy=true включает GPS (вместо Wi-Fi/
+       * IP fallback), что критично для точной проверки геозоны вуза
+       * (радиус обычно 50-100м). timeout увеличен до 15s — high-accuracy
+       * fix может занимать 5-10с на холодном GPS. maximumAge=15s,
+       * чтобы после возврата из фона (например, после отметки в соседней
+       * паре) координата не бралась старой (застревает).
+       */
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 15000 },
     )
   }
 

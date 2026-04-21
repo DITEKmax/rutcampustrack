@@ -7,6 +7,7 @@ import {
   getMonday,
   MONTH_FULL,
 } from '@/shared/lib/dateUtils'
+import { useDateNavigation } from '@/shared/hooks/useDateNavigation'
 import { cn } from '@/lib/utils'
 import type { HomeworkResponse } from './types'
 
@@ -32,19 +33,18 @@ function startOfMonth(d: Date): Date {
   return x
 }
 
-function addMonths(d: Date, n: number): Date {
-  const x = new Date(d)
-  x.setDate(1)
-  x.setMonth(x.getMonth() + n)
-  return x
-}
-
 export function MonthView({
   month,
   onMonthChange,
   homeworks,
   onPickDate,
 }: MonthViewProps) {
+  const { goPrev, goNext } = useDateNavigation({
+    unit: 'month',
+    value: month,
+    onChange: onMonthChange,
+  })
+
   const cells = useMemo<Cell[]>(() => {
     const first = startOfMonth(month)
     const monday = getMonday(first)
@@ -83,7 +83,7 @@ export function MonthView({
       >
         <button
           type="button"
-          onClick={() => onMonthChange(addMonths(month, -1))}
+          onClick={goPrev}
           className="grid size-10 place-items-center rounded-full"
           style={{ color: 'var(--text-secondary)' }}
           aria-label="Предыдущий месяц"
@@ -101,7 +101,7 @@ export function MonthView({
         </span>
         <button
           type="button"
-          onClick={() => onMonthChange(addMonths(month, 1))}
+          onClick={goNext}
           className="grid size-10 place-items-center rounded-full"
           style={{ color: 'var(--text-secondary)' }}
           aria-label="Следующий месяц"

@@ -4,17 +4,30 @@ import { CaretLeft, CaretRight, CalendarBlank } from '@phosphor-icons/react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { SkeletonList } from '@/shared/components/Skeleton'
 import { useNetworkStatus } from '@/shared/hooks/useNetworkStatus'
+import { useSwipeHandler } from '@/shared/hooks/useSwipeHandler'
+import { useDateNavigation } from '@/shared/hooks/useDateNavigation'
+import {
+  addDays,
+  formatDate,
+  formatWeekRange,
+  getMonday,
+  parseLocalDate,
+} from '@/shared/lib/dateUtils'
 import { useStompEvents } from '@/features/checkin/StompProvider'
 import { CheckInToast } from '@/features/checkin/CheckInToast'
 import { cn } from '@/lib/utils'
+import { useQueryClient } from '@tanstack/react-query'
+import { PullToRefresh } from '@/shared/components/PullToRefresh'
 import {
   useWeekSchedule,
-  usePrefetchSubjects,
+  useSubjectMap,
   useSubjectName,
   useStudentRecords,
 } from './api'
 import {
+  useActiveSemester,
   useActiveSemesterId,
+  useAllSemesters,
   useHomeworksForGroup,
 } from '@/features/homework/api'
 import { LessonHomeworkSection } from '@/features/homework/LessonHomeworkSection'
@@ -23,6 +36,7 @@ import { LessonCard } from './LessonCard'
 import { OfflineStaleNotice } from './OfflineStaleNotice'
 import { LessonActionsSheet } from './LessonActionsSheet'
 import { HeadmanLessonSheet } from './HeadmanLessonSheet'
+import { ScheduleBoundsNotice } from './ScheduleBoundsNotice'
 import {
   useBlockLesson,
   useUnblockLesson,
@@ -30,45 +44,10 @@ import {
 } from './lessonActionsApi'
 import type { AttendanceStatus, LessonResponse } from './types'
 
-const MONTH_ABBREV = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
-
-function getMonday(date: Date): Date {
-  const d = new Date(date)
-  const day = d.getDay()
-  const diff = day === 0 ? -6 : 1 - day
-  d.setDate(d.getDate() + diff)
-  d.setHours(0, 0, 0, 0)
-  return d
-}
-
-function addDays(date: Date, days: number): Date {
-  const d = new Date(date)
-  d.setDate(d.getDate() + days)
-  return d
-}
-
-function formatDate(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
 function getTodayDayIndex(): number {
   const dow = new Date().getDay()
   if (dow === 0) return 5
   return dow - 1
-}
-
-function formatWeekRange(monday: Date): string {
-  const saturday = addDays(monday, 5)
-  const startDay = monday.getDate()
-  const endDay = saturday.getDate()
-
-  if (monday.getMonth() === saturday.getMonth()) {
-    return `${startDay}-${endDay} ${MONTH_ABBREV[saturday.getMonth()]}`
-  }
-  return `${startDay} ${MONTH_ABBREV[monday.getMonth()]} - ${endDay} ${MONTH_ABBREV[saturday.getMonth()]}`
 }
 
 function isSameWeek(a: Date, b: Date): boolean {
@@ -85,6 +64,7 @@ export function SchedulePage() {
   const isHeadman = !!user?.isHeadman
   const { isOnline } = useNetworkStatus()
   const { attendanceCounts, personalStatuses, markPersonalStatus } = useStompEvents()
+  const queryClient = useQueryClient()
 
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getMonday(new Date()))
   const [selectedDayIndex, setSelectedDayIndex] = useState(getTodayDayIndex)
@@ -97,6 +77,53 @@ export function SchedulePage() {
   const unblockMutation = useUnblockLesson()
   const activeSubject = useSubjectName(activeLesson?.subjectId)
   const headmanSubject = useSubjectName(headmanLesson?.subjectId)
+
+  const { data: activeSemester, isFetched: semesterFetched } = useActiveSemester()
+  const { data: allSemesters } = useAllSemesters()
+
+  const semesterBounds = useMemo(() => {
+    if (!activeSemester) return null
+    return {
+      from: parseLocalDate(activeSemester.dateFrom),
+      to: parseLocalDate(activeSemester.dateTo),
+    }
+  }, [activeSemester])
+
+  const nextSemesterStart = useMemo(() => {
+    if (!allSemesters) return null
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const upcoming = allSemesters
+      .map((s) => parseLocalDate(s.dateFrom))
+      .filter((d) => d.getTime() > today.getTime())
+      .sort((a, b) => a.getTime() - b.getTime())
+    return upcoming[0] ?? null
+  }, [allSemesters])
+
+  /**
+   * Показываем info-screen только когда `semesterFetched` (загрузка
+   * завершилась) — это убирает false-positive во время initial render
+   * и делает тесты/unit-env предсказуемыми (mock без /semesters не
+   * блокирует рендер lesson-карточек).
+   */
+  const outOfBounds = useMemo((): 'before-start' | 'after-end' | 'no-active' | null => {
+    if (!semesterFetched) return null
+    if (!activeSemester) return 'no-active'
+    if (!semesterBounds) return null
+    const weekEndDate = addDays(currentWeekStart, 5)
+    if (weekEndDate < semesterBounds.from) return 'before-start'
+    if (currentWeekStart > semesterBounds.to) return 'after-end'
+    return null
+  }, [semesterFetched, activeSemester, semesterBounds, currentWeekStart])
+
+  const weekNav = useDateNavigation({
+    unit: 'week',
+    value: currentWeekStart,
+    onChange: setCurrentWeekStart,
+    bounds: semesterBounds
+      ? { min: semesterBounds.from, max: semesterBounds.to }
+      : undefined,
+  })
 
   const weekStart = formatDate(currentWeekStart)
   const weekEnd = formatDate(addDays(currentWeekStart, 5))
@@ -130,7 +157,7 @@ export function SchedulePage() {
     () => (lessons ?? []).map((l) => l.subjectId),
     [lessons],
   )
-  usePrefetchSubjects(subjectIds)
+  const { subjectMap } = useSubjectMap(subjectIds)
 
   const dayLessons = useMemo(() => {
     if (!lessons) return []
@@ -157,22 +184,28 @@ export function SchedulePage() {
 
   const isCurrentWeek = isSameWeek(currentWeekStart, new Date())
 
-  const handleSwipeWeek = (direction: 'prev' | 'next') => {
-    setCurrentWeekStart((prev) => addDays(prev, direction === 'next' ? 7 : -7))
-  }
+  const handleSwipeWeek = useCallback(
+    (direction: 'prev' | 'next') => {
+      if (direction === 'next') weekNav.goNext()
+      else weekNav.goPrev()
+    },
+    [weekNav],
+  )
 
-  const handleTodayPill = () => {
-    setCurrentWeekStart(getMonday(new Date()))
+  const handleTodayPill = useCallback(() => {
+    weekNav.goToToday()
     setSelectedDayIndex(getTodayDayIndex())
-  }
+  }, [weekNav])
 
-  const handleDaySwipe = (_e: never, info: { offset: { x: number } }) => {
-    if (info.offset.x < -50 && selectedDayIndex < 5) {
-      setSelectedDayIndex((prev) => prev + 1)
-    } else if (info.offset.x > 50 && selectedDayIndex > 0) {
-      setSelectedDayIndex((prev) => prev - 1)
-    }
-  }
+  const handleDaySwipe = useSwipeHandler({
+    horizontalThreshold: 50,
+    onSwipeLeft: () => {
+      if (selectedDayIndex < 5) setSelectedDayIndex((prev) => prev + 1)
+    },
+    onSwipeRight: () => {
+      if (selectedDayIndex > 0) setSelectedDayIndex((prev) => prev - 1)
+    },
+  })
 
   const handleCheckinSuccess = useCallback(
     (lessonId: number) => {
@@ -215,7 +248,16 @@ export function SchedulePage() {
     return lessonDate >= today && lessonDate <= limit
   }, [])
 
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['schedule'] }),
+      queryClient.invalidateQueries({ queryKey: ['studentRecords'] }),
+      queryClient.invalidateQueries({ queryKey: ['homeworks'] }),
+    ])
+  }, [queryClient])
+
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="flex min-h-full flex-col">
       {/* Week nav strip */}
       <div
@@ -225,9 +267,11 @@ export function SchedulePage() {
         <button
           type="button"
           onClick={() => handleSwipeWeek('prev')}
+          disabled={!weekNav.canGoPrev}
           className={cn(
             'grid size-11 place-items-center rounded-full',
             'transition-colors duration-200 ease-out',
+            'disabled:opacity-30 disabled:cursor-not-allowed',
           )}
           style={{ color: 'var(--text-secondary)' }}
           aria-label="Предыдущая неделя"
@@ -253,9 +297,11 @@ export function SchedulePage() {
         <button
           type="button"
           onClick={() => handleSwipeWeek('next')}
+          disabled={!weekNav.canGoNext}
           className={cn(
             'grid size-11 place-items-center rounded-full',
             'transition-colors duration-200 ease-out',
+            'disabled:opacity-30 disabled:cursor-not-allowed',
           )}
           style={{ color: 'var(--text-secondary)' }}
           aria-label="Следующая неделя"
@@ -271,6 +317,8 @@ export function SchedulePage() {
         weekDates={weekDates}
         onSwipeWeek={handleSwipeWeek}
         hasOfflineBanner={!isOnline}
+        canSwipePrev={weekNav.canGoPrev}
+        canSwipeNext={weekNav.canGoNext}
       />
 
       {/* Offline stale notice */}
@@ -287,10 +335,18 @@ export function SchedulePage() {
           drag="x"
           dragDirectionLock
           dragConstraints={{ left: 0, right: 0 }}
-          onDragEnd={handleDaySwipe as never}
+          onDragEnd={handleDaySwipe}
           className="flex flex-col gap-3 px-4 pb-4 pt-3"
         >
-          {isLoading ? (
+          {outOfBounds ? (
+            <ScheduleBoundsNotice
+              kind={outOfBounds}
+              activeFrom={semesterBounds?.from ?? null}
+              activeTo={semesterBounds?.to ?? null}
+              nextFrom={nextSemesterStart}
+              onReturn={handleTodayPill}
+            />
+          ) : isLoading ? (
             <SkeletonList count={4} />
           ) : dayLessons.length === 0 ? (
             <EmptyDayState />
@@ -328,6 +384,7 @@ export function SchedulePage() {
                   >
                     <LessonCard
                       lesson={lesson}
+                      subjectName={subjectMap[lesson.subjectId]}
                       attendanceCount={attendanceCounts[lesson.id]}
                       personalStatus={
                         personalStatuses[lesson.id] ??
@@ -435,6 +492,7 @@ export function SchedulePage() {
         )}
       </AnimatePresence>
     </div>
+    </PullToRefresh>
   )
 }
 

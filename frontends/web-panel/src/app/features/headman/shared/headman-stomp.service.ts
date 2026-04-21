@@ -1,80 +1,56 @@
-import { Injectable, inject } from '@angular/core';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import { Observable, Subject } from 'rxjs';
-import { AuthApi } from '../../../core/auth/auth.api';
-import { buildWsUrl } from '../../../core/auth/ws-ticket';
+import { Injectable, OnDestroy, inject } from '@angular/core';
+import { Observable, Subject, Subscription, filter } from 'rxjs';
+import { NotificationCenterService } from '../../../core/notifications/notification-center.service';
 import type { LateCheckinRequestedEvent } from '../late-checkin/late-checkin.types';
 
 /**
- * STOMP subscription for the headman-only sub-topic
- * `/topic/group/{groupId}/headman`.
+ * Adapter поверх {@link NotificationCenterService} (M07 G5) для
+ * headman-only sub-topic `/topic/group/{groupId}/headman`.
  *
- * Background: notification-service routes headman-only events
- * (`excuse.requested`, `late_checkin.requested`) to a separate sub-topic so
- * that plain group subscribers never see them — see
- * services/notification-service/.../EventConsumer.java (HEADMAN_ONLY_EVENTS).
+ * Notification center уже подписывается на sub-topic если `user.isHeadman`
+ * и прокидывает raw envelope'ы через `onEvent$`. Здесь фильтруем только
+ * `late_checkin.requested` и отдаём payload downstream компоненту.
  *
- * This service is a narrower sibling of StudentStompService. M03b Группа 7:
- * теперь использует single-use ws-ticket вместо JWT в query (замена
- * `?token=<jwt>` → `?ticket=<uuid>`).
- *
- * Lifecycle:
- * - `connect(groupId)` — idempotent per groupId. Access token автоматически
- *   отправляется через `authInterceptor` при запросе ws-ticket.
- * - `lateCheckinRequested$` — stream of envelopes from the sub-topic filtered
- *   to the `late_checkin.requested` type.
- * - `disconnect()` — release the client (call from ngOnDestroy).
+ * До G5 держал отдельный STOMP-клиент — это дублировало сокет и reconnect
+ * logic параллельно с NotificationCenter'ом. Теперь реальный STOMP-connect
+ * только в center'е (M03b ws-ticket + M07 G5 exponential backoff).
  */
 @Injectable({ providedIn: 'root' })
-export class HeadmanStompService {
-  private readonly authApi = inject(AuthApi);
-  private client: Client | null = null;
+export class HeadmanStompService implements OnDestroy {
+  private readonly center = inject(NotificationCenterService);
+
   private currentGroupId: number | null = null;
+  private subscription: Subscription | null = null;
   private readonly lateCheckinSubject = new Subject<LateCheckinRequestedEvent['payload']>();
 
   readonly lateCheckinRequested$: Observable<LateCheckinRequestedEvent['payload']> =
     this.lateCheckinSubject.asObservable();
 
   connect(groupId: number): void {
-    if (this.currentGroupId === groupId && this.client !== null) {
+    if (this.currentGroupId === groupId && this.subscription !== null) {
       return;
     }
-    if (this.client !== null) {
-      this.disconnect();
-    }
+    this.disconnect();
     this.currentGroupId = groupId;
-    this.client = new Client({
-      webSocketFactory: async () => new SockJS(await buildWsUrl(this.authApi)),
-      reconnectDelay: 1000,
-      onConnect: () => {
-        this.client?.subscribe(`/topic/group/${groupId}/headman`, message => {
-          try {
-            const envelope = JSON.parse(message.body) as {
-              type: string;
-              payload: LateCheckinRequestedEvent['payload'];
-            };
-            if (envelope.type === 'late_checkin.requested') {
-              this.lateCheckinSubject.next(envelope.payload);
-            }
-          } catch {
-            // Malformed frame — drop silently. Never echo frame body to console.
-          }
-        });
-      },
-      onStompError: frame => {
-        // eslint-disable-next-line no-console
-        console.error('STOMP error:', frame.headers['message']);
-      },
-    });
-    this.client.activate();
+
+    this.subscription = this.center.onEvent$
+      .pipe(filter((envelope) => envelope.type === 'late_checkin.requested'))
+      .subscribe((envelope) => {
+        this.lateCheckinSubject.next(
+          envelope.payload as unknown as LateCheckinRequestedEvent['payload'],
+        );
+      });
   }
 
   disconnect(): void {
-    if (this.client !== null) {
-      this.client.deactivate();
-      this.client = null;
-      this.currentGroupId = null;
+    if (this.subscription !== null) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
     }
+    this.currentGroupId = null;
+  }
+
+  ngOnDestroy(): void {
+    this.disconnect();
   }
 }

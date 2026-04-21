@@ -1,121 +1,53 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { of } from 'rxjs';
-
-// ---- Module-level mocks -----------------------------------------------------
-// We capture: (a) the config passed to `new Client(...)`, (b) the function
-// handed to the `subscribe` call, and (c) the URL passed to SockJS.
-//
-// M03b Группа 7: webSocketFactory теперь async (pre-fetch ws-ticket).
-
-type StompCallback = (message: { body: string }) => void;
-
-interface CapturedClient {
-  config: {
-    webSocketFactory: () => Promise<unknown> | unknown;
-    reconnectDelay: number;
-    onConnect: () => void;
-    onStompError?: (frame: { headers: Record<string, string> }) => void;
-  };
-  activate: ReturnType<typeof vi.fn>;
-  deactivate: ReturnType<typeof vi.fn>;
-  subscribe: ReturnType<typeof vi.fn>;
-  active: boolean;
-  __lastCallback: StompCallback | null;
-}
-
-const capturedClients: CapturedClient[] = [];
-const capturedSockJsUrls: string[] = [];
-
-vi.mock('@stomp/stompjs', () => {
-  return {
-    Client: vi.fn().mockImplementation((config: CapturedClient['config']) => {
-      const instance: CapturedClient = {
-        config,
-        activate: vi.fn(),
-        deactivate: vi.fn(),
-        subscribe: vi.fn(),
-        active: false,
-        __lastCallback: null,
-      };
-      instance.subscribe.mockImplementation((_destination: string, callback: StompCallback) => {
-        instance.__lastCallback = callback;
-        return { id: 'sub-1', unsubscribe: vi.fn() };
-      });
-      instance.activate.mockImplementation(() => {
-        instance.active = true;
-      });
-      instance.deactivate.mockImplementation(() => {
-        instance.active = false;
-      });
-      capturedClients.push(instance);
-      return instance;
-    }),
-  };
-});
-
-vi.mock('sockjs-client', () => {
-  return {
-    default: vi.fn().mockImplementation((url: string) => {
-      capturedSockJsUrls.push(url);
-      return { url };
-    }),
-  };
-});
+import { Subject } from 'rxjs';
 
 import { StudentStompService } from './student-stomp.service';
-import { AuthApi } from '../../../core/auth/auth.api';
+import { StudentNotificationBadgeService } from './student-notification-badge.service';
+import {
+  NotificationCenterService,
+  type StompEnvelope,
+} from '../../../core/notifications/notification-center.service';
 
-describe('StudentStompService (M03b ws-ticket)', () => {
+/**
+ * M07 G5: StudentStompService теперь — thin adapter поверх
+ * NotificationCenterService.onEvent$. Спецификация проверяет только
+ * адаптер-логику (фильтры, badge increment, idempotency). Сам STOMP-клиент
+ * тестируется в notification-center.service.spec (exponential backoff,
+ * ws-ticket handshake, reconnect).
+ */
+describe('StudentStompService (adapter over NotificationCenter)', () => {
   let service: StudentStompService;
-  let mockAuthApi: Partial<AuthApi>;
+  let eventsSubject: Subject<StompEnvelope>;
+  let badgeMock: { increment: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
-    capturedClients.length = 0;
-    capturedSockJsUrls.length = 0;
-    mockAuthApi = {
-      acquireWsTicket: vi.fn().mockReturnValue(
-        of({ ticket: 'uuid-42', expiresAt: '2026-04-20T00:00:30Z' }),
-      ),
+    eventsSubject = new Subject<StompEnvelope>();
+    badgeMock = { increment: vi.fn() };
+
+    const centerMock: Partial<NotificationCenterService> = {
+      onEvent$: eventsSubject.asObservable(),
     };
+
     TestBed.configureTestingModule({
       providers: [
         StudentStompService,
-        { provide: AuthApi, useValue: mockAuthApi },
+        { provide: NotificationCenterService, useValue: centerMock },
+        { provide: StudentNotificationBadgeService, useValue: badgeMock },
       ],
     });
     service = TestBed.inject(StudentStompService);
   });
 
-  it('connect() constructs a Client with reconnectDelay 1000 and ws factory pre-fetches ticket', async () => {
+  it('connect() подписывается на NotificationCenter.onEvent$', () => {
     service.connect(5);
-
-    expect(capturedClients).toHaveLength(1);
-    const client = capturedClients[0];
-    expect(client.config.reconnectDelay).toBe(1000);
-    expect(client.activate).toHaveBeenCalledTimes(1);
-
-    // Invoke the SockJS factory — async (Promise). Ticket URL instead of token.
-    await client.config.webSocketFactory();
-    expect(mockAuthApi.acquireWsTicket).toHaveBeenCalled();
-    expect(capturedSockJsUrls).toContain('/api/ws?ticket=uuid-42');
+    expect(eventsSubject.observed).toBe(true);
   });
 
-  it('on onConnect, subscribes to /topic/group/{groupId}', () => {
+  it('эмитит attendance.marked payload через marked$', () => {
     service.connect(5);
-    const client = capturedClients[0];
-    client.config.onConnect();
-
-    expect(client.subscribe).toHaveBeenCalledWith('/topic/group/5', expect.any(Function));
-  });
-
-  it('emits attendance.marked payloads from marked$ when the subscribe callback receives a matching envelope', () => {
-    service.connect(5);
-    const client = capturedClients[0];
-    client.config.onConnect();
-
     const received: unknown[] = [];
-    service.marked$.subscribe(payload => received.push(payload));
+    service.marked$.subscribe((payload) => received.push(payload));
 
     const payload = {
       lesson_id: 12,
@@ -124,55 +56,61 @@ describe('StudentStompService (M03b ws-ticket)', () => {
       status: 'present',
       marked_by: 'self',
     };
-    client.__lastCallback?.({
-      body: JSON.stringify({ type: 'attendance.marked', payload }),
-    });
+    eventsSubject.next({ type: 'attendance.marked', payload });
 
     expect(received).toEqual([payload]);
   });
 
-  it('ignores envelopes with a non-attendance.marked type', () => {
+  it('событие !== attendance.marked не попадает в marked$, но попадает в onAnyEvent$', () => {
     service.connect(5);
-    const client = capturedClients[0];
-    client.config.onConnect();
+    const marked: unknown[] = [];
+    const any: unknown[] = [];
+    service.marked$.subscribe((p) => marked.push(p));
+    service.onAnyEvent$.subscribe((env) => any.push(env));
 
-    const received: unknown[] = [];
-    service.marked$.subscribe(payload => received.push(payload));
+    eventsSubject.next({ type: 'lesson.started', payload: { lesson_id: 1 } });
 
-    client.__lastCallback?.({
-      body: JSON.stringify({ type: 'lesson.started', payload: { lesson_id: 1 } }),
-    });
-
-    expect(received).toEqual([]);
+    expect(marked).toEqual([]);
+    expect(any).toHaveLength(1);
+    expect((any[0] as StompEnvelope).type).toBe('lesson.started');
   });
 
-  it('ignores malformed JSON frames without throwing', () => {
+  it('increments badge на каждом BADGE_TYPES событии', () => {
     service.connect(5);
-    const client = capturedClients[0];
-    client.config.onConnect();
-
-    const received: unknown[] = [];
-    service.marked$.subscribe(payload => received.push(payload));
-
-    expect(() =>
-      client.__lastCallback?.({ body: 'not json ———' }),
-    ).not.toThrow();
-    expect(received).toEqual([]);
+    eventsSubject.next({ type: 'homework.published', payload: {} });
+    eventsSubject.next({ type: 'attendance.marked', payload: {} });
+    expect(badgeMock.increment).toHaveBeenCalledTimes(2);
   });
 
-  it('disconnect() calls deactivate() on the client', () => {
+  it('не инкрементирует badge для событий вне BADGE_TYPES', () => {
     service.connect(5);
-    const client = capturedClients[0];
+    eventsSubject.next({ type: 'late_checkin.requested', payload: {} });
+    expect(badgeMock.increment).not.toHaveBeenCalled();
+  });
 
+  it('disconnect() освобождает подписку', () => {
+    service.connect(5);
+    expect(eventsSubject.observed).toBe(true);
     service.disconnect();
-
-    expect(client.deactivate).toHaveBeenCalledTimes(1);
+    expect(eventsSubject.observed).toBe(false);
   });
 
-  it('is idempotent — calling connect() twice for the same group does not create a second client', () => {
+  it('connect() идемпотентен для одного и того же groupId', () => {
     service.connect(5);
     service.connect(5);
+    // Только одна подписка на Subject — observed остаётся true, но второй
+    // connect ничего не создаёт дополнительно. Проверяется через счётчик
+    // событий: 1 envelope → 1 marked.
+    const received: unknown[] = [];
+    service.marked$.subscribe((p) => received.push(p));
+    eventsSubject.next({ type: 'attendance.marked', payload: { lesson_id: 7 } });
+    expect(received).toEqual([{ lesson_id: 7 }]);
+  });
 
-    expect(capturedClients).toHaveLength(1);
+  it('connect() с другим groupId переустанавливает подписку', () => {
+    service.connect(5);
+    service.connect(6);
+    // Первая подписка отписана, вторая активна — Subject видит одного подписчика.
+    expect(eventsSubject.observed).toBe(true);
   });
 });

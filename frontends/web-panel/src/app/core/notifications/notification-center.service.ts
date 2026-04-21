@@ -1,5 +1,5 @@
 import { Injectable, Signal, computed, effect, inject, signal } from '@angular/core';
-import { Client } from '@stomp/stompjs';
+import { Client, ReconnectionTimeMode } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { Subject } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
@@ -134,9 +134,14 @@ export class NotificationCenterService {
     this.connectedKey = key;
 
     // M03b Группа 7: ticket-based handshake. Каждый reconnect свежий ticket.
+    // M07 G5: exponential backoff (1s → 30s). Fixed 2s raffle'ил broker при
+    // массовых отключениях (reverse-proxy рестарт); exponential равномерно
+    // размазывает reconnect'ы во времени.
     this.client = new Client({
       webSocketFactory: async () => new SockJS(await buildWsUrl(this.authApi)),
-      reconnectDelay: 2000,
+      reconnectDelay: 1000,
+      maxReconnectDelay: 30_000,
+      reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
       onConnect: () => {
         this.client?.subscribe(`/topic/group/${groupId}`, message => this.handleFrame(message.body, userId));
         if (isHeadman) {

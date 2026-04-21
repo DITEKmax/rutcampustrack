@@ -1,16 +1,14 @@
-import { Injectable, inject } from '@angular/core';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import { Observable, Subject } from 'rxjs';
+import { Injectable, OnDestroy, inject } from '@angular/core';
+import { Observable, Subject, Subscription, filter, map } from 'rxjs';
 import type {
   AttendanceMarkedPayload,
   StompEnvelope,
 } from './student-schedule.types';
 import { StudentNotificationBadgeService } from './student-notification-badge.service';
-import { AuthApi } from '../../../core/auth/auth.api';
-import { buildWsUrl } from '../../../core/auth/ws-ticket';
+import { NotificationCenterService } from '../../../core/notifications/notification-center.service';
 
-const STORED_TYPES = [
+/** События, которые студент хочет видеть в badge-счётчике. */
+const BADGE_TYPES: ReadonlySet<string> = new Set([
   'lesson.started',
   'lesson.cancelled',
   'homework.published',
@@ -18,53 +16,38 @@ const STORED_TYPES = [
   'attendance.marked',
   'late_checkin.decided',
   'excuse.decided',
-];
+]);
 
 /**
- * STOMP subscription service for the student cabinet.
+ * Adapter поверх {@link NotificationCenterService} (M07 G5).
  *
- * Mirrors the PWA implementation (frontends/pwa/src/features/checkin/
- * useStompCheckin.ts) so both clients interoperate with the same
- * notification-web broker topology shipped in Phase 20.
+ * До G5 был самостоятельным STOMP-клиентом с собственным `Client.activate()` —
+ * это открывало ещё одно WebSocket-соединение параллельно с NotificationCenter'ом,
+ * клиентам приходили дубли событий, и при reverse-proxy-рестарте оба клиента
+ * ломились на reconnect в один и тот же момент.
  *
- * Connection lifecycle:
- * 1. Caller invokes `connect(groupId, getAccessToken)`; the service builds a
- *    @stomp/stompjs Client with a SockJS factory pointing at
- *    `/api/ws?token=<access-token>` — this is the only channel the
- *    notification-web JwtHandshakeInterceptor accepts (see
- *    services/notification-service/.../WebSocketConfig.java).
- * 2. On successful CONNECT the client subscribes to
- *    `/topic/group/{groupId}` and parses each envelope as
- *    `{ type: 'attendance.marked', payload: AttendanceMarkedPayload }`.
- * 3. Matching envelopes are pushed onto `marked$` for downstream reactive
- *    consumers (Plan 03 wires the CheckinComponent to this observable).
- * 4. Caller invokes `disconnect()` in ngOnDestroy to deactivate the client.
+ * Теперь `connect(groupId)` идемпотентно начинает подписку на `onEvent$`
+ * NotificationCenter'а. Реальный STOMP-коннект держится только там, reconnect
+ * и security (T-51-01: токен не логируется) — тоже ответственность center'а.
  *
- * Idempotency: calling `connect()` twice for the same groupId while a
- * client is already live is a no-op. Calling with a different groupId
- * tears down the existing client and creates a new one.
+ * Контракт остался тем же:
+ * - `marked$` — `attendance.marked` payload;
+ * - `onAnyEvent$` — сырой envelope;
+ * - `connect(groupId)` / `disconnect()` — lifecycle hooks для компонента.
  *
- * ## Security (T-51-01 mitigation)
- *
- * The access token arrives as a `?token=` query param on the WebSocket
- * upgrade URL. This module:
- *   - NEVER logs the full URL.
- *   - NEVER logs `getAccessToken()` output.
- *   - NEVER echoes the token into an error message.
- *   - NEVER persists the token to localStorage.
- * `onStompError` only surfaces `frame.headers['message']` — an
- * intentionally narrow channel that cannot leak connection context.
- * Token lifecycle is owned by the notification-web interceptor, which
- * validates the JWT at handshake and discards it thereafter.
+ * `groupId` сейчас используется только для sanity (если пользователь сменил
+ * группу между connect'ами — сбрасываем подписку). Фильтрация по groupId
+ * уже сделана NotificationCenter'ом (он подписывается на `/topic/group/{gid}`).
  */
 @Injectable({ providedIn: 'root' })
-export class StudentStompService {
-  private client: Client | null = null;
+export class StudentStompService implements OnDestroy {
+  private readonly center = inject(NotificationCenterService);
+  private readonly badgeService = inject(StudentNotificationBadgeService);
+
   private currentGroupId: number | null = null;
+  private subscription: Subscription | null = null;
   private readonly markedSubject = new Subject<AttendanceMarkedPayload>();
   private readonly onAnySubject = new Subject<StompEnvelope<Record<string, unknown>>>();
-  private readonly badgeService = inject(StudentNotificationBadgeService);
-  private readonly authApi = inject(AuthApi);
 
   /** Reactive stream of attendance.marked payloads. */
   readonly marked$: Observable<AttendanceMarkedPayload> = this.markedSubject.asObservable();
@@ -73,56 +56,45 @@ export class StudentStompService {
   readonly onAnyEvent$: Observable<StompEnvelope<Record<string, unknown>>> = this.onAnySubject.asObservable();
 
   /**
-   * Connect to /api/ws for a given group. Idempotent per (groupId).
-   * Switching groups tears down the prior client.
+   * Idempotent per groupId. Switching groups resubscribes.
    *
-   * M03b Группа 7: ticket-based handshake. Access token уходит только в
-   * `POST /auth/ws-ticket` (через authInterceptor), не в WebSocket URL.
+   * Не открывает WebSocket сам — только слушает `NotificationCenterService.onEvent$`.
+   * Сам STOMP-клиент (M03b ws-ticket handshake + M07 G5 exponential backoff)
+   * держится center'ом.
    */
   connect(groupId: number): void {
-    if (this.currentGroupId === groupId && this.client !== null) {
-      // Already connected or connecting for this group.
+    if (this.currentGroupId === groupId && this.subscription !== null) {
       return;
     }
-
-    if (this.client !== null) {
-      this.disconnect();
-    }
-
+    this.disconnect();
     this.currentGroupId = groupId;
-    this.client = new Client({
-      webSocketFactory: async () => new SockJS(await buildWsUrl(this.authApi)),
-      reconnectDelay: 1000,
-      onConnect: () => {
-        this.client?.subscribe(`/topic/group/${groupId}`, message => {
-          try {
-            const envelope = JSON.parse(message.body) as StompEnvelope<Record<string, unknown>>;
-            this.onAnySubject.next(envelope);
-            if (STORED_TYPES.includes(envelope.type)) { this.badgeService.increment(); }
-            if (envelope.type === 'attendance.marked') {
-              this.markedSubject.next(envelope.payload as unknown as AttendanceMarkedPayload);
-            }
-          } catch {
-            // Malformed frame — drop silently. Never echo frame body to console.
-          }
-        });
-      },
-      onStompError: frame => {
-        // T-51-01: log ONLY the broker-provided message header, never the URL
-        // or any headers that could carry the token.
-        // eslint-disable-next-line no-console
-        console.error('STOMP error:', frame.headers['message']);
-      },
-    });
-    this.client.activate();
+
+    this.subscription = this.center.onEvent$
+      .pipe(
+        // Center может в будущем шлёт события других групп (админы, super-users);
+        // сейчас гарантирована привязка к user.groupId, но оставляем type-guard.
+        map((envelope) => envelope as StompEnvelope<Record<string, unknown>>),
+        filter((envelope) => typeof envelope.type === 'string'),
+      )
+      .subscribe((envelope) => {
+        this.onAnySubject.next(envelope);
+        if (BADGE_TYPES.has(envelope.type)) this.badgeService.increment();
+        if (envelope.type === 'attendance.marked') {
+          this.markedSubject.next(envelope.payload as unknown as AttendanceMarkedPayload);
+        }
+      });
   }
 
-  /** Disconnect and release the current client, if any. */
+  /** Отписаться. Center продолжает держать сокет — disconnect здесь лёгкий. */
   disconnect(): void {
-    if (this.client !== null) {
-      this.client.deactivate();
-      this.client = null;
-      this.currentGroupId = null;
+    if (this.subscription !== null) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
     }
+    this.currentGroupId = null;
+  }
+
+  ngOnDestroy(): void {
+    this.disconnect();
   }
 }

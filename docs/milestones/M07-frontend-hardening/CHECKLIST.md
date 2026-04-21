@@ -154,12 +154,29 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 
 ## Группа 5 — NotificationCenter unification (QC1) — ~4ч
 
-- [ ] web-panel: создать `NotificationService` (unified STOMP client)
-- [ ] Заменить 3 существующих STOMP-клиента вызовами NotificationService
-- [ ] WebSocket reconnect + exponential backoff в одном месте
-- [ ] Повторно типизировать event payloads через generated types (QC2)
-- [ ] Unit-тесты reconnect logic
-- [ ] Commit: `refactor(frontend): unified NotificationService (M07 Группа 5, QC1)`
+- [x] web-panel: `NotificationCenterService` уже был с phase-pre-G5
+      реализован; G5 его усиливает до unified STOMP-клиента.
+- [x] `StudentStompService` и `HeadmanStompService` переделаны в
+      thin adapter'ы над `NotificationCenterService.onEvent$`
+      (filter по type). Один WebSocket на всё приложение, один
+      reconnect-механизм.
+- [x] Exponential backoff в NotificationCenter:
+      `reconnectDelay: 1000` + `maxReconnectDelay: 30_000` +
+      `reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL`.
+      Раньше был fixed 2s — raffle'ил broker при одновременных
+      отключениях клиентов.
+- [~] Повторная типизация event payloads через generated types —
+      **отложено**: backend STOMP envelope'ы (snake_case) не описаны
+      в OpenAPI, это шина MQ + WS, не REST. Типизация шины →
+      отдельный milestone (возможно M10 Notification History).
+- [x] Unit-тесты:
+      - `notification-center.service.spec.ts` — 6 кейсов (exponential
+        backoff config, headman sub-topic, logout disconnect,
+        onEvent$ propagation, garbage JSON не крэшит).
+      - `student-stomp.service.spec.ts` — 8 кейсов, переписан под
+        adapter-паттерн (mock NotificationCenter.onEvent$).
+      - `headman-stomp.service.spec.ts` — 5 кейсов (новый файл).
+- [x] Commit `ded220b`: `refactor(frontend): unified NotificationService (M07 Группа 5, QC1)`
 
 ## Группа 6 — UX P2-7A/1..8 — ~2д
 

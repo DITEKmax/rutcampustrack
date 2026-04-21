@@ -209,7 +209,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       `enableHighAccuracy: true` + timeout 15s + `mapGeolocationError`
       (denied/timeout/unavailable) в CheckInButton + feature-detection
       для отсутствующего geolocation API.
-- [x] Commit `<pending>`: `feat(pwa): UX improvements P2-7A/1..8 (M07 Группа 6)`
+- [x] Commit `6e5ca8e`: `feat(pwa): UX improvements P2-7A/1..8 (M07 Группа 6)`
 
 ## Группа 7 — ConfirmWithReasonDialog (QC4) — ~2ч
 

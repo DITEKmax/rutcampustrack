@@ -7,7 +7,7 @@ Opus сам откроет файлы и поймёт где мы останов
 
 Продолжай работу над M07 Frontend Hardening (v0.0.0).
 
-**Текущий прогресс M07 (2026-04-22, 9 коммитов):**
+**Текущий прогресс M07 (2026-04-22, 10 коммитов):**
 
 | Группа | Статус | Commit |
 |--------|--------|--------|
@@ -17,9 +17,9 @@ Opus сам откроет файлы и поймёт где мы останов
 | G3b migration callsite'ов (PWA + web-panel full) | ✅ | `b5e66f6` |
 | G4 RFC 7807 error interceptor | ✅ | `9f628aa` |
 | G5 NotificationCenter unified (STOMP adapters + expo backoff) | ✅ | `9120544` |
-| **G6 UX P2-7A/1..8** | ⬜ **NEXT** | — |
+| G6 UX P2-7A/1..8 (PullToRefresh + hooks + bounds + geolocation) | ✅ | `6e5ca8e` |
 | G7 ConfirmWithReasonDialog | ✅ | `bfa780f` |
-| G8 Lazy-loading per-role | ⬜ | — |
+| **G8 Lazy-loading per-role** | ⬜ **NEXT** | — |
 | G9 StatsPage aggregate + sparklines placeholder | ⬜ | — |
 | G10 a11y axe-core baseline | ⬜ | — |
 | G11 nginx per-location + PR-template | ✅ | `65640f4` |
@@ -28,26 +28,36 @@ Opus сам откроет файлы и поймёт где мы останов
 Scope-commit `56d879c` (D1 decisions) + docs-commit `03949e3` (hand-off
 после G1+G2+G3a).
 
-**Стартуй с G6 — UX improvements P2-7A/1..8 (самый крупный, ~2д):**
+**Стартуй с G8 — Lazy-loading per-role (~3ч):**
 
-См. `docs/milestones/M07-frontend-hardening/CHECKLIST.md` → Группа 6.
-Восемь подзадач:
-1. **P2-7A/1 PullToRefresh** — PWA hook + TanStack Query refetch.
-2. **P2-7A/2 useSwipeHandler** — конфигурируемый threshold hook.
-3. **P2-7A/3 useDateNavigation** — single source of truth для prev/next.
-4. **P2-7A/4 Schedule navigation bounds** — prev/next ограничены
-   активным семестром + info-screen за границей (см. D1 решение 5).
-5. **P2-7A/5 Scroll position preservation** — sessionStorage per route.
-6. **P2-7A/6 forkJoin waterfall fix** — subject-lookup не должен
-   блокировать. Проверь `SchedulePage` / `LessonCard` useSubjectName.
-7. **P2-7A/7 Unified DrawerMenu** — PWA сейчас имеет несколько
-   drawer'ов; сделать shared `DrawerMenu` компонент.
-8. **P2-7A/8 Geolocation high-accuracy + loading UX** — spinner +
-   timeout для `CheckInButton` / `CheckInScreen`.
+См. `docs/milestones/M07-frontend-hardening/CHECKLIST.md` → Группа 8.
+- Angular web-panel: `loadChildren` для `/admin/*`, `/teacher/*`,
+  `/student/*`, `/headman/*` с role-check guard'ами. Bundle analyzer
+  < 500KB per role initial chunk.
+- PWA React: `main.tsx` уже использует `lazy()` для всех route-level
+  компонентов. Проверить что admin/teacher/student chunks разделены
+  (bundle analyzer в build), при необходимости — добавить role-based
+  split. Меньше дублирования.
 
-**Можно параллельно или после G6:** G8 (lazy-loading per-role, ~3ч,
-Angular routes + PWA React.lazy), G9 (StatsPage aggregate + sparklines
+**Можно параллельно или после G8:** G9 (StatsPage aggregate + sparklines
 placeholder, ~2ч), G10 (a11y axe-core, ~1д).
+
+## G6 Post-scope сюрпризы (учтены в commit `6e5ca8e`)
+
+- **HeadmanLessonSheet содержит Tabs между header и scrollable area** —
+  BottomSheet default header не подошёл. Решение: передавать `heading`/
+  `subtitle` через BottomSheet props для LessonActionsSheet (простой
+  кейс), и не использовать их в HeadmanLessonSheet (custom children
+  рендерят свой собственный header-wrapper при необходимости). В
+  HeadmanLessonSheet header через BottomSheet props остаётся, а Tabs
+  рендерятся как обычный ребёнок.
+- **SchedulePage test не мокал /academic/semesters** — после G6/4 bounds
+  добавились, требовался `mockSemesters`. Добавлен mock с `active=true`
+  в `beforeEach` всех трёх кейсов.
+- **usePrefetchSubjects оставлен orphan export** — после G6/6 замена
+  на `useSubjectMap` исключила все call-sites. Не удалил, т.к. это
+  чистый side-effect hook без зависимостей, оставляет возможность
+  использовать в будущем без reimport из generated API.
 
 **G12 — блокирующий финал:** аудит diff всего M07, security-auditor +
 code-reviewer агенты, CHANGELOG, tag `v0.0.0-alpha.8`.

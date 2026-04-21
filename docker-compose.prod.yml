@@ -386,7 +386,8 @@ services:
   # ============================================================
 
   node-exporter:
-    image: prom/node-exporter:latest
+    # M06 P2-9/2: semver-pin (OWNER-ANSWERS 4091). Renovate auto-merge patch.
+    image: prom/node-exporter:v1.8.2
     container_name: rct-node-exporter
     command:
       - '--path.rootfs=/host'
@@ -418,7 +419,8 @@ services:
     privileged: true
 
   prometheus:
-    image: prom/prometheus:latest
+    # M06 P2-9/2: semver-pin (OWNER-ANSWERS 4091). Renovate auto-merge patch.
+    image: prom/prometheus:v2.55.1
     container_name: rct-prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -495,7 +497,8 @@ services:
     restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:latest
+    # M06 P2-9/2: semver-pin (OWNER-ANSWERS 4092). Renovate auto-merge patch.
+    image: grafana/grafana:11.3.1
     container_name: rct-grafana
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
@@ -515,7 +518,9 @@ services:
     restart: unless-stopped
 
   loki:
-    image: grafana/loki:latest
+    # M06 P2-9/2: semver-pin (OWNER-ANSWERS 4094). Major upgrade — MANUAL
+    # через Renovate (см. docs/runbooks/loki-major-upgrade.md, NEW-151).
+    image: grafana/loki:3.2.1
     container_name: rct-loki
     command: -config.file=/etc/loki/loki.yml
     volumes:

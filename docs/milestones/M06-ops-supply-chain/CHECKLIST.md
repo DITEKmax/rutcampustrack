@@ -34,15 +34,16 @@
 - [x] `docker-compose.prod.yml` — `cadvisor:v0.49.1@sha256:...` + `promtail:3.2.1@sha256:...`
 - [x] `docs/infra/container-trust.md` — NEW-102 policy doc
 - [x] Smoke: `docker compose config --quiet` exit=0
-- [ ] Commit: `feat(ops): digest-пин cadvisor + promtail (M06 Группа 3, QD4, NEW-102)`
+- [x] Commit: `30a1046 feat(ops): digest-пин cadvisor + promtail (M06 Группа 3, QD4, NEW-102)`
 
-## Группа 4 — Observability semver pins (P2-9/2, 13 P2-2) — ~1.5ч
+## Группа 4 — Observability semver pins (P2-9/2, 13 P2-2) — ~1.5ч ✅
 
-- [ ] `docker-compose.prod.yml` — `grafana/loki:3.2.1` (не `:latest`)
-- [ ] `docker-compose.prod.yml` — `prom/prometheus:v2.55.1`
-- [ ] `docker-compose.prod.yml` — `grafana/grafana:11.3.1`
-- [ ] `docker-compose.prod.yml` — `prom/node-exporter:v1.8.2`
-- [ ] `docs/runbooks/loki-major-upgrade.md` — NEW-151
+- [x] `docker-compose.prod.yml` — `grafana/loki:3.2.1` (matches promtail 3.2.1)
+- [x] `docker-compose.prod.yml` — `prom/prometheus:v2.55.1`
+- [x] `docker-compose.prod.yml` — `grafana/grafana:11.3.1`
+- [x] `docker-compose.prod.yml` — `prom/node-exporter:v1.8.2`
+- [x] `docs/runbooks/loki-major-upgrade.md` — NEW-151 (expand-contract schema procedure)
+- [x] Smoke: `compose config --quiet` exit=0; нет `:latest` в prod compose кроме infra tag'ов (postgres:16, mongo:7, и т.д.)
 - [ ] Commit: `feat(ops): semver-pin observability images (M06 Группа 4, P2-9/2, NEW-151)`
 
 ## Группа 5 — Renovate + Dependabot (QD4 + QD6 + NEW-105) — ~2.5ч

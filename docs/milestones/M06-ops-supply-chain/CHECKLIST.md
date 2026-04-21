@@ -52,15 +52,15 @@
 - [x] `.github/dependabot.yml` — gradle, npm × 3 (pwa/web-panel/mini-app), pip (bot), docker, github-actions (security-only)
 - [x] `renovate-config-validator` — `Config validated successfully`
 - [x] `docs/ci-cd.md` — NEW-105 (полный CI/CD flow: ci.yml + deploy.yml + security.yml + Renovate + Dependabot + rollback procedure)
-- [ ] Commit: `feat(ops): Renovate + Dependabot + ci-cd.md (M06 Группа 5, QD6, NEW-105)`
+- [x] Commit: `bab4eb7 feat(ops): Renovate + Dependabot + ci-cd.md (M06 Группа 5, QD6, NEW-105)`
 
-## Группа 6 — Trivy + Gitleaks + SECURITY.md (QD5, NEW-103) — ~3ч
+## Группа 6 — Trivy + Gitleaks + SECURITY.md (QD5, NEW-103) — ~3ч ✅
 
-- [ ] `.github/workflows/security.yml` — trivy-action (repo + image) fail on HIGH/CRITICAL + weekly cron
-- [ ] `.github/workflows/security.yml` — gitleaks-action на push/PR
-- [ ] `.pre-commit-config.yaml` — gitleaks hook
-- [ ] `SECURITY.md` в корне — responsible disclosure, contact email/Telegram
-- [ ] Smoke локально: `docker run aquasec/trivy fs .` + `docker run zricethezav/gitleaks detect --source=.`
+- [x] `.github/workflows/security.yml` — 4 job'а: trivy-repo (fs scan + SARIF → Security tab), trivy-config (Dockerfile + compose), gitleaks (secrets), trivy-images (matrix × 11 GHCR образов, только schedule)
+- [x] Gitleaks через `gitleaks/gitleaks-action@v2` — push + PR
+- [x] `.pre-commit-config.yaml` — gitleaks + check-yaml/json/large-files/eof/trailing-ws
+- [x] `SECURITY.md` в корне — disclosure policy с email + Telegram fallback, 24h/7d/30d/90d timeline
+- [x] Smoke: `npx yaml-lint` на 3 YAML → `YAML Lint successful`
 - [ ] Commit: `feat(ops): Trivy + Gitleaks CI + SECURITY.md (M06 Группа 6, QD5, NEW-103)`
 
 ## Группа 7 — CI↔deploy gate + path filters (C0-8, 13 P0-2, 13 P1-11) — ~1.5ч

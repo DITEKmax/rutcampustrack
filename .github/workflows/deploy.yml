@@ -1,18 +1,46 @@
 name: Deploy
 
+# M06 G7 (C0-8, 13 P0-2): deploy triggered ONLY after successful CI run.
+# `workflow_run` fires after CI completes; `if: success()` filter ensures
+# red CI doesn't release to prod. Red CI = no deploy, period.
+# Fallback: manual `workflow_dispatch` для emergency releases (когда
+# CI падает по flake'у и надо выкатить fix).
+#
+# IMPORTANT: в workflow_run-triggered job'е `github.sha` = SHA of default
+# branch HEAD at workflow creation (может отставать), а `workflow_run.
+# head_sha` = actual CI-commit. Используем DEPLOY_SHA env-переменную,
+# резолвится через `|| github.sha` для workflow_dispatch fallback.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Почему emergency deploy без CI (audit trail)'
+        required: true
+        type: string
+
+env:
+  DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
   build-push:
     name: Build and Push to GHCR
+    # workflow_run fires on BOTH success + failure — filter here.
+    # workflow_dispatch always runs (manual override).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -30,7 +58,7 @@ jobs:
           context: .
           file: services/api-gateway/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/api-gateway:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/api-gateway:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/api-gateway:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/api-gateway:latest
           cache-from: type=gha,scope=api-gateway
           cache-to: type=gha,scope=api-gateway,mode=max
 
@@ -40,7 +68,7 @@ jobs:
           context: .
           file: services/auth-service/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/auth-service:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/auth-service:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/auth-service:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/auth-service:latest
           cache-from: type=gha,scope=auth-service
           cache-to: type=gha,scope=auth-service,mode=max
 
@@ -50,7 +78,7 @@ jobs:
           context: .
           file: services/academic-service/academic-app/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/academic-service:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/academic-service:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/academic-service:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/academic-service:latest
           cache-from: type=gha,scope=academic-service
           cache-to: type=gha,scope=academic-service,mode=max
 
@@ -60,7 +88,7 @@ jobs:
           context: .
           file: services/schedule-service/schedule-app/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/schedule-service:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/schedule-service:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/schedule-service:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/schedule-service:latest
           cache-from: type=gha,scope=schedule-service
           cache-to: type=gha,scope=schedule-service,mode=max
 
@@ -70,7 +98,7 @@ jobs:
           context: .
           file: services/attendance-service/attendance-app/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/attendance-service:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/attendance-service:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/attendance-service:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/attendance-service:latest
           cache-from: type=gha,scope=attendance-service
           cache-to: type=gha,scope=attendance-service,mode=max
 
@@ -80,7 +108,7 @@ jobs:
           context: .
           file: services/notification-service/notification-app/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/notification-web:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/notification-web:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/notification-web:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/notification-web:latest
           cache-from: type=gha,scope=notification-web
           cache-to: type=gha,scope=notification-web,mode=max
 
@@ -90,7 +118,7 @@ jobs:
           context: services/notification-bot
           file: services/notification-bot/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/notification-bot:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/notification-bot:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/notification-bot:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/notification-bot:latest
           cache-from: type=gha,scope=notification-bot
           cache-to: type=gha,scope=notification-bot,mode=max
 
@@ -100,7 +128,7 @@ jobs:
           context: frontends/pwa
           file: frontends/pwa/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/pwa-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/pwa-nginx:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/pwa-nginx:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/pwa-nginx:latest
           cache-from: type=gha,scope=pwa
           cache-to: type=gha,scope=pwa,mode=max
 
@@ -110,7 +138,7 @@ jobs:
           context: frontends/mini-app
           file: frontends/mini-app/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:latest
           cache-from: type=gha,scope=mini-app
           cache-to: type=gha,scope=mini-app,mode=max
 
@@ -120,7 +148,7 @@ jobs:
           context: frontends/web-panel
           file: frontends/web-panel/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:latest
           cache-from: type=gha,scope=web-panel
           cache-to: type=gha,scope=web-panel,mode=max
 
@@ -130,7 +158,7 @@ jobs:
           context: frontends/landing
           file: frontends/landing/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/landing-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/landing-nginx:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/landing-nginx:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/landing-nginx:latest
           cache-from: type=gha,scope=landing
           cache-to: type=gha,scope=landing,mode=max
 
@@ -143,7 +171,7 @@ jobs:
         uses: appleboy/ssh-action@v1
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ env.DEPLOY_SHA }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -164,7 +192,7 @@ jobs:
                chown -R 100:101 /keys && \
                chmod 640 /keys/private.key && \
                chmod 644 /keys/public.key"
-            # IMAGE_TAG=${{ github.sha }} pins commit-specific images (M06 QD1, 13 P1-1).
+            # IMAGE_TAG=${{ env.DEPLOY_SHA }} pins commit-specific images (M06 QD1, 13 P1-1).
             # compose reads ${IMAGE_TAG:-latest} per service block. `latest` tag still
             # pushed for zero-downtime redeploy via `docker compose pull`, но конкретный
             # rollback возможен через `IMAGE_TAG=<sha> docker compose up -d`.

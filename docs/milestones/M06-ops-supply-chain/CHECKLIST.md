@@ -61,14 +61,17 @@
 - [x] `.pre-commit-config.yaml` — gitleaks + check-yaml/json/large-files/eof/trailing-ws
 - [x] `SECURITY.md` в корне — disclosure policy с email + Telegram fallback, 24h/7d/30d/90d timeline
 - [x] Smoke: `npx yaml-lint` на 3 YAML → `YAML Lint successful`
-- [ ] Commit: `feat(ops): Trivy + Gitleaks CI + SECURITY.md (M06 Группа 6, QD5, NEW-103)`
+- [x] Commit: `5acffdb feat(ops): Trivy + Gitleaks CI + SECURITY.md (M06 Группа 6, QD5, NEW-103)`
 
-## Группа 7 — CI↔deploy gate + path filters (C0-8, 13 P0-2, 13 P1-11) — ~1.5ч
+## Группа 7 — CI↔deploy gate + path filters (C0-8, 13 P0-2, 13 P1-11) — ~1.5ч ✅
 
-- [ ] `.github/workflows/ci.yml` — `paths-ignore: ['docs/**', '.planning/**', '*.md']`
-- [ ] `.github/workflows/deploy.yml` — `on: workflow_run: workflows: [CI]: types: [completed]: branches: [main]` + `if: github.event.workflow_run.conclusion == 'success'`
-- [ ] `docs/ci-cd.md` — раздел «branch protection setup» (manual GitHub UI steps)
-- [ ] Commit: `feat(ci): workflow_run gate + paths-ignore (M06 Группа 7, C0-8, 13 P0-2/11)`
+- [x] `.github/workflows/ci.yml` — `paths-ignore: [docs/**, .planning/**, *.md, SECURITY.md, renovate.json, .pre-commit-config.yaml]`
+- [x] `.github/workflows/deploy.yml` — `on: workflow_run: [CI]: types: [completed]: branches: [main]` + `if: workflow_run.conclusion == 'success'` + `workflow_dispatch` fallback (emergency)
+- [x] `DEPLOY_SHA` env (D3) — правильный SHA из `workflow_run.head_sha`, fallback `github.sha` для workflow_dispatch
+- [x] Все 11 build-push tags + IMAGE_TAG в SSH используют `${{ env.DEPLOY_SHA }}`
+- [x] `docs/ci-cd.md` — раздел branch protection (уже был в G5)
+- [x] Smoke: `yaml-lint ci.yml deploy.yml` → `YAML Lint successful`
+- [ ] Commit: `feat(ci): workflow_run gate + DEPLOY_SHA (M06 Группа 7, C0-8, 13 P0-2/11)`
 
 ## Группа 8 — M05 defer'ы — ~4ч
 

@@ -95,3 +95,42 @@ main.
   hostmetrics receiver — v0.1 candidate.
 - (c) Keep `:latest` + Trivy weekly scan — supply-chain race окно между
   pull и scan может 7 дней.
+
+---
+
+## 2026-04-21 — D3: `DEPLOY_SHA` env-variable вместо `github.sha` в workflow_run
+
+**Выбрано:** `env: DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}`
+на top-level deploy.yml, все build/deploy steps используют `${{ env.DEPLOY_SHA }}`.
+
+**Почему:** в GitHub Actions `workflow_run`-triggered workflow'е
+`github.sha` = SHA of **default branch HEAD at workflow creation**,
+а **НЕ** commit SHA который триггернул upstream CI workflow. Это
+subtle bug: если второй commit успел попасть в main пока первый CI
+ещё шёл, `github.sha` deploy.yml'а == commit #2, хотя build-push
+должен тэгировать commit #1.
+
+Корректный SHA — `github.event.workflow_run.head_sha`. Fallback
+`|| github.sha` нужен для `workflow_dispatch` event (там
+workflow_run undefined).
+
+**Реализация:**
+```yaml
+env:
+  DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+```
+
+Все 11 `tags: ...:${{ github.sha }}` заменены на `${{ env.DEPLOY_SHA }}`.
+`IMAGE_TAG` для VPS deploy — аналогично.
+
+**Альтернативы отклонены:**
+- (a) `workflow_call` + передача SHA через inputs — требует изменения
+  ci.yml, увеличивает coupling.
+- (b) Repository_dispatch event — усложняет trigger chain, теряет
+  GitHub UI integration.
+- (c) `workflow_run.head_sha` inline в каждом `tag` — duplication,
+  легко забыть при добавлении нового сервиса.
+
+**Риск:** `workflow_dispatch` без upstream CI — теоретически может
+вернуть default branch SHA вместо конкретного. Addmitigation:
+`workflow_dispatch.inputs.reason` обязателен — human review.

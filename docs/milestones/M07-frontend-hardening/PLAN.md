@@ -54,6 +54,9 @@ frontend-stack.
 - `traceId` в toast/log per error
 - ErrorBoundary fallback для React PWA
 - generated type `components['schemas']['ErrorResponse']` везде
+- **Rename `fieldErrors` → `invalidParams`** в обоих клиентах
+  (отложено с M01 — RFC 9457 compliance, backend переименовал поле
+  в M01 shared-web, фронты ещё используют старое имя)
 
 ### NotificationCenter unification (QC1)
 - 3 STOMP-клиента в web-panel → один shared NotificationService
@@ -79,10 +82,13 @@ frontend-stack.
   feature modules lazy-loaded
 - PWA React.lazy по ролям
 
-### PWA aggregate + sparklines (QC6, QC7)
+### PWA aggregate + sparklines placeholder (QC6, QC7)
 - StatsPage — `/attendance/stats/aggregate` batch endpoint вместо
-  N×2 запросов
-- Admin-dashboard real sparklines (replace псевдо-данных)
+  N×2 запросов (backend endpoint есть — batch из M05)
+- Admin-dashboard sparklines: **placeholder с "доступно в v0.1"**
+  label, реальный endpoint откладывается в v0.1 (требует
+  time-series backend — Prometheus-based через NEW-94). Псевдо-данные
+  заменяются на явный skeleton + info-badge. См. `future-ideas.md`.
 
 ### PR-template + labels (QE1)
 - `.github/pull_request_template.md` — `landing-review` / `docs-review`
@@ -96,11 +102,18 @@ frontend-stack.
   недостаточно (повторная оценка).
 
 **Исключено (другие milestones):**
-- openapi-typescript generation в CI как blocking gate — M08 (coverage-gate)
-- Playwright e2e + axe-core automation — M08
-- SBOM + cosign signing — M08
-- isHeadman principal-based userId (gRPC proto redesign, breaking) — v0.1
-- Redis cache hit/miss metrics через `RedisCacheMeterBinder` — v0.1
+- openapi-typescript generation в CI как blocking gate — **M08** (coverage-gate + drift CI)
+- Playwright e2e + axe-core automation — **M08** (Group 5)
+- SBOM + cosign signing — **M08** (Group 11)
+- `@Schema(description, example)` на DTO + `GlobalErrorResponsesCustomizer`
+  наполнение + nginx basic-auth /swagger-ui — **M11 OpenAPI Polish**
+- Stateful NotificationCenter (backend pagination API + Caffeine
+  unread-count) — **M10 Notification History** (M07 делает thin-client
+  unified component, M10 подменяет data source)
+- Real sparklines endpoint `/admin/dashboard/metrics` — **v0.1**
+  (требует time-series backend, NEW-94)
+- isHeadman principal-based userId (gRPC proto redesign, breaking) — **v0.1**
+- Redis cache hit/miss metrics через `RedisCacheMeterBinder` — **v0.1**
 
 ## Модули / изменения
 
@@ -170,6 +183,11 @@ frontend-stack.
 - [ ] PWA `useSwipeHandler`, `useDateNavigation`, `PullToRefresh`
       функциональны; swipe threshold configurable
 - [ ] StatsPage использует aggregate endpoint (1 запрос вместо N×2)
+- [ ] Admin-dashboard sparklines показывают placeholder
+      «доступно в v0.1» + skeleton UI (не псевдо-данные)
+- [ ] Frontend `fieldErrors` → `invalidParams` rename во всех
+      error-interceptor точках (PWA + web-panel); grep по старому
+      имени пустой
 - [ ] web-panel lazy-loading по ролям работает (initial bundle < 500KB
       per role)
 - [ ] a11y: `npx @axe-core/cli` на dev PWA/web-panel/landing — zero
@@ -186,10 +204,13 @@ frontend-stack.
 
 - **Блокируется:** M03b (HttpOnly cookie + ws-ticket — frontend уже
   использует эти интерфейсы). ✅ готово.
-- **Блокирует:** M08 (Playwright e2e тесты требуют axe-core + a11y
-  baseline + generated types).
-- **Parallel safe:** M08, M09. M09 может идти параллельно (разные
-  scope файлов).
+- **Блокирует:**
+  - M08 (Playwright e2e тесты требуют axe-core + a11y baseline +
+    generated types).
+  - M10 (NotificationCenter unified thin-client нужен M10 для подмены
+    data source на backend pagination).
+  - M11 (openapi-typescript regeneration после M11 @Schema descriptions).
+- **Parallel safe:** M08, M09, M10, M11 — разные scope файлов.
 
 ## Artifacts
 

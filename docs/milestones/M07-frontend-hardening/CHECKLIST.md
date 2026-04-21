@@ -63,6 +63,11 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 - [ ] web-panel: `CoreModule` HttpInterceptor — `ProblemDetails` parser
       + material snackbar
 - [ ] Оба: показывать `traceId` в error-toast (hidden detail + copy button)
+- [ ] **Rename `fieldErrors` → `invalidParams`** в PWA error parser
+      (RFC 9457 compliance, отложено с M01)
+- [ ] **Rename `fieldErrors` → `invalidParams`** в web-panel error
+      interceptor
+- [ ] Grep проверка: `fieldErrors` отсутствует в frontends/
 - [ ] Integration test: backend returns 400 + `ErrorResponse` → toast
       отображает title + detail
 - [ ] Commit: `feat(frontend): RFC 7807 error interceptor (M07 Группа 4, QC3)`
@@ -106,14 +111,16 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 - [ ] PWA: `React.lazy(() => import(...))` для role-specific pages
 - [ ] Commit: `refactor(web-panel): lazy-loading per-role (M07 Группа 8, QC5)`
 
-## Группа 9 — StatsPage aggregate + sparklines (QC6, QC7) — ~3ч
+## Группа 9 — StatsPage aggregate + sparklines placeholder (QC6, QC7) — ~2ч
 
-- [ ] Backend: `/attendance/stats/aggregate?subjectIds=...&groupIds=...`
-      batch endpoint (если ещё нет)
+- [ ] Проверить что `/attendance/stats/aggregate` batch endpoint
+      существует (из M05); если нет — создать (минимальный)
 - [ ] PWA StatsPage refactor — 1 запрос вместо N×2
-- [ ] Admin-dashboard sparklines — real data endpoint (backend) +
-      replace псевдо-данных
-- [ ] Commit: `feat(frontend): StatsPage aggregate + real sparklines (M07 Группа 9, QC6/7)`
+- [ ] Admin-dashboard sparklines: заменить псевдо-данные на skeleton
+      UI + info-badge «Графики доступны в v0.1»
+- [ ] Добавить запись в `docs/future-ideas.md` о real sparklines
+      endpoint `/admin/dashboard/metrics` (Prometheus-based, NEW-94)
+- [ ] Commit: `feat(frontend): StatsPage aggregate + sparklines placeholder (M07 Группа 9, QC6/7)`
 
 ## Группа 10 — a11y audit baseline (P2-7B/1..4) — ~1д
 

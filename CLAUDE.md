@@ -15,7 +15,7 @@ RutCampusTrack — микросервисная система учёта пос
 - **v7.0**: ЗАВЕРШЕНА (Frontends — Mini App, Web Panel, Landing) — фазы 33-40
 - **v8.0**: ЗАВЕРШЕНА (CI/CD, Deployment & Documentation) — фазы 41-48
 - **v9.0**: ЗАВЕРШЕНА (Frontend Unification — Single Login & Role-Based Web Clients) — фазы 49-57 + Phase 58 (BUG-006 Admin Fixes) + Phase 59 (Excuse Tickets Backend) + Phase 60 (Headman Schedule Management)
-- **v0.0.0**: В РАБОТЕ (Pre-release hardening по аудиту) — 8 milestones в `docs/milestones/`, активный — см. `docs/milestones/README.md`
+- **v0.0.0**: В РАБОТЕ (Pre-release hardening по аудиту) — 12 milestones в `docs/milestones/`, активный — см. `docs/milestones/README.md`
 - Полный план v0.0.0: `docs/report-before-v0.0.0/99-executive-summary.md`
 - Исходный аудит: `docs/report-before-v0.0.0/` (16 отчётов, OWNER-ANSWERS.md, COVERAGE-AUDIT.md)
 - Полный план v1.0-v9.0: `.planning/ROADMAP.md`, отчёты: `docs/phase-{N}-report.md`
@@ -31,9 +31,12 @@ RutCampusTrack — микросервисная система учёта пос
 | M04 | Observability | ✅ OTel+Tempo tracing + Alertmanager → bot → Telegram + JSON-логи + 8 counter'ов + 3 gauge'а + retention 14d + Grafana business-kpis dashboard — завершён 2026-04-20 |
 | M05 | Performance | ✅ Composite indexes + Redis rbac/subject cache + HikariCP tuning + batch endpoints + gRPC fan-out + push retention 90d — завершён 2026-04-21 |
 | M06 | Ops & Supply Chain | ✅ SHA tagging + digest cadvisor/promtail + semver-pin observability + HEALTHCHECK × 7 + Renovate/Dependabot + Trivy/Gitleaks + CI/deploy gate + M05 security defer'ы — завершён 2026-04-21 |
-| M07 | Frontend Hardening | CSP self-host + a11y + openapi-typescript + UX fixes |
-| M08 | Test Infrastructure | Playwright e2e + golden tests + coverage-gate 60/50/50 + diff 80% |
-| M09 | Prod Release Blockers (Фаза 3) | OTP через RabbitMQ + MessageDigest + cleanupOrphans + landing deep-link + latecheckin/bot тесты |
+| M07 | Frontend Hardening | CSP self-host + a11y + openapi-typescript + UX fixes + fieldErrors→invalidParams rename + sparklines placeholder |
+| M08 | Test Infrastructure | Playwright e2e + golden tests + coverage-gate 60/50/50 + diff 80% + SBOM/cosign + digest-pin |
+| M09 | Prod Release Blockers (Фаза 3 + event unification) | OTP через RabbitMQ + MessageDigest + cleanupOrphans + landing deep-link + latecheckin/bot тесты + lesson.cancelled/excuse.{approved,rejected} events + prod-deploy-checklist + secret-rotation + resource-limits |
+| M10 | Notification History | Stateful notification-web + MongoDB notification_db + notification_history TTL 30d + Caffeine unread-count + NotificationCenter backend pagination |
+| M11 | OpenAPI Polish | SharedOpenApiCustomizer наполнение + @Schema на DTO + nginx basic-auth на prod /swagger-ui + OpenAPI↔runtime conformance CI |
+| M12 | Auth Contract-first Refactor | `auth-api-contract` модуль + AuthApi/WsTicketApi/InternalAuthApi interfaces + DTO migration + controller implements + убирает последнее исключение Contract-first правила |
 
 Начало и порядок выполнения: `docs/milestones/README.md`. Workflow
 описан там же — per milestone ведётся PLAN + CHECKLIST + NOTES + DECISIONS.
@@ -67,7 +70,7 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 | Academic Service | 9091 | Spring Boot | PostgreSQL (academic_db) + Redis cache |
 | Schedule Service | 9092 | Spring Boot | PostgreSQL (schedule_db) |
 | Attendance Service | 9093 | Spring Boot | MongoDB (attendance_db) |
-| Notification Web | 9094 | Spring Boot WebSocket (STOMP) | — (stateless event forwarder, становится stateful после M04 — см. NEW-168) |
+| Notification Web | 9094 | Spring Boot WebSocket (STOMP) + Caffeine | MongoDB (notification_db) — stateful history store в M10 (NEW-166/167/168); до M10 stateless event forwarder |
 | Notification Bot | — | Python Aiogram 3 | Redis (reminder msgs) |
 
 Между сервисами: gRPC. Асинхронные события: RabbitMQ (fanout exchange).
@@ -82,7 +85,9 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 - **БЕЗ Lombok в контрактных модулях** (`*-api-contract`). Lombok допустим только в `*-app` (entity, внутренние классы)
 - **Исключения:**
   - `api-gateway` — прокси, собственного REST API не публикует, `*-api-contract` не нужен (зафиксировано M09 D2)
-  - `auth-service` — единственный нарушитель правила (01 P0-1), `auth-api-contract` отложен в v0.1 backlog (M09 D1, `docs/future-ideas.md`)
+  - ~~`auth-service`~~ — **закрывается в M12** (auth-api-contract refactor);
+    до завершения M12 остаётся временным нарушителем правила (01 P0-1).
+    После M12 — единственное исключение только `api-gateway`.
 
 ### Enum-ы
 

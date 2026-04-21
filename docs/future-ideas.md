@@ -167,6 +167,101 @@ single-pass accumulators (D9) закрывают immediate need.
 
 ---
 
+## FSM storage миграция в Redis для Telegram-бота (v0.1)
+
+**Источник:** `06-notification-bot.md` P2-7, отложено из M08/M09.
+
+**Текущее состояние:** `notification-bot/__main__.py:105` использует
+`MemoryStorage()` для Aiogram FSM. При рестарте контейнера состояние
+теряется.
+
+**Почему не блокер сейчас:** FSM реально не используется (bot имеет
+только однокадровые callback_query handler'ы). Фикс preventive —
+чтобы при добавлении первого multi-step сценария (excuse-wizard,
+reminder-customization) не словить regression.
+
+**Идея на будущее:**
+```python
+from aiogram.fsm.storage.redis import RedisStorage
+storage = RedisStorage.from_url(settings.redis_url)
+dp = Dispatcher(storage=storage)
+```
+
+**Оценка работы:** ~2 часа + тесты (вместе с первой multi-step
+фичей).
+
+---
+
+## `/actuator/**` исключить из OTel tracing (v0.1)
+
+**Источник:** M04 backlog → M05 → M06 G8e → M07 NOTES → **v0.1**.
+
+**Текущее состояние:** OpenTelemetry трейсит все HTTP requests,
+включая `/actuator/health`, `/actuator/prometheus`, `/actuator/metrics`.
+Это засоряет Tempo метриками scraping'а (Prometheus опрашивает
+/actuator/prometheus каждые 15s → ~5760 spans/сутки per сервис
+только от scraping'а).
+
+**Почему не блокер сейчас:** severity MINOR; отмечено в
+`application.yml` комментарием honest-о («до custom Sampler»).
+
+**Идея на будущее:** custom `OtelSampler` bean в shared-observability:
+```java
+@Bean
+Sampler skipActuator(@Value("${otel.sampler.skip-paths}") List<String> paths) {
+    return Sampler.parentBased(Sampler.alwaysOn()).and(
+        (ctx, name, kind, attrs, links) -> {
+            var httpTarget = attrs.get(AttributeKey.stringKey("http.target"));
+            if (httpTarget != null && paths.stream().anyMatch(httpTarget::startsWith)) {
+                return SamplingResult.create(SamplingDecision.DROP);
+            }
+            return SamplingResult.recordAndSample();
+        }
+    );
+}
+```
+
+**Оценка работы:** ~1 день (shared-observability bean + integration
+tests per service).
+
+---
+
+## Real sparklines backend для admin-dashboard (v0.1)
+
+**Источник:** `10-frontend-web-panel.md` QC7, `OWNER-ANSWERS.md`
+NEW-94, отложено в M07 (placeholder «доступно в v0.1»).
+
+**Текущее состояние (M07 finish):** admin-dashboard показывает
+skeleton UI с info-badge «Графики доступны в v0.1» вместо
+псевдо-данных. Реального endpoint'а нет.
+
+**Идея на будущее:** `GET /api/admin/dashboard/metrics` → time-series
+агрегаты:
+```json
+{
+  "active_users_7d": 245,
+  "new_check_ins_24h": 1820,
+  "red_zone_count": 12,
+  "sparklines": {
+    "check_ins_by_day": [{"day": "2026-04-15", "count": 1820}, ...],
+    "active_users_by_day": [...]
+  }
+}
+```
+
+**Архитектурный выбор (NEW-94):**
+- v0.1: миграция на **Prometheus** как источник time-series
+  (уже запущен в M04 observability stack). Grafana-style query
+  через `PrometheusMeterRegistry.query()` или proxy.
+- **НЕ** делать SQL-агрегацию в attendance_db (MongoDB `$group`
+  тяжёлый, блокировки при writes, через 3-6 месяцев всё равно
+  переписывать).
+
+**Оценка работы:** ~2 дня (Prometheus query client + caching +
+frontend wiring).
+
+---
+
 ## NEW-146-checklist: Аудит-чеклист для `.collect(toList())` агрегации
 
 Использовать при PR-ревью service-слоя:

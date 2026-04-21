@@ -43,18 +43,34 @@ subagent на diff в конце milestone'а.
 | M04 | [Observability (Tracing, Alertmanager, JSON-логи)](M04-observability/PLAN.md) | M01 | ~5-7д | ✅ 2026-04-20 |
 | M05 | [Performance (Indexes, Redis cache, HikariCP, batch, gRPC, push retention)](M05-performance/PLAN.md) | M01 | ~6-7д | ✅ 2026-04-21 |
 | M06 | [Ops & Supply Chain (SHA tagging, Trivy, HEALTHCHECK)](M06-ops-supply-chain/PLAN.md) | — | ~3-4д | ✅ 2026-04-21 |
-| M07 | Frontend Hardening (CSP, a11y, UX, openapi-typescript) | M03b | ~10-12д | ⬜ |
-| M08 | Test Infrastructure (Playwright, golden, coverage-gate) | M01, M02, M03b | ~10-12д | ⬜ |
-| M09 | [Prod Release Blockers (Фаза 3 Точечные P0)](M09-prod-release-blockers/PLAN.md) | M02, M03a | ~4-5д | ⬜ |
+| M07 | [Frontend Hardening (CSP, a11y, UX, openapi-typescript)](M07-frontend-hardening/PLAN.md) | M03b | ~10-12д | ⬜ |
+| M08 | [Test Infrastructure (Playwright, golden, coverage-gate, SBOM)](M08-test-infrastructure/PLAN.md) | M01, M02, M03b, M07 | ~10-12д | ⬜ |
+| M09 | [Prod Release Blockers (P0 + event unification + prod-deploy-checklist)](M09-prod-release-blockers/PLAN.md) | M02, M03a | ~7-8д | ⬜ |
+| M10 | [Notification History (stateful notification-web + MongoDB)](M10-notification-history/PLAN.md) | M01, M02, M05 | ~4-5д | ⬜ |
+| M11 | [OpenAPI Polish (@Schema, customizer, swagger basic-auth)](M11-openapi-polish/PLAN.md) | M01, M10 | ~3д | ⬜ |
+| M12 | [Auth Contract-first Refactor (auth-api-contract + AuthApi interface)](M12-auth-contract/PLAN.md) | M07, M11 | ~2.5д | ⬜ |
 
 **Parallel tracks:** M04 и M05 можно делать одновременно с M03a/M03b
 (независимы по коду). M06 полностью независим — можно делать когда угодно,
 даже параллельно M01. M03 разделён на M03a (Internal JWT + rate-limit) и
 M03b (JWT cookie + ws-ticket + logout) для промежуточного тега
-`v0.0.0-alpha.3` и снижения риска breaking change. **M09** закрывает
-оставшиеся «Точечные P0» из Фазы 3 executive-summary и является
-финальным блокером релиза v0.0.0 — parallel safe с M06/M07/M08,
-но релизный тег `v0.0.0` ставится только после всех четырёх.
+`v0.0.0-alpha.3` и снижения риска breaking change.
+
+**Финальные milestones (M07-M12)** parallel safe между собой при
+соблюдении dependency graph:
+- **M07 → M08** (M08 Playwright требует M07 axe-core baseline + openapi-ts)
+- **M07 → M10** (M10 подменяет data source в thin-client NotificationCenter
+  из M07)
+- **M07 → M11** (M11 наполняет @Schema, regenerate openapi-ts из M07)
+- **M10 → M11** (M11 финализирует @Schema в notification-api-contract)
+- **M11 → M12** (M12 применяет M11 @Schema policy к auth-api-contract
+  сразу при создании)
+- **M07 → M12** (M12 regenerate openapi-ts требует M07 generator setup)
+- **M09** независим — параллельно с M07-M12.
+
+Релизный тег `v0.0.0` ставится только после **всех** M07-M12.
+M12 — последний структурный долг (Contract-first compliance); после
+M12 единственное исключение в правилах — `api-gateway` (прокси).
 
 ## Правила
 

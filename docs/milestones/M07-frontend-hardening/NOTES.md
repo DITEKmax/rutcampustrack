@@ -66,6 +66,54 @@
 
 ---
 
+## G9 discovery (2026-04-22)
+
+### PWA StatsPage не получил batch-refactor — backend endpoint отсутствует
+
+CHECKLIST говорил: «Проверить что `/attendance/stats/aggregate`
+batch endpoint существует (из M05); если нет — создать (минимальный)».
+
+Проверка показала:
+- `/attendance/reports/journal` принимает **один** `subjectId` за вызов
+  (generated types: `{groupId, subjectId, dateFrom, dateTo}`).
+- `POST /attendance/marks/batch` (M05 G4) — bulk-mark, не stats-aggregate.
+- Stats-aggregate endpoint'а в backend **нет**. M05 G5 сделал
+  single-pass accumulators внутри `StudentStatsResponse` для одного
+  студента, а не group-level aggregation.
+
+**Решение:** создание нового backend endpoint'а = outside M07 scope
+(M07 = frontend-only milestone). Текущая реализация
+`SubjectStatsCollector` в `StatsPage` уже делает **N параллельных
+queries** через TanStack — не sequential. Реального waterfall в
+StatsPage **нет** (был только в schedule/LessonCard subject-lookup,
+закрыт G6/6 через `useSubjectMap`).
+
+**Отложено в `docs/future-ideas.md` → NEW-94** (Real sparklines
+backend) — этот же endpoint (`GET /api/admin/dashboard/metrics`
+или `GET /api/stats/group-aggregate`) закроет оба кейса.
+
+### Admin-dashboard sparklines были псевдо-данными
+
+`admin-dashboard.component.ts::buildSpark()` делал **детерминированный
+random** на основе target-числа (чтобы линия «не прыгала» между
+рендерами). Визуально неотличимо от реальных данных — юзер принимал
+их как факт. Удалено в G9:
+- `BaseChartDirective`, `ChartConfiguration` импорты убраны
+- `studentsSpark()`, `teachersSpark()`, `groupsSpark()`,
+  `activeGroupsSpark()`, `chartData()`, `chartOptions` deleted
+- `buildSpark()` helper deleted
+- `[sparkData]` binding убран со всех `<app-stat-card>`
+- Chart-секция заменена на skeleton-bars + info-сообщение
+
+`StatCardComponent.sparkData` input оставлен как `input<number[] | null>(null)` — при `null` SVG не рендерится. Компонент готов вернуться
+к реальным sparklines без повторного рефакторинга после NEW-94.
+
+`chart.js` остаётся transitive-зависимостью (teacher-stats + student-stats
+используют BaseChartDirective с реальными per-subject данными). Удаление
+целиком отложено до миграции tree-shake (M08/v0.1).
+
+---
+
 ## G3b discovery (2026-04-21)
 
 ### ExcuseType был runtime bug — lowercase vs UPPERCASE

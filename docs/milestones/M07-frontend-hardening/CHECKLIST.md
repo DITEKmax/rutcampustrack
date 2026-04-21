@@ -254,18 +254,26 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       `CheckInScreen`, `ProfilePage`, `NotificationsPage`) — в других.
       Роли не пересекаются.
 - [x] Build зелёный, 470/470 unit-тесты passing.
-- [x] Commit `<pending>`: `refactor(web-panel): lazy-loading per-role (M07 Группа 8, QC5)`
+- [x] Commit `6c346e0`: `refactor(web-panel): lazy-loading per-role (M07 Группа 8, QC5)`
 
 ## Группа 9 — StatsPage aggregate + sparklines placeholder (QC6, QC7) — ~2ч
 
-- [ ] Проверить что `/attendance/stats/aggregate` batch endpoint
-      существует (из M05); если нет — создать (минимальный)
-- [ ] PWA StatsPage refactor — 1 запрос вместо N×2
-- [ ] Admin-dashboard sparklines: заменить псевдо-данные на skeleton
-      UI + info-badge «Графики доступны в v0.1»
-- [ ] Добавить запись в `docs/future-ideas.md` о real sparklines
-      endpoint `/admin/dashboard/metrics` (Prometheus-based, NEW-94)
-- [ ] Commit: `feat(frontend): StatsPage aggregate + sparklines placeholder (M07 Группа 9, QC6/7)`
+- [~] ~~`/attendance/stats/aggregate` batch endpoint~~ — **не существует**
+      в backend (M05 G5 сделал single-pass для одного студента, не
+      group-aggregate). Создание — outside M07 scope. См. NOTES.md
+      «G9 discovery» и `docs/future-ideas.md` → NEW-94.
+- [~] ~~PWA StatsPage refactor — 1 запрос вместо N×2~~ — `SubjectStatsCollector`
+      уже делает N **параллельных** queries через TanStack (не
+      sequential). Реального waterfall нет. Batch-endpoint отложен
+      до NEW-94.
+- [x] Admin-dashboard sparklines: Chart.js + `buildSpark()` псевдо-данные
+      удалены. Заменены на skeleton-bars + info-сообщение «Графики
+      посещаемости появятся в следующем релизе» (D1 решение 4).
+      `StatCardComponent.sparkData` готов вернуться к real data без
+      refactor.
+- [x] `docs/future-ideas.md` NEW-94 обновлён — описано состояние после
+      G9 (skeleton UI), архитектурный выбор Prometheus-based endpoint.
+- [x] Commit `<pending>`: `feat(web-panel): sparklines placeholder (M07 Группа 9, QC6/7)`
 
 ## Группа 10 — a11y audit baseline (P2-7B/1..4) — ~1д
 

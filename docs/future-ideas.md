@@ -268,9 +268,13 @@ tests per service).
 **Источник:** `10-frontend-web-panel.md` QC7, `OWNER-ANSWERS.md`
 NEW-94, отложено в M07 (placeholder «доступно в v0.1»).
 
-**Текущее состояние (M07 finish):** admin-dashboard показывает
-skeleton UI с info-badge «Графики доступны в v0.1» вместо
-псевдо-данных. Реального endpoint'а нет.
+**Текущее состояние (M07 G9, commit завершает милестоун):**
+admin-dashboard показывает skeleton-bars + info-сообщение «Графики
+посещаемости появятся в следующем релизе» вместо Chart.js с
+псевдо-данными. `buildSpark` helper и `chart.js`/`ng2-charts`
+import'ы в admin-dashboard удалены (chart.js остаётся transitive в
+teacher-stats и student-stats, где используются реальные данные
+per-subject). Реального time-series endpoint'а нет.
 
 **Идея на будущее:** `GET /api/admin/dashboard/metrics` → time-series
 агрегаты:

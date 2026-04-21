@@ -27,7 +27,6 @@
         icon="ph-duotone ph-students"
         [value]="stats()?.totalStudents ?? 0"
         label="Студентов"
-        [sparkData]="studentsSpark()"
         [loading]="loading()"
       />
     </a>
@@ -37,7 +36,6 @@
         icon="ph-duotone ph-chalkboard-teacher"
         [value]="stats()?.totalTeachers ?? 0"
         label="Преподавателей"
-        [sparkData]="teachersSpark()"
         [loading]="loading()"
       />
     </a>
@@ -47,7 +45,6 @@
         icon="ph-duotone ph-users-three"
         [value]="stats()?.totalGroups ?? 0"
         label="Групп всего"
-        [sparkData]="groupsSpark()"
         [loading]="loading()"
       />
     </a>
@@ -58,32 +55,33 @@
         [value]="stats()?.activeGroups ?? 0"
         label="Активных групп"
         suffix="{{ activeGroupsPct() ? activeGroupsPct() + '%' : '' }}"
-        [sparkData]="activeGroupsSpark()"
         [loading]="loading()"
       />
     </a>
   </div>
 
-  <!-- Attendance trend chart (§5.3 draw-in) -->
+  <!-- Attendance trend chart placeholder (M07 G9, D1 решение 4) -->
   <section class="chart-card data-card-in" aria-labelledby="dashboard-chart-title">
     <header class="chart-card__head">
       <div>
         <p class="chart-card__eyebrow">Посещаемость · 7 дней</p>
         <h3 class="chart-card__title" id="dashboard-chart-title">Динамика за неделю</h3>
       </div>
-      <span class="chart-card__badge" aria-hidden="true">
-        <i class="ph ph-trend-up"></i> live
+      <span class="chart-card__badge chart-card__badge--soon" aria-hidden="true">
+        <i class="ph ph-hourglass"></i> скоро
       </span>
     </header>
-    <div class="chart-card__canvas">
-      <canvas
-        baseChart
-        role="img"
-        aria-label="График посещаемости за последние 7 дней"
-        [data]="chartData()"
-        [options]="chartOptions"
-        [type]="'line'"
-      ></canvas>
+    <div class="chart-card__placeholder" role="status" aria-live="polite">
+      <div class="chart-card__placeholder-skeleton" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <p class="chart-card__placeholder-text">
+        Графики посещаемости появятся в следующем релизе.
+      </p>
     </div>
   </section>
 

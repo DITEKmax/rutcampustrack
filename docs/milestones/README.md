@@ -43,7 +43,7 @@ subagent на diff в конце milestone'а.
 | M04 | [Observability (Tracing, Alertmanager, JSON-логи)](M04-observability/PLAN.md) | M01 | ~5-7д | ✅ 2026-04-20 |
 | M05 | [Performance (Indexes, Redis cache, HikariCP, batch, gRPC, push retention)](M05-performance/PLAN.md) | M01 | ~6-7д | ✅ 2026-04-21 |
 | M06 | [Ops & Supply Chain (SHA tagging, Trivy, HEALTHCHECK)](M06-ops-supply-chain/PLAN.md) | — | ~3-4д | ✅ 2026-04-21 |
-| M07 | [Frontend Hardening (CSP, a11y, UX, openapi-typescript)](M07-frontend-hardening/PLAN.md) | M03b | ~10-12д | ⬜ |
+| M07 | [Frontend Hardening (CSP, a11y, UX, openapi-typescript)](M07-frontend-hardening/PLAN.md) | M03b | ~10-12д | ✅ 2026-04-22 |
 | M08 | [Test Infrastructure (Playwright, golden, coverage-gate, SBOM)](M08-test-infrastructure/PLAN.md) | M01, M02, M03b, M07 | ~10-12д | ⬜ |
 | M09 | [Prod Release Blockers (P0 + event unification + prod-deploy-checklist)](M09-prod-release-blockers/PLAN.md) | M02, M03a | ~7-8д | ⬜ |
 | M10 | [Notification History (stateful notification-web + MongoDB)](M10-notification-history/PLAN.md) | M01, M02, M05 | ~4-5д | ⬜ |

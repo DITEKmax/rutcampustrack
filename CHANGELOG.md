@@ -9,6 +9,93 @@
 
 ### Added
 
+- **M07 Frontend Hardening** — CSP, typegen, error contracts, UX, a11y
+  baseline (~14 человеко-дней, 11 групп, 17 коммитов `bccf471..2be3eab`,
+  tag `v0.0.0-alpha.8`).
+  - **Landing CSP self-host** (C0-6, commit `c93b6ee`) — 11 CDN ресурсов
+    (Fontshare 4 шрифта, Google Fonts 8 файлов, Phosphor Icons 2 woff2,
+    GSAP + ScrollTrigger min.js) скачаны в `frontends/landing/dist/
+    assets/{fonts,vendor}/`. CSP корневого nginx `'self'` сохраняется —
+    убраны 3 preconnect, переписаны `<link>`/`<script>` на локальные
+    пути.
+  - **Landing meta + a11y** (QE3/QE4, commit `8a20c91`) — og-image
+    1200×630 (SVG-first via `@resvg/resvg-js`, `scripts/generate-og.mjs`),
+    Twitter cards, canonical, robots, JSON-LD Organization +
+    WebApplication. `@media (prefers-reduced-motion: reduce)` global
+    override + `gsap.matchMedia()` + `svg.pauseAnimations()` для 2
+    SMIL `<animateMotion>` в hero.
+  - **openapi-typescript type-gen** (QC2, commits `c20ed50` G3a,
+    `b5e66f6` G3b) — 5 сервисов × 4 frontend (PWA + web-panel)
+    через `npm run generate:types`. Generated `.types.ts` committed.
+    CI drift-guard `.github/workflows/openapi-drift.yml` —
+    `generate:types:offline` + `git diff --exit-code`. Strict-wrapper
+    `api/schema.ts` (HATEOAS optionality). Mini-app отложен до
+    post-M12 copy+adapt из PWA (D1 решение 2). Types-only подход
+    (D3) — axios/HttpClient остаются, `openapi-fetch` не wiring.
+  - **RFC 7807 error interceptor** (QC3, commit `9f628aa`) — парсер
+    `api/problemDetails.ts` + `core/errors/problem-details.interceptor.ts`
+    (Angular), `errorToastBus` + `ErrorToastHost` (PWA), traceId в
+    copy-button toast. Adapter-based rename `fieldErrors →
+    invalidParams` (D4 — backend @Schema rename отложен в M11).
+    Suppress flags: `meta.skipGlobalErrorToast` (TanStack), `X-Skip-
+    Global-Error-Toast: 1` header (Angular).
+  - **Unified NotificationCenter** (QC1, commit `9120544`) —
+    web-panel `NotificationCenterService` с exponential backoff
+    (1s→30s, `ReconnectionTimeMode.EXPONENTIAL`). `StudentStompService`
+    и `HeadmanStompService` — thin adapter'ы поверх `onEvent$ +
+    filter`. Один WebSocket на приложение. Stateful pagination
+    отложено до M10.
+  - **UX improvements P2-7A/1..8** (commit `6e5ca8e`) — 8 фич:
+    `PullToRefresh` (native touch + rubber-band + TanStack
+    `invalidateQueries`), `useSwipeHandler` (dominant-axis +
+    velocity 500 px/s), `useDateNavigation` (day/week/month, bounds
+    opt-in), Schedule bounds через `useActiveSemester` +
+    `ScheduleBoundsNotice` (D1 решение 5), `useScrollRestoration`
+    (sessionStorage per pathname, POP=restore), `useSubjectMap`
+    batch-lookup устраняет SchedulePage waterfall, `BottomSheet`
+    shared component (−110 LOC LessonActionsSheet +
+    HeadmanLessonSheet), geolocation `enableHighAccuracy: true` +
+    `mapGeolocationError` для denied/timeout/unavailable.
+  - **ConfirmWithReasonDialog** (QC4, commit `bfa780f`) — web-panel
+    Material dialog с textarea + non-empty validation + auto-trim +
+    maxLength. Заменяет `window.prompt` в headman-lessons. PWA
+    отложен (D5 — нет call-site'ов).
+  - **Lazy-loading per-role** (QC5, commit `6c346e0`) — web-panel
+    `app.routes.ts` 297→76 LOC. Role-routes через `loadChildren`:
+    `features/{admin,teacher,student,headman}/{role}.routes.ts`.
+    Per-role chunks < 100KB (groups-page 77KB, headman-schedule 63KB).
+    Initial bundle 874KB raw / 224KB gzip (D7 — budget 500→900KB).
+    PWA — `React.lazy()` уже split по routes.
+  - **StatsPage aggregate + sparklines placeholder** (QC6/7, commit
+    `82eb2ad`) — admin-dashboard Chart.js + псевдо-данные `buildSpark`
+    удалены. Skeleton-bars + текст «Графики посещаемости появятся в
+    следующем релизе» (D1 решение 4). NEW-94 (real Prometheus-based
+    endpoint) отложен v0.1. StatsPage PWA — backend batch-endpoint
+    отсутствует, `SubjectStatsCollector` параллельно через
+    TanStack, не sequential waterfall.
+  - **a11y baseline + checklist** (P2-7B, commit `2be3eab`) — WCAG 2.1
+    AA pass 1 зафиксирован в `docs/a11y-checklist.md`. Global
+    landmarks (`<main>` в AppShell + ShellComponent), 66+131
+    aria-labels, `prefers-reduced-motion` в landing/PWA/Drawer/
+    Sheet/CheckInButton, semantic HTML в admin-dashboard +
+    ProfilePage + HomeDashboard (`<section aria-labelledby>` + `<h1
+    class="sr-only">`). Pass 2 (axe-core run, ESLint a11y plugins,
+    skip-links, color contrast, SMIL replace) отложен в M08/v0.1.
+  - **nginx per-location + PR-template** (P2-9/3, NEW-74, NEW-108,
+    NEW-152, commit `65640f4`) — global `client_max_body_size 2m` +
+    25m on `/api/attendance/excuses/with-file`. `docs/nginx-config.md`
+    runbook. `.github/pull_request_template.md` +
+    `docs/contributing.md`.
+  - **G12 audit hot-patches** (commit `82cf482`) —
+    HIGH-1 CSP fix (3 inline scripts вынесены в `assets/js/*.js`,
+    `script-src 'self' 'unsafe-hashes' sha256=...` → `script-src
+    'self'`), MED-1 DoS fix (`attendance-excuse-upload` Gateway
+    route с 5 req/min per-user, `userIdKeyResolver` — до G12 было
+    15 GB/мин amplification), S1/S2/S7 code-review (orphan
+    `usePrefetchSubjects` удалён, unread `pendingWriteRef`
+    удалён из useScrollRestoration, clarifying comment в
+    useSubjectMap).
+
 - **M06 Ops & Supply Chain** — supply-chain guard + CI/CD hardening
   (~21ч, 9 групп, 12 коммитов `b6a0cc3..e0e1881`).
   - **HEALTHCHECK в 7 Dockerfile** (P2-9/1, NEW-150) — metadata

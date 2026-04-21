@@ -5,9 +5,40 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
-Продолжай работу над M07 Frontend Hardening (v0.0.0).
+M07 Frontend Hardening **ЗАКРЫТ** 2026-04-22 (tag `v0.0.0-alpha.8`
+локально, без push). 19 коммитов `bccf471..82cf482`, 10 функциональных
+групп + G12 closure. Post-mortem в
+`docs/milestones/M07-frontend-hardening/PLAN.md`.
 
-**Текущий прогресс M07 (2026-04-22, 10 коммитов):**
+**Стартуй с M08 Test Infrastructure** (Playwright e2e + golden tests
++ coverage-gate 60/50/50 + diff 80% + SBOM/cosign + digest-pin). План
+в `docs/milestones/M08-test-infrastructure/PLAN.md`. M08 также закроет
+M07 deferred: `@axe-core/cli` run, `jsx-a11y`/`@angular-eslint`
+ESLint plugins, bundle optimisation (shared Material chunk split).
+
+**Parallel safe с M08:** M09 (Prod Release Blockers, ~4-5д) +
+M10 (Notification History) + M11 (OpenAPI Polish) + M12 (Auth
+Contract refactor).
+
+См. `docs/milestones/README.md` dependency graph.
+
+---
+
+## M07 итог (2026-04-22) — ARCHIVE
+
+**Актуальные правила (без изменений с M05):**
+- Русский язык в отчётах / NOTES / ответах.
+- **Ветка `dev`**. Push на `main` — НЕ делать до отдельного указания.
+- Не звать `gsd-*` агентов. `Explore` для «найти все X»,
+  `bug-hunter` / `code-reviewer` / `security-auditor` — в G12 audit.
+- Surprise → NOTES.md + спросить до продолжения.
+- Micro-решение → DECISIONS.md.
+- Закрыл пункт CHECKLIST → `[x]` через Edit (commit hash в описании).
+- **Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные.**
+- Push на origin / создание PR — только с явного `go` пользователя.
+- `CHANGELOG.md [Unreleased]` обновляй при значимых изменениях (G12).
+
+**Коммиты M07 (19 штук):**
 
 | Группа | Статус | Commit |
 |--------|--------|--------|
@@ -19,11 +50,11 @@ Opus сам откроет файлы и поймёт где мы останов
 | G5 NotificationCenter unified (STOMP adapters + expo backoff) | ✅ | `9120544` |
 | G6 UX P2-7A/1..8 (PullToRefresh + hooks + bounds + geolocation) | ✅ | `6e5ca8e` |
 | G7 ConfirmWithReasonDialog | ✅ | `bfa780f` |
-| **G8 Lazy-loading per-role** | ⬜ **NEXT** | — |
-| G9 StatsPage aggregate + sparklines placeholder | ⬜ | — |
-| G10 a11y axe-core baseline | ⬜ | — |
+| G8 Lazy-loading per-role (web-panel) | ✅ | `6c346e0` |
+| G9 Sparklines placeholder (admin-dashboard) | ✅ | `82eb2ad` |
+| G10 a11y baseline + checklist | ✅ | `2be3eab` |
 | G11 nginx per-location + PR-template | ✅ | `65640f4` |
-| G12 Audit + docs close + tag alpha.8 | ⬜ | — |
+| G12 Audit hot-patches (CSP + DoS + code review) | ✅ | `82cf482` |
 
 Scope-commit `56d879c` (D1 decisions) + docs-commit `03949e3` (hand-off
 после G1+G2+G3a).

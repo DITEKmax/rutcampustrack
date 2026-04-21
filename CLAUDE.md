@@ -31,7 +31,7 @@ RutCampusTrack — микросервисная система учёта пос
 | M04 | Observability | ✅ OTel+Tempo tracing + Alertmanager → bot → Telegram + JSON-логи + 8 counter'ов + 3 gauge'а + retention 14d + Grafana business-kpis dashboard — завершён 2026-04-20 |
 | M05 | Performance | ✅ Composite indexes + Redis rbac/subject cache + HikariCP tuning + batch endpoints + gRPC fan-out + push retention 90d — завершён 2026-04-21 |
 | M06 | Ops & Supply Chain | ✅ SHA tagging + digest cadvisor/promtail + semver-pin observability + HEALTHCHECK × 7 + Renovate/Dependabot + Trivy/Gitleaks + CI/deploy gate + M05 security defer'ы — завершён 2026-04-21 |
-| M07 | Frontend Hardening | CSP self-host + a11y + openapi-typescript + UX fixes + fieldErrors→invalidParams rename + sparklines placeholder |
+| M07 | Frontend Hardening | ✅ CSP self-host + openapi-typescript + RFC 7807 + unified STOMP + UX P2-7A (PullToRefresh/swipe/dateNav/bounds/scroll/BottomSheet/geolocation) + ConfirmWithReason + lazy-per-role + sparklines placeholder + a11y baseline — завершён 2026-04-22 |
 | M08 | Test Infrastructure | Playwright e2e + golden tests + coverage-gate 60/50/50 + diff 80% + SBOM/cosign + digest-pin |
 | M09 | Prod Release Blockers (Фаза 3 + event unification) | OTP через RabbitMQ + MessageDigest + cleanupOrphans + landing deep-link + latecheckin/bot тесты + lesson.cancelled/excuse.{approved,rejected} events + prod-deploy-checklist + secret-rotation + resource-limits |
 | M10 | Notification History | Stateful notification-web + MongoDB notification_db + notification_history TTL 30d + Caffeine unread-count + NotificationCenter backend pagination |

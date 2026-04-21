@@ -1,8 +1,9 @@
 # M07 — Frontend Hardening
 
-**Статус:** ⬜ не начат
-**Старт / финиш:** — / —
-**Estimate:** 10-12 человеко-дней
+**Статус:** ✅ завершён
+**Старт / финиш:** 2026-04-21 / 2026-04-22
+**Estimate:** 10-12 человеко-дней / **Actual:** ~14 человеко-дней
+**Tag:** `v0.0.0-alpha.8` (локально, без push)
 
 ---
 
@@ -230,3 +231,112 @@ frontend-stack.
 
 _Никаких «why», «motivation», «background» — это уже в 99-executive-summary.md
 и OWNER-ANSWERS.md (QC1-7 + QE3/4 + P2-7A/B). Здесь только WHAT и DONE-критерии._
+
+---
+
+## Post-mortem (2026-04-22)
+
+**Финальный статус:** ✅ 10 функциональных групп + G12 closure. Tag
+`v0.0.0-alpha.8`.
+
+### Коммит-граф (17 коммитов)
+
+| # | Коммит | Группа |
+|---|--------|--------|
+| 1 | `bccf471` | Scaffold PLAN + CHECKLIST + NOTES + DECISIONS |
+| 2 | `56d879c` | Scope decisions D1 (5 owner-решений) |
+| 3 | `c93b6ee` | G1 Landing CSP self-host |
+| 4 | `8a20c91` | G2 Landing meta + prefers-reduced-motion |
+| 5 | `03949e3` | docs hand-off после G1+G2+G3a |
+| 6 | `c20ed50` | G3a openapi-typescript foundation |
+| 7 | `b5e66f6` | G3b types migration (PWA + web-panel full) |
+| 8 | `9f628aa` | G4 RFC 7807 error interceptor |
+| 9 | `9120544` | G5 NotificationCenter unified |
+| 10 | `65640f4` | G11 nginx per-location + PR-template |
+| 11 | `bfa780f` | G7 ConfirmWithReasonDialog |
+| 12 | `2b03693` | docs hand-off после G3b+G4+G5+G7+G11 |
+| 13 | `6e5ca8e` | G6 UX P2-7A/1..8 (PullToRefresh + hooks + bounds + geolocation) |
+| 14 | `df1dd17` | docs hand-off после G6 |
+| 15 | `6c346e0` | G8 Lazy-loading per-role (web-panel) |
+| 16 | `82eb2ad` | G9 Sparklines placeholder (admin-dashboard) |
+| 17 | `2be3eab` | G10 A11y baseline + checklist |
+| 18 | `<hot-patches>` | G12 audit hot-patches |
+| 19 | `<closure>` | G12 closure (CHANGELOG + post-mortem + status) |
+
+### Что сработало
+
+- **D1 stabilized scope**: 5 owner-решений в начале милестоуна
+  (og-image SVG-first, mini-app defer, axe-core baseline, sparklines
+  text, schedule bounds) — ни одного rework'а из-за неопределённости.
+- **Types-only migration G3b (D3)**: axios остаётся, `components[
+  'schemas']` как type — без риска regressии refresh-token flow. 122
+  PWA + 444 web-panel tests passing без изменений.
+- **Adapter-based `fieldErrors → invalidParams` (D4)**: backend
+  @Schema rename отложен в M11, frontend использует invalidParams
+  уже сегодня.
+- **Per-role lazy-loading по factam уже работал** (loadComponent на
+  каждом route). G8 дал чистый refactor на `loadChildren` — 297→76
+  LOC в `app.routes.ts`, явные entry points.
+- **useSubjectMap устранил waterfall LessonCard** — 1 рендер вместо
+  2 (skeleton → real name).
+- **BottomSheet унификация** — -110 LOC в 2 sheet-файлах, shared
+  Escape handling, drag-to-close, `prefers-reduced-motion`.
+- **Audit-triggered code polish** (G12): 3 hot-patches (orphan
+  `usePrefetchSubjects` deleted, unread `pendingWriteRef` в
+  useScrollRestoration, clarifying comment в `useSubjectMap`).
+
+### Что пошло не по плану
+
+- **Initial bundle budget** (D7): acceptance «< 500KB per role»
+  интерпретировалось как per-role **chunk** (достигнуто: < 100KB),
+  не total initial shell. Фактический initial = 874KB raw / 224KB
+  gzip — shared Angular framework + Material. Budget поднят до 900KB,
+  реальная оптимизация deferred в v0.1.
+- **StatsPage aggregate endpoint (QC6)** не существует в backend —
+  M05 G5 сделал single-pass для одного студента, group-aggregate нет.
+  Создание = outside M07 scope. StatsPage PWA остался с N параллельными
+  TanStack queries (не waterfall, уже OK).
+- **@axe-core/cli run** — нужен dev server. Отложено в M08 Playwright
+  e2e pipeline. Pass 1 baseline закрыт через `docs/a11y-checklist.md`
+  — semantic HTML + aria-labels + prefers-reduced-motion verified
+  manually.
+- **ESLint a11y plugins**: у PWA и web-panel НЕТ ESLint config
+  вообще. Setup = отдельный milestone scope (M08 CI quality gate).
+- **mini-app** (QC1-7) полностью out-of-scope M07 (D1 решение 2) —
+  copy+adapt после M12 стабилизации PWA.
+
+### Deferred из M07 → другие milestones
+
+| Finding | Severity | → milestone |
+|---------|----------|-------------|
+| @axe-core/cli run | — | M08 (Playwright e2e pipeline) |
+| ESLint jsx-a11y + @angular-eslint/template | — | M08 (CI quality gate) |
+| Mini-app type migration | — | Post-M12 (copy+adapt from PWA) |
+| Backend `@Schema(fieldErrors → invalidParams)` | — | M11 (OpenAPI Polish) |
+| NotificationCenter stateful pagination | — | M10 (Notification History) |
+| Real sparklines endpoint `/admin/dashboard/metrics` | — | v0.1 (NEW-94 Prometheus-based) |
+| SMIL 3 `<animate>` в landing → CSS keyframes | — | a11y pass 2 (v0.1) |
+| Skip-to-main links + color contrast audit | — | a11y pass 2 (v0.1) |
+| Material Design shared-chunk split | — | v0.1 (bundle optimisation) |
+| Backend stats-aggregate endpoint | — | v0.1 (NEW-94) |
+| Full openapi-fetch runtime swap | — | v0.1 pilot feature |
+
+### Audit-финальный
+
+`security-auditor` (фон, результат в G12 commit) + `code-reviewer`
+(7 SUGGESTED, 0 CRITICAL). Hot-patches:
+- S1 — удалён orphan `usePrefetchSubjects` из schedule/api.ts.
+- S2 — удалён unread `pendingWriteRef` из useScrollRestoration.
+- S7 — поясняющий комментарий для id>0 filter в useSubjectMap.
+
+### Метрики
+
+- **Source LOC delta:** ~+3200/-1100 (new shared hooks + components
+  + api.ts, offset by sheet refactor + app.routes consolidation).
+- **Test count:** PWA 122 → 154 (+32). Web-panel 444 → 470 (+26,
+  включая ConfirmWithReasonDialog + Notification refactor из G5+G7).
+- **Bundle:** PWA main ~673KB raw (recharts, TanStack, motion,
+  phosphor). Web-panel initial 874KB raw / 224KB gzip; per-role
+  chunks < 100KB. Acceptable для public-alpha.
+- **Время:** ~14 человеко-дней (estimate 10-12 — укладывается в 15%
+  overshoot, главный override — G6 как самая крупная группа).

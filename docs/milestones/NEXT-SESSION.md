@@ -13,45 +13,56 @@ Opus сам откроет файлы и поймёт где мы останов
    пункта + 99-executive-summary.md roadmap).
 2. Рабочий процесс — lightweight milestones без GSD-orchestrator'а.
    Индекс: `docs/milestones/README.md`.
-3. **M05 Performance ✅ закрыт 2026-04-21**, tag `v0.0.0-alpha.6`.
-   5 milestones закрыто (M01, M02, M03a, M03b, M04, M05). Осталось 3:
-   M06 Ops & Supply Chain, M07 Frontend Hardening, M08 Test Infra.
+3. **M06 Ops & Supply Chain ✅ закрыт 2026-04-21**, tag `v0.0.0-alpha.7`.
+   6 milestones закрыто (M01-M06). Осталось 3:
+   M07 Frontend Hardening, M08 Test Infra, M09 Prod Release Blockers.
 
-**Следующий milestone по dependency graph:** **M06 Ops & Supply Chain**.
-Полностью независим (не блокируется другими), стабильный scope из
-OWNER-ANSWERS. Estimate ~3-4 дня.
+**Следующий milestone по dependency graph:** **M07 Frontend Hardening**
+(зависит от M03b, который закрыт). ~10-12д. Scope — CSP self-host,
+a11y, openapi-typescript, UX фиксы. Альтернатива — **M09 Prod Release
+Blockers** (зависит от M02+M03a, оба закрыты), ~4-5д, точечные P0 из
+Фазы 3. Parallel safe — можно делать M09 параллельно с M07.
 
-M06 Scope (из `docs/milestones/README.md`):
-- SHA tagging для docker-образов (reproducible builds).
-- Trivy + Gitleaks в CI.
-- HEALTHCHECK в Dockerfile (existing compose health-check → proper).
-- Renovate config для dependency updates.
-- Дополнительно из M05 audit defer'нуто:
-  - Redis Jackson `LaissezFaireSubTypeValidator` → `BasicPolymorphicTypeValidator`
-    с whitelist `ru.rutcampustrack.*` (security-auditor finding #3, M05 G9).
-  - `isHeadman` rate-limit на gRPC (security #5, M05 G9).
-  - Redis cache hit/miss metrics через `@Aspect` (caching-strategy.md
-    §Observability deferred).
-  - `GrpcClientMetricsInterceptor` Timer caching (bug-hunter 5.1) +
-    `startNs` в `start()` (5.3).
-  - `/actuator/**` excluded из tracing sampling (M04 backlog).
+**М06 defer'ы для M07/M09:**
+- Redis cache hit/miss metrics через `RedisCacheMeterBinder` (MINOR).
+- `/actuator/**` excluded from tracing (custom OTel Sampler bean).
+- isHeadman principal-based userId (gRPC proto redesign, breaking).
+- nginx / postgres / mongo / redis / rabbitmq digest-pin.
+- rct-nginx 5-min background reload → `nginx -t` + Loki alerting.
+- SBOM generation + cosign signing (M08).
+- Trivy action sha-digest pin (M08).
 
-Альтернативно: **M07 Frontend Hardening** (зависит от M03b только,
-~10-12д) — если нужна фокусировка на UX/a11y до инфраструктуры. Или
-**M08 Test Infra** (зависит от M01/M02/M03b, ~10-12д) — Playwright e2e.
+M07 Scope (из `99-executive-summary.md` P1-C + Фаза 5 P2-7A/7B):
+- CSP self-host лендинг-ресурсов (C0-6, 12 P0-1, 13 P0-4) — склонировать
+  Fontshare/Google Fonts/unpkg/jsdelivr в `frontends/landing/dist/assets/
+  vendor/`, CSP `'self'` без whitelist'а внешних CDN.
+- openapi-typescript для PWA/web-panel (QC2) — типы из Swagger spec
+  вместо ручных interface-копий.
+- a11y audit: semantic HTML, axe-core в Playwright, jsx-a11y ESLint,
+  prefers-reduced-motion (QC*), SMIL→CSS (QE3).
+- UX фиксы: pull-to-refresh, useSwipeHandler, useDateNavigation,
+  geolocation high-accuracy (P2-7A).
+- QE4 landing meta-тегов (og/twitter/canonical/robots/JSON-LD).
+- M06 defer'ы из списка выше (Redis cache metrics, /actuator/** tracing,
+  nginx digest-pin, принципиально-нужные для frontend hardening).
+
+Альтернативно: **M09 Prod Release Blockers** (~4-5д, последний фаза-3
+P0 cleanup: OTP через RabbitMQ, MessageDigest, cleanupOrphans, landing
+deep-link, latecheckin/bot tests). Parallel safe с M07.
 
 Что делать:
-1. Создай `docs/milestones/M06-ops-supply-chain/` из шаблона
+1. Создай `docs/milestones/M07-frontend-hardening/` из шаблона
    `docs/milestones/_TEMPLATE/`: PLAN.md + CHECKLIST.md + NOTES.md +
    DECISIONS.md.
-2. PLAN.md наполни из OWNER-ANSWERS «Supply Chain» секции + M05 defer'ов
-   (см. список выше) + пройдись по `docs/report-before-v0.0.0/
-   06-supply-chain-report.md` если есть.
-3. Разбей на группы по ~3-4ч atomic (образец — M05 G1-G10).
+2. PLAN.md наполни из OWNER-ANSWERS «Frontend» секций (QC1..7, QE3/4) +
+   M06 defer'ы (см. список выше) + `docs/report-before-v0.0.0/
+   09-frontend-pwa.md`, `10-frontend-web-panel.md`, `12-frontend-
+   landing.md`, `13-infra-docker-ci.md` CSP section.
+3. Разбей на группы по ~3-4ч atomic (образец — M06 G1-G9).
 4. Спроси owner'а перед стартом для подтверждения scope'а.
-5. `git log --oneline -10` — последние коммиты (`v0.0.0-alpha.6` на
-   последнем M05 коммите; 90+ коммитов ahead origin; tags `v0.0.0-
-   alpha.2..6` локальные).
+5. `git log --oneline -15` — последние коммиты (`v0.0.0-alpha.7` на
+   последнем M06 коммите; 100+ коммитов ahead origin; tags `v0.0.0-
+   alpha.2..7` локальные).
 6. Проверь docker-compose: `docker compose ps`. Инфра из прошлых
    сессий уже поднята.
 
@@ -72,9 +83,10 @@ M06 Scope (из `docs/milestones/README.md`):
    зелёный + integration + ArchUnit + CI-lint).
 3. Post-mortem секция дописана в PLAN.md.
 4. Статус в `docs/milestones/README.md` → ✅ готов.
-5. Тег `git tag v0.0.0-alpha.7` на последнем коммите milestone'а.
+5. Тег `git tag v0.0.0-alpha.8` на последнем коммите milestone'а
+   (alpha.7 — M06, alpha.8 — M07, alpha.9 — M08, `v0.0.0` — после M09).
 6. Сообщить owner'у финальный summary + ссылку на следующий
-   milestone (M07 или M08).
+   milestone (M08 или M09).
 
 Старт:
 > Читаю README.md → 99-executive-summary.md → M05 post-mortem →

@@ -30,9 +30,10 @@ RutCampusTrack — микросервисная система учёта пос
 | M03b | Secure Boundaries Part B | ✅ HttpOnly cookie + WS-ticket + logout lifecycle + KI-3/6/7/8 hot-patches — завершён 2026-04-20 |
 | M04 | Observability | ✅ OTel+Tempo tracing + Alertmanager → bot → Telegram + JSON-логи + 8 counter'ов + 3 gauge'а + retention 14d + Grafana business-kpis dashboard — завершён 2026-04-20 |
 | M05 | Performance | ✅ Composite indexes + Redis rbac/subject cache + HikariCP tuning + batch endpoints + gRPC fan-out + push retention 90d — завершён 2026-04-21 |
-| M06 | Ops & Supply Chain | SHA tagging + Trivy/Gitleaks + HEALTHCHECK + Renovate |
+| M06 | Ops & Supply Chain | ✅ SHA tagging + digest cadvisor/promtail + semver-pin observability + HEALTHCHECK × 7 + Renovate/Dependabot + Trivy/Gitleaks + CI/deploy gate + M05 security defer'ы — завершён 2026-04-21 |
 | M07 | Frontend Hardening | CSP self-host + a11y + openapi-typescript + UX fixes |
 | M08 | Test Infrastructure | Playwright e2e + golden tests + coverage-gate 60/50/50 + diff 80% |
+| M09 | Prod Release Blockers (Фаза 3) | OTP через RabbitMQ + MessageDigest + cleanupOrphans + landing deep-link + latecheckin/bot тесты |
 
 Начало и порядок выполнения: `docs/milestones/README.md`. Workflow
 описан там же — per milestone ведётся PLAN + CHECKLIST + NOTES + DECISIONS.
@@ -75,10 +76,13 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 
 ### Contract-first
 
-- Каждый сервис имеет `*-api-contract` (чистый `java-library`) и `*-app` (Spring Boot)
+- Каждый сервис, публикующий собственный REST API, имеет `*-api-contract` (чистый `java-library`) и `*-app` (Spring Boot)
 - Контроллер `implements` интерфейс из контракта. Маппинги ТОЛЬКО в интерфейсе
 - Request DTO = Java `record`. Response DTO = класс (для HATEOAS `RepresentationModel`)
 - **БЕЗ Lombok в контрактных модулях** (`*-api-contract`). Lombok допустим только в `*-app` (entity, внутренние классы)
+- **Исключения:**
+  - `api-gateway` — прокси, собственного REST API не публикует, `*-api-contract` не нужен (зафиксировано M09 D2)
+  - `auth-service` — единственный нарушитель правила (01 P0-1), `auth-api-contract` отложен в v0.1 backlog (M09 D1, `docs/future-ideas.md`)
 
 ### Enum-ы
 

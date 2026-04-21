@@ -9,6 +9,62 @@
 
 ### Added
 
+- **M06 Ops & Supply Chain** — supply-chain guard + CI/CD hardening
+  (~21ч, 9 групп, 12 коммитов `b6a0cc3..e0e1881`).
+  - **HEALTHCHECK в 7 Dockerfile** (P2-9/1, NEW-150) — metadata
+    живёт с образом, `docker run` без compose тоже работает. Java
+    через `wget -qO- /actuator/health`, bot через `curl /health`.
+    `docs/dockerfile-conventions.md`.
+  - **SHA-tagging через `${IMAGE_TAG:-latest}`** (QD1, 13 P1-1/2/4) —
+    11 образов параметризованы; `deploy.yml` передаёт `github.sha` →
+    reproducible rollback. Убран дублирующий `up -d` после `sleep 30`,
+    заменён на `--wait --wait-timeout 120`. mini-app tag `:${sha}`.
+  - **Digest-пин cadvisor + promtail** (QD4, NEW-102) — multi-arch
+    manifest-list digests. `docs/infra/container-trust.md` — policy.
+  - **Observability semver-pin** (P2-9/2, NEW-151) — `loki:3.2.1`,
+    `prometheus:v2.55.1`, `grafana:11.3.1`, `node-exporter:v1.8.2`.
+    `docs/runbooks/loki-major-upgrade.md` — expand-contract schema.
+  - **Renovate + Dependabot** (QD4+QD6, NEW-105) — auto-merge
+    patch/pin/digest после CI, manual minor/major, groupings,
+    loki major manual-only. Dependabot security-only × 7 ecosystems.
+    `docs/ci-cd.md` — полный CI/CD runbook.
+  - **Trivy + Gitleaks CI + SECURITY.md** (QD5, NEW-103) — 4 jobs
+    (trivy-repo SARIF + trivy-config + gitleaks + weekly trivy-images
+    matrix). `.pre-commit-config.yaml`. `SECURITY.md` disclosure policy.
+  - **CI↔deploy gate** (C0-8, 13 P0-2/11) — `paths-ignore` docs/
+    .planning/MD. `workflow_run: [CI]: completed` + strict guards
+    (`head_branch==main && event==push`). `concurrency: production-
+    deploy` (avoid concurrent JWT keygen). `DEPLOY_SHA` env из
+    `workflow_run.head_sha`.
+
+### Fixed (security)
+
+- **Redis Jackson whitelist** (M05 defer, security #3) —
+  `LaissezFaireSubTypeValidator` → `BasicPolymorphicTypeValidator`
+  с narrow whitelist (`ru.rutcampustrack.*` + explicit collection
+  types + `java.time.*` + `java.math.BigDecimal/BigInteger`).
+  Block'ирует gadget-chains через `@class` в Redis payload'е.
+- **gRPC isHeadman rate-limit** (M05 defer, security #5) — token
+  bucket 120 calls/мин per userId в `AcademicGrpcServiceImpl`,
+  lock-free CAS, `RL_MAX_BUCKETS=10k`. `Status.RESOURCE_EXHAUSTED`
+  при превышении. Integration-тест покрывает.
+- **GrpcClientMetricsInterceptor** (M05 defer, bug-hunter 5.1+5.3) —
+  Timer cache ConcurrentHashMap по `(service|method|status)`; `startNs`
+  перенесён в `start()` listener.
+- **Pre-existing EventSchemaRefTest fix** — M04 G6 (08fbd1f) добавил
+  required envelope fields, test payload'ы не обновлены. Восстановлен
+  zeлёный build.
+
+### Deferred (M07+)
+
+- Redis cache metrics `@Aspect` (MINOR) — требует `RedisCacheMeterBinder`
+  без namespace-TTL регрессии.
+- `/actuator/**` excluded from tracing (M04 backlog) — custom OTel
+  `Sampler` bean + integration tests.
+- isHeadman principal-based userId — M07 (gRPC proto redesign).
+- rct-nginx 5-min reload + nginx/postgres/mongo/redis/rabbitmq digest-
+  pin — M07/M09.
+
 - **M05 Performance — Группа 9 Audit + hot-patches** — три внешних
   агента (bug-hunter / security-auditor / code-reviewer) на diff M05
   в чистом контексте. 22 findings; закрыто 10 критичных/high/medium,

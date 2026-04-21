@@ -71,52 +71,54 @@
 - [x] Все 11 build-push tags + IMAGE_TAG в SSH используют `${{ env.DEPLOY_SHA }}`
 - [x] `docs/ci-cd.md` — раздел branch protection (уже был в G5)
 - [x] Smoke: `yaml-lint ci.yml deploy.yml` → `YAML Lint successful`
-- [ ] Commit: `feat(ci): workflow_run gate + DEPLOY_SHA (M06 Группа 7, C0-8, 13 P0-2/11)`
+- [x] Commit: `7c74b3a feat(ci): workflow_run gate + DEPLOY_SHA (M06 Группа 7, C0-8, 13 P0-2/11)`
 
-## Группа 8 — M05 defer'ы — ~4ч
+## Группа 8 — M05 defer'ы — ~4ч (3 done, 2 deferred в M07)
 
-### 8a. Redis Jackson whitelist (M05 security #3, ~45м)
+### 8a. Redis Jackson whitelist (M05 security #3, ~45м) ✅
 
-- [ ] `CacheConfig.java` — `BasicPolymorphicTypeValidator.builder().allowIfSubType("ru.rutcampustrack.")` вместо `LaissezFaireSubTypeValidator`
-- [ ] Smoke: `RbacCacheIT` + `@Cacheable("subject")` IT зелёные
+- [x] `CacheConfig.java` — `BasicPolymorphicTypeValidator.builder().allowIfSubType("ru.rutcampustrack.").allowIfSubType("java.util./time/lang/math.")` вместо `LaissezFaireSubTypeValidator`
+- [x] Smoke: `RbacCacheIT` зелёный; `compileJava` successful
+- [x] Commit: `47039cf fix(security): Redis Jackson whitelist validator (M06 G8a, M05 defer)`
 
-### 8b. isHeadman gRPC rate-limit (M05 security #5, ~1ч)
+### 8b. isHeadman gRPC rate-limit (M05 security #5, ~1ч) ✅
 
-- [ ] Решить где — на edge Gateway или в `AcademicGrpcServiceImpl`. Если Gateway — ссылка на M03a rate-limit Redis. Если gRPC-уровень — token bucket через `Bucket4j` per `userId+groupId`
-- [ ] Implement + unit-тест
+- [x] Token bucket в `AcademicGrpcServiceImpl.isHeadman` — 120 calls/мин per userId, lock-free CAS, RL_MAX_BUCKETS=10k cap на heap
+- [x] Integration test: `isHeadman_rateLimitExceeded_throwsResourceExhausted` — 120 calls пройдут, 121-й → RESOURCE_EXHAUSTED
+- [x] Commit: `7208b11 fix(security): gRPC isHeadman rate-limit (M06 G8b, M05 defer)`
 
-### 8c. Redis cache metrics `@Aspect` (M05 minor, ~1ч)
+### 8c. Redis cache metrics `@Aspect` (M05 minor, ~1ч) ⏸ deferred в M07
 
-- [ ] `shared-observability/RedisCacheMetricsAspect` — `@Around("@annotation(Cacheable)")` + `Timer` histogram с тегом `cache`
-- [ ] Alternate path: `RedisCacheManager` builder-hook `.withCacheConfiguration(..., CacheStatistics.Simple)`
-- [ ] Проверить не ломает namespace-specific TTL (регрессия из M05 G3)
+- [x] Deferred — `@Aspect` на `@Cacheable` не даёт hit/miss (определяется внутри advice chain), `MetricsCacheManagerDecorator` ломает namespace-TTL. Правильный fix — `RedisCacheMeterBinder` Spring Boot 3.4+. Записано в NOTES
 
-### 8d. GrpcClientMetricsInterceptor Timer cache + startNs (bug-hunter 5.1+5.3, ~45м)
+### 8d. GrpcClientMetricsInterceptor Timer cache + startNs (bug-hunter 5.1+5.3, ~45м) ✅
 
-- [ ] `GrpcClientMetricsInterceptor` — `ConcurrentHashMap<MethodDescriptor, Timer>` вместо `meterRegistry.timer()` per call
-- [ ] `start()` — захватывать `startNs` в закрывающем scope (сейчас — глобальное поле, data race)
-- [ ] Unit-тест на concurrent calls
+- [x] `timerCache` ConcurrentHashMap keyed by (service|method|status) — O(1) lookup вместо `Timer.builder()` per call
+- [x] `startNs = System.nanoTime()` перенесён внутрь `start()` listener (correct call-duration semantics)
+- [x] `shared-observability:test` зелёный
+- [x] Commit: `cf983fa fix(observability): GrpcClientMetricsInterceptor Timer cache + startNs (M06 G8d)`
 
-### 8e. /actuator/** excluded from tracing (M04 backlog, ~30м)
+### 8e. /actuator/** excluded from tracing (M04 backlog, ~30м) ⏸ deferred в M07
 
-- [ ] `SpanFilter` / `Sampler` customizer — skip spans для uri match `/actuator/**`
-- [ ] Проверить Tempo UI: прошёл 1 `/actuator/health` → не появилась span
+- [x] Deferred — требует custom OTel `Sampler` bean или `ObservationRegistryCustomizer` + integration test per-service. M06-scope не соответствует
+- [x] Auth-service `application.yml` comment исправлен — не обещает того чего нет (включено в `cf983fa` commit)
 
-- [ ] Commit: `fix(defer): M05 hot-patches — Redis whitelist + gRPC RL + Timer cache + actuator tracing (M06 Группа 8)`
+**Группа 8 итог:** 3/5 imlemented, 2/5 deferred с обоснованием в NOTES. Commits: `47039cf`, `7208b11`, `cf983fa`.
 
-## Группа 9 — Audit + docs close — ~3ч
+## Группа 9 — Audit + docs close — ~3ч ✅
 
-- [ ] `./gradlew build` финальный — зелёный
-- [ ] `docker compose -f docker-compose.prod.yml config` — валидный
-- [ ] `Explore` / `bug-hunter` на diff M06 (от `e03e74b` до финального G8 commit)
-- [ ] `security-auditor` на новый `security.yml`, `renovate.json`, `Dockerfile` HEALTHCHECK
-- [ ] Hot-patches если найдутся — отдельным commit
-- [ ] `CHANGELOG.md` `[Unreleased]` — M06 entries (Added + Changed + Security)
-- [ ] `docs/milestones/M06-ops-supply-chain/PLAN.md` — Post-mortem секция
-- [ ] `docs/milestones/README.md` — M06 → ✅ + дата
-- [ ] `CLAUDE.md` — статус M06 → ✅ + дата
-- [ ] `docs/milestones/NEXT-SESSION.md` — hand-off для M07
-- [ ] `git tag v0.0.0-alpha.7` на финальном commit'е M06
+- [x] `./gradlew build` финальный — зелёный (после G9 hot-patch EventSchemaRefTest)
+- [x] `docker compose -f docker-compose.prod.yml config` — валидный, `${IMAGE_TAG}` резолвится
+- [x] `security-auditor` агент на diff M06 (b6a0cc3..cf983fa) — 5 HIGH + 7 MEDIUM findings
+- [x] Hot-patches в `e0e1881`: H1 (deploy.yml strict guards) + H2 (concurrency) + H3 (CacheConfig narrow whitelist) + EventSchemaRefTest fix
+- [x] H4 (headmanBuckets + principal userId) + H5 (nginx 5-min reload) deferred с обоснованием в NOTES
+- [x] MEDIUM findings (M1-M7) deferred в M07/M08 с обоснованием
+- [x] `CHANGELOG.md` `[Unreleased]` — M06 entries (Added + Fixed security + Deferred)
+- [x] `docs/milestones/M06-ops-supply-chain/PLAN.md` — Post-mortem секция
+- [x] `docs/milestones/README.md` — M06 → ✅ 2026-04-21
+- [x] `CLAUDE.md` — статус M06 → ✅ 2026-04-21
+- [x] `docs/milestones/NEXT-SESSION.md` — hand-off для M07
+- [ ] `git tag v0.0.0-alpha.7` — после closure commit
 - [ ] Commit: `docs(m06): закрытие milestone — post-mortem + CHANGELOG + hand-off`
 
 ---

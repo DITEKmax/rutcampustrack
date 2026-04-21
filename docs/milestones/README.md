@@ -42,15 +42,19 @@ subagent на diff в конце milestone'а.
 | M03b | [Secure Boundaries Part B (JWT cookie + ws-ticket + logout)](M03b-jwt-cookie-ws-ticket/PLAN.md) | M03a | ~8-12д | ✅ 2026-04-20 |
 | M04 | [Observability (Tracing, Alertmanager, JSON-логи)](M04-observability/PLAN.md) | M01 | ~5-7д | ✅ 2026-04-20 |
 | M05 | [Performance (Indexes, Redis cache, HikariCP, batch, gRPC, push retention)](M05-performance/PLAN.md) | M01 | ~6-7д | ✅ 2026-04-21 |
-| M06 | Ops & Supply Chain (SHA tagging, Trivy, HEALTHCHECK) | — | ~3-4д | ⬜ |
+| M06 | [Ops & Supply Chain (SHA tagging, Trivy, HEALTHCHECK)](M06-ops-supply-chain/PLAN.md) | — | ~3-4д | ✅ 2026-04-21 |
 | M07 | Frontend Hardening (CSP, a11y, UX, openapi-typescript) | M03b | ~10-12д | ⬜ |
 | M08 | Test Infrastructure (Playwright, golden, coverage-gate) | M01, M02, M03b | ~10-12д | ⬜ |
+| M09 | [Prod Release Blockers (Фаза 3 Точечные P0)](M09-prod-release-blockers/PLAN.md) | M02, M03a | ~4-5д | ⬜ |
 
 **Parallel tracks:** M04 и M05 можно делать одновременно с M03a/M03b
 (независимы по коду). M06 полностью независим — можно делать когда угодно,
 даже параллельно M01. M03 разделён на M03a (Internal JWT + rate-limit) и
 M03b (JWT cookie + ws-ticket + logout) для промежуточного тега
-`v0.0.0-alpha.3` и снижения риска breaking change.
+`v0.0.0-alpha.3` и снижения риска breaking change. **M09** закрывает
+оставшиеся «Точечные P0» из Фазы 3 executive-summary и является
+финальным блокером релиза v0.0.0 — parallel safe с M06/M07/M08,
+но релизный тег `v0.0.0` ставится только после всех четырёх.
 
 ## Правила
 

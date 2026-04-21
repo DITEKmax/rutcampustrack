@@ -110,7 +110,7 @@ jobs:
           context: frontends/mini-app
           file: frontends/mini-app/Dockerfile
           push: true
-          tags: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:latest
+          tags: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:${{ github.sha }},ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:latest
           cache-from: type=gha,scope=mini-app
           cache-to: type=gha,scope=mini-app,mode=max
 
@@ -143,12 +143,13 @@ jobs:
         uses: appleboy/ssh-action@v1
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          IMAGE_TAG: ${{ github.sha }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          envs: GHCR_TOKEN
+          envs: GHCR_TOKEN,IMAGE_TAG
           script: |
             set -e
             echo "$GHCR_TOKEN" | docker login ghcr.io -u ditekmax --password-stdin
@@ -163,10 +164,14 @@ jobs:
                chown -R 100:101 /keys && \
                chmod 640 /keys/private.key && \
                chmod 644 /keys/public.key"
+            # IMAGE_TAG=${{ github.sha }} pins commit-specific images (M06 QD1, 13 P1-1).
+            # compose reads ${IMAGE_TAG:-latest} per service block. `latest` tag still
+            # pushed for zero-downtime redeploy via `docker compose pull`, но конкретный
+            # rollback возможен через `IMAGE_TAG=<sha> docker compose up -d`.
+            export IMAGE_TAG
+            echo ".deployed-sha=$IMAGE_TAG" > /opt/rutcampustrack/.deployed-sha
             docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml pull
-            docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans
-            sleep 30
-            docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose --env-file /opt/rutcampustrack/.env.prod -f docker-compose.prod.yml up -d --remove-orphans --wait --wait-timeout 120
 
             # --- Reload Grafana/Loki/Promtail when observability config changes ---
             # Grafana provisioning (datasources/dashboards) is loaded from

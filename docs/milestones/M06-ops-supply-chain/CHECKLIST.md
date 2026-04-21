@@ -16,16 +16,16 @@
 - [x] `docker-compose.prod.yml` — уже имеет `depends_on: service_healthy` matrix (M04), нет изменений
 - [x] `docs/dockerfile-conventions.md` — NEW-150 runbook
 - [x] Smoke: `docker buildx build --check` × 7 Dockerfile, `Check complete, no warnings found` × 7
-- [ ] Commit: `feat(ops): HEALTHCHECK в 7 Dockerfile (M06 Группа 1, P2-9/1, NEW-150)`
+- [x] Commit: `29bfbdc feat(ops): HEALTHCHECK в 7 Dockerfile (M06 Группа 1, P2-9/1, NEW-150)`
 
-## Группа 2 — SHA-tagging + IMAGE_TAG параметризация (QD1, 13 P1-1/4) — ~2ч
+## Группа 2 — SHA-tagging + IMAGE_TAG параметризация (QD1, 13 P1-1/4) — ~2ч ✅
 
-- [ ] `docker-compose.prod.yml` — `image: ghcr.io/.../X:${IMAGE_TAG:-latest}` × 11 образов приложения
-- [ ] `deploy.yml` — передача `IMAGE_TAG=${{ github.sha }}` в SSH env + `docker compose pull`
-- [ ] `deploy.yml` mini-app build — добавить `:${{ github.sha }}` к тегам
-- [ ] `deploy.yml` — убрать дублирующий `up -d` после `sleep 30` (13 P1-2, side-fix)
-- [ ] Локальный smoke: `docker compose -f docker-compose.prod.yml config` — валидный
-- [ ] Commit: `feat(ops): SHA-tagging через IMAGE_TAG + deploy.yml cleanup (M06 Группа 2, QD1, 13 P1-1/2/4)`
+- [x] `docker-compose.prod.yml` — `image: ghcr.io/.../X:${IMAGE_TAG:-latest}` × 11 образов приложения
+- [x] `deploy.yml` — передача `IMAGE_TAG=${{ github.sha }}` в SSH env (+ `.deployed-sha` marker)
+- [x] `deploy.yml` mini-app build — добавить `:${{ github.sha }}` к тегам (13 P1-4)
+- [x] `deploy.yml` — убрать дублирующий `up -d` после `sleep 30` (13 P1-2), заменён на `--wait --wait-timeout 120`
+- [x] Smoke: `IMAGE_TAG=abc123 docker compose config` — резолвится в 11 образах; `config --quiet` exit=0
+- [ ] Commit: `feat(ops): SHA-tagging + deploy.yml cleanup (M06 Группа 2, QD1, 13 P1-1/2/4)`
 
 ## Группа 3 — Digest-пин cadvisor + promtail (QD4, NEW-102) — ~1.5ч
 

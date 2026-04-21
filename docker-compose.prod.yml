@@ -111,7 +111,7 @@ services:
     build:
       context: .
       dockerfile: services/auth-service/Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/auth-service:latest
+    image: ghcr.io/ditekmax/rutcampustrack/auth-service:${IMAGE_TAG:-latest}
     container_name: rct-auth-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -150,7 +150,7 @@ services:
     build:
       context: .
       dockerfile: services/academic-service/academic-app/Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/academic-service:latest
+    image: ghcr.io/ditekmax/rutcampustrack/academic-service:${IMAGE_TAG:-latest}
     container_name: rct-academic-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -184,7 +184,7 @@ services:
     build:
       context: .
       dockerfile: services/schedule-service/schedule-app/Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/schedule-service:latest
+    image: ghcr.io/ditekmax/rutcampustrack/schedule-service:${IMAGE_TAG:-latest}
     container_name: rct-schedule-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -218,7 +218,7 @@ services:
     build:
       context: .
       dockerfile: services/attendance-service/attendance-app/Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/attendance-service:latest
+    image: ghcr.io/ditekmax/rutcampustrack/attendance-service:${IMAGE_TAG:-latest}
     container_name: rct-attendance-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -256,7 +256,7 @@ services:
     build:
       context: .
       dockerfile: services/notification-service/notification-app/Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/notification-web:latest
+    image: ghcr.io/ditekmax/rutcampustrack/notification-web:${IMAGE_TAG:-latest}
     container_name: rct-notification-web
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -299,7 +299,7 @@ services:
     build:
       context: ./services/notification-bot
       dockerfile: Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/notification-bot:latest
+    image: ghcr.io/ditekmax/rutcampustrack/notification-bot:${IMAGE_TAG:-latest}
     container_name: rct-notification-bot
     environment:
       BOT_TOKEN: ${BOT_TOKEN}
@@ -342,7 +342,7 @@ services:
     build:
       context: .
       dockerfile: services/api-gateway/Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/api-gateway:latest
+    image: ghcr.io/ditekmax/rutcampustrack/api-gateway:${IMAGE_TAG:-latest}
     container_name: rct-api-gateway
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -584,7 +584,7 @@ services:
     build:
       context: ./frontends/pwa
       dockerfile: Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/pwa-nginx:latest
+    image: ghcr.io/ditekmax/rutcampustrack/pwa-nginx:${IMAGE_TAG:-latest}
     container_name: rct-pwa-nginx
     expose:
       - "80"
@@ -596,7 +596,7 @@ services:
     build:
       context: ./frontends/mini-app
       dockerfile: Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:latest
+    image: ghcr.io/ditekmax/rutcampustrack/mini-app-nginx:${IMAGE_TAG:-latest}
     container_name: rct-mini-app-nginx
     expose:
       - "80"
@@ -608,7 +608,7 @@ services:
     build:
       context: ./frontends/web-panel
       dockerfile: Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:latest
+    image: ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:${IMAGE_TAG:-latest}
     container_name: rct-web-panel-nginx
     expose:
       - "80"
@@ -620,7 +620,7 @@ services:
     build:
       context: ./frontends/landing
       dockerfile: Dockerfile
-    image: ghcr.io/ditekmax/rutcampustrack/landing-nginx:latest
+    image: ghcr.io/ditekmax/rutcampustrack/landing-nginx:${IMAGE_TAG:-latest}
     container_name: rct-landing-nginx
     expose:
       - "80"

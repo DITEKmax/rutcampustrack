@@ -12,6 +12,7 @@ import io.grpc.Status;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,6 +44,17 @@ public class GrpcClientMetricsInterceptor implements ClientInterceptor {
 
     private final MeterRegistry meterRegistry;
 
+    /**
+     * M06 G8d (bug-hunter 5.1): Timer cache keyed by (service|method|status).
+     * Избегаем Timer.builder().register() на каждый call — lookup в
+     * MeterRegistry с tag-parsing ≈ 5-15μs overhead per RPC. После cache'а —
+     * O(1) получение готового Timer.
+     *
+     * Key-space bounded ≤ |services| × |methods| × |Status.Code|
+     * (~3 × 10 × 17 = ~500 entries) — heap-safe без eviction.
+     */
+    private final ConcurrentHashMap<String, Timer> timerCache = new ConcurrentHashMap<>();
+
     public GrpcClientMetricsInterceptor(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
     }
@@ -58,30 +70,48 @@ public class GrpcClientMetricsInterceptor implements ClientInterceptor {
         String serviceName = slash > 0 ? shortServiceName(fullName.substring(0, slash)) : fullName;
         String methodName = slash > 0 ? fullName.substring(slash + 1) : "";
 
-        long startNs = System.nanoTime();
-
         ClientCall<ReqT, RespT> delegate = next.newCall(method, callOptions);
         return new ForwardingClientCall.SimpleForwardingClientCall<>(delegate) {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
+                // M06 G8d (bug-hunter 5.3): startNs фиксируется в start(),
+                // не в interceptCall. interceptCall выполняется в caller-
+                // thread до попадания в executor; start() — ближе к
+                // actual RPC dispatch. Разница <1ms в normal case, но
+                // корректнее по семантике "call duration".
+                long startNs = System.nanoTime();
                 Listener<RespT> instrumented = new ForwardingClientCallListener
                         .SimpleForwardingClientCallListener<>(responseListener) {
                     @Override
                     public void onClose(Status status, Metadata trailers) {
                         long elapsedNs = System.nanoTime() - startNs;
-                        Timer.builder(TIMER_NAME)
-                                .description("gRPC client call duration")
-                                .tag("service", serviceName)
-                                .tag("method", methodName)
-                                .tag("status", status.getCode().name())
-                                .register(meterRegistry)
-                                .record(elapsedNs, TimeUnit.NANOSECONDS);
+                        String statusCode = status.getCode().name();
+                        Timer timer = timerForTags(serviceName, methodName, statusCode);
+                        timer.record(elapsedNs, TimeUnit.NANOSECONDS);
                         super.onClose(status, trailers);
                     }
                 };
                 super.start(instrumented, headers);
             }
         };
+    }
+
+    /**
+     * Lazy Timer registration per unique (service, method, status) tuple.
+     * Cache key — конкатенированная строка (избегаем аллокации List-ключа).
+     */
+    private Timer timerForTags(String serviceName, String methodName, String statusCode) {
+        String key = serviceName + '|' + methodName + '|' + statusCode;
+        Timer cached = timerCache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        return timerCache.computeIfAbsent(key, k -> Timer.builder(TIMER_NAME)
+                .description("gRPC client call duration")
+                .tag("service", serviceName)
+                .tag("method", methodName)
+                .tag("status", statusCode)
+                .register(meterRegistry));
     }
 
     /**

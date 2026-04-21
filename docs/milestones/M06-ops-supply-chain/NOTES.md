@@ -29,6 +29,46 @@
 4. `GrpcClientMetricsInterceptor` Timer caching + `startNs` в `start()` — LOW (bug-hunter 5.1+5.3).
 5. `/actuator/**` excluded from tracing sampling — M04 backlog.
 
+### Группа 8c — deferred в M07/v0.1
+
+Redis cache hit/miss metrics через `@Aspect` — MINOR finding:
+
+- Напрямую `@Aspect` на `@Cacheable` не даёт информации hit/miss
+  (это определяется в Spring's CacheInterceptor внутри advice
+  chain).
+- `MetricsCacheManagerDecorator` wrapping ломает namespace-TTL
+  (M05 G3 regression).
+- Правильный fix — `RedisCacheWriter` customization или Spring Boot
+  3.4+ `RedisCacheMeterBinder`, требует hook'и и integration-тест
+  на namespace-TTL preservation.
+
+**Действие:** deferred без каких-либо изменений кода. TODO в M07 или
+v0.1 when observability в prod станет критичной.
+
+### Группа 8e — deferred в M07
+
+`/actuator/**` excluded from tracing sampling — M04 backlog, оказалось
+сложнее чем M06-scope:
+
+- Spring Boot 3.4 + OpenTelemetry не имеет out-of-box property
+  `management.tracing.paths-to-skip`.
+- Варианты:
+  - Custom `Sampler` bean (OTel level) с проверкой span attributes
+    `url.path` / `http.route`.
+  - `ObservationRegistryCustomizer` с `observationPredicate`
+    (требует shared-observability dep на `micrometer-observation`).
+  - `WebFilter` early-end spans — хрупко, может порвать span-chain
+    для downstream calls.
+- Правильный fix требует shared-observability модуль changes +
+  integration-тесты per-service.
+- Текущая comment в `application.yml:108` вводит в заблуждение
+  («Health-check запросы исключены из sampling»), но реально не
+  исключены — spam в Tempo продолжается.
+
+**Действие:** перенесено в M07 (или отдельную Phase до v0.0.0),
+`application.yml` comment поправлен в G8e commit — честно отражает
+status quo.
+
 ### Группа 1 — сделано
 
 - **Surprise:** `docker-compose.prod.yml` уже содержал полноценные

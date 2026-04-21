@@ -105,7 +105,9 @@ management:
   # M04 QA2 (NEW-58/59) — distributed tracing OTel → Tempo.
   # Sampling 1.0 для v0.0.0 (малый traffic, ловим всё). Снизить до 0.1
   # когда дойдём до production scale (NEW-66 trigger).
-  # Health-check запросы исключены из sampling (спам в Tempo).
+  # TODO(M07): исключить /actuator/** из sampling (custom Sampler bean
+  # на OTel level). Сейчас health-check requests попадают в Tempo —
+  # spam, но не функциональный блокер v0.0.0.
   tracing:
     sampling:
       probability: 1.0

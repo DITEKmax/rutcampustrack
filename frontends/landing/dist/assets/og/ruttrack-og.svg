@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  RutTrack Open Graph image (1200×630).
+  Source-of-truth. Generate PNG via: node scripts/generate-og.js
+  Brand tokens mirror docs/Rutcampustrack brandbook.md §2.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E5A0"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <radialGradient id="glowGradient" cx="30%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00E5A0" stop-opacity="0.18"/>
+      <stop offset="70%" stop-color="#00E5A0" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="gridPattern" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#1A2236" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0A0E17"/>
+  <rect width="1200" height="630" fill="url(#gridPattern)"/>
+  <rect width="1200" height="630" fill="url(#glowGradient)"/>
+
+  <!-- Transit line — decorative diagonal route -->
+  <g stroke="url(#brandGradient)" stroke-width="2" fill="none" opacity="0.55">
+    <path d="M -40 540 Q 300 500 500 430 T 900 280 L 1240 120"/>
+  </g>
+  <!-- Station dots along the line -->
+  <g fill="url(#brandGradient)">
+    <circle cx="180" cy="520" r="6"/>
+    <circle cx="420" cy="450" r="6"/>
+    <circle cx="660" cy="370" r="6"/>
+    <circle cx="900" cy="280" r="6"/>
+    <circle cx="1120" cy="170" r="6"/>
+  </g>
+
+  <!-- R glyph — gradient R in rounded square (mimics favicon.svg) -->
+  <g transform="translate(96, 120)">
+    <rect x="0" y="0" width="180" height="180" rx="36" fill="url(#brandGradient)"/>
+    <text x="90" y="138" font-family="'Clash Display', 'General Sans', system-ui, sans-serif"
+          font-size="140" font-weight="700" fill="#0A0E17" text-anchor="middle">R</text>
+  </g>
+
+  <!-- Brand name -->
+  <text x="320" y="200" font-family="'Clash Display', 'General Sans', system-ui, sans-serif"
+        font-size="96" font-weight="700" fill="#F0F2F5">RutTrack</text>
+
+  <!-- Sub-title -->
+  <text x="320" y="260" font-family="'General Sans', 'DM Sans', system-ui, sans-serif"
+        font-size="32" font-weight="500" fill="#8B95A8">Учёт посещаемости РУТ МИИТ</text>
+
+  <!-- Main claim -->
+  <text x="96" y="400" font-family="'Clash Display', 'General Sans', system-ui, sans-serif"
+        font-size="56" font-weight="600" fill="#F0F2F5">Учёт посещаемости,</text>
+  <text x="96" y="466" font-family="'Clash Display', 'General Sans', system-ui, sans-serif"
+        font-size="56" font-weight="600" fill="#F0F2F5">который движется</text>
+  <text x="96" y="532" font-family="'Clash Display', 'General Sans', system-ui, sans-serif"
+        font-size="56" font-weight="600" fill="url(#brandGradient)">вместе с вами</text>
+
+  <!-- Bottom metadata — URL + tagline -->
+  <g transform="translate(96, 590)">
+    <text x="0" y="0" font-family="'JetBrains Mono', ui-monospace, monospace"
+          font-size="20" font-weight="400" fill="#4A5568">ruttrack.site</text>
+  </g>
+  <g transform="translate(1104, 590)">
+    <text x="0" y="0" font-family="'DM Sans', system-ui, sans-serif"
+          font-size="20" font-weight="500" fill="#4A5568" text-anchor="end">Транспортная сеть вашего обучения</text>
+  </g>
+</svg>

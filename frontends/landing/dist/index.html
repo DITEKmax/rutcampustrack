@@ -9,12 +9,61 @@
   <title>RutTrack — Учёт посещаемости РУТ МИИТ</title>
   <meta name="description" content="Геоотметка за 10 секунд, расписание, статистика и уведомления в Telegram. Транспортная сеть вашего учебного маршрута." />
 
-  <!-- OpenGraph -->
+  <!-- Canonical + crawling -->
+  <link rel="canonical" href="https://ruttrack.site/presentation/" />
+  <meta name="robots" content="index,follow" />
+
+  <!-- OpenGraph (M07 G2, QE4) -->
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="RutTrack" />
   <meta property="og:title" content="RutTrack — Учёт посещаемости РУТ МИИТ" />
-  <meta property="og:description" content="Геоотметка за 10 секунд, расписание, статистика и уведомления в Telegram." />
+  <meta property="og:description" content="Геоотметка за 10 секунд, расписание, статистика и уведомления в Telegram. Транспортная сеть вашего учебного маршрута." />
   <meta property="og:url" content="https://ruttrack.site/presentation/" />
   <meta property="og:locale" content="ru_RU" />
+  <meta property="og:image" content="https://ruttrack.site/presentation/assets/og/ruttrack-og-1200x630.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="RutTrack — учёт посещаемости РУТ МИИТ. Градиентная буква R и слоган «Учёт посещаемости, который движется вместе с вами»." />
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="RutTrack — Учёт посещаемости РУТ МИИТ" />
+  <meta name="twitter:description" content="Геоотметка за 10 секунд, расписание, статистика и уведомления в Telegram." />
+  <meta name="twitter:image" content="https://ruttrack.site/presentation/assets/og/ruttrack-og-1200x630.png" />
+  <meta name="twitter:image:alt" content="RutTrack — учёт посещаемости РУТ МИИТ." />
+
+  <!-- JSON-LD — Organization + WebApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://ruttrack.site/#org",
+        "name": "RutTrack",
+        "url": "https://ruttrack.site/",
+        "logo": "https://ruttrack.site/presentation/favicon.svg",
+        "description": "Система учёта посещаемости для студентов и преподавателей РУТ МИИТ."
+      },
+      {
+        "@type": "WebApplication",
+        "name": "RutTrack",
+        "url": "https://ruttrack.site/",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web, Android, iOS, Telegram",
+        "description": "Геоотметка за 10 секунд, расписание, статистика посещаемости и уведомления в Telegram. Для студентов, старост и преподавателей РУТ МИИТ.",
+        "inLanguage": "ru-RU",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "RUB"
+        },
+        "publisher": { "@id": "https://ruttrack.site/#org" }
+      }
+    ]
+  }
+  </script>
 
   <!-- No render until theme is decided (prevents flash) -->
   <script>
@@ -163,8 +212,19 @@
      * ========================================================================== */
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+    /* Global reduced-motion override (M07 G2, P2-7B/3).
+     * Neutralises CSS keyframes (pulse/spin), transitions, SMIL на уровне
+     * селекторов. Per-element GSAP branching остаётся через gsap.matchMedia()
+     * ниже — отвечает за hero reveal.
+     */
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
     }
     body {
       margin: 0;
@@ -1633,11 +1693,28 @@
         }
       });
 
-      // Reduced motion — show everything instantly
+      // Reduced motion — show everything instantly (M07 G2, P2-7B/3)
       mm.add('(prefers-reduced-motion: reduce)', function () {
         gsap.set('.hero__title .line > span', { y: 0 });
         gsap.set('.hero__eyebrow, .hero__subtitle, .hero__cta, .hero__meta, .hero__visual, .reveal', { opacity: 1, y: 0 });
         gsap.set('.arch-step, .arch-arrow', { opacity: 1, y: 0, scaleX: 1 });
+
+        // SMIL <animateMotion> в hero SVG — CSS override выше не останавливает
+        // SMIL, поэтому дёргаем нативный API. matchMedia (gsap.matchMedia)
+        // вызовет cleanup → unpause если пользователь отключит reduce live.
+        var pausedSvgs = [];
+        document.querySelectorAll('svg').forEach(function (svg) {
+          if (typeof svg.pauseAnimations === 'function') {
+            try { svg.pauseAnimations(); pausedSvgs.push(svg); } catch (_) { /* jsdom */ }
+          }
+        });
+        return function cleanup() {
+          pausedSvgs.forEach(function (svg) {
+            if (typeof svg.unpauseAnimations === 'function') {
+              try { svg.unpauseAnimations(); } catch (_) { /* noop */ }
+            }
+          });
+        };
       });
     });
   </script>

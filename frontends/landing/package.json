@@ -1,0 +1,13 @@
+{
+  "name": "rutcampustrack-landing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static landing page served at /presentation/. No bundler: dist/ is canonical source. Dev-deps only for asset generation (og-image, future stylelint/a11y).",
+  "scripts": {
+    "generate:og": "node scripts/generate-og.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}

@@ -38,20 +38,28 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 
 ## Группа 2 — Landing meta + a11y (QE3, QE4, P2-7B/3) — ~3ч
 
-- [ ] Создать `dist/assets/og/ruttrack-og-1200x630.png` (дизайн-spec
-      нужен — спросить owner'а про brand-гайд)
-- [ ] `index.html` `<head>`: `og:image`, `og:title`, `og:description`,
-      `og:url`, `twitter:card`, `twitter:image`, `<link rel=canonical>`,
+- [x] Создать `dist/assets/og/ruttrack-og.svg` (SVG source-of-truth,
+      brand-tokens из `docs/Rutcampustrack brandbook.md` §2) + скрипт
+      `scripts/generate-og.mjs` (resvg-js, self-hosted woff2 → PNG) +
+      `package.json` с devDep `@resvg/resvg-js@^2.6.2`.
+- [x] Сгенерировать `dist/assets/og/ruttrack-og-1200x630.png` (162KB)
+- [x] `index.html` `<head>`: `og:image` + `og:image:type/width/height/alt`,
+      `og:site_name`, `twitter:card=summary_large_image`,
+      `twitter:image/title/description/image:alt`,
+      `<link rel=canonical href=ruttrack.site/presentation/>`,
       `<meta name=robots content=index,follow>`
-- [ ] JSON-LD `<script type=application/ld+json>` Organization + WebApp
-      schema
-- [ ] CSS `@media (prefers-reduced-motion: reduce)` — override анимаций
-      на `0.001ms`
-- [ ] JS `matchMedia('(prefers-reduced-motion: reduce)').addEventListener`
-      + `svg.pauseAnimations?.()` для SMIL
-- [ ] Smoke: Chrome DevTools emulate `prefers-reduced-motion: reduce` →
-      анимации замирают
+- [x] JSON-LD `<script type=application/ld+json>` Organization +
+      WebApplication schema (inLanguage ru-RU, offers price=0, publisher
+      ref)
+- [x] CSS `@media (prefers-reduced-motion: reduce)` — global override
+      (animation 0.001ms + transition 0.001ms + scroll-behavior auto)
+- [x] JS `gsap.matchMedia('(prefers-reduced-motion: reduce)')` scope +
+      `svg.pauseAnimations()` / `unpauseAnimations()` cleanup для SMIL
+      `<animateMotion>` × 2 в hero (уже было partially, дополнено)
+- [x] Smoke: py http.server → JSON-LD парсится, og-image 200 OK,
+      index.html 70KB
 - [ ] Smoke: Telegram Preview / Twitter Card Validator на staging URL
+      — deferred до deploy в dev (G11 closure)
 - [ ] Commit: `feat(landing): meta + prefers-reduced-motion (M07 Группа 2, QE3/4)`
 
 ## Группа 3 — openapi-typescript type-gen (QC2) — ~2д

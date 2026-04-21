@@ -41,7 +41,13 @@ export default function HomeDashboard() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div className="mx-auto flex w-full max-w-md flex-col gap-[var(--space-4)] px-[var(--space-4)] pb-[var(--space-6)] pt-[var(--space-5)]">
+    <section
+      aria-labelledby="home-dashboard-title"
+      className="mx-auto flex w-full max-w-md flex-col gap-[var(--space-4)] px-[var(--space-4)] pb-[var(--space-6)] pt-[var(--space-5)]"
+    >
+      <h1 id="home-dashboard-title" className="sr-only">
+        Моя посещаемость
+      </h1>
       <ProfileHeader
         me={meQuery.data}
         group={groupQuery.data}
@@ -78,7 +84,7 @@ export default function HomeDashboard() {
           <TopMissedList items={dashQuery.data.topMissed} />
         </>
       )}
-    </div>
+    </section>
     </PullToRefresh>
   )
 }

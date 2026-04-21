@@ -273,18 +273,36 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       refactor.
 - [x] `docs/future-ideas.md` NEW-94 обновлён — описано состояние после
       G9 (skeleton UI), архитектурный выбор Prometheus-based endpoint.
-- [x] Commit `<pending>`: `feat(web-panel): sparklines placeholder (M07 Группа 9, QC6/7)`
+- [x] Commit `82eb2ad`: `feat(web-panel): sparklines placeholder (M07 Группа 9, QC6/7)`
 
 ## Группа 10 — a11y audit baseline (P2-7B/1..4) — ~1д
 
-- [ ] PWA: semantic HTML audit (`<main>`, `<nav>`, `<article>`, `<section>`)
-- [ ] web-panel: Material aria-labels обёртки
-- [ ] Landing: SMIL → CSS keyframes где возможно (P2-7B/3)
-- [ ] `@axe-core/cli` CLI run → zero CRITICAL/SERIOUS findings
-- [ ] `jsx-a11y` ESLint rules в PWA
-- [ ] `@angular-eslint/template-accessibility` rules в web-panel
-- [ ] `docs/a11y-checklist.md` (WCAG 2.1 AA baseline)
-- [ ] Commit: `feat(frontend): a11y baseline + axe-core audit (M07 Группа 10, P2-7B)`
+- [x] PWA: semantic HTML audit. `<main>` в AppShell подтверждён.
+      ProfilePage уже использует `<section>`/`<article>`. HomeDashboard
+      обёрнут в `<section aria-labelledby>` + `<h1 class="sr-only">`
+      (route landmark). Остальные страницы (Schedule/Homework/CheckIn/
+      Notifications/Stats) — `<div>`-wrappers, родительский `<main>`
+      достаточен для screen-reader'ов; явные section-wrappers отложены
+      в pass 2.
+- [x] web-panel: Material aria-labels обёртки. grep: 131 `aria-label`
+      в 49 файлах. `<main>` в `shell.component.html` подтверждён.
+      Admin-dashboard — `<section>` + `<header>` + semantic `<table>`.
+- [~] Landing: SMIL → CSS keyframes — **отложено в pass 2**. 3
+      `<animate>` остаются, они уже работают корректно с `svg.pause
+      Animations()` при `prefers-reduced-motion` (M07 G2).
+- [~] `@axe-core/cli` CLI run — **отложено в pass 2 / M08**. Требует
+      running dev server; в M08 интегрируется через Playwright e2e.
+- [~] `jsx-a11y` ESLint rules в PWA — **отложено в M08**. PWA не
+      имеет ESLint config вообще; setup = отдельный scope (new dev-dep
+      chain, config file, rules tuning).
+- [~] `@angular-eslint/template-accessibility` rules в web-panel —
+      **отложено в M08**. Аналогично: ESLint config нет в web-panel.
+- [x] `docs/a11y-checklist.md` — WCAG 2.1 AA baseline создан.
+      Pass 1 (M07 G10 baseline, **выполнено**) + Pass 2 (v0.1 items:
+      axe-core run, ESLint a11y plugins, Lighthouse score ≥ 95, skip-
+      links, color contrast, SMIL replace, touch targets, screen reader
+      testing, heading hierarchy, live regions).
+- [x] Commit `<pending>`: `feat(frontend): a11y baseline + checklist (M07 Группа 10, P2-7B)`
 
 ## Группа 11 — nginx per-location + PR-template (P2-9/3, NEW-74) — ~2ч
 

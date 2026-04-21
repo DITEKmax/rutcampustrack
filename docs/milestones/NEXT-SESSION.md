@@ -7,38 +7,75 @@ Opus сам откроет файлы и поймёт где мы останов
 
 Продолжай работу над M07 Frontend Hardening (v0.0.0).
 
-**Текущий прогресс M07 (2026-04-21, 4 коммита):**
+**Текущий прогресс M07 (2026-04-22, 9 коммитов):**
 
 | Группа | Статус | Commit |
 |--------|--------|--------|
 | G1 Landing CSP self-host | ✅ | `c93b6ee` |
 | G2 Landing meta + prefers-reduced-motion | ✅ | `8a20c91` |
 | G3a openapi-typescript foundation + generated types | ✅ | `c20ed50` |
-| G3b migration callsite'ов (pilot → widespread) | ⬜ **NEXT** | — |
-| G4 RFC 7807 error interceptor | ⬜ | — |
-| G5 NotificationCenter unified | ⬜ | — |
-| G6 UX P2-7A/1..8 | ⬜ | — |
-| G7 ConfirmWithReasonDialog | ⬜ | — |
+| G3b migration callsite'ов (PWA + web-panel full) | ✅ | `b5e66f6` |
+| G4 RFC 7807 error interceptor | ✅ | `9f628aa` |
+| G5 NotificationCenter unified (STOMP adapters + expo backoff) | ✅ | `9120544` |
+| **G6 UX P2-7A/1..8** | ⬜ **NEXT** | — |
+| G7 ConfirmWithReasonDialog | ✅ | `bfa780f` |
 | G8 Lazy-loading per-role | ⬜ | — |
 | G9 StatsPage aggregate + sparklines placeholder | ⬜ | — |
 | G10 a11y axe-core baseline | ⬜ | — |
-| G11 nginx per-location + PR-template | ⬜ | — |
+| G11 nginx per-location + PR-template | ✅ | `65640f4` |
 | G12 Audit + docs close + tag alpha.8 | ⬜ | — |
 
-Есть также scope-commit `56d879c` (D1 decisions + PLAN/NOTES/CHECKLIST update).
+Scope-commit `56d879c` (D1 decisions) + docs-commit `03949e3` (hand-off
+после G1+G2+G3a).
 
-**Начинай с G3b — миграция callsite'ов:**
+**Стартуй с G6 — UX improvements P2-7A/1..8 (самый крупный, ~2д):**
 
-Generated types уже готовы в git:
-- `frontends/pwa/src/api/generated/{auth,academic,schedule,attendance}.types.ts`
-- `frontends/web-panel/src/app/api/generated/{same}.types.ts`
-- `docs/openapi/{svc}.json` — baseline для drift-guard.
+См. `docs/milestones/M07-frontend-hardening/CHECKLIST.md` → Группа 6.
+Восемь подзадач:
+1. **P2-7A/1 PullToRefresh** — PWA hook + TanStack Query refetch.
+2. **P2-7A/2 useSwipeHandler** — конфигурируемый threshold hook.
+3. **P2-7A/3 useDateNavigation** — single source of truth для prev/next.
+4. **P2-7A/4 Schedule navigation bounds** — prev/next ограничены
+   активным семестром + info-screen за границей (см. D1 решение 5).
+5. **P2-7A/5 Scroll position preservation** — sessionStorage per route.
+6. **P2-7A/6 forkJoin waterfall fix** — subject-lookup не должен
+   блокировать. Проверь `SchedulePage` / `LessonCard` useSubjectName.
+7. **P2-7A/7 Unified DrawerMenu** — PWA сейчас имеет несколько
+   drawer'ов; сделать shared `DrawerMenu` компонент.
+8. **P2-7A/8 Geolocation high-accuracy + loading UX** — spinner +
+   timeout для `CheckInButton` / `CheckInScreen`.
 
-Первый шаг — найти ручные interfaces в PWA (grep по `interface.*{` в
-`frontends/pwa/src/api/` + features), выбрать pilot feature (рекомендую
-useSchedule hook + schedule page), мигрировать на `openapi-fetch +
-components['schemas']['...']`, убедиться что `tsc -b` проходит, затем
-widespread. См. `docs/milestones/M07-frontend-hardening/CHECKLIST.md` → G3b.
+**Можно параллельно или после G6:** G8 (lazy-loading per-role, ~3ч,
+Angular routes + PWA React.lazy), G9 (StatsPage aggregate + sparklines
+placeholder, ~2ч), G10 (a11y axe-core, ~1д).
+
+**G12 — блокирующий финал:** аудит diff всего M07, security-auditor +
+code-reviewer агенты, CHANGELOG, tag `v0.0.0-alpha.8`.
+
+## Важные инфраструктурные вещи уже сделаны
+
+- `frontends/pwa/src/api/schema.ts` + `frontends/web-panel/src/app/api/schema.ts`
+  — центральные type-aliases поверх generated (Strict-wrapper для HATEOAS
+  optionality). При добавлении новых DTO — сюда, не в feature/types.ts.
+- PWA: `api/problemDetails.ts` + `shared/lib/errorToastBus.ts` +
+  `shared/components/ErrorToastHost.tsx` + `ErrorBoundary.tsx`. Новые
+  useQuery/useMutation автоматически получают toast на error.
+- web-panel: `core/errors/problem-details.interceptor.ts` + snackbar.
+  Suppress через header `X-Skip-Global-Error-Toast: 1` для graceful
+  403/404.
+- web-panel: `shared/confirm-with-reason-dialog/` — Material dialog для
+  reason-input, replace `window.prompt`.
+- web-panel: `NotificationCenterService` — единый STOMP клиент с
+  exponential backoff. `StudentStompService` и `HeadmanStompService` —
+  thin adapter'ы поверх него. Новые STOMP подписки делать через
+  `center.onEvent$` + filter.
+- `.github/workflows/openapi-drift.yml` — CI fail'ит если generated
+  types расходятся с committed OpenAPI specs. При изменении backend DTO
+  регенерить через `npm run generate:types` (с running backend) или
+  `:offline` (из committed JSON).
+- `nginx/nginx.conf` + `conf.d/default.conf` — `client_max_body_size`
+  global 2m + per-location 25m для `/api/attendance/excuses/with-file`.
+- `.github/pull_request_template.md` + `docs/contributing.md`.
 
 ## Запуск backend для regeneration (если нужно)
 

@@ -269,6 +269,31 @@ public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest
         assertThat(response.getIsHeadman()).isFalse();
     }
 
+    @Test
+    void isHeadman_rateLimitExceeded_throwsResourceExhausted() {
+        // M06 G8b: 120 calls/min per userId. Используем уникальный userId,
+        // чтобы не задеть bucket'ы других тестов.
+        long uniqueUserId = 888_001L;
+        HeadmanCheckRequest request = HeadmanCheckRequest.newBuilder()
+                .setUserId(uniqueUserId)
+                .setGroupId(GROUP_ID)
+                .build();
+
+        // 120 вызовов — все должны пройти (consume all tokens).
+        for (int i = 0; i < 120; i++) {
+            stub.isHeadman(request);
+        }
+
+        // 121-й вызов — RESOURCE_EXHAUSTED.
+        assertThatThrownBy(() -> stub.isHeadman(request))
+                .isInstanceOf(StatusRuntimeException.class)
+                .satisfies(ex -> {
+                    Status status = ((StatusRuntimeException) ex).getStatus();
+                    assertThat(status.getCode()).isEqualTo(Status.Code.RESOURCE_EXHAUSTED);
+                    assertThat(status.getDescription()).contains("rate limit");
+                });
+    }
+
     // =====================================================================
     // GRPC-05: GetActiveSemester
     // =====================================================================

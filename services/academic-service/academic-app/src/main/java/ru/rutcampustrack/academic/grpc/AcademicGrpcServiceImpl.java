@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.grpc;
 
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import ru.rutcampustrack.academic.entity.Group;
@@ -13,6 +14,8 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * gRPC service implementation for Academic Service.
@@ -22,6 +25,24 @@ import java.util.Optional;
  */
 @GrpcService
 public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrpcServiceImplBase {
+
+    /**
+     * M06 G8b (M05 security #5): rate-limit на isHeadman по userId.
+     * Unbounded key-space в rbac Redis cache (key = userId:groupId) позволяет
+     * attacker'у flood'ить random pairs → миллионы записей до eviction (TTL 60с).
+     * Per-user bucket: 120 calls / min (hot-path auth = 1-2/req, headman actions
+     * ~10/min даже у active старосты; 120 — запас × 10). При превышении
+     * возвращаем Status.RESOURCE_EXHAUSTED.
+     *
+     * Per-user (не per-pair), чтобы attacker не мог обойти, подбирая новые
+     * groupId для того же userId. Мы лимитируем самого user'а, не уникальные
+     * комбинации.
+     */
+    private static final int HEADMAN_RL_PER_MINUTE = 120;
+    private static final long HEADMAN_RL_WINDOW_NANOS = 60_000_000_000L;
+    /** Cap на размер bucket-мапы. При превышении — clear() (см. TokenBucket logic). */
+    private static final int RL_MAX_BUCKETS = 10_000;
+    private final ConcurrentHashMap<Long, TokenBucket> headmanBuckets = new ConcurrentHashMap<>();
 
     private final AcademicReadService academicReadService;
     private final GroupRepository groupRepository;
@@ -131,8 +152,23 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
      */
     @Override
     public void isHeadman(HeadmanCheckRequest request, StreamObserver<HeadmanCheckResponse> responseObserver) {
+        long userId = request.getUserId();
+        // Защита от unbounded heap growth (unknown userId flood): при превышении
+        // RL_MAX_BUCKETS очищаем map целиком. Lossy, но это rate-limit, не
+        // functional state — потеря bucket'ов = возврат к full quota.
+        if (headmanBuckets.size() > RL_MAX_BUCKETS) {
+            headmanBuckets.clear();
+        }
+        TokenBucket bucket = headmanBuckets.computeIfAbsent(userId, id -> new TokenBucket());
+        if (!bucket.tryConsume()) {
+            responseObserver.onError(Status.RESOURCE_EXHAUSTED
+                    .withDescription("isHeadman rate limit exceeded for user " + userId)
+                    .asRuntimeException());
+            return;
+        }
+
         boolean isHeadman = academicReadService.isHeadmanOf(
-                request.getUserId(), request.getGroupId());
+                userId, request.getGroupId());
 
         HeadmanCheckResponse response = HeadmanCheckResponse.newBuilder()
                 .setIsHeadman(isHeadman)
@@ -140,6 +176,35 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    /**
+     * Sliding-window token bucket. refill = HEADMAN_RL_PER_MINUTE tokens per
+     * HEADMAN_RL_WINDOW_NANOS (60с). Lock-free через CAS (AtomicLong).
+     */
+    private static final class TokenBucket {
+        private final AtomicLong tokens = new AtomicLong(HEADMAN_RL_PER_MINUTE);
+        private final AtomicLong lastRefillNanos = new AtomicLong(System.nanoTime());
+
+        boolean tryConsume() {
+            long now = System.nanoTime();
+            long lastRefill = lastRefillNanos.get();
+            long elapsed = now - lastRefill;
+            if (elapsed >= HEADMAN_RL_WINDOW_NANOS
+                    && lastRefillNanos.compareAndSet(lastRefill, now)) {
+                tokens.set(HEADMAN_RL_PER_MINUTE);
+            }
+
+            while (true) {
+                long current = tokens.get();
+                if (current <= 0) {
+                    return false;
+                }
+                if (tokens.compareAndSet(current, current - 1)) {
+                    return true;
+                }
+            }
+        }
     }
 
     /**

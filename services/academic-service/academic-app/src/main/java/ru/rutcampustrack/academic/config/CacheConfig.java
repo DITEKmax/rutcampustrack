@@ -3,7 +3,8 @@ package ru.rutcampustrack.academic.config;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.ObjectProvider;
@@ -72,12 +73,25 @@ public class CacheConfig {
         Hibernate6Module hibernate6Module = new Hibernate6Module();
         hibernate6Module.enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING);
 
+        // M06 G8a (M05 security #3): whitelist polymorphic validator вместо
+        // LaissezFaireSubTypeValidator. Допускаем только доменные классы
+        // (ru.rutcampustrack.*) и стандартные JDK-типы для коллекций /
+        // даты / примитивов. Block'ирует gadget-chains через произвольные
+        // ClassPath-классы в @class поле Redis-payload'а.
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfSubType("ru.rutcampustrack.")
+                .allowIfSubType("java.util.")
+                .allowIfSubType("java.time.")
+                .allowIfSubType("java.lang.")
+                .allowIfSubType("java.math.")
+                .build();
+
         ObjectMapper om = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .registerModule(hibernate6Module)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .activateDefaultTyping(
-                        LaissezFaireSubTypeValidator.instance,
+                        ptv,
                         ObjectMapper.DefaultTyping.NON_FINAL,
                         JsonTypeInfo.As.PROPERTY);
 

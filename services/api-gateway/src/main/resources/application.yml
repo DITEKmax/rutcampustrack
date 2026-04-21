@@ -162,6 +162,26 @@ spring:
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
 
+        # M07 G12 MED-1: tight RL для multipart-upload excuse tickets.
+        # 25 MB body × 600 rpm (generic attendance RL) = 15 GB/мин amplification.
+        # Ставим 5 req/min per-user, чтобы честный студент (1-2 excuse/неделю)
+        # не чувствовал ограничение, а abuse-сценарий блокировался при 6-й попытке.
+        # Должен объявляться ДО generic `/api/attendance/**` — Spring Cloud Gateway
+        # matcher выбирает первый совпавший.
+        - id: attendance-excuse-upload
+          uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+          predicates:
+            - Path=/api/attendance/excuses/with-file
+            - Method=POST
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@userIdKeyResolver}"
+
         - id: attendance-service
           uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
           predicates:

@@ -1,5 +1,5 @@
-import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useQueries, useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { apiClient } from '@/shared/lib/axios'
 import type {
   AttendanceRecord,
@@ -60,6 +60,8 @@ export function useSubjectMap(subjectIds: number[]): {
   isLoading: boolean
 } {
   const uniqueIds = useMemo(
+    // 0 — sentinel для «unresolved» в LessonResponse.subjectId; отсекаем,
+    // чтобы не slать GET /academic/subjects/0.
     () => [...new Set(subjectIds)].filter((id) => id > 0),
     [subjectIds],
   )
@@ -113,20 +115,6 @@ export function useStudentRecords() {
   })
 }
 
-export function usePrefetchSubjects(subjectIds: number[]) {
-  const queryClient = useQueryClient()
-
-  useEffect(() => {
-    const uniqueIds = [...new Set(subjectIds)]
-    uniqueIds.forEach((id) => {
-      queryClient.prefetchQuery({
-        queryKey: ['subject', id],
-        queryFn: async () => {
-          const { data } = await apiClient.get<SubjectResponse>(`/academic/subjects/${id}`)
-          return data.name
-        },
-        staleTime: 24 * 60 * 60 * 1000,
-      })
-    })
-  }, [subjectIds, queryClient])
-}
+// M07 G6/6: `usePrefetchSubjects` удалён — SchedulePage теперь использует
+// `useSubjectMap` (batch через `useQueries`), который получает имена до
+// первого рендера LessonCard'ов без дополнительного prefetch effect'a.

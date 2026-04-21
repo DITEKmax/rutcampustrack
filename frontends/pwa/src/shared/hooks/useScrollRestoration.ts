@@ -36,7 +36,6 @@ export function useScrollRestoration(
   const { pathname } = useLocation()
   const navType = useNavigationType()
   const rafIdRef = useRef<number | null>(null)
-  const pendingWriteRef = useRef<number | null>(null)
 
   // Save on scroll (throttled via rAF).
   useEffect(() => {
@@ -47,7 +46,6 @@ export function useScrollRestoration(
       if (rafIdRef.current !== null) return
       rafIdRef.current = requestAnimationFrame(() => {
         rafIdRef.current = null
-        pendingWriteRef.current = el.scrollTop
         try {
           sessionStorage.setItem(
             STORAGE_PREFIX + pathname,

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { attachProblemDetails, parseProblemDetails } from '@/api/problemDetails'
 
 let isRefreshing = false
 let pendingQueue: Array<{ resolve: (token: string) => void; reject: (err: unknown) => void }> = []
@@ -90,6 +91,10 @@ apiClient.interceptors.response.use(
         isRefreshing = false
       }
     }
+    // M07 G4 (QC3): парсим RFC 9457 ProblemDetails + нормализуем
+    // fieldErrors → invalidParams единожды на interceptor уровне, чтобы
+    // call-sites читали через getProblemDetails() без повторного парсинга.
+    attachProblemDetails(error, parseProblemDetails(error))
     return Promise.reject(error)
   }
 )

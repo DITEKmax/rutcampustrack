@@ -12,6 +12,8 @@ import { IOSOnboardingOverlay } from './features/auth/IOSOnboardingOverlay'
 import { StompProvider } from './features/checkin/StompProvider'
 import { NotificationCenterProvider } from './features/notifications/NotificationCenter'
 import { UpdateBanner } from './shared/components/UpdateBanner'
+import { ErrorBoundary } from './shared/components/ErrorBoundary'
+import { ErrorToastHost } from './shared/components/ErrorToastHost'
 import './index.css'
 
 const HomeDashboard = lazy(() => import('./features/home/HomeDashboard'))
@@ -72,14 +74,17 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <IOSOnboardingOverlay />
-          <RouterProvider router={router} />
-          <UpdateBanner />
-        </AuthProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <IOSOnboardingOverlay />
+            <RouterProvider router={router} />
+            <UpdateBanner />
+            <ErrorToastHost />
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </StrictMode>
 )

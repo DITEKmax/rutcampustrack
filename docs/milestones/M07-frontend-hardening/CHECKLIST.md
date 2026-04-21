@@ -120,24 +120,37 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       не переименовал); во frontend-коде `fieldErrors`/`invalidParams`
       не используется. Rename станет post-parse adapter'ом в G4
       error-interceptor'е.
-- [ ] Commit: `feat(frontend): migrate PWA + web-panel to generated types (M07 G3b, QC2)`
+- [x] Commit `b5e66f6`: `feat(frontend): migrate PWA + web-panel to generated types (M07 G3b, QC2)`
 
 ## Группа 4 — RFC 7807 error interceptor (QC3) — ~4ч
 
-- [ ] PWA: `src/api/interceptors/problemDetails.ts` — parse + throw
-      typed error
-- [ ] PWA: `src/components/ErrorBoundary.tsx` + toast integration
-- [ ] web-panel: `CoreModule` HttpInterceptor — `ProblemDetails` parser
-      + material snackbar
-- [ ] Оба: показывать `traceId` в error-toast (hidden detail + copy button)
-- [ ] **Rename `fieldErrors` → `invalidParams`** в PWA error parser
-      (RFC 9457 compliance, отложено с M01)
-- [ ] **Rename `fieldErrors` → `invalidParams`** в web-panel error
-      interceptor
-- [ ] Grep проверка: `fieldErrors` отсутствует в frontends/
-- [ ] Integration test: backend returns 400 + `ErrorResponse` → toast
-      отображает title + detail
-- [ ] Commit: `feat(frontend): RFC 7807 error interceptor (M07 Группа 4, QC3)`
+- [x] PWA: `src/api/problemDetails.ts` — parse + normalise adapter;
+      axios response interceptor кеширует результат на error object
+      через Symbol.for key.
+- [x] PWA: `src/shared/components/ErrorBoundary.tsx` +
+      `ErrorToastHost.tsx` + `errorToastBus.ts` emitter; QueryCache /
+      MutationCache emit через bus.
+- [x] web-panel: `core/errors/problem-details.ts` parser +
+      `problem-details.interceptor.ts` + `error-toast.service.ts` +
+      `error-toast.component.ts` (MatSnackBar).
+- [x] Оба: `traceId` в error-toast через copy button с «trace:
+      abc12345…» + «Скопировано» feedback (1.5с).
+- [x] **Rename `fieldErrors` → `invalidParams`** — **adapter-based**
+      (D4). Parser принимает оба shape и нормализует на `invalidParams`.
+      User code не видит `fieldErrors` (см. grep ниже).
+- [x] Grep проверка: `fieldErrors` в frontends/ присутствует только
+      в (а) generated types, (б) parser-коде / tests / комментах.
+      User-facing код пользуется `invalidParams`.
+- [x] Unit-тесты парсера: PWA 9 кейсов (src/api/__tests__/
+      problemDetails.test.ts), web-panel 7 кейсов (core/errors/
+      problem-details.spec.ts). Покрывают: RFC 7807 happy path,
+      post-M11 shape, plain-text 502, network error, non-axios/non-
+      HttpErrorResponse, garbage fieldErrors items, body без
+      title/detail/type.
+- [x] Suppress flags: `meta.skipGlobalErrorToast` (PWA Query/Mutation)
+      и `X-Skip-Global-Error-Toast: 1` header (web-panel) — для
+      graceful-degradation хуков, ожидающих 403/404.
+- [x] Commit `930f194`: `feat(frontend): RFC 7807 error interceptor (M07 Группа 4, QC3)`
 
 ## Группа 5 — NotificationCenter unification (QC1) — ~4ч
 

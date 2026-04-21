@@ -111,3 +111,33 @@ openapi-fetch = 1-2д сверх scope + риск регрессии auth-flow.
 **Pilot feature:** `features/schedule/` (types.ts + api.ts +
 headmanSheetApi.ts + lessonActionsApi.ts) — самая изолированная,
 3 ручных DTO-типа, generated types полностью покрывают.
+
+---
+
+## 2026-04-22 — D4: G4 rename `fieldErrors → invalidParams` как adapter
+
+**Что выбрано:** не переименовывать backend-поле, а сделать парсер,
+принимающий оба shape (`fieldErrors` legacy attendance/academic/
+schedule + `invalidParams` shared-web M11) и нормализующий на
+`invalidParams` в consumer API.
+
+**Почему:**
+- Backend имеет 4 разных `ErrorResponse`-класса в разных сервисах
+  (attendance/academic/schedule локальные + shared-web с
+  `invalidParams`). Сейчас только shared-web использует `invalidParams`;
+  остальные — `fieldErrors`.
+- Переименовать все 4 backend DTO одновременно — отдельный milestone
+  scope (M11 OpenAPI Polish). М07 — frontend-milestone, не должен
+  требовать backend DTO change.
+- Parser-based adapter позволяет user-facing frontend коду уже
+  использовать `invalidParams` сегодня, независимо от backend прогресса.
+
+**Альтернативы:**
+- Backend rename сейчас — отвергнуто (scope creep, M11 scope).
+- Держать `fieldErrors` во frontend — отвергнуто (RFC 9457 compliance
+  + OWNER-ANSWERS M01 P0-1 требовали invalidParams).
+
+**Implication:** после M11 парсер продолжит работать — `invalidParams`
+shape берётся первым (см. `coerceInvalidParams`). Когда все сервисы
+переедут на shared-web, legacy branch мёртвой не будет — просто
+никогда не сработает, и удаляется в любой момент.

@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * Uses RabbitMQ Testcontainer started in AbstractAttendanceIntegrationTest.
  */
-class RabbitConsumerTest extends AbstractAttendanceIntegrationTest {
+class RabbitConsumerIT extends AbstractAttendanceIntegrationTest {
 
     @Autowired
     private AmqpAdmin amqpAdmin;

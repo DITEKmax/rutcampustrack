@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Proves RPRT-01 (lesson attendance), RPRT-02 (journal grid),
  * RPRT-03 (student stats), RPRT-04 (student records), and authorization rules.
  */
-class ReportIntegrationTest extends AbstractAttendanceIntegrationTest {
+class ReportIT extends AbstractAttendanceIntegrationTest {
 
     private static final Long LESSON_ID = 1L;
     private static final Long GROUP_ID = 10L;

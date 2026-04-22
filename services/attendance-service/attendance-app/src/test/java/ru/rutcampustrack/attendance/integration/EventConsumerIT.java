@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
  * Publishes real messages to the fanout exchange and verifies MongoDB state.
  * Proves MARK-03, MARK-04, MARK-05 requirements.
  */
-class EventConsumerIntegrationTest extends AbstractAttendanceIntegrationTest {
+class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;

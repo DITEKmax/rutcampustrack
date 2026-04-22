@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * Verifies INFRA-02: AttendanceStatus and AttendanceSource are stored as lowercase strings in MongoDB.
  */
-class EnumSerializationTest extends AbstractAttendanceIntegrationTest {
+class EnumSerializationIT extends AbstractAttendanceIntegrationTest {
 
     @AfterEach
     void cleanup() {

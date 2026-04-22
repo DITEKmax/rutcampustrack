@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - TEACHER role rejected with 403
  * - No headers rejected with 403
  */
-class SecuritySmokeTest extends AbstractAttendanceIntegrationTest {
+class SecuritySmokeIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void studentEndpoint_withStudentRole_returns200() throws Exception {

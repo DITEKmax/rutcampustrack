@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * GeofenceService is mocked to prevent @PostConstruct gRPC calls.
  * AttendanceEventPublisher is spied to verify event publication.
  */
-class MarkingIntegrationTest extends AbstractAttendanceIntegrationTest {
+class MarkingIT extends AbstractAttendanceIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;

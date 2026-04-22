@@ -44,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * GeofenceService is replaced with @MockitoBean to prevent @PostConstruct gRPC call to Academic Service.
  */
-class CheckinIntegrationTest extends AbstractAttendanceIntegrationTest {
+class CheckinIT extends AbstractAttendanceIntegrationTest {
 
     private static final String EXCHANGE = "rut-uit.events";
     private static final String TEST_QUEUE = "test-checkin-queue";

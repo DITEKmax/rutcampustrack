@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Verifies INFRA-01: unique compound index on (lesson_id, user_id) rejects duplicates.
  */
-class MongoIndexTest extends AbstractAttendanceIntegrationTest {
+class MongoIndexIT extends AbstractAttendanceIntegrationTest {
 
     @AfterEach
     void cleanup() {

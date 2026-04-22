@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Verifies D-11 duplicate-check query and basic persistence for ExcuseTicket.
  */
-class ExcuseRepositoryTest extends AbstractAttendanceIntegrationTest {
+class ExcuseRepositoryIT extends AbstractAttendanceIntegrationTest {
 
     @Autowired
     private ExcuseRepository excuseRepository;

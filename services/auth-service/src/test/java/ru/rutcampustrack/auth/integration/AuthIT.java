@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AuthIntegrationTest extends AbstractIntegrationTest {
+class AuthIT extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;

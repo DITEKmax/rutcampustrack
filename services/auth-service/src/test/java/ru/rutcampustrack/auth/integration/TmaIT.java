@@ -24,7 +24,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TES
 
 @Sql(scripts = "classpath:sql/set-telegram-id.sql")
 @Sql(scripts = "classpath:sql/clear-telegram-id.sql", executionPhase = AFTER_TEST_METHOD)
-class TmaIntegrationTest extends AbstractIntegrationTest {
+class TmaIT extends AbstractIntegrationTest {
 
     private static final String BOT_TOKEN = "test_bot_token_12345";
 

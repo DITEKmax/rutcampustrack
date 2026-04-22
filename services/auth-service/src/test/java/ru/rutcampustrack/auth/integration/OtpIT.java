@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Sql(scripts = "classpath:sql/set-telegram-id.sql")
 @Sql(scripts = "classpath:sql/clear-telegram-id.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-class OtpIntegrationTest extends AbstractIntegrationTest {
+class OtpIT extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;

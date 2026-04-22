@@ -241,3 +241,25 @@ extend ContainerTestBase, которые **не abstract**, должны ока�
 `@AnalyzeClasses(packages = "ru.rutcampustrack")`.
 
 ---
+
+## Surprise: G8 — CSRF double-submit (2026-04-22)
+
+**Factum:** NEXT-SESSION/CHECKLIST требует `CsrfDoubleSubmitIT`. После
+чтения `docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md` (2026-04-20):
+CSRF double-submit **явно отвергнут** в пользу `SameSite=Strict` + same-origin
+для v0.0.0. Double-submit планируется ввести только при переходе на
+`SameSite=Lax` (OAuth-callback в v1.0).
+
+**Следствие:** в codebase нет CSRF-filter / X-CSRF-TOKEN header — тест
+`CsrfDoubleSubmitIT` в прямом виде проверял бы отсутствующее поведение.
+
+**Решение (D6 в DECISIONS.md):** заменить контракт на реальный
+**SameSite/HttpOnly/Secure** контракт cookie `rct_refresh`. В codebase
+частично покрыт `AuthIT.java` (строки 93-95 — только happy-path). Добавляю
+отдельный `SameSiteCookieContractIT`:
+  - login выдаёт cookie с `HttpOnly`, `Secure`, `SameSite=Strict`
+  - refresh без cookie → 401 (proof: auth-сервис не принимает cross-origin)
+  - refresh с cookie, но без X-CSRF-TOKEN header → 200
+    (regression guard против случайного введения CSRF-header
+    без frontend-поддержки — сломает логин)
+  - `/auth/logout` clears cookie с теми же атрибутами

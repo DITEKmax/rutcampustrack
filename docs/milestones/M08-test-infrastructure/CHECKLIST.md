@@ -160,12 +160,35 @@
 
 ## Группа 8 — Security contract tests (P2-8/8)
 
-- [ ] `GrpcSecretFailFastIT` в notification-bot (pytest + monkeypatch)
-- [ ] `TmaHmacValidationIT` в auth-service (signed/mutated/replay)
-- [ ] `CsrfDoubleSubmitIT` в shared-web или gateway
-- [ ] Объединить в `SecurityContractsIT` suite
-- [ ] Проверить `SecurityIdorIT` (NEW-31 M03a) остаётся работоспособным
-- [ ] `docs/testing.md` — раздел «Security contract tests» (NEW-164)
+- [x] `GrpcSecretFailFastIT` в notification-bot (pytest + monkeypatch)
+      — commit TBD. 7 тестов в `tests/test_grpc_secret_fail_fast.py`;
+      добавлен `validate_startup_config()` в `bot/config.py` + вызов
+      в `bot/__main__.py:main()` до `run_health_server()`. Защищает
+      от silent deploy с пустым `GRPC_SECRET` (UNAUTHENTICATED + UP health).
+- [x] `TmaHmacValidationIT` в auth-service (signed/mutated/replay)
+      — commit TBD. `TmaIT.java` расширен 4 новыми тестами:
+      replay-in-window → 200 (by design), bit-flipped signature → 401,
+      different bot token → 401, missing hash → 401. Плюс 6 существующих.
+      `@Tag("security-contract")`.
+- [x] ~~`CsrfDoubleSubmitIT`~~ → **`SameSiteCookieContractIT`** (D6 2026-04-22)
+      — commit TBD. M03b отверг double-submit token в пользу
+      SameSite=Strict. Реальный контракт — cookie-атрибуты + regression
+      guard «refresh без X-CSRF-TOKEN → 200». 5 тестов.
+      `@Tag("security-contract")`.
+- [x] Объединить в `SecurityContractsIT` suite — commit TBD.
+      Реализовано через JUnit `@Tag("security-contract")` + pytest
+      `@pytest.mark.security_contract`. Запуск: Gradle `--tests`
+      filter / pytest `-m security_contract`. Gradle-tag filter в
+      `integrationTest` task не включён (добавится в G10 coverage-gate
+      или v0.1), без нового `junit-platform-suite`-модуля, минимизируя deps.
+- [~] Проверить `SecurityIdorIT` (NEW-31 M03a) — **файл не существует
+      в codebase.** Упоминался в M03a PLAN как NEW-31, но фактически
+      не реализован. Записано в NOTES.md. Defer: создать в M09
+      (Prod Release Blockers) как часть ролевой IDOR-защиты, сейчас
+      Gateway JWT validator + role-filter покрывает основные векторы.
+- [x] `docs/testing.md` — раздел «Security contract tests» (NEW-164)
+      — commit TBD. Обновлён с реальными классами, командами запуска
+      и объяснением D6 (почему нет `CsrfDoubleSubmitIT`).
 
 ## Группа 9 — Contract tests для событий (14 P1-5) + WebSocket (14 P1-9)
 

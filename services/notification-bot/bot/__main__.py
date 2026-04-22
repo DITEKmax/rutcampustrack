@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiohttp import web
 
-from bot.config import config
+from bot.config import config, validate_startup_config
 from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
@@ -96,6 +96,11 @@ async def create_clients():
 
 async def main() -> None:
     global _consumer_task, _bot_task
+
+    # M08 G8 (NEW-164) — kill process before any listener starts if secrets
+    # are missing. Without this, bot connects to gRPC with empty
+    # x-grpc-secret, every call returns UNAUTHENTICATED silently.
+    validate_startup_config(config)
 
     await run_health_server()
 

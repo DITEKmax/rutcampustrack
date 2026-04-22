@@ -1,6 +1,11 @@
 from pydantic_settings import BaseSettings
 
 
+class StartupError(RuntimeError):
+    """Raised when mandatory configuration is missing — kills the process before
+    any handler/consumer starts. Used by validate_startup_config (M08 G8)."""
+
+
 class Settings(BaseSettings):
     bot_token: str = "placeholder"
     rabbitmq_url: str = "amqp://rct_user:rct_dev_pass@rabbitmq:5672/"
@@ -58,3 +63,26 @@ class Settings(BaseSettings):
 
 
 config = Settings()
+
+
+def validate_startup_config(settings: "Settings") -> None:
+    """Fail-fast validator invoked before bot startup (M08 G8, NEW-164).
+
+    Guards against silent mis-deployment where mandatory secrets are
+    missing — notification-bot would otherwise connect to gRPC servers
+    with empty x-grpc-secret metadata and be silently rejected
+    (UNAUTHENTICATED) while the health endpoint still reports UP.
+
+    Raises StartupError listing every missing field; caller must not
+    catch it — let the process die so Docker restart policy surfaces
+    the misconfiguration in CI/prod.
+    """
+    missing: list[str] = []
+    if not settings.grpc_secret:
+        missing.append("GRPC_SECRET (x-grpc-secret metadata for gRPC calls to academic/schedule)")
+    if not settings.bot_token or settings.bot_token == "placeholder":
+        missing.append("BOT_TOKEN (Telegram bot token)")
+    if missing:
+        raise StartupError(
+            "Missing mandatory configuration:\n  - " + "\n  - ".join(missing)
+        )

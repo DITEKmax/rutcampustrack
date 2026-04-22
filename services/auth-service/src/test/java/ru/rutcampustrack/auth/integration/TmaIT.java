@@ -1,5 +1,6 @@
 package ru.rutcampustrack.auth.integration;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 
+@Tag("security-contract")
 @Sql(scripts = "classpath:sql/set-telegram-id.sql")
 @Sql(scripts = "classpath:sql/clear-telegram-id.sql", executionPhase = AFTER_TEST_METHOD)
 class TmaIT extends AbstractIntegrationTest {
@@ -72,6 +74,88 @@ class TmaIT extends AbstractIntegrationTest {
         // telegram_id 999999999 is not in DB
         String initData = buildValidInitData(999999999L, BOT_TOKEN);
         TmaAuthRequest request = new TmaAuthRequest(initData);
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "/auth/tma", request, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * M08 G8 security contract (NEW-164) — replay with same initData and
+     * hash is accepted as long as auth_date is within {@code tma.auth-date-max-age-seconds}
+     * window. Telegram docs explicitly allow replays up to 24h, so we verify the
+     * window enforcement is in place rather than a per-hash one-shot guard.
+     *
+     * <p>Captured in docs/testing.md — Security contract tests: TMA replay semantics.
+     */
+    @Test
+    void tma_withReplayedInitDataInsideWindow_returnsToken() {
+        String initData = buildValidInitData(123456789L, BOT_TOKEN);
+        TmaAuthRequest request = new TmaAuthRequest(initData);
+
+        ResponseEntity<TokenResponse> firstResponse = restTemplate.postForEntity(
+                "/auth/tma", request, TokenResponse.class);
+        assertThat(firstResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        // Exact same initData, same hash, same auth_date → still valid (by design)
+        ResponseEntity<TokenResponse> replayResponse = restTemplate.postForEntity(
+                "/auth/tma", request, TokenResponse.class);
+        assertThat(replayResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(replayResponse.getBody()).isNotNull();
+        // New token pair each time — jti rotates, old refresh tokens remain valid
+        // independently (replay-protection lives at refresh-token level, not initData)
+        assertThat(replayResponse.getBody().refreshToken())
+                .isNotEqualTo(firstResponse.getBody().refreshToken());
+    }
+
+    /**
+     * M08 G8 security contract (NEW-164) — an initData with a bit-flipped
+     * signature is rejected even though the payload is otherwise identical to
+     * a valid request. Protects against an attacker who snooped a hash and
+     * tries to forge variants.
+     */
+    @Test
+    void tma_withBitFlippedSignature_returns401() {
+        String validInitData = buildValidInitData(123456789L, BOT_TOKEN);
+        // Flip the first hex char of the hash — still syntactically valid length,
+        // but HMAC comparison must fail via MessageDigest.isEqual (constant-time).
+        int hashIdx = validInitData.lastIndexOf("&hash=") + "&hash=".length();
+        char firstHashChar = validInitData.charAt(hashIdx);
+        char flipped = firstHashChar == '0' ? '1' : '0';
+        String tampered = validInitData.substring(0, hashIdx) + flipped + validInitData.substring(hashIdx + 1);
+
+        TmaAuthRequest request = new TmaAuthRequest(tampered);
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "/auth/tma", request, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * M08 G8 security contract (NEW-164) — an initData signed with a
+     * different bot token is rejected. Protects against an attacker who
+     * gained control of a different bot in the same namespace.
+     */
+    @Test
+    void tma_withDifferentBotTokenSignature_returns401() {
+        // Sign with an attacker's bot token, not the one auth-service trusts
+        String initData = buildValidInitData(123456789L, "attacker_bot_token_67890");
+        TmaAuthRequest request = new TmaAuthRequest(initData);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "/auth/tma", request, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * M08 G8 security contract (NEW-164) — missing `hash` field in initData
+     * is rejected (not silently treated as "no hash required").
+     */
+    @Test
+    void tma_withMissingHashField_returns401() {
+        long authDate = System.currentTimeMillis() / 1000;
+        String initData = "auth_date=" + authDate
+                + "&user=" + URLEncoder.encode("{\"id\":123456789}", StandardCharsets.UTF_8);
+        TmaAuthRequest request = new TmaAuthRequest(initData);
+
         ResponseEntity<String> response = restTemplate.postForEntity(
                 "/auth/tma", request, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);

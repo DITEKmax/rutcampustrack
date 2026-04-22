@@ -68,16 +68,56 @@ cd services/notification-bot && pytest
 
 ## Security contract tests (M08 Группа 8, NEW-164)
 
-Scope:
-- `GrpcSecretFailFastIT` — notification-bot pytest, fail-fast при
-  отсутствии `GRPC_SERVICE_SECRET`
-- `TmaHmacValidationIT` — auth-service, Telegram Mini App initData
-  HMAC (signed OK, mutated sig 401, replay 401)
-- `CsrfDoubleSubmitIT` — shared-web / gateway, double-submit cookie
-  для state-changing requests
+Группа тестов, охраняющая security-контракты от регрессии при рефакторинге.
+В отличие от unit-тестов, они фиксируют **наблюдаемое поведение извне**:
+HTTP responses, HMAC-валидацию, cookie-атрибуты, startup-валидацию секретов.
 
-Все 3 консолидируются в `SecurityContractsIT` suite. Details —
-Группа 8 PLAN.md M08.
+### Скоуп
+
+| Тест | Слой | Защищает от |
+|------|------|-------------|
+| `test_grpc_secret_fail_fast.py` | notification-bot pytest | Silent start с пустым `GRPC_SECRET` — бот бы молча отправлял каждый gRPC-вызов с UNAUTHENTICATED и `/health` всё равно показывал UP. Новый `validate_startup_config()` в `bot/config.py` бросает `StartupError` до `run_health_server`. |
+| `TmaIT` | auth-service IT | Подделки Telegram Mini App initData: мутация hash, подпись другим bot-token'ом, missing hash. `@Tag("security-contract")`. Replay — тест-guard что принимается (by design: Telegram разрешает replay в пределах 24h). |
+| `SameSiteCookieContractIT` | auth-service IT | Регрессия атрибутов `rct_refresh` cookie (HttpOnly/Secure/SameSite=Strict/Path). Отдельный guard-тест: refresh **с** cookie **без** `X-CSRF-TOKEN` header → 200 (защита от случайного внедрения double-submit без обновления frontend-interceptor'ов). `@Tag("security-contract")`. |
+
+### Почему нет `CsrfDoubleSubmitIT`
+
+M03b (`docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md`,
+2026-04-20) явно отверг double-submit token: для v0.0.0 защиту от CSRF
+обеспечивает `SameSite=Strict` + same-origin. Double-submit token
+планируется ввести только при переходе на `SameSite=Lax` (OAuth-callback
+в v1.0). M08 DECISIONS D6 (2026-04-22) заменил `CsrfDoubleSubmitIT` на
+`SameSiteCookieContractIT`.
+
+### Как запустить
+
+**Java (auth-service):**
+```bash
+./gradlew :services:auth-service:integrationTest \
+  --tests "ru.rutcampustrack.auth.integration.TmaIT" \
+  --tests "ru.rutcampustrack.auth.integration.SameSiteCookieContractIT"
+```
+
+JUnit-tag `@Tag("security-contract")` проставлен на обоих IT — Gradle
+tag-filtering через `useJUnitPlatform { includeTags("security-contract") }`
+в `integrationTest`-task **не включён** (будет добавлен вместе с
+coverage-gate в Группе 10 или в v0.1). Пока фильтруем по `--tests`.
+
+**Python (notification-bot):**
+```bash
+cd services/notification-bot
+pytest -m security_contract
+```
+
+### Как добавить новый security-contract тест
+
+1. Java: `@Tag("security-contract")` на классе, extend
+   `Abstract*IntegrationTest`, имя файла `*IT.java`.
+2. Python: `pytestmark = pytest.mark.security_contract` сверху модуля
+   (marker зарегистрирован в `pytest.ini`).
+3. Тест должен падать при **сломанном security-контракте**, не при
+   flaky infrastructure. Без глобальных side-effects — каждый IT
+   запускается в isolated Postgres/Redis (testcontainers).
 
 ## Event contract tests (M08 Группа 9, 14 P1-5)
 

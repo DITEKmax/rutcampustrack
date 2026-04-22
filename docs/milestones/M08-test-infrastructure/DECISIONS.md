@@ -134,3 +134,33 @@ cosign verify \
 забывает cleanup. Минимизируется через `@Sql(scripts="/cleanup.sql")`
 или `mongo.drop()` в `@BeforeEach`. Документируем в
 `docs/runbooks/dev-setup.md` (создадим в Группе 2).
+
+---
+
+## D6 — G8 CSRF: заменить double-submit на SameSite contract (2026-04-22)
+
+**Вопрос:** NEXT-SESSION/CHECKLIST требует `CsrfDoubleSubmitIT`, но M03b
+DECISIONS (2026-04-20) явно отвергли double-submit token для v0.0.0.
+В codebase нет CSRF-filter/X-CSRF-TOKEN header. Что тестировать?
+
+**Решение:** вместо `CsrfDoubleSubmitIT` — **`SameSiteCookieContractIT`**
+в auth-service. Покрывает реально применяемый CSRF-защитный контракт:
+
+- cookie `rct_refresh` после login имеет `HttpOnly`, `Secure`, `SameSite=Strict`
+- POST `/auth/refresh` без cookie → 401 (proof: cross-origin рефреш невозможен)
+- POST `/auth/refresh` с cookie, БЕЗ `X-CSRF-TOKEN` header → 200
+  (regression guard против случайного введения CSRF-header без
+  frontend-interceptor — сломает логин в PWA/web-panel)
+- `/auth/logout` clear-cookie с теми же атрибутами
+
+**Контекст:**
+- `AuthIT.java` (строки 93-95) частично покрывает атрибуты, но в
+  happy-path. Нужен отдельный IT с фокусом на security contract.
+- `X-CSRF-TOKEN` absence-тест — guard против регрессии: если кто-то в
+  v1.0 решит включить double-submit, он должен **одновременно** обновить
+  PWA + web-panel interceptor'ы. Тест падает → напоминание.
+- CHECKLIST G8 обновляется: `CsrfDoubleSubmitIT` → `SameSiteCookieContractIT`.
+
+**Trade-off:** не покрываем гипотетический double-submit механизм, но он
+и не существует. Когда введут в v1.0 — новый IT добавляется в M09+.
+Текущий тест фиксирует действительный контракт v0.0.0.

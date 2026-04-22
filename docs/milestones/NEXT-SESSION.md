@@ -5,23 +5,23 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
-**M08 Test Infrastructure — 8/12 групп закрыто (2026-04-22).**
-Продолжать с **Группы 9 (Event + WebSocket contract tests)**. План —
+**M08 Test Infrastructure — 9/12 групп закрыто (2026-04-22).**
+Продолжать с **Группы 10 (Coverage gate)**. План —
 `docs/milestones/M08-test-infrastructure/PLAN.md`.
 
-Локальных коммитов ahead origin: **~44** (25 pre-M08 + 19 M08).
+Локальных коммитов ahead origin: **~45** (25 pre-M08 + 20 M08).
 Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закрытия M08.
 
 **Старт следующей сессии — дословно:**
 
 > Читаю NEXT-SESSION → CHECKLIST M08 → DECISIONS D1-D6. Стартую с
-> Группы 9 — Event + WebSocket contract tests (параметризованный
-> EventContractIT по event-schemas/*.json + StompIntegrationTest
-> в notification-web + PWA WebSocket reconnect test).
+> Группы 10 — Coverage gate (JaCoCo per-module 60% line + Vitest 50% +
+> pytest-cov 50% + diff-cover ≥80% на changed lines + PR-comments actions
+> + baseline commit + M09 selective override для latecheckin/handlers).
 
 ---
 
-## M08 статус (2026-04-22, 19 коммитов)
+## M08 статус (2026-04-22, 20 коммитов)
 
 ### Правила (без изменений с M05-M07)
 
@@ -58,10 +58,9 @@ Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закры
 | G6 Frontend unit | `6df30a6` | 09/10 P0-4 regression guards (`clearAllClientState.test.ts` PWA + `clear-all-client-state.spec.ts` web-panel), `docs/testing.md` (NEW-162) |
 | G7 Load tests | `4730dec` | `tests/load/bulk-mark.js` + `geolocation-flood.js`, `docs/load-testing.md` (NEW-163), `docs/performance-baseline.md` (шаблон, первый прогон в G12) |
 | G8 Security contracts | `bef5c0a` | GrpcSecretFailFastIT pytest (7) + validate_startup_config() в bot/config.py, TmaIT +4 (bit-flip/diff-bot/missing-hash/replay-in-window, 10 total), SameSiteCookieContractIT (5) вместо CsrfDoubleSubmitIT (D6), @Tag("security-contract") + pytest marker. SecurityIdorIT не существовал → defer M09. |
+| G9 Event + WS contract | `b2ae934` | EventSchemaCoverageTest (40 параметризованных, shared-events) + StompIntegrationIT (3, notification-service RANDOM_PORT + StandardWebSocketClient) + PWA useStompCheckin +3 reconnect regression guards (delay, idempotent onConnect, fresh ticket). |
 
-### Остались (4 группы)
-
-**G9 — Event + WebSocket contract (P1-5, P1-9).** ~3-4ч.
+### Остались (3 группы)
 - Параметризованный `EventContractIT` — читает
   `event-schemas/*.json`, валидирует publisher+consumer для всех
   14+ событий (lesson.*, attendance.*, excuse.*, late_checkin.*,
@@ -126,7 +125,7 @@ Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закры
 
 ### Состояние окружения
 
-- `dev` branch чистый. 44 коммита ahead `origin/dev`.
+- `dev` branch чистый. 45 коммитов ahead `origin/dev`.
 - Docker-compose containers: подняты или могут быть подняты через
   `docker compose up -d`.
 - Все тесты зелёные (attendance, schedule, academic, auth,
@@ -135,7 +134,7 @@ Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закры
 
 ### Действия, ожидающие `go` пользователя
 
-1. `git push origin dev` — 44+ коммита ahead origin.
+1. `git push origin dev` — 45+ коммитов ahead origin.
 2. `git push origin --tags` — 7 tags (`v0.0.0-alpha.2..8`) локальные.
 3. Старт Группы 8 в новой сессии.
 
@@ -151,7 +150,7 @@ M04 Observability ✅ 2026-04-20
 M05 Performance ✅ 2026-04-21
 M06 Ops & Supply Chain ✅ 2026-04-21
 M07 Frontend Hardening ✅ 2026-04-22 (tag `v0.0.0-alpha.8` локальный)
-**M08 Test Infrastructure ⏳ 8/12 групп закрыто, продолжать с G9.**
+**M08 Test Infrastructure ⏳ 9/12 групп закрыто, продолжать с G10.**
 M09 Prod Release Blockers ⬜
 M10 Notification History ⬜
 M11 OpenAPI Polish ⬜

@@ -193,7 +193,7 @@
 ## Группа 9 — Contract tests для событий (14 P1-5) + WebSocket (14 P1-9)
 
 - [x] Параметризованный `EventSchemaCoverageTest` в shared-events
-      — commit TBD. 40 тестов: schema parseable + envelope complete +
+      — commit `b2ae934`. 40 тестов: schema parseable + envelope complete +
       const matches filename + $refs resolve to _common.json + minimal
       envelope validates + coverage regression guard (19 expected schemas).
       JSON-schema sanity как unit (без Spring/Docker).
@@ -202,12 +202,12 @@
       semester.archived, homework.* (2). Publisher-side остаётся per-service
       `*ContractIT` (5 файлов: schedule 2, attendance 2, academic 1).
 - [x] `StompIntegrationIT` в notification-web (RANDOM_PORT +
-      StandardWebSocketClient) — commit TBD. 3 теста: happy path
+      StandardWebSocketClient) — commit `b2ae934`. 3 теста: happy path
       (ticket → subscribe → broadcast → receive), missing ticket → reject,
       invalid ticket → reject. `@MockitoBean WsTicketClient` + `PushService`.
       URL: `/ws/websocket` (SockJS-enabled endpoint принимает native WS
       через `/websocket` suffix).
-- [x] PWA WebSocket reconnect test — commit TBD. Расширен существующий
+- [x] PWA WebSocket reconnect test — commit `b2ae934`. Расширен существующий
       `useStompCheckin.test.ts` на 3 reconnect regression guards:
       reconnectDelay > 0 ∧ ≤ 5000ms, idempotent onConnect (resubscribe),
       fresh WS-ticket per reconnect (single-use).

@@ -61,7 +61,7 @@ import static org.mockito.Mockito.when;
  * Тесты вызывают {@link #flushOutbox()} после service-метода чтобы
  * эмулировать OutboxPublisherJob tick (в test-профиле он не шедулится).
  */
-class EventIntegrationTest extends AbstractAcademicEventIntegrationTest {
+class EventIT extends AbstractAcademicEventIntegrationTest {
 
     private static final String EXCHANGE = "rut-uit.events";
     private static final int RECEIVE_TIMEOUT_MS = 5000;

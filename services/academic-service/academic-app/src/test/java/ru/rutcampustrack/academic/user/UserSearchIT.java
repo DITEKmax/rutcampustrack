@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @AutoConfigureMockMvc
 @Transactional
-class UserSearchIntegrationTest extends AbstractAcademicIntegrationTest {
+class UserSearchIT extends AbstractAcademicIntegrationTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired JdbcTemplate jdbcTemplate;

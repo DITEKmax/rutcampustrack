@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class RestApiIntegrationTest extends AbstractAcademicIntegrationTest {
+class RestApiIT extends AbstractAcademicIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

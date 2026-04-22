@@ -17,7 +17,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class EntityMappingIntegrationTest extends AbstractAcademicIntegrationTest {
+class EntityMappingIT extends AbstractAcademicIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;

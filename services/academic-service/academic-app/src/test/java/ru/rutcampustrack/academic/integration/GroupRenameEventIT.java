@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Параллельно также публикуется {@code group.updated} (для инвалидации кэшей).
  * Тест проверяет что оба события попадают в fanout exchange.
  */
-class GroupRenameEventTest extends AbstractAcademicEventIntegrationTest {
+class GroupRenameEventIT extends AbstractAcademicEventIntegrationTest {
 
     private static final String EXCHANGE = "rut-uit.events";
     private static final int RECEIVE_TIMEOUT_MS = 5000;

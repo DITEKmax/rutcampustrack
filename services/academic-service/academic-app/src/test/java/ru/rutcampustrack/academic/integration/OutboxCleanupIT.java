@@ -35,8 +35,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code OutboxCleanupJob} в нём же → в тестах его вообще нет. Поэтому
  * создаём тестовый bean с подменённым Clock'ом.
  */
-@Import(OutboxCleanupIntegrationTest.CleanupTestConfig.class)
-class OutboxCleanupIntegrationTest extends AbstractAcademicIntegrationTest {
+@Import(OutboxCleanupIT.CleanupTestConfig.class)
+class OutboxCleanupIT extends AbstractAcademicIntegrationTest {
 
     /** Retention — 7 дней (такой же дефолт как в прод-конфиге). */
     private static final int RETENTION_DAYS = 7;

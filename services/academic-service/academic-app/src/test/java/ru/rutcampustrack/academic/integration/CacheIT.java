@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * are counted at the proxy level, which is sufficient for cache-hit verification.
  *
  * Uses a unique in-process gRPC server name ("academic-cache-test") to avoid
- * conflicts with AcademicGrpcIntegrationTest ("academic-grpc-test").
+ * conflicts with AcademicGrpcIT ("academic-grpc-test").
  *
  * Data from V2__seed_test_data.sql:
  *   group(id=1, name=ИВТ-211), semester(id=1, is_active=true),
@@ -56,7 +56,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     }
 )
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-class CacheIntegrationTest extends AbstractAcademicCacheIntegrationTest {
+class CacheIT extends AbstractAcademicCacheIntegrationTest {
 
     // Seed data constants matching V2__seed_test_data.sql
     private static final long GROUP_ID = 1L;

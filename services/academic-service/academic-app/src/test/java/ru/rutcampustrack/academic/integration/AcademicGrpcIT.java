@@ -55,7 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
     }
 )
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class AcademicGrpcIntegrationTest extends AbstractAcademicIntegrationTest {
+public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
     // Seed data constants — match V2__seed_test_data.sql exactly
     private static final long GROUP_ID = 1L;

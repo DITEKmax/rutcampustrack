@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>Каждый тест в @Transactional — откатывается, БД восстанавливается.
  */
 @Transactional
-class UserRepositorySearchTest extends AbstractAcademicIntegrationTest {
+class UserRepositorySearchIT extends AbstractAcademicIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;

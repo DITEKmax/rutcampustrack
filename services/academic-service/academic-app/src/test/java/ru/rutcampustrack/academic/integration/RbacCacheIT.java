@@ -78,7 +78,7 @@ class RbacCacheIT extends AbstractAcademicCacheIntegrationTest {
      * из rbac cache. Наличие Redis key подтверждает кеш-запись
      * (hit-rate косвенно — если бы не было кеша, любая смена БД между
      * вызовами давала бы разный результат; здесь мы полагаемся на
-     * тот же паттерн, что используется в {@code CacheIntegrationTest}).
+     * тот же паттерн, что используется в {@code CacheIT}).
      */
     @Test
     void isHeadman_secondCall_servedFromRbacCache() {

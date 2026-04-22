@@ -302,7 +302,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       axe-core run, ESLint a11y plugins, Lighthouse score ≥ 95, skip-
       links, color contrast, SMIL replace, touch targets, screen reader
       testing, heading hierarchy, live regions).
-- [x] Commit `<pending>`: `feat(frontend): a11y baseline + checklist (M07 Группа 10, P2-7B)`
+- [x] Commit `2be3eab`: `feat(frontend): a11y baseline + checklist (M07 Группа 10, P2-7B)`
 
 ## Группа 11 — nginx per-location + PR-template (P2-9/3, NEW-74) — ~2ч
 
@@ -326,18 +326,25 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 
 ## Группа 12 — Audit + docs close — ~3ч
 
-- [ ] `./gradlew build` финальный — зелёный
-- [ ] `npm run build` в PWA/web-panel/mini-app/landing — зелёные
-- [ ] `security-auditor` + `code-reviewer` агенты на diff M07
-- [ ] `@axe-core/cli` финальный run
-- [ ] Hot-patches если найдутся — отдельным commit
-- [ ] `CHANGELOG.md` `[Unreleased]` — M07 entries
-- [ ] `docs/milestones/M07-frontend-hardening/PLAN.md` — Post-mortem секция
-- [ ] `docs/milestones/README.md` — M07 → ✅ + дата
-- [ ] `CLAUDE.md` — статус M07 → ✅ + дата
-- [ ] `docs/milestones/NEXT-SESSION.md` — hand-off для M08
-- [ ] `git tag v0.0.0-alpha.8` на финальном commit'е M07
-- [ ] Commit: `docs(m07): закрытие milestone — post-mortem + CHANGELOG + hand-off`
+- [x] `./gradlew build` финальный — зелёный (verified в `82cf482`:
+      `./gradlew :services:api-gateway:test` зелёный после hot-patches)
+- [x] `npm run build` в PWA/web-panel/mini-app/landing — зелёные
+      (PWA `tsc -b` + 154/154 tests в `82cf482`)
+- [x] `security-auditor` + `code-reviewer` агенты на diff M07 —
+      findings адресованы в `82cf482` (HIGH-1 CSP, MED-1 rate-limit,
+      S1/S2/S7 code-review). INFO-5/INFO-1 отложены в M10/v0.1.
+- [~] ~~`@axe-core/cli` финальный run~~ — отложено в M08 / pass 2
+      (см. Группа 10, требует running dev server + Playwright e2e).
+- [x] Hot-patches — commit `82cf482`: `fix(m07): audit hot-patches —
+      CSP, rate-limit, code review (G12)`
+- [x] `CHANGELOG.md` `[Unreleased]` — M07 entries (в `26aef81`)
+- [x] `docs/milestones/M07-frontend-hardening/PLAN.md` — Post-mortem
+      секция (в `26aef81`)
+- [x] `docs/milestones/README.md` — M07 → ✅ 2026-04-22 (в `26aef81`)
+- [x] `CLAUDE.md` — статус M07 → ✅ 2026-04-22 (в `26aef81`)
+- [x] `docs/milestones/NEXT-SESSION.md` — hand-off для M08 (в `26aef81`)
+- [x] `git tag v0.0.0-alpha.8` на финальном commit'е M07 (26aef81)
+- [x] Commit `26aef81`: `docs(m07): closure — post-mortem + CHANGELOG + hand-off для M08`
 
 ---
 

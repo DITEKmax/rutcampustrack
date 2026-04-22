@@ -5,19 +5,27 @@
 
 ## Группа 1 — Testing conventions (P2-8/1)
 
-- [ ] Audit: список всех классов с `@SpringBootTest`/`@DataJpaTest`/
+- [x] Audit: список всех классов с `@SpringBootTest`/`@DataJpaTest`/
       `@WebMvcTest`/Testcontainers по 5 сервисам (grep + отчёт в NOTES)
-- [ ] Переименовать `*Test` → `*IT` по списку (git mv + imports fix)
-- [ ] Root `build.gradle.kts` — shared `integrationTest` Gradle task
+      — commit `42f9147`
+- [x] Переименовать `*Test` → `*IT` по списку (git mv + imports fix)
+      — commits `f1ddba7` (attendance, 9), `871910b` (schedule, 10),
+      `db4779d` (academic, 9), `0f812d9` (auth, 3)
+- [x] Root `build.gradle.kts` — shared `integrationTest` Gradle task
       с `filter { includeTestsMatching "*IT" }`, `shouldRunAfter("test")`
-- [ ] `services/*/build.gradle.kts` — включить `integrationTest` в
-      `tasks.check { dependsOn }`
-- [ ] `tasks.test { filter { excludeTestsMatching "*IT" } }` везде
-- [ ] ArchUnit rule: классы с IT-аннотациями должны заканчиваться на "IT"
-      (расширение NEW-109)
-- [ ] `.github/workflows/ci.yml` — split `unit-test` + `integration-test`
-      jobs (parallel, общий artifact cache)
-- [ ] Измерить CI time до/после → запись в NOTES.md
+      — commit `4119b5f`
+- [x] `services/*/build.gradle.kts` — включить `integrationTest` в
+      `tasks.check { dependsOn }` — commit `4119b5f` (через subprojects
+      блок в root build.gradle.kts)
+- [x] `tasks.test { filter { excludeTestsMatching "*IT" } }` везде
+      — commit `4119b5f`
+- [x] ArchUnit rule: классы с IT-аннотациями должны заканчиваться на "IT"
+      (расширение NEW-109) — commit `8418faa`
+      (IntegrationTestNamingRule + 4 per-service wrappers)
+- [x] `.github/workflows/ci.yml` — split `unit-test` + `integration-test`
+      jobs (parallel, общий artifact cache) — commit TBD
+- [ ] Измерить CI time до/после → запись в NOTES.md (требует push на
+      origin + запустить CI; отложено до закрытия M08)
 
 ## Группа 2 — Testcontainers hybrid refactor (P2-8/2)
 

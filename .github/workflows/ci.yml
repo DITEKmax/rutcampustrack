@@ -21,8 +21,8 @@ on:
       - '.pre-commit-config.yaml'
 
 jobs:
-  java-build-test:
-    name: Java — ${{ matrix.service.name }}
+  java-unit-test:
+    name: Java unit — ${{ matrix.service.name }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -55,18 +55,93 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build and test ${{ matrix.service.name }}
-        run: ./gradlew ${{ matrix.service.path }}:check --no-daemon
+      # M08 Группа 1 (P2-8/1) — только unit (*Test), БЕЗ *IT.
+      # Быстрая jobs, блокирующая PR при базовых регрессиях.
+      - name: Unit tests ${{ matrix.service.name }}
+        run: ./gradlew ${{ matrix.service.path }}:test --no-daemon
 
-      - name: Upload test reports
+      - name: Upload unit test reports
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-${{ matrix.service.name }}
+          name: unit-test-reports-${{ matrix.service.name }}
           path: |
-            services/**/build/reports/tests/
-            services/**/build/test-results/
+            services/**/build/reports/tests/test/
+            services/**/build/test-results/test/
           retention-days: 7
+
+  java-integration-test:
+    name: Java IT — ${{ matrix.service.name }}
+    runs-on: ubuntu-latest
+    # Integration tests независимы от unit job'ов (separate pipelines,
+    # fail-fast на уровне jobs). Параллельный запуск ускоряет wall-time.
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: api-gateway
+            path: ':services:api-gateway'
+          - name: auth-service
+            path: ':services:auth-service'
+          - name: academic-service
+            path: ':services:academic-service:academic-app'
+          - name: schedule-service
+            path: ':services:schedule-service:schedule-app'
+          - name: attendance-service
+            path: ':services:attendance-service:attendance-app'
+          - name: notification-service
+            path: ':services:notification-service:notification-app'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # M08 Группа 1 (P2-8/1) — только *IT (Spring context + Testcontainers).
+      # Gradle filter в root build.gradle.kts.
+      - name: Integration tests ${{ matrix.service.name }}
+        run: ./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon
+
+      - name: Upload integration test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-reports-${{ matrix.service.name }}
+          path: |
+            services/**/build/reports/integrationTest/
+            services/**/build/test-results/integrationTest/
+          retention-days: 7
+
+  java-verification:
+    name: Java verification (verifyNoDebugInProd + verifyLogbackJsonInAllServices)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # Lightweight verification tasks (не зависит от тестов).
+      - name: Run verification tasks
+        run: ./gradlew verifyNoDebugInProd verifyLogbackJsonInAllServices --no-daemon
 
   python-lint-test:
     name: Python Lint & Test

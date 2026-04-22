@@ -303,6 +303,64 @@ frontend wiring).
 
 ---
 
+## Full load-testing suite (Gatling / JMeter) для v0.1
+
+**Источник:** M08 DECISIONS D2 (2026-04-22). OWNER-ANSWERS P2-8/7
+разрешает v0.0.0 ограничиться minimal-only — k6 scripts + manual
+прогон перед релизом. Полноценный нагрузочный стенд отложен.
+
+**Текущее состояние (v0.0.0, M08):**
+В `tests/load/` лежат 2 k6-скрипта (`bulk-mark.js`,
+`geolocation-flood.js`) + `docs/performance-baseline.md` с первыми
+числами p50/p95/p99. Release-engineer прогоняет руками перед каждым
+release tag локально против `docker compose up`. CI load-job нет.
+
+**Идея на будущее:**
+
+1. **Gatling** или **JMeter** как основной инструмент для многосценарных
+   нагрузок (параллельные потоки «checkin + excuse + schedule view»,
+   realistic ramp-up curves, distributed load-generation).
+2. **Nightly CI job против dev-инстанса на VPS** (после M12 когда
+   prod stable) — ловит регрессии автоматически, trend-графики в
+   Grafana через Prometheus exporter (Gatling умеет, k6 тоже через
+   `--out experimental-prometheus-rw`).
+3. **Dedicated load-runner** (self-hosted GitHub Actions runner на VPS)
+   — CPU стабильнее чем GitHub-hosted (где железо плавающее).
+
+**Варианты инструмента:**
+- **Gatling** (Scala DSL) — красивые HTML-отчёты, хорош для complex
+  scenario, steep learning curve.
+- **JMeter** (XML + GUI) — зрелый, много плагинов, но XML-конфиги
+  плохо review'ятся в PR.
+- **k6 с расширенным scope** — docker-образ `grafana/k6` для CI,
+  multiple `scenarios` в одном скрипте, тот же JS DSL. Наиболее
+  реалистично если мы останавливаемся на k6 и не мигрируем.
+
+**Что это даст:**
+- Continuous detection регрессий между релизами (сейчас ловим только
+  если release-engineer не забыл прогнать).
+- Realistic load patterns (один k6-скрипт = один сценарий; в реальности
+  старост одновременно отмечает, студент подаёт excuse, teacher
+  смотрит журнал — k6 minimal scope это не моделирует).
+- Trend-графики p95/error_rate по времени, видно «когда поехало».
+
+**Trigger:** после tag `v0.0.0` (все M07-M12 закрыты) + минимум 2 недели
+стабильности prod на VPS + накопленная статистика «какие endpoint'ы чаще
+всего регрессируют».
+
+**Estimate:** ~3-5 дней.
+- 1д — выбор инструмента (k6 scale-up vs Gatling migration) + baseline
+  migration из текущих 2 скриптов.
+- 1-2д — setup dedicated runner + dev-инстанс deploy automation
+  (зависит от M09/M12 VPS stability).
+- 1-2д — Grafana dashboard + Prometheus integration + alert rules
+  (p95 > threshold → Telegram через M04 Alertmanager).
+
+**Зависимости:** M08 (baseline в `performance-baseline.md`), M09
+(prod-deploy-checklist), M12 (VPS stable + dev-инстанс).
+
+---
+
 ## NEW-146-checklist: Аудит-чеклист для `.collect(toList())` агрегации
 
 Использовать при PR-ревью service-слоя:

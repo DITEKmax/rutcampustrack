@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Полное ФИО (Фамилия Имя Отчество)",
+    "firstName": "Иван",
+    "lastName": "Иванов",
+    "middleName": "Иванович",
+    "expectedDisplay": "Иванов Иван Иванович"
+  },
+  {
+    "name": "Без отчества (studentka без middleName)",
+    "firstName": "Анна",
+    "lastName": "Петрова",
+    "middleName": null,
+    "expectedDisplay": "Петрова Анна"
+  },
+  {
+    "name": "Пустой middleName — без отчества",
+    "firstName": "Елена",
+    "lastName": "Сидорова",
+    "middleName": "",
+    "expectedDisplay": "Сидорова Елена"
+  },
+  {
+    "name": "Blank middleName (whitespace) — без отчества",
+    "firstName": "Мария",
+    "lastName": "Козлова",
+    "middleName": "   ",
+    "expectedDisplay": "Козлова Мария"
+  },
+  {
+    "name": "Double-barrel lastName (Салтыкова-Щедрина)",
+    "firstName": "Нина",
+    "lastName": "Салтыкова-Щедрина",
+    "middleName": "Петровна",
+    "expectedDisplay": "Салтыкова-Щедрина Нина Петровна"
+  },
+  {
+    "name": "Latin names",
+    "firstName": "John",
+    "lastName": "Smith",
+    "middleName": "A.",
+    "expectedDisplay": "Smith John A."
+  },
+  {
+    "name": "Single-letter first (инициал)",
+    "firstName": "А",
+    "lastName": "Пушкин",
+    "middleName": "С",
+    "expectedDisplay": "Пушкин А С"
+  },
+  {
+    "name": "Очень длинная фамилия (проверка StringBuilder capacity)",
+    "firstName": "Александр",
+    "lastName": "Воскресенский-Никольский-Преображенский",
+    "middleName": "Сергеевич",
+    "expectedDisplay": "Воскресенский-Никольский-Преображенский Александр Сергеевич"
+  },
+  {
+    "name": "Короткие имена (Ли, Ан)",
+    "firstName": "Ан",
+    "lastName": "Ли",
+    "middleName": "Сергеевич",
+    "expectedDisplay": "Ли Ан Сергеевич"
+  },
+  {
+    "name": "Отчество с апострофом (Д'Артаньян)",
+    "firstName": "Шарль",
+    "lastName": "Д'Артаньян",
+    "middleName": "Огьюст",
+    "expectedDisplay": "Д'Артаньян Шарль Огьюст"
+  },
+  {
+    "name": "Кириллица + ё в имени",
+    "firstName": "Пётр",
+    "lastName": "Фёдоров",
+    "middleName": "Семёнович",
+    "expectedDisplay": "Фёдоров Пётр Семёнович"
+  },
+  {
+    "name": "Admin test user (без отчества)",
+    "firstName": "Админ",
+    "lastName": "Тестовый",
+    "middleName": null,
+    "expectedDisplay": "Тестовый Админ"
+  }
+]

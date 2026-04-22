@@ -303,6 +303,36 @@ frontend wiring).
 
 ---
 
+## jqwik property-based testing для v0.1
+
+**Источник:** M08 Группа 4 (2026-04-22), `docs/golden-tests.md`.
+
+**Текущее состояние (v0.0.0):**
+Property tests реализованы через standard JUnit + random loops +
+`@RepeatedTest(100)`. Работает, но не даёт auto-shrinking
+counter-examples и statistical distribution controls.
+
+**Идея на будущее:**
+- `testImplementation(libs.jqwik)` через `libs.versions.toml`.
+- Migrate 2 property-test методов на `@Property` (WeekParityPropertyTest +
+  DisplayNamePropertyTest).
+- Добавить новые properties через generator composition
+  (`@Arbitraries.strings().ofLength(2, 20)` + `@Combinators.combine(...)`).
+
+**Что это даст:**
+- Auto-shrinking — если property fails на `"Фёдоров Пётр"`, jqwik
+  сам уменьшит до минимального failing input (`"А Я"` или проще).
+- Statistical distribution — balance edge-cases (empty strings,
+  unicode surrogates, null) vs normal inputs.
+- Intentional reproducibility — seed logging для non-flaky runs.
+
+**Blocker:** jqwik имеет известные конфликты с Spring Boot Test
+resolver'ами. Требует отдельного runner setup. Не блокирует v0.0.0.
+
+**Estimate:** ~0.5д.
+
+---
+
 ## gRPC integration tests — real in-process channels вместо @MockitoBean (v0.1)
 
 **Источник:** M08 Группа 2 @MockitoBean audit (2026-04-22,

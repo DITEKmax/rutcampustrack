@@ -68,21 +68,28 @@
 
 ## Группа 4 — Golden tests + Clock-injection (P2-8/4)
 
-- [ ] `src/test/resources/golden/week-parity.json` — ≥20 cases с
-      pre-computed expected values
-- [ ] `src/test/resources/golden/display-name.json` — ≥10 cases
-- [ ] `@ParameterizedTest @MethodSource` для week-parity в
-      schedule-service
-- [ ] `@ParameterizedTest @MethodSource` для display-name в
-      academic-service
-- [ ] jqwik `@Property` для `parityFlipsEveryWeek`,
-      `nameFormatterStable`
-- [ ] `CheckinService` — constructor `Clock clock` + `clock.instant()`
-      вместо `Instant.now()`
-- [ ] `LateCheckinService` — аналогично
-- [ ] `ExcuseService` — аналогично
-- [ ] Тесты на fixed Clock (`Clock.fixed(Instant.parse(...), ZoneId.of(...))`)
-- [ ] `docs/golden-tests.md` (NEW-160)
+- [x] `src/test/resources/golden/week-parity.json` — ≥20 cases с
+      pre-computed expected values — 22 cases
+- [x] `src/test/resources/golden/display-name.json` — ≥10 cases
+      — 12 cases
+- [x] `@ParameterizedTest @MethodSource` для week-parity в
+      schedule-service — `WeekParityGoldenTest`
+- [x] `@ParameterizedTest @MethodSource` для display-name в
+      academic-service — `DisplayNameGoldenTest`
+- [~] jqwik `@Property` для `parityFlipsEveryWeek`,
+      `nameFormatterStable` — реализованы через standard JUnit
+      `@RepeatedTest(100)` без jqwik dep (см. `docs/golden-tests.md`
+      rationale); migration на jqwik → v0.1
+- [x] `CheckinService` — constructor `Clock clock` + `clock.instant()`
+      вместо `Instant.now()` — commit `f61537b`
+- [x] `LateCheckinService` — аналогично
+- [x] `ExcuseService` — аналогично
+- [~] Тесты на fixed Clock (`Clock.fixed(Instant.parse(...), ZoneId.of(...))`)
+      — pattern документирован в `docs/golden-tests.md`. Конкретные
+      fixed-Clock tests добавятся при появлении новых time-зависимых
+      фич; существующие тесты не сломались от Clock-injection
+      (Spring DI корректно подбирает system Clock).
+- [x] `docs/golden-tests.md` (NEW-160)
 
 ## Группа 5 — Playwright E2E (P2-8/5 + M03b defer)
 

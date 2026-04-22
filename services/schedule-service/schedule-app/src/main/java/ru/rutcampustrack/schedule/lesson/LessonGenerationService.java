@@ -22,8 +22,10 @@ import java.util.List;
  * Service responsible for generating Lesson entities from ScheduleItem templates.
  *
  * Week parity is anchored to the ISO-8601 week number of each candidate date:
- * - Odd  ISO week → 1-я учебная неделя (WeekType.EVEN).
- * - Even ISO week → 2-я учебная неделя (WeekType.ODD).
+ * - Even ISO week (16, 18, ...) → 1-я учебная неделя → WeekType.ODD.
+ * - Odd  ISO week (17, 19, ...) → 2-я учебная неделя → WeekType.EVEN.
+ * UI показывает только номер (1 или 2), без слов «чётная/нечётная» — legacy
+ * именование enum-а сохранено для backwards-compatibility DTO.
  *
  * Этот выбор синхронизирует бэкенд с фронтендом (web-panel/pwa показывают
  * баннер «идёт N-я неделя» на основе ISO-номера) и не зависит от даты

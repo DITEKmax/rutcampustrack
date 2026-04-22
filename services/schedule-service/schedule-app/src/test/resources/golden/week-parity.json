@@ -1,0 +1,134 @@
+[
+  {
+    "name": "2026-04-20 (ISO W17 — первый понедельник мая) → EVEN",
+    "date": "2026-04-20",
+    "isoWeek": 17,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "2026-04-27 (ISO W18) → ODD",
+    "date": "2026-04-27",
+    "isoWeek": 18,
+    "expectedWeekType": "ODD"
+  },
+  {
+    "name": "2026-09-01 Monday of semester start week (ISO W36) → ODD",
+    "date": "2026-09-01",
+    "isoWeek": 36,
+    "expectedWeekType": "ODD"
+  },
+  {
+    "name": "2026-09-08 (ISO W37) → EVEN",
+    "date": "2026-09-08",
+    "isoWeek": 37,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "2026-02-02 (ISO W6) → ODD",
+    "date": "2026-02-02",
+    "isoWeek": 6,
+    "expectedWeekType": "ODD"
+  },
+  {
+    "name": "2026-02-09 (ISO W7) → EVEN",
+    "date": "2026-02-09",
+    "isoWeek": 7,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "Year boundary — 2025-12-29 (ISO W1 of 2026) → EVEN",
+    "date": "2025-12-29",
+    "isoWeek": 1,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "Year boundary — 2024-12-30 Mon (ISO W1 of 2025) → EVEN",
+    "date": "2024-12-30",
+    "isoWeek": 1,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "Long year — 2020-12-28 (ISO W53 of 2020) → EVEN",
+    "date": "2020-12-28",
+    "isoWeek": 53,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "2020-12-31 Thursday (still ISO W53 of 2020) → EVEN",
+    "date": "2020-12-31",
+    "isoWeek": 53,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "Leap year — 2024-02-29 (ISO W9) → EVEN",
+    "date": "2024-02-29",
+    "isoWeek": 9,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "Leap year — 2024-03-01 Friday (ISO W9) → EVEN",
+    "date": "2024-03-01",
+    "isoWeek": 9,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "Sunday in ISO W14 — 2026-04-05 → ODD",
+    "date": "2026-04-05",
+    "isoWeek": 14,
+    "expectedWeekType": "ODD"
+  },
+  {
+    "name": "Monday in ISO W14 — 2026-03-30 → ODD",
+    "date": "2026-03-30",
+    "isoWeek": 14,
+    "expectedWeekType": "ODD"
+  },
+  {
+    "name": "First semester boundary — 2026-09-07 (ISO W37) → EVEN",
+    "date": "2026-09-07",
+    "isoWeek": 37,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "ISO W20 (чёт) → ODD",
+    "date": "2026-05-11",
+    "isoWeek": 20,
+    "expectedWeekType": "ODD"
+  },
+  {
+    "name": "ISO W21 (нечёт) → EVEN",
+    "date": "2026-05-18",
+    "isoWeek": 21,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "ISO W50 → ODD",
+    "date": "2026-12-07",
+    "isoWeek": 50,
+    "expectedWeekType": "ODD"
+  },
+  {
+    "name": "ISO W51 → EVEN",
+    "date": "2026-12-14",
+    "isoWeek": 51,
+    "expectedWeekType": "EVEN"
+  },
+  {
+    "name": "ISO W52 → ODD",
+    "date": "2026-12-21",
+    "isoWeek": 52,
+    "expectedWeekType": "ODD"
+  },
+  {
+    "name": "Mid-summer — 2026-07-06 (ISO W28) → ODD",
+    "date": "2026-07-06",
+    "isoWeek": 28,
+    "expectedWeekType": "ODD"
+  },
+  {
+    "name": "New Year — 2027-01-04 Monday (ISO W1 of 2027) → EVEN",
+    "date": "2027-01-04",
+    "isoWeek": 1,
+    "expectedWeekType": "EVEN"
+  }
+]

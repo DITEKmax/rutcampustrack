@@ -52,13 +52,19 @@
 
 ## Группа 3 — Flyway MigrationIT (P2-8/3)
 
-- [ ] `MigrationTestUtils.runMigrationsUpTo(version)` helper в
-      shared-test-containers
-- [ ] `FlywayMigrationIT` в auth-service (3 test templates)
-- [ ] `FlywayMigrationIT` в schedule-service (3 test templates)
-- [ ] `FlywayMigrationIT` в attendance-service (адаптация под Mongo
-      миграции — другой механизм, скорее smoke)
-- [ ] `docs/runbooks/migration-testing.md` (NEW-159)
+- [x] `MigrationTestUtils.runMigrationsUpTo(version)` helper в
+      shared-test-containers — уже готов с M01
+- [~] `FlywayMigrationIT` в auth-service (3 test templates) —
+      **skip** (auth-service не владеет Flyway-миграциями, users
+      table owned academic). Defer до M12 (Auth Contract refactor).
+- [x] `FlywayMigrationIT` в schedule-service (3 test templates)
+      — V1..V12, зелёный
+- [x] `FlywayMigrationIT` в academic-service (3 test templates)
+      — V1..V17, зелёный (дополнительно к HomeworkMigrationIT)
+- [x] `FlywayMigrationIT` в attendance-service (адаптация под Mongo
+      миграции — другой механизм, скорее smoke) — добавлен test
+      `mongoConfigInitIndexes_createsAllExpectedIndexes` в MongoIndexIT
+- [x] `docs/runbooks/migration-testing.md` (NEW-159)
 
 ## Группа 4 — Golden tests + Clock-injection (P2-8/4)
 

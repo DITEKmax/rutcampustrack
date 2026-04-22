@@ -25,6 +25,7 @@ import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -75,6 +76,7 @@ public class ExcuseService {
     private final ExcuseEventPublisher excuseEventPublisher;
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final BusinessMetrics businessMetrics;
+    private final Clock clock;
 
     public ExcuseService(ExcuseRepository excuseRepository,
                          RequestContext requestContext,
@@ -83,7 +85,8 @@ public class ExcuseService {
                          AttendanceWritePort attendanceWritePort,
                          ExcuseEventPublisher excuseEventPublisher,
                          ScheduleGrpcClient scheduleGrpcClient,
-                         BusinessMetrics businessMetrics) {
+                         BusinessMetrics businessMetrics,
+                         Clock clock) {
         this.excuseRepository = excuseRepository;
         this.requestContext = requestContext;
         this.academicGrpcClient = academicGrpcClient;
@@ -92,6 +95,7 @@ public class ExcuseService {
         this.excuseEventPublisher = excuseEventPublisher;
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.businessMetrics = businessMetrics;
+        this.clock = clock;
     }
 
     /**
@@ -189,7 +193,7 @@ public class ExcuseService {
         // D-26: snapshot studentName via gRPC
         String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());
 
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         ExcuseTicket ticket = ExcuseTicket.builder()
                 .studentId(requestContext.getUserId())
                 .groupId(requestContext.getGroupId())
@@ -290,7 +294,7 @@ public class ExcuseService {
             throw new ConflictException("Решение по тикету уже принято");
         }
 
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         ticket.setStatus(newStatus);
         ticket.setDecisionBy(requestContext.getUserId());
         ticket.setDecisionComment(request.decisionComment());
@@ -347,7 +351,7 @@ public class ExcuseService {
             return;
         }
 
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         ExcuseTicketStatus newStatus = approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED;
         ticket.setStatus(newStatus);
         ticket.setDecisionBy(decisionBy);

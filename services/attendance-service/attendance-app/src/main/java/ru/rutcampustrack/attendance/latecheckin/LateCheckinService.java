@@ -17,6 +17,7 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -51,6 +52,7 @@ public class LateCheckinService {
     private final AttendanceWritePort attendanceWritePort;
     private final LateCheckinEventPublisher eventPublisher;
     private final BusinessMetrics businessMetrics;
+    private final Clock clock;
 
     public LateCheckinService(LateCheckinRepository repository,
                               RequestContext requestContext,
@@ -59,7 +61,8 @@ public class LateCheckinService {
                               AttendanceRepository attendanceRepository,
                               AttendanceWritePort attendanceWritePort,
                               LateCheckinEventPublisher eventPublisher,
-                              BusinessMetrics businessMetrics) {
+                              BusinessMetrics businessMetrics,
+                              Clock clock) {
         this.repository = repository;
         this.requestContext = requestContext;
         this.scheduleGrpcClient = scheduleGrpcClient;
@@ -68,6 +71,7 @@ public class LateCheckinService {
         this.attendanceWritePort = attendanceWritePort;
         this.eventPublisher = eventPublisher;
         this.businessMetrics = businessMetrics;
+        this.clock = clock;
     }
 
     public LateCheckinRequest createRequest(Long lessonId) {
@@ -103,7 +107,7 @@ public class LateCheckinService {
 
         String studentName = academicGrpcClient.getUserDisplayName(requestContext.getUserId());
 
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         LateCheckinRequest request = LateCheckinRequest.builder()
                 .studentId(requestContext.getUserId())
                 .groupId(requestContext.getGroupId())
@@ -190,7 +194,7 @@ public class LateCheckinService {
             return;
         }
 
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         request.setStatus(approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED);
         request.setDecisionBy(decisionBy);
         request.setDecisionAt(now);

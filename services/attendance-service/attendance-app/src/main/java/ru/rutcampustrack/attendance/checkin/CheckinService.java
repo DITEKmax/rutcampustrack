@@ -17,12 +17,12 @@ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 
 /**
  * Orchestrates the geo-checkin write path.
@@ -39,7 +39,6 @@ import java.time.ZoneId;
 @Service
 public class CheckinService {
 
-    private static final ZoneId SERVER_ZONE = ZoneId.of("Europe/Moscow");
     private static final Duration CHECKIN_BUFFER = Duration.ofMinutes(5);
 
     private final CheckinRateLimiter rateLimiter;
@@ -50,6 +49,7 @@ public class CheckinService {
     private final SemesterCacheService semesterCacheService;
     private final RequestContext requestContext;
     private final BusinessMetrics businessMetrics;
+    private final Clock clock;
 
     public CheckinService(CheckinRateLimiter rateLimiter,
                           GeofenceService geofenceService,
@@ -58,7 +58,8 @@ public class CheckinService {
                           AttendanceEventPublisher eventPublisher,
                           SemesterCacheService semesterCacheService,
                           RequestContext requestContext,
-                          BusinessMetrics businessMetrics) {
+                          BusinessMetrics businessMetrics,
+                          Clock clock) {
         this.rateLimiter = rateLimiter;
         this.geofenceService = geofenceService;
         this.scheduleGrpcClient = scheduleGrpcClient;
@@ -67,6 +68,7 @@ public class CheckinService {
         this.semesterCacheService = semesterCacheService;
         this.requestContext = requestContext;
         this.businessMetrics = businessMetrics;
+        this.clock = clock;
     }
 
     /**
@@ -87,8 +89,8 @@ public class CheckinService {
         }
 
         // Step 2: Active lesson (CHKN-02) — ResourceNotFoundException propagates as 404
-        Instant now = Instant.now();
-        String moscowTimestamp = LocalDateTime.ofInstant(now, SERVER_ZONE).toString();
+        Instant now = clock.instant();
+        String moscowTimestamp = LocalDateTime.ofInstant(now, clock.getZone()).toString();
         LessonResponse lesson = scheduleGrpcClient.getActiveLesson(requestContext.getGroupId(), moscowTimestamp);
 
         // Step 3: Time window (CHKN-03) — 5 min before start to 5 min after end
@@ -161,8 +163,8 @@ public class CheckinService {
         LocalDate date = LocalDate.parse(lesson.getDate());
         LocalTime start = LocalTime.parse(lesson.getStartTime());
         LocalTime end = LocalTime.parse(lesson.getEndTime());
-        Instant windowOpen = date.atTime(start).atZone(SERVER_ZONE).toInstant().minus(CHECKIN_BUFFER);
-        Instant windowClose = date.atTime(end).atZone(SERVER_ZONE).toInstant().plus(CHECKIN_BUFFER);
+        Instant windowOpen = date.atTime(start).atZone(clock.getZone()).toInstant().minus(CHECKIN_BUFFER);
+        Instant windowClose = date.atTime(end).atZone(clock.getZone()).toInstant().plus(CHECKIN_BUFFER);
         return !now.isBefore(windowOpen) && !now.isAfter(windowClose);
     }
 }

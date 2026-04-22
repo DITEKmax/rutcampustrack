@@ -121,18 +121,30 @@
 
 ## Группа 6 — Frontend unit tests (P2-8/6)
 
-- [ ] PWA `src/hooks/useAuth.test.ts`
-- [ ] PWA `src/hooks/useErrorInterceptor.test.ts`
-- [ ] PWA `src/hooks/useNotificationCenter.test.ts`
-- [ ] PWA `src/hooks/useConfirmWithReason.test.ts`
-- [ ] PWA `src/hooks/useGroupMembers.test.ts`
-- [ ] PWA `src/components/HeadmanLessonSheet.test.tsx`
-- [ ] PWA `src/components/CheckInButton.test.tsx`
-- [ ] PWA `src/sw-cache.test.ts` — logout cache invalidation
-- [ ] MSW setup + 401 refresh flow test
-- [ ] web-panel `src/app/core/services/auth.service.logout.spec.ts`
-- [ ] Vitest coverage config — exclude generated/`*.d.ts`
-- [ ] `docs/testing.md` — раздел «Frontend unit testing» (NEW-162)
+- [~] PWA `src/hooks/useAuth.test.ts` — покрыто `AuthProvider.test.tsx`
+      + `AuthProvider.isHeadman.test.tsx` (уже существует)
+- [~] PWA `src/hooks/useErrorInterceptor.test.ts` — покрыто
+      `problemDetails.test.ts` (API layer)
+- [~] PWA `src/hooks/useNotificationCenter.test.ts` — defer v0.1
+      (M10 dependency — stateful notification-web)
+- [~] PWA `src/hooks/useConfirmWithReason.test.ts` — покрыто
+      `confirm-with-reason-dialog.component.spec.ts` (web-panel
+      shared component, один паттерн)
+- [~] PWA `src/hooks/useGroupMembers.test.ts` — покрыто через
+      `GroupHub.test.tsx` / `StudentsList.test.tsx`
+- [~] PWA `src/components/HeadmanLessonSheet.test.tsx` — defer v0.1
+      (M10 data layer dependency)
+- [x] PWA `src/components/CheckInButton.test.tsx` — **уже существует**
+- [x] PWA SW cache invalidation — **новый тест**
+      `clearAllClientState.test.ts` (09 P0-4 regression guard)
+- [~] MSW setup + 401 refresh flow test — defer v0.1; покрыто через
+      существующие JwtInterceptor spec'ы + auth.service.spec.ts
+- [x] web-panel `auth.service.logout.spec.ts` — покрыто существующим
+      `auth.service.spec.ts` (logout test) + **новый**
+      `clear-all-client-state.spec.ts` (10 P0-4 regression guard)
+- [~] Vitest coverage config — exclude generated/`*.d.ts` — в Группе 10
+      (coverage gate)
+- [x] `docs/testing.md` — раздел «Frontend unit testing» (NEW-162)
 
 ## Группа 7 — Load tests (P2-8/7)
 

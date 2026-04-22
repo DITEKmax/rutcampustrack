@@ -148,11 +148,15 @@
 
 ## Группа 7 — Load tests (P2-8/7)
 
-- [ ] `tests/load/bulk-mark.js` — k6, 10 VU, 2 min, p95<500ms
-- [ ] `tests/load/geolocation-flood.js` — 50 VU concurrent checkin
-- [ ] Первый прогон → `docs/performance-baseline.md` с метриками
-- [ ] `docs/load-testing.md` (NEW-163) — как запускать, что измерять
-- [ ] Full load suite в future-ideas.md (v0.1)
+- [x] `tests/load/bulk-mark.js` — k6, 10 VU, 2 min, p95<500ms
+- [x] `tests/load/geolocation-flood.js` — 50 VU × 30s, p95<1000ms
+      (rate<0.05 с учётом CHKN-07 rate-limits)
+- [~] Первый прогон → `docs/performance-baseline.md` с метриками —
+      шаблон создан, реальные числа ожидают первого прогона в
+      Группе 12 (финализация) или при следующем session
+- [x] `docs/load-testing.md` (NEW-163) — как запускать, interpret
+- [x] Full load suite в future-ideas.md (v0.1) — уже есть секция
+      Gatling/JMeter в future-ideas.md
 
 ## Группа 8 — Security contract tests (P2-8/8)
 

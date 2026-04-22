@@ -5,23 +5,23 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
-**M08 Test Infrastructure — 7/12 групп закрыто (2026-04-22).**
-Продолжать с **Группы 8 (Security contract tests)**. План —
+**M08 Test Infrastructure — 8/12 групп закрыто (2026-04-22).**
+Продолжать с **Группы 9 (Event + WebSocket contract tests)**. План —
 `docs/milestones/M08-test-infrastructure/PLAN.md`.
 
-Локальных коммитов ahead origin: **~43** (25 pre-M08 + 18 M08).
+Локальных коммитов ahead origin: **~44** (25 pre-M08 + 19 M08).
 Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закрытия M08.
 
 **Старт следующей сессии — дословно:**
 
-> Читаю NEXT-SESSION → CHECKLIST M08 → DECISIONS D1-D5. Стартую с
-> Группы 8 — Security contract tests (GrpcSecretFailFastIT
-> pytest + TmaHmacValidationIT + CsrfDoubleSubmitIT + suite'ный
-> SecurityContractsIT).
+> Читаю NEXT-SESSION → CHECKLIST M08 → DECISIONS D1-D6. Стартую с
+> Группы 9 — Event + WebSocket contract tests (параметризованный
+> EventContractIT по event-schemas/*.json + StompIntegrationTest
+> в notification-web + PWA WebSocket reconnect test).
 
 ---
 
-## M08 статус (2026-04-22, 18 коммитов)
+## M08 статус (2026-04-22, 19 коммитов)
 
 ### Правила (без изменений с M05-M07)
 
@@ -35,7 +35,7 @@ Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закры
 - **Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные.**
 - `CHANGELOG.md [Unreleased]` обновляй при значимых изменениях (G12).
 
-### M08 DECISIONS (D1-D5, commit `0c8564c`)
+### M08 DECISIONS (D1-D6, commits `0c8564c`, `bef5c0a`)
 
 | # | Вопрос | Решение |
 |---|--------|---------|
@@ -44,6 +44,7 @@ Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закры
 | D3 | Diff-coverage gate | **warning первый PR → hard-fail далее** |
 | D4 | Cosign | **keyless** (OIDC Fulcio), публичный репо |
 | D5 | Testcontainers reuse | везде + **исключение FlywayMigrationIT** |
+| D6 | G8 CSRF test | `CsrfDoubleSubmitIT` → **`SameSiteCookieContractIT`** (M03b отверг double-submit token; реальный контракт = SameSite attributes) |
 
 ### Закрытые группы
 
@@ -56,20 +57,9 @@ Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закры
 | G5 Playwright E2E | `5191098` | `tests/e2e/` scaffold, 4 core + 4 role specs, axe-core, `scripts/smoke-prod.sh`, `docs/e2e-testing.md` (NEW-161). CI job **defer в M09** |
 | G6 Frontend unit | `6df30a6` | 09/10 P0-4 regression guards (`clearAllClientState.test.ts` PWA + `clear-all-client-state.spec.ts` web-panel), `docs/testing.md` (NEW-162) |
 | G7 Load tests | `4730dec` | `tests/load/bulk-mark.js` + `geolocation-flood.js`, `docs/load-testing.md` (NEW-163), `docs/performance-baseline.md` (шаблон, первый прогон в G12) |
+| G8 Security contracts | `bef5c0a` | GrpcSecretFailFastIT pytest (7) + validate_startup_config() в bot/config.py, TmaIT +4 (bit-flip/diff-bot/missing-hash/replay-in-window, 10 total), SameSiteCookieContractIT (5) вместо CsrfDoubleSubmitIT (D6), @Tag("security-contract") + pytest marker. SecurityIdorIT не существовал → defer M09. |
 
-### Остались (5 групп)
-
-**G8 — Security contract tests (P2-8/8, NEW-164).** ~2-3ч.
-- `GrpcSecretFailFastIT` в notification-bot (pytest + monkeypatch):
-  `test_empty_grpc_secret_fails_startup` → StartupError при пустом
-  `GRPC_SERVICE_SECRET`.
-- `TmaHmacValidationIT` в auth-service: signed initData → 200,
-  mutated signature → 401, replay (same timestamp) → 401.
-- `CsrfDoubleSubmitIT` — в shared-web или gateway: POST без
-  `X-CSRF-TOKEN` → 403, mismatched cookie+header → 403, matched → 200.
-- Объединить в `SecurityContractsIT` suite.
-- Проверить `SecurityIdorIT` (NEW-31 M03a) остаётся работоспособным.
-- `docs/testing.md` → добавить раздел «Security contract tests».
+### Остались (4 группы)
 
 **G9 — Event + WebSocket contract (P1-5, P1-9).** ~3-4ч.
 - Параметризованный `EventContractIT` — читает
@@ -136,7 +126,7 @@ Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закры
 
 ### Состояние окружения
 
-- `dev` branch чистый. 43 коммита ahead `origin/dev`.
+- `dev` branch чистый. 44 коммита ahead `origin/dev`.
 - Docker-compose containers: подняты или могут быть подняты через
   `docker compose up -d`.
 - Все тесты зелёные (attendance, schedule, academic, auth,
@@ -145,7 +135,7 @@ Tags `v0.0.0-alpha.2..8` локальные. Push отложен до закры
 
 ### Действия, ожидающие `go` пользователя
 
-1. `git push origin dev` — 43+ коммита ahead origin.
+1. `git push origin dev` — 44+ коммита ahead origin.
 2. `git push origin --tags` — 7 tags (`v0.0.0-alpha.2..8`) локальные.
 3. Старт Группы 8 в новой сессии.
 
@@ -161,7 +151,7 @@ M04 Observability ✅ 2026-04-20
 M05 Performance ✅ 2026-04-21
 M06 Ops & Supply Chain ✅ 2026-04-21
 M07 Frontend Hardening ✅ 2026-04-22 (tag `v0.0.0-alpha.8` локальный)
-**M08 Test Infrastructure ⏳ 7/12 групп закрыто, продолжать с G8.**
+**M08 Test Infrastructure ⏳ 8/12 групп закрыто, продолжать с G9.**
 M09 Prod Release Blockers ⬜
 M10 Notification History ⬜
 M11 OpenAPI Polish ⬜

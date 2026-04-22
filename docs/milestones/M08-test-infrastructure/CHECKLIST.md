@@ -23,7 +23,7 @@
       (расширение NEW-109) — commit `8418faa`
       (IntegrationTestNamingRule + 4 per-service wrappers)
 - [x] `.github/workflows/ci.yml` — split `unit-test` + `integration-test`
-      jobs (parallel, общий artifact cache) — commit TBD
+      jobs (parallel, общий artifact cache) — commit `bef5c0a`
 - [ ] Измерить CI time до/после → запись в NOTES.md (требует push на
       origin + запустить CI; отложено до закрытия M08)
 
@@ -161,21 +161,21 @@
 ## Группа 8 — Security contract tests (P2-8/8)
 
 - [x] `GrpcSecretFailFastIT` в notification-bot (pytest + monkeypatch)
-      — commit TBD. 7 тестов в `tests/test_grpc_secret_fail_fast.py`;
+      — commit `bef5c0a`. 7 тестов в `tests/test_grpc_secret_fail_fast.py`;
       добавлен `validate_startup_config()` в `bot/config.py` + вызов
       в `bot/__main__.py:main()` до `run_health_server()`. Защищает
       от silent deploy с пустым `GRPC_SECRET` (UNAUTHENTICATED + UP health).
 - [x] `TmaHmacValidationIT` в auth-service (signed/mutated/replay)
-      — commit TBD. `TmaIT.java` расширен 4 новыми тестами:
+      — commit `bef5c0a`. `TmaIT.java` расширен 4 новыми тестами:
       replay-in-window → 200 (by design), bit-flipped signature → 401,
       different bot token → 401, missing hash → 401. Плюс 6 существующих.
       `@Tag("security-contract")`.
 - [x] ~~`CsrfDoubleSubmitIT`~~ → **`SameSiteCookieContractIT`** (D6 2026-04-22)
-      — commit TBD. M03b отверг double-submit token в пользу
+      — commit `bef5c0a`. M03b отверг double-submit token в пользу
       SameSite=Strict. Реальный контракт — cookie-атрибуты + regression
       guard «refresh без X-CSRF-TOKEN → 200». 5 тестов.
       `@Tag("security-contract")`.
-- [x] Объединить в `SecurityContractsIT` suite — commit TBD.
+- [x] Объединить в `SecurityContractsIT` suite — commit `bef5c0a`.
       Реализовано через JUnit `@Tag("security-contract")` + pytest
       `@pytest.mark.security_contract`. Запуск: Gradle `--tests`
       filter / pytest `-m security_contract`. Gradle-tag filter в
@@ -187,7 +187,7 @@
       (Prod Release Blockers) как часть ролевой IDOR-защиты, сейчас
       Gateway JWT validator + role-filter покрывает основные векторы.
 - [x] `docs/testing.md` — раздел «Security contract tests» (NEW-164)
-      — commit TBD. Обновлён с реальными классами, командами запуска
+      — commit `bef5c0a`. Обновлён с реальными классами, командами запуска
       и объяснением D6 (почему нет `CsrfDoubleSubmitIT`).
 
 ## Группа 9 — Contract tests для событий (14 P1-5) + WebSocket (14 P1-9)

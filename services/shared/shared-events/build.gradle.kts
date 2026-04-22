@@ -26,5 +26,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.fasterxml.jackson.core:jackson-databind")
     testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    // M08 G9 — EventSchemaCoverageTest валидирует event-schemas/*.json как
+    // корректные JSON Schema + проверяет coverage regression.
+    testImplementation(libs.json.schema.validator)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

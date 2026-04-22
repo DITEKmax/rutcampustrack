@@ -192,13 +192,25 @@
 
 ## Группа 9 — Contract tests для событий (14 P1-5) + WebSocket (14 P1-9)
 
-- [ ] Параметризованный `EventContractIT` — читает все
-      `event-schemas/*.json`, валидирует publisher/consumer
-- [ ] Покрывает 14+ events: lesson.*, attendance.*, excuse.*,
-      late_checkin.*, otp.requested, user.*
-- [ ] `StompIntegrationTest` в notification-web (RANDOM_PORT +
-      StandardWebSocketClient)
-- [ ] PWA WebSocket reconnect test — mock + `onclose → setTimeout`
+- [x] Параметризованный `EventSchemaCoverageTest` в shared-events
+      — commit TBD. 40 тестов: schema parseable + envelope complete +
+      const matches filename + $refs resolve to _common.json + minimal
+      envelope validates + coverage regression guard (19 expected schemas).
+      JSON-schema sanity как unit (без Spring/Docker).
+- [x] Покрывает 19 events (actual на диске): lesson.* (5), attendance.marked,
+      excuse.* (2), late_checkin.* (3), otp.verified, group.* (3),
+      semester.archived, homework.* (2). Publisher-side остаётся per-service
+      `*ContractIT` (5 файлов: schedule 2, attendance 2, academic 1).
+- [x] `StompIntegrationIT` в notification-web (RANDOM_PORT +
+      StandardWebSocketClient) — commit TBD. 3 теста: happy path
+      (ticket → subscribe → broadcast → receive), missing ticket → reject,
+      invalid ticket → reject. `@MockitoBean WsTicketClient` + `PushService`.
+      URL: `/ws/websocket` (SockJS-enabled endpoint принимает native WS
+      через `/websocket` suffix).
+- [x] PWA WebSocket reconnect test — commit TBD. Расширен существующий
+      `useStompCheckin.test.ts` на 3 reconnect regression guards:
+      reconnectDelay > 0 ∧ ≤ 5000ms, idempotent onConnect (resubscribe),
+      fresh WS-ticket per reconnect (single-use).
 
 ## Группа 10 — Coverage gate (QD2)
 

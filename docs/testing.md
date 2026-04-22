@@ -121,14 +121,41 @@ pytest -m security_contract
 
 ## Event contract tests (M08 Группа 9, 14 P1-5)
 
-Параметризованный `EventContractIT` читает все `event-schemas/*.json`,
-валидирует publisher + consumer per schema. Покрывает 14+ событий:
-`lesson.*`, `attendance.*`, `excuse.*`, `late_checkin.*`, `otp.*`,
-`user.*`.
+Двухслойный подход:
 
-WebSocket/STOMP lifecycle (14 P1-9) — `StompIntegrationTest` в
-notification-web (RANDOM_PORT + StandardWebSocketClient) + PWA
-WebSocket reconnect test (M07 G5).
+1. **Schema sanity + coverage guard** — `EventSchemaCoverageTest` в
+   `services/shared/shared-events/src/test/java/.../EventSchemaCoverageTest.java`.
+   Параметризованный по всем `event-schemas/*.json` (19 файлов), проверяет:
+   - schema — корректная JSON Schema draft 2020-12
+   - envelope содержит полный набор required-полей (event_type / event_id /
+     occurred_at / payload / event_version / trace_id / source)
+   - `properties.event_type.const` совпадает с именем файла
+   - `$ref` на envelope-поля ведут к `_common.json`
+   - минимальный envelope с пустым payload проходит валидацию по envelope-shape
+   - **coverage regression guard** — whitelist `EXPECTED_EVENT_SCHEMAS`
+     synced с диском. Новый файл → тест падает → автор добавляет entry
+     + `*ContractIT` в сервисе-источнике.
+2. **Publisher-side contract tests** — по одному `*ContractIT` в каждом
+   publishing-сервисе:
+   - `services/schedule-service/.../LessonStartedContractIT` — lesson.started + lesson.closed
+   - `services/schedule-service/.../LessonCancelledContractIT`
+   - `services/attendance-service/.../AttendanceMarkedContractIT`
+   - `services/attendance-service/excuse/ExcuseEventContractIT` — excuse.requested + excuse.decided
+   - `services/academic-service/.../GroupUpdatedContractIT`
+
+## WebSocket / STOMP lifecycle (M08 Группа 9, 14 P1-9)
+
+- **Server-side**: `services/notification-service/.../StompIntegrationIT` —
+  `@SpringBootTest(RANDOM_PORT)` + `StandardWebSocketClient` +
+  `WebSocketStompClient`. Подключение через `/ws/websocket` (SockJS-enabled
+  endpoint принимает native WS через `/websocket` suffix). 3 теста:
+  happy path (valid ticket → subscribe → broadcast → receive),
+  missing ticket → reject, invalid ticket → reject.
+- **Client-side**: `frontends/pwa/.../useStompCheckin.test.ts` — reconnect
+  regression guards. Mock `@stomp/stompjs::Client`, проверяет
+  `reconnectDelay > 0 ∧ ≤ 5000ms`, idempotent `onConnect` (resubscribe
+  при reconnect), fresh WebSocket ticket per reconnect (single-use
+  обязательно — stale ticket → handshake UNAUTHORIZED).
 
 ## Как добавить новый тест
 

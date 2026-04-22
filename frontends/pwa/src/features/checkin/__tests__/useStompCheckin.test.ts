@@ -7,18 +7,27 @@ let mockClientInstances: Array<{
   deactivate: ReturnType<typeof vi.fn>
   subscribe: ReturnType<typeof vi.fn>
   onConnect: (() => void) | null
+  onWebSocketClose: ((evt: unknown) => void) | null
   webSocketFactory: (() => unknown) | null
+  reconnectDelay: number | undefined
 }>
 
 vi.mock('@stomp/stompjs', () => {
   return {
-    Client: vi.fn().mockImplementation((config: { onConnect?: () => void; webSocketFactory?: () => unknown }) => {
+    Client: vi.fn().mockImplementation((config: {
+      onConnect?: () => void
+      onWebSocketClose?: (evt: unknown) => void
+      webSocketFactory?: () => unknown
+      reconnectDelay?: number
+    }) => {
       const instance = {
         activate: vi.fn(),
         deactivate: vi.fn().mockResolvedValue(undefined),
         subscribe: vi.fn(),
         onConnect: config.onConnect ?? null,
+        onWebSocketClose: config.onWebSocketClose ?? null,
         webSocketFactory: config.webSocketFactory ?? null,
+        reconnectDelay: config.reconnectDelay,
       }
       mockClientInstances.push(instance)
       return instance
@@ -126,5 +135,65 @@ describe('useStompCheckin', () => {
 
     unmount()
     expect(instance.deactivate).toHaveBeenCalled()
+  })
+
+  // M08 G9 (P1-9) — reconnect contract regression guards. Actual reconnect
+  // logic lives inside @stomp/stompjs; we pin the hook's contract with the
+  // library so that a careless refactor can't silently drop reconnect.
+  describe('reconnect contract (M08 G9)', () => {
+    it('passes a finite reconnectDelay to Client — reconnect mandatory', () => {
+      renderHook(() => useStompCheckin(5, vi.fn()))
+      const instance = mockClientInstances[0]
+
+      expect(instance.reconnectDelay).toBeDefined()
+      expect(instance.reconnectDelay).toBeGreaterThan(0)
+      // Upper bound — if someone bumps delay to 60s we catch it in review.
+      // Justification: WebSocket-mediated attendance marking needs sub-5s
+      // recovery or the checkin window closes silently.
+      expect(instance.reconnectDelay).toBeLessThanOrEqual(5000)
+    })
+
+    it('resubscribes on reconnect — onConnect fires again after WebSocket close', () => {
+      const onMarked = vi.fn()
+      renderHook(() => useStompCheckin(5, onMarked))
+
+      const instance = mockClientInstances[0]
+
+      // First connect: subscribe once
+      instance.onConnect!()
+      expect(instance.subscribe).toHaveBeenCalledTimes(1)
+
+      // Simulate disconnect → stompjs внутри делает reconnect + onConnect снова.
+      // Мы проверяем что onConnect handler hook'а — idempotent (subscribe,
+      // а не cached subscription object с stale callback).
+      instance.onConnect!()
+      expect(instance.subscribe).toHaveBeenCalledTimes(2)
+
+      // Delivers events after reconnect
+      const subscribeCallback = instance.subscribe.mock.calls[1][1]
+      subscribeCallback({
+        body: JSON.stringify({
+          type: 'attendance.marked',
+          payload: { lesson_id: 2, user_id: 42, group_id: 5, status: 'present', marked_by: 'student_geo' },
+        }),
+      })
+      expect(onMarked).toHaveBeenCalledWith(
+        expect.objectContaining({ lesson_id: 2 })
+      )
+    })
+
+    it('fresh WebSocket ticket fetched on each connect — no cached ticket replay', async () => {
+      renderHook(() => useStompCheckin(5, vi.fn()))
+      const instance = mockClientInstances[0]
+
+      await instance.webSocketFactory!()
+      const firstCallCount = buildWsUrlMock.mock.calls.length
+      expect(firstCallCount).toBeGreaterThanOrEqual(1)
+
+      // Reconnect: stompjs will call webSocketFactory again. Ticket is
+      // single-use — stale-ticket reuse would UNAUTHORIZED the handshake.
+      await instance.webSocketFactory!()
+      expect(buildWsUrlMock.mock.calls.length).toBeGreaterThan(firstCallCount)
+    })
   })
 })

@@ -53,4 +53,7 @@ dependencies {
     testImplementation("org.flywaydb:flyway-core")
     testRuntimeOnly("org.flywaydb:flyway-database-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // M08 Группа 1 (P2-8/1) — IntegrationTestNamingRule + ArchUnit
+    testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
 }

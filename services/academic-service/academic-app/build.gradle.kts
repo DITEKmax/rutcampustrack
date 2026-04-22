@@ -89,6 +89,8 @@ dependencies {
     testImplementation(libs.archunit.junit5)
     testImplementation(testFixtures(project(":services:shared:shared-security")))
     testImplementation(testFixtures(project(":services:shared:shared-observability")))
+    // M08 Группа 1 (P2-8/1) — IntegrationTestNamingRule shared rule
+    testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

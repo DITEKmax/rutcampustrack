@@ -43,6 +43,9 @@ dependencies {
     // JDBC + Flyway для MigrationTestUtils
     testFixturesApi("org.flywaydb:flyway-core")
 
+    // M08 Группа 1 / P2-8/1 — ArchUnit rule IntegrationTestNamingRule
+    testFixturesApi(libs.archunit.junit5)
+
     // Smoke-тесты самого модуля
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.junit.jupiter:junit-jupiter")

@@ -107,3 +107,92 @@
 - k6 baselines: [TBD — bulk-mark p95, geolocation-flood p95]
 
 ---
+
+## Группа 1 — Audit `*Test` → `*IT` (2026-04-22)
+
+**Критерий rename:** класс содержит `@SpringBootTest` / `@Testcontainers` /
+`extends Abstract*IntegrationTest` / `extends ContainerTestBase`. Unit-тесты
+(чистый JUnit / Mockito без Spring context) — не трогаем.
+
+### Abstract base classes (keep original name, уже ясны как baseline)
+
+| Путь | Решение |
+|------|---------|
+| `services/attendance-service/.../integration/AbstractAttendanceIntegrationTest.java` | **keep** (abstract, не JUnit-class) |
+| `services/schedule-service/.../integration/AbstractScheduleIntegrationTest.java` | **keep** |
+| `services/academic-service/.../integration/AbstractAcademicIntegrationTest.java` | **keep** |
+| `services/academic-service/.../integration/AbstractAcademicEventIntegrationTest.java` | **keep** |
+| `services/academic-service/.../integration/AbstractAcademicCacheIntegrationTest.java` | **keep** |
+| `services/auth-service/.../integration/AbstractIntegrationTest.java` | **keep** |
+| `services/shared/shared-test-containers/.../ContainerTestBase.java` | **keep** |
+
+Abstract-base'ы помечены `abstract`, не запускаются JUnit Platform'ой
+напрямую. Оставляем `*Test` naming — ArchUnit rule в Группе 1.2 будет
+проверять `modifiers does not contain ABSTRACT`.
+
+### Rename plan (30 файлов)
+
+**attendance-service (13):**
+- `integration/SecuritySmokeTest` → `SecuritySmokeIT`
+- `integration/ReportIntegrationTest` → `ReportIT`
+- `integration/RabbitConsumerTest` → `RabbitConsumerIT`
+- `integration/MongoIndexTest` → `MongoIndexIT`
+- `integration/MarkingIntegrationTest` → `MarkingIT`
+- `integration/EventConsumerIntegrationTest` → `EventConsumerIT`
+- `integration/EnumSerializationTest` → `EnumSerializationIT`
+- `integration/CheckinIntegrationTest` → `CheckinIT`
+- `excuse/ExcuseRepositoryTest` → `ExcuseRepositoryIT`
+
+**schedule-service (8):**
+- `lesson/LessonStatusTransitionJobTest` → `LessonStatusTransitionJobIT`
+- `integration/ShedLockSmokeIntegrationTest` → `ShedLockSmokeIT`
+- `integration/LessonCancelEventTest` → `LessonCancelEventIT`
+- `integration/SecuritySmokeTest` → `SecuritySmokeIT`
+- `integration/LessonApiTest` → `LessonApiIT`
+- `integration/ScheduleViewTest` → `ScheduleViewIT`
+- `integration/EntityMappingIntegrationTest` → `EntityMappingIT`
+- `integration/ScheduleItemApiTest` → `ScheduleItemApiIT`
+- `integration/LessonGenerationIntegrationTest` → `LessonGenerationIT`
+- `grpc/ScheduleGrpcServiceImplTest` → `ScheduleGrpcServiceImplIT`
+
+**academic-service (8):**
+- `user/UserSearchIntegrationTest` → `UserSearchIT`
+- `user/UserRepositorySearchTest` → `UserRepositorySearchIT`
+- `integration/RestApiIntegrationTest` → `RestApiIT`
+- `integration/OutboxCleanupIntegrationTest` → `OutboxCleanupIT`
+- `integration/GroupRenameEventTest` → `GroupRenameEventIT`
+- `integration/EventIntegrationTest` → `EventIT`
+- `integration/EntityMappingIntegrationTest` → `EntityMappingIT`
+- `integration/CacheIntegrationTest` → `CacheIT`
+- `integration/AcademicGrpcIntegrationTest` → `AcademicGrpcIT`
+
+**auth-service (3):**
+- `integration/TmaIntegrationTest` → `TmaIT`
+- `integration/OtpIntegrationTest` → `OtpIT`
+- `integration/AuthIntegrationTest` → `AuthIT`
+
+**api-gateway:** все тесты уже `*IT` (InternalJwtIssuerIT, RateLimitIT,
+FailOpenIT, CompositeLoginKeyResolverIT). Нет работы.
+
+**notification-service:** все Spring-context тесты уже `*IT`
+(PushSubscriptionCleanupJobIT, NotificationErrorHandlingIT,
+NotificationLoggingIT). Нет работы.
+
+**shared-test-containers:**
+- `FixtureSmokeTest` — `@SpringBootTest` отсутствует (pure testcontainer
+  smoke), но использует `ContainerTestBase` → kind-of hybrid. Оставляем
+  `Test` для Группы 2, обсудим при hybrid-refactor: или убрать testcontainers,
+  или rename в IT. **Defer → Группа 2**.
+
+**shared-outbox/shared-events/shared-security/shared-observability/shared-web:**
+все `*Test` — unit, без Spring-context. Не трогаем.
+
+### Планируемый ArchUnit (Группа 1.2)
+
+Rule: классы `@SpringBootTest` / `@Testcontainers` / extend Abstract*IT /
+extend ContainerTestBase, которые **не abstract**, должны оканчиваться на
+`"IT"`. Rule размещаем в `shared-web/src/testFixtures/` как
+`IntegrationTestNamingConvention` + применяем per-сервис через
+`@AnalyzeClasses(packages = "ru.rutcampustrack")`.
+
+---

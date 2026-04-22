@@ -93,24 +93,31 @@
 
 ## Группа 5 — Playwright E2E (P2-8/5 + M03b defer)
 
-- [ ] `tests/e2e/` — Playwright скаффолдинг (init config, dependencies)
-- [ ] `playwright.config.ts` — Chromium + WebKit, retries=1, trace on-first-retry
-- [ ] `tests/e2e/fixtures/seed.ts` — test users (student/teacher/admin/headman)
-- [ ] `auth.spec.ts` — login + logout + state clearing
-- [ ] `headman-mark.spec.ts` — bulk-mark 30 students, WebSocket verify
-- [ ] `student-excuse.spec.ts` — 10MB PDF upload + approve
-- [ ] `admin-create-user.spec.ts` — create + initial_password visible
-- [ ] `role-admin.spec.ts` — admin-only paths golden
-- [ ] `role-teacher.spec.ts` — teacher-only paths golden
-- [ ] `role-student.spec.ts` — student-only paths golden
-- [ ] `role-headman.spec.ts` — headman-only paths golden
-- [ ] `@axe-core/playwright` integration в каждый spec
-- [ ] Axe rules scope: WCAG 2.1 AA, severity CRITICAL+SERIOUS
-- [ ] CI job `e2e-tests` после `integration-test`:
-      docker-compose up → Playwright → teardown
-- [ ] Artifacts upload: screenshots, traces on failure
-- [ ] `scripts/smoke-prod.sh` (curl /actuator/health + login + schedule)
-- [ ] `docs/e2e-testing.md` (NEW-161)
+- [x] `tests/e2e/` — Playwright скаффолдинг (init config, dependencies)
+      — package.json + tsconfig.json + .gitignore + README.md
+- [x] `playwright.config.ts` — Chromium + WebKit + mobile-chrome,
+      retries=1 в CI, trace on-first-retry
+- [x] `tests/e2e/fixtures/users.ts` — test users
+      (student/teacher/admin/headman)
+- [x] `auth.spec.ts` — login + logout + state clearing (+ @smoke tag)
+- [x] `headman-mark.spec.ts` — bulk-mark + WebSocket live-update
+- [x] `student-excuse.spec.ts` — 10MB PDF upload + headman approves
+- [x] `admin-create-user.spec.ts` — create + initial_password visible
+- [x] `role-admin.spec.ts` — admin-only paths + cross-role guard
+- [x] `role-teacher.spec.ts` — teacher read-only + cross-role guard
+- [x] `role-student.spec.ts` — student paths + headman blocked
+- [x] `role-headman.spec.ts` — headman paths + student fallback
+- [x] `@axe-core/playwright` integration в каждый spec — через
+      `fixtures/axe.ts::assertNoA11yCriticalOrSerious`
+- [x] Axe rules scope: WCAG 2.1 AA, severity CRITICAL+SERIOUS
+- [~] CI job `e2e-tests` после `integration-test`:
+      docker-compose up → Playwright → teardown — **defer в M09**
+      (требует stable staging; подробно в `docs/e2e-testing.md`)
+- [~] Artifacts upload: screenshots, traces on failure — configured в
+      playwright.config.ts (`outputDir`, `reporter html`), CI upload
+      вместе с job M09
+- [x] `scripts/smoke-prod.sh` (curl /actuator/health + login + schedule)
+- [x] `docs/e2e-testing.md` (NEW-161)
 
 ## Группа 6 — Frontend unit tests (P2-8/6)
 

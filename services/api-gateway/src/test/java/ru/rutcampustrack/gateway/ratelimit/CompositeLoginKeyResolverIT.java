@@ -38,8 +38,9 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CompositeLoginKeyResolverIT {
 
+    // M08 D5 — reuse=true; локально через ~/.testcontainers.properties.
     static final GenericContainer<?> REDIS =
-            new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
+            new GenericContainer<>("redis:7-alpine").withExposedPorts(6379).withReuse(true);
 
     static WireMockServer WIREMOCK;
 

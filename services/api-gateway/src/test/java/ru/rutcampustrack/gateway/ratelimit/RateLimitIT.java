@@ -37,8 +37,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class RateLimitIT {
 
+    // M08 D5 — reuse=true; локально через ~/.testcontainers.properties.
     static final GenericContainer<?> REDIS =
-            new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
+            new GenericContainer<>("redis:7-alpine").withExposedPorts(6379).withReuse(true);
 
     static WireMockServer WIREMOCK;
 

@@ -303,6 +303,54 @@ frontend wiring).
 
 ---
 
+## gRPC integration tests — real in-process channels вместо @MockitoBean (v0.1)
+
+**Источник:** M08 Группа 2 @MockitoBean audit (2026-04-22,
+docs/milestones/M08-test-infrastructure/NOTES.md).
+
+**Текущее состояние (v0.0.0, M08):**
+41 `@MockitoBean` в тестах, 37 из них мокают gRPC/external clients
+(ScheduleGrpcClient, AcademicGrpcClient, SemesterCacheService). Это
+правильный паттерн для current architecture — предотвращает
+external dependency at test startup, изолирует тест от downstream
+service availability.
+
+**Blocker:** OWNER-ANSWERS P2-8/2 рекомендует «real Testcontainers
+где possible, in-process gRPC для clients». Реализация требует
+полноценной Группы 2.5 (~1-2 дня), которая не блокирует v0.0.0
+release — accept'ится текущий hybrid-подход.
+
+**Идея на будущее:**
+
+1. `InProcessGrpcServerExtension` — JUnit 5 extension в
+   `shared-test-containers`. Создаёт in-process gRPC server на
+   unique name per test class, регистрирует bindable services
+   (real implementations of Academic/Schedule gRPC services).
+2. `@Bean @Primary` в testConfig — inject `InProcessChannelBuilder`
+   вместо `NettyChannelBuilder`, подписывается на extension'ом
+   созданный server-name.
+3. Per-test — `InProcessGrpcServerRegistry` для установки
+   per-method mock responses (вместо `when(grpcClient.getLesson())
+   .thenReturn(...)` → `registry.register(LessonServiceGrpc.getGetLessonMethod(),
+   ServerCalls.asyncUnaryCall(...))`).
+
+**Что это даст:**
+- Тесты проверяют real Protobuf serialization + HTTP/2 transport.
+- Ловят incompatible proto changes (rename field, change type) —
+  сейчас они проходят mimic'ом mock'а.
+- Готовность к multi-module proto changes (академик → schedule
+  ResolveLesson D-04).
+
+**Estimate:** ~1-2 дня.
+- 0.5д — Extension + testConfig scaffold.
+- 0.5д — mock-response registry pattern.
+- 0.5-1д — миграция 37 существующих @MockitoBean.
+
+**Trigger:** после v0.0.0 release, когда появится реальная нужда
+(proto breaking change проскочит в прод через mock).
+
+---
+
 ## Full load-testing suite (Gatling / JMeter) для v0.1
 
 **Источник:** M08 DECISIONS D2 (2026-04-22). OWNER-ANSWERS P2-8/7

@@ -59,10 +59,14 @@ public abstract class AbstractScheduleIntegrationTest {
     static final PostgreSQLContainer<?> POSTGRES;
 
     static {
+        // M08 D5 — reuse=true; локально активируется через
+        // ~/.testcontainers.properties (testcontainers.reuse.enable=true),
+        // на CI игнорируется (fresh runner).
         POSTGRES = new PostgreSQLContainer<>("postgres:16")
                 .withDatabaseName("schedule_db")
                 .withUsername("rct_user")
-                .withPassword("rct_dev_pass");
+                .withPassword("rct_dev_pass")
+                .withReuse(true);
         POSTGRES.start();
     }
 

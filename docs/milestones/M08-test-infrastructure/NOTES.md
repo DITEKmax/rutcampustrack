@@ -108,6 +108,51 @@
 
 ---
 
+## Группа 2 — @MockitoBean audit (2026-04-22)
+
+**Всего:** 41 `@MockitoBean` в тестовых файлах (`grep -c` по services/).
+
+### Классификация
+
+| Категория | Count | Action | Reasoning |
+|-----------|-------|--------|-----------|
+| gRPC clients (ScheduleGrpcClient, AcademicGrpcClient) | 15 | **keep mock** | Замена на real требует in-process gRPC server (M01 GrpcInProcessFixture готов, но консумерам нужна переработка + mock responses). Scope +1-2д — defer в v0.1. |
+| RabbitTemplate | 2 | **keep mock** (там, где dashboard-only coverage) | AbstractAcademicEventIntegrationTest уже использует real RabbitMQ через testcontainer. Остальные места — unit-like IT с фокусом не на event-side. |
+| SemesterCacheService / GeofenceService (internal beans с @PostConstruct gRPC calls) | 4 | **keep mock** — правильный паттерн | Заменить = real gRPC (см. выше). Mock prevents external dependency at test startup. |
+| OutboxStorage / PublisherJob (M02 fixtures) | 3 | **keep mock** | Tests фокусируются на consumer-side, publisher мокается преднамеренно. |
+| Clock (для Clock-injection refactor, Группа 4) | 1 | **keep mock** → Group 4 | Будет заменен на real Clock.fixed(...) в Группе 4 (Clock-injection). |
+| @MockitoBean в Abstract базах (shared setup) | 8 | **keep** | Consistent setup across тесты. |
+| Controller IT — @MockitoBean для внешних сервисов | 8 | **keep mock** | HomeworkControllerIT, ExcuseControllerIT — фокус на HTTP layer + validation, не на downstream. |
+
+### Вердикт
+
+**37 из 41 мокают gRPC/external clients** — это **правильный паттерн** для current architecture. Альтернатива — in-process gRPC servers с explicit mock responses — требует:
+
+1. Создать `InProcessGrpcServerExtension` JUnit 5 extension (~200 LOC).
+2. Per-service — `@Bean @Primary` в testConfig, регистрирующий in-process channel builder.
+3. Per-test — inject `InProcessGrpcServerRegistry`, устанавливать mock-responses через `ServerCalls.asyncUnaryCall(...)` вместо `when(...).thenReturn(...)`.
+
+Это **полноценная Группа 2.5** на 1-2 дня. Defer'ю в v0.1 через `future-ideas.md`. В M08 Группа 2 ограничиваюсь:
+- `.withReuse(true)` во всех inline-контейнерах ✅
+- `WireMockFixture` wrapper (уже в shared-test-containers, M01)
+- `GrpcInProcessFixture` (уже в shared-test-containers, M01)
+- audit-отчёт в NOTES.md (сейчас) ✅
+
+**Acceptance criteria Группы 2** выполнены: «audit 36+ мест; отчёт в NOTES» ✅.
+
+### ShedLockSmokeIT — reuse exception
+
+`ShedLockSmokeIT` использует JUnit 5 `@Testcontainers` extension + `@Container`
+annotation. Extension автоматически управляет жизненным циклом контейнера
+(`.start()` + `.stop()`). `.withReuse(true)` с `@Container` может
+конфликтовать — extension может пытаться останавливать reuse-контейнер.
+**Не трогаем.**
+
+Этот же принцип применим к будущему `FlywayMigrationIT` (Группа 3) —
+fresh container нужен для `freshInstallAppliesAllMigrations` template (D5).
+
+---
+
 ## Группа 1 — Audit `*Test` → `*IT` (2026-04-22)
 
 **Критерий rename:** класс содержит `@SpringBootTest` / `@Testcontainers` /

@@ -29,16 +29,26 @@
 
 ## Группа 2 — Testcontainers hybrid refactor (P2-8/2)
 
-- [ ] Включить `.withReuse(true)` во всех контейнерах shared-test-containers
-- [ ] Добавить `~/.testcontainers.properties` пример в `docs/runbooks/`
-      (dev-setup)
-- [ ] Audit 36+ `@MockitoBean` мест: таблица «класс / поле / заменить
-      на real? / причина» в NOTES.md
-- [ ] Заменить `@MockitoBean` на real containers где feasible (priority:
-      БД-операции, Rabbit publishers)
-- [ ] `InProcessGrpcChannelFactory` — новый bean в shared-test-containers
-- [ ] `WireMockExtension` wrapper для HTTP external integrations
+- [x] Включить `.withReuse(true)` во всех контейнерах shared-test-containers
+      — ContainerTestBase уже имел с M01; добавлено в 8 inline-контейнеров
+      (4 Abstract базы + 2 api-gateway IT + RateLimitIT/CompositeLoginKeyResolverIT).
+      ShedLockSmokeIT — exception (@Container extension, см. NOTES.md).
+- [x] Добавить `~/.testcontainers.properties` пример в `docs/runbooks/`
+      (dev-setup) — `docs/runbooks/dev-setup.md`
+- [x] Audit 36+ `@MockitoBean` мест: таблица «класс / поле / заменить
+      на real? / причина» в NOTES.md — 41 мест классифицированы в NOTES.md
+- [~] Заменить `@MockitoBean` на real containers где feasible (priority:
+      БД-операции, Rabbit publishers) — **defer v0.1**. 37 из 41 мокают
+      gRPC clients — full переработка через in-process gRPC требует
+      1-2д. Запись в `docs/future-ideas.md`.
+- [~] `InProcessGrpcChannelFactory` — новый bean в shared-test-containers
+      — уже существует с M01 (`GrpcInProcessFixture`), консумеры появятся
+      в v0.1 вместе с @MockitoBean refactor'ом.
+- [~] `WireMockExtension` wrapper для HTTP external integrations —
+      уже существует с M01 (`WireMockFixture`), используется в api-gateway
+      IT (RateLimitIT/CompositeLoginKeyResolverIT).
 - [ ] Измерить CI time после hybrid — не должно вырасти больше +15%
+      (отложено до push на origin, вместе с Группой 1)
 
 ## Группа 3 — Flyway MigrationIT (P2-8/3)
 

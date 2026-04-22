@@ -96,11 +96,14 @@ public abstract class AbstractAttendanceIntegrationTest {
     static final GenericContainer<?> REDIS;
 
     static {
-        MONGODB = new MongoDBContainer("mongo:7.0");
+        // M08 D5 — reuse=true; локально активируется через
+        // ~/.testcontainers.properties (testcontainers.reuse.enable=true),
+        // на CI игнорируется (fresh runner).
+        MONGODB = new MongoDBContainer("mongo:7.0").withReuse(true);
         MONGODB.start();
-        RABBITMQ = new RabbitMQContainer("rabbitmq:3.13-management");
+        RABBITMQ = new RabbitMQContainer("rabbitmq:3.13-management").withReuse(true);
         RABBITMQ.start();
-        REDIS = new GenericContainer<>("redis:7.2").withExposedPorts(6379);
+        REDIS = new GenericContainer<>("redis:7.2").withExposedPorts(6379).withReuse(true);
         REDIS.start();
     }
 

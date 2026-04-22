@@ -33,6 +33,45 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
+
+    // M08 Группа 1 (P2-8/1) — split unit-test и integration-test.
+    //   ./gradlew test            — только unit (*Test, НЕ *IT)
+    //   ./gradlew integrationTest — только IT (*IT)
+    //   ./gradlew check           — запускает оба (default поведение)
+    //
+    // Параллельные CI-jobs используют `test` и `integrationTest` отдельно,
+    // чтобы unit прошли быстро (< 1м), а slower *IT с Testcontainers
+    // бегали в отдельной job'е.
+    tasks.named<Test>("test") {
+        filter {
+            excludeTestsMatching("*IT")
+            isFailOnNoMatchingTests = false
+        }
+    }
+
+    tasks.register<Test>("integrationTest") {
+        group = "verification"
+        description = "Запускает только *IT тесты (Spring context, Testcontainers, gRPC in-process)."
+        useJUnitPlatform()
+        filter {
+            includeTestsMatching("*IT")
+            isFailOnNoMatchingTests = false
+        }
+        // Same classpath как test — тесты в src/test/java.
+        testClassesDirs = sourceSets["test"].output.classesDirs
+        classpath = sourceSets["test"].runtimeClasspath
+        shouldRunAfter("test")
+
+        // Отдельная отчётность, не перезаписываем test HTML/XML.
+        reports {
+            html.outputLocation.set(layout.buildDirectory.dir("reports/integrationTest"))
+            junitXml.outputLocation.set(layout.buildDirectory.dir("test-results/integrationTest"))
+        }
+    }
+
+    tasks.named("check") {
+        dependsOn("integrationTest")
+    }
 }
 
 // M04 NEW-57 / QA1 — CI-check против регрессии DEBUG в application.yml/application-prod.yml.

@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * mass-cancel (LSSN-06), and geo-block toggle (LSSN-07).
  */
 @AutoConfigureMockMvc
-class LessonApiTest extends AbstractScheduleIntegrationTest {
+class LessonApiIT extends AbstractScheduleIntegrationTest {
 
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;

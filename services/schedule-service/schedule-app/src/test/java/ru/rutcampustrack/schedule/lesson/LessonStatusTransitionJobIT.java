@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
  * instead of commit, so the @TransactionalEventListener(AFTER_COMMIT) in DomainEventListener
  * would never fire. Manual @AfterEach cleanup is used instead.
  */
-class LessonStatusTransitionJobTest extends AbstractScheduleIntegrationTest {
+class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 

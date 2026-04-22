@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * - The UNIQUE(schedule_item_id, date) constraint exists (LSSN-03 idempotency anchor)
  * - grpc.server.port, hibernate.jdbc.time_zone, and all other config is valid (CRON-04)
  */
-class EntityMappingIntegrationTest extends AbstractScheduleIntegrationTest {
+class EntityMappingIT extends AbstractScheduleIntegrationTest {
 
     @Autowired
     ScheduleItemRepository scheduleItemRepository;

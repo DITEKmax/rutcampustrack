@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * достаточно для acceptance criteria «2 инстанса → событие один раз».
  */
 @Testcontainers
-class ShedLockSmokeIntegrationTest {
+class ShedLockSmokeIT {
 
     @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16")

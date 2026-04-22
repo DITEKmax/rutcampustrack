@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
  *  - NOT_FOUND: wrong groupId → ResourceNotFoundException (маппится на Status.NOT_FOUND через @GrpcAdvice)
  *  - NOT_FOUND: lesson cancelled → исключается из резолва (status filter planned/active/closed)
  *
- * Pattern mirrors {@link ScheduleGrpcServiceImplTest}: прямой вызов + mock StreamObserver
+ * Pattern mirrors {@link ScheduleGrpcServiceImplIT}: прямой вызов + mock StreamObserver
  * (без in-process gRPC канала, per D-06).
  */
 class ScheduleGrpcResolveLessonIT extends AbstractScheduleIntegrationTest {

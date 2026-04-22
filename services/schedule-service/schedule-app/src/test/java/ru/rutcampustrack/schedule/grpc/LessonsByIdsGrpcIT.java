@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
  * - Silently skips unknown ids (no NOT_FOUND)
  * - Handles empty request list gracefully
  *
- * Pattern mirrors ScheduleGrpcServiceImplTest: direct invocation + mock StreamObserver.
+ * Pattern mirrors ScheduleGrpcServiceImplIT: direct invocation + mock StreamObserver.
  */
 class LessonsByIdsGrpcIT extends AbstractScheduleIntegrationTest {
 
@@ -125,7 +125,7 @@ class LessonsByIdsGrpcIT extends AbstractScheduleIntegrationTest {
     }
 
     // =========================================================================
-    // Helpers (mirror ScheduleGrpcServiceImplTest pattern)
+    // Helpers (mirror ScheduleGrpcServiceImplIT pattern)
     // =========================================================================
 
     private ScheduleItem createScheduleItem(Long groupId, Long subjectId, Short lessonNumber,

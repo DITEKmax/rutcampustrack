@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - GlobalExceptionHandler maps AccessDeniedException to HTTP 403 with RFC 7807 body
  */
 @AutoConfigureMockMvc
-class SecuritySmokeTest extends AbstractScheduleIntegrationTest {
+class SecuritySmokeIT extends AbstractScheduleIntegrationTest {
 
     @Autowired
     MockMvc mockMvc;

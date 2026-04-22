@@ -52,7 +52,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Wednesdays (dayOfWeek=3) total 3.
  */
 @AutoConfigureMockMvc
-class LessonGenerationIntegrationTest extends AbstractScheduleIntegrationTest {
+class LessonGenerationIT extends AbstractScheduleIntegrationTest {
 
     private static final Long GROUP_ID = 2L;
     private static final Long SEMESTER_ID = 10L;

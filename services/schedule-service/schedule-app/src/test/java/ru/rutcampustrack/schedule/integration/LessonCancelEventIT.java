@@ -34,7 +34,7 @@ import ru.rutcampustrack.shared.outbox.OutboxRecord;
  * а не напрямую в Rabbit. Тест проверяет запись в outbox — это эквивалент
  * гарантии «событие не теряется, даже если Rabbit недоступен».
  */
-class LessonCancelEventTest extends AbstractScheduleIntegrationTest {
+class LessonCancelEventIT extends AbstractScheduleIntegrationTest {
 
     private static final Long GROUP_ID = 10L;
     private static final Long SUBJECT_ID = 200L;

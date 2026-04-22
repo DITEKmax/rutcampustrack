@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Verifies access by any authenticated role and full response field coverage.
  */
 @AutoConfigureMockMvc
-class ScheduleViewTest extends AbstractScheduleIntegrationTest {
+class ScheduleViewIT extends AbstractScheduleIntegrationTest {
 
     @MockitoBean
     AcademicGrpcClient academicGrpcClient;

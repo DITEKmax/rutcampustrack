@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verify;
  * Uses direct method invocation with mock StreamObserver (per D-06 — no in-process gRPC channel).
  * NOT @Transactional — uses @AfterEach cleanup to avoid preventing AFTER_COMMIT event listeners.
  */
-class ScheduleGrpcServiceImplTest extends AbstractScheduleIntegrationTest {
+class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
 
     @Autowired
     ScheduleGrpcServiceImpl grpcService;

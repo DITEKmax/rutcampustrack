@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Uses MockMvc + @MockitoBean AcademicGrpcClient (D-04 — mock the wrapper, not the stub).
  */
 @AutoConfigureMockMvc
-class ScheduleItemApiTest extends AbstractScheduleIntegrationTest {
+class ScheduleItemApiIT extends AbstractScheduleIntegrationTest {
 
     private static final Long GROUP_ID = 1L;
     private static final Long SEMESTER_ID = 10L;

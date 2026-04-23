@@ -1,165 +1,170 @@
-# Промпт для следующей сессии
+# Промпт для следующей сессии — M09 Группа 9 (Audit + Release)
 
-Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Этого достаточно —
-Opus сам откроет файлы и поймёт где мы остановились.
+Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Opus сам откроет
+нужные файлы, поймёт где мы стоим и добьёт релиз.
 
 ---
 
-**M09 Prod Release Blockers в процессе. Группа 1 закрыта, Группа 2 — 5/7 пунктов.**
-Остался **G2.6 AuthOtpFlowIT debug** + **G2.7 architecture.md** + финальный коммит Группы 2.
-Затем Группа 3 (latecheckin тесты).
+**M09 Prod Release Blockers почти готов: G1-G8 закрыты, осталась G9 Audit + tag.**
+Нет приоритетных bug'ов в очереди. В новой сессии нужно: прогнать
+полный build + pytest, запустить 2 агента на diff M09, применить
+hot-patches если найдутся, поставить tag `v0.0.0-alpha.10` локально.
 
-Локальных коммитов ahead origin: **~61** (25 pre-M08 + 27 M08 + 4 M09 G1 + 5 M09 G2 WIP).
-Tags `v0.0.0-alpha.2..9` локальные. Push отложен до явного go.
+Локальных коммитов ahead origin: **17**. Tags `v0.0.0-alpha.2..9`
+локальные. Push всё ещё отложен до явного `go`.
 
 **Старт следующей сессии — дословно:**
 
-> Читаю NEXT-SESSION → CHECKLIST M09 → NOTES M09 → AuthOtpFlowIT (coммит
-> `d4ca2ca`). **Сначала G2.6 — debug AuthOtpFlowIT**: почему
-> `rabbitTemplate.receive` возвращает null. По гипотезам из NOTES:
-> #1 (`@ConditionalOnBean` порядок) → #3 (Jackson exception) → #4 (type
-> mismatch). Применяю fix, снимаю `@Disabled`, запускаю
-> `./gradlew :services:auth-service:integrationTest --tests "AuthOtpFlowIT"`.
-> Когда зелёный — **G2.7**: обновляю `docs/architecture.md` раздел
-> OTP flow + финальный docs(m09) коммит Группы 2. Далее — Группа 3.
+> Читаю NEXT-SESSION → CHECKLIST M09 Группу 9 → последний commit
+> `4fa58a4`. **Сначала прогон** `./gradlew build` +
+> `cd services/notification-bot && py -m pytest tests/ --override-ini="addopts=" --cov=bot/handlers --cov-fail-under=70`.
+> Если красное — фикс, коммит `fix(m09 G9): <explanation>`. Когда
+> зелёное — **параллельные агенты** `security-auditor` и `bug-hunter`
+> на diff M09 (25 commits от `2996652` до `4fa58a4`) — focus areas
+> ниже. Hot-patches → commit'ом, повторный прогон, green → **tag**
+> `git tag -a v0.0.0-alpha.10 -m "M09 Prod Release Blockers"` +
+> финальный **`docs(m09): close M09 + hand-off для M10`** commit.
+> Обновить `NEXT-SESSION.md` под M10.
 
 ---
 
-## M09 Группа 2 — состояние на 2026-04-23
+## M09 — текущий статус (на 2026-04-24)
 
-### Что закоммичено (5 коммитов)
+| Группа | Статус | Commit |
+|--------|--------|--------|
+| G1 Quick wins (P0-5 MessageDigest + P0-6 cleanupOrphans + P0-2 landing) | ✅ | `2996652..0c465f1` |
+| G2 OTP через RabbitMQ event (08 P0-2) | ✅ | `3d6dfd1..bda6a35` |
+| G3 latecheckin tests (14 P0-1) | ✅ | `48a63f7` |
+| G4 bot callback tests + 70% handlers (14 P0-2, 14 P1-7) | ✅ | `25da2d9` |
+| G5 lesson.cancelled full snapshot + V13 migration (02 P2-11/5) | ✅ | `b5a7e2e` |
+| G6 headman role check + NEW-121 audit (06 P1-1) | ✅ | `e332d41` |
+| G7 prod-deploy-checklist + runbooks + compose mem_limits (NEW-154/155/157) | ✅ | `c5bf621` |
+| G8 admin-scripts + future-ideas + CLAUDE/CHANGELOG | ✅ | `4fa58a4` |
+| **G9 Audit + tag** | ⏳ | — |
 
-| Commit | Scope |
-|--------|-------|
-| `3d6dfd1` | feat(events): `event-schemas/otp.requested.json` + `OtpRequestedEvent.java` |
-| `807b1f2` | feat(auth): `OtpService.requestOtp()` → void, 204 No Content, `OtpCodeResponse` удалён, OpenAPI + frontend types |
-| `b851221` | feat(bot): `otp_requested.py` handler + `/login` рефактор + `OtpMessageTracker.{store_pending_user_msg, finalize_with_bot_msg}` |
-| `70bd2db` | test(auth): `OtpRequestedContractTest` (3 теста valid/missing-code/non-6digit) + `EventSchemaValidator` |
-| `d4ca2ca` | **wip**(auth): `AuthOtpFlowIT` — помечен `@Disabled`, причина в NOTES |
+## G9 Scope (~0.5д)
 
-### Что работает (покрытие)
+### 1. Зелёный прогон — до запуска агентов
 
-- `./gradlew :services:auth-service:test` — все unit + OtpIT + OtpServiceTest + OtpRequestedContractTest — ✅ зелёные.
-- `cd services/notification-bot && py -m pytest tests/` — 165 тестов зелёные (161 + 4 новых `test_otp_requested.py`).
-- Контракт: `OtpIT.otpRequest_withValidTelegramId_returns204NoBody` проверяет 204 body + Redis-код. Schema validates publisher envelope. Bot consumer payload unit-tested.
-
-### G2.6 AuthOtpFlowIT — **НЕ работает**, debug в следующей сессии
-
-**Файл:** `services/auth-service/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java`
-
-**Симптомы:**
-```
-204 ассерт → ✅
-Redis-код ассерт → ✅  (6-digit в otp:123456789)
-message = rabbitTemplate.receive(TEST_QUEUE, 500) × 16 iter = null → ❌
-```
-
-В логах `DomainEventListener.onDomainEvent` **отсутствуют** — похоже `@EventListener` не срабатывает.
-
-**Гипотезы для debug (по приоритету, см. NOTES.md § G2.6):**
-
-1. **`@ConditionalOnBean(RabbitTemplate.class)`** на `DomainEventListener` — bean-graph порядок. `RabbitTemplate` создаётся в `RabbitConfig.@Bean` (`@ConditionalOnBean(ConnectionFactory.class)`). Spring может оценить условие `DomainEventListener` **до** регистрации `RabbitTemplate` → listener пропустит. **Fix:** заменить на `@ConditionalOnProperty(prefix="spring.rabbitmq", name="host")`.
-
-2. **Fanout exchange не declared до publish** — проверить `amqpAdmin.getExchangeProperties` в @BeforeEach.
-
-3. **Jackson serialization ошибка в `DomainEventListener.onDomainEvent`** — `catch(AmqpException)` не ловит `JsonMappingException`. Расширить до `Exception`. Set log level `org.springframework.amqp=DEBUG`.
-
-4. **`@EventListener` type mismatch** — параметр `auth.event.DomainEvent` vs `shared.events.DomainEvent`. Попробовать сменить на shared type.
-
-5. **Альтернатива:** заменить `rabbitTemplate.receive` polling на `SimpleMessageListenerContainer` + `MessageListener` — более надёжный consumer pattern для тестов.
-
-**Файл теста сейчас:** 179 строк, `@Disabled` повешен, test queue имеет уникальное имя с `nanoTime()` suffix, polling 8s (16 × 500ms). testcontainers: Postgres + Redis + RabbitMQ с `reuse=true`. `@TestPropertySource(properties = {"spring.autoconfigure.exclude="})` override'ит application-test.yml (где Rabbit отключён по умолчанию — не ломать другие auth IT).
-
-**Команда для запуска:**
 ```bash
-cd /c/Users/maksd/IntelliJIDEA/rutcampustrack
-export JAVA_HOME="C:\\Users\\maksd\\.jdks\\ms-21.0.9"
-./gradlew.bat :services:auth-service:integrationTest --tests "ru.rutcampustrack.auth.integration.AuthOtpFlowIT"
+# Backend
+export JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9"
+./gradlew.bat build --no-daemon
+# Должно быть BUILD SUCCESSFUL. Ratchet 60% LINE + latecheckin 70% активен.
+
+# Python bot
+cd services/notification-bot
+py -m pytest tests/ --override-ini="addopts=" --cov=bot/handlers --cov-fail-under=70
+# Должно: 198 passed, handlers coverage 92.83%.
+
+py -m pytest tests/
+# Должно: 198 passed, bot/ coverage 76.86% (>50% baseline).
 ```
 
-Смотри HTML report: `services/auth-service/build/reports/integrationTest/classes/ru.rutcampustrack.auth.integration.AuthOtpFlowIT.html`.
+Если красное — **не двигаться к агентам**, фикс + коммит, повторный прогон.
 
-### G2.7 осталось
+### 2. Параллельные агенты (single message, 2 Agent tool calls)
 
-- `docs/architecture.md` — раздел OTP flow. Проверить grep `otp|OTP` что уже есть; обновить «старую» диаграмму (HTTP body с code) на новую (event-driven через Rabbit).
-- Финальный коммит: `docs(m09): close Группу 2 — OTP event flow` (или `feat(auth): OTP через RabbitMQ event (01 P0-4, 08 P0-2)` если G2.7 объединить с architecture doc).
+**security-auditor** — focus:
+- OTP event flow: кто в Rabbit читает `otp.requested` кроме bot? DLQ на bot-down (TTL Redis 120s vs Rabbit retry)? Race при parallel `/auth/otp/request` от того же telegramId (cooldown/attempts, но что внутри окна Rabbit-retry)?
+- `OtpService.verifyOtp` constant-time корректность — ветвление по input-size ещё остаётся?
+- `_verify_headman` fail-closed на gRPC error — не ломает UX при кратковременном academic outage?
+- headman role check coverage (что если `found=true` + `is_headman=null`?)
+- V13 миграция: legacy cancelled-строки с `cancelled_by=NULL` — downstream consumer'ы на это готовы?
+- `lesson.deleted` grep — не осталось ли orphan-references после G5 scope-decision D5.
 
-### Deviations от CHECKLIST (зафиксированы в DECISIONS.md)
+**bug-hunter** — focus:
+- Outbox publisher retry для `lesson.cancelled` full snapshot — дубли приводят к двойному edit_text у студентов? (Schema `event_id` должен уникализировать через attendance idempotency, проверить).
+- `otp.requested` retry → bot получит 2 кода, студент увидит второе сообщение → first message stale. Tracker `store_pending_user_msg` handle'ит?
+- Aiogram fake-updates edge cases в новых тестах (forwarded callback'и с старым data → handler не должен falsly publish).
+- Flyway V10 → V13 rename (я переименовал из-за conflict с V10__shedlock_table.sql) — проверить что MigrationIT test'ы не broken, checksum validation в prod'е не ломается после upgrade.
+- Role check — user.found=True но `is_headman=None` (proto optional) — `getattr(user, "is_headman", False)` returns `None`, `not None == True` → **пропустит студента**? Проверить.
 
-- **D4** — OtpRequestedPublisher как отдельный класс НЕ создан. Используется существующий `DomainEventListener` (fire-and-forget). Причина: OTP-код эфемерен в Redis, shared-outbox требует Postgres persistence → нарушает security-model.
-- **Python contract-тест пропущен** — `jsonschema` не в bot deps. Покрытие: Java publisher-side validation + pytest consumer payload.
+### 3. Hot-patches
+
+Любой finding — отдельный fix-commit: `fix(m09 G9): <short>`. НЕ
+squash'ить в G-commits (audit trail важнее pretty log'а для M09).
+
+### 4. Финализация
+
+- **Post-mortem** в `docs/milestones/M09-prod-release-blockers/PLAN.md`:
+  календарное время, reality vs estimate, lessons learned (особенно
+  G2.6 RabbitConfig debug'инг — 2 неверных гипотезы до root cause).
+- **Tag** локально:
+  ```bash
+  git tag -a v0.0.0-alpha.10 -m "M09 Prod Release Blockers — closed"
+  ```
+- **Финальный коммит**: `docs(m09): close M09 + hand-off для M10`:
+  - CHECKLIST Группа 9 → ✅
+  - NEXT-SESSION под M10 (см. M10 CHECKLIST — `docs/milestones/M10-notification-history/`)
+  - PLAN.md post-mortem выше
 
 ---
 
-## M09 Группа 1 — закрыто (2026-04-23)
-
-- `2996652` fix(auth): OtpService MessageDigest.isEqual + OtpServiceTest (4 теста)
-- `ebed02b` fix(attendance): удалить startup orphan-cleanup + StartupOrphanCleanupRemovedIT
-- `e751040` fix(landing): 4 CTA → `https://t.me/ruttrack_bot/ruttrack`
-- `0c465f1` docs(m09): CHECKLIST tick + NOTES
-
-**Отклонения:**
-- `.env.prod.example TELEGRAM_BOT_USERNAME` — перенесён в Группу 7 (deep-link hardcoded).
-- Smoke-check landing — перенесён на staging.
-
----
-
-## M09 scope — оставшиеся группы (из PLAN.md)
-
-| # | Группа | Суть | Статус |
-|---|--------|------|--------|
-| G1 | Quick wins | MessageDigest + cleanupOrphans delete + landing deep-link | ✅ |
-| G2 | OTP через RabbitMQ | 08 P0-2: убрать code из HTTP body, publisher → bot consumer | ⏳ 5/7 |
-| G3 | latecheckin тесты | 14 P0-1: unit + IT + jacoco 70% gate активация | ⬜ |
-| G4 | bot handlers тесты | Pytest coverage для handlers/ → 70% pilot | ⬜ |
-| G5 | Event unification | lesson.cancelled / excuse.{approved,rejected} publishers | ⬜ |
-| G6 | Prod-deploy-checklist | 13 P0-3: runbook для VPS release | ⬜ |
-| G7 | Secret rotation | JWT keys + DB passwords + GRPC_SECRET runbook | ⬜ |
-| G8 | Resource limits | compose.prod CPU/mem limits per service | ⬜ |
-| G9 | Финализация | build + check + tag v0.0.0-alpha.10 + post-mortem | ⬜ |
-
-## Правила (без изменений с M05-M08)
+## Правила (без изменений)
 
 - **Русский язык** в отчётах / NOTES / ответах.
 - **Ветка `dev`**. Push на `main`/`origin` — только с явного `go`.
 - Не звать `gsd-*` агентов. `Explore` для «найти все X»,
-  `bug-hunter` / `code-reviewer` / `security-auditor` — в G9 audit.
+  `bug-hunter` + `security-auditor` — только в G9 (этой сессии).
 - Surprise → NOTES.md + спросить до продолжения.
-- Micro-решение → DECISIONS.md.
+- Micro-решение → DECISIONS.md (D7, D8... — продолжаем нумерацию, D1-D6 уже).
 - Закрыл пункт CHECKLIST → `[x]` через Edit (commit hash в описании).
-- **Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные.**
-- `CHANGELOG.md [Unreleased]` обновляй при значимых изменениях (G9).
+- **Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные**, edit применяется.
 
-## M08 хэндовер-факты для M09 (актуальны)
+## Ожидающие явного `go`
 
-### Coverage gate активен
-- `./gradlew check` запускает `jacocoTestCoverageVerification` для всех модулей.
-- Per-module ratchet floor в root `build.gradle.kts`.
-- `attendance-app/build.gradle.kts` — placeholder-rule для `latecheckin.*` 70% LINE с `isEnabled = false`. M09 G3 активирует.
-- PWA vitest threshold ratchet 38% lines / 47% functions.
-- pytest-cov 50% gate (actual 70.5%). M09 G4 добавит pytest-cov 70% pilot для `bot/handlers/`.
+1. `git push origin dev` — **17 коммитов** ahead (25 всего после G9).
+2. `git push origin --tags` — **8 tags** (`v0.0.0-alpha.2..9`), станет 9 после G9 tag.
+3. После M09 → **M10 Notification History** (stateful notification-web
+   + Mongo notification_db + TTL 30d + Caffeine unread-count). См.
+   `docs/milestones/M10-notification-history/PLAN.md`.
 
-### Supply-chain активен
-- Digest-pin 13 images в `docker-compose.prod.yml`.
-- deploy.yml: `sbom-sign` + verify. Cosign verify в `docs/runbooks/image-signing-verification.md`.
-- Trivy SHA-pin (v0.36.0).
-- Renovate monthly digest-bump.
+---
 
-### Diff-cover hard-fail
-- `.github/workflows/coverage.yml` — `exit 1` активен.
-- PR с diff-cover < 80% на changed lines → red CI.
+## Ключевые факты для G9 agents (опорный context)
 
-### M08 defer'ы явно ожидают M09
-1. **Playwright CI job `e2e-tests`** — ждёт stable staging (после G6).
-2. **`SecurityIdorIT`** — создаётся при расширении IDOR-защиты.
-3. **`@MockitoBean` → in-process gRPC** — defer v0.1.
-4. **k6 baseline** — release-engineer на VPS staging перед релизом.
+**Root cause G2.6 AuthOtpFlowIT** (для security-auditor — похожие
+ловушки могут быть в attendance/schedule): user `@Configuration` +
+`@ConditionalOnBean(ConnectionFactory.class)` оценивается ДО
+`RabbitAutoConfiguration`, condition всегда false. Fix: убран
+`@ConditionalOnBean`, listener через `@Bean` в RabbitConfig.
+`catch(AmqpException)` → `catch(Exception)` (Jackson бросает
+MessageConversionException, не AmqpException).
 
-## Действия, ожидающие `go` пользователя
+**DECISIONS накопленные в M09** (6 штук):
+- **D1-D3** — G1 детали.
+- **D4** — OtpRequestedPublisher как отдельный класс НЕ создан (OTP
+  эфемерен, shared-outbox persistence нарушает security-модель).
+- **D5** — `lesson.deleted` НЕ удаляется в G5 (physical DELETE, не
+  синоним cancelled; attendance orphan-cleanup зависит).
+- **D6** — `excuse.decided` остаётся single event (status=approved|rejected),
+  не разбиваем на `excuse.approved/rejected` (симметрия с late_checkin,
+  избегаем дублирования consumer-кода).
 
-1. `git push origin dev` — **~61 коммитов** ahead origin.
-2. `git push origin --tags` — **8 tags** (`v0.0.0-alpha.2..9`) локальные.
-3. Fix G2.6 → G2.7 → Группы 3-9 в новой сессии.
+**Deviations от CHECKLIST** (помечены `[~]`, не блокируют закрытие):
+- G2: OtpRequestedPublisher не создан (D4); Python contract-тест
+  пропущен (jsonschema не в deps, Java publisher-side достаточно).
+- G3: event-schemas approved/rejected не созданы (в коде single
+  `late_checkin.decided`); integration fake-updates test пропущен.
+- G4: integration fake-updates test пропущен.
+- G5: `lesson.deleted` НЕ удалено (D5); NEW-119 UI one-off lessons
+  отложен в M09 G9 cleanup (теперь = эта сессия, можно проверить).
+- G6: excuse.approved/rejected schemas не созданы (D6); integration
+  fake-updates test пропущен.
+- G7: nginx/certbot/node-exporter/cadvisor/promtail без mem_limit
+  (safety-alert `ContainerWithoutMemoryLimit` напомнит); staging
+  smoke — пройдёт при prod deploy (не в этой сессии).
+
+**Coverage**: handlers bot = 92.83%, latecheckin jacoco 70% LINE
+активирован, bot/ overall 76.86% (>50% baseline), JaCoCo ratchet 60%
+LINE держится.
+
+**Ключевые commits M09 для diff-агентов:**
+```bash
+git log --oneline 2996652..4fa58a4
+# или полный diff: git diff 2996652~1..4fa58a4
+```
 
 ---
 
@@ -174,17 +179,9 @@ M05 Performance ✅ 2026-04-21
 M06 Ops & Supply Chain ✅ 2026-04-21
 M07 Frontend Hardening ✅ 2026-04-22 (tag `v0.0.0-alpha.8` локальный)
 M08 Test Infrastructure ✅ 2026-04-23 (tag `v0.0.0-alpha.9` локальный)
-**M09 Prod Release Blockers ⏳ Группы 1 ✅, Группа 2 5/7, Группы 3-9 ⬜**
-M10 Notification History ⬜
+**M09 Prod Release Blockers ⏳ G1-G8 ✅ / G9 Audit — в этой сессии (tag `v0.0.0-alpha.10` локально после G9)**
+M10 Notification History ⬜ (следующая — stateful notification-web)
 M11 OpenAPI Polish ⬜
-M12 Auth Contract-first Refactor ⬜
+M12 Auth Contract-first Refactor ⬜ (планирование v0.0.0; фактическая реализация — v0.1, см. future-ideas.md)
 
 Dependency graph и полный roadmap — `docs/milestones/README.md`.
-
----
-
-## M08 итог (tag `v0.0.0-alpha.9`)
-
-**12/12 групп закрыто**, ~27 коммитов, календарно 2 дня (2026-04-22..23).
-
-Подробности: `docs/milestones/M08-test-infrastructure/{PLAN,CHECKLIST,NOTES,DECISIONS}.md`.

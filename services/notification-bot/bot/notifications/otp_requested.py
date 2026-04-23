@@ -42,7 +42,14 @@ async def handle_otp_requested(
     ttl_seconds = payload.get("ttl_seconds") or 300
 
     if telegram_id is None or code is None:
-        logger.warning("otp.requested event malformed: %s", event)
+        # M09 G9 hot-patch (BH-M3) — логаем только ключи event'а, не значения.
+        # Полный event содержит `payload.code` (plaintext OTP); Loki retention
+        # 14d + Promtail collect stdout всех контейнеров → код попал бы в index.
+        logger.warning(
+            "otp.requested event malformed: event_keys=%s payload_keys=%s",
+            list(event.keys()),
+            list(payload.keys()) if isinstance(payload, dict) else None,
+        )
         return
 
     telegram_id = int(telegram_id)

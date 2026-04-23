@@ -50,10 +50,14 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:rabbitmq")
     testImplementation("org.flywaydb:flyway-core")
     testRuntimeOnly("org.flywaydb:flyway-database-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // M08 Группа 1 (P2-8/1) — IntegrationTestNamingRule + ArchUnit
     testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
+
+    // M09 G2 (08 P0-2) — contract-тест otp.requested против JSON Schema
+    testImplementation(libs.json.schema.validator)
 }

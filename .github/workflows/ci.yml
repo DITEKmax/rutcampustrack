@@ -175,6 +175,12 @@ jobs:
       - name: Run tests
         run: pytest tests/ -v
 
+      # M09 G4.5 — selective coverage gate для bot/handlers/ (14 P0-2).
+      # Основной addopts из pytest.ini замеряет bot/ (50% floor). Этот
+      # второй прогон — stricter 70% pilot для interactive-handlers.
+      - name: Handlers coverage gate (70%)
+        run: pytest tests/ --override-ini="addopts=" --cov=bot/handlers --cov-report=term --cov-fail-under=70
+
   frontend-build-test:
     name: Frontend — ${{ matrix.app }}
     runs-on: ubuntu-latest

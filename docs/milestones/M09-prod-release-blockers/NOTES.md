@@ -45,6 +45,52 @@
   (owner явно указал «v0.1»).
 - **Magic-link для первого входа** (01-Q1 accepted tradeoff).
 
+## 2026-04-23 — Группа 2 WIP (5/7 закрыто, G2.6 debug в следующей сессии)
+
+### Что сделано (коммиты)
+- `3d6dfd1` feat(events): схема + OtpRequestedEvent класс
+- `807b1f2` feat(auth): 204 No Content, OtpService void, OpenAPI + frontend types
+- `b851221` feat(bot): otp_requested consumer + /login рефактор + tracker новые методы
+- `70bd2db` test(auth): OtpRequestedContractTest (3 теста зелёные)
+- `d4ca2ca` wip(auth): AuthOtpFlowIT (помечен @Disabled, причина ниже)
+
+### G2.6 AuthOtpFlowIT — почему не работает
+
+**Файл:** `services/auth-service/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java`
+
+**Симптомы:**
+1. `response.getStatusCode() == NO_CONTENT` → ✅ проходит
+2. `redisTemplate.get("otp:123456789")` → 6-digit code, ✅ проходит
+3. `rabbitTemplate.receive(TEST_QUEUE, 500)` по 16 итерациям (8s total) → null
+4. В логах нет «Published event» от `DomainEventListener` — похоже listener не триггерится
+
+**Окружение теста:**
+- `@TestPropertySource(properties = { "spring.autoconfigure.exclude=" })` — override'им exclude RabbitAutoConfiguration из application-test.yml (там он отключён).
+- PostgreSQL + Redis + RabbitMQ testcontainers локально.
+- Test queue уникальное имя `auth-otp-flow-it.<nanoTime>`, durable=false, exclusive=false, **autoDelete=false** (после first try с autoDelete=true был 404).
+
+**Гипотезы (проверить в новой сессии по приоритету):**
+
+1. **`@ConditionalOnBean(RabbitTemplate.class)` порядок** — `DomainEventListener` помечен `@ConditionalOnBean(RabbitTemplate.class)`. RabbitTemplate создаётся как `@Bean` в `RabbitConfig` (тоже `@ConditionalOnBean(ConnectionFactory.class)`). Spring может оценить условие `DomainEventListener` **до** того как RabbitTemplate зарегистрирован, и listener пропустит. **Проверка:** временно заменить `@ConditionalOnBean(RabbitTemplate.class)` → `@ConditionalOnProperty(prefix="spring.rabbitmq", name="host")`. Или дебаг `AuditBeanRegistry` через `ConditionEvaluationReport`.
+
+2. **Fanout exchange не declared до publish.** Auth `RabbitConfig.@Bean authEventsExchange()` → `FanoutExchange("rut-uit.events", durable=true, autoDelete=false)`. Amqp-admin auto-declare при startup. Но если auto-declare отложен и публикация letsит раньше — msg теряется. **Проверка:** в @BeforeEach перед `amqpAdmin.declareExchange` сделать `amqpAdmin.getQueueProperties("rut-uit.events")` — посмотреть что он видит, или явно `rabbitTemplate.setExchange(...)` перед convertAndSend.
+
+3. **Jackson сериализация падает молча в `DomainEventListener.onDomainEvent`.** Catch(AmqpException) логирует `.warn`, но не все исключения AmqpException — NPE/JsonMappingException вылетят как unchecked. **Проверка:** ловить `Exception` в тесте запускаем через manual logging (set log level `org.springframework.amqp` = DEBUG).
+
+4. **`@EventListener` type mismatch.** `DomainEventListener.onDomainEvent(DomainEvent event)` — `import ru.rutcampustrack.auth.event.DomainEvent` (локальный alias). `OtpRequestedEvent extends auth.event.DomainEvent`. Должен match'иться. Но Spring использует `ResolvableType` — если generic wildcard`ы вмешались — пропустит. **Проверка:** в `DomainEventListener` поменять параметр на `shared.events.DomainEvent` — `auth.event.DomainEvent extends shared.events.DomainEvent`.
+
+5. **RabbitTemplate routing key.** Мы шлём через `convertAndSend(EXCHANGE, "", event)` — пустой routing key. Для fanout routing key игнорируется. Но если в test где-то выставляется alternative exchange... (маловероятно, но проверить.
+
+**Альтернатива:** вместо receive-polling использовать `SimpleMessageListenerContainer` с `@RabbitListener` или `MessageListener` внутри теста — это настоящий consumer, а не short-lived basic.get polling. Возможно помогает.
+
+### G2.7 осталось
+- `docs/architecture.md` раздел «OTP flow» (старая диаграмма HTTP body → новая event-driven). Есть ли там существующая OTP-диаграмма — проверить grep "OTP|otp".
+- Финальный коммит на группу: `feat(auth): OTP через RabbitMQ event (01 P0-4, 08 P0-2)` — можно сделать отдельным docs(m09) закрывающим.
+
+### Открытые вопросы (решены в Группе 2)
+- ✅ **Q1 OTP failure handling** — выбран вариант C (retry перезаписывает Redis-код + публикует новое событие). См. docstring `OtpRequestedEvent`.
+- ✅ **Q2 `.env.prod` TELEGRAM_BOT_USERNAME** — не требуется в G2 (bot получает telegram_id из event.payload, chat_id == telegram_id). Переменная нужна только для landing (уже hardcoded в G1).
+
 ## 2026-04-23 — Группа 1 закрыта
 
 - **G1.1 (01 P0-5):** `OtpService.verifyOtp` переведён на

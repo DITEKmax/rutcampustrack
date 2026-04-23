@@ -14,20 +14,29 @@
 - [~] Smoke-check на dev: клик по кнопке лендинга — **перенесено на staging** в Группе 7 (локального landing dev-окружения нет)
 - [x] 3 атомарных коммита (вместо одного): `2996652` + `ebed02b` + `e751040`
 
-## Группа 2 — OTP через RabbitMQ (~1.5д)
+## Группа 2 — OTP через RabbitMQ (~1.5д) ⏳ 5/7 закрыто, осталось G2.6+G2.7
 
-- [ ] `event-schemas/otp-requested.json` — JSON Schema {`event_version`, `occurred_at`, `trace_id`, `source`, `telegram_id`, `code`, `ttl_seconds`} (08 P0-2)
-- [ ] `auth-app/.../event/OtpRequestedEvent.java` — record, extends `DomainEvent` (shared-events base из M01)
-- [ ] `auth-app/.../event/OtpRequestedPublisher.java` — публикует в fanout exchange `otp.events` через shared-outbox (M02 OutboxStorage)
-- [ ] `AuthController.requestOtp` — убрать `code` из response DTO; возвращает `204 No Content` (или `{"delivery": "telegram"}` если нужен feedback UI)
-- [ ] `AuthApiResponse` / OpenAPI spec — обновить контракт; фронтенд (PWA/web-panel) перестаёт читать `code` из body
-- [ ] `notification-bot/app/consumers/otp_requested.py` — aio_pika consumer с `event_version` проверкой; отправляет код через `Bot.send_message(telegram_id, code)`
-- [ ] `notification-bot/app/consumers/__init__.py` + `main.py` — регистрация консюмера
-- [ ] Contract-тест `OtpRequestedContractTest.java` — публишер → валидация против JSON Schema (networknt json-schema-validator из M02)
-- [ ] Contract-тест Python `tests/contract/test_otp_requested_consumer.py` — consumer-side schema validation
-- [ ] Integration-тест `AuthOtpFlowIT` — `POST /auth/otp/request` → body не содержит `code` + outbox row → RabbitMQ message → bot получил (testcontainer Rabbit)
-- [ ] Обновить `docs/architecture.md` — диаграмма OTP flow (old: HTTP body / new: event-driven)
-- [ ] Коммит `feat(auth): OTP через RabbitMQ event (01 P0-4, 08 P0-2)`
+- [x] `event-schemas/otp.requested.json` — JSON Schema `{event_version, occurred_at, trace_id, source, telegram_id, code, ttl_seconds}` (08 P0-2) — `3d6dfd1`
+- [x] `auth-service/.../event/OtpRequestedEvent.java` — class extends `auth.event.DomainEvent` (shared-events envelope, Payload record) — `3d6dfd1`
+- [~] `OtpRequestedPublisher` **не создан** — используется существующий `DomainEventListener` (DECISIONS D4: OTP эфемерен в Redis, shared-outbox ломает security-model) — `807b1f2`
+- [x] `AuthController.requestOtp` — `204 No Content`, `OtpCodeResponse` DTO удалён, `OtpService.requestOtp` сигнатура `String → void` — `807b1f2`
+- [x] `docs/openapi/auth.json` обновлён + `frontends/{pwa,web-panel}/.../generated/auth.types.ts` регенерированы через `npm run generate:types:offline` — `807b1f2`
+- [x] `notification-bot/bot/notifications/otp_requested.py` — handler + регистрация в `event_dispatcher.py` (с `event_type: "otp.requested"`) — `b851221`
+- [x] `/login` handler рефакторен: `store_pending_user_msg` → `auth.request_otp()` (204); ответ пользователю отправляет consumer — `b851221`
+- [x] `AuthHttpClient.request_otp`: `str → None`; `OtpMessageTracker` + `store_pending_user_msg`/`finalize_with_bot_msg` — `b851221`
+- [x] Contract-тест `OtpRequestedContractTest.java` — publisher → JSON Schema validation (3 теста: valid/missing-code/non-6digit); добавлен `EventSchemaValidator` (auth-scope) — `70bd2db`
+- [~] Python contract-тест **пропущен** — `jsonschema` не в bot deps, overhead добавления не оправдан: `tests/test_otp_requested.py` (4 теста) покрывает consumer payload поведение; Java publisher-side уже валидирует envelope через networknt
+- [ ] **G2.6 WIP** — `AuthOtpFlowIT` — **не стабильный**, `message=null` после 8s polling (`d4ca2ca`). Debug в следующей сессии. Тест помечен `@Disabled` с пояснением.
+- [ ] **G2.7** — `docs/architecture.md` раздел «OTP flow» (old HTTP body / new event-driven)
+- [ ] **G2 финальный коммит** — `feat(auth): OTP через RabbitMQ event (01 P0-4, 08 P0-2)` — закрывается вместе с G2.7 после fix G2.6
+
+**Стабильное покрытие на 2026-04-23 (без G2.6):**
+- OtpIT (integrationTest): `otpRequest_withValidTelegramId_returns204NoBody` — 204 + Redis code
+- OtpRequestedContractTest (test): 3 теста — schema валидность publisher envelope
+- pytest `tests/test_otp_requested.py`: 4 теста — consumer payload
+- pytest `tests/test_event_dispatcher.py`: `otp.requested` в handler registry
+- pytest `tests/test_login_handler.py`: переписан под новую семантику
+- **Всего: 161 + 4 = 165 pytest зелёные; все auth `test` задачи зелёные**
 
 ## Группа 3 — latecheckin тесты (~1.5д)
 

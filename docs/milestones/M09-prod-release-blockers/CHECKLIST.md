@@ -157,8 +157,8 @@
 - [x] `PLAN.md` → Post-mortem секция (reality vs estimate 30h vs 56-64h, lessons learned по Spring `@ConditionalOnBean`, `catch (AmqpException)`, parallel agents efficiency)
 - [x] `docs/milestones/README.md` → M09 ✅ 2026-04-24 (уже в G8)
 - [x] `CLAUDE.md` → M09 статус ✅ (уже в G8)
-- [ ] Тег `v0.0.0-alpha.10` (локально) — финализация
-- [ ] Hand-off `NEXT-SESSION.md` под M10 Notification History
+- [x] Тег `v0.0.0-alpha.10` локально (annotated, commit `4615b03`) — финализация
+- [x] Hand-off `NEXT-SESSION.md` под M10 Notification History (`4615b03`)
 
 ---
 

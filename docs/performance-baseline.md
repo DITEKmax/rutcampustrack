@@ -3,9 +3,16 @@
 Числа с первых прогонов k6 load-scripts из `tests/load/`. Обновляется
 при каждом prod-release (пропорционально улучшениям).
 
-⚠️ **TBD** — baseline ещё не зафиксирован. Этот файл создан M08
-Группой 7 (2026-04-22) как шаблон. Первый прогон ожидается при
-закрытии M08 (Группа 12) против локального `docker compose up`.
+⚠️ **TBD** — baseline ещё не зафиксирован реальными числами.
+
+**Статус M08 G12 (2026-04-23):** локальный docker-стек в Windows dev
+не подходит для reproducible baseline (jitter от Docker Desktop
+virtualization + WSL I/O overhead). M08 DECISION D2 требует manual
+прогона release-engineer'ом на stable staging перед релизом.
+Первый запись будет сделан release-engineer'ом перед созданием
+`v0.0.0` tag против prod-like VPS staging.
+
+k6-скрипты и инфраструктура готовы — см. `docs/load-testing.md`.
 
 ## Как обновлять
 

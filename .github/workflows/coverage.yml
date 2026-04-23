@@ -85,8 +85,9 @@ jobs:
       - name: Run tests with coverage
         run: ./gradlew ${{ matrix.service.path }}:test ${{ matrix.service.path }}:integrationTest ${{ matrix.service.path }}:jacocoTestReport --no-daemon
 
-      # M08 G10 (D3) — первый прогон warning-only; после baseline-коммита
-      # (M08 G12) сделаем min-coverage hard-fail.
+      # M08 G12 — hard-fail активирован. JaCoCo verification происходит в
+      # `./gradlew check` (root build.gradle.kts per-module ratchet gate).
+      # Этот step только постит PR-comment с summary — не gate.
       - name: JaCoCo PR comment
         if: github.event_name == 'pull_request'
         uses: madrapps/jacoco-report@v1.7.1
@@ -99,7 +100,6 @@ jobs:
           update-comment: true
           pass-emoji: ':white_check_mark:'
           fail-emoji: ':x:'
-          continue-on-error: true # D3: warning до baseline-коммита
 
       - name: Upload JaCoCo XML
         uses: actions/upload-artifact@v4
@@ -128,14 +128,11 @@ jobs:
         working-directory: frontends/${{ matrix.app }}
         run: npm ci
 
-      # M08 G10 — thresholds 50% прописаны в vitest.config.ts. Провал
-      # шагу = hard-fail для lines < 50%. Первый прогон — warning
-      # через continue-on-error (D3).
+      # M08 G12 — hard-fail активирован (thresholds 50% в vitest.config.ts).
       - name: Run tests with coverage
         id: vitest
         working-directory: frontends/${{ matrix.app }}
         run: npm run test:coverage
-        continue-on-error: true
 
       - name: Vitest PR comment
         if: github.event_name == 'pull_request' && hashFiles(format('frontends/{0}/coverage/coverage-summary.json', matrix.app)) != ''
@@ -153,11 +150,6 @@ jobs:
           path: frontends/${{ matrix.app }}/coverage/lcov.info
           retention-days: 7
 
-      # D3: пока warning. Снимем continue-on-error после baseline PR.
-      - name: Fail if thresholds breached (warn-only for baseline)
-        if: steps.vitest.outcome == 'failure'
-        run: |
-          echo "::warning::Vitest coverage thresholds breached in ${{ matrix.app }}. M08 G10 baseline — D3 warning."
 
   python-coverage:
     name: Python coverage — notification-bot
@@ -181,11 +173,11 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-test.txt
 
-      # pytest.ini addopts уже включает --cov + --cov-fail-under=50.
+      # M08 G12 — hard-fail активирован. pytest.ini addopts уже включает
+      # --cov + --cov-fail-under=50.
       - name: Run pytest with coverage
         id: pytest
         run: pytest tests/ -v
-        continue-on-error: true
 
       - name: Pytest coverage PR comment
         if: github.event_name == 'pull_request' && hashFiles('services/notification-bot/coverage.xml') != ''
@@ -213,10 +205,6 @@ jobs:
           # Будущий CI step:
           #   pytest tests/handlers/ --cov=bot/handlers --cov-fail-under=70
 
-      - name: Fail if thresholds breached (warn-only for baseline)
-        if: steps.pytest.outcome == 'failure'
-        run: |
-          echo "::warning::pytest-cov threshold breached. M08 G10 baseline — D3 warning."
 
   diff-cover:
     name: Diff coverage ≥80%
@@ -307,15 +295,15 @@ jobs:
           header: diff-coverage
           path: /tmp/diff-summary.md
 
-      # D3 — финальный gate.
-      # После M08 G12 baseline-коммита: заменить следующий `echo` на `exit 1`.
-      - name: Enforce diff-cover gate (D3 — warning → hard-fail)
+      # M08 G12 — hard-fail gate активирован (D3).
+      # Любой из 3 diff-cover-прогонов упал → CI red.
+      - name: Enforce diff-cover gate (D3 hard-fail)
         run: |
           FAILED=0
-          [ -n "$DIFF_COVER_FAIL_JAVA" ] && { echo "::warning::Java diff-cover < 80%"; FAILED=1; }
-          [ -n "$DIFF_COVER_FAIL_FE" ] && { echo "::warning::Frontend diff-cover < 80%"; FAILED=1; }
-          [ -n "$DIFF_COVER_FAIL_PY" ] && { echo "::warning::Python diff-cover < 80%"; FAILED=1; }
+          [ -n "$DIFF_COVER_FAIL_JAVA" ] && { echo "::error::Java diff-cover < 80% для changed lines"; FAILED=1; }
+          [ -n "$DIFF_COVER_FAIL_FE" ] && { echo "::error::Frontend diff-cover < 80% для changed lines"; FAILED=1; }
+          [ -n "$DIFF_COVER_FAIL_PY" ] && { echo "::error::Python diff-cover < 80% для changed lines"; FAILED=1; }
           if [ "$FAILED" = "1" ]; then
-            echo "::warning::Baseline PR (D3) — diff-cover gate в warning-режиме. После M08 G12 станет hard-fail."
-            # exit 1   # ← раскомментировать в M08 G12 baseline commit
+            echo "::error::diff-cover gate провалил CI. Покрой новые строки тестами или помечай их @SuppressWarnings / # pragma: no cover с обоснованием в PR."
+            exit 1
           fi

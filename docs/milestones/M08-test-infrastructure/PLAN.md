@@ -1,8 +1,8 @@
 # M08 — Test Infrastructure
 
-**Статус:** ⬜ не начат
-**Старт / финиш:** — / —
-**Estimate:** 10-12 человеко-дней
+**Статус:** ✅ завершён
+**Старт / финиш:** 2026-04-22 / 2026-04-23
+**Estimate:** 10-12 человеко-дней (actual: ~2 дня calendar, ~24 коммита)
 
 ---
 
@@ -303,3 +303,122 @@
 
 _Никаких «why», «motivation», «background» — это уже в 99-executive-summary.md
 и OWNER-ANSWERS.md (P2-8/1..8, QD2/QD3). Здесь только WHAT и DONE-критерии._
+
+---
+
+## Post-mortem (2026-04-23)
+
+### Что получилось хорошо
+
+- **Clean split unit/integration** (G1). 31 `*Test → *IT` rename +
+  shared Gradle task + ArchUnit `IntegrationTestNamingRule`
+  остановит regression в naming. `./gradlew test` теперь <1min,
+  `integrationTest` отдельно.
+- **Golden tests + Clock injection** (G4). `week-parity.json` (22 cases)
+  + `display-name.json` (12 cases) как параметризованные `@MethodSource`.
+  Clock injection позволяет писать deterministic time-tests.
+- **Playwright scaffold** (G5). 4 core + 4 role specs + axe-core
+  fixture готовы. CI-job defer в M09, но скрипты запускаются локально
+  + `smoke-prod.sh` для post-deploy.
+- **Event schema coverage** (G9). 40 параметризованных тестов покрывают
+  19 RabbitMQ events через один generic test — новые schema
+  автоматически включаются.
+- **Cosign keyless** (G11). Zero-secret supply-chain (D4), signatures
+  в Rekor transparency log, verify на deploy блокирует unsigned images.
+  Digest-pin 13 base-images делает deployment reproducible.
+- **Ratchet baseline gate** (G12). Per-module coverage floor с margin
+  -2% даёт immediate hard-fail gate без требования моментально поднять
+  coverage до 60%. M09+ поднимает floor по мере роста.
+
+### Что пришлось переопределить
+
+- **D5 Testcontainers reuse**: `.withReuse(true)` во всех inline-
+  контейнерах, **кроме** `FlywayMigrationIT` и `ShedLockSmokeIT` (где
+  нужен fresh state / `@Container` extension управляет lifecycle).
+- **D6 CSRF double-submit → SameSite contract**. M03b в DECISIONS
+  явно отвергли double-submit token, так что `CsrfDoubleSubmitIT`
+  стал `SameSiteCookieContractIT` — cookie attributes + regression
+  guard «refresh без X-CSRF-TOKEN → 200».
+- **D3 diff-cover hard-fail**: активирован в G12 после baseline PR
+  (не с первого коммита — первый не покрывает свою инфраструктуру).
+- **`@MockitoBean` refactor defer (G2)**: 37 из 41 мокают gRPC-clients.
+  Замена на in-process gRPC сервер требует 1-2д отдельной работы
+  → defer в v0.1 (`future-ideas.md`).
+- **JaCoCo absolute 60% gate**: factual baseline показал
+  attendance-app 16.5%, schedule-app 14.2%, academic-app 20.9%.
+  Применён **per-module ratchet** вместо единого 60%: каждый модуль
+  не может опуститься ниже своего текущего floor.
+- **k6 baseline** (D2): локальный Windows dev-стек не подходит для
+  reproducible numbers (Docker Desktop jitter + WSL I/O). Первый
+  запись делается release-engineer'ом на VPS staging перед релизом.
+
+### Surprises (подробно в NOTES.md)
+
+- **G4 Clock-injection регрессия**: G4 (commit `f61537b`) добавил
+  `Clock` constructor в 3 сервиса, но unit-тесты остались без
+  `@Mock Clock` — `@InjectMocks` сквозь null → NPE при
+  `clock.instant()`. Поймано только в G10 первым baseline-прогоном.
+  Урок: `./gradlew test` после изменений в service constructor'ах
+  обязателен до закрытия группы.
+- **`LessonEventServiceParallelTest` wall-time flaky**: 350ms порог
+  (M05 G8) → 750ms не хватал на Windows dev (actual 767ms).
+  Переписан на `CountDownLatch`-pattern — параллельность доказана
+  без timing-noise. Урок: wall-clock assertions хрупки, latch-based
+  надёжнее.
+- **Baseline coverage <60% для 5 модулей**: стало очевидно только
+  после реального прогона. 7/12 модулей проходят 60%, остальные —
+  ratchet floor.
+
+### Defer'ы (перенесено в M09 / v0.1)
+
+- **M09 G2/G3**: `latecheckin/` + `notification-bot/handlers/` 70%
+  coverage pilot — override placeholder готов в
+  `attendance-app/build.gradle.kts` с `isEnabled = false`,
+  активируется М09 после `LateCheckinServiceTest`+`LateCheckinControllerIT`.
+- **M09**: Playwright CI job `e2e-tests` (requires stable staging).
+- **M09**: `SecurityIdorIT` (NEW-31 M03a) — файл не существовал,
+  создать при расширении ролевой IDOR-защиты.
+- **v0.1**: `@MockitoBean` → in-process gRPC refactor.
+- **v0.1**: jqwik property-based migration для week-parity.
+- **v0.1**: full load suite (JMeter/Gatling + dedicated CI runner).
+- **v0.1**: mini-app E2E (после post-M12 unification с PWA).
+
+### Метрики M08
+
+**Коммиты:** ~24 коммита от `42f9147` (G1 start) до tag-commit
+включительно. ~2 дня calendar.
+
+**Новых test-файлов:** ~20 (8 E2E specs + regression guards +
+security contracts + event schema + Stomp IT + Playwright fixtures).
+
+**Новых docs (NEW-*):**
+- NEW-159 `docs/runbooks/migration-testing.md`
+- NEW-160 `docs/golden-tests.md`
+- NEW-161 `docs/e2e-testing.md`
+- NEW-162 `docs/testing.md` (расширен frontend + security)
+- NEW-163 `docs/load-testing.md`
+- NEW-164 `docs/testing.md` security-contract section
+- NEW-165 `docs/runbooks/image-signing-verification.md`
+
+**Baseline coverage (locally 2026-04-23):**
+
+| Модуль | LINE | Gate floor |
+|--------|------|-----------|
+| api-gateway | 95.2% | 60% |
+| shared-logback | 100.0% | 60% |
+| shared-events | 91.8% | 60% |
+| shared-web | 88.5% | 60% |
+| auth-service | 81.3% | 60% |
+| notification-app | 75.7% | 60% |
+| shared-security | 70.4% | 60% |
+| shared-observability | 41.3% | 39% |
+| academic-app | 20.9% | 18% |
+| shared-outbox | 17.6% | 15% |
+| attendance-app | 16.5% | 14% |
+| schedule-app | 14.2% | 12% |
+| PWA | 40.2% lines | 38% |
+| web-panel | 78.1% lines | 50% |
+| notification-bot | 70.5% | 50% |
+
+**Ratchet property**: coverage не может опуститься ниже floor;
+M09+ поднимает floor по мере роста coverage в pilot-модулях.

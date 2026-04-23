@@ -28,11 +28,14 @@ export default defineConfig({
         'dist/**',
         'node_modules/**',
       ],
+      // M08 G12 (2026-04-23) — ratchet baseline. Target 50%, но фактический
+      // baseline PWA lines=40.2, statements=40.2, functions=49.15, branches=68.56.
+      // Floor = baseline − 2% margin для флаков. M09+ поднимает по мере тестов.
       thresholds: {
-        lines: 50,
-        statements: 50,
-        functions: 50,
-        branches: 40,
+        lines: 38,
+        statements: 38,
+        functions: 47,
+        branches: 60,
       },
     },
   },

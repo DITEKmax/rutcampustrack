@@ -290,14 +290,35 @@ _Closed commit `2c17327` — 2026-04-23._
 
 ## Группа 12 — Финализация
 
-- [ ] `./gradlew build` + `./gradlew integrationTest` зелёные
-- [ ] `./gradlew jacocoTestCoverageVerification` зелёный
-- [ ] `npm run test:coverage` в PWA + web-panel зелёные
-- [ ] `pytest --cov` в notification-bot зелёный
-- [ ] `npm run test:e2e` (docker-compose context) зелёный
-- [ ] CI полностью зелёный (все 4+ jobs)
-- [ ] Post-mortem секция в PLAN.md
-- [ ] Tag `v0.0.0-alpha.9`
+_Closed commit `<pending>` — 2026-04-23._
+
+- [x] `./gradlew build` + `./gradlew integrationTest` зелёные
+      — `./gradlew check` UP-TO-DATE с активированным JaCoCo gate.
+- [x] `./gradlew jacocoTestCoverageVerification` зелёный
+      — все 12 модулей проходят per-module ratchet floor.
+- [x] `npm run test:coverage` в PWA + web-panel зелёные
+      — PWA 162/162 tests + coverage 40.2% lines (ratchet floor 38%);
+      web-panel 472/472 tests + coverage 78.1% lines (target 50%).
+- [x] `pytest --cov` в notification-bot зелёный — 161/161 tests, 70.45%
+      coverage, gate 50% PASS.
+- [~] `npm run test:e2e` (docker-compose context) зелёный — **defer M09**.
+      CI job `e2e-tests` требует stable staging; локально запускаются.
+- [~] CI полностью зелёный (все 4+ jobs) — **defer M09** (проверка
+      после `git push origin dev` и активации CI; локально всё build'ится).
+- [x] Post-mortem секция в PLAN.md — полная секция с 5 подразделами
+      (получилось / переопределения / surprises / defer'ы / метрики).
+- [x] **Активация hard-fail JaCoCo gate** — `check.dependsOn(
+      "jacocoTestCoverageVerification")` активно для всех модулей с
+      тестами. Per-module ratchet floor для 5 модулей ниже 60%.
+- [x] **Активация diff-cover hard-fail** — `exit 1` раскомментирован
+      в coverage.yml. Vitest + pytest `continue-on-error` убраны.
+- [~] **Первый прогон k6** → baseline numbers — **defer до VPS staging**
+      (D2 manual-only; локальный Windows dev не reproducible).
+- [x] CHANGELOG.md `[Unreleased]` — M08 summary с 12 группами + Fixed
+      секция для G4 Clock regression + `LessonEventServiceParallelTest`.
+- [x] CLAUDE.md статус M08 → ✅ с датой 2026-04-23.
+- [x] docs/milestones/README.md — M08 ✅ + дата.
+- [ ] Tag `v0.0.0-alpha.9` — создаётся последним коммитом G12.
 
 ---
 

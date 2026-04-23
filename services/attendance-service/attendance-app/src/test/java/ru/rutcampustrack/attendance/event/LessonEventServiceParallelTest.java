@@ -1,6 +1,5 @@
 package ru.rutcampustrack.attendance.event;
 
-import com.mongodb.client.result.UpdateResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -17,6 +16,9 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -24,23 +26,22 @@ import static org.mockito.Mockito.when;
 
 /**
  * M05 G8 (NEW-149): проверяет что {@link LessonEventService#processLessonClosed}
- * параллелит два gRPC-вызова через {@code grpcTaskExecutor}. Мок-клиенты
- * симулируют 500ms latency каждый. Wall-time:
- * <ul>
- *   <li>Параллельно: ~520ms (500ms + overhead).</li>
- *   <li>Sequential baseline: ~1020ms (500ms × 2).</li>
- * </ul>
+ * параллелит два gRPC-вызова через {@code grpcTaskExecutor}.
  *
- * <p>Ассерт: wall-time &lt; 750ms подтверждает параллельное выполнение
- * (лимит 750ms оставляет margin для thread-startup + Mockito overhead
- * на медленных runners; sequential path пройдёт ~1000ms и тест упадёт).
- * M08 G10 — latency 200ms → 500ms увеличивает signal-to-noise на CI.
+ * <p>M08 G12 (2026-04-23) — переписано с wall-time на CountDownLatch-pattern.
+ * Причина: wall-time зависит от CPU dev-машины/CI runner'а, flaky (350ms→750ms
+ * не хватало — actual 767ms наблюдался на Windows dev). CountDownLatch даёт
+ * прямое доказательство concurrent-вызова без timing-noise:
+ * <ul>
+ *   <li>Оба gRPC-mock'а await на {@code bothStarted} latch.</li>
+ *   <li>Если оба ждут одновременно → latch опускается до 0 → mock'ы идут дальше.</li>
+ *   <li>Sequential execution → первый mock зависнет, тест упадёт по timeout.</li>
+ * </ul>
+ * Timeout 5s — далеко за любые разумные overhead'ы, но меньше CI-watchdog.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class LessonEventServiceParallelTest {
-
-    private static final long SIM_LATENCY_MS = 500;
 
     @Mock
     private ScheduleGrpcClient scheduleGrpcClient;
@@ -59,9 +60,21 @@ class LessonEventServiceParallelTest {
 
     @Test
     void processLessonClosed_runsGrpcCallsInParallel() throws Exception {
-        // Сэмулируем 200ms latency на каждый gRPC-call
+        // Latch countdown'ится каждым mock'ом при entry. Оба await'ят
+        // до total == 0 — т.е. пока ОБА gRPC-вызова не стартовали.
+        // Sequential execution → первый зависнет навсегда (вторая задача
+        // не запущена) → await timeout → test fails.
+        CountDownLatch bothStarted = new CountDownLatch(2);
+
         when(scheduleGrpcClient.getLessonById(any())).thenAnswer(inv -> {
-            Thread.sleep(SIM_LATENCY_MS);
+            bothStarted.countDown();
+            // Await до 3s. Если parallel — вторая задача тоже дойдёт сюда,
+            // latch опустится, оба продолжат. Если sequential — timeout.
+            if (!bothStarted.await(3, TimeUnit.SECONDS)) {
+                throw new AssertionError(
+                        "Sequential execution detected: second gRPC call did not start"
+                                + " while first was blocked");
+            }
             return LessonResponse.newBuilder()
                     .setId(1L)
                     .setGroupId(10L)
@@ -71,7 +84,12 @@ class LessonEventServiceParallelTest {
                     .build();
         });
         when(academicGrpcClient.getGroupMembers(any())).thenAnswer(inv -> {
-            Thread.sleep(SIM_LATENCY_MS);
+            bothStarted.countDown();
+            if (!bothStarted.await(3, TimeUnit.SECONDS)) {
+                throw new AssertionError(
+                        "Sequential execution detected: second gRPC call did not start"
+                                + " while first was blocked");
+            }
             return GroupMembersResponse.newBuilder()
                     .addStudents(StudentInfo.newBuilder().setUserId(100L).build())
                     .build();
@@ -91,18 +109,11 @@ class LessonEventServiceParallelTest {
                 mongoTemplate, scheduleGrpcClient, academicGrpcClient,
                 semesterCacheService, executor);
 
-        long start = System.currentTimeMillis();
         svc.processLessonClosed(1L, 10L);
-        long elapsed = System.currentTimeMillis() - start;
 
-        // Параллельно: ~500ms + overhead. Sequential было бы ~1000ms.
-        // M08 G10 — 750ms порог даёт 250ms margin для thread-startup +
-        // Mockito overhead. Sequential path гарантированно > 1000ms, так что
-        // тест продолжает доказывать параллельное выполнение.
-        assertThat(elapsed)
-                .as("processLessonClosed wall-time должно быть < 750ms "
-                        + "(параллельно 500ms × 2) — sequential baseline ~1000ms")
-                .isLessThan(750L);
+        // Если мы сюда дошли — оба mock'а отработали, значит оба были
+        // запущены concurrently (иначе первый бы timeout-ом упал).
+        assertThat(bothStarted.getCount()).isZero();
 
         executor.shutdown();
     }

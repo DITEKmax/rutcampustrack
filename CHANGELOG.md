@@ -9,6 +9,57 @@
 
 ### Added
 
+- **M08 Test Infrastructure** — e2e, coverage gate, supply-chain,
+  contract tests (~12 человеко-дней, 12 групп, 24+ коммитов
+  `42f9147..<tag-commit>`, tag `v0.0.0-alpha.9`).
+  - **G1 Testing conventions** — 31 `*Test → *IT` rename, shared
+    Gradle `integrationTest` task, `IntegrationTestNamingRule`
+    ArchUnit, split unit + integration CI jobs.
+  - **G2 Testcontainers hybrid** — `.withReuse(true)` × 8 контейнеров,
+    аудит 41 `@MockitoBean` (37 gRPC → defer v0.1), `dev-setup.md`.
+  - **G3 Flyway MigrationIT** — 3 test templates (fresh install /
+    checksum / data-preservation) для schedule + academic,
+    `migration-testing.md` (NEW-159).
+  - **G4 Golden + Clock** — Clock injection в CheckinService /
+    LateCheckinService / ExcuseService, `week-parity.json` (22 cases)
+    + `display-name.json` (12 cases), `golden-tests.md` (NEW-160).
+  - **G5 Playwright E2E** — scaffold (Chromium + WebKit + mobile),
+    4 core + 4 role specs, `@axe-core/playwright`, `smoke-prod.sh`,
+    `e2e-testing.md` (NEW-161). CI job defer M09.
+  - **G6 Frontend unit** — `clearAllClientState` regression guards
+    (PWA + web-panel), `testing.md` (NEW-162).
+  - **G7 Load tests** — `bulk-mark.js` + `geolocation-flood.js` (k6),
+    `load-testing.md` (NEW-163), baseline шаблон (D2 manual-only).
+  - **G8 Security contracts** — `GrpcSecretFailFastIT` pytest +
+    `validate_startup_config()` fail-fast в bot, `TmaIT` +4 tests,
+    `SameSiteCookieContractIT` (D6 — double-submit отвергнут M03b).
+  - **G9 Event + WS contract** — `EventSchemaCoverageTest` (40
+    параметризованных, 19 events), `StompIntegrationIT` +
+    PWA reconnect guards.
+  - **G10 Coverage gate** — JaCoCo 0.8.12 per-module 60% LINE +
+    Vitest 50% line (PWA + web-panel) + pytest-cov 50% (bot) +
+    diff-cover 80% на changed lines + 3 PR-comment actions.
+  - **G11 Supply chain** — SBOM matrix×11 (`anchore/sbom-action`
+    SHA-pin) + keyless cosign sign/verify (Fulcio/Rekor, D4),
+    digest-pin 13 base-images в `compose.prod.yml`, Trivy SHA-pin,
+    Renovate digest-bump rule, `image-signing-verification.md`
+    (NEW-165).
+  - **G12 Финализация** — per-module ratchet baseline gate
+    (api-gateway 95%, auth 81%, attendance-app 14% floor), diff-cover
+    hard-fail активирован, Vitest threshold adjust (PWA 38% lines
+    ratchet), pytest-cov baseline 70%. Tag `v0.0.0-alpha.9`.
+
+### Fixed
+
+- **G4 Clock-injection regression** (M08 G10/G12) — `CheckinServiceTest`
+  и `ExcuseServiceTest` получали NPE от `clock.instant()` после
+  G4 commit `f61537b`. Добавлен `@Mock Clock` + `when(clock.instant())`
+  stubs в setUp.
+- **`LessonEventServiceParallelTest` flaky** (M08 G12) — wall-time
+  threshold упирался в CI jitter (350ms, затем 750ms не хватало).
+  Переписан на `CountDownLatch`-pattern: параллельность доказана
+  без timing-noise.
+
 - **M07 Frontend Hardening** — CSP, typegen, error contracts, UX, a11y
   baseline (~14 человеко-дней, 11 групп, 17 коммитов `bccf471..2be3eab`,
   tag `v0.0.0-alpha.8`).

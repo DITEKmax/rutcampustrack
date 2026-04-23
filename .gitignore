@@ -4,6 +4,13 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 out/
 
+# === Coverage artifacts (M08 G10/G12) ===
+# Frontend: vitest coverage output
+frontends/*/coverage/
+# Python: pytest-cov output
+services/notification-bot/.coverage
+services/notification-bot/coverage.xml
+
 # M04 NEW-67: git.properties генерируется на каждом build'е
 # (root :generateGitProperties task). В git не коммитится.
 services/*/src/main/resources/git.properties

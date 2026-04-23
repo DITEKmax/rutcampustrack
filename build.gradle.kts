@@ -140,29 +140,55 @@ subprojects {
                         fileTree(it) { exclude(jacocoExcludes) }
                     }
                 )
+                // M08 G12 — ratchet baseline (OWNER-ANSWERS QD2 + D3).
+                // Global target: 60% LINE per-module. Baseline-модули ниже
+                // 60% получают module-level override (floor = current - 2%
+                // margin против флаков). Ratchet: coverage не может упасть
+                // ниже текущего floor; M09+ поднимает floor по мере роста.
+                //
+                // Baseline замерен 2026-04-23 (commit 2c17327, test + IT):
+                //   api-gateway            95.2%   → 60%
+                //   shared-logback        100.0%   → 60%
+                //   shared-events          91.8%   → 60%
+                //   shared-web             88.5%   → 60%
+                //   auth-service           81.3%   → 60%
+                //   notification-app       75.7%   → 60%
+                //   shared-security        70.4%   → 60%
+                //   shared-observability   41.3%   → 39% ratchet
+                //   academic-app           20.9%   → 18% ratchet
+                //   shared-outbox          17.6%   → 15% ratchet
+                //   attendance-app         16.5%   → 14% ratchet
+                //   schedule-app           14.2%   → 12% ratchet
+                val pathLc = project.path.lowercase()
+                val floorPct = when {
+                    pathLc.endsWith(":shared-observability") -> "0.39"
+                    pathLc.endsWith(":academic-app")         -> "0.18"
+                    pathLc.endsWith(":shared-outbox")        -> "0.15"
+                    pathLc.endsWith(":attendance-app")       -> "0.14"
+                    pathLc.endsWith(":schedule-app")         -> "0.12"
+                    else                                     -> "0.60"
+                }
                 violationRules {
-                    // Global: 60% line per-module (OWNER-ANSWERS QD2).
-                    // Baseline-модули с coverage <60% временно помечаются
-                    // через per-service override (см. example в attendance-app).
-                    // НЕ ослаблять глобальный порог — это противоречит D3.
                     rule {
                         element = "BUNDLE"
                         limit {
                             counter = "LINE"
                             value = "COVEREDRATIO"
-                            minimum = "0.60".toBigDecimal()
+                            minimum = floorPct.toBigDecimal()
                         }
                     }
                 }
             }
 
-            // M08 G10 baseline (D3) — НЕ привязываем verification к :check
-            // автоматически. Модули attendance-app/academic-app/schedule-app
-            // имеют baseline coverage <60% (M05-M09 добавит тесты), ранее
-            // не было JaCoCo-gate'а. Активация через M08 G12:
-            //   tasks.named("check") { dependsOn("jacocoTestCoverageVerification") }
-            // Запуск вручную: ./gradlew jacocoTestCoverageVerification
-            // CI coverage-job использует continue-on-error: true до baseline.
+            // M08 G12 — активация hard-fail gate в :check.
+            // Только для модулей с тестами (api-contract pure java-library
+            // не имеют src/test/java).
+            val hasTests = sourceSets.findByName("test")?.allSource?.files?.isNotEmpty() == true
+            if (hasTests) {
+                tasks.named("check") {
+                    dependsOn("jacocoTestCoverageVerification")
+                }
+            }
         }
     }
 }

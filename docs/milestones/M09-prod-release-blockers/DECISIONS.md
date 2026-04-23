@@ -39,3 +39,28 @@ REST API не публикует.
 
 **Последствия:** 07-api-gateway отчёт P0-1/P0-2 касаются CORS и JWT-
 фильтра, не структуры модулей. Эти пункты закрыты в M03a/M03b и M07.
+
+## D3 — landing deep-link: hardcode `https://t.me/ruttrack_bot/ruttrack`
+
+**Контекст:** 12 P0-2 требует кнопки лендинга вести в Telegram, не на
+внутренний `/login` (web-panel). NOTES.md Q2 обсуждал явная переменная
+vs `getMe()` auto-discovery.
+
+**Альтернативы:**
+- (a) Env-переменная `TELEGRAM_BOT_USERNAME=ruttrack_bot` с build-time
+  inlining через vite/script. Landing — статический HTML без bundler'а
+  (`package.json:6` — "dist/ is canonical source"), build-tooling
+  нет, пришлось бы его внедрять.
+- (b) `getMe()` на бэкенде + runtime endpoint → лишний HTTP call для
+  статической страницы.
+- (c) Hardcode `https://t.me/ruttrack_bot/ruttrack` (это же значение
+  уже в `.env.prod` → `MINI_APP_URL`).
+
+**Решение:** (c). Bot username — стабильный identifier (смена = rename
+бота = плановое событие, requires coordinated rollout). 4 ссылки в
+index.html замены одной grep-командой. Cost of change ≪ cost of
+adding a build pipeline к статическому landing'у.
+
+**Последствия:** При смене username — grep + sed в landing и коммит.
+Если станет чаще — поднять вопрос build-pipeline для landing в v0.1.
+`target="_blank" rel="noopener noreferrer"` добавлены (security).

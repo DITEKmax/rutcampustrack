@@ -12,9 +12,15 @@ groups:
   - name: resource-limits
     rules:
       - alert: ContainerMemoryHigh
+        # M09 G9 hot-patch (BH-M4) — excluded container_spec_memory_limit_bytes=0
+        # guard иначе деление на 0 даёт +Inf, +Inf > 0.9 = true → false-positive
+        # firing для контейнеров без mem_limit (nginx/certbot/node-exporter/
+        # cadvisor/promtail). Alert ContainerWithoutMemoryLimit ниже ловит их
+        # отдельно, не шумит на bot-alert canal.
         expr: |
           (container_memory_usage_bytes{name=~"rct-.*"}
             / container_spec_memory_limit_bytes{name=~"rct-.*"}) > 0.9
+          and on (name) container_spec_memory_limit_bytes{name=~"rct-.*"} > 0
         for: 5m
         labels:
           severity: warning

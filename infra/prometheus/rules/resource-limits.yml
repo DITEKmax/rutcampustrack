@@ -1,0 +1,42 @@
+# M09 Группа 7 (NEW-157) — resource-limits alerts.
+#
+# Срабатывает когда container использует > 90% своего mem_limit 5 мин.
+# Это warning-уровня: cadvisor видит spike из-за GC collection или
+# кратковременного запроса, for=5m фильтрует ложные.
+#
+# Critical-версии пока нет — если сервис идёт к OOMKill, restart через
+# docker автоматически восстанавливает (healthcheck failed → graceful
+# restart), alert ServiceDown (service-health.yml) срабатывает
+# параллельно.
+groups:
+  - name: resource-limits
+    rules:
+      - alert: ContainerMemoryHigh
+        expr: |
+          (container_memory_usage_bytes{name=~"rct-.*"}
+            / container_spec_memory_limit_bytes{name=~"rct-.*"}) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Контейнер {{ $labels.name }} > 90% memory"
+          description: |
+            {{ $labels.name }} использует более 90% своего mem_limit уже 5 минут.
+            Возможна утечка, cache overgrowth или недооценённый budget —
+            проверить docs/resource-limits.md.
+            Текущее использование: {{ $value | humanizePercentage }}.
+
+      # Защита от container_spec_memory_limit_bytes=0 (если mem_limit
+      # не указан — не хотим division-by-zero или false-negative).
+      - alert: ContainerWithoutMemoryLimit
+        expr: |
+          container_spec_memory_limit_bytes{name=~"rct-.*"} == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Контейнер {{ $labels.name }} без mem_limit"
+          description: |
+            {{ $labels.name }} запущен без mem_limit — может занять всю RAM
+            VPS при утечке. Добавить лимит в docker-compose.prod.yml
+            (см. docs/resource-limits.md).

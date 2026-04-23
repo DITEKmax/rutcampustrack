@@ -104,33 +104,38 @@
       вывод «нет asymmetric decision-flow, все decision через Rabbit»
 - [ ] **G6.6** Коммит `feat(bot): headman role check for excuse + late_checkin callbacks (M09 G6, 06 P1-1)`
 
-## Группа 7 — Prod-deploy checklist + runbooks (NEW-154/155/157, ~1д)
+## Группа 7 — Prod-deploy checklist + runbooks (NEW-154/155/157, ~1д) ✅ закрыто
 
-- [ ] `docs/prod-deploy-checklist.md` — оглавление: pre-deploy checks,
-      during-deploy monitoring, post-deploy validation; ссылки на
-      конкретные runbook'и
-- [ ] `docs/runbooks/secret-rotation.md` (NEW-155): quarterly
-      procedure — POSTGRES_*, BOT_TOKEN, GHCR_TOKEN, VAPID_PRIVATE_KEY,
-      JWT_SECRET; пошаговые инструкции per-secret + downtime window
-      + validation steps
-- [ ] `docs/runbooks/bot-webhook-migration.md` (NEW-154):
-      Alertmanager payload schema (`{status, receiver, alerts[], ...}`);
-      `/internal/alert` migration steps; rollback plan
-- [ ] `docs/resource-limits.md` (NEW-157): VPS 4GB budget таблица
-      per-service (academic/schedule/attendance 512M, notification-web/
-      gateway/bot 256M, auth 256M); JVM opts per-service; Prometheus
-      alert rule (container_memory_usage_bytes /
-      container_spec_memory_limit_bytes > 0.9 for 5m)
-- [ ] `docker-compose.prod.yml` — добавить `mem_limit`,
-      `mem_reservation`, `restart: unless-stopped` per-service
-- [ ] `docker-compose.prod.yml` — JVM opts
-      `-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0`
-      per Java service
-- [ ] Prometheus alert rule commit в `infra/prometheus/alerts/` или
-      аналог
-- [ ] Smoke на staging (если есть): мем-limits применяются, сервисы
-      стартуют без OOMKilled
-- [ ] Коммит `docs(m09): prod-deploy-checklist + secret-rotation + resource-limits (NEW-154/155/157)`
+- [x] **G7.1** `docs/prod-deploy-checklist.md` — pre/during/post-deploy чеклист
+      + section 5 copy-paste для release PR. Ссылки на все runbook'и
+- [x] **G7.2** `docs/runbooks/secret-rotation.md` (NEW-155) — inventory 15+
+      секретов + per-secret procedures (Postgres/Mongo/Redis/Rabbit/
+      INTERNAL_ISSUER/GRPC/BOT/VAPID/GHCR/Grafana) + quarterly/annually
+      schedule + rotation log на VPS
+- [x] **G7.3** `docs/runbooks/bot-webhook-migration.md` (NEW-154) — ASCII
+      chain Prom→AM→notification-web→Rabbit→bot→Telegram, Alertmanager
+      payload v4 contract, 2 migration scenario (endpoint upgrade /
+      event schema change), rollback plan per-link
+- [x] **G7.4** `docs/resource-limits.md` (NEW-157) — 4GB VPS budget по
+      categories: Java (2304M), Python (256M), DB/MQ (1216M), obs (864M),
+      nginx (224M), JVM opts standard block, Prom alert rule, validation
+      procedure + remediation steps
+- [x] **G7.5** `docker-compose.prod.yml` — `mem_limit` + `mem_reservation`
+      добавлены для 14 сервисов (все Java + bot + postgres×2 + mongo +
+      redis + rabbit + prom + alertmanager + grafana + tempo + loki).
+      `JAVA_TOOL_OPTIONS` (MaxRAMPercentage 75% + G1GC + HeapDump)
+      для всех 6 Java-сервисов. Redis — `maxmemory 96m allkeys-lru`.
+      `docker compose config --quiet` syntax валиден
+- [~] nginx / certbot / node-exporter / cadvisor / promtail — без
+      `mem_limit`: стабильный footprint 16-64MB, alert
+      ContainerWithoutMemoryLimit напомнит если начнёт разрастаться
+- [x] **G7.6** `infra/prometheus/rules/resource-limits.yml` — 2 rules:
+      `ContainerMemoryHigh` (usage > 90% limit for 5m, warning) +
+      `ContainerWithoutMemoryLimit` (detect сервисы без лимита for 10m)
+- [~] Smoke на staging — staging env не поднят локально; smoke пройдёт
+      в section 2.2 prod-deploy-checklist при первом применении V13 +
+      лимитов в prod
+- [ ] **G7.7** Коммит `docs(m09): prod-deploy-checklist + runbooks + compose mem_limits (M09 G7, NEW-154/155/157)`
 
 ## Группа 8 — Docs + cleanup (~0.5д)
 

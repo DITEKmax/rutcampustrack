@@ -19,6 +19,9 @@ services:
       - pg-academic-data:/var/lib/postgresql/data
     networks:
       - private_net
+    # M09 G7 (NEW-157) — см. docs/resource-limits.md.
+    mem_limit: 192m
+    mem_reservation: 128m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U rct_user -d academic_db"]
       interval: 10s
@@ -41,6 +44,9 @@ services:
       - pg-schedule-data:/var/lib/postgresql/data
     networks:
       - private_net
+    # M09 G7 (NEW-157).
+    mem_limit: 256m
+    mem_reservation: 192m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U rct_user -d schedule_db"]
       interval: 10s
@@ -65,6 +71,9 @@ services:
       - ./infra/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - private_net
+    # M09 G7 (NEW-157).
+    mem_limit: 384m
+    mem_reservation: 256m
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -76,13 +85,18 @@ services:
     # M08 G11 — digest-pin. Update: docker buildx imagetools inspect redis:7-alpine
     image: redis:7-alpine@sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6
     container_name: rct-redis
-    command: redis-server --requirepass "${REDIS_PASSWORD}"
+    # M09 G7 — maxmemory чуть ниже mem_limit, allkeys-lru выбрасывает
+    # холодные OTP/RBAC-entries раньше, чем OOMKill срубит контейнер.
+    command: redis-server --requirepass "${REDIS_PASSWORD}" --maxmemory 96mb --maxmemory-policy allkeys-lru
     expose:
       - "6379"
     volumes:
       - redis-data:/data
     networks:
       - private_net
+    # M09 G7 (NEW-157).
+    mem_limit: 128m
+    mem_reservation: 64m
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
@@ -103,6 +117,9 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - private_net
+    # M09 G7 (NEW-157).
+    mem_limit: 256m
+    mem_reservation: 192m
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -132,6 +149,8 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_KEY_DIR: /keys
       TMA_BOT_TOKEN: ${TMA_BOT_TOKEN}
+      # M09 G7 (NEW-157) — heap = 0.75 × mem_limit. См. docs/resource-limits.md.
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     volumes:
       - jwt-keys:/keys
     expose:
@@ -145,6 +164,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    # M09 G7 (NEW-157).
+    mem_limit: 256m
+    mem_reservation: 192m
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9090/actuator/health || exit 1"]
@@ -168,6 +190,8 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
+      # M09 G7 (NEW-157).
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     expose:
       - "9091"
     networks:
@@ -179,6 +203,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    # M09 G7 (NEW-157).
+    mem_limit: 512m
+    mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9091/actuator/health || exit 1"]
@@ -202,6 +229,8 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
       TZ: Europe/Moscow
+      # M09 G7 (NEW-157).
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     expose:
       - "9092"
     networks:
@@ -213,6 +242,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    # M09 G7 (NEW-157).
+    mem_limit: 512m
+    mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9092/actuator/health || exit 1"]
@@ -236,6 +268,8 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
+      # M09 G7 (NEW-157).
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     expose:
       - "9093"
     networks:
@@ -247,6 +281,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    # M09 G7 (NEW-157).
+    mem_limit: 512m
+    mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9093/actuator/health || exit 1"]
@@ -281,6 +318,8 @@ services:
       # M04 Группа 9 — shared secret для Alertmanager webhook в /internal/alert.
       ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET}
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin
+      # M09 G7 (NEW-157).
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     volumes:
       - jwt-keys:/keys:ro
     expose:
@@ -294,6 +333,9 @@ services:
         condition: service_healthy
       auth-service:          # <-- FIX: ждём пока auth-service сгенерит /keys/public.key
         condition: service_healthy
+    # M09 G7 (NEW-157).
+    mem_limit: 256m
+    mem_reservation: 192m
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9094/actuator/health/liveness || exit 1"]
@@ -337,6 +379,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    # M09 G7 (NEW-157). Python ~80-120MB RSS, 256M — с запасом.
+    mem_limit: 256m
+    mem_reservation: 128m
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
@@ -363,6 +408,8 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       # M03a: Gateway → auth-service token-exchange shared secret
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
+      # M09 G7 (NEW-157).
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     expose:
       - "8080"
     networks:
@@ -380,6 +427,9 @@ services:
         condition: service_healthy
       notification-web:
         condition: service_healthy
+    # M09 G7 (NEW-157).
+    mem_limit: 256m
+    mem_reservation: 192m
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
@@ -453,6 +503,9 @@ services:
       - node-exporter
       - cadvisor
       - alertmanager
+    # M09 G7 (NEW-157).
+    mem_limit: 192m
+    mem_reservation: 128m
     restart: unless-stopped
 
   # M04 Группа 9 — Alertmanager. Принимает fired alerts от prometheus
@@ -486,6 +539,9 @@ services:
       - "9093"
     networks:
       - private_net
+    # M09 G7 (NEW-157).
+    mem_limit: 64m
+    mem_reservation: 32m
     restart: unless-stopped
 
   # M04 QA2 — Grafana Tempo, distributed tracing storage. Retention 14d (QA5).
@@ -505,6 +561,9 @@ services:
       - "4318"  # OTLP HTTP (на будущее)
     networks:
       - private_net
+    # M09 G7 (NEW-157).
+    mem_limit: 128m
+    mem_reservation: 96m
     restart: unless-stopped
 
   grafana:
@@ -527,6 +586,9 @@ services:
     depends_on:
       - prometheus
       - tempo
+    # M09 G7 (NEW-157).
+    mem_limit: 96m
+    mem_reservation: 64m
     restart: unless-stopped
 
   loki:
@@ -543,6 +605,9 @@ services:
       - "3100"
     networks:
       - private_net
+    # M09 G7 (NEW-157).
+    mem_limit: 192m
+    mem_reservation: 128m
     restart: unless-stopped
 
   promtail:

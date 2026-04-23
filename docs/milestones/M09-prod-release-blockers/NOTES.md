@@ -45,4 +45,23 @@
   (owner явно указал «v0.1»).
 - **Magic-link для первого входа** (01-Q1 accepted tradeoff).
 
-## YYYY-MM-DD
+## 2026-04-23 — Группа 1 закрыта
+
+- **G1.1 (01 P0-5):** `OtpService.verifyOtp` переведён на
+  `MessageDigest.isEqual` + unit `OtpServiceTest` (4 теста:
+  correct/wrong/null code + structural guard против String.equals регрессии).
+- **G1.2 (04 P0-6):** `cleanupOrphans` + gRPC-вызов `getLessonsByIds`
+  удалены из `AttendanceIndexInitializer`. Bean больше не зависит от
+  `ScheduleGrpcClient` (сам клиент остаётся — используется 17 другими
+  файлами). IT `StartupOrphanCleanupRemovedIT` — regression guard:
+  (a) `verifyNoInteractions(scheduleGrpcClient)` при старте,
+  (b) re-run runner'а с orphan-doc не удаляет его.
+- **G1.3 (12 P0-2):** 4 CTA на landing с `/login` → deep-link
+  `https://t.me/ruttrack_bot/ruttrack` (см. DECISIONS D3 —
+  hardcode вместо build-pipeline для статического HTML).
+- **G1 CHECKLIST пункт `.env.prod.example TELEGRAM_BOT_USERNAME`**
+  перенесён в Группу 7 (prod-deploy-checklist + env-шаблоны) —
+  в M09 G1 переменная не нужна, deep-link hardcoded.
+- **Smoke-check лендинга:** dev-окружение landing сейчас не
+  поднимается локально; visual smoke (клик → Telegram) — при
+  deploy на staging в Группе 7.

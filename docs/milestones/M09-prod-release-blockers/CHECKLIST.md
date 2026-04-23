@@ -2,17 +2,17 @@
 
 Атомарные задачи в порядке выполнения. Отмечаются `[x]` после коммита.
 
-## Группа 1 — Quick wins (~2ч)
+## Группа 1 — Quick wins (~2ч) ✅ 2026-04-23
 
-- [ ] `OtpService.verifyOtp` — `String.equals` → `MessageDigest.isEqual(stored.getBytes(UTF_8), request.code().getBytes(UTF_8))` (01 P0-5, ~5 мин)
-- [ ] Unit-тест `OtpServiceTest#verifyOtp_constantTimeCompare` — проверка что путь не ветвится по содержимому кода (mockito + assert)
-- [ ] `AttendanceService.cleanupOrphans` + `@PostConstruct` удалены (04 P0-6)
-- [ ] `AttendanceApplication` / `AttendanceIndexInitializer` — если gRPC-вызов `ListLessons` остался только для cleanup'а, удалить
-- [ ] Integration-тест: старт attendance-service с недоступным schedule-service → контейнер up, существующие marks не удалены
-- [ ] `frontends/landing/index.html` — `<a href="/login">` → `<a href="https://t.me/<bot_username>">` (12 P0-2)
-- [ ] `.env.prod.example` — добавить `TELEGRAM_BOT_USERNAME=` + комментарий (NEW-51)
-- [ ] Smoke-check на dev: клик по кнопке лендинга открывает Telegram
-- [ ] Коммит `fix(m09): quick wins — MessageDigest + cleanupOrphans + landing deep-link`
+- [x] `OtpService.verifyOtp` — `String.equals` → `MessageDigest.isEqual(stored.getBytes(UTF_8), request.code().getBytes(UTF_8))` (01 P0-5, ~5 мин) — `2996652`
+- [x] Unit-тест `OtpServiceTest#verifyOtp_constantTimeCompare` — source-structural guard + 3 поведенческих теста — `2996652`
+- [x] `AttendanceService.cleanupOrphans` + `@PostConstruct` удалены (04 P0-6) — `ebed02b`
+- [x] `AttendanceApplication` / `AttendanceIndexInitializer` — `ScheduleGrpcClient` зависимость убрана из bean — `ebed02b`
+- [x] Integration-тест: старт attendance-service с недоступным schedule-service — `StartupOrphanCleanupRemovedIT` — `ebed02b`
+- [x] `frontends/landing/dist/index.html` — 4 CTA переведены на `https://t.me/ruttrack_bot/ruttrack` (12 P0-2) — `e751040`
+- [~] `.env.prod.example TELEGRAM_BOT_USERNAME` (NEW-51) — **перенесено в Группу 7** (deep-link hardcoded в landing, env не требуется в G1)
+- [~] Smoke-check на dev: клик по кнопке лендинга — **перенесено на staging** в Группе 7 (локального landing dev-окружения нет)
+- [x] 3 атомарных коммита (вместо одного): `2996652` + `ebed02b` + `e751040`
 
 ## Группа 2 — OTP через RabbitMQ (~1.5д)
 

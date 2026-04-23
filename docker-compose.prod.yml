@@ -4,7 +4,10 @@ services:
   # ============================================================
 
   postgres-academic:
-    image: postgres:16
+    # M08 G11 (P2-8/G11, M06 defer): digest-pin base image. Bump через Renovate
+    # (см. renovate.json packageRules для pinDigests). Update command:
+    #   docker buildx imagetools inspect postgres:16
+    image: postgres:16@sha256:760ea41aae126965bedd587d35a23de37447bb13a6ac4444bef6ff73b8b72234
     container_name: rct-postgres-academic
     environment:
       POSTGRES_DB: academic_db
@@ -24,7 +27,8 @@ services:
     restart: unless-stopped
 
   postgres-schedule:
-    image: postgres:16
+    # M08 G11 — digest-pin.
+    image: postgres:16@sha256:760ea41aae126965bedd587d35a23de37447bb13a6ac4444bef6ff73b8b72234
     container_name: rct-postgres-schedule
     environment:
       POSTGRES_DB: schedule_db
@@ -45,7 +49,8 @@ services:
     restart: unless-stopped
 
   mongo-attendance:
-    image: mongo:7
+    # M08 G11 — digest-pin. Update: docker buildx imagetools inspect mongo:7
+    image: mongo:7@sha256:43fddee7e532a920f3dfdee9e8f4834398c155c26bcb92d790cc1cd3c630fc40
     container_name: rct-mongo-attendance
     environment:
       MONGO_INITDB_DATABASE: admin
@@ -68,7 +73,8 @@ services:
     restart: unless-stopped
 
   redis:
-    image: redis:7-alpine
+    # M08 G11 — digest-pin. Update: docker buildx imagetools inspect redis:7-alpine
+    image: redis:7-alpine@sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6
     container_name: rct-redis
     command: redis-server --requirepass "${REDIS_PASSWORD}"
     expose:
@@ -85,7 +91,8 @@ services:
     restart: unless-stopped
 
   rabbitmq:
-    image: rabbitmq:3.13-alpine
+    # M08 G11 — digest-pin. Update: docker buildx imagetools inspect rabbitmq:3.13-alpine
+    image: rabbitmq:3.13-alpine@sha256:d7af1c87c5f1eda13fcfca06db452bf3aeab6619fc3358b68535c0c02c4e52bc
     container_name: rct-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
@@ -386,8 +393,9 @@ services:
   # ============================================================
 
   node-exporter:
-    # M06 P2-9/2: semver-pin (OWNER-ANSWERS 4091). Renovate auto-merge patch.
-    image: prom/node-exporter:v1.8.2
+    # M08 G11 — digest-pin (было semver-only M06 P2-9/2). Update:
+    #   docker buildx imagetools inspect prom/node-exporter:v1.8.2
+    image: prom/node-exporter:v1.8.2@sha256:4032c6d5bfd752342c3e631c2f1de93ba6b86c41db6b167b9a35372c139e7706
     container_name: rct-node-exporter
     command:
       - '--path.rootfs=/host'
@@ -419,8 +427,9 @@ services:
     privileged: true
 
   prometheus:
-    # M06 P2-9/2: semver-pin (OWNER-ANSWERS 4091). Renovate auto-merge patch.
-    image: prom/prometheus:v2.55.1
+    # M08 G11 — digest-pin (было semver-only M06 P2-9/2). Update:
+    #   docker buildx imagetools inspect prom/prometheus:v2.55.1
+    image: prom/prometheus:v2.55.1@sha256:2659f4c2ebb718e7695cb9b25ffa7d6be64db013daba13e05c875451cf51b0d3
     container_name: rct-prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -451,7 +460,8 @@ services:
   # notification-web:9094/internal/alert. Silence 22:00-08:00 MSK
   # для warning (critical — всегда).
   alertmanager:
-    image: prom/alertmanager:v0.27.0
+    # M08 G11 — digest-pin. Update: docker buildx imagetools inspect prom/alertmanager:v0.27.0
+    image: prom/alertmanager:v0.27.0@sha256:e13b6ed5cb929eeaee733479dce55e10eb3bc2e9c4586c705a4e8da41e5eacf5
     container_name: rct-alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
@@ -482,7 +492,8 @@ services:
   # OTLP gRPC :4317 принимает spans от 6 backend-сервисов (NEW-59).
   # HTTP :3200 — Tempo HTTP API для Grafana datasource.
   tempo:
-    image: grafana/tempo:2.3.1
+    # M08 G11 — digest-pin. Update: docker buildx imagetools inspect grafana/tempo:2.3.1
+    image: grafana/tempo:2.3.1@sha256:1c6fb7c74831474f82c9bde218c84b61e5269b676e6505e7dc3c1862dae9b5cc
     container_name: rct-tempo
     command: ["-config.file=/etc/tempo/tempo.yml"]
     volumes:
@@ -497,8 +508,9 @@ services:
     restart: unless-stopped
 
   grafana:
-    # M06 P2-9/2: semver-pin (OWNER-ANSWERS 4092). Renovate auto-merge patch.
-    image: grafana/grafana:11.3.1
+    # M08 G11 — digest-pin (было semver-only M06 P2-9/2). Update:
+    #   docker buildx imagetools inspect grafana/grafana:11.3.1
+    image: grafana/grafana:11.3.1@sha256:fa801ab6e1ae035135309580891e09f7eb94d1abdbd2106bdc288030b028158c
     container_name: rct-grafana
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
@@ -518,9 +530,10 @@ services:
     restart: unless-stopped
 
   loki:
-    # M06 P2-9/2: semver-pin (OWNER-ANSWERS 4094). Major upgrade — MANUAL
+    # M08 G11 — digest-pin (было semver-only M06 P2-9/2). Major upgrade — MANUAL
     # через Renovate (см. docs/runbooks/loki-major-upgrade.md, NEW-151).
-    image: grafana/loki:3.2.1
+    # Update: docker buildx imagetools inspect grafana/loki:3.2.1
+    image: grafana/loki:3.2.1@sha256:09a53b4a4ff81ffcd8f13886df19d33fac7a8d3aaf952e3c7e66cbade5b2fc31
     container_name: rct-loki
     command: -config.file=/etc/loki/loki.yml
     volumes:
@@ -554,7 +567,8 @@ services:
   # ============================================================
 
   nginx:
-    image: nginx:1.27-alpine
+    # M08 G11 — digest-pin. Update: docker buildx imagetools inspect nginx:1.27-alpine
+    image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
     container_name: rct-nginx
     ports:
       - "80:80"
@@ -577,7 +591,9 @@ services:
     command: "/bin/sh -c 'while :; do sleep 5m; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
   certbot:
-    image: certbot/certbot
+    # M08 G11 — digest-pin + explicit tag (было implicit :latest, supply-chain риск).
+    # Update: docker buildx imagetools inspect certbot/certbot:latest
+    image: certbot/certbot:latest@sha256:78a7eaa40af657301e25731297b6e73646c695370d17e9bb03189fa82966d65c
     container_name: rct-certbot
     volumes:
       - certbot-conf:/etc/letsencrypt

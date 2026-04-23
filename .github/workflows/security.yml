@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy fs scan (HIGH, CRITICAL)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0 — M08 G11 SHA-pin
         with:
           scan-type: fs
           scan-ref: .
@@ -41,7 +41,7 @@ jobs:
           skip-dirs: 'docs,.planning,.github,frontends/**/node_modules,**/build,**/dist'
 
       - name: Trivy fs scan (SARIF for GitHub Security)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0 — M08 G11 SHA-pin
         if: always()
         with:
           scan-type: fs
@@ -68,7 +68,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy config scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0 — M08 G11 SHA-pin
         with:
           scan-type: config
           scan-ref: .
@@ -122,7 +122,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trivy image scan ${{ matrix.image }}
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0 — M08 G11 SHA-pin
         with:
           image-ref: ghcr.io/ditekmax/rutcampustrack/${{ matrix.image }}:latest
           severity: HIGH,CRITICAL

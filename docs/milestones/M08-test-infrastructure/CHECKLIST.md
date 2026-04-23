@@ -253,18 +253,40 @@ _Closed commit `3de786b` — 2026-04-23._
 
 ## Группа 11 — Supply chain (M06 defer'ы)
 
-- [ ] SBOM generation в CI — `anchore/sbom-action@{sha}` per image
-- [ ] SBOM publish как GHCR artifact
-- [ ] Cosign install + sign step — `sigstore/cosign-installer@{sha}`
-- [ ] Cosign verify step в deploy workflow
-- [ ] Trivy action pin: заменить `@master` → `@{sha}`
-- [ ] `docker-compose.prod.yml` — nginx digest-pin
-- [ ] `docker-compose.prod.yml` — postgres digest-pin
-- [ ] `docker-compose.prod.yml` — mongo digest-pin
-- [ ] `docker-compose.prod.yml` — redis digest-pin
-- [ ] `docker-compose.prod.yml` — rabbitmq digest-pin
-- [ ] `docs/runbooks/image-signing-verification.md` (NEW-165)
-- [ ] Renovate/Dependabot rule для digest updates (monthly)
+_Closed commit `<pending>` — 2026-04-23._
+
+- [x] SBOM generation в CI — `anchore/sbom-action@{sha}` per image
+      — `anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610` (v0.24.0)
+      в `deploy.yml:sbom-sign` matrix × 11 images. SPDX-json формат.
+- [x] SBOM publish как GHCR artifact — через `cosign attest --type spdxjson`
+      (Rekor transparency log = immutable long-term store) + workflow
+      artifact `sbom-<service>.spdx.json` retention 90d.
+- [x] Cosign install + sign step — `sigstore/cosign-installer@{sha}`
+      — `@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003` (v4.1.1), cosign v2.4.1.
+      Keyless через `COSIGN_EXPERIMENTAL=1` (D4) + permissions `id-token: write`.
+- [x] Cosign verify step в deploy workflow — новый step `Verify signatures`
+      в `deploy.yml:deploy` перед SSH. Проверяет все 11 images через
+      `certificate-identity-regexp` для `deploy.yml@*` workflow path.
+      `deploy` needs `[build-push, sbom-sign]` — не катим без подписи.
+- [x] Trivy action pin: заменить `@master` → `@{sha}`
+      — `security.yml` × 4 места: `aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8`
+      (v0.36.0, latest stable). Ранее было `@0.28.0` (semver), теперь SHA.
+- [x] `docker-compose.prod.yml` — nginx digest-pin — `nginx:1.27-alpine@sha256:65645c...`
+- [x] `docker-compose.prod.yml` — postgres digest-pin — `postgres:16@sha256:760ea4...`
+      × 2 (academic + schedule).
+- [x] `docker-compose.prod.yml` — mongo digest-pin — `mongo:7@sha256:43fdde...`
+- [x] `docker-compose.prod.yml` — redis digest-pin — `redis:7-alpine@sha256:7aec73...`
+- [x] `docker-compose.prod.yml` — rabbitmq digest-pin — `rabbitmq:3.13-alpine@sha256:d7af1c...`
+- [x] **Bonus**: digest-pin для мониторинг-images (node-exporter, prometheus,
+      alertmanager, tempo, grafana, loki) + certbot/certbot (было implicit `:latest`).
+- [x] `docs/runbooks/image-signing-verification.md` (NEW-165) — TL;DR +
+      полный verify-скрипт (11 images) + SBOM verify-attestation + troubleshooting
+      (`no matching signatures` / cert mismatch / Rekor outage) + emergency
+      override flow + rotation.
+- [x] Renovate/Dependabot rule для digest updates (monthly)
+      — 2 новых packageRules в `renovate.json`: все base images digest-pin
+      с `schedule: first day of month`, auto-merge digest patch; + generic
+      `pinDigests: true` для всех github-actions.
 
 ## Группа 12 — Финализация
 

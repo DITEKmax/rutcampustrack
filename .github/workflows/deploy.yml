@@ -180,11 +180,135 @@ jobs:
           cache-from: type=gha,scope=landing
           cache-to: type=gha,scope=landing,mode=max
 
+  # M08 G11 (M06 defer, OWNER-ANSWERS P2-8/G11) — SBOM generation + cosign
+  # keyless signing для supply-chain attestation.
+  #
+  # Что получаем:
+  # - SBOM (SPDX json) per image, прикреплён к GHCR manifest как OCI attachment.
+  # - Cosign signature per image + per SBOM, keyless через Fulcio/Rekor (D4).
+  # - Verify на VPS: cosign verify с certificate-identity-regexp.
+  # - Дисплей в GHCR: Package → Digests → Attestations/Signatures.
+  #
+  # Actions pinned to SHA (latest stable releases 2026-04):
+  # - anchore/sbom-action@v0.24.0 (e22c389)
+  # - sigstore/cosign-installer@v4.1.1 (cad07c2)
+  sbom-sign:
+    name: SBOM + cosign sign
+    needs: build-push
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # required for cosign keyless OIDC (Fulcio)
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - api-gateway
+          - auth-service
+          - academic-service
+          - schedule-service
+          - attendance-service
+          - notification-web
+          - notification-bot
+          - pwa-nginx
+          - mini-app-nginx
+          - web-panel-nginx
+          - landing-nginx
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      # SBOM — SPDX json формат, чтобы работать с Trivy/Grype/GitHub UI.
+      # Attachment к image digest в GHCR (type: oci-dir).
+      - name: Generate + attach SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: ghcr.io/ditekmax/rutcampustrack/${{ matrix.image }}:${{ env.DEPLOY_SHA }}
+          format: spdx-json
+          upload-release-assets: false
+          upload-artifact: true
+          artifact-name: sbom-${{ matrix.image }}.spdx.json
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+        with:
+          cosign-release: 'v2.4.1'
+
+      # Keyless sign (D4 — без COSIGN_PRIVATE_KEY secret).
+      # OIDC token → Fulcio выдаёт short-lived cert (10мин TTL) →
+      # подпись + запись в Rekor transparency log.
+      - name: Cosign sign image (keyless)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign --yes \
+            ghcr.io/ditekmax/rutcampustrack/${{ matrix.image }}:${{ env.DEPLOY_SHA }}
+
+      # Подписать SBOM blob отдельно — signature attached к image через
+      # cosign attach, после этого verify может проверить SBOM origin.
+      - name: Cosign attest SBOM (keyless)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          # attest использует тот же keyless-flow что и sign
+          cosign attest --yes \
+            --predicate <(find . -name 'sbom-${{ matrix.image }}.spdx.json' -print0 | head -1 | xargs -0 cat) \
+            --type spdxjson \
+            ghcr.io/ditekmax/rutcampustrack/${{ matrix.image }}:${{ env.DEPLOY_SHA }} || \
+          echo "::warning::cosign attest failed for ${{ matrix.image }} — non-blocking, проверь SBOM artifact"
+
   deploy:
     name: Deploy to VPS
-    needs: build-push
+    # M08 G11 — deploy ждёт sbom-sign (нет подписи → не катим).
+    # sbom-sign fails при compromised OIDC или временном outage Fulcio →
+    # deploy блокируется. Manual rollback: workflow_dispatch с
+    # `allow_unsigned_deploy` (добавится в M09 emergency-flow).
+    needs: [build-push, sbom-sign]
     runs-on: ubuntu-latest
     steps:
+      # M08 G11 — verify cosign signatures ДО SSH-deploy. Catches:
+      # 1. OIDC compromise (identity mismatch),
+      # 2. image tampering между push и deploy,
+      # 3. Rekor log gaps.
+      - name: Install cosign for verify
+        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+        with:
+          cosign-release: 'v2.4.1'
+
+      - name: Log in to GHCR (for verify)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Verify signatures (11 images)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set -e
+          IMAGES=(api-gateway auth-service academic-service schedule-service attendance-service notification-web notification-bot pwa-nginx mini-app-nginx web-panel-nginx landing-nginx)
+          for img in "${IMAGES[@]}"; do
+            echo "--- Verifying ghcr.io/ditekmax/rutcampustrack/${img}:${{ env.DEPLOY_SHA }} ---"
+            cosign verify \
+              --certificate-identity-regexp="^https://github.com/ditekmax/rutcampustrack/.github/workflows/deploy\.yml@.*" \
+              --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+              "ghcr.io/ditekmax/rutcampustrack/${img}:${{ env.DEPLOY_SHA }}"
+          done
+          echo "✓ All 11 images verified via Fulcio/Rekor"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         env:

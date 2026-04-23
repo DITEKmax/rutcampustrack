@@ -63,6 +63,36 @@
       "matchPackageNames": ["gcr.io/cadvisor/cadvisor", "grafana/promtail"],
       "matchUpdateTypes": ["digest"],
       "automerge": true
+    },
+    {
+      "description": "M08 G11 — digest-pin all base images (postgres/mongo/redis/rabbitmq/nginx/certbot/prom/grafana/loki/tempo). Enforce image@sha256:... при любом Renovate update, auto-merge digest patch monthly.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "postgres",
+        "mongo",
+        "redis",
+        "rabbitmq",
+        "nginx",
+        "certbot/certbot",
+        "prom/node-exporter",
+        "prom/prometheus",
+        "prom/alertmanager",
+        "grafana/tempo",
+        "grafana/grafana",
+        "grafana/loki"
+      ],
+      "pinDigests": true,
+      "matchUpdateTypes": ["digest"],
+      "schedule": ["before 06:00 on the first day of the month"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "M08 G11 — GitHub Actions SHA-pin enforcement (supply-chain hardening).",
+      "matchDatasources": ["github-tags"],
+      "matchManagers": ["github-actions"],
+      "pinDigests": true
     }
   ],
   "vulnerabilityAlerts": {

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "otp.requested",
+  "description": "Пользователь запросил OTP-код для входа в веб-панель. Генерируется Auth Service (M09 G2, 08 P0-2) вместо возврата code в HTTP body. Потребляется notification-bot: доставляет код в Telegram через bot.send_message(telegram_id, code). При retry со стороны клиента auth перезаписывает Redis-код (TTL 5 мин) и публикует новое событие — bot получает свежий код, старый инвалидируется TTL (M09 NOTES Q1 вариант C).",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "otp.requested"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "telegram_id",
+        "code",
+        "ttl_seconds"
+      ],
+      "properties": {
+        "telegram_id": {
+          "type": "integer",
+          "description": "Telegram user id — адресат сообщения с кодом"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[0-9]{6}$",
+          "description": "6-значный OTP-код. Живёт в Redis TTL seconds. Секретный — consumer должен логировать MASKED (см. shared-logback masking правила)."
+        },
+        "ttl_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Время жизни кода в секундах — bot показывает пользователю срок действия"
+        }
+      }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (всегда auth-service для otp.requested)."
+    }
+  }
+}

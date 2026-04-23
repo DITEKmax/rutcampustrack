@@ -253,7 +253,7 @@ _Closed commit `3de786b` — 2026-04-23._
 
 ## Группа 11 — Supply chain (M06 defer'ы)
 
-_Closed commit `<pending>` — 2026-04-23._
+_Closed commit `2c17327` — 2026-04-23._
 
 - [x] SBOM generation в CI — `anchore/sbom-action@{sha}` per image
       — `anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610` (v0.24.0)

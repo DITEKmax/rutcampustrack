@@ -5,20 +5,24 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
-**M08 Test Infrastructure — 10/12 групп закрыто (2026-04-23).**
-Продолжать с **Группы 11 (Supply chain — SBOM/cosign/digest-pin)**. План —
+**M08 Test Infrastructure — 11/12 групп закрыто (2026-04-23).**
+Продолжать с **Группы 12 (Финализация + tag alpha.9)**. План —
 `docs/milestones/M08-test-infrastructure/PLAN.md`.
 
-Локальных коммитов ahead origin: **~46** (25 pre-M08 + 21 M08). Tag
-`v0.0.0-alpha.9` будет после G12. Push отложен до закрытия M08.
+Локальных коммитов ahead origin: **~49** (25 pre-M08 + 24 M08). Tag
+`v0.0.0-alpha.9` будет создан в G12 на последнем M08-коммите. Push
+отложен до закрытия M08.
 
 **Старт следующей сессии — дословно:**
 
 > Читаю NEXT-SESSION → CHECKLIST M08 → DECISIONS D1-D6. Стартую с
-> Группы 11 — Supply chain (SBOM generation через anchore/sbom-action,
-> cosign keyless sign через sigstore/cosign-installer (D4), Trivy action
-> pin @master → @sha, digest-pin для nginx/postgres/mongo/redis/rabbitmq
-> в docker-compose.prod.yml, runbook image-signing-verification.md NEW-165).
+> Группы 12 (финализация): ./gradlew build + integrationTest зелёные,
+> активация hard-fail JaCoCo gate (раскомментировать check.dependsOn в
+> root build.gradle.kts), активация diff-cover exit 1 в coverage.yml,
+> npm run test:coverage зелёные в PWA/web-panel, pytest --cov зелёный
+> в bot, **первый прогон k6** → performance-baseline.md, CHANGELOG
+> [Unreleased] + CLAUDE.md статус M08 ✅ + milestones README + post-mortem
+> в PLAN.md + tag v0.0.0-alpha.9 + hand-off для M09.
 
 ---
 
@@ -61,8 +65,9 @@ Opus сам откроет файлы и поймёт где мы останов
 | G8 Security contracts | `bef5c0a` | GrpcSecretFailFastIT pytest (7) + validate_startup_config() в bot/config.py, TmaIT +4 (bit-flip/diff-bot/missing-hash/replay-in-window, 10 total), SameSiteCookieContractIT (5) вместо CsrfDoubleSubmitIT (D6), @Tag("security-contract") + pytest marker. SecurityIdorIT не существовал → defer M09. |
 | G9 Event + WS contract | `b2ae934` | EventSchemaCoverageTest (40 параметризованных, shared-events) + StompIntegrationIT (3, notification-service RANDOM_PORT + StandardWebSocketClient) + PWA useStompCheckin +3 reconnect regression guards (delay, idempotent onConnect, fresh ticket). |
 | G10 Coverage gate | `3de786b` | JaCoCo 60% (disabled в check до G12) + Vitest 50% + pytest-cov 50% + diff-cover 80% (warning-mode, D3) + 3 PR-comment actions. Bonus: G4 Clock-regression fix (CheckinServiceTest/ExcuseServiceTest + flaky LessonEventServiceParallelTest). Baseline: auth 81%, attendance-app 16.5% — см. NOTES.md. |
+| G11 Supply chain | `2c17327` | SBOM matrix×11 (anchore/sbom-action@v0.24.0 SHA-pin) + cosign keyless sign + verify step в deploy (sigstore/cosign-installer@v4.1.1 SHA-pin). Digest-pin 13 base images в compose.prod (postgres×2/mongo/redis/rabbitmq/nginx + мониторинг + certbot). Trivy SHA-pin (@v0.36.0). Renovate digest-bump rule monthly. NEW-165 image-signing-verification.md. |
 
-### Остались (2 группы)
+### Остались (1 группа)
 - Параметризованный `EventContractIT` — читает
   `event-schemas/*.json`, валидирует publisher+consumer для всех
   14+ событий (lesson.*, attendance.*, excuse.*, late_checkin.*,
@@ -71,16 +76,6 @@ Opus сам откроет файлы и поймёт где мы останов
 - `StompIntegrationTest` в notification-web (RANDOM_PORT +
   StandardWebSocketClient) — полный WebSocket lifecycle.
 - PWA WebSocket reconnect test — mock WebSocket + `onclose → setTimeout(reconnect)` cycle.
-
-**G11 — Supply chain (M06 defer).** ~2-3ч.
-- **SBOM generation** (`anchore/sbom-action@{sha}` или
-  `cyclonedx-gradle-plugin`) — per-image SBOM artifact на GHCR.
-- **Cosign keyless signing** (D4) через `sigstore/cosign-installer@{sha}`.
-- **Trivy action sha-pin** — текущий `@master`, заменить на sha.
-- **Digest-pin** для base images в `docker-compose.prod.yml`: nginx,
-  postgres×2, mongo, redis, rabbitmq → `image@sha256:...`.
-- `docs/runbooks/image-signing-verification.md` (NEW-165) — verify
-  команда с `--certificate-identity-regexp` pattern для VPS.
 
 **G12 — Финализация.** ~1-2ч.
 - `./gradlew build` + `./gradlew integrationTest` зелёные.
@@ -144,7 +139,7 @@ M04 Observability ✅ 2026-04-20
 M05 Performance ✅ 2026-04-21
 M06 Ops & Supply Chain ✅ 2026-04-21
 M07 Frontend Hardening ✅ 2026-04-22 (tag `v0.0.0-alpha.8` локальный)
-**M08 Test Infrastructure ⏳ 10/12 групп закрыто, продолжать с G11.**
+**M08 Test Infrastructure ⏳ 11/12 групп закрыто, продолжать с G12.**
 M09 Prod Release Blockers ⬜
 M10 Notification History ⬜
 M11 OpenAPI Polish ⬜

@@ -11,6 +11,7 @@ import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.entity.User;
 import ru.rutcampustrack.auth.entity.enums.AccountStatus;
+import ru.rutcampustrack.auth.event.OtpRequestedEvent;
 import ru.rutcampustrack.auth.event.OtpVerifiedEvent;
 import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
 import ru.rutcampustrack.auth.exception.OtpExpiredException;
@@ -52,7 +53,13 @@ public class OtpService {
         this.businessMetrics = businessMetrics;
     }
 
-    public String requestOtp(OtpRequest request) {
+    /**
+     * M09 G2 (08 P0-2) — requestOtp больше НЕ возвращает код наружу.
+     * Код идёт в notification-bot через RabbitMQ event {@code otp.requested};
+     * bot отправляет его в Telegram. HTTP body ответа пустое (204 No Content).
+     * См. DECISIONS D4 — почему прямая публикация, а не shared-outbox.
+     */
+    public void requestOtp(OtpRequest request) {
         Long telegramId = request.telegramId();
 
         User user = userRepository.findByTelegramId(telegramId)
@@ -113,7 +120,12 @@ public class OtpService {
         // на текущий момент; SMS будет добавлен — tag выделен под это.
         businessMetrics.otpRequestCounter("telegram").increment();
 
-        return code;
+        // M09 G2 (08 P0-2) — doставка кода через RabbitMQ event → bot. fire-and-forget
+        // (DomainEventListener обрабатывает @EventListener → rabbitTemplate).
+        // Retry клиента при потере события → Redis TTL просрочится, клиент
+        // получит новый код (NOTES Q1 вариант C).
+        eventPublisher.publishEvent(new OtpRequestedEvent(
+                this, telegramId, code, otpProperties.ttlSeconds()));
     }
 
     public TokenResponse verifyOtp(OtpVerifyRequest request) {

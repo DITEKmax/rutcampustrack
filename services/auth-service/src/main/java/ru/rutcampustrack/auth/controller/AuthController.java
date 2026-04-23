@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
-import ru.rutcampustrack.auth.dto.OtpCodeResponse;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
@@ -146,13 +145,17 @@ public class AuthController {
         return ResponseEntity.ok(authService.getPublicKey());
     }
 
-    @Operation(summary = "Request OTP code", description = "Generate OTP code for Telegram-based authentication and return it in response body for bot delivery")
-    @ApiResponse(responseCode = "200", description = "OTP code generated and returned")
+    @Operation(summary = "Request OTP code",
+               description = "Generate OTP code for Telegram-based authentication. "
+                       + "M09 G2 (08 P0-2): код отправляется пользователю через "
+                       + "notification-bot (RabbitMQ event otp.requested), НЕ возвращается в HTTP body.")
+    @ApiResponse(responseCode = "204", description = "OTP code generated and dispatched to Telegram bot")
+    @ApiResponse(responseCode = "401", description = "Unknown telegram_id or inactive account")
     @ApiResponse(responseCode = "429", description = "Rate limited — too many requests")
     @PostMapping("/otp/request")
-    public ResponseEntity<OtpCodeResponse> requestOtp(@Valid @RequestBody OtpRequest request) {
-        String code = otpService.requestOtp(request);
-        return ResponseEntity.ok(new OtpCodeResponse(code));
+    public ResponseEntity<Void> requestOtp(@Valid @RequestBody OtpRequest request) {
+        otpService.requestOtp(request);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Verify OTP code", description = "Verify OTP code and receive JWT token pair + refresh cookie")

@@ -9,7 +9,6 @@ import org.springframework.http.*;
 import org.springframework.test.context.jdbc.Sql;
 import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
-import ru.rutcampustrack.auth.dto.OtpCodeResponse;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
@@ -42,32 +41,34 @@ class OtpIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void otpRequest_withValidTelegramId_returns200WithCode() {
+    void otpRequest_withValidTelegramId_returns204NoBody() {
         OtpRequest request = new OtpRequest(123456789L);
 
-        ResponseEntity<OtpCodeResponse> response = restTemplate.postForEntity(
-                "/auth/otp/request", request, OtpCodeResponse.class);
+        ResponseEntity<Void> response = restTemplate.postForEntity(
+                "/auth/otp/request", request, Void.class);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().code()).isNotBlank();
-        assertThat(response.getBody().code()).hasSize(6);
+        // M09 G2 (08 P0-2) — 204 No Content, код в body отсутствует,
+        // доставляется через RabbitMQ event в notification-bot.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(response.getBody()).isNull();
+
+        // Tests читают код из Redis напрямую (в prod его видит только bot).
+        String code = redisTemplate.opsForValue().get("otp:123456789");
+        assertThat(code).isNotBlank();
+        assertThat(code).hasSize(6);
     }
 
     @Test
     void otpVerify_withCorrectCode_returnsTokenPair() {
-        // Request OTP — now returns code in response body
         OtpRequest otpRequest = new OtpRequest(123456789L);
-        ResponseEntity<OtpCodeResponse> requestResponse = restTemplate.postForEntity(
-                "/auth/otp/request", otpRequest, OtpCodeResponse.class);
-        assertThat(requestResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(requestResponse.getBody()).isNotNull();
+        ResponseEntity<Void> requestResponse = restTemplate.postForEntity(
+                "/auth/otp/request", otpRequest, Void.class);
+        assertThat(requestResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
-        // Use code from response body (also verify it matches Redis)
-        String code = requestResponse.getBody().code();
+        // Tests читают код из Redis — в prod код попадает в Telegram через event.
+        String code = redisTemplate.opsForValue().get("otp:123456789");
         assertThat(code).isNotBlank();
 
-        // Verify OTP
         OtpVerifyRequest verifyRequest = new OtpVerifyRequest(123456789L, code);
         ResponseEntity<TokenResponse> verifyResponse = restTemplate.postForEntity(
                 "/auth/otp/verify", verifyRequest, TokenResponse.class);
@@ -82,7 +83,7 @@ class OtpIT extends AbstractIntegrationTest {
     void otpVerify_withWrongCode_returns401() {
         // Request OTP first to ensure there is a valid OTP in Redis
         OtpRequest otpRequest = new OtpRequest(123456789L);
-        restTemplate.postForEntity("/auth/otp/request", otpRequest, OtpCodeResponse.class);
+        restTemplate.postForEntity("/auth/otp/request", otpRequest, Void.class);
 
         // Verify with wrong code
         OtpVerifyRequest verifyRequest = new OtpVerifyRequest(123456789L, "000000");
@@ -94,11 +95,9 @@ class OtpIT extends AbstractIntegrationTest {
 
     @Test
     void otpVerifyByCode_withCorrectCode_returnsTokenPair() {
-        // Request OTP
         OtpRequest otpRequest = new OtpRequest(123456789L);
-        ResponseEntity<OtpCodeResponse> requestResponse = restTemplate.postForEntity(
-                "/auth/otp/request", otpRequest, OtpCodeResponse.class);
-        String code = requestResponse.getBody().code();
+        restTemplate.postForEntity("/auth/otp/request", otpRequest, Void.class);
+        String code = redisTemplate.opsForValue().get("otp:123456789");
 
         // Verify by code only (no telegram_id)
         OtpVerifyByCodeRequest verifyRequest = new OtpVerifyByCodeRequest(code);

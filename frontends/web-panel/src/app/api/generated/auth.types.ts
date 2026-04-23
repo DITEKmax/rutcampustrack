@@ -174,7 +174,7 @@ export interface paths {
         put?: never;
         /**
          * Request OTP code
-         * @description Generate OTP code for Telegram-based authentication and return it in response body for bot delivery
+         * @description Generate OTP code for Telegram-based authentication. M09 G2 (08 P0-2): код отправляется пользователю через notification-bot (RabbitMQ event otp.requested), НЕ возвращается в HTTP body.
          */
         post: operations["requestOtp"];
         delete?: never;
@@ -321,9 +321,6 @@ export interface components {
         OtpRequest: {
             /** Format: int64 */
             telegramId: number;
-        };
-        OtpCodeResponse: {
-            code?: string;
         };
         LoginRequest: {
             login?: string;
@@ -617,23 +614,26 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OTP code generated and returned */
-            200: {
+            /** @description OTP code generated and dispatched to Telegram bot */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["OtpCodeResponse"];
+                content?: never;
+            };
+            /** @description Unknown telegram_id or inactive account */
+            401: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
             };
             /** @description Rate limited — too many requests */
             429: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["OtpCodeResponse"];
-                };
+                content?: never;
             };
         };
     };

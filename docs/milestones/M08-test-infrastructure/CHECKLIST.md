@@ -214,6 +214,8 @@
 
 ## Группа 10 — Coverage gate (QD2)
 
+_Closed commit `3de786b` — 2026-04-23._
+
 - [x] JaCoCo config в root `build.gradle.kts`: 60% line per-module
       — `subprojects { apply(plugin = "jacoco") }` + `afterEvaluate` с
       violationRules LINE 0.60, инструмент JaCoCo 0.8.12.

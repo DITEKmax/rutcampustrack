@@ -18,6 +18,8 @@ import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -130,7 +132,13 @@ public class OtpService {
             throw new OtpExpiredException();
         }
 
-        if (!storedCode.equals(request.code())) {
+        // M09 Группа 1 (01 P0-5): constant-time compare — путь не ветвится
+        // по содержимому кода, устраняя timing side-channel.
+        String requestCode = request.code() == null ? "" : request.code();
+        boolean matches = MessageDigest.isEqual(
+                storedCode.getBytes(StandardCharsets.UTF_8),
+                requestCode.getBytes(StandardCharsets.UTF_8));
+        if (!matches) {
             // IMP-03: Track verification attempts, annul OTP after 3 failures
             String verifyKey = "otp_verify_attempts:" + telegramId;
             Long attempts = redisTemplate.opsForValue().increment(verifyKey);

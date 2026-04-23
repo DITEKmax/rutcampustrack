@@ -9,12 +9,18 @@ message so the headman sees immediate feedback ("⏳ Обрабатываем…
 once late_checkin.decided arrives — see student_alerts.py). For simplicity we edit
 straight to the final label here, since the decision event is fire-and-forget and
 the attendance-service is authoritative.
+
+M09 G6 (06 P1-1): перед publish проверяем is_headman через academic_client
+(симметрично excuse.py). Student или unlinked Telegram получает alert
+«Недостаточно прав» без publish.
 """
 
 import logging
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
+
+from bot.handlers.excuse import _verify_headman
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +36,11 @@ async def handle_late_checkin_decision(callback: CallbackQuery, **data) -> None:
 
     action, request_id = parts[1], parts[2]
     approved = action == "approve"
+
+    # M09 G6 (06 P1-1) — role check ДО publish, симметрично excuse.py.
+    academic_client = data.get("academic_client")
+    if not await _verify_headman(callback, academic_client):
+        return
 
     event_publisher = data.get("event_publisher")
     if event_publisher is None:

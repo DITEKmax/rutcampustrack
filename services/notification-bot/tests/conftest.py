@@ -58,3 +58,19 @@ def event_publisher_mock():
     publisher = MagicMock()
     publisher.publish = AsyncMock()
     return publisher
+
+
+@pytest.fixture
+def academic_client_mock():
+    """M09 G6.2 — AsyncMock для AcademicGrpcClient.get_user_by_telegram_id.
+
+    По умолчанию возвращает found + is_headman=True (чтобы handler'ы
+    проходили role check в happy-path). Тесты не-старосты override'ят
+    return_value на `found=True, is_headman=False` или `found=False`.
+    """
+    client = MagicMock()
+    user = MagicMock()
+    user.found = True
+    user.is_headman = True
+    client.get_user_by_telegram_id = AsyncMock(return_value=user)
+    return client

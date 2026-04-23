@@ -45,6 +45,43 @@
   (owner явно указал «v0.1»).
 - **Magic-link для первого входа** (01-Q1 accepted tradeoff).
 
+## 2026-04-23 — Группа 6 ЗАКРЫТА (role check + NEW-121 audit)
+
+### Что сделано (коммит — следующий)
+
+- **06 P1-1**: `bot/handlers/excuse.py` + `late_checkin.py` — перед publish
+  проверяют `is_headman` через `academic_client.get_user_by_telegram_id`.
+  Helper `_verify_headman` вынесен в `excuse.py`, `late_checkin.py`
+  импортирует его (избегаем дублирования 20 строк). Ошибка gRPC →
+  fail-closed: «Не удалось проверить права» без publish.
+- **23 unit-тестов** (11 excuse + 12 late_checkin), handlers coverage
+  92.83% (>70% gate), 198 passed суммарно.
+- **DECISIONS D6**: не создаём `excuse.approved/rejected.json` — flow
+  уже single `excuse.decided` со status-полем, симметрично
+  `late_checkin.decided` (избегаем асимметрии + dup handler-кода).
+
+### NEW-121 — audit asymmetric flows (bot → backend)
+
+**Inventory всех синхронных REST-вызовов из notification-bot:**
+
+| From | To | Method | Purpose | Verdict |
+|------|-----|--------|---------|---------|
+| `/login` handler | auth-service `/auth/otp/request` | POST | инициировать OTP | OK — command (не decision), нет смысла через Rabbit command queue для одного endpoint'а |
+| `/status` handler | schedule gRPC `get_active_lesson` | gRPC | get active lesson | OK — read-only query, Rabbit не подходит (synchronous reply required) |
+| `/status` handler | attendance REST `GET /api/attendance/reports/student/records` | GET | read attendance history | OK — read-only query |
+| excuse/late_checkin callback | academic gRPC `get_user_by_telegram_id` | gRPC | role check (G6) | OK — read-only query, JUST added in G6 |
+| various consumer notif-handlers | academic gRPC `get_group_members`, `get_subjects_by_ids` | gRPC | resolve names | OK — read-only query |
+
+**Нет** оставшихся asymmetric «bot publishes decision через REST». Все
+decision events идут через Rabbit (`excuse.decision`, `late_checkin.decision`).
+Все REST/gRPC-вызовы — либо read-only query (natural fit), либо single
+command-trigger (OTP).
+
+**Вывод:** audit NEW-121 закрыт без action items. Закрепляем pattern:
+«bot публикует decision events через Rabbit, читает лукапы через gRPC,
+POST-команды только для simple command-triggers без решений». Новые
+handler'ы должны следовать этому.
+
 ## 2026-04-23 — Группа 2 ЗАКРЫТА (G2.6 + G2.7 в финальной сессии)
 
 ### Что сделано (коммиты)

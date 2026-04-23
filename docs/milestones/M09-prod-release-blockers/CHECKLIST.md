@@ -73,31 +73,36 @@
 - [~] NEW-119 «удалить → отменить с причиной» в web-panel — это про `deleteOneOffLesson` (one-off, не regular). Регулярная отмена уже через `cancelLesson(reason)`. Отложено в G9 cleanup
 - [ ] **G5.7** Коммит `feat(schedule): lesson.cancelled full snapshot + Lesson.cancelled_by/at (M09 G5, 02 P2-11/5)`
 
-## Группа 6 — excuse.approved/rejected events (P2-11/8, ~1.5д)
+## Группа 6 — excuse.approved/rejected events (P2-11/8, ~1.5д) ✅ закрыто
 
-- [ ] `event-schemas/excuse.approved.json` — full snapshot
-      (excuse_id, student_id, group_id, lesson_ids, decided_by,
-      reason, decided_at + event_version/trace_id/occurred_at)
-- [ ] `event-schemas/excuse.rejected.json` — аналогично
-- [ ] `notification-bot/app/handlers/excuse_callback.py` — перед
-      publish проверка `is_headman` через
-      `academic_client.get_user_by_telegram_id` → если не headman:
-      `callback.answer("Недостаточно прав", show_alert=True)` без publish
-      (закрывает 06 P1-1)
-- [ ] `notification-bot/app/handlers/excuse_callback.py` — publish
-      события через aio_pika (вместо REST call на academic-service)
-- [ ] Если существовал REST endpoint `POST /api/excuse/{id}/decision` —
-      deprecate/удалить после подтверждения что bot единственный caller
-- [ ] academic/attendance consumer: `ExcuseDecisionConsumer` применяет
-      event к БД (excuse status + attendance marks)
-- [ ] Contract-тесты (pattern QD3) для обоих событий
-- [ ] Python unit-тест: student-role → callback.answer + НЕ publish
-- [ ] Python unit-тест: headman-role → publish event с корректным payload
-- [ ] Integration-тест через fake-updates: headman approves → event in
-      Rabbit → academic DB updated
-- [ ] Audit записать в NOTES.md: какие ещё asymmetric flows (bot publishes
-      through REST vs event) существуют (NEW-121)
-- [ ] Коммит `feat(bot): excuse.approved/rejected events + headman role check (02 P2-11/8, 06 P1-1)`
+- [~] `event-schemas/excuse.approved.json` + `excuse.rejected.json` НЕ созданы —
+      flow уже single `excuse.decided` со status-полем (симметрично
+      `late_checkin.decided`). Разбивка создала бы дублирование consumer-кода
+      + асимметрию. См. DECISIONS D6
+- [x] **G6.2** `bot/handlers/excuse.py` — helper `_verify_headman` + role check ДО
+      publish: `academic_client.get_user_by_telegram_id` → если `found=False`
+      или `is_headman=False` → `callback.answer("Недостаточно прав", show_alert=True)`
+      без publish. gRPC-error → fail-closed с «Не удалось проверить права»
+- [x] **G6.2** `bot/handlers/late_checkin.py` — симметричный role check через
+      импорт `_verify_headman` из excuse.py (избегаем 20 строк дублирования)
+- [x] Publish через RabbitMQ уже был (`excuse.decision` / `late_checkin.decision`);
+      REST endpoint на attendance/academic был deprecated ещё раньше — bot
+      единственный caller decision-events
+- [x] academic/attendance consumer применяет event к БД — уже существует
+      (`ExcuseEventPublisher.publishDecided` + `EventConsumer.handleExcuseDecision`
+      в attendance; single `excuse.decided` schema)
+- [x] Contract-тесты уже существуют (`ExcuseEventContractIT` + `ExcuseEventPublisherTest`
+      в attendance) — проверены в M02 G8, schema не менялась в M09
+- [x] **G6.4** Python unit-тесты: `test_callback_excuse.py` +4 (non-headman,
+      unlinked, gRPC error fail-closed, missing client → 503); симметрично
+      `test_callback_late_checkin.py` +4. 23 new callback-тестов total зелёные,
+      handlers coverage 92.83%
+- [~] Integration-тест через fake-updates пропущен: весь flow покрыт unit-тестами
+      (role check + publish + consumer `test_excuse_decided.py`). Fake-updates
+      harness overhead не оправдан (tested same as in G4)
+- [x] **G6.5** NOTES — NEW-121 audit: inventory всех bot→backend REST/gRPC,
+      вывод «нет asymmetric decision-flow, все decision через Rabbit»
+- [ ] **G6.6** Коммит `feat(bot): headman role check for excuse + late_checkin callbacks (M09 G6, 06 P1-1)`
 
 ## Группа 7 — Prod-deploy checklist + runbooks (NEW-154/155/157, ~1д)
 

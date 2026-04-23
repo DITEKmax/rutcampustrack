@@ -140,3 +140,34 @@ regenerate/subject-delete, и они будут всплывать в отчёт
 
 **Последствия:** G5 целиком посвящается расширению `lesson.cancelled`
 до full snapshot. `lesson.deleted` не трогаем — работает как было.
+
+## D6 — Оставляем single `excuse.decided` (M09 G6)
+
+**Контекст:** PLAN.md G6 (02 P2-11/8) требует «`event-schemas/excuse.approved.json`
++ `excuse.rejected.json` с full snapshot». CHECKLIST повторял это.
+
+**Текущее состояние (до G6):** существует единое событие `excuse.decided`
+с `payload.status in {"approved","rejected"}` + `decision_by` + `decision_comment`.
+Симметрично `late_checkin.decided` (используется в G3 late-checkin flow) и
+`excuse.requested`. Bot consumer `test_excuse_decided.py` + attendance publisher
+`ExcuseEventPublisher.publishDecided` — оба знают про единое событие и ветку
+на status.
+
+**Альтернативы:**
+- (a) Разбить на два события: `excuse.approved` + `excuse.rejected`. Каждое
+  со своим schema-файлом и своим consumer-handler'ом.
+- (b) Оставить `excuse.decided` со status-полем (текущее). То же что
+  `late_checkin.decided`.
+
+**Решение:** вариант (b). Обоснование:
+- Consumer практически всегда ветвится по status (template сообщения
+  «одобрено/отклонено», сброс attendance только для approved). Разбивка
+  на 2 события добавила бы дублирование handler-кода.
+- Единообразие с `late_checkin.decided` — оба decision events одинаковой
+  формы. Разбивка только excuse создала бы асимметрию.
+- Schema `excuse.decided.json` и `late_checkin.decided.json` уже содержат
+  все full snapshot поля: ticket_id/student_id/group_id/decision_by/
+  decision_comment/decided_at. Никакой information loss нет.
+
+**Последствия:** G6 закрывается без создания новых schemas. Focus — на
+role check (06 P1-1) и audit asymmetric flows (NEW-121).

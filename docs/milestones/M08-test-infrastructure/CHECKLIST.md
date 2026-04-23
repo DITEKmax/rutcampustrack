@@ -290,7 +290,7 @@ _Closed commit `2c17327` — 2026-04-23._
 
 ## Группа 12 — Финализация
 
-_Closed commit `<pending>` — 2026-04-23._
+_Closed commit `bb7b20b` — 2026-04-23._
 
 - [x] `./gradlew build` + `./gradlew integrationTest` зелёные
       — `./gradlew check` UP-TO-DATE с активированным JaCoCo gate.
@@ -318,7 +318,7 @@ _Closed commit `<pending>` — 2026-04-23._
       секция для G4 Clock regression + `LessonEventServiceParallelTest`.
 - [x] CLAUDE.md статус M08 → ✅ с датой 2026-04-23.
 - [x] docs/milestones/README.md — M08 ✅ + дата.
-- [ ] Tag `v0.0.0-alpha.9` — создаётся последним коммитом G12.
+- [x] Tag `v0.0.0-alpha.9` — annotated local tag на commit `bb7b20b`.
 
 ---
 

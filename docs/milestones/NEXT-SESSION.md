@@ -5,127 +5,100 @@ Opus сам откроет файлы и поймёт где мы останов
 
 ---
 
-**M08 Test Infrastructure — 11/12 групп закрыто (2026-04-23).**
-Продолжать с **Группы 12 (Финализация + tag alpha.9)**. План —
-`docs/milestones/M08-test-infrastructure/PLAN.md`.
+**M08 Test Infrastructure ЗАВЕРШЁН (2026-04-23, tag `v0.0.0-alpha.9`).**
+Начинаем **M09 Prod Release Blockers** — Фаза 3 из `99-executive-summary.md`.
+План — `docs/milestones/M09-prod-release-blockers/PLAN.md`.
 
-Локальных коммитов ahead origin: **~49** (25 pre-M08 + 24 M08). Tag
-`v0.0.0-alpha.9` будет создан в G12 на последнем M08-коммите. Push
-отложен до закрытия M08.
+Локальных коммитов ahead origin: **~52** (25 pre-M08 + 27 M08). Tags
+`v0.0.0-alpha.2..9` локальные. Push отложен до явного go.
 
 **Старт следующей сессии — дословно:**
 
-> Читаю NEXT-SESSION → CHECKLIST M08 → DECISIONS D1-D6. Стартую с
-> Группы 12 (финализация): ./gradlew build + integrationTest зелёные,
-> активация hard-fail JaCoCo gate (раскомментировать check.dependsOn в
-> root build.gradle.kts), активация diff-cover exit 1 в coverage.yml,
-> npm run test:coverage зелёные в PWA/web-panel, pytest --cov зелёный
-> в bot, **первый прогон k6** → performance-baseline.md, CHANGELOG
-> [Unreleased] + CLAUDE.md статус M08 ✅ + milestones README + post-mortem
-> в PLAN.md + tag v0.0.0-alpha.9 + hand-off для M09.
+> Читаю NEXT-SESSION → CHECKLIST M09 → PLAN M09. Стартую с **Группы 1
+> (Quick wins, ~2ч)**: `MessageDigest.isEqual` в OtpService,
+> удаление `AttendanceService.cleanupOrphans` + `@PostConstruct`,
+> landing deep-link кнопки `/login` → `t.me/<bot>`. Атомарные коммиты
+> по каждому fix.
 
 ---
 
-## M08 статус (2026-04-23, 21 коммит)
+## M09 scope (из PLAN.md)
 
-### Правила (без изменений с M05-M07)
+**Группы** (9 групп, ~7-8 человеко-дней estimate):
+
+| # | Группа | Суть |
+|---|--------|------|
+| G1 | Quick wins | MessageDigest + cleanupOrphans delete + landing deep-link |
+| G2 | OTP через RabbitMQ | 08 P0-2: убрать `code` из HTTP body, publisher → bot consumer |
+| G3 | latecheckin тесты | 14 P0-1: unit + IT + jacoco 70% gate активация |
+| G4 | bot handlers тесты | Pytest coverage для handlers/ → 70% pilot |
+| G5 | Event unification | lesson.cancelled / excuse.{approved,rejected} publishers |
+| G6 | Prod-deploy-checklist | 13 P0-3: runbook для VPS release |
+| G7 | Secret rotation | JWT keys + DB passwords + GRPC_SECRET runbook |
+| G8 | Resource limits | compose.prod CPU/mem limits per service |
+| G9 | Финализация | build + check + tag v0.0.0-alpha.10 + post-mortem |
+
+**Правила (без изменений с M05-M08):**
 
 - **Русский язык** в отчётах / NOTES / ответах.
 - **Ветка `dev`**. Push на `main`/`origin` — только с явного `go`.
 - Не звать `gsd-*` агентов. `Explore` для «найти все X»,
-  `bug-hunter` / `code-reviewer` / `security-auditor` — в G12 audit.
+  `bug-hunter` / `code-reviewer` / `security-auditor` — в G9 audit.
 - Surprise → NOTES.md + спросить до продолжения.
 - Micro-решение → DECISIONS.md.
 - Закрыл пункт CHECKLIST → `[x]` через Edit (commit hash в описании).
 - **Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные.**
-- `CHANGELOG.md [Unreleased]` обновляй при значимых изменениях (G12).
+- `CHANGELOG.md [Unreleased]` обновляй при значимых изменениях (G9).
 
-### M08 DECISIONS (D1-D6, commits `0c8564c`, `bef5c0a`)
+## M08 хэндовер-факты для M09
 
-| # | Вопрос | Решение |
-|---|--------|---------|
-| D1 | Playwright scope для mini-app | **skip** (14 P2-12 ACCEPT) |
-| D2 | k6 в CI | **manual-only**, CI → v0.1 |
-| D3 | Diff-coverage gate | **warning первый PR → hard-fail далее** |
-| D4 | Cosign | **keyless** (OIDC Fulcio), публичный репо |
-| D5 | Testcontainers reuse | везде + **исключение FlywayMigrationIT** |
-| D6 | G8 CSRF test | `CsrfDoubleSubmitIT` → **`SameSiteCookieContractIT`** (M03b отверг double-submit token; реальный контракт = SameSite attributes) |
+### Coverage gate активен
 
-### Закрытые группы
+- `./gradlew check` запускает `jacocoTestCoverageVerification`
+  для всех модулей с тестами.
+- **Per-module ratchet floor** в root `build.gradle.kts` —
+  coverage не может упасть ниже текущего floor, но M09 в Группе 3
+  **должна поднять attendance-app ratchet floor** с 14% до
+  реального значения после латчекин-тестов (ожидание: 25-30% после
+  LateCheckinServiceTest + LateCheckinControllerIT).
+- `attendance-app/build.gradle.kts` — placeholder-rule для
+  `latecheckin.*` 70% LINE с `isEnabled = false`. M09 G3 включает:
+  `isEnabled = true` после добавления тестов.
+- PWA vitest threshold ratchet 38% lines / 47% functions. M09+
+  поднимает по мере добавления тестов.
+- Web-panel vitest 50% target (actual 78.1%).
+- pytest-cov 50% gate (actual 70.5%). M09 G4 добавит отдельный CI
+  step `pytest --cov=bot/handlers --cov-fail-under=70` для pilot.
 
-| Группа | Commits | Ключевое |
-|--------|---------|----------|
-| G1 Testing conventions | 8 (`42f9147`..`269107c`) | 31 `*Test`→`*IT` rename, Gradle split, ArchUnit IntegrationTestNamingRule, CI yml split |
-| G2 Testcontainers hybrid | `68a9ecb` | `.withReuse(true)` × 8 containers, 41 `@MockitoBean` audit (37 gRPC → defer v0.1), `docs/runbooks/dev-setup.md` |
-| G3 Flyway MigrationIT | `3781edf` | schedule V1..V12 + academic V1..V17 с 3 template'ами (fresh install / checksum / data-preservation), Mongo indexes smoke, `docs/runbooks/migration-testing.md` (NEW-159) |
-| G4 Golden + Clock | `f61537b` + `3a38fc1` | Clock injection в CheckinService/LateCheckinService/ExcuseService, week-parity.json (22 cases) + display-name.json (12), parameterized + property tests, `docs/golden-tests.md` (NEW-160), jqwik defer |
-| G5 Playwright E2E | `5191098` | `tests/e2e/` scaffold, 4 core + 4 role specs, axe-core, `scripts/smoke-prod.sh`, `docs/e2e-testing.md` (NEW-161). CI job **defer в M09** |
-| G6 Frontend unit | `6df30a6` | 09/10 P0-4 regression guards (`clearAllClientState.test.ts` PWA + `clear-all-client-state.spec.ts` web-panel), `docs/testing.md` (NEW-162) |
-| G7 Load tests | `4730dec` | `tests/load/bulk-mark.js` + `geolocation-flood.js`, `docs/load-testing.md` (NEW-163), `docs/performance-baseline.md` (шаблон, первый прогон в G12) |
-| G8 Security contracts | `bef5c0a` | GrpcSecretFailFastIT pytest (7) + validate_startup_config() в bot/config.py, TmaIT +4 (bit-flip/diff-bot/missing-hash/replay-in-window, 10 total), SameSiteCookieContractIT (5) вместо CsrfDoubleSubmitIT (D6), @Tag("security-contract") + pytest marker. SecurityIdorIT не существовал → defer M09. |
-| G9 Event + WS contract | `b2ae934` | EventSchemaCoverageTest (40 параметризованных, shared-events) + StompIntegrationIT (3, notification-service RANDOM_PORT + StandardWebSocketClient) + PWA useStompCheckin +3 reconnect regression guards (delay, idempotent onConnect, fresh ticket). |
-| G10 Coverage gate | `3de786b` | JaCoCo 60% (disabled в check до G12) + Vitest 50% + pytest-cov 50% + diff-cover 80% (warning-mode, D3) + 3 PR-comment actions. Bonus: G4 Clock-regression fix (CheckinServiceTest/ExcuseServiceTest + flaky LessonEventServiceParallelTest). Baseline: auth 81%, attendance-app 16.5% — см. NOTES.md. |
-| G11 Supply chain | `2c17327` | SBOM matrix×11 (anchore/sbom-action@v0.24.0 SHA-pin) + cosign keyless sign + verify step в deploy (sigstore/cosign-installer@v4.1.1 SHA-pin). Digest-pin 13 base images в compose.prod (postgres×2/mongo/redis/rabbitmq/nginx + мониторинг + certbot). Trivy SHA-pin (@v0.36.0). Renovate digest-bump rule monthly. NEW-165 image-signing-verification.md. |
+### Supply-chain активен
 
-### Остались (1 группа)
-- Параметризованный `EventContractIT` — читает
-  `event-schemas/*.json`, валидирует publisher+consumer для всех
-  14+ событий (lesson.*, attendance.*, excuse.*, late_checkin.*,
-  otp.requested, user.*). M02 покрыл только `LessonStartedContractIT`,
-  остальные — через pattern.
-- `StompIntegrationTest` в notification-web (RANDOM_PORT +
-  StandardWebSocketClient) — полный WebSocket lifecycle.
-- PWA WebSocket reconnect test — mock WebSocket + `onclose → setTimeout(reconnect)` cycle.
+- Digest-pin 13 images в `docker-compose.prod.yml`.
+- deploy.yml: `sbom-sign` job + verify перед SSH. Без подписи — red.
+- Cosign verify команда в `docs/runbooks/image-signing-verification.md`.
+- Trivy SHA-pin (v0.36.0).
+- Renovate monthly digest-bump rule + `pinDigests: true` для GH Actions.
 
-**G12 — Финализация.** ~1-2ч.
-- `./gradlew build` + `./gradlew integrationTest` зелёные.
-- **Активация hard-fail JaCoCo gate**: раскомментировать
-  `tasks.named("check") { dependsOn("jacocoTestCoverageVerification") }`
-  в root build.gradle.kts. Потребует чтобы все модули достигли 60%
-  LINE — возможно, понадобится per-module override для attendance-app
-  (baseline 16.5%) или исключение legacy-пакетов.
-- **Активация diff-cover hard-fail** в coverage.yml:
-  раскомментировать `exit 1` в последнем step'е `diff-cover`.
-- `npm run test:coverage` в PWA + web-panel зелёные.
-- `pytest --cov` в notification-bot зелёный.
-- **Первый прогон k6** → записать числа в `performance-baseline.md`.
-- `CHANGELOG.md [Unreleased]` — M08 summary.
-- `CLAUDE.md` — статус M08 → ✅.
-- `docs/milestones/README.md` — M08 ✅ + дата.
-- Post-mortem секция в `docs/milestones/M08-test-infrastructure/PLAN.md`.
-- `git tag v0.0.0-alpha.9` на последнем коммите M08 (локально).
-- Hand-off в `NEXT-SESSION.md` для M09/M10/M11/M12.
+### Diff-cover hard-fail
 
-### Важные артефакты M08 (source of truth)
+- `.github/workflows/coverage.yml` — `exit 1` активен.
+- PR с diff-cover < 80% на changed lines → red CI.
+- Первый M09 PR будет проверкой.
 
-- `docs/milestones/M08-test-infrastructure/{PLAN,CHECKLIST,NOTES,DECISIONS}.md`
-- `services/shared/shared-test-containers/src/testFixtures/java/ru/rutcampustrack/shared/testcontainers/IntegrationTestNamingRule.java` (G1)
-- `docs/runbooks/dev-setup.md` (G2 — Testcontainers reuse инструкция)
-- `docs/runbooks/migration-testing.md` (G3, NEW-159)
-- `docs/golden-tests.md` (G4, NEW-160)
-- `docs/e2e-testing.md` (G5, NEW-161)
-- `tests/e2e/` — Playwright suite (scaffold + 8 specs)
-- `scripts/smoke-prod.sh` — curl-based post-deploy smoke
-- `docs/testing.md` (G6, NEW-162) — единый entry-point
-- `docs/load-testing.md` (G7, NEW-163)
-- `docs/performance-baseline.md` (G7) — шаблон для baseline чисел
-- `docs/future-ideas.md` — M08-добавки: full load suite (v0.1),
-  gRPC in-process tests (v0.1), jqwik (v0.1)
+### M08 defer'ы явно ожидают M09
 
-### Состояние окружения
+1. **Playwright CI job `e2e-tests`** — требует stable staging.
+   Добавить в deploy.yml после G6 (prod-deploy-checklist) стабилизирует
+   VPS.
+2. **`SecurityIdorIT`** — файл не существует (NEW-31 M03a забытый).
+   M09 создаёт при расширении ролевой IDOR-защиты.
+3. **`@MockitoBean` → in-process gRPC** — defer v0.1, не М09.
+4. **k6 baseline** — release-engineer на VPS staging перед релизом.
 
-- `dev` branch чистый. 45 коммитов ahead `origin/dev`.
-- Docker-compose containers: подняты или могут быть подняты через
-  `docker compose up -d`.
-- Все тесты зелёные (attendance, schedule, academic, auth,
-  notification, shared).
-- `./gradlew compileTestJava` — clean.
+## Действия, ожидающие `go` пользователя
 
-### Действия, ожидающие `go` пользователя
-
-1. `git push origin dev` — 45+ коммитов ahead origin.
-2. `git push origin --tags` — 7 tags (`v0.0.0-alpha.2..8`) локальные.
-3. Старт Группы 8 в новой сессии.
+1. `git push origin dev` — **~52 коммитов** ahead origin.
+2. `git push origin --tags` — **8 tags** (`v0.0.0-alpha.2..9`) локальные.
+3. Старт Группы 1 M09 в новой сессии.
 
 ---
 
@@ -139,10 +112,33 @@ M04 Observability ✅ 2026-04-20
 M05 Performance ✅ 2026-04-21
 M06 Ops & Supply Chain ✅ 2026-04-21
 M07 Frontend Hardening ✅ 2026-04-22 (tag `v0.0.0-alpha.8` локальный)
-**M08 Test Infrastructure ⏳ 11/12 групп закрыто, продолжать с G12.**
-M09 Prod Release Blockers ⬜
+**M08 Test Infrastructure ✅ 2026-04-23 (tag `v0.0.0-alpha.9` локальный).**
+**M09 Prod Release Blockers ⏳ не начат, продолжать с G1.**
 M10 Notification History ⬜
 M11 OpenAPI Polish ⬜
 M12 Auth Contract-first Refactor ⬜
 
 Dependency graph и полный roadmap — `docs/milestones/README.md`.
+
+---
+
+## M08 итог (tag `v0.0.0-alpha.9`)
+
+**12/12 групп закрыто**, ~27 коммитов, календарно 2 дня (2026-04-22..23).
+
+| Группа | Commit | Ключевое |
+|--------|--------|----------|
+| G1 Testing conventions | 8 commits | 31 rename + Gradle split + ArchUnit |
+| G2 Testcontainers hybrid | `68a9ecb` | Reuse × 8 + 41-mock audit |
+| G3 Flyway MigrationIT | `3781edf` | 3 templates × 2 services |
+| G4 Golden + Clock | `f61537b`+`3a38fc1` | 22+12 golden cases + Clock DI |
+| G5 Playwright E2E | `5191098` | 8 specs + axe + smoke-prod |
+| G6 Frontend unit | `6df30a6` | P0-4 regression guards |
+| G7 Load tests | `4730dec` | k6 scripts + baseline шаблон |
+| G8 Security contracts | `bef5c0a` | GrpcSecretFailFast + TmaIT + SameSite |
+| G9 Event + WS contract | `b2ae934` | 40 events + STOMP + reconnect |
+| G10 Coverage gate | `3de786b` | JaCoCo + Vitest + pytest-cov + diff-cover |
+| G11 Supply chain | `2c17327` | SBOM + cosign keyless + digest-pin 13 images |
+| G12 Финализация | `bb7b20b` | Ratchet gate + hard-fail + tag alpha.9 |
+
+Подробности: `docs/milestones/M08-test-infrastructure/{PLAN,CHECKLIST,NOTES,DECISIONS}.md`.

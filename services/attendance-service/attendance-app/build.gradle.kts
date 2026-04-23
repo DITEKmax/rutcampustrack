@@ -95,11 +95,10 @@ protobuf {
     }
 }
 
-// M08 Группа 10 — M09 selective coverage override (QD2 + OWNER-ANSWERS P2-8/1).
-// latecheckin/** домен — pilot для stricter gate 70% LINE.
-// Активируется в M09 Группа 3 вместе с LateCheckinServiceTest + LateCheckinControllerIT.
-// До появления тестов rule в disabled-режиме: сохраняет контракт в коде,
-// не ломает baseline build (M08 G12).
+// M08 Группа 10 / M09 Группа 3 — selective coverage gate для latecheckin/**.
+// 70% LINE — pilot для stricter ratchet (QD2 + OWNER-ANSWERS P2-8/1).
+// Активировано в M09 G3.5 после LateCheckinServiceTest + LateCheckinControllerIT
+// + LateCheckinEventContractTest.
 //
 // afterEvaluate нужен т.к. task создаётся JaCoCo plugin'ом из root build.gradle.kts
 // через subprojects { apply(plugin = "jacoco") }.
@@ -107,7 +106,6 @@ afterEvaluate {
     tasks.findByName("jacocoTestCoverageVerification")?.let {
         (it as JacocoCoverageVerification).violationRules {
             rule {
-                isEnabled = false // M09 Группа 3 включит это
                 element = "PACKAGE"
                 includes = listOf("ru.rutcampustrack.attendance.latecheckin.*")
                 limit {

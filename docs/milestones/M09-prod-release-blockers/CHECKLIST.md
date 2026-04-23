@@ -38,16 +38,14 @@
 - pytest `tests/test_login_handler.py`: переписан под новую семантику
 - **Всего: 161 + 4 = 165 pytest зелёные; все auth `test` задачи зелёные**
 
-## Группа 3 — latecheckin тесты (~1.5д)
+## Группа 3 — latecheckin тесты (~1.5д) ✅ закрыто
 
-- [ ] `attendance-app/.../latecheckin/LateCheckinServiceTest.java` — unit-тесты: create, approve (роль старосты), reject, listByGroup, listByUser; edge cases (student != owner, already approved, lesson closed, not headman)
-- [ ] `attendance-app/.../latecheckin/LateCheckinControllerIT.java` — MockMvc + Testcontainers Mongo, happy-path для каждого endpoint'а
-- [ ] `event-schemas/late-checkin-requested.json` (NEW-52)
-- [ ] `event-schemas/late-checkin-approved.json` (NEW-52)
-- [ ] `event-schemas/late-checkin-rejected.json` (NEW-52)
-- [ ] `LateCheckinEventContractTest.java` — 3 publisher-side contract-теста
-- [ ] `build.gradle.kts` attendance-app — jacoco report `latecheckin/**` ≥ 70% line, fail build при нарушении
-- [ ] Коммит `test(attendance): latecheckin unit + IT + contract (14 P0-1)`
+- [x] **G3.1** `LateCheckinServiceTest.java` — 16 unit-тестов (createRequest happy + 5 edge; listPendingForHeadman 3 пути; applyDecisionFromWeb approve/reject/guards/notFound; applyDecision idempotent/notFound)
+- [x] **G3.2** `LateCheckinControllerIT.java` — 5 MockMvc + Testcontainers (POST create → 201; GET pending headman vs не-headman → 200/403; POST decision approve → 200 + attendance marked; non-headman → 403)
+- [~] **G3.3** event-schemas уже существуют (`late_checkin.requested.json`, `late_checkin.decided.json`, `late_checkin.decision.json`) — CHECKLIST изначально использовал имена `approved/rejected`, в коде это единое событие `decided` со status=approved|rejected
+- [x] **G3.4** `LateCheckinEventContractTest.java` — 3 publisher-side теста (requested + decided.approved + decided.rejected) против JSON Schema через `EventSchemaValidator`. Unit-тест с in-memory `CapturingOutbox` — без Spring context / testcontainers
+- [x] **G3.5** `build.gradle.kts` attendance-app — `isEnabled=false` снят, `latecheckin/**` 70% LINE gate активен, `./gradlew :services:attendance-service:attendance-app:check` зелёный
+- [ ] **G3.6** Коммит `test(attendance): latecheckin unit + IT + contract + jacoco 70% gate (14 P0-1)`
 
 ## Группа 4 — bot callback_query тесты (~1.5д)
 

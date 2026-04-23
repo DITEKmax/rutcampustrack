@@ -520,6 +520,64 @@ Downstream-сервисы НЕ знают о JWT — работают тольк
 
 Exchange: `rut-uit.events` (fanout) → Queues: `notification-web.events`, `notification-bot.events`
 
+### Lesson lifecycle (NEW-118, M09 G5)
+
+Ключевой жизненный цикл `lessons` в schedule-service и события, которыми
+он синхронизируется с downstream:
+
+```
+                   [ScheduleItem]
+                        │
+                        │ LessonGenerationService
+                        ▼
+                   ┌─────────┐      auto @ start  ┌────────┐
+                   │ PLANNED │─────────────────▶│ ACTIVE │
+                   └────┬────┘                   └────┬───┘
+                        │                              │
+                        │ headman/admin cancel          │ auto @ end
+                        ▼                              ▼
+                   ┌───────────┐                  ┌────────┐
+                   │ CANCELLED │◀────────────────│ CLOSED │
+                   └─────┬─────┘   retrospective  └────────┘
+                         │
+                         │ headman/admin restore
+                         ▼
+                     (→ PLANNED)
+```
+
+**Автоматические переходы** (`LessonStatusTransitionJob` tick):
+- `PLANNED → ACTIVE` — в момент `start_time` в ту же дату.
+- `ACTIVE → CLOSED` — в момент `end_time`. Неотметившиеся студенты
+  помечаются `absent` (defence-in-depth в attendance).
+
+**Ручные переходы** (staros+admin через `LessonService`):
+- `cancelLesson(id, reason)` — допустим из **PLANNED/ACTIVE/CLOSED**.
+  Ретроспективная отмена CLOSED полезна когда надо заменить пару и
+  переразметить посещаемость задним числом (UX-требование).
+  Записывает `cancel_reason`, `cancelled_by`, `cancelled_at`.
+  Публикует **`lesson.cancelled`** (full snapshot, M09 G5).
+- `restoreLesson(id)` — только из **CANCELLED → PLANNED**. Очищает
+  `cancel_reason`/`cancelled_by`/`cancelled_at`. Если `start_time`
+  уже прошло, следующий tick `LessonStatusTransitionJob` автоматически
+  перепроведёт в ACTIVE/CLOSED.
+
+**Physical DELETE** — отдельный сценарий, НЕ путать с CANCELLED:
+- `LessonGenerationService.regenerateFromDate()` удаляет PLANNED-строки
+  перед regenerate из обновлённого ScheduleItem.
+- `SubjectDeletedCascadeService` удаляет cascade при `subject.deleted`
+  из academic.
+
+В обоих случаях публикуется **`lesson.deleted`** с массивом `lesson_ids`.
+attendance-service удаляет orphan-attendance-doc'и по этим id'ам
+(без этого они всплывают как дубликаты рядом с regenerated-lesson'ами).
+
+**Matrix: какой event на что влияет**
+
+| Event | Row state | attendance docs | UI message |
+|-------|-----------|-----------------|------------|
+| `lesson.cancelled` | `status=cancelled`, reason/by/at | docs → status=CANCELLED | «Пара отменена» студентам + старосте |
+| `lesson.deleted` | row DELETED | orphan docs purged | silent (система, не user-facing) |
+
 ---
 
 ## 5. Фронтенды

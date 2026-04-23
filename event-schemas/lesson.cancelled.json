@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "lesson.cancelled",
-  "description": "Пара отменена старостой. Генерируется Schedule Service.",
+  "description": "Пара отменена старостой/админом. Генерируется Schedule Service. M09 G5 — full snapshot (start_time, end_time, lesson_number, cancelled_by, cancelled_at) чтобы downstream не нужны были second-look gRPC вызовы в schedule.",
   "type": "object",
   "required": [
     "event_type",
@@ -44,8 +44,31 @@
           "type": "string",
           "format": "date"
         },
+        "start_time": {
+          "type": ["string", "null"],
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$",
+          "description": "HH:MM или HH:MM:SS, локальное время кампуса."
+        },
+        "end_time": {
+          "type": ["string", "null"],
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$"
+        },
+        "lesson_number": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 8
+        },
         "cancel_reason": {
-          "type": "string"
+          "type": ["string", "null"]
+        },
+        "cancelled_by": {
+          "type": ["integer", "null"],
+          "description": "user_id старосты/админа. NULL для legacy-строк, отменённых до миграции V13."
+        },
+        "cancelled_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "ISO-8601 с offset. NULL для legacy-строк до миграции V13."
         }
       }
     },

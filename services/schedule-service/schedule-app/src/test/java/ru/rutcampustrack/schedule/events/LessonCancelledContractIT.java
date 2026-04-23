@@ -1,5 +1,7 @@
 package ru.rutcampustrack.schedule.events;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -29,8 +31,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
- * M02 Группа 8 — contract test: cancelLesson() → lesson.cancelled event
- * в outbox валидируется против event-schemas/lesson.cancelled.json.
+ * M02 Группа 8 / M09 G5 — contract test: cancelLesson() → lesson.cancelled
+ * event в outbox валидируется против event-schemas/lesson.cancelled.json
+ * и содержит full snapshot (start_time/end_time/lesson_number/cancelled_by/
+ * cancelled_at) дополнительно к базовым ключам.
  */
 class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
 
@@ -49,6 +53,8 @@ class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
     @MockitoBean
     RequestContext requestContext;
 
+    private final ObjectMapper mapper = new ObjectMapper();
+
     @AfterEach
     void cleanup() {
         lessonRepository.deleteAll();
@@ -61,8 +67,9 @@ class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId());
 
+        Long adminId = 999L;
         when(requestContext.getRole()).thenReturn(UserRole.ADMIN);
-        when(requestContext.getUserId()).thenReturn(999L);
+        when(requestContext.getUserId()).thenReturn(adminId);
         when(requestContext.isHeadman()).thenReturn(false);
 
         lessonService.cancelLesson(lesson.getId(), new CancelLessonRequest("Preparation day"));
@@ -77,6 +84,28 @@ class LessonCancelledContractIT extends AbstractScheduleIntegrationTest {
         assertThat(errors)
                 .as("lesson.cancelled payload должен соответствовать schema")
                 .isEmpty();
+
+        // M09 G5 — full snapshot: bot/attendance не должны делать second-look
+        // gRPC в schedule; start_time/end_time/lesson_number/cancelled_by/at
+        // приходят в том же сообщении.
+        JsonNode root = mapper.readTree(cancelled.get().payload());
+        JsonNode payload = root.get("payload");
+        assertThat(payload.get("lesson_id").asLong()).isEqualTo(lesson.getId());
+        assertThat(payload.get("group_id").asLong()).isEqualTo(10L);
+        assertThat(payload.get("subject_id").asLong()).isEqualTo(200L);
+        assertThat(payload.get("date").asText()).isEqualTo("2026-04-03");
+        assertThat(payload.get("start_time").asText()).isEqualTo("10:10");
+        assertThat(payload.get("end_time").asText()).isEqualTo("11:45");
+        assertThat(payload.get("lesson_number").asInt()).isEqualTo(2);
+        assertThat(payload.get("cancel_reason").asText()).isEqualTo("Preparation day");
+        assertThat(payload.get("cancelled_by").asLong()).isEqualTo(adminId);
+        assertThat(payload.get("cancelled_at").asText()).isNotBlank();
+
+        // Entity state тоже должен быть обновлён (source of truth для БД).
+        Lesson reloaded = lessonRepository.findById(lesson.getId()).orElseThrow();
+        assertThat(reloaded.getStatus()).isEqualTo(LessonStatus.CANCELLED);
+        assertThat(reloaded.getCancelledBy()).isEqualTo(adminId);
+        assertThat(reloaded.getCancelledAt()).isNotNull();
     }
 
     private ScheduleItem createScheduleItem() {

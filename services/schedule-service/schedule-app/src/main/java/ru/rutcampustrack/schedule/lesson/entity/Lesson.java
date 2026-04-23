@@ -63,6 +63,22 @@ public class Lesson {
     @Column(name = "cancel_reason", length = 512)
     private String cancelReason;
 
+    /**
+     * M09 G5 (02 P2-11/5) — user_id старосты/админа, отменившего пару.
+     * NULL для строк, отменённых до миграции V13.
+     */
+    @Setter
+    @Column(name = "cancelled_by")
+    private Long cancelledBy;
+
+    /**
+     * M09 G5 (02 P2-11/5) — момент отмены UTC. NULL для строк,
+     * отменённых до миграции V13.
+     */
+    @Setter
+    @Column(name = "cancelled_at")
+    private OffsetDateTime cancelledAt;
+
     @Setter
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

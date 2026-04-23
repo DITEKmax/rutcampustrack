@@ -95,17 +95,27 @@ public class LessonService {
     public LessonWithItem cancelLesson(Long lessonId, CancelLessonRequest request) {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
         Lesson lesson = lwi.lesson();
+        ScheduleItem item = lwi.scheduleItem();
         if (lesson.getStatus() == LessonStatus.CANCELLED) {
             throw new InvalidLessonStateException(
                     "Lesson is already cancelled");
         }
+        // M09 G5 (02 P2-11/5) — фиксируем ПОЛНЫЙ контекст отмены в самой строке
+        // (cancelled_by/cancelled_at), чтобы downstream read из БД и full snapshot
+        // event совпадали. Ранее эти поля отсутствовали, audit делался только
+        // через Rabbit payload.
+        OffsetDateTime cancelledAt = OffsetDateTime.now();
         lesson.setStatus(LessonStatus.CANCELLED);
         lesson.setCancelReason(request.reason());
+        lesson.setCancelledBy(requestContext.getUserId());
+        lesson.setCancelledAt(cancelledAt);
         Lesson saved = lessonRepository.save(lesson);
         eventPublisher.publishEvent(new LessonCancelledEvent(this,
-                saved.getId(), lwi.scheduleItem().getGroupId(), lwi.scheduleItem().getSubjectId(),
-                saved.getDate(), saved.getCancelReason()));
-        return new LessonWithItem(saved, lwi.scheduleItem());
+                saved.getId(), item.getGroupId(), item.getSubjectId(),
+                saved.getDate(), item.getStartTime(), item.getEndTime(),
+                item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null,
+                saved.getCancelReason(), saved.getCancelledBy(), saved.getCancelledAt()));
+        return new LessonWithItem(saved, item);
     }
 
     /**
@@ -124,6 +134,9 @@ public class LessonService {
         }
         lesson.setStatus(LessonStatus.PLANNED);
         lesson.setCancelReason(null);
+        // M09 G5 — restore очищает весь audit-tuple cancellation'а.
+        lesson.setCancelledBy(null);
+        lesson.setCancelledAt(null);
         return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
     }
 
@@ -141,9 +154,15 @@ public class LessonService {
         }
         List<Lesson> toCancel = lessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn(
                 itemIds, request.dateFrom(), request.dateTo(), List.of(LessonStatus.PLANNED.name().toLowerCase()));
+        // M09 G5 — фиксируем единый cancelledAt для всей пачки, чтобы легче
+        // было сгруппировать audit-записи downstream (и event-timeline в UI).
+        OffsetDateTime cancelledAt = OffsetDateTime.now();
+        Long cancelledBy = requestContext.getUserId();
         for (Lesson l : toCancel) {
             l.setStatus(LessonStatus.CANCELLED);
             l.setCancelReason(request.reason());
+            l.setCancelledBy(cancelledBy);
+            l.setCancelledAt(cancelledAt);
         }
         lessonRepository.saveAll(toCancel);
         Map<Long, ScheduleItem> itemMap = items.stream()
@@ -152,7 +171,9 @@ public class LessonService {
             ScheduleItem item = itemMap.get(l.getScheduleItemId());
             eventPublisher.publishEvent(new LessonCancelledEvent(this,
                     l.getId(), item.getGroupId(), item.getSubjectId(),
-                    l.getDate(), l.getCancelReason()));
+                    l.getDate(), item.getStartTime(), item.getEndTime(),
+                    item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null,
+                    l.getCancelReason(), l.getCancelledBy(), l.getCancelledAt()));
         }
         return toCancel.size();
     }

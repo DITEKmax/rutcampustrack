@@ -104,3 +104,39 @@ outbox pattern: event пишется в таблицу в той же DB-тра�
 **Последствия:** `OtpRequestedPublisher` как отдельный класс не
 создаётся. Вся интеграция — `ApplicationEventPublisher.publishEvent(
 new OtpRequestedEvent(...))` в `OtpService.requestOtp`.
+
+## D5 — `lesson.deleted` event оставляем (M09 G5)
+
+**Контекст:** PLAN.md G5 (02 P2-11/5) требует «удаление `lesson.deleted`
+event + publisher/consumer кода» одновременно с переходом на full snapshot
+`lesson.cancelled`. CHECKLIST повторял это.
+
+**Проблема:** `lesson.deleted` и `lesson.cancelled` — **разные use-case'ы**,
+не синонимы:
+- `lesson.cancelled` — статус-переход строки: `status=PLANNED → CANCELLED`,
+  запись в БД остаётся, consumer'ы помечают attendance как CANCELLED.
+- `lesson.deleted` — **physical DELETE строки** из Postgres. Publisher'ы:
+  1. `LessonGenerationService.regenerateFromDate()` — удаляет PLANNED-строки
+     перед regenerate из обновлённого ScheduleItem.
+  2. `SubjectDeletedCascadeService` — удаляет cascade при `subject.deleted`
+     из academic-service.
+  Consumer attendance-service удаляет orphan-attendance-doc'и по ids
+  (их иначе некем привязать).
+
+Если `lesson.deleted` убрать — attendance-service получит orphan-docs при
+regenerate/subject-delete, и они будут всплывать в отчётах как
+«duplicate» рядом с свежими Lesson-строками.
+
+**Альтернативы:**
+- (a) Оставить `lesson.deleted` как самостоятельное событие для physical
+  delete, `lesson.cancelled` — для status-change. Семантически чисто.
+- (b) Слить в одно: `lesson.cancelled(reason="regenerate")` +
+  `cancelled_by=system_user_id`. Но это искажает статистику (regenerate
+  — это **не** отмена пары студентам, downstream не должен показывать
+  «Пара отменена» в UI).
+
+**Решение:** вариант (a). Оставляем `lesson.deleted` как есть. CHECKLIST
+пункт «удалить lesson.deleted» помечается `[~]` со ссылкой на D5.
+
+**Последствия:** G5 целиком посвящается расширению `lesson.cancelled`
+до full snapshot. `lesson.deleted` не трогаем — работает как было.

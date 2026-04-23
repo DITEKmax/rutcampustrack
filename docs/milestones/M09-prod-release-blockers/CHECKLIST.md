@@ -58,35 +58,20 @@
 - [x] **Не-староста → 403** и **expired TTL** из CHECKLIST: handler'ы этих проверок пока не делают (headman role check — в Группе 6, 06 P1-1; TTL — не предусмотрен в текущем дизайне). Отражено в тестах через malformed-data / missing-publisher edge cases
 - [ ] **G4.6** Коммит `test(bot): callback_query unit + handlers 70% coverage gate (14 P0-2, 14 P1-7)`
 
-## Группа 5 — lesson.cancelled full snapshot (P2-11/5, ~1.5д)
+## Группа 5 — lesson.cancelled full snapshot (P2-11/5, ~1.5д) ✅ закрыто
 
-- [ ] Миграция `schedule-service/.../V{N}__lesson_cancellation_columns.sql`:
-      `ALTER TABLE lessons ADD COLUMN cancelled_by BIGINT,
-       ADD COLUMN cancelled_at TIMESTAMPTZ`
-- [ ] `Lesson.java` entity — добавить поля `cancelledBy`, `cancelledAt`
-- [ ] `LessonService.cancel(id, reason, userId)` — устанавливает оба
-      поля + статус `cancelled`
-- [ ] Удалить `LessonService.delete(id)` (если есть) или deprecate с
-      delegation к `cancel(id, "legacy-delete", systemUserId)`
-- [ ] `event-schemas/lesson.cancelled.json` — full snapshot payload
-      (lesson_id, group_id, subject_id, date, start_time, end_time,
-      lesson_number, reason, cancelled_by, cancelled_at +
-      event_version/trace_id/occurred_at)
-- [ ] `LessonCancelledPublisher` — публикует через shared-outbox
-- [ ] Удалить `event-schemas/lesson.deleted.json` + publisher кода
-- [ ] Consumer update: `attendance-service/.../LessonCancelledConsumer`
-      подписан на новое событие
-- [ ] Consumer update: `notification-web/.../LessonCancelledConsumer`
-- [ ] Contract-тест `LessonCancelledContractIT` (publisher-side
-      schema validation)
-- [ ] Integration-тест: create lesson → cancel(reason, userId) →
-      assert lesson.status='cancelled', cancelled_by и cancelled_at
-      заполнены, event published
-- [ ] Grep проверка: `lesson.deleted` и `LessonDeletedEvent` удалены
-      из кода
-- [ ] `docs/architecture.md` — раздел «Lesson lifecycle» (NEW-118):
-      диаграмма planned → active → closed; planned/active → cancelled
-- [ ] Коммит `feat(schedule): lesson.cancelled full snapshot + удаление lesson.deleted (02 P2-11/5)`
+- [x] **G5.1** `V13__lesson_cancellation_columns.sql` — `ALTER TABLE lessons ADD COLUMN cancelled_by BIGINT, cancelled_at TIMESTAMPTZ` (V10 был занят `shedlock_table`)
+- [x] **G5.2** `Lesson.java` — `cancelledBy`, `cancelledAt`; `LessonService.cancelLesson` устанавливает оба поля из `requestContext.getUserId() + OffsetDateTime.now()`; `massCancelLessons` — единый cancelledAt для пачки; `restoreLesson` очищает cancellation-tuple
+- [~] `LessonService.delete(id)` — отсутствует (нет legacy HARD-delete API для regular lessons; physical delete только через regenerate/cascade)
+- [x] **G5.3** `lesson.cancelled.json` — full snapshot payload (start_time, end_time, lesson_number, cancelled_by, cancelled_at как optional, обратная совместимость сохранена)
+- [~] `LessonCancelledPublisher` отдельного класса нет — используется общий `DomainEventListener` через outbox (consistent с другими schedule-событиями)
+- [~] **G5.4** `lesson.deleted` **оставлен** (см. DECISIONS D5): это **отдельный use-case** (physical DELETE row'ов из `regenerateFromDate` / `SubjectDeletedCascadeService`), не синоним cancelled. Удаление сломало бы attendance orphan-cleanup
+- [x] **G5.5** Consumers backward-compatible: attendance + notification-bot + notification-service уже работают с новой schema'й (используют только `lesson_id`/`group_id`/`subject_id`/`date`/`cancel_reason` — старое required-множество)
+- [x] **G5.6** `LessonCancelledContractIT` расширен: validation + field-by-field assertions на полный snapshot (start_time, end_time, lesson_number, cancelled_by, cancelled_at); проверка что entity в БД тоже обновлён
+- [x] **G5.6** `docs/architecture.md` — новый раздел «Lesson lifecycle (NEW-118, M09 G5)» с ASCII-диаграммой и matrix `lesson.cancelled` vs `lesson.deleted`
+- [x] **Прогон**: 35 тестов (9 unit + 26 IT) зелёные
+- [~] NEW-119 «удалить → отменить с причиной» в web-panel — это про `deleteOneOffLesson` (one-off, не regular). Регулярная отмена уже через `cancelLesson(reason)`. Отложено в G9 cleanup
+- [ ] **G5.7** Коммит `feat(schedule): lesson.cancelled full snapshot + Lesson.cancelled_by/at (M09 G5, 02 P2-11/5)`
 
 ## Группа 6 — excuse.approved/rejected events (P2-11/8, ~1.5д)
 

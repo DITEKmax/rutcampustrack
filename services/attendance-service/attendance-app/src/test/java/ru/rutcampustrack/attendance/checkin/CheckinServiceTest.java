@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinRequest;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -68,6 +70,13 @@ class CheckinServiceTest {
     @Mock
     private Counter checkinCounterMock;
 
+    // M08 G10 (Clock-injection regression fix) — @InjectMocks требует
+    // @Mock Clock, иначе constructor DI получает null → NPE в clock.instant().
+    // Unit-тестам не нужен fixed Clock: widely-open time window (00:00..23:59)
+    // игнорирует момент времени. Mock возвращает Clock.systemUTC() по умолчанию.
+    @Mock
+    private Clock clock;
+
     @InjectMocks
     private CheckinService checkinService;
 
@@ -106,6 +115,10 @@ class CheckinServiceTest {
                 .thenReturn(java.util.Optional.empty());
         // M04 Группа 8 — counter на happy path увеличивается один раз.
         lenient().when(businessMetrics.checkinCounter(anyString())).thenReturn(checkinCounterMock);
+        // M08 G10 (Clock-injection regression fix) — подставляем systemUTC в mock.
+        // Конкретное время не важно: lesson.startTime="00:00", endTime="23:59".
+        lenient().when(clock.instant()).thenReturn(Instant.now());
+        lenient().when(clock.getZone()).thenReturn(ZoneId.of("Europe/Moscow"));
     }
 
     // -------------------------------------------------------------------------

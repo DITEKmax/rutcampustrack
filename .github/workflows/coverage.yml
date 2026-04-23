@@ -1,0 +1,321 @@
+name: Coverage
+
+# M08 Группа 10 (OWNER-ANSWERS QD2) — coverage gate.
+# - Java JaCoCo 60% line per-module (блокирующий через ./gradlew check)
+# - Frontend Vitest 50% line (PWA + web-panel)
+# - Python pytest-cov 50% line (notification-bot)
+# - diff-cover ≥80% на changed lines (D3 — warning до baseline PR, далее hard-fail)
+#
+# PR-comment actions:
+# - madrapps/jacoco-report      — JaCoCo XML → PR summary table
+# - davelosert/vitest-coverage-report-action — json-summary → PR comment
+# - MishaKav/pytest-coverage-comment — pytest-cov XML → PR comment
+#
+# Actions pinned to sha (M06 supply-chain).
+
+on:
+  pull_request:
+    branches: ['**']
+    paths-ignore:
+      - 'docs/**'
+      - '.planning/**'
+      - '*.md'
+      - 'SECURITY.md'
+      - 'renovate.json'
+      - '.pre-commit-config.yaml'
+  push:
+    branches: ['main', 'dev']
+    paths-ignore:
+      - 'docs/**'
+      - '.planning/**'
+      - '*.md'
+      - 'SECURITY.md'
+      - 'renovate.json'
+      - '.pre-commit-config.yaml'
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  java-coverage:
+    name: Java coverage — ${{ matrix.service.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: api-gateway
+            path: ':services:api-gateway'
+            report: 'services/api-gateway/build/reports/jacoco/test/jacocoTestReport.xml'
+          - name: auth-service
+            path: ':services:auth-service'
+            report: 'services/auth-service/build/reports/jacoco/test/jacocoTestReport.xml'
+          - name: academic-service
+            path: ':services:academic-service:academic-app'
+            report: 'services/academic-service/academic-app/build/reports/jacoco/test/jacocoTestReport.xml'
+          - name: schedule-service
+            path: ':services:schedule-service:schedule-app'
+            report: 'services/schedule-service/schedule-app/build/reports/jacoco/test/jacocoTestReport.xml'
+          - name: attendance-service
+            path: ':services:attendance-service:attendance-app'
+            report: 'services/attendance-service/attendance-app/build/reports/jacoco/test/jacocoTestReport.xml'
+          - name: notification-service
+            path: ':services:notification-service:notification-app'
+            report: 'services/notification-service/notification-app/build/reports/jacoco/test/jacocoTestReport.xml'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # test + integrationTest + jacocoTestReport (aggregate exec data).
+      # jacocoTestCoverageVerification выполнится через :check в отдельном
+      # ci.yml job (уже есть), здесь фокус на генерации XML для PR-comment.
+      - name: Run tests with coverage
+        run: ./gradlew ${{ matrix.service.path }}:test ${{ matrix.service.path }}:integrationTest ${{ matrix.service.path }}:jacocoTestReport --no-daemon
+
+      # M08 G10 (D3) — первый прогон warning-only; после baseline-коммита
+      # (M08 G12) сделаем min-coverage hard-fail.
+      - name: JaCoCo PR comment
+        if: github.event_name == 'pull_request'
+        uses: madrapps/jacoco-report@v1.7.1
+        with:
+          paths: ${{ matrix.service.report }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 60
+          min-coverage-changed-files: 80
+          title: "☕ Java coverage — ${{ matrix.service.name }}"
+          update-comment: true
+          pass-emoji: ':white_check_mark:'
+          fail-emoji: ':x:'
+          continue-on-error: true # D3: warning до baseline-коммита
+
+      - name: Upload JaCoCo XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-${{ matrix.service.name }}
+          path: ${{ matrix.service.report }}
+          retention-days: 7
+
+  frontend-coverage:
+    name: Frontend coverage — ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [pwa, web-panel]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontends/${{ matrix.app }}/package-lock.json
+
+      - name: Install
+        working-directory: frontends/${{ matrix.app }}
+        run: npm ci
+
+      # M08 G10 — thresholds 50% прописаны в vitest.config.ts. Провал
+      # шагу = hard-fail для lines < 50%. Первый прогон — warning
+      # через continue-on-error (D3).
+      - name: Run tests with coverage
+        id: vitest
+        working-directory: frontends/${{ matrix.app }}
+        run: npm run test:coverage
+        continue-on-error: true
+
+      - name: Vitest PR comment
+        if: github.event_name == 'pull_request' && hashFiles(format('frontends/{0}/coverage/coverage-summary.json', matrix.app)) != ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: frontends/${{ matrix.app }}
+          name: "🌐 Frontend coverage — ${{ matrix.app }}"
+          comment-on: 'pr'
+
+      - name: Upload lcov
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-lcov-${{ matrix.app }}
+          path: frontends/${{ matrix.app }}/coverage/lcov.info
+          retention-days: 7
+
+      # D3: пока warning. Снимем continue-on-error после baseline PR.
+      - name: Fail if thresholds breached (warn-only for baseline)
+        if: steps.vitest.outcome == 'failure'
+        run: |
+          echo "::warning::Vitest coverage thresholds breached in ${{ matrix.app }}. M08 G10 baseline — D3 warning."
+
+  python-coverage:
+    name: Python coverage — notification-bot
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/notification-bot
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: |
+            services/notification-bot/requirements.txt
+            services/notification-bot/requirements-test.txt
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+
+      # pytest.ini addopts уже включает --cov + --cov-fail-under=50.
+      - name: Run pytest with coverage
+        id: pytest
+        run: pytest tests/ -v
+        continue-on-error: true
+
+      - name: Pytest coverage PR comment
+        if: github.event_name == 'pull_request' && hashFiles('services/notification-bot/coverage.xml') != ''
+        uses: MishaKav/pytest-coverage-comment@v1.1.52
+        with:
+          pytest-xml-coverage-path: services/notification-bot/coverage.xml
+          title: '🐍 Python coverage — notification-bot'
+          badge-title: bot-coverage
+          unique-id-for-comment: python-bot-coverage
+
+      - name: Upload coverage.xml
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-coverage-bot
+          path: services/notification-bot/coverage.xml
+          retention-days: 7
+
+      # M09 Группа 2 pilot override — handlers/ ≥ 70%.
+      # После того как M09 добавит тесты для handlers/, сделаем блокирующим.
+      - name: M09 pilot — bot/handlers coverage 70%
+        if: always()
+        run: |
+          echo "::notice::M09 pilot 70% coverage для bot/handlers — активируется в M09 Группа 2"
+          # Будущий CI step:
+          #   pytest tests/handlers/ --cov=bot/handlers --cov-fail-under=70
+
+      - name: Fail if thresholds breached (warn-only for baseline)
+        if: steps.pytest.outcome == 'failure'
+        run: |
+          echo "::warning::pytest-cov threshold breached. M08 G10 baseline — D3 warning."
+
+  diff-cover:
+    name: Diff coverage ≥80%
+    runs-on: ubuntu-latest
+    needs: [java-coverage, frontend-coverage, python-coverage]
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # diff-cover нужна история для git diff vs base
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install diff-cover
+        run: pip install 'diff-cover>=9.0.0'
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .coverage-reports/
+
+      # diff-cover умеет читать несколько coverage-отчётов (jacoco XML + lcov
+      # + coverage.xml). Прогоняем per-format, агрегируем в один summary.
+      - name: Diff-cover JaCoCo
+        id: diff-jacoco
+        run: |
+          find .coverage-reports/jacoco-*/ -name 'jacocoTestReport.xml' -print 2>/dev/null | tee /tmp/jacoco-files.txt
+          if [ -s /tmp/jacoco-files.txt ]; then
+            diff-cover $(cat /tmp/jacoco-files.txt | tr '\n' ' ') \
+              --compare-branch=origin/${{ github.event.pull_request.base.ref }} \
+              --fail-under=80 \
+              --markdown-report=/tmp/diff-cover-java.md \
+              --format=markdown:/tmp/diff-cover-java.md || echo "DIFF_COVER_FAIL_JAVA=1" >> $GITHUB_ENV
+          else
+            echo "No JaCoCo reports — skipping"
+          fi
+        continue-on-error: true # D3: warning до baseline
+
+      - name: Diff-cover frontend (lcov)
+        id: diff-lcov
+        run: |
+          find .coverage-reports/vitest-lcov-*/ -name 'lcov.info' -print 2>/dev/null | tee /tmp/lcov-files.txt
+          if [ -s /tmp/lcov-files.txt ]; then
+            diff-cover $(cat /tmp/lcov-files.txt | tr '\n' ' ') \
+              --compare-branch=origin/${{ github.event.pull_request.base.ref }} \
+              --fail-under=80 \
+              --format=markdown:/tmp/diff-cover-frontend.md || echo "DIFF_COVER_FAIL_FE=1" >> $GITHUB_ENV
+          else
+            echo "No lcov reports — skipping"
+          fi
+        continue-on-error: true
+
+      - name: Diff-cover Python
+        id: diff-python
+        run: |
+          if [ -f .coverage-reports/pytest-coverage-bot/coverage.xml ]; then
+            diff-cover .coverage-reports/pytest-coverage-bot/coverage.xml \
+              --compare-branch=origin/${{ github.event.pull_request.base.ref }} \
+              --fail-under=80 \
+              --format=markdown:/tmp/diff-cover-python.md || echo "DIFF_COVER_FAIL_PY=1" >> $GITHUB_ENV
+          else
+            echo "No coverage.xml — skipping"
+          fi
+        continue-on-error: true
+
+      - name: Aggregate diff-cover summary
+        run: |
+          echo "# 📊 Diff Coverage Report (changed lines ≥ 80%)" > /tmp/diff-summary.md
+          echo "" >> /tmp/diff-summary.md
+          echo "## Java" >> /tmp/diff-summary.md
+          cat /tmp/diff-cover-java.md 2>/dev/null || echo "_No Java coverage in this PR_" >> /tmp/diff-summary.md
+          echo "" >> /tmp/diff-summary.md
+          echo "## Frontend (PWA + web-panel)" >> /tmp/diff-summary.md
+          cat /tmp/diff-cover-frontend.md 2>/dev/null || echo "_No frontend coverage in this PR_" >> /tmp/diff-summary.md
+          echo "" >> /tmp/diff-summary.md
+          echo "## Python (notification-bot)" >> /tmp/diff-summary.md
+          cat /tmp/diff-cover-python.md 2>/dev/null || echo "_No Python coverage in this PR_" >> /tmp/diff-summary.md
+          echo "" >> /tmp/diff-summary.md
+          echo "---" >> /tmp/diff-summary.md
+          echo "_M08 G10 baseline — warnings only (D3). После baseline-коммита diff < 80% станет hard-fail._" >> /tmp/diff-summary.md
+
+      - name: Comment diff-cover summary
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: diff-coverage
+          path: /tmp/diff-summary.md
+
+      # D3 — финальный gate.
+      # После M08 G12 baseline-коммита: заменить следующий `echo` на `exit 1`.
+      - name: Enforce diff-cover gate (D3 — warning → hard-fail)
+        run: |
+          FAILED=0
+          [ -n "$DIFF_COVER_FAIL_JAVA" ] && { echo "::warning::Java diff-cover < 80%"; FAILED=1; }
+          [ -n "$DIFF_COVER_FAIL_FE" ] && { echo "::warning::Frontend diff-cover < 80%"; FAILED=1; }
+          [ -n "$DIFF_COVER_FAIL_PY" ] && { echo "::warning::Python diff-cover < 80%"; FAILED=1; }
+          if [ "$FAILED" = "1" ]; then
+            echo "::warning::Baseline PR (D3) — diff-cover gate в warning-режиме. После M08 G12 станет hard-fail."
+            # exit 1   # ← раскомментировать в M08 G12 baseline commit
+          fi

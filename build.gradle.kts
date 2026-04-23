@@ -19,6 +19,11 @@ allprojects {
 
 subprojects {
     apply(plugin = "java")
+    // M08 Группа 10 (QD2) — JaCoCo per-module 60% line gate.
+    // Применяется только к Java-подпроектам. Frontend/Python coverage
+    // — через vitest + pytest-cov (см. frontends/*/vitest.config.ts и
+    // services/notification-bot/pytest.ini).
+    apply(plugin = "jacoco")
 
     java {
         sourceCompatibility = JavaVersion.toVersion(javaVersion)
@@ -32,6 +37,13 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+    }
+
+    // M08 Группа 10 — JaCoCo config. Применяется во всех java-subprojects,
+    // но verification — выборочно (see jacocoTestCoverageVerification блок
+    // ниже + allprojects { plugins.withId("jacoco") } на конце файла).
+    configure<JacocoPluginExtension> {
+        toolVersion = "0.8.12"
     }
 
     // M08 Группа 1 (P2-8/1) — split unit-test и integration-test.
@@ -71,6 +83,87 @@ subprojects {
 
     tasks.named("check") {
         dependsOn("integrationTest")
+    }
+
+    // M08 Группа 10 — jacocoTestReport агрегирует execData test+integrationTest.
+    // NEW-99 excludes: generated protobuf/gRPC, OpenAPI generated, Spring
+    // Application bootstrap (main-less POJO coverage = шум), DTO/record
+    // (автоматические getter'ы, без бизнес-логики).
+    //
+    // afterEvaluate обязателен: classDirectories должны быть populated
+    // Java plugin'ом (sourceSets) ДО exclude-фильтрации, иначе
+    // "cannot be executed in the current context" при tasks.withType {}.
+    val jacocoExcludes = listOf(
+        "**/generated/**",
+        "**/grpc/proto/**",
+        "ru/rutcampustrack/**/grpc/**/*OuterClass*.class",
+        "ru/rutcampustrack/**/grpc/**/*Grpc*.class",
+        "ru/rutcampustrack/**/*Application.class",
+        "ru/rutcampustrack/**/*Dto.class",
+        "ru/rutcampustrack/**/dto/**",
+        "ru/rutcampustrack/**/config/**",
+    )
+
+    afterEvaluate {
+        // jacocoTestReport / jacocoTestCoverageVerification создаются JaCoCo-плагином
+        // при первой же evaluation. tasks.findByName вместо named — не все модули
+        // реально содержат тесты (api-contract модули pure java-library).
+        tasks.findByName("jacocoTestReport")?.let { reportTask ->
+            (reportTask as JacocoReport).apply {
+                dependsOn(tasks.named("test"))
+                // integrationTest может отсутствовать (api-contract модули).
+                tasks.findByName("integrationTest")?.let { dependsOn(it) }
+                executionData.setFrom(
+                    fileTree(layout.buildDirectory.dir("jacoco")).include("*.exec")
+                )
+                reports {
+                    xml.required.set(true)
+                    html.required.set(true)
+                    csv.required.set(false)
+                }
+                classDirectories.setFrom(
+                    classDirectories.files.map {
+                        fileTree(it) { exclude(jacocoExcludes) }
+                    }
+                )
+            }
+        }
+
+        tasks.findByName("jacocoTestCoverageVerification")?.let { verifyTask ->
+            (verifyTask as JacocoCoverageVerification).apply {
+                dependsOn(tasks.named("jacocoTestReport"))
+                executionData.setFrom(
+                    fileTree(layout.buildDirectory.dir("jacoco")).include("*.exec")
+                )
+                classDirectories.setFrom(
+                    classDirectories.files.map {
+                        fileTree(it) { exclude(jacocoExcludes) }
+                    }
+                )
+                violationRules {
+                    // Global: 60% line per-module (OWNER-ANSWERS QD2).
+                    // Baseline-модули с coverage <60% временно помечаются
+                    // через per-service override (см. example в attendance-app).
+                    // НЕ ослаблять глобальный порог — это противоречит D3.
+                    rule {
+                        element = "BUNDLE"
+                        limit {
+                            counter = "LINE"
+                            value = "COVEREDRATIO"
+                            minimum = "0.60".toBigDecimal()
+                        }
+                    }
+                }
+            }
+
+            // M08 G10 baseline (D3) — НЕ привязываем verification к :check
+            // автоматически. Модули attendance-app/academic-app/schedule-app
+            // имеют baseline coverage <60% (M05-M09 добавит тесты), ранее
+            // не было JaCoCo-gate'а. Активация через M08 G12:
+            //   tasks.named("check") { dependsOn("jacocoTestCoverageVerification") }
+            // Запуск вручную: ./gradlew jacocoTestCoverageVerification
+            // CI coverage-job использует continue-on-error: true до baseline.
+        }
     }
 }
 

@@ -25,20 +25,22 @@ import static org.mockito.Mockito.when;
 /**
  * M05 G8 (NEW-149): проверяет что {@link LessonEventService#processLessonClosed}
  * параллелит два gRPC-вызова через {@code grpcTaskExecutor}. Мок-клиенты
- * симулируют 200ms latency каждый. Wall-time:
+ * симулируют 500ms latency каждый. Wall-time:
  * <ul>
- *   <li>Параллельно: ~210ms (200ms + overhead).</li>
- *   <li>Sequential baseline: ~420ms (200ms × 2).</li>
+ *   <li>Параллельно: ~520ms (500ms + overhead).</li>
+ *   <li>Sequential baseline: ~1020ms (500ms × 2).</li>
  * </ul>
  *
- * <p>Ассерт: wall-time &lt; 350ms подтверждает параллельное выполнение
- * (лимит 350ms оставляет margin для CI jitter, но исключает sequential path).
+ * <p>Ассерт: wall-time &lt; 750ms подтверждает параллельное выполнение
+ * (лимит 750ms оставляет margin для thread-startup + Mockito overhead
+ * на медленных runners; sequential path пройдёт ~1000ms и тест упадёт).
+ * M08 G10 — latency 200ms → 500ms увеличивает signal-to-noise на CI.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class LessonEventServiceParallelTest {
 
-    private static final long SIM_LATENCY_MS = 200;
+    private static final long SIM_LATENCY_MS = 500;
 
     @Mock
     private ScheduleGrpcClient scheduleGrpcClient;
@@ -93,11 +95,14 @@ class LessonEventServiceParallelTest {
         svc.processLessonClosed(1L, 10L);
         long elapsed = System.currentTimeMillis() - start;
 
-        // Параллельно: ~200ms + overhead. Sequential было бы ~400ms.
+        // Параллельно: ~500ms + overhead. Sequential было бы ~1000ms.
+        // M08 G10 — 750ms порог даёт 250ms margin для thread-startup +
+        // Mockito overhead. Sequential path гарантированно > 1000ms, так что
+        // тест продолжает доказывать параллельное выполнение.
         assertThat(elapsed)
-                .as("processLessonClosed wall-time должно быть < 350ms "
-                        + "(параллельно 200ms × 2) — sequential baseline ~400ms")
-                .isLessThan(350L);
+                .as("processLessonClosed wall-time должно быть < 750ms "
+                        + "(параллельно 500ms × 2) — sequential baseline ~1000ms")
+                .isLessThan(750L);
 
         executor.shutdown();
     }

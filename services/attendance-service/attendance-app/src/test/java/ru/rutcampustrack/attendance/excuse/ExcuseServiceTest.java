@@ -27,7 +27,9 @@ import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import io.micrometer.core.instrument.Counter;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,6 +83,10 @@ class ExcuseServiceTest {
     @Mock
     private Counter excuseCreatedCounterMock;
 
+    // M08 G10 (Clock-injection regression fix) — см. CheckinServiceTest.
+    @Mock
+    private Clock clock;
+
     @InjectMocks
     private ExcuseService excuseService;
 
@@ -122,6 +128,9 @@ class ExcuseServiceTest {
         // M04 Группа 8 — counter excuse.created; kind (illness/etc) передаётся
         // в downcase.
         lenient().when(businessMetrics.excuseCreatedCounter(anyString())).thenReturn(excuseCreatedCounterMock);
+        // M08 G10 (Clock-injection regression fix).
+        lenient().when(clock.instant()).thenReturn(Instant.now());
+        lenient().when(clock.getZone()).thenReturn(ZoneId.of("Europe/Moscow"));
     }
 
     // ---------------------------------------------------------------------

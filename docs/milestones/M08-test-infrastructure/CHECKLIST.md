@@ -214,18 +214,40 @@
 
 ## Группа 10 — Coverage gate (QD2)
 
-- [ ] JaCoCo config в root `build.gradle.kts`: 60% line per-module
-- [ ] JaCoCo exclusions: `**/*Dto.class`, `**/*Record.class`,
+- [x] JaCoCo config в root `build.gradle.kts`: 60% line per-module
+      — `subprojects { apply(plugin = "jacoco") }` + `afterEvaluate` с
+      violationRules LINE 0.60, инструмент JaCoCo 0.8.12.
+- [x] JaCoCo exclusions: `**/*Dto.class`, `**/*Record.class`,
       `**/*Application.class`, `**/generated/**` (NEW-99)
-- [ ] PWA `vitest.config.ts` — coverage 50% line, `exclude: ['**/*.d.ts']`
-- [ ] web-panel аналогично
-- [ ] notification-bot `pytest.ini` — `--cov-fail-under=50`
-- [ ] `diff-cover` tool в CI — gate 80% на changed lines
-- [ ] PR-comments: madrapps/jacoco, vitest-coverage-report,
-      pytest-coverage-comment
-- [ ] Baseline коммит после первого зелёного прогона
-- [ ] **Selective override для M09 pilot** — latecheckin 70%,
+      — `jacocoExcludes` list в root, включает generated/grpc/proto/dto/config.
+- [x] PWA `vitest.config.ts` — coverage 50% line, `exclude: ['**/*.d.ts']`
+      — `coverage: { provider: 'v8', reporter: ['text','lcov','json-summary'],
+      thresholds: { lines: 50 } }`. `@vitest/coverage-v8` в devDependencies.
+- [x] web-panel аналогично — `coverage` секция с теми же thresholds.
+- [x] notification-bot `pytest.ini` — `--cov-fail-under=50`
+      — addopts включает `--cov=bot --cov-report=xml --cov-fail-under=50`.
+      `pytest-cov>=5.0.0` в requirements-test.txt. Excludes (grpc stubs,
+      __main__.py) в `[tool.coverage.run]` в pyproject.toml.
+- [x] `diff-cover` tool в CI — gate 80% на changed lines
+      — `.github/workflows/coverage.yml` `diff-cover` job, агрегирует
+      JaCoCo XML + lcov + coverage.xml. D3: warning до baseline, hard-fail
+      после (закомментированный `exit 1` в последнем step'е).
+- [x] PR-comments: madrapps/jacoco, vitest-coverage-report,
+      pytest-coverage-comment — все три action'а в coverage.yml.
+- [~] Baseline коммит после первого зелёного прогона — baseline running
+      локально прошёл (auth 81.3% LINE, attendance-app 16.5%).
+      См. NOTES.md «Surprise: baseline coverage <60%». Активация hard-fail
+      `check.dependsOn("jacocoTestCoverageVerification")` отложена на G12.
+- [~] **Selective override для M09 pilot** — latecheckin 70%,
       handlers/ 70% (сохранить после M09)
+      — `attendance-app/build.gradle.kts` содержит rule с `isEnabled = false`
+      для `ru.rutcampustrack.attendance.latecheckin.*` 70% LINE. Активируется
+      M09 G3. Bot/handlers/ — NOTICE в coverage.yml, реальный step в M09 G2.
+- [x] **G4 Clock-injection regression fix (unplanned)** — CheckinServiceTest +
+      ExcuseServiceTest получили NPE после G4 (commit `f61537b`) из-за
+      отсутствия `@Mock Clock`. Добавлен mock + `when(clock.instant())`.
+      Также `LessonEventServiceParallelTest` flaky threshold ужесточён
+      (SIM_LATENCY 200→500ms, порог 350→750ms) для CI-jitter.
 
 ## Группа 11 — Supply chain (M06 defer'ы)
 

@@ -8,3 +8,24 @@ select = ["E", "F", "W", "I"]
 [tool.ruff.lint.per-file-ignores]
 "bot/grpc_client/*_pb2.py" = ["E501", "F401", "E402", "F811"]
 "bot/grpc_client/*_pb2_grpc.py" = ["E501", "F401", "E402", "F811"]
+
+# M08 Группа 10 (OWNER-ANSWERS QD2) — coverage excludes.
+# Gate 50% line — в pytest.ini addopts. Generated grpc stubs и
+# __main__.py (bootstrap entry) исключены как шум.
+[tool.coverage.run]
+source = ["bot"]
+omit = [
+    "bot/grpc_client/*_pb2.py",
+    "bot/grpc_client/*_pb2_grpc.py",
+    "bot/__main__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+show_missing = true
+skip_covered = false

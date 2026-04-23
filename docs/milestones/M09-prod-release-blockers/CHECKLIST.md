@@ -147,17 +147,18 @@
 - [x] **G8.6** `CHANGELOG.md [Unreleased]` — полная M09 секция: 8 групп с per-group bullet'ами
 - [ ] **G8.7** Коммит `docs(m09): admin-scripts + future-ideas + CLAUDE/CHANGELOG M09 final docs`
 
-## Группа 9 — Audit (~0.5д)
+## Группа 9 — Audit (~0.5д) ✅ 2026-04-24
 
-- [ ] Полный `./gradlew build` + `pytest notification-bot/` — всё зелёное
-- [ ] `security-auditor` агент на diff M09 — фокус: OTP event flow (кто читает код из Rabbit? TTL? DLQ на bot unavailable?), constant-time verify корректность, race при параллельном request OTP, headman role check coverage
-- [ ] `bug-hunter` агент — фокус: outbox publisher retry для `otp.requested`/`lesson.cancelled`/`excuse.*` (дубли → пользователь получит 2 разных кода?), Aiogram fake-updates edge cases, lesson.deleted grep на orphan references
-- [ ] Hot-patches → отдельный коммит
-- [ ] `PLAN.md` → Post-mortem секция
-- [ ] `docs/milestones/README.md` → M09 ✅ + дата
-- [ ] `CLAUDE.md` → M09 статус ✅
-- [ ] Тег `git tag v0.0.0` или `v0.0.0-rc.1` (локально)
-- [ ] Hand-off для release-candidate в `NEXT-SESSION.md`
+- [x] Полный `./gradlew build` (BUILD SUCCESSFUL 4m 4s) + `pytest` 198 passed, handlers 92.83%, overall 77.17%
+- [x] `security-auditor` агент на diff M09 — 0 BLOCK, 1 HIGH (SA-H1 `verifyOtpByCode` без attempts counter), 5 MEDIUM (SA-M1/M3/M4/M5 и LOW) — итог deferred в v0.1, см. DECISIONS D7
+- [x] `bug-hunter` агент — 0 BLOCK, 1 HIGH (BH-H1 bot event_id дедуп отсутствует), 5 MEDIUM (BH-M2..M6) — итог deferred в v0.1
+- [x] Hot-patches (2 коммита): `2bba0e1` BH-M3 OTP-в-log fix, `89afd44` BH-M4 PromQL +Inf guard
+- [x] Оставшиеся HIGH + MEDIUM задокументированы в `docs/future-ideas.md` → «OTP hardening bundle (v0.1)»; решение — в DECISIONS D7
+- [x] `PLAN.md` → Post-mortem секция (reality vs estimate 30h vs 56-64h, lessons learned по Spring `@ConditionalOnBean`, `catch (AmqpException)`, parallel agents efficiency)
+- [x] `docs/milestones/README.md` → M09 ✅ 2026-04-24 (уже в G8)
+- [x] `CLAUDE.md` → M09 статус ✅ (уже в G8)
+- [ ] Тег `v0.0.0-alpha.10` (локально) — финализация
+- [ ] Hand-off `NEXT-SESSION.md` под M10 Notification History
 
 ---
 

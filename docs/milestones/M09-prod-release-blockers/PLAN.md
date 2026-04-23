@@ -228,3 +228,100 @@
 _Никаких «why», «motivation», «background» — это в 99-executive-summary.md
 и OWNER-ANSWERS.md (Q-P0-4..6, Q-P0-1/2 в 14, Q-P0-2 в 12, P2-11/5 2600-2628,
 P2-11/8 2657-2682, NEW-154/155/157 4346-4445). Здесь только WHAT и DONE._
+
+---
+
+## Post-mortem (закрытие 2026-04-24)
+
+**Длительность:** 2026-04-23 (старт G1) → 2026-04-24 (tag G9).
+Календарное: **2 дня**, estimate был **7-8 человеко-дней** — scope
+шёл плотно, но часть «event unification» оказалась лёгкой (existing
+pattern `excuse.decided` + schema уже покрывала full snapshot → D6
+сэкономил 1д).
+
+**Reality vs estimate:**
+- **G1 Quick wins** — 2ч, как planned. Без сюрпризов.
+- **G2 OTP через Rabbit** — 1.5д planned, **~3 сессий рабочего
+  времени**. G2.6 (AuthOtpFlowIT зелёный) — главный тайм-сток. 2
+  неверные гипотезы до root cause (см. ниже).
+- **G3 latecheckin tests** — 1.5д planned, ~6ч. Гладко: scaffold'ы
+  готовые, pattern повторён из предыдущих сервисов.
+- **G4 bot callbacks** — 1.5д planned, ~4ч. Aiogram 3 fixtures — mock
+  callback_query напрямую, без dispatcher harness. Гладко.
+- **G5 lesson.cancelled** — 1.5д planned, ~3ч. D5 («lesson.deleted
+  оставляем») убрал большую часть scope'а в начале группы.
+- **G6 headman role check** — 1.5д planned, ~2ч. D6 («единое
+  `excuse.decided`») убрал создание новых schemas.
+- **G7 runbooks + mem_limits** — 1д planned, ~6ч. Crafting 4
+  runbook-документов и pass через docker-compose config — руки,
+  но без сюрпризов.
+- **G8 docs** — 0.5д planned, 1ч.
+- **G9 audit** — 0.5д planned, ~3ч (эта сессия) включая параллельный
+  прогон двух агентов + triage + hot-patches + tag.
+
+**Итого:** ~30ч реальной работы vs 56-64ч estimate. Estimate был с
+запасом на debug, реальный debug-тайм пришёлся на G2.6.
+
+**Lessons learned:**
+
+1. **Spring auto-configuration ordering — `@ConditionalOnBean` на
+   user-Configuration.** G2.6 root cause: наш `RabbitConfig`
+   `@Configuration` аннотирован `@ConditionalOnBean(
+   ConnectionFactory.class)`. Condition оценивается **до**
+   `RabbitAutoConfiguration` — а значит `ConnectionFactory` ещё не
+   создан → condition false → наш JSON-converter `RabbitTemplate`
+   не регистрируется → default autoconfigured RabbitTemplate с
+   `SimpleMessageConverter` ломает JSON-контракт.
+
+   **Первые две неверные гипотезы:**
+   - Думал что проблема в `application-test.yml` exclude'е
+     `RabbitAutoConfiguration` — снял exclude, тесты всё равно
+     красные.
+   - Думал что в том что `@TestConfiguration` в тестах
+     переопределяет beans не в том порядке — поменял порядок,
+     тесты всё равно красные.
+
+   **Финальный root cause** — `@ConditionalOnBean` на user-side
+   `@Configuration` (не на `@Bean`-method'е), которое оценивается
+   слишком рано в bootstrap'е. Fix: убрать condition полностью,
+   listener регистрируется `@Bean`'ом в `RabbitConfig` без
+   conditional.
+
+   **Takeaway:** `@ConditionalOnBean(X.class)` на `@Configuration`
+   плохо сочетается с auto-configured beans. Использовать только на
+   `@Bean`-method'е (оно evaluates после context refresh). Или
+   использовать `@AutoConfigureAfter(RabbitAutoConfiguration.class)`.
+
+2. **`catch (AmqpException)` vs `catch (Exception)`.** Jackson
+   deserialize error бросает `MessageConversionException` (не
+   `AmqpException`), так что narrow `catch (AmqpException)` его не
+   ловил → unhandled exception → test failure без clear log. Для
+   event-handler'ов на Rabbit — `catch (Exception)` безопаснее.
+
+3. **Deviations в CHECKLIST acceptable если documented.** Из 8
+   групп 5 имели `[~]` отклонения (D4 shared-outbox, D5 lesson.
+   deleted, D6 excuse.decided split, Python contract-тесты,
+   fake-updates integration). Scope-решения в DECISIONS не тормозили,
+   а наоборот ускорили milestone. Policy: если отклонение саму
+   цель acceptance criteria не подменяет — `[~]` + DECISIONS D{N}
+   достаточно. Audit по-прежнему closing группу.
+
+4. **Parallel agents на diff — эффективно.** G9 прогнал
+   security-auditor + bug-hunter в parallel (single message, 2
+   Agent tool calls) по 17-commit diff. Два агента параллельно
+   вернули 2 HIGH + 8 MEDIUM findings за ~7 минут, triage 3 минуты,
+   hot-patches 2 коммита 10 минут. Без параллельности — сдвоенная
+   последовательность agents ~15 минут.
+
+5. **"Tag valid" != "все findings fixed".** G9 финализировал
+   tag `v0.0.0-alpha.10` с 2 HIGH deferred в v0.1 (см. DECISIONS D7).
+   Это не регрессия — M09 scope был "prod release blockers", HIGH
+   findings это iterative hardening. Для v0.0.0 GA — закрыть все
+   HIGH из OTP hardening bundle (future-ideas.md).
+
+**Post-M09 state:**
+- Tag `v0.0.0-alpha.10` локально (push deferred).
+- 20 коммитов ahead origin (17 до G9 + 3 в G9: 2 hot-patch + 1
+  close-milestone).
+- Следующий milestone — **M10 Notification History** (stateful
+  notification-web с Mongo + Caffeine unread-count + TTL 30d).

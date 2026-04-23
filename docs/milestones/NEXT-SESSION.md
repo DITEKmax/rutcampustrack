@@ -1,169 +1,129 @@
-# Промпт для следующей сессии — M09 Группа 9 (Audit + Release)
+# Промпт для следующей сессии — M10 Notification History
 
 Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Opus сам откроет
-нужные файлы, поймёт где мы стоим и добьёт релиз.
+нужные файлы и стартанёт milestone.
 
 ---
 
-**M09 Prod Release Blockers почти готов: G1-G8 закрыты, осталась G9 Audit + tag.**
-Нет приоритетных bug'ов в очереди. В новой сессии нужно: прогнать
-полный build + pytest, запустить 2 агента на diff M09, применить
-hot-patches если найдутся, поставить tag `v0.0.0-alpha.10` локально.
+**M09 Prod Release Blockers ✅ закрыт 2026-04-24, tag `v0.0.0-alpha.10`
+локально. Следующий milestone — M10 Notification History:
+`notification-web` из stateless event-forwarder'а в stateful сервис
+с Mongo + pagination REST + Caffeine unread-count.**
 
-Локальных коммитов ahead origin: **17**. Tags `v0.0.0-alpha.2..9`
+Локальных коммитов ahead origin: **20**. Tags `v0.0.0-alpha.2..10`
 локальные. Push всё ещё отложен до явного `go`.
 
 **Старт следующей сессии — дословно:**
 
-> Читаю NEXT-SESSION → CHECKLIST M09 Группу 9 → последний commit
-> `4fa58a4`. **Сначала прогон** `./gradlew build` +
-> `cd services/notification-bot && py -m pytest tests/ --override-ini="addopts=" --cov=bot/handlers --cov-fail-under=70`.
-> Если красное — фикс, коммит `fix(m09 G9): <explanation>`. Когда
-> зелёное — **параллельные агенты** `security-auditor` и `bug-hunter`
-> на diff M09 (25 commits от `2996652` до `4fa58a4`) — focus areas
-> ниже. Hot-patches → commit'ом, повторный прогон, green → **tag**
-> `git tag -a v0.0.0-alpha.10 -m "M09 Prod Release Blockers"` +
-> финальный **`docs(m09): close M09 + hand-off для M10`** commit.
-> Обновить `NEXT-SESSION.md` под M10.
+> Читаю `docs/milestones/NEXT-SESSION.md` →
+> `docs/milestones/M10-notification-history/{PLAN,CHECKLIST,NOTES}.md` →
+> `99-executive-summary.md` строки 120 и 170 (P2-6/4) →
+> `05-notification-service.md` P2-6/4 → `OWNER-ANSWERS.md` строки
+> 5021-5131 (P2-6/4 вариант b FULL). Старт с **Группы 1 MongoDB
+> schema setup (NEW-166)**: `infra/mongo-init/notification-db-init.js`
+> + `docker-compose*.yml` mount init-script и env
+> `MONGO_NOTIFICATION_USER/PASSWORD`. Коммит
+> `feat(infra): notification_db init + mongo user (M10 G1, NEW-166)`.
+> Далее **Группа 2 notification-api-contract module** — новый модуль
+> per contract-first rule (БЕЗ Lombok): `NotificationType enum`,
+> `NotificationHistoryDto record`, `UnreadCountDto record`,
+> `NotificationApi interface` с `@RequestMapping + @Operation +
+> @ApiResponse`. Коммит
+> `feat(notif): notification-api-contract module (M10 G2, NEW-167)`.
+
+Каждая группа — отдельный атомарный коммит. Stop при сюрпризе → NOTES
++ спросить.
 
 ---
 
-## M09 — текущий статус (на 2026-04-24)
+## M10 — исходный статус (на 2026-04-24 старт)
 
-| Группа | Статус | Commit |
-|--------|--------|--------|
-| G1 Quick wins (P0-5 MessageDigest + P0-6 cleanupOrphans + P0-2 landing) | ✅ | `2996652..0c465f1` |
-| G2 OTP через RabbitMQ event (08 P0-2) | ✅ | `3d6dfd1..bda6a35` |
-| G3 latecheckin tests (14 P0-1) | ✅ | `48a63f7` |
-| G4 bot callback tests + 70% handlers (14 P0-2, 14 P1-7) | ✅ | `25da2d9` |
-| G5 lesson.cancelled full snapshot + V13 migration (02 P2-11/5) | ✅ | `b5a7e2e` |
-| G6 headman role check + NEW-121 audit (06 P1-1) | ✅ | `e332d41` |
-| G7 prod-deploy-checklist + runbooks + compose mem_limits (NEW-154/155/157) | ✅ | `c5bf621` |
-| G8 admin-scripts + future-ideas + CLAUDE/CHANGELOG | ✅ | `4fa58a4` |
-| **G9 Audit + tag** | ⏳ | — |
+Все 9 групп в CHECKLIST:
 
-## G9 Scope (~0.5д)
-
-### 1. Зелёный прогон — до запуска агентов
-
-```bash
-# Backend
-export JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9"
-./gradlew.bat build --no-daemon
-# Должно быть BUILD SUCCESSFUL. Ratchet 60% LINE + latecheckin 70% активен.
-
-# Python bot
-cd services/notification-bot
-py -m pytest tests/ --override-ini="addopts=" --cov=bot/handlers --cov-fail-under=70
-# Должно: 198 passed, handlers coverage 92.83%.
-
-py -m pytest tests/
-# Должно: 198 passed, bot/ coverage 76.86% (>50% baseline).
-```
-
-Если красное — **не двигаться к агентам**, фикс + коммит, повторный прогон.
-
-### 2. Параллельные агенты (single message, 2 Agent tool calls)
-
-**security-auditor** — focus:
-- OTP event flow: кто в Rabbit читает `otp.requested` кроме bot? DLQ на bot-down (TTL Redis 120s vs Rabbit retry)? Race при parallel `/auth/otp/request` от того же telegramId (cooldown/attempts, но что внутри окна Rabbit-retry)?
-- `OtpService.verifyOtp` constant-time корректность — ветвление по input-size ещё остаётся?
-- `_verify_headman` fail-closed на gRPC error — не ломает UX при кратковременном academic outage?
-- headman role check coverage (что если `found=true` + `is_headman=null`?)
-- V13 миграция: legacy cancelled-строки с `cancelled_by=NULL` — downstream consumer'ы на это готовы?
-- `lesson.deleted` grep — не осталось ли orphan-references после G5 scope-decision D5.
-
-**bug-hunter** — focus:
-- Outbox publisher retry для `lesson.cancelled` full snapshot — дубли приводят к двойному edit_text у студентов? (Schema `event_id` должен уникализировать через attendance idempotency, проверить).
-- `otp.requested` retry → bot получит 2 кода, студент увидит второе сообщение → first message stale. Tracker `store_pending_user_msg` handle'ит?
-- Aiogram fake-updates edge cases в новых тестах (forwarded callback'и с старым data → handler не должен falsly publish).
-- Flyway V10 → V13 rename (я переименовал из-за conflict с V10__shedlock_table.sql) — проверить что MigrationIT test'ы не broken, checksum validation в prod'е не ломается после upgrade.
-- Role check — user.found=True но `is_headman=None` (proto optional) — `getattr(user, "is_headman", False)` returns `None`, `not None == True` → **пропустит студента**? Проверить.
-
-### 3. Hot-patches
-
-Любой finding — отдельный fix-commit: `fix(m09 G9): <short>`. НЕ
-squash'ить в G-commits (audit trail важнее pretty log'а для M09).
-
-### 4. Финализация
-
-- **Post-mortem** в `docs/milestones/M09-prod-release-blockers/PLAN.md`:
-  календарное время, reality vs estimate, lessons learned (особенно
-  G2.6 RabbitConfig debug'инг — 2 неверных гипотезы до root cause).
-- **Tag** локально:
-  ```bash
-  git tag -a v0.0.0-alpha.10 -m "M09 Prod Release Blockers — closed"
-  ```
-- **Финальный коммит**: `docs(m09): close M09 + hand-off для M10`:
-  - CHECKLIST Группа 9 → ✅
-  - NEXT-SESSION под M10 (см. M10 CHECKLIST — `docs/milestones/M10-notification-history/`)
-  - PLAN.md post-mortem выше
-
----
+| Группа | Scope |
+|--------|-------|
+| G1 MongoDB schema setup | `notification_db` init + user + docker-compose mount |
+| G2 notification-api-contract module | DTO + interface + enum |
+| G3 Backend entity + repository + consumer | Entity + Mongo indexes + `@RabbitListener` |
+| G4 Service + Caffeine cache | `CaffeineConfig` + `@Cacheable unread-count` + evict |
+| G5 Controller + Gateway route | `NotificationController implements NotificationApi` + routing |
+| G6 Frontend integration | PWA NotificationCenter backed by REST + STOMP |
+| G7 STOMP cache invalidation | Publisher evicts cache при publish new event |
+| G8 Docs | `docs/architecture.md` раздел 3.5 expansion + `database-schema.md` notification_db |
+| G9 Audit + tag | security-auditor + bug-hunter на diff M10, hot-patches, tag `v0.0.0-alpha.11` |
 
 ## Правила (без изменений)
 
 - **Русский язык** в отчётах / NOTES / ответах.
 - **Ветка `dev`**. Push на `main`/`origin` — только с явного `go`.
 - Не звать `gsd-*` агентов. `Explore` для «найти все X»,
-  `bug-hunter` + `security-auditor` — только в G9 (этой сессии).
+  `bug-hunter` + `security-auditor` — только в G9.
 - Surprise → NOTES.md + спросить до продолжения.
-- Micro-решение → DECISIONS.md (D7, D8... — продолжаем нумерацию, D1-D6 уже).
+- Micro-решение → DECISIONS.md (D1, D2... свежий счёт в M10).
 - Закрыл пункт CHECKLIST → `[x]` через Edit (commit hash в описании).
 - **Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные**, edit применяется.
+- Атомарные коммиты per группа. Если группа >6ч работы — разрежь её.
 
 ## Ожидающие явного `go`
 
-1. `git push origin dev` — **17 коммитов** ahead (25 всего после G9).
-2. `git push origin --tags` — **8 tags** (`v0.0.0-alpha.2..9`), станет 9 после G9 tag.
-3. После M09 → **M10 Notification History** (stateful notification-web
-   + Mongo notification_db + TTL 30d + Caffeine unread-count). См.
-   `docs/milestones/M10-notification-history/PLAN.md`.
+1. `git push origin dev` — **20 коммитов** ahead (rising до ~35+
+   после M10).
+2. `git push origin --tags` — **9 tags** (`v0.0.0-alpha.2..10`),
+   станет 10 после M10 tag.
+3. После M10 → **M11 OpenAPI Polish** (SharedOpenApiCustomizer
+   наполнение + @Schema на DTO + nginx basic-auth на prod /swagger-ui
+   + OpenAPI↔runtime conformance CI). См.
+   `docs/milestones/M11-openapi-polish/PLAN.md`.
 
 ---
 
-## Ключевые факты для G9 agents (опорный context)
+## Ключевые факты для M10 старта (опорный context)
 
-**Root cause G2.6 AuthOtpFlowIT** (для security-auditor — похожие
-ловушки могут быть в attendance/schedule): user `@Configuration` +
-`@ConditionalOnBean(ConnectionFactory.class)` оценивается ДО
-`RabbitAutoConfiguration`, condition всегда false. Fix: убран
-`@ConditionalOnBean`, listener через `@Bean` в RabbitConfig.
-`catch(AmqpException)` → `catch(Exception)` (Jackson бросает
-MessageConversionException, не AmqpException).
+**Почему переделываем notification-web (P2-6/4).** Сервис был заложен
+в M04 как stateless forwarder (RabbitMQ → STOMP push), но по факту в
+prod'е потребовалось:
+- Пользователь хочет видеть **историю** уведомлений после login (сейчас
+  потерянные при disconnect).
+- Badge unread-count в UI требует persistent state.
+- Owner-решение (OWNER-ANSWERS.md:5021-5131) — вариант (b) FULL:
+  новая DB `notification_db`, pagination REST API, TTL 30d на
+  документах, Caffeine для unread-count.
 
-**DECISIONS накопленные в M09** (6 штук):
+**Архитектурно:**
+- Fanout exchange `notification.events` → 2 queue: `notification.delivery`
+  (существующий STOMP push) + `notification.history` (новый persister).
+- Два consumer'а в одном контейнере `notification-web` (разделены по
+  queue'am, error в одном не влияет на другой через ACK).
+- Mongo DB `notification_db` — отдельная от `attendance_db` (разные
+  сервисы по P2-9/6 principle).
+- Caffeine L1 cache per-instance (единственный instance в MVP; если
+  будет scale — evict через STOMP broadcast event).
+
+**M09 достижения (для context'а):**
+- OTP через RabbitMQ event (не HTTP body)
+- `lesson.cancelled` — full snapshot schema
+- latecheckin/bot handlers — 70% coverage gate
+- docker-compose.prod.yml — mem_limits, JVM opts, Prom alert'ы
+- 2 HIGH findings из G9 audit deferred в v0.1 — см.
+  `docs/future-ideas.md` «OTP hardening bundle (v0.1)»:
+  - SA-H1 `verifyOtpByCode` без attempts counter
+  - BH-H1 bot dispatcher event_id дедуп отсутствует
+
+**DECISIONS накопленные в M09** (D1-D7, пример для следования
+pattern'у в M10):
 - **D1-D3** — G1 детали.
-- **D4** — OtpRequestedPublisher как отдельный класс НЕ создан (OTP
-  эфемерен, shared-outbox persistence нарушает security-модель).
-- **D5** — `lesson.deleted` НЕ удаляется в G5 (physical DELETE, не
-  синоним cancelled; attendance orphan-cleanup зависит).
-- **D6** — `excuse.decided` остаётся single event (status=approved|rejected),
-  не разбиваем на `excuse.approved/rejected` (симметрия с late_checkin,
-  избегаем дублирования consumer-кода).
+- **D4** — OTP через DomainEventListener, НЕ shared-outbox.
+- **D5** — `lesson.deleted` оставлен как отдельный use-case.
+- **D6** — `excuse.decided` single event со status-полем.
+- **D7** — G9 audit HIGH findings deferred в v0.1.
 
-**Deviations от CHECKLIST** (помечены `[~]`, не блокируют закрытие):
-- G2: OtpRequestedPublisher не создан (D4); Python contract-тест
-  пропущен (jsonschema не в deps, Java publisher-side достаточно).
-- G3: event-schemas approved/rejected не созданы (в коде single
-  `late_checkin.decided`); integration fake-updates test пропущен.
-- G4: integration fake-updates test пропущен.
-- G5: `lesson.deleted` НЕ удалено (D5); NEW-119 UI one-off lessons
-  отложен в M09 G9 cleanup (теперь = эта сессия, можно проверить).
-- G6: excuse.approved/rejected schemas не созданы (D6); integration
-  fake-updates test пропущен.
-- G7: nginx/certbot/node-exporter/cadvisor/promtail без mem_limit
-  (safety-alert `ContainerWithoutMemoryLimit` напомнит); staging
-  smoke — пройдёт при prod deploy (не в этой сессии).
+**Coverage на момент закрытия M09**:
+- handlers bot = 92.83%, bot overall = 77.17% (baseline 50%)
+- JaCoCo ratchet 60% LINE + latecheckin 70% activated
 
-**Coverage**: handlers bot = 92.83%, latecheckin jacoco 70% LINE
-активирован, bot/ overall 76.86% (>50% baseline), JaCoCo ratchet 60%
-LINE держится.
-
-**Ключевые commits M09 для diff-агентов:**
+**Ключевые commits M09 для context'а:**
 ```bash
-git log --oneline 2996652..4fa58a4
-# или полный diff: git diff 2996652~1..4fa58a4
+git log --oneline 2996652~1..HEAD  # все 20 коммитов M09 (G1-G9)
 ```
 
 ---
@@ -179,9 +139,9 @@ M05 Performance ✅ 2026-04-21
 M06 Ops & Supply Chain ✅ 2026-04-21
 M07 Frontend Hardening ✅ 2026-04-22 (tag `v0.0.0-alpha.8` локальный)
 M08 Test Infrastructure ✅ 2026-04-23 (tag `v0.0.0-alpha.9` локальный)
-**M09 Prod Release Blockers ⏳ G1-G8 ✅ / G9 Audit — в этой сессии (tag `v0.0.0-alpha.10` локально после G9)**
-M10 Notification History ⬜ (следующая — stateful notification-web)
+M09 Prod Release Blockers ✅ 2026-04-24 (tag `v0.0.0-alpha.10` локальный)
+**M10 Notification History ⏳ — эта сессия (tag `v0.0.0-alpha.11` после G9)**
 M11 OpenAPI Polish ⬜
-M12 Auth Contract-first Refactor ⬜ (планирование v0.0.0; фактическая реализация — v0.1, см. future-ideas.md)
+M12 Auth Contract-first Refactor ⬜ (планирование v0.0.0; реализация v0.1, см. future-ideas.md)
 
 Dependency graph и полный roadmap — `docs/milestones/README.md`.

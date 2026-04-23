@@ -171,3 +171,56 @@ regenerate/subject-delete, и они будут всплывать в отчёт
 
 **Последствия:** G6 закрывается без создания новых schemas. Focus — на
 role check (06 P1-1) и audit asymmetric flows (NEW-121).
+
+## D7 — G9 audit: HIGH findings deferred в v0.1 (2 штуки)
+
+**Контекст:** `security-auditor` + `bug-hunter` на diff 17 коммитов M09
+(`2996652..4fa58a4`) вытащили:
+- **0 BLOCK** (tag `v0.0.0-alpha.10` валидный)
+- **2 HIGH**: SA-H1 `verifyOtpByCode` без attempts counter; BH-H1
+  дубли `lesson.cancelled` событий в bot dispatcher (event_id дедуп
+  отсутствует).
+- **8 MEDIUM** (SA-M1/M3/M4/M5, BH-M2/M3/M4/M5/M6).
+
+**Что fix'нуто в G9 hot-patch:**
+- **BH-M3** (коммит `2bba0e1`): `otp_requested.py` malformed-event
+  warn-log писал весь event с plaintext OTP-кодом → Loki 14d retention.
+  Хардкор security issue с низкой вероятностью срабатывания (нужен
+  schema-mismatched event), но тривиальный fix — 1 строка, заменил
+  на `list(event.keys())`. Мерит немедленного исправления.
+- **BH-M4** (коммит `89afd44`): `ContainerMemoryHigh` PromQL давал
+  `+Inf > 0.9 = true` для контейнеров без mem_limit → ~10 false-
+  positive alerts. Один раз прод поднимется — alert-spam похоронит
+  real issues в Telegram боте админа. Добавил guard
+  `and on (name) container_spec_memory_limit_bytes > 0`. Validated
+  `promtool check rules`.
+
+**Что отложено в v0.1** (см. `docs/future-ideas.md` → «OTP hardening
+bundle»):
+- **SA-H1** (verifyOtpByCode attempts counter) — архитектурное
+  решение: need IP-resolve в сервисе или stricter Gateway RL.
+  Gateway RL 5 req/min/IP держит single-IP атаки; distributed botnet
+  — реальный vector, но не MVP-level threat (10 студентов pilot).
+- **BH-H1** (bot dispatcher event_id дедуп) — это 50+ строк изменений
+  в base infrastructure бота, задевает ВСЕ handler'ы. Регрессия
+  риск. Должно идти через proper dispatcher-level test в v0.1.
+- Все MEDIUM — в тот же future-ideas bundle.
+
+**Альтернативы:**
+- (a) Fix HIGH в G9 перед tag'ом — +1д на SA-H1 (need Gateway RL
+  tune или IP counter) + +1д на BH-H1 (dispatcher refactor). Риск
+  регрессии в стабильном code base.
+- (b) Tag alpha.10 с documented HIGHs в v0.1. Дыры не критичные для
+  pilot deployment (малая нагрузка, trusted network), закрываются
+  до GA v0.0.0.
+
+**Решение:** (b). Tag `v0.0.0-alpha.10` валидный — M09 scope был
+"prod release blockers", и HIGH findings это **iterative hardening**,
+а не новые blockers. Обе HIGH документированы в future-ideas bundle
+с fix plans.
+
+**Последствия:**
+- `CHANGELOG.md` G9 bullet упоминает 0 BLOCK + 2 HIGH deferred.
+- `docs/future-ideas.md` новый раздел «OTP hardening bundle (v0.1)»
+  с детальным fix plan'ом.
+- v0.0.0 GA checkpoint должен включать OTP hardening bundle в scope.

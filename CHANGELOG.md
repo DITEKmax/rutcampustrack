@@ -61,6 +61,15 @@
     `future-ideas.md` разделы Auth contract-first refactor (v0.1) +
     Auth OpenAPI (P2-2/2 v0.1); CLAUDE.md contract-first уточнение;
     `docs/milestones/README.md` статус M09 ✅.
+  - **G9 Audit + hot-patches** — параллельный прогон `security-auditor`
+    + `bug-hunter` на diff 17 коммитов M09. Итог: 0 BLOCK, 2 HIGH
+    (deferred в v0.1 backlog — см. `docs/future-ideas.md`), 8 MEDIUM.
+    Hot-patches в G9: (a) `otp_requested.py` malformed-event log
+    только keys, не values — предотвращает OTP-код в Loki 14d
+    retention (BH-M3); (b) `ContainerMemoryHigh` Prom rule — guard
+    `container_spec_memory_limit_bytes > 0` избегает +Inf alert-spam
+    для контейнеров без mem_limit (BH-M4). Tag `v0.0.0-alpha.10`
+    локально.
 
 - **M08 Test Infrastructure** — e2e, coverage gate, supply-chain,
   contract tests (~12 человеко-дней, 12 групп, 24+ коммитов

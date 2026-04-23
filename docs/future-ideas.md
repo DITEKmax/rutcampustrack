@@ -521,3 +521,80 @@ auth на `auth-api-contract` module:
 в основном удаление legacy generation script'ов).
 
 ---
+
+## OTP hardening bundle (v0.1, deferred из M09 G9 audit)
+
+`security-auditor` + `bug-hunter` на M09 diff вытащили 2 HIGH и
+несколько MEDIUM по OTP / rate-limit. BLOCK ни одного нет — теги
+v0.0.0-alpha.10 валидный, но это всё должно быть закрыто до v0.0.0 GA.
+
+**HIGH.1 — `verifyOtpByCode` без attempts counter (SA-H1).**
+`POST /auth/otp/verify-by-code` ищет `otp_code:<code>` в Redis без
+`otp_verify_attempts` счётчика. Единственная защита — Gateway
+RequestRateLimiter 5 req/min per IP + `FailOpenRateLimiter` fail-open
+при Redis outage. При distributed brute-force (botnet) 10^6 кодов
+можно перебрать за часы; при одновременных live OTP (множество
+parallel logins) birthday-speedup.
+
+Fix план v0.1:
+1. Добавить в `OtpService.verifyOtpByCode` counter по IP (через
+   `HttpServletRequest` → resolve ip) — `otp_verify_by_code_miss:<ip>`,
+   лимит 20 неверных в 5 минут → 429 «Too many verification attempts».
+2. Metric `otp_verify_by_code_counter("mismatch"/"success"/"throttled")`.
+3. Alert `OtpBruteForceSuspect` в Prometheus rule — `rate(otp_verify_
+   by_code_counter{status="mismatch"}[5m]) > 10`.
+
+**HIGH.2 — дубли `lesson.cancelled` событий в боте (BH-H1).**
+`OutboxPublisherJob.publishBatch` делает `sender.send()` → `markSent`.
+Если `markSent` падает (DB deadlock / connection reset) после того
+как Rabbit принял message, запись остаётся `pending` → следующий tick
+(5s) публикует её снова. Все consumer'ы получают duplicate, в том
+числе бот. Attendance-service идемпотентен на status, но
+`notification-bot handle_lesson_cancelled` не проверяет `event_id`
+и дублирует `send_queue.put(...)` всем студентам → 2 одинаковых
+Telegram-сообщения.
+
+Тот же класс багов может задеть ЛЮБОЙ bot-consumer (lesson.started,
+homework.published, group.renamed…).
+
+Fix план v0.1 (dispatcher-уровня идемпотентность):
+1. В `EventDispatcher.dispatch` до вызова handler'а — check
+   Redis `SET NX PX` на ключе `event_processed:<event_id>` с TTL 24h.
+2. Если set failed (уже processed) → skip handler + metric
+   `event_duplicate_total{event_type}`.
+3. Новая fixture в `conftest.py` + regression-тест в
+   `test_event_dispatcher.py` на duplicate-delivery.
+
+**MEDIUM bundle — attendance-consumer защитные проверки.**
+1. **SA-M1** — `ExcuseService.applyDecisionFromBot` +
+   `LateCheckinService.applyDecision` не валидируют что
+   `decision_by.telegram_id` принадлежит старосте ТОЙ группы, что
+   студент. `_verify_headman` в боте проверяет global `is_headman`,
+   но не group-ownership. Fix: gRPC `academic.isHeadmanOfGroup(
+   user_id, ticket.group_id)` до `save + cascade`.
+2. **SA-M5** — `decisionBy` хранится как telegram_id (9-10 digit), не
+   user_id. Audit trail ломается — нельзя join с users. Fix: resolve
+   через academic_client до save.
+3. **SA-M4** — OTP plaintext в fanout exchange. Любой consumer
+   автоматически bind'нутый к `rut-uit.events` читает `otp.requested`.
+   Fix: перейти на topic exchange с routing key filtering, bot
+   подписывается только на `otp.*` / other-services — на остальное.
+4. **SA-M3** — `FailOpenRateLimiter` fail-open на Redis outage.
+   Для critical paths (`/auth/otp/*`, `/auth/login`) — fail-closed
+   или in-memory backup bucket. Alert `RateLimiterFailOpen`.
+5. **BH-M2** — OTP race: два параллельных `/otp/request` от same
+   telegram_id (RL bypass через разные IP) → два live кодов в
+   `otp_code:*`. Fix: Lua script atomic step для reserve-cooldown-
+   generate, или `setIfAbsent("otp_lock:"+tid, ..., 2s)` serialize.
+6. **BH-M5** — orphan pending_user_msg в `OtpMessageTracker` при
+   double /login или auth-fail между первой и второй отправкой.
+   Fix: List-append вместо overwrite, cleanup-по-list.
+7. **BH-M6** — auth/notification-web `mem_limit: 256m` + heap 75%
+   тесновато. Native (classloader + metaspace + threads + STOMP
+   broker state) может съесть 120+ MB. Fix: поднять до 384m / 512m
+   или снизить MaxRAMPercentage до 60%.
+
+**Оценка bundle:** 2-3 дня (1д на OTP hardening, 1д на dispatcher
+дедуп + regression, 0.5-1д на остальные).
+
+---

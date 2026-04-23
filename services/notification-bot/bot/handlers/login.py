@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 import aiohttp
@@ -7,18 +6,11 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from bot.handlers.prefs import LOGIN_LABEL
-from bot.notifications.otp_verified import cleanup_otp_messages
 from bot.services.otp_message_tracker import OtpMessageTracker
 
 logger = logging.getLogger(__name__)
 
 login_router = Router()
-
-WEB_LOGIN_URL = "https://ruttrack.site/login"
-
-# OTP lifetime in seconds — mirrors OtpProperties.ttlSeconds in auth-service.
-# Messages are scheduled for deletion when this window elapses without a successful verify.
-OTP_TTL_SECONDS = 300
 
 
 @login_router.message(Command("login"))
@@ -29,31 +21,28 @@ async def cmd_login(
     bot: Bot,
     otp_tracker: OtpMessageTracker,
 ) -> None:
-    """Handle /login — request OTP, send code message, and arrange cleanup.
+    """Handle /login — попросить Auth Service сгенерировать OTP.
 
-    On success: persist (chat_id, user_message_id, bot_message_id) in Redis and
-    schedule a deferred cleanup task that fires after OTP_TTL_SECONDS. The same
-    messages are also removed earlier if auth-service publishes otp.verified.
+    M09 G2 (08 P0-2): auth возвращает 204 No Content, код уходит
+    через RabbitMQ event otp.requested → handler (bot.notifications.
+    otp_requested). Здесь — только триггер и сохранение user_message_id
+    для последующего cleanup.
     """
     telegram_id = message.from_user.id
 
     try:
-        code = await auth_client.request_otp(telegram_id)
-        bot_message = await message.answer(
-            f"Ваш код для входа: <code>{code}</code>\n\n"
-            f"Откройте веб-панель и введите этот код:\n{WEB_LOGIN_URL}\n\n"
-            "Код действует 5 минут.",
-            parse_mode="HTML",
-        )
-
-        await otp_tracker.store(
+        # M09 G2: сохраняем user_message_id в pending-ключ ДО вызова auth,
+        # чтобы event handler мог его подхватить и собрать полный tracker.
+        await otp_tracker.store_pending_user_msg(
             telegram_id=telegram_id,
             chat_id=message.chat.id,
             user_message_id=message.message_id,
-            bot_message_id=bot_message.message_id,
         )
-        asyncio.create_task(_cleanup_after_expiry(telegram_id, bot=bot, tracker=otp_tracker))
-
+        await auth_client.request_otp(telegram_id)
+        # Ответ пользователю отправит handle_otp_requested, когда придёт
+        # событие. Здесь ничего отправлять НЕ надо — избегаем spoiler'а "сейчас
+        # пришлю код", если Rabbit ляжет в этот момент (bot увидит ошибку
+        # таймаута в handle_otp_requested).
     except aiohttp.ClientResponseError as e:
         if e.status == 429:
             await message.answer("Слишком много попыток. Подождите.")
@@ -65,23 +54,3 @@ async def cmd_login(
     except Exception:
         logger.warning("OTP request failed unexpectedly", exc_info=True)
         await message.answer("Сервис временно недоступен. Попробуйте позже.")
-
-
-async def _cleanup_after_expiry(
-    telegram_id: int,
-    *,
-    bot: Bot,
-    tracker: OtpMessageTracker,
-) -> None:
-    """Sleep for the OTP TTL then clean up messages if still present.
-
-    If the user verifies successfully, otp.verified consumer will pop() the
-    tracker first and this call becomes a no-op — pop() is atomic.
-    """
-    try:
-        await asyncio.sleep(OTP_TTL_SECONDS)
-        await cleanup_otp_messages(telegram_id, bot=bot, tracker=tracker, reason="expired")
-    except asyncio.CancelledError:
-        raise
-    except Exception:
-        logger.exception("OTP expiry cleanup failed for telegram_id=%d", telegram_id)

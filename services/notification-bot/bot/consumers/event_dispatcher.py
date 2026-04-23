@@ -53,6 +53,7 @@ class EventDispatcher:
         from bot.notifications.lesson_closed import handle_lesson_closed
         from bot.notifications.lesson_one_off_cancelled import handle_lesson_one_off_cancelled
         from bot.notifications.lesson_one_off_created import handle_lesson_one_off_created
+        from bot.notifications.otp_requested import handle_otp_requested
         from bot.notifications.otp_verified import handle_otp_verified
 
         # M04 Группа 9 — admin list parsed once при старте dispatcher'а.
@@ -134,6 +135,13 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
+            ),
+            # M09 G2 (08 P0-2): OTP код теперь доставляется через event,
+            # а не в HTTP body. Handler отправляет код пользователю в Telegram.
+            "otp.requested": lambda event: handle_otp_requested(
+                event,
+                bot=self._bot,
+                tracker=self._otp_tracker,
             ),
             # OTP login cleanup: remove code + request messages when user logs in
             "otp.verified": lambda event: handle_otp_verified(

@@ -31,8 +31,13 @@ class AuthHttpClient:
         if self._session:
             await self._session.close()
 
-    async def request_otp(self, telegram_id: int) -> str:
-        """Request OTP code for telegram_id. Returns 6-digit code string.
+    async def request_otp(self, telegram_id: int) -> None:
+        """Request OTP code for telegram_id.
+
+        M09 G2 (08 P0-2): auth-service отвечает 204 No Content, код доставляется
+        через RabbitMQ event otp.requested → notification-bot consumer.
+        Тело ответа больше не читаем — всё success-прохождение означает
+        «auth принял запрос и опубликовал event».
 
         Raises aiohttp.ClientResponseError on 401 (user not found),
         429 (rate limited), or 5xx (service error).
@@ -42,5 +47,3 @@ class AuthHttpClient:
             json={"telegramId": telegram_id},
         ) as resp:
             resp.raise_for_status()
-            data = await resp.json()
-            return data["code"]

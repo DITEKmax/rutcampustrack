@@ -156,6 +156,8 @@ async def test_dispatcher_has_all_event_types():
         # 58-07 / BUG-006-6
         "group.renamed",
         "group.archived",
+        # M09 G2 (08 P0-2): OTP код через event вместо HTTP body
+        "otp.requested",
         # OTP login flow cleanup
         "otp.verified",
         # 60-04: headman one-off lesson add/remove

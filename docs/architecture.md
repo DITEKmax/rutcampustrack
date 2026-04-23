@@ -111,7 +111,7 @@
 | Метод | Путь | Роль | Описание |
 |-------|------|------|----------|
 | POST | `/auth/login` | Public | Логин по email/password → JWT |
-| POST | `/auth/otp/request` | Public | Запрос OTP через Telegram |
+| POST | `/auth/otp/request` | Public | Запрос OTP → 204 No Content (код не в ответе, летит боту через Rabbit) |
 | POST | `/auth/otp/verify` | Public | Проверка OTP → JWT |
 | POST | `/auth/refresh` | Authenticated | Обновление Access Token |
 | POST | `/auth/logout` | Authenticated | Инвалидация Refresh Token |
@@ -137,7 +137,54 @@ jwt:public_key              → "<PEM>"           TTL: 3600 сек
 refresh:{user_id}:{jti}     → "valid"           TTL: 7 дней
 ```
 
+**OTP flow (M09 G2 · 08 P0-2, event-driven):**
+
+Раньше `POST /auth/otp/request` возвращал код в HTTP body — он
+просачивался в логи/proxy/APM и ослаблял security-модель OTP.
+Теперь Auth публикует событие `otp.requested` в RabbitMQ, а bot читает
+код из payload и отправляет его в Telegram.
+
+```
+┌──────────┐  POST /auth/otp/request             ┌────────────┐
+│ Frontend │─────────────────────────────────────>│ Auth :9090 │
+│ (Login)  │<──────── 204 No Content ─────────── │            │
+└──────────┘                                      └─────┬──────┘
+                                                        │
+                                         Redis SET      │
+                                         otp:{tg} = {code}
+                                         TTL 120s       │
+                                                        │
+                                        Event publish   │
+                               rut-uit.events (fanout)  ▼
+                                                 ┌─────────────┐
+                                                 │  RabbitMQ   │
+                                                 └─────┬───────┘
+                                                       │
+                                          otp.requested│ payload:
+                                          consumer     │   telegram_id
+                                                       │   code
+                                                       ▼   ttl_seconds
+                                                 ┌─────────────┐
+                                                 │  Bot        │
+                                                 │  /login     │
+                                                 │  send_msg   │
+                                                 └─────────────┘
+```
+
+**Свойства:**
+- 204 ответ без body — код **не** возвращается REST-клиенту.
+- `code` существует в двух местах: Redis-ключ `otp:{telegram_id}` (для
+  последующего `verifyOtp`) и Rabbit-payload (для отправки боту).
+- Fire-and-forget: если Rabbit недоступен, `DomainEventListener`
+  логирует warning, но `/auth/otp/request` всё равно возвращает 204.
+  Клиент нажимает «Resend» → новый код в Redis (TTL перезаписывается) +
+  новый event. Старый TTL выпадает без последствий (self-healing).
+- Прямая публикация (без shared-outbox): OTP-код эфемерен, persistence
+  в Postgres `auth_outbox` ослабила бы security-модель
+  (DECISIONS M09 D4).
+
 **Не общается** с другими сервисами — источник доверия, не потребитель.
+Единственный Rabbit publisher — эфемерные OTP-события для бота.
 
 ---
 
@@ -410,11 +457,14 @@ vapid:private_key   → "<base64>"     TTL: нет (постоянный)
 **Роль:** Telegram-бот с OTP-авторизацией и push-уведомлениями.
 
 **Функции:**
-- Отправка OTP-кодов для авторизации
+- Отправка OTP-кодов для авторизации (consumer `otp.requested` из Auth)
 - Push-уведомления студентам о начале пар
 - Команды бота: `/start`, `/login`, `/status`
 
-**Подписан на RabbitMQ-события:** те же, что и Notification Web
+**Подписан на RabbitMQ-события:** те же, что и Notification Web, плюс:
+- `otp.requested` → `bot.send_message(telegram_id, code)` —
+  payload.code подписан Auth'ом с TTL 120 сек, bot не сохраняет код сам
+- `otp.verified` → удаление предыдущих Telegram-сообщений с кодом
 
 **Вызывает gRPC:**
 - Academic Service: `GetGroupMembers` — для массовой рассылки по группе

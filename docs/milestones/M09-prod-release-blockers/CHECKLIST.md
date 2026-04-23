@@ -14,7 +14,7 @@
 - [~] Smoke-check на dev: клик по кнопке лендинга — **перенесено на staging** в Группе 7 (локального landing dev-окружения нет)
 - [x] 3 атомарных коммита (вместо одного): `2996652` + `ebed02b` + `e751040`
 
-## Группа 2 — OTP через RabbitMQ (~1.5д) ⏳ 5/7 закрыто, осталось G2.6+G2.7
+## Группа 2 — OTP через RabbitMQ (~1.5д) ✅ закрыто
 
 - [x] `event-schemas/otp.requested.json` — JSON Schema `{event_version, occurred_at, trace_id, source, telegram_id, code, ttl_seconds}` (08 P0-2) — `3d6dfd1`
 - [x] `auth-service/.../event/OtpRequestedEvent.java` — class extends `auth.event.DomainEvent` (shared-events envelope, Payload record) — `3d6dfd1`
@@ -26,9 +26,9 @@
 - [x] `AuthHttpClient.request_otp`: `str → None`; `OtpMessageTracker` + `store_pending_user_msg`/`finalize_with_bot_msg` — `b851221`
 - [x] Contract-тест `OtpRequestedContractTest.java` — publisher → JSON Schema validation (3 теста: valid/missing-code/non-6digit); добавлен `EventSchemaValidator` (auth-scope) — `70bd2db`
 - [~] Python contract-тест **пропущен** — `jsonschema` не в bot deps, overhead добавления не оправдан: `tests/test_otp_requested.py` (4 теста) покрывает consumer payload поведение; Java publisher-side уже валидирует envelope через networknt
-- [ ] **G2.6 WIP** — `AuthOtpFlowIT` — **не стабильный**, `message=null` после 8s polling (`d4ca2ca`). Debug в следующей сессии. Тест помечен `@Disabled` с пояснением.
-- [ ] **G2.7** — `docs/architecture.md` раздел «OTP flow» (old HTTP body / new event-driven)
-- [ ] **G2 финальный коммит** — `feat(auth): OTP через RabbitMQ event (01 P0-4, 08 P0-2)` — закрывается вместе с G2.7 после fix G2.6
+- [x] **G2.6** — `AuthOtpFlowIT` зелёный — `@Disabled` снят; root cause: `@ConditionalOnBean(ConnectionFactory.class)` на user `@Configuration` оценивался до autoconfig и давал false, поэтому наш JSON `RabbitTemplate` не создавался, а default-autoconfig с `SimpleMessageConverter` ломал JSON-контракт. Fix: убран `@ConditionalOnBean`, listener регистрируется `@Bean`'ом в `RabbitConfig`, `application-test.yml` больше не исключает `RabbitAutoConfiguration`. Все 84 auth-теста (test+integrationTest) зелёные.
+- [x] **G2.7** — `docs/architecture.md` раздел 3.2 обновлён: endpoint `/auth/otp/request` → 204, добавлена секция «OTP flow (M09 G2 · 08 P0-2, event-driven)» с ASCII-диаграммой; раздел 3.5 bot обновлён — consumer `otp.requested`/`otp.verified`
+- [ ] **G2 финальный коммит** — `feat(auth): AuthOtpFlowIT + architecture.md OTP flow (M09 G2.6+G2.7)` — закрывает группу
 
 **Стабильное покрытие на 2026-04-23 (без G2.6):**
 - OtpIT (integrationTest): `otpRequest_withValidTelegramId_returns204NoBody` — 204 + Redis code

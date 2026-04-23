@@ -45,16 +45,60 @@
   (owner явно указал «v0.1»).
 - **Magic-link для первого входа** (01-Q1 accepted tradeoff).
 
-## 2026-04-23 — Группа 2 WIP (5/7 закрыто, G2.6 debug в следующей сессии)
+## 2026-04-23 — Группа 2 ЗАКРЫТА (G2.6 + G2.7 в финальной сессии)
 
 ### Что сделано (коммиты)
 - `3d6dfd1` feat(events): схема + OtpRequestedEvent класс
 - `807b1f2` feat(auth): 204 No Content, OtpService void, OpenAPI + frontend types
 - `b851221` feat(bot): otp_requested consumer + /login рефактор + tracker новые методы
 - `70bd2db` test(auth): OtpRequestedContractTest (3 теста зелёные)
-- `d4ca2ca` wip(auth): AuthOtpFlowIT (помечен @Disabled, причина ниже)
+- `d4ca2ca` wip(auth): AuthOtpFlowIT (был @Disabled — ниже разбор)
+- **(следующий)** feat(auth): AuthOtpFlowIT + architecture.md (G2.6+G2.7)
 
-### G2.6 AuthOtpFlowIT — почему не работает
+### G2.6 root cause (разобрано 2026-04-23)
+
+**Истинная причина была не в гипотезе #1/#3/#4 (каждая по отдельности),
+а в сочетании двух факторов в `RabbitConfig.java`:**
+
+1. `@Configuration` + `@ConditionalOnBean(ConnectionFactory.class)` —
+   user-`@Configuration` обрабатывается Spring'ом **до** autoconfig'а, а
+   `ConnectionFactory` создаёт именно `RabbitAutoConfiguration`.
+   Condition оценивался false → наш `@Bean rabbitTemplate` + converter
+   **не создавались никогда**, даже когда Rabbit полностью доступен.
+2. `DomainEventListener` (`@Component @ConditionalOnBean(RabbitTemplate.class)`)
+   всё равно находил autoconfig-default `RabbitTemplate` (он создаётся
+   Spring Boot'ом autoconfig'ом) и инжектил его. У default-шаблона —
+   `SimpleMessageConverter`, который сериализует объекты как
+   `application/x-java-serialized-object` байты. Тест ожидает UTF-8 JSON
+   с полем `event_type` → `path("event_type").asText()` видит пустую
+   строку, assertion падает. Но на уровне логов это выглядело как
+   «message вообще не пришёл» — т.к. MessageConverter consumer'а
+   (Jackson по умолчанию в `rabbitTemplate.receive`) тоже ломался и
+   логи не показывали body.
+
+**Fix (минимальный набор изменений):**
+- `RabbitConfig.java` — убран `@ConditionalOnBean(ConnectionFactory.class)`.
+  Теперь конфигурация активна всегда, Rabbit/Connection `@Bean`'ы
+  создаются с нашим Jackson2JsonMessageConverter.
+- `DomainEventListener` — убран `@Component` + `@ConditionalOnBean`,
+  регистрируется как `@Bean` в `RabbitConfig` (гарантия: получает тот
+  же `RabbitTemplate`, что и `@Bean rabbitTemplate`, а не autoconfig'овый).
+- `catch(AmqpException)` → `catch(Exception)` — MessageConversionException
+  / IllegalStateException из Jackson пробрасывались и ломали
+  `/auth/otp/request`. Fire-and-forget требует ловить всё.
+- `application-test.yml` — убран `spring.autoconfigure.exclude:
+  RabbitAutoConfiguration`. Теперь все IT поднимают Rabbit autoconfig;
+  те, что реально не используют Rabbit, просто не делают `convertAndSend`
+  и `CachingConnectionFactory` остаётся idle. `management.health.rabbit
+  .enabled=false` оставлен, чтобы `/actuator/health` не ждал живое соединение.
+- `application-test.yml` — добавлен дефолтный `spring.rabbitmq.*` (localhost:5672/guest/guest),
+  чтобы autoconfig не падал на старте без env-переменных.
+
+**Проверка:** `./gradlew :services:auth-service:test
+:services:auth-service:integrationTest` — BUILD SUCCESSFUL, 84/84
+зелёные (unit + IT включая AuthOtpFlowIT зелёным за 9.5s).
+
+### G2.6 (старый текст — исторический debug) — почему не работало
 
 **Файл:** `services/auth-service/src/test/java/ru/rutcampustrack/auth/integration/AuthOtpFlowIT.java`
 

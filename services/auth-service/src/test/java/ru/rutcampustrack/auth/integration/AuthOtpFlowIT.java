@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.amqp.core.AmqpAdmin;
@@ -110,11 +109,6 @@ class AuthOtpFlowIT {
 
     @Test
     @Timeout(value = 20, unit = TimeUnit.SECONDS)
-    @Disabled("M09 G2 flaky на Windows dev: testcontainer Rabbit + per-test queue + "
-            + "reused connection — race между declare и publish. Покрытие: "
-            + "OtpIT.otpRequest_withValidTelegramId_returns204NoBody (204 + Redis) + "
-            + "OtpRequestedContractTest (schema валидность) + bot test_otp_requested.py "
-            + "(consumer payload). Сквозной flow проверяется на staging в G7.")
     void requestOtp_204Body_redisHasCode_rabbitReceivesEvent() throws Exception {
         ResponseEntity<Void> response = restTemplate.postForEntity(
                 "/auth/otp/request", new OtpRequest(TELEGRAM_ID), Void.class);

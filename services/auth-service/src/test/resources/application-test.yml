@@ -10,10 +10,18 @@ spring:
   web:
     resources:
       add-mappings: false
-  autoconfigure:
-    # No RabbitMQ in tests — publisher beans aren't needed and health probe would fail.
-    exclude:
-      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+  # M09 G2.6: RabbitAutoConfiguration больше не исключаем — auth-service
+  # публикует otp.requested event через RabbitTemplate (DomainEventListener).
+  # Без autoconfig'а user-@Configuration с @ConditionalOnBean давал false
+  # (оценка до autoconfig) → rabbitTemplate из RabbitConfig не создавался,
+  # default-autoconfig-шаблон с SimpleMessageConverter ломал JSON-контракт.
+  # Тесты, не проверяющие Rabbit, не делают convertAndSend — connection
+  # factory просто не используется.
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 
 management:
   health:

@@ -33,7 +33,7 @@ RutCampusTrack — микросервисная система учёта пос
 | M06 | Ops & Supply Chain | ✅ SHA tagging + digest cadvisor/promtail + semver-pin observability + HEALTHCHECK × 7 + Renovate/Dependabot + Trivy/Gitleaks + CI/deploy gate + M05 security defer'ы — завершён 2026-04-21 |
 | M07 | Frontend Hardening | ✅ CSP self-host + openapi-typescript + RFC 7807 + unified STOMP + UX P2-7A (PullToRefresh/swipe/dateNav/bounds/scroll/BottomSheet/geolocation) + ConfirmWithReason + lazy-per-role + sparklines placeholder + a11y baseline — завершён 2026-04-22 |
 | M08 | Test Infrastructure | ✅ 31 `*Test→*IT` rename + Testcontainers reuse + Flyway MigrationIT + Clock-injection + Playwright e2e (8 specs + axe) + frontend unit regression guards + k6 load scaffold + security contracts (GrpcSecretFailFast+TmaIT+SameSiteCookie) + event schema coverage (40 тестов) + STOMP lifecycle IT + PWA reconnect guards + JaCoCo per-module ratchet (+ M09 latecheckin 70% pilot) + Vitest 50%/PWA 38% baseline + pytest-cov 50%/70% baseline + diff-cover 80% + SBOM+cosign keyless + digest-pin 13 images + Trivy SHA-pin + Renovate monthly digest-bump — завершён 2026-04-23 |
-| M09 | Prod Release Blockers (Фаза 3 + event unification) | OTP через RabbitMQ + MessageDigest + cleanupOrphans + landing deep-link + latecheckin/bot тесты + lesson.cancelled/excuse.{approved,rejected} events + prod-deploy-checklist + secret-rotation + resource-limits |
+| M09 | Prod Release Blockers (Фаза 3 + event unification) | ✅ OTP через RabbitMQ event (08 P0-2) + MessageDigest.isEqual (01 P0-5) + cleanupOrphans delete (04 P0-6) + landing deep-link (12 P0-2) + latecheckin unit/IT/contract + 70% jacoco gate (14 P0-1) + bot callback unit + 70% handlers coverage (14 P0-2) + lesson.cancelled full snapshot (P2-11/5, V13 миграция cancelled_by/at) + excuse/late_checkin headman role check (06 P1-1) + prod-deploy-checklist + secret-rotation runbook + bot-webhook-migration + resource-limits (NEW-154/155/157) + docker-compose mem_limits + JVM opts + Prometheus ContainerMemoryHigh alert — завершён 2026-04-24 |
 | M10 | Notification History | Stateful notification-web + MongoDB notification_db + notification_history TTL 30d + Caffeine unread-count + NotificationCenter backend pagination |
 | M11 | OpenAPI Polish | SharedOpenApiCustomizer наполнение + @Schema на DTO + nginx basic-auth на prod /swagger-ui + OpenAPI↔runtime conformance CI |
 | M12 | Auth Contract-first Refactor | `auth-api-contract` модуль + AuthApi/WsTicketApi/InternalAuthApi interfaces + DTO migration + controller implements + убирает последнее исключение Contract-first правила |
@@ -84,10 +84,12 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 - Request DTO = Java `record`. Response DTO = класс (для HATEOAS `RepresentationModel`)
 - **БЕЗ Lombok в контрактных модулях** (`*-api-contract`). Lombok допустим только в `*-app` (entity, внутренние классы)
 - **Исключения:**
-  - `api-gateway` — прокси, собственного REST API не публикует, `*-api-contract` не нужен (зафиксировано M09 D2)
-  - ~~`auth-service`~~ — **закрывается в M12** (auth-api-contract refactor);
-    до завершения M12 остаётся временным нарушителем правила (01 P0-1).
-    После M12 — единственное исключение только `api-gateway`.
+  - `api-gateway` — прокси, собственного REST API не публикует, `*-api-contract` не нужен (зафиксировано M09 D2). **Единственное постоянное исключение.**
+  - `auth-service` — **временный нарушитель** (01 P0-1, owner-решение 01-Q1).
+    Планирование refactor'а — M12 (в v0.0.0 scope'е); фактическая реализация
+    отложена в v0.1 (см. `docs/future-ideas.md` → «Auth API contract-first
+    refactor»). До завершения рефакторинга нарушение acceptable —
+    контракт зафиксирован в `docs/openapi/auth.json` (ручная конкатенация).
 
 ### Enum-ы
 

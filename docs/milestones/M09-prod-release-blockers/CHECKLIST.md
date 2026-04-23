@@ -137,18 +137,15 @@
       лимитов в prod
 - [ ] **G7.7** Коммит `docs(m09): prod-deploy-checklist + runbooks + compose mem_limits (M09 G7, NEW-154/155/157)`
 
-## Группа 8 — Docs + cleanup (~0.5д)
+## Группа 8 — Docs + cleanup (~0.5д) ✅ закрыто
 
-- [ ] `docs/admin-scripts.md` — новый runbook (NEW-33): cleanup orphans (mongosh), backfill templates, recovery (3-5 скриптов)
-- [ ] `docs/future-ideas.md` — раздел «Auth API contract-first refactor (v0.1)» с обоснованием отложения 01 P0-1
-- [ ] `docs/future-ideas.md` — раздел «P2-2/2 auth-service OpenAPI (v0.1)»
-      связанный с auth-api-contract refactor
-- [ ] `CLAUDE.md` — обновить «Правила кодирования → Contract-first»: уточнить что `api-gateway` не требует контракта (он прокси), и что `auth-service` получит `auth-api-contract` в v0.1
-- [ ] `docs/milestones/README.md` — статус M09 → ✅ + дата
-- [ ] `CLAUDE.md` v0.0.0 Milestones table — статус M09 + упомянуть
-      P2-11/5 / P2-11/8 в описании
-- [ ] `CHANGELOG.md [Unreleased]` — секция M09 с полным scope
-- [ ] Коммит `docs(m09): admin-scripts + future-ideas + CLAUDE contract-first уточнение`
+- [x] **G8.1** `docs/admin-scripts.md` (NEW-33) — 6 templates: orphan cleanup через mongosh (с prep `/tmp/lesson_ids.txt` из PG), backfill `cancelled_by/at` из schedule_outbox, purge stuck outbox, invalidate refresh-tokens, recompute Redis RBAC cache, emergency JWT key rotate
+- [x] **G8.2** `docs/future-ideas.md` — раздел «Auth API contract-first refactor (v0.1)» с обоснованием отложения 01 P0-1 + раздел «Auth-service OpenAPI (P2-2/2, v0.1)»
+- [x] **G8.3** `CLAUDE.md` Contract-first уточнено: `api-gateway` как единственное постоянное исключение, `auth-service` — временный нарушитель (M12 планирование в v0.0.0, фактическая реализация v0.1)
+- [x] **G8.4** `docs/milestones/README.md` — статус M09 → ✅ 2026-04-24
+- [x] **G8.5** `CLAUDE.md` v0.0.0 Milestones table — M09 ✅ с полным scope (OTP event + MessageDigest + cleanupOrphans + landing + latecheckin + bot callbacks + lesson.cancelled V13 + excuse/late_checkin headman check + runbooks + mem_limits + JVM opts + Prom alert) + дата
+- [x] **G8.6** `CHANGELOG.md [Unreleased]` — полная M09 секция: 8 групп с per-group bullet'ами
+- [ ] **G8.7** Коммит `docs(m09): admin-scripts + future-ideas + CLAUDE/CHANGELOG M09 final docs`
 
 ## Группа 9 — Audit (~0.5д)
 

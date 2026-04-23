@@ -9,6 +9,59 @@
 
 ### Added
 
+- **M09 Prod Release Blockers** — закрытие P0 из аудита + event
+  unification + prod-deploy hardening (8 групп, ~12 коммитов,
+  `2996652..<tag>`, планируется tag `v0.0.0-alpha.10`).
+  - **G1 Quick wins** — `OtpService.verifyOtp` на `MessageDigest.isEqual`
+    (01 P0-5, constant-time compare против timing side-channel);
+    удалён `@PostConstruct cleanupOrphans` в `AttendanceIndexInitializer`
+    (04 P0-6, startup orphan purge опасен при race с schedule);
+    4 CTA на landing → `t.me/ruttrack_bot/ruttrack` deep-link (12 P0-2).
+  - **G2 OTP через RabbitMQ event** (08 P0-2) — `/auth/otp/request`
+    возвращает 204 No Content; код идёт боту через `otp.requested`
+    (JSON schema + OtpRequestedEvent + bot consumer `otp_requested.py`).
+    `OtpVerifiedEvent` для cleanup Telegram-сообщений. Fix
+    `RabbitConfig`: `@Bean rabbitTemplate` с Jackson converter
+    создаётся правильно; `DomainEventListener` регистрируется
+    `@Bean`'ом в RabbitConfig (гарантия Jackson envelope, не
+    default SimpleMessageConverter).
+  - **G3 latecheckin tests** (14 P0-1) — `LateCheckinServiceTest`
+    16 unit, `LateCheckinControllerIT` 5 MockMvc + Testcontainers
+    Mongo, `LateCheckinEventContractTest` 3 unit-contract против
+    JSON schema; jacoco gate `latecheckin/**` ≥70% LINE активирован.
+  - **G4 bot callback_query tests** (14 P0-2, 14 P1-7) —
+    `test_callback_excuse.py` 8 + `test_callback_late_checkin.py` 7 +
+    `test_callback_prefs.py` 10 с `callback_query_factory`/
+    `event_publisher_mock`/`academic_client_mock` fixtures. CI step
+    `pytest --cov=bot/handlers --cov-fail-under=70`. Handlers coverage 92.83%.
+  - **G5 lesson.cancelled full snapshot** (02 P2-11/5, NEW-118) —
+    V13 миграция `lessons.cancelled_by BIGINT, cancelled_at TIMESTAMPTZ`;
+    `LessonCancelledEvent` расширен до full snapshot (start_time/
+    end_time/lesson_number/cancelled_by/cancelled_at) — downstream
+    consumer'ам больше не нужен second-look gRPC в schedule.
+    `LessonService.cancelLesson` + `massCancelLessons` заполняют
+    audit-tuple; `restoreLesson` очищает. `docs/architecture.md`
+    раздел «Lesson lifecycle».
+  - **G6 headman role check** (06 P1-1, NEW-121) — helper
+    `_verify_headman` в `bot/handlers/excuse.py`, импортируется из
+    `late_checkin.py`. gRPC `get_user_by_telegram_id` проверяет
+    `found && is_headman`; fail-closed на gRPC error. NOTES audit
+    всех bot→backend REST/gRPC — нет asymmetric decision-flows.
+  - **G7 prod-deploy hardening** (NEW-154/155/157) —
+    `docs/prod-deploy-checklist.md` + `runbooks/secret-rotation.md`
+    + `runbooks/bot-webhook-migration.md` + `docs/resource-limits.md`
+    (4GB VPS budget). `docker-compose.prod.yml` — `mem_limit`/
+    `mem_reservation` для 14 контейнеров; `JAVA_TOOL_OPTIONS`
+    (MaxRAMPercentage=75, G1GC, HeapDumpOnOOM) для 6 Java; redis
+    `--maxmemory 96m allkeys-lru`. Prometheus rule
+    `ContainerMemoryHigh` (>90% for 5m) + `ContainerWithoutMemoryLimit`.
+  - **G8 docs cleanup** — `docs/admin-scripts.md` (NEW-33) —
+    6 runbook templates (orphan cleanup, backfill, stuck outbox,
+    refresh-token invalidation, cache flush, JWT rotation);
+    `future-ideas.md` разделы Auth contract-first refactor (v0.1) +
+    Auth OpenAPI (P2-2/2 v0.1); CLAUDE.md contract-first уточнение;
+    `docs/milestones/README.md` статус M09 ✅.
+
 - **M08 Test Infrastructure** — e2e, coverage gate, supply-chain,
   contract tests (~12 человеко-дней, 12 групп, 24+ коммитов
   `42f9147..<tag-commit>`, tag `v0.0.0-alpha.9`).

@@ -64,3 +64,43 @@ adding a build pipeline к статическому landing'у.
 **Последствия:** При смене username — grep + sed в landing и коммит.
 Если станет чаще — поднять вопрос build-pipeline для landing в v0.1.
 `target="_blank" rel="noopener noreferrer"` добавлены (security).
+
+## D4 — OTP события публикуются напрямую, не через shared-outbox
+
+**Контекст:** CHECKLIST G2.2 предписывал «OtpRequestedPublisher через
+shared-outbox (M02 OutboxStorage)». Shared-outbox — transactional
+outbox pattern: event пишется в таблицу в той же DB-транзакции, что
+и основная запись → publisher-job его publish'ит → at-least-once.
+
+**Проблема:** OTP flow не имеет «основной записи» в транзакции.
+Код живёт в Redis (TTL 5 мин), а не в Postgres/Mongo. Чтобы
+встроить outbox, надо:
+- (a) сохранять OTP-код в Postgres (нарушение security-model: код
+  теряет эфемерность, появляется в бэкапах DB, расширяет attack
+  surface) — **отвергнуто**;
+- (b) писать outbox-запись без attached-транзакции, что ломает
+  саму гарантию outbox'а (at-least-once без atomicity — те же
+  failure modes, что fire-and-forget, но сложнее).
+
+**Альтернатива:** существующий `DomainEventListener`
+(auth/event/DomainEventListener.java) — `@EventListener` +
+`RabbitTemplate.convertAndSend(EXCHANGE, "", event)`. Уже публикует
+`OtpVerifiedEvent` fire-and-forget. Тот же pattern для
+`OtpRequestedEvent` — минимум кода, ноль новых зависимостей.
+
+**Failure mode и mitigation:** Rabbit down → event потерян. Но:
+- OTP в Redis уже записан → клиент при retry (POST /auth/otp/request)
+  перезаписывает Redis-код (new SecureRandom) и публикует новое
+  событие. Self-healing (NOTES Q1 вариант C).
+- Rate-limit (`otp_sent` cooldown) защищает от spam: пока cooldown
+  держит — retry не произойдёт, но TTL самого OTP (5 мин) короче
+  Rabbit SLA (минуты в xудшем случае), так что практически
+  пользователь просто видит «код не пришёл» и retry'ит.
+
+**Решение:** публиковать `OtpRequestedEvent` через существующий
+`DomainEventListener`. CHECKLIST G2.2 закрывается с deviation —
+пункт помечен `[~]` и отсылает на D4.
+
+**Последствия:** `OtpRequestedPublisher` как отдельный класс не
+создаётся. Вся интеграция — `ApplicationEventPublisher.publishEvent(
+new OtpRequestedEvent(...))` в `OtpService.requestOtp`.

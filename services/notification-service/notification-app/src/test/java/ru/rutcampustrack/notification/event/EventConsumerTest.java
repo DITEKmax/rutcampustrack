@@ -32,8 +32,16 @@ class EventConsumerTest {
 
     @BeforeEach
     void setUp() {
-        consumer = new EventConsumer(messagingTemplate, webPushDeliveryService);
+        consumer = new EventConsumer(messagingTemplate, webPushDeliveryService,
+                new ru.rutcampustrack.shared.events.IdempotencyGuard(NOOP_STORE));
     }
+
+    /** M13 G8 — claim всегда успешен; в unit-tests envelope-ы без event_id и так skip'аются guard'ом. */
+    private static final ru.rutcampustrack.shared.events.IdempotencyStore NOOP_STORE =
+            new ru.rutcampustrack.shared.events.IdempotencyStore() {
+                @Override public boolean tryClaim(String c, java.util.UUID e) { return true; }
+                @Override public long deleteProcessedBefore(java.time.Instant before) { return 0; }
+            };
 
     // --- Existing STOMP routing tests (must all still pass) ---
 

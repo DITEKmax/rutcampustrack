@@ -4,8 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.subject.SubjectDeletedCascadeService;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
+import ru.rutcampustrack.shared.events.EventIdempotent;
+import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
 import java.util.Map;
 
@@ -26,17 +29,27 @@ public class EventConsumer extends AbstractEventConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(EventConsumer.class);
 
-    private final SubjectDeletedCascadeService subjectDeletedCascadeService;
+    public static final String CONSUMER_ID = "schedule";
 
-    public EventConsumer(SubjectDeletedCascadeService subjectDeletedCascadeService) {
+    private final SubjectDeletedCascadeService subjectDeletedCascadeService;
+    private final IdempotencyGuard idempotencyGuard;
+
+    public EventConsumer(SubjectDeletedCascadeService subjectDeletedCascadeService,
+                         IdempotencyGuard idempotencyGuard) {
         this.subjectDeletedCascadeService = subjectDeletedCascadeService;
+        this.idempotencyGuard = idempotencyGuard;
     }
 
     @RabbitListener(queues = "schedule-service.events")
+    @EventIdempotent(consumer = CONSUMER_ID)
+    @Transactional
     public void onEvent(Map<String, Object> envelope) {
         String eventType = (String) envelope.get("event_type");
         if (eventType == null) {
             log.warn("Received event without event_type, ignoring: {}", envelope);
+            return;
+        }
+        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
             return;
         }
         // M04 QA3 — extract trace_id из envelope в MDC до вызова handler'а.

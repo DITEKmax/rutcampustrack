@@ -14,10 +14,17 @@ DLQ_QUEUE_NAME = "notification-bot.events.dlq"
 DLQ_ROUTING_KEY = "notification-bot.events.dlq"
 
 
-async def start_consumer(rabbitmq_url: str, dispatcher=None) -> aio_pika.abc.AbstractRobustConnection:
+async def start_consumer(
+    rabbitmq_url: str,
+    dispatcher=None,
+    idempotency_guard=None,
+) -> aio_pika.abc.AbstractRobustConnection:
     """
     Connect to RabbitMQ via connect_robust (auto-reconnect),
     declare fanout exchange + queue with DLQ, consume and log events.
+
+    M13 G8: при наличии `idempotency_guard` проверяем `event_id` через
+    Redis SET NX перед dispatch — duplicate skip.
 
     Returns the connection object so health check can inspect it.
     """
@@ -62,6 +69,7 @@ async def start_consumer(rabbitmq_url: str, dispatcher=None) -> aio_pika.abc.Abs
                 try:
                     body = json.loads(message.body)
                     event_type = body.get("event_type", "unknown")
+                    event_id = body.get("event_id")
                     # M04 Группа 7: trace_id приходит в envelope от Java-сервисов
                     # (shared-events AbstractEventPublisher.fillDefaults).
                     # Биндим его в structlog contextvars чтобы все логи
@@ -69,8 +77,13 @@ async def start_consumer(rabbitmq_url: str, dispatcher=None) -> aio_pika.abc.Abs
                     with bind_trace_context(
                         body.get("trace_id"),
                         event_type=event_type,
-                        event_id=body.get("event_id"),
+                        event_id=event_id,
                     ):
+                        # M13 G8 — consumer-side dedup. Redis SET NX guard
+                        # отсекает повторную доставку того же event_id.
+                        if idempotency_guard is not None:
+                            if not await idempotency_guard.try_claim(event_id):
+                                continue
                         logger.info("[notification-bot] Received event: %s", event_type)
                         if dispatcher:
                             await dispatcher.dispatch(body)

@@ -6,6 +6,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
+import ru.rutcampustrack.shared.events.EventIdempotent;
+import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +16,8 @@ import java.util.Set;
 @Slf4j
 public class EventConsumer extends AbstractEventConsumer {
 
+    public static final String CONSUMER_ID = "notification-web";
+
     private static final Set<String> HEADMAN_ONLY_EVENTS = Set.of(
             "excuse.requested",
             "late_checkin.requested"
@@ -21,19 +25,27 @@ public class EventConsumer extends AbstractEventConsumer {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final WebPushDeliveryService webPushDeliveryService;
+    private final IdempotencyGuard idempotencyGuard;
 
     public EventConsumer(SimpMessagingTemplate messagingTemplate,
-                         WebPushDeliveryService webPushDeliveryService) {
+                         WebPushDeliveryService webPushDeliveryService,
+                         IdempotencyGuard idempotencyGuard) {
         this.messagingTemplate = messagingTemplate;
         this.webPushDeliveryService = webPushDeliveryService;
+        this.idempotencyGuard = idempotencyGuard;
     }
 
     @RabbitListener(queues = "notification-web.events")
+    @EventIdempotent(consumer = CONSUMER_ID)
+    @org.springframework.transaction.annotation.Transactional
     @SuppressWarnings("unchecked")
     public void onEvent(Map<String, Object> envelope) {
         String eventType = (String) envelope.get("event_type");
         if (eventType == null) {
             log.warn("Received event without event_type, ignoring: {}", envelope);
+            return;
+        }
+        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
             return;
         }
 

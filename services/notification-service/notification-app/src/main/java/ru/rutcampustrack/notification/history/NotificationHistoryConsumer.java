@@ -3,8 +3,11 @@ package ru.rutcampustrack.notification.history;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
+import ru.rutcampustrack.shared.events.EventIdempotent;
+import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
 import java.time.Instant;
 import java.util.Map;
@@ -28,21 +31,31 @@ import java.util.Optional;
 @Slf4j
 public class NotificationHistoryConsumer extends AbstractEventConsumer {
 
+    public static final String CONSUMER_ID = "notification-history";
+
     private final NotificationHistoryRepository repository;
     private final NotificationHistoryService historyService;
+    private final IdempotencyGuard idempotencyGuard;
 
     public NotificationHistoryConsumer(NotificationHistoryRepository repository,
-                                       NotificationHistoryService historyService) {
+                                       NotificationHistoryService historyService,
+                                       IdempotencyGuard idempotencyGuard) {
         this.repository = repository;
         this.historyService = historyService;
+        this.idempotencyGuard = idempotencyGuard;
     }
 
     @RabbitListener(queues = "notification-web.history")
+    @EventIdempotent(consumer = CONSUMER_ID)
+    @Transactional
     @SuppressWarnings("unchecked")
     public void onEvent(Map<String, Object> envelope) {
         String eventType = (String) envelope.get("event_type");
         if (eventType == null) {
             log.warn("history-consumer: envelope without event_type, skipping");
+            return;
+        }
+        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
             return;
         }
 

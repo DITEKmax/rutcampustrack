@@ -15,6 +15,9 @@ import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexInfo;
 import org.springframework.data.mongodb.core.index.IndexOperations;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import ru.rutcampustrack.shared.events.IdempotencyGuard;
+import ru.rutcampustrack.shared.events.IdempotencyStore;
+import ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore;
 
 import java.time.Duration;
 import java.util.List;
@@ -83,6 +86,22 @@ public class NotificationHistoryMongoConfig {
         return new MongoTransactionManager(factory);
     }
 
+    /**
+     * M13 G8: consumer-side dedup по {@code event_id} для notification-web
+     * (как для основного {@link ru.rutcampustrack.notification.event.EventConsumer},
+     * так и для {@link NotificationHistoryConsumer}). Индексы создаются в
+     * {@link #initIndexes()} вместе с TTL.
+     */
+    @Bean
+    public IdempotencyStore idempotencyStore(MongoTemplate mongoTemplate) {
+        return new MongoIdempotencyStore(mongoTemplate);
+    }
+
+    @Bean
+    public IdempotencyGuard idempotencyGuard(IdempotencyStore store) {
+        return new IdempotencyGuard(store);
+    }
+
     @EventListener(ApplicationReadyEvent.class)
     public void initIndexes() {
         if (!mongoTemplate.collectionExists(COLLECTION)) {
@@ -111,6 +130,11 @@ public class NotificationHistoryMongoConfig {
                 i1, i2, i3, ttlDays);
 
         verifyIndexes(ops);
+
+        // M13 G8 — consumer-side dedup. Compound unique
+        // (consumer_id, event_id) + idx_ecp_cleanup на отдельной коллекции
+        // event_consumer_processed.
+        new MongoIdempotencyStore(mongoTemplate).ensureIndexes();
     }
 
     /**

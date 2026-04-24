@@ -21,6 +21,9 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-databind")
     // M04 Группа 8 — MetricNames (OUTBOX_LAG_SECONDS) используется в OutboxMetrics.
     api(project(":services:shared:shared-observability"))
+    // M13 G8 — IdempotencyStore интерфейс (consumer-side dedup), реализации
+    // живут здесь же (JpaIdempotencyStore + MongoIdempotencyStore).
+    api(project(":services:shared:shared-events"))
     compileOnly("org.slf4j:slf4j-api")
 
     // Spring-аннотации (@Component/@Scheduled/@Transactional) нужны для

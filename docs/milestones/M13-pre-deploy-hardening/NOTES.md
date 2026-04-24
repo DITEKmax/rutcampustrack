@@ -432,3 +432,96 @@ integrationTest — все зелёные после M13 G7.
 - digest-pin image в docker-compose.prod.yml после staging verify:
   `docker buildx imagetools inspect bitnami/mongodb:7.0 | grep Digest`.
   Сейчас floating tag (чтобы не блочить M13).
+
+## 2026-04-25 — Группа 8 (Consumer-side dedup по event_id)
+
+**Дизайн (по согласованию владельца):**
+
+- `IdempotencyStore` interface в `shared-events` — два метода
+  (`tryClaim(consumerId, eventId)` + `deleteProcessedBefore(cutoff)`).
+- `IdempotencyGuard` helper в `shared-events` — оборачивает store,
+  вытаскивает `event_id` из envelope, fail-open при отсутствии/malformed.
+- `@EventIdempotent(consumer = "...")` — marker-аннотация (не AOP).
+  Реальный dedup делается явным `idempotencyGuard.tryClaim(envelope)`
+  в первой строке consumer-метода. Причина: AOP вокруг `@RabbitListener`
+  через CGLIB-proxy менее предсказуем по сравнению с явным вызовом, а
+  consumer'ов всего 4 в Java + 1 в Python — декларативность не нужна.
+
+**JPA store (academic + schedule):**
+
+- Таблица `event_consumer_processed (consumer_id VARCHAR(64), event_id UUID,
+  processed_at TIMESTAMPTZ, PK(consumer_id, event_id))` + `idx_ecp_cleanup`.
+- Flyway: academic V18, schedule V14 — `MigrationIT` подтверждает.
+- `JpaIdempotencyStore.tryClaim` использует **PostgreSQL native
+  `INSERT ... ON CONFLICT DO NOTHING`** через `entityManager.createNativeQuery`.
+
+  **Surprise (executed G8.7):** первая версия делала `entityManager.persist + flush`
+  + `catch DataIntegrityViolationException → return false`. Hibernate flush failure
+  помечает Spring tx как `rollback-only` через `setRollbackOnly()`, и handler-tx
+  не может коммитнуться — `UnexpectedRollbackException: Transaction silently
+  rolled back because it has been marked as rollback-only`. Native UPSERT
+  не бросает PSQLException → tx остаётся valid. Это критичный учёт для
+  любого «JPA insert-or-skip» паттерна на shared tx.
+
+**Mongo store (attendance + notification-web):**
+
+- Коллекция `event_consumer_processed` — compound unique
+  `(consumer_id, event_id)` + `idx_ecp_cleanup` на `processed_at`.
+- `MongoIdempotencyStore.tryClaim` — `insertOne` + catch
+  `MongoWriteException` с `ErrorCategory.DUPLICATE_KEY` → return false.
+  В отличие от JPA, Mongo writes **не помечают Spring tx как rollback-only**
+  при duplicate-key (replica set tx + insertOne — атомарно, ошибка только в
+  client'е). Поэтому здесь обычный `try/catch` работает.
+- Привязка к `IdempotencyStore` bean'у в attendance `MongoConfig` +
+  notification `NotificationHistoryMongoConfig`. Индексы создаются в
+  `initIndexes()` через `new MongoIdempotencyStore(mongoTemplate).ensureIndexes()`.
+
+**Применено к consumer'ам:**
+
+- `schedule.EventConsumer.onEvent` — CONSUMER_ID="schedule".
+- `attendance.EventConsumer.onEvent` — CONSUMER_ID="attendance".
+- `notification.EventConsumer.onEvent` — CONSUMER_ID="notification-web".
+- `notification.NotificationHistoryConsumer.onEvent` — CONSUMER_ID="notification-history".
+  Два **разных** consumer-id для notification-web (т.к. два @RabbitListener
+  на разные queues с разной семантикой) — claim'ы независимы по этим id.
+- **academic — N/A:** academic-app не имеет ни одного `@RabbitListener`,
+  только publisher (DomainEventListener). Но Flyway/store/cleanup в
+  academic создаются — для будущих consumer'ов (если появятся в v0.1+)
+  и для cleanup-симметрии.
+
+**Bot Python (notification-bot):**
+
+- `BotIdempotencyGuard` (`bot/services/idempotency_guard.py`) — Redis
+  `SET consumed:{consumer_id}:{event_id} NX EX 3600`.
+- TTL 1h — больше чем Rabbit redelivery window. Fail-open при Redis-сбое
+  (лучше дубль обработать, чем потерять событие).
+- Wired в `__main__.py` через `start_consumer(rabbitmq_url, dispatcher,
+  idempotency_guard)`. 7 pytest'ов покрывают all paths (claim, dedup,
+  TTL, fail-open, missing event_id, multiple consumer_id).
+
+**Cleanup-job (G8.8):**
+
+- `IdempotencyCleanupJob` в `shared-outbox` (рядом с `OutboxCleanupJob`).
+- Cron `0 30 3 * * *` (03:30 UTC) — на 30 минут позже outbox cleanup'а
+  чтобы не пересекаться по lock'ам. Retention 7 дней (configurable).
+- Регистрируется bean'ом в Publisher/Scheduler-секции каждого из 4
+  сервисов с `@Profile("!test")`.
+
+**Tests:**
+
+- Unit: `IdempotencyGuardTest` (9 cases в shared-events),
+  `IdempotencyCleanupJobTest` (3 cases в shared-outbox), pytest
+  `test_idempotency_guard.py` (7 cases в notification-bot).
+- IT: `EventIdempotentIT` × 3 — schedule (direct call + `SubjectDeletedCascadeService`
+  Mockito verify), attendance (Rabbit publish + count claims), notification
+  (Rabbit publish + count claims + history doc count). Academic — нет consumer'а.
+
+**Pre-existing baseline drift найденный в G8.1:**
+
+`shared-events/EventSchemaCoverageTest.eventSchemasMatchWhitelist`
+падает: `otp.requested.json` появилась в M09 G2 (`3d6dfd1`), но
+`EXPECTED_EVENT_SCHEMAS` whitelist в `EventSchemaCoverageTest.java` не
+обновлён. Это блокирует `:services:shared:shared-events:test` весь
+M13. **Не моё (M09 retrospective gap), но требует фикс — см. отдельный
+вопрос владельцу в Группе 24 (либо добавить как G8 follow-up
+оne-line patch). Мой `IdempotencyGuardTest` зелёный, не связан.**

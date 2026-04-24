@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.rutcampustrack.shared.events.IdempotencyStore;
+import ru.rutcampustrack.shared.outbox.IdempotencyCleanupJob;
 import ru.rutcampustrack.shared.outbox.OutboxCleanupJob;
 import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 import ru.rutcampustrack.shared.outbox.OutboxMetrics;
@@ -71,6 +73,14 @@ public class OutboxConfig {
                 OutboxStorage storage,
                 @Value("${rutcampustrack.outbox.retention-days:7}") int retentionDays) {
             return new OutboxCleanupJob(storage, Clock.systemUTC(), retentionDays);
+        }
+
+        /** M13 G8 — daily cleanup для event_consumer_processed (retention 7d). */
+        @Bean
+        public IdempotencyCleanupJob idempotencyCleanupJob(
+                IdempotencyStore store,
+                @Value("${rutcampustrack.idempotency.retention-days:7}") int retentionDays) {
+            return new IdempotencyCleanupJob(store, Clock.systemUTC(), retentionDays);
         }
     }
 }

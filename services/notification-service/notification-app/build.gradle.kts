@@ -16,6 +16,8 @@ dependencies {
     implementation(project(":services:shared:shared-web"))
     implementation(project(":services:shared:shared-events"))
     implementation(project(":services:shared:shared-logback"))
+    // M13 G8 — MongoIdempotencyStore (consumer-side dedup)
+    implementation(project(":services:shared:shared-outbox"))
 
     // M03a — shared-security (Internal JWT validator + dual-mode filter)
     implementation(project(":services:shared:shared-security"))

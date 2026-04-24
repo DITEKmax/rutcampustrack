@@ -16,6 +16,7 @@ from bot.observability import setup_observability
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.event_publisher import EventPublisher
+from bot.services.idempotency_guard import BotIdempotencyGuard
 from bot.services.jwt_redis_client import JwtRedisClient
 from bot.services.notification_prefs import NotificationPrefsClient
 from bot.services.otp_message_tracker import OtpMessageTracker
@@ -54,14 +55,14 @@ async def run_health_server() -> None:
     logger.info("Health server started on port %d", config.health_port)
 
 
-async def run_with_watchdog(rabbitmq_url: str, dispatcher=None) -> None:
+async def run_with_watchdog(rabbitmq_url: str, dispatcher=None, idempotency_guard=None) -> None:
     """
     Watchdog loop — restarts start_consumer on failure or silent exit.
     Propagates CancelledError to allow clean shutdown.
     """
     while True:
         try:
-            await start_consumer(rabbitmq_url, dispatcher=dispatcher)
+            await start_consumer(rabbitmq_url, dispatcher=dispatcher, idempotency_guard=idempotency_guard)
             # start_consumer returned normally — silent consumer death, restart
             logger.warning("Consumer exited normally (silent death) — restarting in 5s")
         except asyncio.CancelledError:
@@ -143,6 +144,13 @@ async def main() -> None:
         password=config.redis_password,
     )
 
+    # M13 G8 — consumer-side dedup по event_id (Redis SET NX EX 3600).
+    idempotency_guard = BotIdempotencyGuard(
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
     dp["academic_client"] = academic_client
     dp["schedule_client"] = schedule_client
     dp["jwt_redis"] = jwt_redis
@@ -193,7 +201,11 @@ async def main() -> None:
     )
 
     # Start watchdog with dispatcher
-    _consumer_task = asyncio.create_task(run_with_watchdog(config.rabbitmq_url, dispatcher=dispatcher))
+    _consumer_task = asyncio.create_task(run_with_watchdog(
+        config.rabbitmq_url,
+        dispatcher=dispatcher,
+        idempotency_guard=idempotency_guard,
+    ))
 
     # Start bot polling (handle_signals=False — Pitfall 5: signals managed by main loop)
     _bot_task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
@@ -219,6 +231,7 @@ async def main() -> None:
         await send_queue.shutdown()
         await redis_client.close()
         await request_tracker.close()
+        await idempotency_guard.close()
         await otp_tracker.close()
         await auth_client.close()
         await attendance_client.close()

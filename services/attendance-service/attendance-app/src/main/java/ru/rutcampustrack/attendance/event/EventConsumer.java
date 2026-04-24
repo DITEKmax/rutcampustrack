@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.attendance.excuse.ExcuseService;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
+import ru.rutcampustrack.shared.events.EventIdempotent;
+import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -26,16 +29,24 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EventConsumer extends AbstractEventConsumer {
 
+    public static final String CONSUMER_ID = "attendance";
+
     private final LessonEventService lessonEventService;
     private final SemesterCacheService semesterCacheService;
     private final LateCheckinService lateCheckinService;
     private final ExcuseService excuseService;
+    private final IdempotencyGuard idempotencyGuard;
 
     @RabbitListener(queues = "attendance-service.events")
+    @EventIdempotent(consumer = CONSUMER_ID)
+    @Transactional
     public void onEvent(Map<String, Object> envelope) {
         String eventType = (String) envelope.get("event_type");
         if (eventType == null) {
             log.warn("Received event without event_type, ignoring: {}", envelope);
+            return;
+        }
+        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) {
             return;
         }
         // M04 QA3 — extract trace_id из envelope в MDC до handler'а.

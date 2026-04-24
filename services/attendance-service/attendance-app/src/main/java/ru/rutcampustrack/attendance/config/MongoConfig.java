@@ -12,6 +12,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexOperations;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import ru.rutcampustrack.shared.events.IdempotencyGuard;
+import ru.rutcampustrack.shared.events.IdempotencyStore;
+import ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore;
 
 /**
  * MongoDB index configuration for the Attendance Service.
@@ -41,6 +44,21 @@ public class MongoConfig {
     @Bean
     public MongoTransactionManager mongoTransactionManager(MongoDatabaseFactory factory) {
         return new MongoTransactionManager(factory);
+    }
+
+    /**
+     * M13 G8: consumer-side dedup по {@code event_id}. Storage инжектится
+     * в {@code EventConsumer} через {@link IdempotencyGuard}, индексы
+     * создаются в {@link #initIndexes()}.
+     */
+    @Bean
+    public IdempotencyStore idempotencyStore(MongoTemplate mongoTemplate) {
+        return new MongoIdempotencyStore(mongoTemplate);
+    }
+
+    @Bean
+    public IdempotencyGuard idempotencyGuard(IdempotencyStore store) {
+        return new IdempotencyGuard(store);
     }
 
     @PostConstruct
@@ -83,5 +101,10 @@ public class MongoConfig {
                 .on("status", Sort.Direction.ASC)
                 .on("created_at", Sort.Direction.ASC)
                 .named("lcr_group_status_created"));
+
+        // M13 G8 — consumer-side dedup. Compound unique
+        // (consumer_id, event_id) делает MongoIdempotencyStore.tryClaim
+        // атомарным insert-or-fail. idx_ecp_cleanup нужен cleanup-job'у.
+        new MongoIdempotencyStore(mongoTemplate).ensureIndexes();
     }
 }

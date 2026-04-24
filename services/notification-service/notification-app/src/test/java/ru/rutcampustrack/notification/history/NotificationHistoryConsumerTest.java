@@ -32,7 +32,12 @@ class NotificationHistoryConsumerTest {
 
     @BeforeEach
     void setUp() {
-        consumer = new NotificationHistoryConsumer(repository, historyService);
+        consumer = new NotificationHistoryConsumer(repository, historyService,
+                new ru.rutcampustrack.shared.events.IdempotencyGuard(
+                        new ru.rutcampustrack.shared.events.IdempotencyStore() {
+                            @Override public boolean tryClaim(String c, java.util.UUID e) { return true; }
+                            @Override public long deleteProcessedBefore(java.time.Instant before) { return 0; }
+                        }));
     }
 
     @Test

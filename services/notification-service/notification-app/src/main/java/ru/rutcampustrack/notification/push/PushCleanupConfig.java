@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.rutcampustrack.shared.events.IdempotencyStore;
+import ru.rutcampustrack.shared.outbox.IdempotencyCleanupJob;
 
 import java.time.Clock;
 
@@ -64,6 +67,14 @@ public class PushCleanupConfig {
         public LockProvider pushCleanupLockProvider(MongoTemplate mongoTemplate) {
             MongoDatabase db = mongoTemplate.getDb();
             return new MongoLockProvider(db);
+        }
+
+        /** M13 G8 — daily cleanup для event_consumer_processed (retention 7d). */
+        @Bean
+        public IdempotencyCleanupJob idempotencyCleanupJob(
+                IdempotencyStore store,
+                @Value("${rutcampustrack.idempotency.retention-days:7}") int retentionDays) {
+            return new IdempotencyCleanupJob(store, Clock.systemUTC(), retentionDays);
         }
     }
 }

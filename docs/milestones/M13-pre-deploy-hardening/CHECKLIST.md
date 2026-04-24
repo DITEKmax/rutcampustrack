@@ -65,16 +65,17 @@
 
 ## Группа 8 — Consumer-side dedup по `event_id` (M02 CRITICAL #2)
 
-- [ ] Создать `shared-events/EventIdempotent` helper (аннотация + aspect)
-- [ ] Schema: `event_consumer_processed (consumer_id, event_id, processed_at)` unique index
-- [ ] Flyway V{N} migration для academic-app + schedule-app (PostgreSQL)
-- [ ] Collection init для attendance-app + notification-web (MongoDB)
-- [ ] Добавить `@EventIdempotent(consumer="academic")` на consumer methods в academic
-- [ ] Добавить `@EventIdempotent(consumer="schedule")` на consumer methods в schedule
-- [ ] Добавить `@EventIdempotent(consumer="attendance")` на consumer methods в attendance
-- [ ] Добавить `@EventIdempotent(consumer="notification-web")` на consumer methods в notification-web
-- [ ] Python equivalent в notification-bot: Redis SET `consumed:{event_id}` TTL 1h + early-return при hit
-- [ ] IT per service: publish event × 2 → consumer видит обработку × 1
+- [x] Создать `shared-events/EventIdempotent` helper (аннотация + aspect) _(не AOP — `IdempotencyStore` interface + `IdempotencyGuard` helper + `@EventIdempotent` marker; явный вызов `guard.tryClaim` в первой строке consumer-метода. См. NOTES «Дизайн»)_
+- [x] Schema: `event_consumer_processed (consumer_id, event_id, processed_at)` unique index _(PG: composite PK `(consumer_id, event_id)` + `idx_ecp_cleanup` на `processed_at`. Mongo: compound unique `(consumer_id, event_id)` через ensureIndexes)_
+- [x] Flyway V{N} migration для academic-app + schedule-app (PostgreSQL) _(academic V18, schedule V14; FlywayMigrationIT зелёный для обоих)_
+- [x] Collection init для attendance-app + notification-web (MongoDB) _(attendance MongoConfig.initIndexes + NotificationHistoryMongoConfig.initIndexes — обе вызывают `new MongoIdempotencyStore(mongoTemplate).ensureIndexes()` после доменных индексов)_
+- [x] Добавить `@EventIdempotent(consumer="academic")` на consumer methods в academic _(N/A — academic-app не имеет @RabbitListener; только publisher через DomainEventListener. Store/Flyway/cleanup всё равно созданы для симметрии и future consumer'ов в v0.1+)_
+- [x] Добавить `@EventIdempotent(consumer="schedule")` на consumer methods в schedule _(`schedule.EventConsumer.onEvent` + `@Transactional` + `idempotencyGuard.tryClaim`)_
+- [x] Добавить `@EventIdempotent(consumer="attendance")` на consumer methods в attendance _(`attendance.EventConsumer.onEvent` + `@Transactional` + guard. Lombok `@RequiredArgsConstructor` подхватывает новое final-поле)_
+- [x] Добавить `@EventIdempotent(consumer="notification-web")` на consumer methods в notification-web _(2 consumer'а с разными CONSUMER_ID: `notification.EventConsumer` (`"notification-web"`) для STOMP/push routing + `NotificationHistoryConsumer` (`"notification-history"`) для persistence)_
+- [x] Python equivalent в notification-bot: Redis SET `consumed:{event_id}` TTL 1h + early-return при hit _(`bot/services/idempotency_guard.py` BotIdempotencyGuard — SET NX EX 3600. Wired в `__main__.py` → `start_consumer(..., idempotency_guard=...)` → проверка перед `dispatcher.dispatch`)_
+- [x] IT per service: publish event × 2 → consumer видит обработку × 1 _(3 EventIdempotentIT: schedule (Mockito verify cascade × 1 + claim count = 1), attendance (Rabbit publish × 2 → claim count = 1 в Mongo), notification-web (Rabbit publish → claims у обоих consumer-id = 1 + history.size = 1). Academic нет — нет consumer'а. Bot — 7 pytest'ов в `test_idempotency_guard.py`)_
+- [x] **(дополнено)** ShedLock cleanup-job для retention 7 дней _(IdempotencyCleanupJob в shared-outbox, cron `0 30 3 * * *`, lock `idempotency-cleanup`. Зарегистрирован в Publisher/Scheduler-секции 4 сервисов под `@Profile("!test")`)_
 
 ## Группа 9 — SecurityIdorIT (NEW-31 retrospective)
 

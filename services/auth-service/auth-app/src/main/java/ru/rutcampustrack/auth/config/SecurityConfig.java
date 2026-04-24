@@ -35,7 +35,6 @@ public class SecurityConfig {
                                 "/auth/refresh",
                                 "/auth/logout",
                                 "/auth/tma",
-                                "/auth/refresh-body",
                                 "/auth/public-key",
                                 "/auth/otp/**",
                                 "/internal/**",

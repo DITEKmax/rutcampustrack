@@ -105,10 +105,6 @@ failures в 60 мин, или `BcryptConcurrencyGuard` (N=20 permits) полон
 **Response 200:** новый `TokenResponse` + rotated `Set-Cookie`.
 **Response 401:** cookie отсутствует / просрочена / revoked в Redis.
 
-### `POST /auth/refresh-body` — **DEPRECATED** (M04/M05 removal)
-Legacy endpoint для TMA/Mini App клиентов. Возвращает заголовки
-`Deprecation: true` + `Sunset: Mon, 01 Jun 2026 00:00:00 GMT`.
-
 ### `POST /auth/logout` — revoke + clear-cookie + invalidate ws-tickets
 **Permit-all** (cookie-only logout работает без access-JWT).
 

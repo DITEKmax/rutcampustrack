@@ -12,7 +12,7 @@ export const setAccessTokenGetter = (fn: () => string | null) => {
   getAccessToken = fn
 }
 
-// Re-auth callback — set by AuthProvider (D-06: re-auth via initData, NOT refresh-body)
+// Re-auth callback — set by AuthProvider (D-06: re-auth via initData, NOT cookie /auth/refresh)
 let onReAuth: (() => Promise<void>) | null = null
 export const setReAuthCallback = (fn: () => Promise<void>) => {
   onReAuth = fn

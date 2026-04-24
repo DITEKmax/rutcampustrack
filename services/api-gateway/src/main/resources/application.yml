@@ -108,7 +108,7 @@ spring:
         - id: auth-refresh
           uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
           predicates:
-            - Path=/api/auth/refresh,/api/auth/refresh-body
+            - Path=/api/auth/refresh
             - Method=POST
           filters:
             - StripPrefix=1

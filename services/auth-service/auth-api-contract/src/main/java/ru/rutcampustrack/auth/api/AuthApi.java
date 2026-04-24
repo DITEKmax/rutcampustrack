@@ -99,15 +99,6 @@ public interface AuthApi {
     @PostMapping("/tma")
     ResponseEntity<TokenResponse> tmaAuth(@Valid @RequestBody TmaAuthRequest request);
 
-    @Operation(summary = "Refresh tokens (body-based, deprecated)",
-            description = "Exchange refresh token in request body for new token pair. "
-                    + "DEPRECATED in M03b — use cookie-based POST /auth/refresh instead. "
-                    + "Planned removal: M04/M05.")
-    @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully")
-    @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
-    @PostMapping("/refresh-body")
-    ResponseEntity<TokenResponse> refreshBody(@Valid @RequestBody RefreshRequest request);
-
     @Operation(summary = "Change password", description = "Change password for authenticated user")
     @ApiResponse(responseCode = "204", description = "Password changed successfully")
     @ApiResponse(responseCode = "401", description = "Current password is incorrect")

@@ -157,3 +157,53 @@ schedule — cap=200 (local override).
 notification-web уже был hot-patch `max-page-size=100` в M10 G9 H2,
 который M13 перевёл в shared default. Если нужны IT на
 `/api/notifications?size=…` — добавлю по запросу.
+
+## 2026-04-25 — Группа 4 (`/auth/refresh-body` removal)
+
+**Usage audit (G4.1):** `grep -rn refresh-body` по `frontends/` нашёл:
+- `web-panel/src/app/api/generated/auth.types.ts` — generated types.
+- `pwa/src/api/generated/auth.types.ts` — generated types.
+- `mini-app/src/shared/lib/axios.ts:15` — однострочный **комментарий**,
+  не runtime.
+
+Ни одного `fetch('/auth/refresh-body')` или `refreshBody()` вызова в
+app-code. Значит миграция фронта не требуется, только regenerate.
+
+**Backend удалено:**
+- `AuthApi.refreshBody(...)` — метод + `@PostMapping("/refresh-body")`.
+- `AuthController.refreshBody(...)` + константа `REFRESH_BODY_SUNSET`
+  (`Mon, 01 Jun 2026 00:00:00 GMT`).
+- `SecurityConfig.permitAll` убран `/auth/refresh-body`.
+- Gateway `application.yml` `auth-refresh` route — убран `,/api/auth/refresh-body` из Path predicate.
+- Gateway `JwtAuthenticationFilter.PUBLIC_PATHS` — убран `/api/auth/refresh-body`.
+- Тесты `AuthIT.refreshBody_withValidToken_returnsDeprecationHeader`
+  и `TmaIT.refreshBody_withValidToken_returnsNewPair` +
+  `TmaIT.refreshBody_withInvalidToken_returns401` удалены. Unused
+  import `RefreshRequest` в AuthIT/TmaIT — удалён.
+
+**Оставлено (используется cookie-flow):**
+- `ru.rutcampustrack.auth.dto.RefreshRequest` DTO — всё ещё нужен:
+  `/auth/refresh` обёртывает cookie в `new RefreshRequest(refreshCookie)`,
+  `/auth/logout` принимает legacy body `RefreshRequest` (для TMA logout).
+- Owner в NEXT-SESSION.md:87 явно сказал: «refresh-body удаляем; mock
+  data, пользователей попросим перезайти» → не удалял DTO преждевременно.
+
+**Docs обновлены:**
+- `docs/auth-flow.md` — удалён раздел `POST /auth/refresh-body —
+  DEPRECATED`.
+- `docs/architecture.md` — удалён подпункт про refresh-body legacy
+  (заменён на однострочное упоминание что endpoint удалён в M13 G4).
+- `docs/openapi/auth.json` — regenerate через OpenApiSnapshotIT
+  c `-Popenapi.snapshot.update=true`. Путь `/auth/refresh-body`
+  удалён из spec.
+- `frontends/{web-panel,pwa}/src/*/generated/auth.types.ts` —
+  regenerate `npm run generate:types:offline` из обновлённого
+  `docs/openapi/auth.json`.
+
+**Комментарий в mini-app axios.ts:15** — поправлен на «re-auth via
+initData, NOT cookie /auth/refresh» (была отсылка к refresh-body).
+
+**Проверка:** локально
+`./gradlew :services:auth-service:auth-app:integrationTest` (AuthIT,
+TmaIT, OpenApiSnapshotIT) + `:services:api-gateway:integrationTest`
+(все RL/security IT) — BUILD SUCCESSFUL, 0 failures.

@@ -63,26 +63,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/refresh-body": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Refresh tokens (body-based, deprecated)
-         * @description Exchange refresh token in request body for new token pair. DEPRECATED in M03b — use cookie-based POST /auth/refresh instead. Planned removal: M04/M05.
-         */
-        post: operations["refreshBody"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/auth/otp/verify": {
         parameters: {
             query?: never;
@@ -241,9 +221,6 @@ export interface components {
             /** Format: int64 */
             expiresIn?: number;
         };
-        RefreshRequest: {
-            refreshToken?: string;
-        };
         OtpVerifyRequest: {
             /** Format: int64 */
             telegramId: number;
@@ -255,6 +232,9 @@ export interface components {
         OtpRequest: {
             /** Format: int64 */
             telegramId: number;
+        };
+        RefreshRequest: {
+            refreshToken?: string;
         };
         LoginRequest: {
             login?: string;
@@ -548,93 +528,6 @@ export interface operations {
                 };
             };
             /** @description Missing, invalid or expired refresh cookie */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TokenResponse"];
-                };
-            };
-            /** @description Доступ запрещён */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Ресурс не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Конфликт данных */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Превышен лимит запросов */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Внутренняя ошибка сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    refreshBody: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshRequest"];
-            };
-        };
-        responses: {
-            /** @description Tokens refreshed successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TokenResponse"];
-                };
-            };
-            /** @description Ошибка валидации запроса */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Invalid or expired refresh token */
             401: {
                 headers: {
                     [name: string]: unknown;

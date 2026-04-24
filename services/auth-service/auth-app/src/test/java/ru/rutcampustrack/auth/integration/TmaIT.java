@@ -7,7 +7,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
-import ru.rutcampustrack.auth.dto.RefreshRequest;
 import ru.rutcampustrack.auth.dto.TmaAuthRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 
@@ -158,34 +157,6 @@ class TmaIT extends AbstractIntegrationTest {
 
         ResponseEntity<String> response = restTemplate.postForEntity(
                 "/auth/tma", request, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    void refreshBody_withValidToken_returnsNewPair() {
-        // First authenticate via TMA to get a refresh token
-        String initData = buildValidInitData(123456789L, BOT_TOKEN);
-        ResponseEntity<TokenResponse> tmaResponse = restTemplate.postForEntity(
-                "/auth/tma", new TmaAuthRequest(initData), TokenResponse.class);
-        assertThat(tmaResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(tmaResponse.getBody()).isNotNull();
-        String refreshToken = tmaResponse.getBody().refreshToken();
-
-        // Use refresh-body endpoint
-        RefreshRequest refreshRequest = new RefreshRequest(refreshToken);
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                "/auth/refresh-body", refreshRequest, TokenResponse.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().accessToken()).isNotBlank();
-        assertThat(response.getBody().refreshToken()).isNotBlank();
-    }
-
-    @Test
-    void refreshBody_withInvalidToken_returns401() {
-        RefreshRequest request = new RefreshRequest("invalid_refresh_token");
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                "/auth/refresh-body", request, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 

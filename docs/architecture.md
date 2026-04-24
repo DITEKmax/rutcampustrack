@@ -977,9 +977,8 @@ cookie + push-unsubscribe).
   идентичные атрибуты для `issue()` и `clear()` (иначе браузер не
   overwrite'ит).
 - `POST /auth/refresh` читает cookie, ротирует refresh-token в Redis,
-  возвращает новый access + rotated cookie.
-- `POST /auth/refresh-body` (deprecated) с Deprecation+Sunset headers —
-  legacy для TMA/Mini App, removal в M04/M05.
+  возвращает новый access + rotated cookie. Body-based fallback
+  `/auth/refresh-body` удалён в M13 G4 — cookie-only flow.
 - CSRF не нужен: same-origin `ruttrack.site` + `SameSite=Strict`
   закрывают cross-site attacks (DECISIONS 2026-04-20).
 

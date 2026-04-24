@@ -31,12 +31,6 @@ public class AuthController implements AuthApi {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
-    /**
-     * Жёсткая дата deprecation'а для /auth/refresh-body. Установлена через
-     * M04/M05 — при removal обновить. Формат — RFC 7231 HTTP-date.
-     */
-    private static final String REFRESH_BODY_SUNSET = "Mon, 01 Jun 2026 00:00:00 GMT";
-
     private final AuthService authService;
     private final OtpService otpService;
     private final TmaService tmaService;
@@ -149,14 +143,6 @@ public class AuthController implements AuthApi {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, issueRefreshCookie(tokens.refreshToken()).toString())
                 .body(tokens);
-    }
-
-    @Override
-    public ResponseEntity<TokenResponse> refreshBody(RefreshRequest request) {
-        return ResponseEntity.ok()
-                .header("Deprecation", "true")
-                .header("Sunset", REFRESH_BODY_SUNSET)
-                .body(authService.refresh(request));
     }
 
     @Override

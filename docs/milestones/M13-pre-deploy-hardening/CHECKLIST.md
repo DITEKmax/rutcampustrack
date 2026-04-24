@@ -27,10 +27,10 @@
 
 ## Группа 4 — `/auth/refresh-body` removal (sunset guard)
 
-- [ ] `grep -rn "refresh-body" frontends/` — аудит usage
-- [ ] Если usage найден — мигрировать frontend на cookie-based `/auth/refresh`
-- [ ] Удалить `POST /auth/refresh-body` endpoint + DTO + test в auth-app
-- [ ] Обновить `docs/auth-flow.md` — только cookie flow
+- [x] `grep -rn "refresh-body" frontends/` — аудит usage _(только generated types + 1 комментарий в mini-app; ни одного runtime-вызова)_
+- [x] Если usage найден — мигрировать frontend на cookie-based `/auth/refresh` _(N/A — frontend уже на cookie flow; regenerate types после G4.3 удалил упоминания)_
+- [x] Удалить `POST /auth/refresh-body` endpoint + DTO + test в auth-app _(удалён: AuthApi.refreshBody, AuthController.refreshBody + REFRESH_BODY_SUNSET, SecurityConfig permitAll, Gateway route Path, JwtAuthenticationFilter PUBLIC_PATHS, AuthIT+TmaIT тесты. RefreshRequest DTO оставлен — ещё нужен для /refresh и /logout (cookie flow wrapper))_
+- [x] Обновить `docs/auth-flow.md` — только cookie flow _(удалён deprecated-блок; + убрано упоминание из docs/architecture.md; regenerate auth.json snapshot + frontend types (web-panel + pwa))_
 
 ## Группа 5 — `InvalidParam` deprecated alias migration
 

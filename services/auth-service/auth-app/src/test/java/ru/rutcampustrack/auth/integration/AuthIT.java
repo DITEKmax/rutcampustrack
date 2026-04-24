@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import ru.rutcampustrack.auth.dto.LoginRequest;
-import ru.rutcampustrack.auth.dto.RefreshRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 
 import java.util.List;
@@ -157,20 +156,6 @@ class AuthIT extends AbstractIntegrationTest {
         ResponseEntity<String> second = restTemplate.exchange(
                 "/auth/refresh", HttpMethod.POST, entity, String.class);
         assertThat(second.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    void refreshBody_withValidToken_returnsDeprecationHeader() {
-        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
-                "/auth/login", new LoginRequest("student", "password"), TokenResponse.class);
-        String refreshToken = loginResponse.getBody().refreshToken();
-
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                "/auth/refresh-body", new RefreshRequest(refreshToken), TokenResponse.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().getFirst("Deprecation")).isEqualTo("true");
-        assertThat(response.getHeaders().getFirst("Sunset")).isNotBlank();
     }
 
     @Test

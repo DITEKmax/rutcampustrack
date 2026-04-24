@@ -12,10 +12,18 @@ dependencyManagement {
     }
 }
 
-// NEW-34: shared-web = чистый java-library.
-// Никакой Spring Boot autoconfiguration, никаких приносимых starter'ов.
-// Spring / Jackson / SLF4J провайдит сервис-потребитель (через свой starter).
+// NEW-34 (M01) + M11 G0.2: shared-web = Spring Boot starter-like модуль.
+// Содержит Spring beans (GlobalExceptionHandler, JacksonConfig,
+// SharedOpenApiCustomizer, AdminActionAspect) + SharedWebAutoConfiguration
+// (регистрируется через META-INF/spring/AutoConfiguration.imports).
+// DTO-типы (ErrorResponse, FieldError, InvalidParam) вынесены в
+// shared-web-api и приходят через `api(...)` — consumers видят их
+// транзитивно.
 dependencies {
+    // M11 G0.2: единый источник DTO-типов для всего backend + транзитив
+    // для consumers (academic/schedule/attendance/notification/auth).
+    api(project(":services:shared:shared-web-api"))
+
     compileOnly("org.springframework:spring-web")
     compileOnly("org.springframework:spring-webmvc")
     compileOnly("org.springframework:spring-context")

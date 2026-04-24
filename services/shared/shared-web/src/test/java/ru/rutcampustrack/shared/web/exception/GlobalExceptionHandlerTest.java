@@ -22,6 +22,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 import java.util.List;
 import java.util.Set;
@@ -41,7 +42,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("MethodArgumentNotValid → 400 + invalidParams[] с name/reason/rejectedValue")
+    @DisplayName("MethodArgumentNotValid → 400 + fieldErrors[] с field/rejectedValue/message")
     void handleMethodArgumentNotValid() {
         BindingResult binding = mock(BindingResult.class);
         when(binding.getFieldErrors()).thenReturn(List.of(
@@ -56,15 +57,15 @@ class GlobalExceptionHandlerTest {
         assertProblem(resp, HttpStatus.BAD_REQUEST, "validation-failed");
         ErrorResponse body = resp.getBody();
         assertThat(body).isNotNull();
-        assertThat(body.invalidParams()).hasSize(2);
-        assertThat(body.invalidParams().get(0).name()).isEqualTo("email");
-        assertThat(body.invalidParams().get(0).reason()).isEqualTo("must be a valid email");
-        assertThat(body.invalidParams().get(0).rejectedValue()).isEqualTo("not-an-email");
-        assertThat(body.invalidParams().get(1).rejectedValue()).isEqualTo(-1);
+        assertThat(body.fieldErrors()).hasSize(2);
+        assertThat(body.fieldErrors().get(0).field()).isEqualTo("email");
+        assertThat(body.fieldErrors().get(0).message()).isEqualTo("must be a valid email");
+        assertThat(body.fieldErrors().get(0).rejectedValue()).isEqualTo("not-an-email");
+        assertThat(body.fieldErrors().get(1).rejectedValue()).isEqualTo(-1);
     }
 
     @Test
-    @DisplayName("ConstraintViolation → 400 + invalidParams[] из propertyPath")
+    @DisplayName("ConstraintViolation → 400 + fieldErrors[] из propertyPath")
     void handleConstraintViolation() {
         ConstraintViolation<Object> v = mockViolation("createUser.login", "size must be >=3", "ab");
         ConstraintViolationException ex = new ConstraintViolationException(Set.of(v));
@@ -72,9 +73,9 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> resp = handler.handleConstraintViolation(ex, request);
 
         assertProblem(resp, HttpStatus.BAD_REQUEST, "validation-failed");
-        assertThat(resp.getBody().invalidParams()).hasSize(1);
-        assertThat(resp.getBody().invalidParams().get(0).name()).isEqualTo("createUser.login");
-        assertThat(resp.getBody().invalidParams().get(0).rejectedValue()).isEqualTo("ab");
+        assertThat(resp.getBody().fieldErrors()).hasSize(1);
+        assertThat(resp.getBody().fieldErrors().get(0).field()).isEqualTo("createUser.login");
+        assertThat(resp.getBody().fieldErrors().get(0).rejectedValue()).isEqualTo("ab");
     }
 
     @Test
@@ -101,7 +102,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("MissingServletRequestParameter → 400 + invalidParams[name]")
+    @DisplayName("MissingServletRequestParameter → 400 + fieldErrors[field]")
     void handleMissingParam() {
         MissingServletRequestParameterException ex =
                 new MissingServletRequestParameterException("userId", "Long");
@@ -109,12 +110,12 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> resp = handler.handleMissingParam(ex, request);
 
         assertProblem(resp, HttpStatus.BAD_REQUEST, "missing-parameter");
-        assertThat(resp.getBody().invalidParams()).hasSize(1);
-        assertThat(resp.getBody().invalidParams().get(0).name()).isEqualTo("userId");
+        assertThat(resp.getBody().fieldErrors()).hasSize(1);
+        assertThat(resp.getBody().fieldErrors().get(0).field()).isEqualTo("userId");
     }
 
     @Test
-    @DisplayName("MethodArgumentTypeMismatch → 400 + invalidParams[name, rejectedValue]")
+    @DisplayName("MethodArgumentTypeMismatch → 400 + fieldErrors[field, rejectedValue]")
     void handleTypeMismatch() {
         MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
         when(ex.getName()).thenReturn("groupId");
@@ -123,8 +124,8 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> resp = handler.handleTypeMismatch(ex, request);
 
         assertProblem(resp, HttpStatus.BAD_REQUEST, "type-mismatch");
-        assertThat(resp.getBody().invalidParams().get(0).name()).isEqualTo("groupId");
-        assertThat(resp.getBody().invalidParams().get(0).rejectedValue()).isEqualTo("not-a-number");
+        assertThat(resp.getBody().fieldErrors().get(0).field()).isEqualTo("groupId");
+        assertThat(resp.getBody().fieldErrors().get(0).rejectedValue()).isEqualTo("not-a-number");
     }
 
     @Test
@@ -183,16 +184,6 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> resp = handler.handleGeneral(ex, request);
 
         assertThat(resp.getBody().traceId()).isNull();
-    }
-
-    @Test
-    @DisplayName("ErrorResponse.badRequest/notFound/internal — фабрики с правильными статусами")
-    void errorResponseFactories() {
-        assertThat(ErrorResponse.badRequest("d", "/i", "t").status()).isEqualTo(400);
-        assertThat(ErrorResponse.notFound("d", "/i", "t").status()).isEqualTo(404);
-        assertThat(ErrorResponse.internal("d", "/i", "t").status()).isEqualTo(500);
-        assertThat(ErrorResponse.badRequest("d", "/i", "t").type())
-                .isEqualTo(ErrorResponse.PROBLEM_BASE + "bad-request");
     }
 
     private static void assertProblem(ResponseEntity<ErrorResponse> resp,

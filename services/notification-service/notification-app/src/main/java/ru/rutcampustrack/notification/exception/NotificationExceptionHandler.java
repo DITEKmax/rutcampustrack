@@ -9,7 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.rutcampustrack.shared.web.exception.ErrorResponse;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 import java.time.Instant;
 

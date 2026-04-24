@@ -143,3 +143,40 @@ persist.
 в отдельной коллекции или не хранят. Мы идём тем же путём.
 
 ---
+
+## D7 — PWA NotificationCenter: hybrid strategy
+
+**Дата:** 2026-04-24 (G6)
+**Контекст:** PWA sessionStorage sidebar показывает broadcast events
+(lesson.*, homework.*, group.*) для live UX. Backend persist'ит только
+per-user actionable events (D6). Полный refactor на `useInfiniteQuery`
+как initial source требовал бы либо:
+- (a) дублировать broadcast events в `notification_history` per user
+  (expensive persist write storm — каждая пара = N students × event);
+- (b) два источника в UI — server-backed history + client-side live
+  broadcast — усложнение компонента.
+
+**Решение (v0.0.0):** hybrid minimum-invasive:
+- sessionStorage+STOMP остаётся authoritative для **current-session
+  UX** (broadcast + live);
+- REST API готов и тестирован (useNotificationHistory hook доступен
+  любому компоненту, который захочет показать серверную историю —
+  future feature «История» раздел или пересчёт unread после reload);
+- `markAllRead` делает best-effort POST на backend → server-side
+  cache stays in sync;
+- STOMP new-event → `queryClient.invalidateQueries(['notifications'])`
+  — backend history query refresh'ится, если компонент её читает.
+
+**Обоснование:** v0.0.0 фокус — **state не теряется при logout/login**
+(P2-6/4 main driver). Client-side live items всё равно идут через STOMP
+— refactor UI на infinite-query из server-side даёт нулевой UX win для
+активной сессии, а стоит 300+ строк code changes в NotificationCenter.
+
+**Последствие:**
+- Full infinite-scroll UI reads server history — v0.1 (записано в
+  Checklist как deferred).
+- Optimistic mutations — v0.1 (для v0.0.0 invalidation достаточно).
+- M07 unified thin-client остаётся sessionStorage-based — M10 не
+  breaking change для M07 contract.
+
+---

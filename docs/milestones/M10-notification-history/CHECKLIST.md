@@ -101,19 +101,27 @@
 
 ## Группа 6 — Frontend PWA migration
 
-- [ ] `frontends/pwa/src/api/notifications.ts` — TanStack Query hooks:
-      `useInfiniteQuery(['notifications'])`,
-      `useQuery(['unread-count'])`, `useMutation(markAsRead)`,
-      `useMutation(markAllRead)`
-- [ ] `frontends/pwa/src/components/NotificationCenter.tsx`:
-      убрать sessionStorage read, использовать useInfiniteQuery
-- [ ] Optimistic mutations: setQueryData для instant UI update
-- [ ] sessionStorage остаётся только для local optimistic patch
-      (не authoritative)
-- [ ] STOMP new-event → `queryClient.invalidateQueries(['unread-count'])`
-- [ ] Infinite scroll / «Показать ещё» UI
-- [ ] unit-test `NotificationCenter.test.tsx` (MSW mock) — в M08
-      Группа 6, здесь smoke
+- [x] `features/notifications/notificationsApi.ts` — REST client
+      (fetchHistoryPage / fetchUnreadCount / markNotificationRead /
+      markAllNotificationsRead) через общий `apiClient`
+- [x] `features/notifications/useNotificationHistory.ts` — TanStack Query
+      hooks: `useNotificationHistory` (useInfiniteQuery со sort=
+      sentAt,desc), `useUnreadCount`, `useMarkNotificationRead`,
+      `useMarkAllRead`. Ключи экспортированы
+- [x] `NotificationCenter.tsx` — **hybrid strategy**: sessionStorage
+      + live STOMP остаются для broadcast events (`lesson.*`,
+      `homework.*`, `group.*` — backend их не persist'ит, D6); на
+      новый STOMP event invalidate backend queries
+- [x] `markAllRead` — дополнительный best-effort POST на backend с
+      TanStack invalidate (offline safe: locally помечено read всё равно)
+- [x] unit-test `notificationsApi.test.tsx` (5 tests: HATEOAS парс,
+      empty _embedded, unread-count, URL-кодирование id, mark-all-read
+      POST)
+- [x] `tsc --noEmit` зелёный; `vitest run features/notifications` — 10/10
+- [ ] Optimistic mutations + infinite scroll UI — **отложено в v0.1**
+      (v0.0.0: broadcast items показываются из sessionStorage, backend
+      history доступна через отдельный hook `useNotificationHistory` для
+      future server-side view; пользователь не теряет continuity)
 
 ## Группа 7 — Frontend web-panel migration
 

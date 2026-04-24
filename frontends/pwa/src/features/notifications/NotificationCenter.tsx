@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { buildWsUrl } from '@/features/auth/wsTicket'
 import {
@@ -17,6 +18,8 @@ import {
   shouldStoreInHistory,
   shouldSuppressBanner,
 } from './notificationPrefs'
+import { markAllNotificationsRead } from './notificationsApi'
+import { notificationsQueryKeys } from './useNotificationHistory'
 
 /**
  * Global notification center for the PWA.
@@ -254,6 +257,7 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
   const groupId = user?.groupId ?? null
   const userId = user?.id ?? null
   const isHeadman = !!user?.isHeadman
+  const queryClient = useQueryClient()
 
   const [items, setItems] = useState<NotificationRecord[]>(() => loadFromStorage())
   const itemsRef = useRef(items)
@@ -314,6 +318,11 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
             return next.length > MAX_ITEMS ? next.slice(0, MAX_ITEMS) : next
           })
 
+          // M10 G6: backend consumer после persist делает evict Caffeine
+          // unread-count; invalidate TanStack query чтобы badge/список
+          // перечитали с сервера без 30s staleTime задержки.
+          queryClient.invalidateQueries({ queryKey: notificationsQueryKeys.all })
+
           if (!shouldSuppressBanner(envelope.type, prefs)) {
             showNativeNotification(record)
           }
@@ -338,13 +347,23 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
     return () => {
       client.deactivate()
     }
-  }, [groupId, userId, isHeadman, accessToken])
+  }, [groupId, userId, isHeadman, accessToken, queryClient])
 
   const markAllRead = useCallback(() => {
     setItems((prev) =>
       prev.every((i) => i.read) ? prev : prev.map((i) => ({ ...i, read: true })),
     )
-  }, [])
+    // M10 G6: best-effort синхронизация с backend. Failure в offline —
+    // ignore, локальный state уже помечен read, следующий onlineReconnect
+    // подтянет server state.
+    markAllNotificationsRead()
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: notificationsQueryKeys.all })
+      })
+      .catch(() => {
+        // noop — offline / не залогинен. Локальный mark stays.
+      })
+  }, [queryClient])
 
   const archive = useCallback((id: string) => {
     setItems((prev) =>

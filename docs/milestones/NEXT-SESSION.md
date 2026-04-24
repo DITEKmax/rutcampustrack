@@ -1,56 +1,103 @@
-# Промпт для следующей сессии — M10 Notification History
+# Промпт для следующей сессии — M10 G8+G9 (docs + audit + tag)
 
 Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Opus сам откроет
-нужные файлы и стартанёт milestone.
+нужные файлы и продолжит.
 
 ---
 
-**M09 Prod Release Blockers ✅ закрыт 2026-04-24, tag `v0.0.0-alpha.10`
-локально. Следующий milestone — M10 Notification History:
-`notification-web` из stateless event-forwarder'а в stateful сервис
-с Mongo + pagination REST + Caffeine unread-count.**
+**M10 Notification History: G1-G7 ✅ закрыты 2026-04-24 (7 коммитов в
+dev ветке). Остались G8 (docs) + G9 (audit + smoke + tag
+`v0.0.0-alpha.11`).**
 
-Локальных коммитов ahead origin: **20**. Tags `v0.0.0-alpha.2..10`
+Локальных коммитов ahead origin: **26**. Tags `v0.0.0-alpha.2..10`
 локальные. Push всё ещё отложен до явного `go`.
 
-**Старт следующей сессии — дословно:**
+**Старт новой сессии — дословно:**
 
 > Читаю `docs/milestones/NEXT-SESSION.md` →
-> `docs/milestones/M10-notification-history/{PLAN,CHECKLIST,NOTES}.md` →
-> `99-executive-summary.md` строки 120 и 170 (P2-6/4) →
-> `05-notification-service.md` P2-6/4 → `OWNER-ANSWERS.md` строки
-> 5021-5131 (P2-6/4 вариант b FULL). Старт с **Группы 1 MongoDB
-> schema setup (NEW-166)**: `infra/mongo-init/notification-db-init.js`
-> + `docker-compose*.yml` mount init-script и env
-> `MONGO_NOTIFICATION_USER/PASSWORD`. Коммит
-> `feat(infra): notification_db init + mongo user (M10 G1, NEW-166)`.
-> Далее **Группа 2 notification-api-contract module** — новый модуль
-> per contract-first rule (БЕЗ Lombok): `NotificationType enum`,
-> `NotificationHistoryDto record`, `UnreadCountDto record`,
-> `NotificationApi interface` с `@RequestMapping + @Operation +
-> @ApiResponse`. Коммит
-> `feat(notif): notification-api-contract module (M10 G2, NEW-167)`.
+> `docs/milestones/M10-notification-history/{PLAN,CHECKLIST,NOTES,DECISIONS}.md`
+> → `CLAUDE.md` для service table location. Запускаю **G8 Docs**:
+>
+> 1. `docs/architecture.md` — добавить раздел «Notification History
+>    (M10)»: schema (document shape), consumer flow (fanout
+>    `rut-uit.events` → queue `notification-web.history` → persist →
+>    evict Caffeine), REST surface, Caffeine 30s + STOMP invalidation
+>    pattern.
+> 2. `docs/database-schema.md` — раздел Mongo `notification_db` →
+>    collection `notification_history` + 3 индекса
+>    (idx_user_sent_desc, idx_user_read, ttl_sent_at 30d).
+> 3. `docs/data-retention-policy.md` — раздел 30d TTL для
+>    notification_history (env `NOTIFICATION_HISTORY_TTL_DAYS`).
+> 4. `CLAUDE.md` service table — `Notification Web | 9094 | Spring
+>    Boot WebSocket (STOMP) + Caffeine | MongoDB (notification_db)`
+>    + убрать старое примечание «stateless forwarder…» если есть.
+> 5. `CLAUDE.md` v0.0.0 milestones table — обновить M10 статус на ✅.
+>
+> Коммит `docs(m10 G8): notification history architecture + schema + CLAUDE.md`.
+>
+> Далее **G9 Audit + smoke + tag**:
+>
+> 1. Запустить `docker compose down -v` → `docker compose up -d` →
+>    дождаться healthy → проверить `docker logs rct-mongo-attendance`
+>    что оба users созданы (MONGO_USER + MONGO_NOTIFICATION_USER);
+>    `docker logs rct-notification-web` без auth-errors + Mongo URI
+>    = notification_db.
+> 2. Запустить `NotificationHistoryConsumerIT` Testcontainers:
+>    `./gradlew.bat :services:notification-service:notification-app:integrationTest
+>    --tests "*NotificationHistoryConsumerIT" --no-daemon`. Если
+>    TTL-index creation fail на Mongo 7 — hot-patch.
+> 3. Запустить `security-auditor` агента на diff M10 (коммиты
+>    `d6c0f14..4615e23`) + `bug-hunter`. Параллельно если
+>    возможно.
+> 4. HIGH findings — hot-patch commits; MEDIUM/LOW — defer в
+>    `future-ideas.md` если не блокер.
+> 5. Обновить CHECKLIST G9, добавить **Post-mortem** в PLAN.md
+>    (что пошло не по плану, lessons learned).
+> 6. Финальный коммит `docs(m10): CHECKLIST G9 final ticks +
+>    post-mortem + hand-off для M11`.
+> 7. `git tag v0.0.0-alpha.11 -m "M10 Notification History закрыт"`.
+> 8. Обновить `NEXT-SESSION.md` на M11 OpenAPI Polish.
 
-Каждая группа — отдельный атомарный коммит. Stop при сюрпризе → NOTES
-+ спросить.
+Stop при сюрпризе → NOTES + спросить.
 
 ---
 
-## M10 — исходный статус (на 2026-04-24 старт)
+## M10 G1-G7 summary (что уже сделано)
 
-Все 9 групп в CHECKLIST:
+| Группа | Commit | Scope |
+|--------|--------|-------|
+| G1 | `d6c0f14` | Mongo init-script (оба user'а, PoLP), compose×2, secret-rotation runbook, future-ideas collMod |
+| G2 | `8746e66` | notification-api-contract: NotificationType enum, NotificationHistoryDto class, UnreadCountDto record, NotificationApi interface, spring-data-commons |
+| G3 | `cc4b05b` | NotificationHistoryDocument + 3 индекса (TTL env-driven) + Repository + Rabbit history queue+DLQ + Consumer (маппер 9 events, broadcast skip, error isolation) + 12 unit + IT |
+| G4+G5 | `1624346` | CaffeineConfig (unread-count 30s) + NotificationHistoryService (@Cacheable/@CacheEvict + invalidate) + NotificationController (4 endpoints) + gateway route + 11 tests |
+| G6 | `e6b3c34` | PWA: notificationsApi (HATEOAS parser) + useNotificationHistory TanStack hooks + NotificationCenter invalidate на STOMP + markAllRead best-effort backend sync + 5 tests |
+| G7 | `4615e23` | web-panel: notification-history.api (Signal-based) + integration в NotificationCenterService + 5 tests |
 
-| Группа | Scope |
-|--------|-------|
-| G1 MongoDB schema setup | `notification_db` init + user + docker-compose mount |
-| G2 notification-api-contract module | DTO + interface + enum |
-| G3 Backend entity + repository + consumer | Entity + Mongo indexes + `@RabbitListener` |
-| G4 Service + Caffeine cache | `CaffeineConfig` + `@Cacheable unread-count` + evict |
-| G5 Controller + Gateway route | `NotificationController implements NotificationApi` + routing |
-| G6 Frontend integration | PWA NotificationCenter backed by REST + STOMP |
-| G7 STOMP cache invalidation | Publisher evicts cache при publish new event |
-| G8 Docs | `docs/architecture.md` раздел 3.5 expansion + `database-schema.md` notification_db |
-| G9 Audit + tag | security-auditor + bug-hunter на diff M10, hot-patches, tag `v0.0.0-alpha.11` |
+**DECISIONS D1-D7:**
+- D1: Модуль notification-api-contract уже был, добавляем классы рядом.
+- D2: Отдельный `notification_user` (PoLP) через init-mongo.js.
+- D3: SPRING_DATA_MONGODB_URI переключён с `attendance_db` на
+  `notification_db`.
+- D4: TTL env `NOTIFICATION_HISTORY_TTL_DAYS` default 30.
+- D5: Queue `notification-web.history` + binding на существующий
+  fanout `rut-uit.events` (PLAN говорил `notification.events`).
+- D6: Маппер persist только 9 user-facing events с `payload.user_id`;
+  broadcast (lesson.*) skip.
+- D7: PWA/web-panel hybrid — sessionStorage+STOMP остаются
+  authoritative для live UX; backend REST — для cross-session sync.
+
+**Deferred в v0.1 (записано в future-ideas.md):**
+- Notification retention `collMod` auto-reconciler.
+- PWA infinite-scroll UI на server-side history.
+- Optimistic mutations.
+- Headman-facing items (excuse.requested из стороны старосты) с gRPC
+  resolve `headman_id`.
+
+**Test counts:**
+- backend notification-app: 23 unit (map 7 + consumer 5 + service 6
+  + controller 5) + 1 IT (запуск отложен в G9)
+- PWA: 5 new (10/10 passing)
+- web-panel: 5 new (11/11 passing)
 
 ## Правила (без изменений)
 
@@ -59,89 +106,66 @@
 - Не звать `gsd-*` агентов. `Explore` для «найти все X»,
   `bug-hunter` + `security-auditor` — только в G9.
 - Surprise → NOTES.md + спросить до продолжения.
-- Micro-решение → DECISIONS.md (D1, D2... свежий счёт в M10).
-- Закрыл пункт CHECKLIST → `[x]` через Edit (commit hash в описании).
-- **Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — ложные**, edit применяется.
-- Атомарные коммиты per группа. Если группа >6ч работы — разрежь её.
+- Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — **ложные**, edit применяется.
+- Атомарные коммиты per группа.
 
-## Ожидающие явного `go`
+## G8 + G9 точки внимания
 
-1. `git push origin dev` — **20 коммитов** ahead (rising до ~35+
-   после M10).
-2. `git push origin --tags` — **9 tags** (`v0.0.0-alpha.2..10`),
-   станет 10 после M10 tag.
-3. После M10 → **M11 OpenAPI Polish** (SharedOpenApiCustomizer
-   наполнение + @Schema на DTO + nginx basic-auth на prod /swagger-ui
-   + OpenAPI↔runtime conformance CI). См.
-   `docs/milestones/M11-openapi-polish/PLAN.md`.
+**G8:**
+- `docs/architecture.md` сейчас описывает notification-web как
+  stateless forwarder — надо явно пометить M10 переход на stateful.
+- `docs/database-schema.md` — поискать раздел «MongoDB / attendance_db»,
+  добавить параллельно notification_db.
+- В `CLAUDE.md` таблица services — строка Notification Web уже
+  содержит «MongoDB (notification_db) — stateful history store в M10
+  (NEW-166/167/168); до M10 stateless event forwarder» — проверить
+  корректность и убрать «до M10».
 
----
-
-## Ключевые факты для M10 старта (опорный context)
-
-**Почему переделываем notification-web (P2-6/4).** Сервис был заложен
-в M04 как stateless forwarder (RabbitMQ → STOMP push), но по факту в
-prod'е потребовалось:
-- Пользователь хочет видеть **историю** уведомлений после login (сейчас
-  потерянные при disconnect).
-- Badge unread-count в UI требует persistent state.
-- Owner-решение (OWNER-ANSWERS.md:5021-5131) — вариант (b) FULL:
-  новая DB `notification_db`, pagination REST API, TTL 30d на
-  документах, Caffeine для unread-count.
-
-**Архитектурно:**
-- Fanout exchange `notification.events` → 2 queue: `notification.delivery`
-  (существующий STOMP push) + `notification.history` (новый persister).
-- Два consumer'а в одном контейнере `notification-web` (разделены по
-  queue'am, error в одном не влияет на другой через ACK).
-- Mongo DB `notification_db` — отдельная от `attendance_db` (разные
-  сервисы по P2-9/6 principle).
-- Caffeine L1 cache per-instance (единственный instance в MVP; если
-  будет scale — evict через STOMP broadcast event).
-
-**M09 достижения (для context'а):**
-- OTP через RabbitMQ event (не HTTP body)
-- `lesson.cancelled` — full snapshot schema
-- latecheckin/bot handlers — 70% coverage gate
-- docker-compose.prod.yml — mem_limits, JVM opts, Prom alert'ы
-- 2 HIGH findings из G9 audit deferred в v0.1 — см.
-  `docs/future-ideas.md` «OTP hardening bundle (v0.1)»:
-  - SA-H1 `verifyOtpByCode` без attempts counter
-  - BH-H1 bot dispatcher event_id дедуп отсутствует
-
-**DECISIONS накопленные в M09** (D1-D7, пример для следования
-pattern'у в M10):
-- **D1-D3** — G1 детали.
-- **D4** — OTP через DomainEventListener, НЕ shared-outbox.
-- **D5** — `lesson.deleted` оставлен как отдельный use-case.
-- **D6** — `excuse.decided` single event со status-полем.
-- **D7** — G9 audit HIGH findings deferred в v0.1.
-
-**Coverage на момент закрытия M09**:
-- handlers bot = 92.83%, bot overall = 77.17% (baseline 50%)
-- JaCoCo ratchet 60% LINE + latecheckin 70% activated
-
-**Ключевые commits M09 для context'а:**
-```bash
-git log --oneline 2996652~1..HEAD  # все 20 коммитов M09 (G1-G9)
-```
+**G9 потенциальные сюрпризы:**
+- **Mongo volume уже существует** — init-script запустится ТОЛЬКО
+  после `docker compose down -v`. Это **breaking dev data** (attendance
+  collections будут пустые до re-seed). Спросить user'а перед `down -v`.
+- **Mongo 7 TTL-index**: Spring Data MongoDB 4.x `expire(Duration)`
+  — новый API; если не сработает → fallback на `expireAfterSeconds`
+  через `IndexInfo.unique(false)`.
+- **Testcontainers reuse=true** — `~/.testcontainers.properties`
+  должен быть. Без него каждый прогон стартует свежий.
+- **Rabbit binding collision**: `notification-web.history` bind'ится
+  к существующему `rut-uit.events`. Если queue уже создана другим
+  сервисом — проверить declaration.
+- **Security-auditor возможные findings**:
+  - `@RequireRole({STUDENT, TEACHER, ADMIN})` — TEACHER видит свою
+    историю (OK), ADMIN тоже (OK), но admin не привязан к группе —
+    ACL по userId достаточно.
+  - `payload` stored raw — если event содержит sensitive data (FCM
+    token? otp code?) — утекает в notification_history. Проверить
+    event-schemas на sensitive fields.
+  - `invalidateUnreadCount` вызывается из Rabbit consumer после
+    save — если user удалён между save и invalidate, userId stale
+    в cache. Low severity.
+- **Bug-hunter возможные findings**:
+  - TTL index с `expireAfterSeconds` изменяется только через collMod
+    — если env var меняется, существующий index остаётся с старым
+    TTL. Уже в future-ideas.md.
+  - `markRead` `@Query+@Update` возвращает `long` modified count —
+    Spring Data derived-update method; если драйвер MongoDB не
+    поддерживает — проверить в IT.
 
 ---
 
 ## История предыдущих milestone (архив)
 
-M01 Shared Foundations ✅ 2026-04-19
-M02 Reliable Eventing ✅ 2026-04-19
-M03a Internal JWT + Rate-limit ✅ 2026-04-20
-M03b Secure Boundaries Part B ✅ 2026-04-20
-M04 Observability ✅ 2026-04-20
-M05 Performance ✅ 2026-04-21
-M06 Ops & Supply Chain ✅ 2026-04-21
-M07 Frontend Hardening ✅ 2026-04-22 (tag `v0.0.0-alpha.8` локальный)
-M08 Test Infrastructure ✅ 2026-04-23 (tag `v0.0.0-alpha.9` локальный)
+M01-M08 ✅ (see предыдущие версии NEXT-SESSION.md)
 M09 Prod Release Blockers ✅ 2026-04-24 (tag `v0.0.0-alpha.10` локальный)
-**M10 Notification History ⏳ — эта сессия (tag `v0.0.0-alpha.11` после G9)**
-M11 OpenAPI Polish ⬜
-M12 Auth Contract-first Refactor ⬜ (планирование v0.0.0; реализация v0.1, см. future-ideas.md)
+**M10 Notification History 🔄 G1-G7 ✅, G8+G9 — эта сессия**
+M11 OpenAPI Polish ⬜ (SharedOpenApiCustomizer + nginx basic-auth + conformance CI)
+M12 Auth Contract-first Refactor ⬜ (планирование в v0.0.0; реализация v0.1)
 
 Dependency graph и полный roadmap — `docs/milestones/README.md`.
+
+## Ожидающие явного `go`
+
+1. `git push origin dev` — **26 коммитов** ahead (станет ~30+ после G8+G9).
+2. `git push origin --tags` — **9 tags**, станет 10 после M10 tag.
+3. После M10 → **M11 OpenAPI Polish**. См.
+   `docs/milestones/M11-openapi-polish/PLAN.md`.

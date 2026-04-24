@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.user;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
@@ -10,6 +11,7 @@ import java.time.OffsetDateTime;
  * Response DTO for a user resource with HATEOAS links.
  * Extends RepresentationModel to carry _links for Level 3 REST.
  */
+@Schema(description = "Пользователь (HATEOAS Level 3 с _links)")
 public class UserResponse extends RepresentationModel<UserResponse> {
 
     private Long id;

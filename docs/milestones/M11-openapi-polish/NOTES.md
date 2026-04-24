@@ -69,6 +69,119 @@
 - **CI `openapi-conformance` step** — часть M11 scope.
 - **Coverage gate** — не влияет (shared-web customizer покрыт unit-тестом).
 
+## Surprises обнаруженные в G1 старте (2026-04-24)
+
+### S1 — shared-web подключён только в notification-app
+
+**Факт:** из 4 сервисов с REST API (academic / schedule / attendance /
+notification) только `notification-app` имеет
+`implementation(project(":services:shared:shared-web"))` в build.gradle.kts
+и `scanBasePackages = {..., "ru.rutcampustrack.shared.web"}` в
+`@SpringBootApplication`.
+
+`academic-app`, `schedule-app`, `attendance-app`:
+- НЕ зависят от shared-web модуля
+- Имеют **собственный** `GlobalExceptionHandler` в `*.exception`
+- Имеют **собственный** `ErrorResponse` record в `*-api-contract`
+  (academic 9-arg, schedule 7-arg, attendance 7-arg)
+
+**Последствие для M11 G1:**
+План предполагает «подключить customizer во все 4 сервиса (auto via
+spring-boot `@ConditionalOnClass`)» — но автомата НЕТ:
+1. shared-web — `java-library`, без auto-configuration
+2. classpath не содержит `OpenApiCustomizer` пока shared-web нет
+3. component scan не сканирует `ru.rutcampustrack.shared.web`
+
+**Варианты решения (требуют owner go):**
+
+A) **Добавить shared-web dependency + scan в 3 сервиса**
+   (academic/schedule/attendance). Минимум: `compileOnly` +
+   scan. Плюсы: M11 G1 закрывается за 1 commit, single source of truth для
+   Customizer. Минусы: shared-web `ErrorResponse` (RFC 9457, 10 полей,
+   `invalidParams`+`field`+`extras`) ≠ contract `ErrorResponse` (RFC 7807,
+   7-9 полей, `fieldErrors`); customizer ссылается на `ErrorResponse` —
+   придётся выбрать одну (или ссылаться по generic name).
+
+B) **Дублировать customizer в каждом `*-app`**, ссылаясь на
+   соответствующий contract `ErrorResponse`. Минусы: drift между
+   сервисами, scope M11 удваивается, M01 заглушка остаётся unused
+   (только в notification).
+
+C) **Контракт-агностичный customizer в shared-web**: ссылаться на
+   `$ref` по строковому имени `ErrorResponse` (в каждом сервисе оно
+   присутствует — JsonInclude/SwaggerSchema автоматически зарегистрируют
+   при сканировании Controller'ов). Это **рекомендуемый default** —
+   minimal blast radius, M01 заглушка наполняется без изменения 3
+   сервисов кроме `+1 dependency` каждый.
+
+D) **AutoConfiguration в shared-web**: `META-INF/spring/`...
+   `AutoConfiguration.imports`. Тогда `implementation` достаточно, scan
+   не нужен. Согласуется с принципом «java-library, не starter» —
+   нарушение, но minor (только для customizer).
+
+**Рекомендация:** **C + D** — добавить shared-web как `implementation`
+в 3 сервиса + переоформить `SharedOpenApiCustomizer` как
+`@AutoConfiguration` (новый файл
+`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`),
+customizer использует `$ref: "#/components/schemas/ErrorResponse"` без
+прямого class reference. Springdoc подхватит локальный
+`ru.rutcampustrack.{service}.contract.exception.ErrorResponse` через
+обычный controller scan.
+
+**ВОПРОС OWNER'У:** какой вариант (A/B/C/D или комбо)? Default — C+D.
+
+### РЕШЕНИЕ OWNER'А (2026-04-24): E — полная унификация + starter split
+
+Owner: "хочу как в больших компаниях, без дублирования".
+
+**Выбран вариант E (расширение C+D):**
+1. Split `shared-web` на 2 модуля:
+   - `shared-web-api` — чистые DTO типы (`ErrorResponse`, `FieldError`,
+     `InvalidParam`). Java-library без Spring.
+   - `shared-web-starter` — Spring Boot beans + `@AutoConfiguration`.
+2. Единый `ErrorResponse` (10 полей, RFC 9457 superset) — удаляем 5
+   дублей (4 contract'а + auth/dto)
+3. Per-service `GlobalExceptionHandler` остаётся, но только для domain
+   exceptions (`@Order(HIGHEST_PRECEDENCE)`). Shared handler берёт
+   catch-all MVC exceptions.
+4. `notification-app` убирает `scanBasePackages` hack — заменяет на
+   AutoConfiguration.imports.
+
+**Scope M11 расширен до 4-5 дней**, Группа 0 добавлена в CHECKLIST.
+
+### G0.1 старт — сюрпризы валидаторов
+
+**Факт:** `StartBeforeEndValidator`, `DateRangeValidator`,
+`ValidFileValidator` используют Spring (`BeanWrapper`,
+`PropertyAccessorFactory`, `MultipartFile`). Чистый `shared-web-api`
+java-library без Spring не может содержать эти validators.
+
+**Проверка:** `grep @StartBeforeEnd|@DateRangeValid|@ValidFile` в
+`services/**/*.java` → 0 production consumers. Только тесты в
+`shared-web/src/test/`. Dead code в M01, но не scope M11.
+
+**Решение:** validators + их аннотации **остаются в
+shared-web-starter** (они всё равно Spring-зависимые). В
+shared-web-api только 3 класса: `ErrorResponse`, `FieldError`,
+`InvalidParam`. AdminAction / AdminActionAspect / JacksonConfig тоже
+Spring — остаются в starter. Это упрощает G0.1 с 8 задач до 3.
+
+**Обновление чеклиста:** перенос validation — **skip**, записано как
+follow-up в v0.1.
+
+### S2 — auth-service имеет свой `org.springdoc:...-webmvc-ui` (без shared-web)
+
+`auth-service/build.gradle.kts:35` — есть springdoc, но shared-web нет
+(M01 не подключал, см. S1). M11 PLAN явно skip'ает auth-service для
+@Schema audit (P2-2/2 → v0.1), но customizer от shared-web ему тоже не
+прилетит. Acceptable — auth-service в любом случае идёт в M12 refactor.
+
+### S3 — `api-gateway` использует `springdoc-openapi-starter-webflux-ui`
+
+Gateway (WebFlux) ≠ остальные (WebMVC). Gateway не публикует свои
+endpoints (только proxy). Customizer от shared-web (WebMVC-only) на
+gateway не применится — это OK, M11 scope для backend services.
+
 ## Deferred в v0.1
 
 - **P2-2/2 auth-service OpenAPI** через `AuthApi` interface — вместе

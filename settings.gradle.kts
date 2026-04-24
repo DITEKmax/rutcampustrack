@@ -1,6 +1,8 @@
 rootProject.name = "rutcampustrack"
 
 // === Shared modules (M01 — foundations для всех сервисов) ===
+// M11 G0: shared-web split на shared-web-api (типы) + shared-web (Spring Boot starter beans).
+include("services:shared:shared-web-api")
 include("services:shared:shared-web")
 include("services:shared:shared-events")
 include("services:shared:shared-logback")

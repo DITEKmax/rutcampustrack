@@ -22,15 +22,18 @@
 
 ## Группа 2 — notification-api-contract module
 
-- [ ] `services/notification-service/notification-api-contract/build.gradle.kts`
-      (java-library, БЕЗ Lombok)
-- [ ] `settings.gradle.kts` — include module
-- [ ] `NotificationType.java` enum (EXCUSE_APPROVED/LESSON_REMINDER/...)
-- [ ] `NotificationHistoryDto.java` record
-- [ ] `UnreadCountDto.java` record
-- [ ] `NotificationApi.java` interface c @RequestMapping + @Operation
-      + @ApiResponse (OpenAPI-ready)
-- [ ] `./gradlew :notification-api-contract:build` зелёный
+- [x] Модуль УЖЕ был (D1); `build.gradle.kts` дополнен
+      `spring-data-commons:3.4.1` для Pageable / PagedResourcesAssembler
+- [x] `settings.gradle.kts` — include уже был
+- [x] `NotificationType.java` enum (11 values: EXCUSE_*/LATE_CHECKIN_*/
+      LESSON_*/ATTENDANCE_RED_ZONE)
+- [x] `NotificationHistoryDto.java` — class extends RepresentationModel
+      (CLAUDE.md: Response = class для HATEOAS)
+- [x] `UnreadCountDto.java` — record (simple response без HATEOAS)
+- [x] `NotificationApi.java` interface — GET list / GET unread-count /
+      PATCH {id}/read / POST mark-all-read, @Operation + @ApiResponses
+- [x] `./gradlew :services:notification-service:notification-api-contract:build`
+      зелёный (commit d6c0f14+)
 
 ## Группа 3 — Backend entity + repository + consumer
 

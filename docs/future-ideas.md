@@ -619,3 +619,93 @@ recreate индекса. Это OK для редких изменений (compl
 **Оценка:** 0.5 дня + IT тест на TTL reconciliation.
 
 ---
+
+## Notification history — bundle deferred из M10 G9 audit (v0.1)
+
+**Источник:** M10 G9 security-auditor + bug-hunter findings
+(`docs/milestones/M10-notification-history/NOTES.md` post-mortem).
+HIGH (H1 status mapping, H2 Pageable cap) пофикшены hot-patch'ами в
+G9. Ниже — MEDIUM/LOW которые не блокируют v0.0.0.
+
+### N1. Payload field allow-list (security MEDIUM)
+
+`NotificationHistoryConsumer` сейчас сохраняет `payload` целиком как
+`Map<String,Object>`. При расширении event-schemas (например,
+`excuse.requested` обогатится `lessons[].subject_name` или
+`decision_comment` с ПДн) — попадёт в Mongo + HATEOAS API без
+переоценки. Добавить explicit per-NotificationType `Map<NotificationType,
+Set<String>>` allow-list ключей перед `repository.save`.
+
+### N2. Transient Mongo failure differentiation (bug MEDIUM)
+
+`NotificationHistoryConsumer.onEvent` swallow'ит все exceptions. Это
+правильно для permanent bug (требуется DLQ replay), но не для
+transient `MongoException`/`DataAccessException` (network blip,
+primary failover). Разделить: rethrow transient → Rabbit retry/DLQ
+nackback; swallow permanent → warn + counter
+`notification.history.persist_failed{event_type}`.
+
+### N3. ObjectId format validation (bug MEDIUM)
+
+`NotificationController.markAsRead(id)` — невалидный ObjectId-like
+string бросит `IllegalArgumentException` из Mongo driver → 500 вместо
+403. Catch + нормализовать к 403 (или 400 BAD_REQUEST).
+
+### N4. extractUserId String-tolerance (bug MEDIUM)
+
+`extractUserId` принимает только `Number`. Если future producer пришлёт
+`"user_id": "42"` (String) — silent skip с warn'ом. Добавить
+`String → Long.parseLong` fallback.
+
+### N5. CSRF documentation для notification mutations (security LOW)
+
+`POST /notifications/mark-all-read` и `PATCH /notifications/{id}/read`
+сейчас защищены Bearer header (не cookie). При future миграции на
+cookie-auth важно не упустить добавление CSRF token. Документировать
+в `docs/notification-history.md` (создать) или в auth-flow.md.
+
+### N6. DLQ retention для notification-web.history.dlq (security LOW)
+
+`notification-web.history.dlq` declared без `x-message-ttl` /
+`x-max-length` — растёт бесконечно. Добавить retention args (или
+periodic cleanup job).
+
+### N7. Cache evict exception isolation (bug LOW)
+
+`NotificationHistoryService.invalidateUnreadCount` — если evict
+throws (cache disposed at shutdown) — exception пузырится из
+`onEvent` → catch'ится в Consumer swallow. Не критично, но добавить
+inner `try { cache.evict } catch { log.warn }`.
+
+### N8. PWA optimistic update + STOMP race (UX LOW)
+
+`NotificationCenter.tsx markAllRead`: между `setItems(local)` и
+`invalidateQueries(success)` может прилететь STOMP event → unread badge
+мигнёт 0→1→0. Добавить cancel mutation если новый event прилетел.
+
+### N9. Multi-instance createCollection TOCTOU (LOW, при scale-out)
+
+`NotificationHistoryMongoConfig` — между `collectionExists` и
+`createCollection` есть race window. На single-instance MVP — OK; при
+scale-out нужен `try/catch (NamespaceExistsException)`. Caffeine cache
+тоже single-instance assumption (см. CaffeineConfig javadoc) —
+комплекс мер при scale-out объединить (Caffeine→Redis +
+createCollection idempotency + STOMP cluster sync).
+
+### N10. Server-side notification history infinite-scroll UI (UX, M10 D7)
+
+PWA + web-panel на v0.0.0 показывают broadcast events из
+sessionStorage; backend-history hook (`useNotificationHistory`) готов,
+но не интегрирован в UI как primary source. v0.1: переключить
+NotificationCenter на server-side useInfiniteQuery + optimistic mutations.
+
+### N11. Headman-facing items (M10 D6)
+
+`excuse.requested` сейчас persist'ится только инициатору-студенту
+(D6). Староста видит этот item только через live STOMP push, без
+history. v0.1: gRPC resolve `headman_id` по `group_id` →
+дополнительный persist для actionable items.
+
+**Оценка пакета (N1-N11):** 5-7 человеко-дней.
+
+---

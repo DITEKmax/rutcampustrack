@@ -48,15 +48,15 @@ public class NotificationHistoryConsumer extends AbstractEventConsumer {
 
         withTraceContext(envelope, () -> {
             try {
-                Optional<NotificationType> maybeType = mapType(eventType);
-                if (maybeType.isEmpty()) {
-                    log.trace("history-consumer: {} — not user-facing, skip", eventType);
-                    return;
-                }
-
                 Map<String, Object> payload = (Map<String, Object>) envelope.get("payload");
                 if (payload == null) {
                     log.warn("history-consumer: {} has no payload, skip", eventType);
+                    return;
+                }
+
+                Optional<NotificationType> maybeType = mapType(eventType, payload);
+                if (maybeType.isEmpty()) {
+                    log.trace("history-consumer: {} — not user-facing, skip", eventType);
                     return;
                 }
 
@@ -88,21 +88,31 @@ public class NotificationHistoryConsumer extends AbstractEventConsumer {
     /**
      * Маппинг event_type → NotificationType. Возвращает empty для broadcast
      * events и system events — они не попадают в per-user history (D6).
+     *
+     * <p>Для {@code *.decided} событий читает {@code payload.status}
+     * ({@code "approved"|"rejected"}, см. event-schemas) и выбирает
+     * соответствующий APPROVED/REJECTED тип. Без payload-aware маппинга
+     * REJECTED-события силенциально writer'ились бы как APPROVED
+     * (G9 hot-patch H1, 2026-04-24).
      */
-    static Optional<NotificationType> mapType(String eventType) {
+    static Optional<NotificationType> mapType(String eventType, Map<String, Object> payload) {
         return switch (eventType) {
             case "excuse.requested" -> Optional.of(NotificationType.EXCUSE_REQUESTED);
-            case "excuse.approved" -> Optional.of(NotificationType.EXCUSE_APPROVED);
-            case "excuse.rejected" -> Optional.of(NotificationType.EXCUSE_REJECTED);
-            case "excuse.decided" -> Optional.of(NotificationType.EXCUSE_APPROVED); // payload.status различает approve/reject
+            case "excuse.decided" -> Optional.of(decisionType(payload,
+                    NotificationType.EXCUSE_APPROVED, NotificationType.EXCUSE_REJECTED));
             case "late_checkin.requested" -> Optional.of(NotificationType.LATE_CHECKIN_REQUESTED);
-            case "late_checkin.approved" -> Optional.of(NotificationType.LATE_CHECKIN_APPROVED);
-            case "late_checkin.rejected" -> Optional.of(NotificationType.LATE_CHECKIN_REJECTED);
-            case "late_checkin.decided", "late_checkin.decision" ->
-                    Optional.of(NotificationType.LATE_CHECKIN_APPROVED);
+            case "late_checkin.decided", "late_checkin.decision" -> Optional.of(decisionType(payload,
+                    NotificationType.LATE_CHECKIN_APPROVED, NotificationType.LATE_CHECKIN_REJECTED));
             case "attendance.marked" -> Optional.of(NotificationType.ATTENDANCE_RED_ZONE);
             default -> Optional.empty();
         };
+    }
+
+    private static NotificationType decisionType(Map<String, Object> payload,
+                                                 NotificationType approved,
+                                                 NotificationType rejected) {
+        Object status = payload.get("status");
+        return "rejected".equals(status) ? rejected : approved;
     }
 
     private static Long extractUserId(Map<String, Object> payload) {

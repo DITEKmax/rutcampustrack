@@ -116,3 +116,98 @@
       PWA + web-panel
 
 ---
+
+## 2026-04-24 — Старт M12
+
+### Owner-ответы (defaults подтверждены)
+
+1. Docker image name: оставить `auth-service` — build path в Dockerfile
+   обновится, image name не меняется.
+2. Internal endpoints: `@Hidden` на `InternalIssuerApi` +
+   `InternalWsTicketApi` — internal не появляется в public /v3/api-docs.
+3. Раздельные interfaces: `InternalIssuerApi` + `InternalWsTicketApi`
+   (не один `InternalAuthApi`) — consistency с academic-service pattern.
+4. DTO: request → Java `record`, response → class без Lombok.
+
+### Отклонения от PLAN.md
+
+- PLAN.md упоминает `OtpCodeResponse` — **такого DTO нет в проекте**.
+  Фактические 12 DTO (не 13): Login/Token/Otp×3/Refresh/Tma/ChangePwd/
+  WsTicket/InternalIssue×2/PublicKey. `OtpCodeResponse` — ошибка копирования.
+
+### Backup `services/auth-service/build.gradle.kts` (на случай rollback G1)
+
+```kotlin
+plugins {
+    java
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
+}
+
+group = "ru.rutcampustrack"
+version = "0.1.0"
+
+dependencyManagement {
+    imports {
+        mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
+    }
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
+    implementation(project(":services:shared:shared-observability"))
+    implementation(project(":services:shared:shared-events"))
+    implementation(project(":services:shared:shared-web"))
+    implementation(project(":services:shared:shared-logback"))
+
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    runtimeOnly("org.postgresql:postgresql")
+
+    // JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:rabbitmq")
+    testImplementation("org.flywaydb:flyway-core")
+    testRuntimeOnly("org.flywaydb:flyway-database-postgresql")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
+    testImplementation(libs.json.schema.validator)
+}
+```
+
+### Пути, которые должны обновиться в G1
+
+| Файл | Было | Стало |
+|---|---|---|
+| `settings.gradle.kts` | `include("services:auth-service")` | +`:auth-api-contract` + `:auth-app` |
+| `services/auth-service/build.gradle.kts` | single-module | удалён |
+| `services/auth-service/Dockerfile` | `:services:auth-service:bootJar`, `build/libs` | `:services:auth-service:auth-app:bootJar`, `auth-app/build/libs` |
+| `build.gradle.kts:254` | `services/auth-service/src/main/resources` | `.../auth-app/src/main/resources` |
+| `build.gradle.kts:293` | `services/auth-service` | `services/auth-service/auth-app` |
+| `.github/workflows/ci.yml:34,85` | `:services:auth-service` | `:services:auth-service:auth-app` |
+| `.github/workflows/coverage.yml:52-54` | `:services:auth-service` + report path | `:services:auth-service:auth-app` + `auth-app/build/...` |
+| `scripts/verify-gateway-e2e.sh:8,35` | `:services:auth-service:bootRun` | `:services:auth-service:auth-app:bootRun` |
+| `docker-compose.prod.yml:140` | `services/auth-service/Dockerfile` | без изменений (Dockerfile остаётся на том же месте) |
+| `.github/workflows/deploy.yml:87` | `services/auth-service/Dockerfile` | без изменений |
+
+---

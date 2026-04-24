@@ -2,28 +2,27 @@
 
 Атомарные задачи в порядке выполнения. Одна строка = 30 мин - 2 часа.
 
-## Группа 1 — Gradle module split (~0.5д)
+## Группа 1 — Gradle module split (~0.5д) ✅ 2026-04-24 (commit 9925376)
 
-- [ ] Backup текущего `services/auth-service/build.gradle.kts` в
+- [x] Backup текущего `services/auth-service/build.gradle.kts` в
       `NOTES.md` (на случай rollback)
-- [ ] Создать `services/auth-service/auth-api-contract/build.gradle.kts`:
+- [x] Создать `services/auth-service/auth-api-contract/build.gradle.kts`:
       java-library plugin, spring-web + springdoc-openapi dependencies,
       БЕЗ Lombok
-- [ ] Создать `services/auth-service/auth-app/build.gradle.kts`:
+- [x] Создать `services/auth-service/auth-app/build.gradle.kts`:
       Spring Boot app, `implementation project(":services:auth-service:auth-api-contract")`
-- [ ] `settings.gradle.kts` — добавить `include` для обоих новых
-      модулей, сохранить legacy auth-service include (удалить в конце)
-- [ ] `services/auth-service/auth-app/src/` — git mv из старого
-      `services/auth-service/src/`
-- [ ] `services/auth-service/Dockerfile` — обновить путь к jar
-      `auth-app/build/libs/auth-app-*.jar`
-- [ ] `docker-compose.yml` — проверить build context auth-service
-- [ ] `./gradlew :auth-api-contract:build` зелёный (пустой модуль)
-- [ ] `./gradlew :auth-app:build` зелёный (полный src, старое
-      поведение)
-- [ ] Удалить старый `services/auth-service/build.gradle.kts` и
-      соответствующий include
-- [ ] Коммит `refactor(auth): split into auth-api-contract + auth-app Gradle modules (M12 Группа 1, 01 P0-1)`
+- [x] `settings.gradle.kts` — 2 новых include, legacy удалён одной операцией
+- [x] `services/auth-service/auth-app/src/` — git mv (79 файлов, 100% rename)
+- [x] `services/auth-service/Dockerfile` — обновить путь к jar
+      `auth-app/build/libs/*.jar` + `:services:auth-service:auth-app:bootJar`
+- [x] `docker-compose.yml` — проверить build context auth-service
+      (без изменений — Dockerfile остаётся на прежнем месте)
+- [x] `./gradlew :auth-api-contract:build` зелёный (NO-SOURCE stub)
+- [x] `./gradlew :auth-app:test` зелёный (24 unit-теста)
+- [x] Удалить старый `services/auth-service/build.gradle.kts`
+- [x] CI/coverage.yml/scripts пути обновлены
+- [x] EventSchemaValidator.java — +1 уровень вверх для schemasDir()
+- [x] Коммит `refactor(auth): split into auth-api-contract + auth-app Gradle modules (M12 Группа 1, 01 P0-1)`
 
 ## Группа 2 — DTO migration (~0.5д)
 

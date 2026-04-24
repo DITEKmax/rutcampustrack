@@ -125,13 +125,23 @@
 
 ## Группа 7 — Frontend web-panel migration
 
-- [ ] `frontends/web-panel/src/app/shared/notification-center/
-      notification.service.ts` — HttpClient pagination
-- [ ] Signal `unreadCount` с 30s staleTime
-- [ ] `mark-as-read` / `mark-all-read` через HttpClient + optimistic
-- [ ] `notification-center.component.ts` — инжект service, template
-      с `*ngFor` + «показать ещё»
-- [ ] STOMP invalidate через WebSocket service (QC1 unified в M07)
+- [x] `core/notifications/notification-history.api.ts` — HttpClient
+      REST client: list (Pageable + HATEOAS PagedModel parse),
+      unreadCount, markRead (URL-encode), markAllRead
+- [x] `core/notifications/notification-history.service.ts` — Signal-
+      based façade: `serverUnreadCount`, `firstPage`, `refreshUnreadCount()`,
+      `loadFirstPage()`, `markAllRead()` Promise
+- [x] `NotificationCenterService` интеграция:
+      * inject `NotificationHistoryService`;
+      * `handleFrame` после `persist()` → `refreshUnreadCount()`;
+      * `markAllRead()` + best-effort `historyService.markAllRead()`
+- [x] Unit test `notification-history.api.spec.ts` (5 tests:
+      HATEOAS parse, empty embedded, unread-count, URL-encode,
+      mark-all-read)
+- [x] Existing `notification-center.service.spec.ts` дополнен mock'ом
+      NotificationHistoryService, все 6 тестов зелёные
+- [ ] Full «Показать ещё» UI на server-side history — **deferred v0.1**
+      (D7 hybrid: sessionStorage остаётся authoritative для live UX)
 
 ## Группа 8 — Docs + CLAUDE.md + cleanup
 

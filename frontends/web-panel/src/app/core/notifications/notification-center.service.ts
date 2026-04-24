@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { AuthApi } from '../auth/auth.api';
 import { buildWsUrl } from '../auth/ws-ticket';
+import { NotificationHistoryService } from './notification-history.service';
 
 /**
  * Единый источник правды для всех STOMP-уведомлений в веб-панели.
@@ -84,6 +85,7 @@ export interface NotificationRecord {
 export class NotificationCenterService {
   private readonly auth = inject(AuthService);
   private readonly authApi = inject(AuthApi);
+  private readonly historyService = inject(NotificationHistoryService);
 
   private client: Client | null = null;
   private connectedKey: string | null = null; // `${userId}:${groupId}:${isHeadman}`
@@ -118,6 +120,9 @@ export class NotificationCenterService {
   markAllRead(): void {
     this._items.update(list => list.map(i => (i.read ? i : { ...i, read: true })));
     this.persist();
+    // M10 G7: best-effort backend sync — локальный badge уже 0, server
+    // tolerant к offline/401 (history-service не rethrow'ит).
+    this.historyService.markAllRead();
   }
 
   /** Очистить историю целиком (не используется в UI пока, но пригодится). */
@@ -204,6 +209,10 @@ export class NotificationCenterService {
       return next.length > MAX_ITEMS ? next.slice(0, MAX_ITEMS) : next;
     });
     this.persist();
+    // M10 G7: backend consumer после persist делает evict Caffeine
+    // unread-count; refresh чтобы badge из server-side источника не
+    // отставал на 30s TTL.
+    this.historyService.refreshUnreadCount();
   }
 
   private loadFromStorage(): NotificationRecord[] {

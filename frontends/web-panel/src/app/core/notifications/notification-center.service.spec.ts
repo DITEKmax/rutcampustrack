@@ -53,6 +53,7 @@ vi.mock('sockjs-client', () => ({
 import { NotificationCenterService } from './notification-center.service';
 import { AuthService } from '../auth/auth.service';
 import { AuthApi } from '../auth/auth.api';
+import { NotificationHistoryService } from './notification-history.service';
 
 describe('NotificationCenterService — M07 G5 exponential backoff', () => {
   let authUserSignal: ReturnType<typeof signal<{ id: number; role: string; groupId: number | null; isHeadman: boolean } | null>>;
@@ -67,12 +68,17 @@ describe('NotificationCenterService — M07 G5 exponential backoff', () => {
     const authApiMock: Partial<AuthApi> = {
       acquireWsTicket: vi.fn().mockReturnValue(of({ ticket: 'uuid-42', expiresAt: '2026-04-22T00:00:30Z' })),
     };
+    const historyServiceMock: Partial<NotificationHistoryService> = {
+      refreshUnreadCount: vi.fn(),
+      markAllRead: vi.fn().mockResolvedValue(undefined),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         NotificationCenterService,
         { provide: AuthService, useValue: authMock },
         { provide: AuthApi, useValue: authApiMock },
+        { provide: NotificationHistoryService, useValue: historyServiceMock },
       ],
     });
   });

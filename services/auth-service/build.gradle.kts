@@ -26,6 +26,11 @@ dependencies {
     implementation(project(":services:shared:shared-observability"))
     implementation(project(":services:shared:shared-events"))
 
+    // M11 G0.7: shared-web Spring Boot starter (catch-all Spring MVC handler
+    // через @AutoConfiguration). Auth-domain handler с
+    // @Order(HIGHEST_PRECEDENCE) обрабатывает только domain исключения.
+    implementation(project(":services:shared:shared-web"))
+
     // M04 QA7 — shared-logback (JSON-вывод + masking через logback-base.xml)
     implementation(project(":services:shared:shared-logback"))
 

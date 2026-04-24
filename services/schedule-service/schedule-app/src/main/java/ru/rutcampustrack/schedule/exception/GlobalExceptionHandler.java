@@ -1,218 +1,119 @@
 package ru.rutcampustrack.schedule.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.MDC;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponseException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.NoHandlerFoundException;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
-import ru.rutcampustrack.shared.web.api.exception.FieldError;
 
 import java.time.Instant;
-import java.util.List;
 
 /**
- * Centralized exception handler returning RFC 7807 Problem Details responses.
- * Controllers only throw exceptions -- this handler maps them to HTTP status codes.
+ * Domain-level exception handler для schedule-service.
+ *
+ * <p>M11 G0.5: Spring MVC catch-all (validation/noHandler/general)
+ * делегирован в shared-web GlobalExceptionHandler через
+ * {@code @Order(LOWEST_PRECEDENCE)}. Schedule handler имеет
+ * {@code @Order(HIGHEST_PRECEDENCE)} и обрабатывает только domain.
+ *
+ * <p>Сохранены:
+ * <ul>
+ *   <li>{@link ResourceNotFoundException} → 404 (schedule-domain)</li>
+ *   <li>{@link AcademicServiceUnavailableException} → 503 (gRPC fallback)</li>
+ *   <li>{@link InvalidLessonStateException} → 422 (lesson FSM)</li>
+ *   <li>{@link DataIntegrityViolationException} → 409 с
+ *       schedule-specific {@code uq_one_off_slot} hint</li>
+ *   <li>{@link ConflictException} → 409 (domain pre-check)</li>
+ *   <li>{@link AccessDeniedException} → 403 (schedule custom, НЕ
+ *       Spring Security AccessDeniedException — у того свой handler
+ *       в shared)</li>
+ * </ul>
  */
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
 
-    private static final String PROBLEM_BASE = "https://api.rutcampustrack.ru/problems/";
+    /** MDC key для correlation id. */
+    private static final String MDC_TRACE_ID = "traceId";
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex,
-                                                         HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                PROBLEM_BASE + "not-found",
-                "Resource not found",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+                                                        HttpServletRequest request) {
+        return problem(HttpStatus.NOT_FOUND, "resource-not-found",
+                "Resource not found", ex.getMessage(), request);
     }
 
     @ExceptionHandler(AcademicServiceUnavailableException.class)
-    public ResponseEntity<ErrorResponse> handleAcademicUnavailable(AcademicServiceUnavailableException ex,
-                                                                     HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.SERVICE_UNAVAILABLE.value(),
-                PROBLEM_BASE + "service-unavailable",
-                "Academic Service unavailable",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(body);
+    public ResponseEntity<ErrorResponse> handleAcademicUnavailable(
+            AcademicServiceUnavailableException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "service-unavailable",
+                "Academic Service unavailable", ex.getMessage(), request);
     }
 
     @ExceptionHandler(InvalidLessonStateException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidLessonState(InvalidLessonStateException ex,
-                                                                    HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.UNPROCESSABLE_ENTITY.value(),
-                PROBLEM_BASE + "invalid-lesson-state",
-                "Invalid lesson state transition",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(body);
+    public ResponseEntity<ErrorResponse> handleInvalidLessonState(
+            InvalidLessonStateException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.UNPROCESSABLE_ENTITY, "invalid-lesson-state",
+                "Invalid lesson state transition", ex.getMessage(), request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex,
-                                                               HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request) {
         String message = ex.getMessage() != null && ex.getMessage().contains("uq_one_off_slot")
                 ? "Разовая пара на этот слот уже существует"
                 : ex.getMessage();
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.CONFLICT.value(),
-                PROBLEM_BASE + "conflict",
-                "Data conflict",
-                message,
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+        return problem(HttpStatus.CONFLICT, "conflict",
+                "Data conflict", message, request);
     }
 
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex,
-                                                          HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.CONFLICT.value(),
-                PROBLEM_BASE + "conflict",
-                "Conflict",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+                                                        HttpServletRequest request) {
+        return problem(HttpStatus.CONFLICT, "conflict",
+                "Conflict", ex.getMessage(), request);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex,
-                                                           HttpServletRequest request) {
-        List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> new FieldError(fe.getField(), fe.getRejectedValue(), fe.getDefaultMessage()))
-                .toList();
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                PROBLEM_BASE + "validation-error",
-                "Validation failed",
-                "Request validation failed",
-                request.getRequestURI(),
-                Instant.now(),
-                fieldErrors
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
-    }
-
+    /**
+     * Schedule-custom {@link AccessDeniedException} (НЕ Spring Security).
+     * Spring Security AccessDeniedException обрабатывается shared handler'ом.
+     */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex,
-                                                             HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.FORBIDDEN.value(),
-                PROBLEM_BASE + "access-denied",
-                "Access denied",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+                                                            HttpServletRequest request) {
+        return problem(HttpStatus.FORBIDDEN, "access-denied",
+                "Access denied", ex.getMessage(), request);
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException ex,
-                                                           HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                PROBLEM_BASE + "not-found",
-                "Resource not found",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-    }
-
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoHandler(NoHandlerFoundException ex,
-                                                          HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                PROBLEM_BASE + "not-found",
-                "Resource not found",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-    }
-
-    @ExceptionHandler(ErrorResponseException.class)
-    public ResponseEntity<ErrorResponse> handleErrorResponse(ErrorResponseException ex,
-                                                              HttpServletRequest request) {
-        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
-        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
+    private static ResponseEntity<ErrorResponse> problem(
+            HttpStatus status,
+            String problemType,
+            String title,
+            String detail,
+            HttpServletRequest request) {
+        String traceId = MDC.get(MDC_TRACE_ID);
         ErrorResponse body = new ErrorResponse(
                 status.value(),
-                PROBLEM_BASE + "error",
-                status.getReasonPhrase(),
-                ex.getMessage(),
+                ErrorResponse.PROBLEM_BASE + problemType,
+                title,
+                detail,
                 request.getRequestURI(),
                 Instant.now(),
-                null
-        );
-        return ResponseEntity.status(status).body(body);
-    }
-
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex,
-                                                               HttpServletRequest request) {
-        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
-        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
-        ErrorResponse body = new ErrorResponse(
-                status.value(),
-                PROBLEM_BASE + "error",
-                status.getReasonPhrase(),
-                ex.getReason(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(status).body(body);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneral(Exception ex,
-                                                        HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                PROBLEM_BASE + "internal-error",
-                "Internal server error",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+                traceId,
+                null,
+                null,
+                null);
+        return ResponseEntity.status(status)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(body);
     }
 }

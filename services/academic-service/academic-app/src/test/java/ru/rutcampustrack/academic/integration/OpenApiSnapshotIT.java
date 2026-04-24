@@ -34,9 +34,10 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
 
     private static final String SERVICE_NAME = "academic";
     // CWD при запуске gradle test — services/academic-service/academic-app/,
-    // repo root = ../../../ относительно неё.
+    // repo root = ../../../ относительно неё. docs/openapi — единый
+    // baseline для M07 frontend drift + M11 G3 runtime conformance.
     private static final Path SNAPSHOT_PATH = Paths.get("../../..")
-            .resolve("docs").resolve("api-spec").resolve(SERVICE_NAME + ".json")
+            .resolve("docs").resolve("openapi").resolve(SERVICE_NAME + ".json")
             .toAbsolutePath().normalize();
 
     @Autowired

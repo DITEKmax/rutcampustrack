@@ -1048,6 +1048,25 @@
             }
           }
         }
+      },
+      "FieldError" : {
+        "description" : "Ошибка валидации одного поля DTO (RFC 9457 Extension Member)",
+        "properties" : {
+          "field" : {
+            "type" : "string",
+            "description" : "Имя поля DTO",
+            "example" : "displayName"
+          },
+          "rejectedValue" : {
+            "type" : "object",
+            "description" : "Отклонённое значение"
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "Локализованное сообщение об ошибке",
+            "example" : "Имя не может быть пустым"
+          }
+        }
       }
     }
   }

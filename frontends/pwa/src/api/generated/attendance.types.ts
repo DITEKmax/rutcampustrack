@@ -348,11 +348,16 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Запрос на ручную отметку посещаемости старостой */
         MarkRequest: {
-            /** @enum {string} */
+            /**
+             * @description Статус посещаемости
+             * @example PRESENT
+             * @enum {string}
+             */
             status: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
         };
-        /** @description Стандартный формат ошибки API */
+        /** @description Стандартный формат ошибки API (RFC 9457 Problem Details) */
         ErrorResponse: {
             /**
              * Format: int32
@@ -372,33 +377,54 @@ export interface components {
             title?: string;
             /**
              * @description Детальное описание
-             * @example Запись с id=99 не найдена
+             * @example Группа с id=99 не найдена
              */
             detail?: string;
             /**
              * @description URI запроса, вызвавшего ошибку
-             * @example /api/attendance/checkins/99
+             * @example /api/academic/groups/99
              */
             instance?: string;
             /**
              * Format: date-time
-             * @description Время возникновения ошибки
+             * @description Время возникновения ошибки (UTC)
+             * @example 2026-04-24T10:15:30Z
              */
             timestamp?: string;
-            /** @description Ошибки валидации полей (только для 400) */
+            /**
+             * @description Correlation ID из MDC (для трассировки в логах)
+             * @example abc-trace-123
+             */
+            traceId?: string;
+            /** @description Ошибки валидации полей body DTO (только для 400) */
             fieldErrors?: components["schemas"]["FieldError"][];
+            /**
+             * @description Имя поля DTO, вызвавшего конфликт (только для 409, BUG-006-2)
+             * @example login
+             */
+            field?: string;
+            /**
+             * @description Дополнительные данные для клиента (счётчики каскадного удаления, retry-after, и т.п.)
+             * @example {
+             *       "scheduleItemsCount": 3
+             *     }
+             */
+            extras?: {
+                [key: string]: Record<string, never>;
+            };
         };
+        /** @description Ошибка валидации одного поля DTO (RFC 9457 Extension Member) */
         FieldError: {
             /**
-             * @description Имя поля
-             * @example lessonId
+             * @description Имя поля DTO
+             * @example displayName
              */
             field?: string;
             /** @description Отклонённое значение */
             rejectedValue?: Record<string, never>;
             /**
-             * @description Сообщение об ошибке
-             * @example Поле не может быть пустым
+             * @description Локализованное сообщение об ошибке
+             * @example Имя не может быть пустым
              */
             message?: string;
         };
@@ -413,6 +439,7 @@ export interface components {
             timestamp?: string;
             _links?: components["schemas"]["Links"];
         };
+        /** @description Результат ручной отметки посещаемости: присвоенный статус, ID пары, ID студента, время */
         MarkResponse: {
             /** @enum {string} */
             status?: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
@@ -424,17 +451,33 @@ export interface components {
             timestamp?: string;
             _links?: components["schemas"]["Links"];
         };
+        /** @description Одна отметка в пакете: ID пары, ID студента, статус */
         MarkBatchItem: {
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description ID пары
+             * @example 12345
+             */
             lessonId: number;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description ID студента
+             * @example 42
+             */
             userId: number;
-            /** @enum {string} */
-            status: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
+            /**
+             * @description Статус посещаемости (CANCELLED отклоняется сервисом)
+             * @example PRESENT
+             * @enum {string}
+             */
+            status: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE";
         };
+        /** @description Пакетный запрос на отметку посещаемости (от 1 до 100 записей, pseudo-atomic) */
         MarkBatchRequest: {
+            /** @description Список отметок для применения одним батчем */
             items: components["schemas"]["MarkBatchItem"][];
         };
+        /** @description Результат пакетной отметки: список персистированных записей и их количество */
         MarkBatchResponse: {
             items?: components["schemas"]["MarkResponse"][];
             /** Format: int32 */
@@ -466,10 +509,26 @@ export interface components {
             updatedAt?: string;
             _links?: components["schemas"]["Links"];
         };
+        /** @description Запрос на создание excuse-тикета (студент → староста) */
         CreateExcuseRequest: {
-            lessonIds?: number[];
-            /** @enum {string} */
+            /**
+             * @description Список ID пар, для которых запрашивается уважительная
+             * @example [
+             *       12345,
+             *       12346
+             *     ]
+             */
+            lessonIds: number[];
+            /**
+             * @description Тип уважительной причины
+             * @example MEDICAL
+             * @enum {string}
+             */
             excuseType: "ILLNESS" | "SUMMONS" | "UNIVERSITY_ORDER" | "EXEMPTION" | "FREE_ATTENDANCE" | "OTHER";
+            /**
+             * @description Комментарий студента (до 1000 символов)
+             * @example Болезнь
+             */
             comment?: string;
         };
         EntityModelExcuseTicketResponse: {
@@ -495,10 +554,19 @@ export interface components {
             updatedAt?: string;
             _links?: components["schemas"]["Links"];
         };
+        /** @description Запрос на геоотметку студента на паре */
         CheckinRequest: {
-            /** Format: double */
+            /**
+             * Format: double
+             * @description Широта точки геоотметки (WGS84)
+             * @example 55.755
+             */
             lat: number;
-            /** Format: double */
+            /**
+             * Format: double
+             * @description Долгота точки геоотметки (WGS84)
+             * @example 37.617
+             */
             lng: number;
         };
         EntityModelCheckinResponse: {
@@ -510,9 +578,18 @@ export interface components {
             timestamp?: string;
             _links?: components["schemas"]["Links"];
         };
+        /** @description Запрос на обновление статуса excuse-тикета (решение старосты) */
         UpdateExcuseStatusRequest: {
-            /** @enum {string} */
-            status: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED";
+            /**
+             * @description Новый статус тикета (допустимы только APPROVED или REJECTED)
+             * @example APPROVED
+             * @enum {string}
+             */
+            status: "APPROVED" | "REJECTED";
+            /**
+             * @description Комментарий к решению (до 1000 символов)
+             * @example Подтверждаю, справка приложена
+             */
             decisionComment?: string;
         };
         EntityModelStudentStatsResponse: {
@@ -520,6 +597,7 @@ export interface components {
             overall?: components["schemas"]["OverallStats"];
             _links?: components["schemas"]["Links"];
         };
+        /** @description Агрегированная статистика посещаемости: всего, присутствовал, пропустил, уважительных, процент */
         OverallStats: {
             /** Format: int32 */
             total?: number;
@@ -532,6 +610,7 @@ export interface components {
             /** Format: double */
             percentage?: number;
         };
+        /** @description Статистика по одному предмету: ID, название, счётчики статусов, процент посещения */
         SubjectStats: {
             /** Format: int64 */
             subjectId?: number;
@@ -574,6 +653,7 @@ export interface components {
             topMissed?: components["schemas"]["TopMissedSubject"][];
             _links?: components["schemas"]["Links"];
         };
+        /** @description Разбивка посещаемости по статусам для donut-chart дашборда (present/absent/excused/free/forgot/cancelled) */
         StatusBreakdown: {
             /** Format: int32 */
             present?: number;
@@ -588,6 +668,7 @@ export interface components {
             /** Format: int32 */
             cancelled?: number;
         };
+        /** @description Предмет из топа пропусков: ID, название, число пропусков, всего пар */
         TopMissedSubject: {
             /** Format: int64 */
             subjectId?: number;
@@ -597,6 +678,7 @@ export interface components {
             /** Format: int32 */
             total?: number;
         };
+        /** @description Недельная точка графика посещаемости: номер недели семестра, ISO-неделя, label, счётчики, % */
         WeeklyStat: {
             /** Format: int32 */
             weekOfSemester?: number;
@@ -625,6 +707,7 @@ export interface components {
             entries?: components["schemas"]["StudentAttendanceEntry"][];
             _links?: components["schemas"]["Links"];
         };
+        /** @description Запись посещаемости студента в списке пары: ID, имя, статус, символ, источник, причина excuse */
         StudentAttendanceEntry: {
             /** Format: int64 */
             userId?: number;
@@ -643,6 +726,7 @@ export interface components {
             students?: components["schemas"]["JournalStudentRow"][];
             _links?: components["schemas"]["Links"];
         };
+        /** @description Ячейка журнала: ID пары, дата, номер пары, статус, символ (б/н/у/сп/отменена) и причина excuse */
         JournalCell: {
             /** Format: int64 */
             lessonId?: number;
@@ -653,6 +737,7 @@ export interface components {
             symbol?: string;
             excuseReason?: string;
         };
+        /** @description Строка журнала для одного студента: ID, отображаемое имя, последовательность ячеек по датам */
         JournalStudentRow: {
             /** Format: int64 */
             userId?: number;
@@ -745,6 +830,15 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Доступ запрещён — не старosta */
             403: {
                 headers: {
@@ -761,6 +855,33 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -796,6 +917,15 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Доступ запрещён — не староста, пара чужой группы или студент не в группе */
             403: {
                 headers: {
@@ -812,6 +942,33 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -849,6 +1006,15 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Только староста той же группы может решать */
             403: {
                 headers: {
@@ -865,6 +1031,33 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -887,6 +1080,24 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelLateCheckinRequestResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Старосты не создают запросы (самоотметка через журнал) */
@@ -925,6 +1136,24 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     createExcuse: {
@@ -958,6 +1187,15 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Староста не создаёт тикеты (D-12) или доступ запрещён */
             403: {
                 headers: {
@@ -967,6 +1205,15 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description На один из уроков уже есть активный тикет (D-11) */
             409: {
                 headers: {
@@ -974,6 +1221,24 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1013,6 +1278,15 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Староста не создаёт тикеты (D-12) или доступ запрещён */
             403: {
                 headers: {
@@ -1020,6 +1294,15 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description На один из уроков уже есть активный тикет (D-11) */
@@ -1038,6 +1321,24 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1062,6 +1363,24 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelCheckinResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Геоотметка заблокирована для данной пары */
@@ -1109,6 +1428,15 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     updateStatus: {
@@ -1144,6 +1472,15 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Не староста или чужая группа */
             403: {
                 headers: {
@@ -1171,6 +1508,24 @@ export interface operations {
                     "*/*": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     getStudentStats: {
@@ -1189,6 +1544,69 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelStudentStatsResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1213,6 +1631,69 @@ export interface operations {
                     "*/*": components["schemas"]["CollectionModelEntityModelAttendanceRecordEntry"];
                 };
             };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     getStudentDashboard: {
@@ -1233,6 +1714,69 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelStudentDashboardResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1257,6 +1801,24 @@ export interface operations {
                     "*/*": components["schemas"]["EntityModelLessonAttendanceResponse"];
                 };
             };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Access denied */
             403: {
                 headers: {
@@ -1273,6 +1835,33 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1300,6 +1889,24 @@ export interface operations {
                     "*/*": components["schemas"]["EntityModelJournalResponse"];
                 };
             };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Access denied */
             403: {
                 headers: {
@@ -1307,6 +1914,42 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1329,6 +1972,24 @@ export interface operations {
                     "*/*": components["schemas"]["CollectionModelEntityModelLateCheckinRequestResponse"];
                 };
             };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Только староста группы */
             403: {
                 headers: {
@@ -1336,6 +1997,42 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1356,6 +2053,69 @@ export interface operations {
                 };
                 content: {
                     "*/*": string;
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1380,6 +2140,24 @@ export interface operations {
                     "*/*": components["schemas"]["EntityModelExcuseTicketResponse"];
                 };
             };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Доступ запрещён (D-14) */
             403: {
                 headers: {
@@ -1396,6 +2174,33 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1421,6 +2226,24 @@ export interface operations {
                     "*/*": components["schemas"]["PagedModelEntityModelExcuseTicketResponse"];
                 };
             };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Доступ запрещён */
             403: {
                 headers: {
@@ -1428,6 +2251,42 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -1455,6 +2314,24 @@ export interface operations {
                     "*/*": components["schemas"]["PagedModelEntityModelExcuseTicketResponse"];
                 };
             };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Не староста или чужая группа (D-14) */
             403: {
                 headers: {
@@ -1462,6 +2339,42 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

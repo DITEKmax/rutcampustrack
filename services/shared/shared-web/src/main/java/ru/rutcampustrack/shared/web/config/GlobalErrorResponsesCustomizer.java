@@ -81,17 +81,31 @@ public class GlobalErrorResponsesCustomizer {
         };
     }
 
-    /** Регистрирует shared {@link ErrorResponse} в components.schemas. */
+    /** Регистрирует shared {@link ErrorResponse} + referenced schemas
+     *  (включая {@link ru.rutcampustrack.shared.web.api.exception.FieldError})
+     *  в components.schemas. Без этого $ref в fieldErrors[].items указывает
+     *  на несуществующий component → openapi-typescript ломается. */
     private static void registerErrorResponseSchema(OpenAPI openApi) {
         if (openApi.getComponents() == null) {
             openApi.setComponents(new Components());
         }
         Components components = openApi.getComponents();
-        if (components.getSchemas() == null || !components.getSchemas().containsKey(ERROR_RESPONSE_SCHEMA)) {
-            Schema<?> schema = io.swagger.v3.core.converter.ModelConverters.getInstance()
-                    .readAllAsResolvedSchema(ErrorResponse.class)
-                    .schema;
-            components.addSchemas(ERROR_RESPONSE_SCHEMA, schema);
+        io.swagger.v3.core.converter.ResolvedSchema resolved =
+                io.swagger.v3.core.converter.ModelConverters.getInstance()
+                        .readAllAsResolvedSchema(ErrorResponse.class);
+        if (components.getSchemas() == null
+                || !components.getSchemas().containsKey(ERROR_RESPONSE_SCHEMA)) {
+            components.addSchemas(ERROR_RESPONSE_SCHEMA, resolved.schema);
+        }
+        // referencedSchemas включает FieldError (вложенный класс из
+        // shared-web-api) — springdoc controller-scan не добирается до
+        // модуля api, поэтому ручная регистрация обязательна.
+        if (resolved.referencedSchemas != null) {
+            resolved.referencedSchemas.forEach((name, schema) -> {
+                if (!components.getSchemas().containsKey(name)) {
+                    components.addSchemas(name, schema);
+                }
+            });
         }
     }
 

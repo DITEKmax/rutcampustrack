@@ -25,7 +25,7 @@ class OpenApiSnapshotIT extends AbstractScheduleIntegrationTest {
 
     private static final String SERVICE_NAME = "schedule";
     private static final Path SNAPSHOT_PATH = Paths.get("../../..")
-            .resolve("docs").resolve("api-spec").resolve(SERVICE_NAME + ".json")
+            .resolve("docs").resolve("openapi").resolve(SERVICE_NAME + ".json")
             .toAbsolutePath().normalize();
 
     @Autowired

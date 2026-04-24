@@ -18,6 +18,12 @@ dependencies {
     // Наш контракт
     implementation(project(":services:academic-service:academic-api-contract"))
 
+    // M11 G0.4: shared-web Spring Boot starter (GlobalExceptionHandler
+    // catch-all для Spring MVC exceptions + JacksonConfig + AdminActionAspect
+    // + SharedOpenApiCustomizer через @AutoConfiguration). Этот сервис
+    // имеет свой academic-domain handler с @Order(HIGHEST_PRECEDENCE).
+    implementation(project(":services:shared:shared-web"))
+
     // M02 — shared-outbox + ShedLock + shared-events (D5(a) единый envelope)
     implementation(project(":services:shared:shared-outbox"))
     implementation(project(":services:shared:shared-events"))

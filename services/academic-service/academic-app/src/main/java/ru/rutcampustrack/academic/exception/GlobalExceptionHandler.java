@@ -3,37 +3,54 @@ package ru.rutcampustrack.academic.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponseException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.NoHandlerFoundException;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
-import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
-import ru.rutcampustrack.shared.web.api.exception.FieldError;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
- * Centralized exception handler returning RFC 7807 Problem Details responses.
- * Controllers only throw exceptions — this handler maps them to HTTP responses.
+ * Domain-level exception handler для academic-service.
+ *
+ * <p>M11 G0.4: catch-all Spring MVC exceptions (validation/noHandler/
+ * accessDenied/general) делегированы в
+ * {@code ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler}
+ * через {@code @Order(LOWEST_PRECEDENCE)}. Этот advice сидит выше
+ * приоритетом ({@code @Order(HIGHEST_PRECEDENCE)}) и обрабатывает
+ * только academic-domain исключения.
+ *
+ * <p>Сохранены:
+ * <ul>
+ *   <li>{@link ResourceNotFoundException} → 404 (academic-specific)</li>
+ *   <li>{@link AccessDeniedException} → 403 (academic-specific, НЕ Spring
+ *       Security AccessDeniedException — у того свой handler в shared)</li>
+ *   <li>{@link BadRequestException} → 400 + structured field</li>
+ *   <li>{@link ConflictException} → 409 + field + extras (BUG-006-2)</li>
+ *   <li>{@link DataIntegrityViolationException} → 409 с constraint
+ *       mapping (academic constraint dictionary)</li>
+ *   <li>{@link ScheduleServiceUnavailableException} → 503 (Phase 61
+ *       gRPC fallback)</li>
+ * </ul>
  */
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    private static final String PROBLEM_BASE = "https://api.rutcampustrack.ru/problems/";
+    /** MDC key для correlation id (совпадает с shared GlobalExceptionHandler). */
+    private static final String MDC_TRACE_ID = "traceId";
 
     /**
      * Maps PostgreSQL {@code UNIQUE} constraint names to logical DTO field names
@@ -65,78 +82,48 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex,
-                                                         HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                PROBLEM_BASE + "resource-not-found",
-                "Ресурс не найден",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+                                                        HttpServletRequest request) {
+        return problem(HttpStatus.NOT_FOUND, "resource-not-found",
+                "Ресурс не найден", ex.getMessage(), request, null, null);
     }
 
+    /**
+     * Academic-specific {@link AccessDeniedException} (НЕ Spring Security).
+     * Spring Security AccessDeniedException обрабатывается shared handler'ом.
+     */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex,
-                                                             HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.FORBIDDEN.value(),
-                PROBLEM_BASE + "access-denied",
-                "Доступ запрещён",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+                                                            HttpServletRequest request) {
+        return problem(HttpStatus.FORBIDDEN, "access-denied",
+                "Доступ запрещён", ex.getMessage(), request, null, null);
     }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex,
-                                                           HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                PROBLEM_BASE + "bad-request",
-                "Неверный запрос",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null,
-                ex.getField()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+                                                          HttpServletRequest request) {
+        return problem(HttpStatus.BAD_REQUEST, "bad-request",
+                "Неверный запрос", ex.getMessage(), request, ex.getField(), null);
     }
 
     /**
-     * Handles {@link ConflictException} — services' explicit pre-check path
-     * (BUG-006-2). Surfaces the structured {@code field} in the RFC 7807 body
-     * so the frontend can highlight the offending control.
+     * {@link ConflictException} — services' explicit pre-check path
+     * (BUG-006-2). Surfaces the structured {@code field} + {@code extras}
+     * in the RFC 9457 body so the frontend can highlight the offending
+     * control / show counts.
      */
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex,
-                                                         HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.CONFLICT.value(),
-                PROBLEM_BASE + "conflict",
-                "Конфликт данных",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null,
-                ex.getField(),
-                ex.getExtras()
-        );
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+                                                        HttpServletRequest request) {
+        return problem(HttpStatus.CONFLICT, "conflict",
+                "Конфликт данных", ex.getMessage(), request, ex.getField(), ex.getExtras());
     }
 
     /**
      * Race-condition / defensive handler for DB-level unique-constraint
      * violations that slipped past the service pre-check (BUG-006-2,
-     * T-58-02-02). Extracts the constraint name from the Hibernate/PG message
-     * and maps it to a known field; unknown constraints become generic 500s
-     * with a WARN log (never leak raw SQL text).
+     * T-58-02-02). Extracts the constraint name from the Hibernate/PG
+     * message and maps it to a known field; unknown constraints fall back
+     * to shared handler's catch-all 500 (no field, generic detail).
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
@@ -146,39 +133,21 @@ public class GlobalExceptionHandler {
         String field = constraintName == null ? null : CONSTRAINT_TO_FIELD.get(constraintName);
 
         if (field != null) {
-            String detail = FIELD_DETAIL.getOrDefault(field,
-                    "Значение поля уже используется");
-            ErrorResponse body = new ErrorResponse(
-                    HttpStatus.CONFLICT.value(),
-                    PROBLEM_BASE + "conflict",
-                    "Конфликт данных",
-                    detail,
-                    request.getRequestURI(),
-                    Instant.now(),
-                    null,
-                    field
-            );
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+            String detail = FIELD_DETAIL.getOrDefault(field, "Значение поля уже используется");
+            return problem(HttpStatus.CONFLICT, "conflict",
+                    "Конфликт данных", detail, request, field, null);
         }
 
-        // Unknown constraint → fall back to 500. Log the constraint name so ops
-        // can add it to CONSTRAINT_TO_FIELD; never include raw SQL in response.
+        // Unknown constraint → 500 без утечки SQL. Лог для ops добавить
+        // constraint в CONSTRAINT_TO_FIELD при необходимости.
         log.warn("Unmapped data-integrity violation constraint={} message={}",
                 constraintName, ex.getMostSpecificCause().getMessage());
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                PROBLEM_BASE + "internal-error",
-                "Внутренняя ошибка сервера",
-                "Нарушение целостности данных",
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+        return problem(HttpStatus.INTERNAL_SERVER_ERROR, "internal-error",
+                "Внутренняя ошибка сервера", "Нарушение целостности данных",
+                request, null, null);
     }
 
     private static String extractConstraintName(DataIntegrityViolationException ex) {
-        // Walk the cause chain looking for a message that contains the marker.
         Throwable t = ex;
         while (t != null) {
             String msg = t.getMessage();
@@ -193,128 +162,43 @@ public class GlobalExceptionHandler {
         return null;
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex,
-                                                           HttpServletRequest request) {
-        List<FieldError> fieldErrors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(fe -> new FieldError(
-                        fe.getField(),
-                        fe.getRejectedValue(),
-                        fe.getDefaultMessage()
-                ))
-                .collect(Collectors.toList());
-
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                PROBLEM_BASE + "validation-failed",
-                "Ошибка валидации",
-                "Одно или несколько полей не прошли проверку",
-                request.getRequestURI(),
-                Instant.now(),
-                fieldErrors
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
-    }
-
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException ex,
-                                                           HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                PROBLEM_BASE + "resource-not-found",
-                "Ресурс не найден",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-    }
-
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoHandler(NoHandlerFoundException ex,
-                                                          HttpServletRequest request) {
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                PROBLEM_BASE + "resource-not-found",
-                "Ресурс не найден",
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-    }
-
-    @ExceptionHandler(ErrorResponseException.class)
-    public ResponseEntity<ErrorResponse> handleErrorResponse(ErrorResponseException ex,
-                                                              HttpServletRequest request) {
-        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
-        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
-        ErrorResponse body = new ErrorResponse(
-                status.value(),
-                PROBLEM_BASE + "error",
-                status.getReasonPhrase(),
-                ex.getMessage(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(status).body(body);
-    }
-
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex,
-                                                               HttpServletRequest request) {
-        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
-        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
-        ErrorResponse body = new ErrorResponse(
-                status.value(),
-                PROBLEM_BASE + "error",
-                status.getReasonPhrase(),
-                ex.getReason(),
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(status).body(body);
-    }
-
     /**
-     * Phase 61 / T-61-06: gRPC-вызов к schedule-service упал (UNAVAILABLE, deadline, …).
-     * Отдаём 503 без стек-трейса — клиент видит только короткий детейл на русском.
+     * Phase 61 / T-61-06: gRPC-вызов к schedule-service упал
+     * (UNAVAILABLE, deadline, …). Отдаём 503 без стек-трейса.
      */
     @ExceptionHandler(ScheduleServiceUnavailableException.class)
     public ResponseEntity<ErrorResponse> handleScheduleUnavailable(
             ScheduleServiceUnavailableException ex,
             HttpServletRequest request) {
         log.warn("schedule-service недоступен: {}", ex.getMessage());
-        ErrorResponse body = new ErrorResponse(
-                HttpStatus.SERVICE_UNAVAILABLE.value(),
-                PROBLEM_BASE + "schedule-service-unavailable",
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "schedule-service-unavailable",
                 "Сервис расписания недоступен",
                 "Не удалось связаться с сервисом расписания. Попробуйте позже.",
-                request.getRequestURI(),
-                Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(body);
+                request, null, null);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneral(Exception ex,
-                                                        HttpServletRequest request) {
+    private static ResponseEntity<ErrorResponse> problem(
+            HttpStatus status,
+            String problemType,
+            String title,
+            String detail,
+            HttpServletRequest request,
+            String field,
+            Map<String, Object> extras) {
+        String traceId = MDC.get(MDC_TRACE_ID);
         ErrorResponse body = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                PROBLEM_BASE + "internal-error",
-                "Внутренняя ошибка сервера",
-                ex.getMessage(),
+                status.value(),
+                ErrorResponse.PROBLEM_BASE + problemType,
+                title,
+                detail,
                 request.getRequestURI(),
                 Instant.now(),
-                null
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+                traceId,
+                null,
+                field,
+                extras);
+        return ResponseEntity.status(status)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(body);
     }
 }

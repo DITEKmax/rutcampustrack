@@ -2,25 +2,46 @@ package ru.rutcampustrack.attendance.config;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexOperations;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * MongoDB index configuration for the Attendance Service.
  * Separated from MongoConvertersConfig to avoid circular dependency:
  * MongoCustomConversions is needed to create MongoTemplate, so it must be
  * declared in a configuration class that does NOT depend on MongoTemplate.
+ *
+ * <p><b>M13 G7:</b> регистрирует {@link MongoTransactionManager} для
+ * multi-document transactions (closes M02 CRITICAL #1 — outbox save +
+ * domain save в одной tx). Требует Mongo replica set
+ * (see docker-compose {@code MONGODB_REPLICA_SET_MODE=primary}).
  */
 @Configuration
+@EnableTransactionManagement
 public class MongoConfig {
 
     @Lazy
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    /**
+     * M13 G7: требуется для {@code @Transactional} + {@code MongoOutboxStorage}
+     * atomicity. `MongoTransactionManager` оборачивает Mongo session'ы +
+     * startSession/commitTransaction/abortTransaction в Spring-совместимый
+     * `PlatformTransactionManager`.
+     */
+    @Bean
+    public MongoTransactionManager mongoTransactionManager(MongoDatabaseFactory factory) {
+        return new MongoTransactionManager(factory);
+    }
 
     @PostConstruct
     public void initIndexes() {

@@ -55,33 +55,44 @@ services:
     restart: unless-stopped
 
   mongo-attendance:
-    # M08 G11 — digest-pin. Update: docker buildx imagetools inspect mongo:7
-    image: mongo:7@sha256:43fddee7e532a920f3dfdee9e8f4834398c155c26bcb92d790cc1cd3c630fc40
+    # M13 G7 (Option B): bitnami/mongodb:7.0 — declarative replica set
+    # setup (RS required для MongoTransactionManager multi-doc transactions).
+    # M08 G11 digest-pin — update: docker buildx imagetools inspect bitnami/mongodb:7.0
+    # и заменить digest после verify на staging.
+    image: bitnami/mongodb:7.0
     container_name: rct-mongo-attendance
     environment:
-      MONGO_INITDB_DATABASE: admin
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_USER: ${MONGO_USER}
-      MONGO_PASSWORD: ${MONGO_PASSWORD}
-      # M10 G1 D2 — отдельный credential для notification_db (PoLP).
-      MONGO_NOTIFICATION_USER: ${MONGO_NOTIFICATION_USER}
-      MONGO_NOTIFICATION_PASSWORD: ${MONGO_NOTIFICATION_PASSWORD}
+      # Single-node replica set (primary + 0 secondaries).
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_REPLICA_SET_NAME: rs0
+      # keyFile generated из MONGODB_REPLICA_SET_KEY env (openssl rand -base64 756).
+      # REQUIRED в prod — см. .env.prod.example.
+      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY}
+      MONGODB_ROOT_USER: root
+      MONGODB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      # Bitnami MONGODB_EXTRA_USERNAMES/PASSWORDS/DATABASES заменяет
+      # legacy init-mongo.js M10 D2 (создавал users через
+      # /docker-entrypoint-initdb.d).
+      MONGODB_EXTRA_USERNAMES: ${MONGO_USER},${MONGO_NOTIFICATION_USER}
+      MONGODB_EXTRA_PASSWORDS: ${MONGO_PASSWORD},${MONGO_NOTIFICATION_PASSWORD}
+      MONGODB_EXTRA_DATABASES: attendance_db,notification_db
+      MONGODB_ADVERTISED_HOSTNAME: mongo-attendance
     expose:
       - "27017"
     volumes:
-      - mongo-data:/data/db
-      - ./infra/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - mongo-data:/bitnami/mongodb
     networks:
       - private_net
-    # M09 G7 (NEW-157).
-    mem_limit: 384m
-    mem_reservation: 256m
+    # M09 G7 (NEW-157). Bitnami RS init может потреблять больше памяти чем
+    # bare mongod — подняли limit с 384m до 512m для safety margin.
+    mem_limit: 512m
+    mem_reservation: 320m
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 40s
     restart: unless-stopped
 
   redis:
@@ -266,7 +277,8 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
-      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin
+      # M13 G7: ?replicaSet=rs0 для MongoTransactionManager multi-doc transactions.
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin&replicaSet=rs0
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
@@ -322,7 +334,8 @@ services:
       ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET}
       # M10 G1 D3 — отдельная БД notification_db + отдельный credential
       # MONGO_NOTIFICATION_USER (PoLP — D2).
-      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER}:${MONGO_NOTIFICATION_PASSWORD}@mongo-attendance:27017/notification_db?authSource=admin
+      # M13 G7: ?replicaSet=rs0 для MongoTransactionManager multi-doc transactions.
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER}:${MONGO_NOTIFICATION_PASSWORD}@mongo-attendance:27017/notification_db?authSource=admin&replicaSet=rs0
       # M10 G1 D4 — retention для notification_history (дней).
       NOTIFICATION_HISTORY_TTL_DAYS: ${NOTIFICATION_HISTORY_TTL_DAYS:-30}
       # M09 G7 (NEW-157).

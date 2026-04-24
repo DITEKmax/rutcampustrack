@@ -1,6 +1,7 @@
 package ru.rutcampustrack.attendance.checkin;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
@@ -82,6 +83,7 @@ public class CheckinService {
      * @throws GeofenceBlockedException   if teacher disabled geo-checkin for this lesson (CHKN-04)
      * @throws ConflictException           if Redis dedup lock already held (CHKN-06)
      */
+    @Transactional
     public AttendanceDocument checkin(CheckinRequest request) {
         // Step 1: Rate limit (CHKN-07) — must be FIRST check
         if (!rateLimiter.checkRateLimit(requestContext.getUserId())) {

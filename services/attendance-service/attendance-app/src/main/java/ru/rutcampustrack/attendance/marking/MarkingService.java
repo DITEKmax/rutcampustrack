@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchItem;
@@ -81,6 +82,7 @@ public class MarkingService {
      * @param request  contains the desired AttendanceStatus
      * @return the persisted or updated AttendanceDocument
      */
+    @Transactional
     public AttendanceDocument markAttendance(Long lessonId, Long userId, MarkRequest request) {
         // D-14: Validate that status is not CANCELLED (system-only)
         if (!ALLOWED_STATUSES.contains(request.status())) {
@@ -165,6 +167,7 @@ public class MarkingService {
      */
     private static final int MAX_UNIQUE_LESSONS_PER_BATCH = 10;
 
+    @Transactional
     public List<AttendanceDocument> markBatch(MarkBatchRequest request) {
         List<MarkBatchItem> items = request.items();
 

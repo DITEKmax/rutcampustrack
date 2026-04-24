@@ -15,7 +15,9 @@ spring:
     mongodb:
       # M10 G1 D3: default БД для local dev = notification_db
       # (notification-web пишет history сюда; prod URI задаётся compose env).
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/notification_db}
+      # M13 G7: ?replicaSet=rs0 для MongoTransactionManager multi-doc transactions
+      # (bitnami/mongodb single-node RS).
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/notification_db?replicaSet=rs0}
     web:
       pageable:
         # M10 G9 H2 hot-patch: default 20 оставлен локально; M13 G3 перевёл

@@ -4,13 +4,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexInfo;
 import org.springframework.data.mongodb.core.index.IndexOperations;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.time.Duration;
 import java.util.List;
@@ -45,6 +49,7 @@ import java.util.stream.Collectors;
  * MongoDB / Mongo driver.
  */
 @Configuration
+@EnableTransactionManagement
 @Slf4j
 public class NotificationHistoryMongoConfig {
 
@@ -64,6 +69,18 @@ public class NotificationHistoryMongoConfig {
                                           @Value("${notification.history.ttl-days:30}") int ttlDays) {
         this.mongoTemplate = mongoTemplate;
         this.ttlDays = ttlDays;
+    }
+
+    /**
+     * M13 G7: требуется для {@code @Transactional} на consumer-path'ах
+     * notification-web (notification_history + outbox-side atomicity, если
+     * появится — на данный момент notification-web пишет только history,
+     * но MongoTransactionManager нужен для future-proof + symmetry с
+     * attendance).
+     */
+    @Bean
+    public MongoTransactionManager mongoTransactionManager(MongoDatabaseFactory factory) {
+        return new MongoTransactionManager(factory);
     }
 
     @EventListener(ApplicationReadyEvent.class)

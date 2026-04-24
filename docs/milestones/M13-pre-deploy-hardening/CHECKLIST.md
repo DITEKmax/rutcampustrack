@@ -56,12 +56,12 @@
 
 ## Группа 7 — Mongo outbox atomicity (M02 CRITICAL #1)
 
-- [ ] Перевести attendance MongoDB в single-node replica set (`--replSet rs0`) в docker-compose.prod.yml + dev.yml
-- [ ] Init script: `rs.initiate()` на первом старте (entrypoint / migration)
-- [ ] Добавить `@Transactional` + `MongoTransactionManager` bean в attendance-app + notification-web
-- [ ] Обернуть `MongoOutboxStorage.save()` в transaction
-- [ ] IT: kill publisher между `save` и `publish` → либо оба committed, либо оба rolled back
-- [ ] Обновить `docs/database-schema.md` — Mongo replica set требование
+- [x] Перевести attendance MongoDB в single-node replica set (`--replSet rs0`) в docker-compose.prod.yml + dev.yml _(Option B — `bitnami/mongodb:7.0` с `MONGODB_REPLICA_SET_MODE=primary` + `_NAME=rs0` + `_KEY` вместо custom entrypoint; volume `/bitnami/mongodb`; mem_limit 512m в prod)_
+- [x] Init script: `rs.initiate()` на первом старте (entrypoint / migration) _(Bitnami делает это automatically при `MODE=primary`; удалён legacy `infra/mongo/init-mongo.js` — users теперь через `MONGODB_EXTRA_USERNAMES/PASSWORDS/DATABASES`)_
+- [x] Добавить `@Transactional` + `MongoTransactionManager` bean в attendance-app + notification-web _(attendance: `MongoConfig.mongoTransactionManager` bean + `@EnableTransactionManagement`; notification-web: same в `NotificationHistoryMongoConfig`)_
+- [x] Обернуть `MongoOutboxStorage.save()` в transaction _(не на уровне самого storage — через `@Transactional` на service-методах: ExcuseService.createExcuse/createExcuseWithFile/updateStatus/applyDecisionFromBot, CheckinService.checkin, MarkingService.markAttendance/markBatch, LateCheckinService.createRequest/applyDecisionFromWeb/applyDecision. Storage-level не нужен — save вызывается внутри domain-tx propagation)_
+- [x] IT: kill publisher между `save` и `publish` → либо оба committed, либо оба rolled back _(новый `OutboxAtomicityIT` с 2 сценариями: `saveAndFail` → rollback обоих, `saveAndCommit` → оба сохранены. 2/2 passing; full attendance-integrationTest + notification-integrationTest зелёные)_
+- [x] Обновить `docs/database-schema.md` — Mongo replica set требование _(новый раздел «Deployment: replica set rs0 (M13 G7)» перед `attendances` коллекцией: требование RS для transactions, Bitnami setup, URI `?replicaSet=rs0`, transactions usage map, rollback plan. Mongo users раздел обновлён: «Создаётся в» → «Bitnami MONGODB_EXTRA_* env (M13 G7)»)_
 
 ## Группа 8 — Consumer-side dedup по `event_id` (M02 CRITICAL #2)
 

@@ -11,7 +11,11 @@ spring:
       max-request-size: 12MB
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://rct_user:rct_dev_pass@mongo-attendance:27017/attendance_db?authSource=admin}
+      # M13 G7: ?replicaSet=rs0 для MongoTransactionManager multi-doc transactions
+      # (bitnami/mongodb single-node RS). В Testcontainers MongoDBContainer
+      # RS mode автоматический — для IT override через DynamicPropertySource
+      # не требует replicaSet явно (getReplicaSetUrl возвращает URI с ним).
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://rct_user:rct_dev_pass@mongo-attendance:27017/attendance_db?authSource=admin&replicaSet=rs0}
     redis:
       host: redis
       port: 6379

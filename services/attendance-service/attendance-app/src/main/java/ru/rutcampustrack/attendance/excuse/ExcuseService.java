@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.excuse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.rutcampustrack.attendance.contract.dto.excuse.CreateExcuseRequest;
 import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
@@ -104,11 +105,14 @@ public class ExcuseService {
      * @throws ConflictException   headman attempted to create (D-12) or a lesson already has an active ticket (D-11)
      * @throws BadRequestException defensive validation guard (comment length, empty list) — primary validation lives in DTO
      */
+    @Transactional
     public ExcuseTicket createExcuse(CreateExcuseRequest request) {
         ExcuseTicket saved = createTicketInternal(request);
         // D-19 / D-27: publish excuse.requested after save — notification-bot listens.
-        // Обогащаем payload деталями пар (номер, дата, предмет): без этого староста
-        // в TG/веб видел только ID пар без контекста.
+        // M13 G7: save (Mongo excuse) + outbox.save (Mongo outbox) обёрнуты в одну
+        // MongoTransactionManager tx (replica set обязателен). Если publishRequested
+        // бросит — excuse.save rollback'ается, инвариант «excuse существует ⇔ event
+        // в outbox» сохраняется.
         excuseEventPublisher.publishRequested(saved, resolveLessonDetails(saved.getLessonIds()));
         // M04 Группа 8 — excuse.created{kind}. kind = enum ExcuseType (illness, ...).
         businessMetrics.excuseCreatedCounter(saved.getExcuseType().name().toLowerCase()).increment();
@@ -123,6 +127,7 @@ public class ExcuseService {
      * inside the {@code excuse.requested} event payload. Bot picks it up via
      * the existing RabbitMQ consumer.
      */
+    @Transactional
     public ExcuseTicket createExcuseWithFile(CreateExcuseRequest request, MultipartFile file) {
         final long MAX_BYTES = 10L * 1024 * 1024;
         ExcuseTicket saved = createTicketInternal(request);
@@ -266,6 +271,7 @@ public class ExcuseService {
      *
      * Cascade on APPROVED (D-16) will be performed by plan 59-04 once AttendanceWritePort exists.
      */
+    @Transactional
     public ExcuseTicket updateStatus(String id, UpdateExcuseStatusRequest request) {
         ExcuseTicket ticket = excuseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
@@ -342,6 +348,7 @@ public class ExcuseService {
      * @param approved         true = APPROVED, false = REJECTED
      * @param decisionComment  опциональный комментарий
      */
+    @Transactional
     public void applyDecisionFromBot(String ticketId, Long decisionBy, boolean approved, String decisionComment) {
         ExcuseTicket ticket = excuseRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));

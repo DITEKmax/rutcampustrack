@@ -1,6 +1,7 @@
 package ru.rutcampustrack.attendance.latecheckin;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
@@ -74,6 +75,7 @@ public class LateCheckinService {
         this.clock = clock;
     }
 
+    @Transactional
     public LateCheckinRequest createRequest(Long lessonId) {
         if (requestContext.isHeadman()) {
             throw new ConflictException(
@@ -164,6 +166,7 @@ public class LateCheckinService {
      * @return the decided request (APPROVED or REJECTED), or the already-decided request
      *         if called twice (idempotent).
      */
+    @Transactional
     public LateCheckinRequest applyDecisionFromWeb(String requestId, boolean approved) {
         if (!requestContext.isHeadman()) {
             throw new AccessDeniedException("Решение может принимать только староста");
@@ -185,6 +188,7 @@ public class LateCheckinService {
      * @param decisionBy telegram user_id (bot path) or internal user_id (web path)
      * @param approved   true → APPROVED + attendance upsert; false → REJECTED
      */
+    @Transactional
     public void applyDecision(String requestId, Long decisionBy, boolean approved) {
         LateCheckinRequest request = repository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));

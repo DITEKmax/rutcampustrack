@@ -45,29 +45,42 @@ services:
       retries: 5
 
   mongo-attendance:
-    image: mongo:7
+    # M13 G7 (Option B) — bitnami/mongodb:7 для declarative replica set
+    # setup (MongoTransactionManager в attendance-app + notification-web
+    # требует RS для multi-doc transactions). Image managed by VMware
+    # Tanzu (ex-Bitnami), production-grade, compatible с `mongo:7` data
+    # format (rollback: revert image + MONGO_INITDB_* env; см. NOTES.md).
+    image: bitnami/mongodb:7.0
     container_name: rct-mongo-attendance
     environment:
-      MONGO_INITDB_DATABASE: admin
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-root}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-rct_dev_pass}
-      # M10 G1 D2 — application users (PoLP), создаются init-mongo.js.
-      MONGO_USER: ${MONGO_USER:-rct_user}
-      MONGO_PASSWORD: ${MONGO_PASSWORD:-rct_dev_pass}
-      MONGO_NOTIFICATION_USER: ${MONGO_NOTIFICATION_USER:-rct_notification_user}
-      MONGO_NOTIFICATION_PASSWORD: ${MONGO_NOTIFICATION_PASSWORD:-rct_dev_pass}
+      # Replica set bootstrap — single-node rs0 (primary + 0 secondaries).
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_REPLICA_SET_NAME: rs0
+      # keyFile gen из ${MONGODB_REPLICA_SET_KEY} env (openssl rand -base64 756).
+      # В dev default — fixed placeholder (не prod!). Prod — из .env.prod.
+      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY:-rct_dev_replica_set_key_must_be_replaced_in_prod_environment_security}
+      MONGODB_ROOT_USER: ${MONGO_ROOT_USER:-root}
+      MONGODB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-rct_dev_pass}
+      # Дополнительные users создаются Bitnami automatically:
+      # MONGODB_EXTRA_USERNAMES/PASSWORDS/DATABASES — comma-separated arrays.
+      # Заменяет legacy init-mongo.js из M10 D2.
+      MONGODB_EXTRA_USERNAMES: ${MONGO_USER:-rct_user},${MONGO_NOTIFICATION_USER:-rct_notification_user}
+      MONGODB_EXTRA_PASSWORDS: ${MONGO_PASSWORD:-rct_dev_pass},${MONGO_NOTIFICATION_PASSWORD:-rct_dev_pass}
+      MONGODB_EXTRA_DATABASES: attendance_db,notification_db
+      # M13 G7 — advertise hostname для корректной связки primary в replica set.
+      MONGODB_ADVERTISED_HOSTNAME: mongo-attendance
     expose:
       - "27017"
     volumes:
-      - mongo-data:/data/db
-      - ./infra/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - mongo-data:/bitnami/mongodb
     networks:
       - private_net
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
   redis:
     image: redis:7-alpine
@@ -166,7 +179,8 @@ services:
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:noreply@rut.ru}
       # M10 G1 D3 — отдельная БД notification_db + отдельный credential
       # MONGO_NOTIFICATION_USER (PoLP — D2).
-      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER:-rct_notification_user}:${MONGO_NOTIFICATION_PASSWORD:-rct_dev_pass}@mongo-attendance:27017/notification_db?authSource=admin
+      # M13 G7: ?replicaSet=rs0 для MongoTransactionManager multi-doc transactions.
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER:-rct_notification_user}:${MONGO_NOTIFICATION_PASSWORD:-rct_dev_pass}@mongo-attendance:27017/notification_db?authSource=admin&replicaSet=rs0
       # M10 G1 D4 — retention для notification_history (дней).
       NOTIFICATION_HISTORY_TTL_DAYS: ${NOTIFICATION_HISTORY_TTL_DAYS:-30}
       # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.

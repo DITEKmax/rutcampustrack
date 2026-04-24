@@ -262,6 +262,42 @@ CREATE INDEX idx_lessons_status ON lessons(status) WHERE status IN ('planned', '
 
 ## MongoDB: attendance_db (Attendance Service)
 
+### Deployment: replica set rs0 (M13 G7)
+
+MongoDB деплоится как **single-node replica set** (`rs0`) — это
+требование для multi-document transactions (Spring Data MongoDB
+`MongoTransactionManager`). Standalone Mongo **не поддерживает**
+transactions и вернёт `MongoCommandException: Transaction numbers
+are only allowed on a replica set member or mongos`.
+
+- **Image:** `bitnami/mongodb:7.0` — declarative RS setup через
+  `MONGODB_REPLICA_SET_MODE=primary` + `MONGODB_REPLICA_SET_NAME=rs0`
+  + `MONGODB_REPLICA_SET_KEY` (shared keyFile генерится из env).
+- **Users:** создаются через Bitnami `MONGODB_EXTRA_USERNAMES/PASSWORDS/DATABASES`
+  (заменяет legacy `infra/mongo/init-mongo.js` M10 D2).
+- **Spring URI:** `?replicaSet=rs0&authSource=admin` (обязателен
+  query-param для правильного routing'а).
+- **Один физический инстанс**, две logical DB (`attendance_db`,
+  `notification_db`). Хост — `mongo-attendance` (имя legacy от M05,
+  контейнер физически shared).
+
+**Transactions usage (M13 G7 — closes M02 CRITICAL #1):**
+- `attendance-app`: `ExcuseService.createExcuse/createExcuseWithFile/updateStatus/applyDecisionFromBot`,
+  `CheckinService.checkin`, `MarkingService.markAttendance/markBatch`,
+  `LateCheckinService.createRequest/applyDecisionFromWeb/applyDecision` — все обёрнуты
+  в `@Transactional`. Domain-save + `outboxStorage.save` атомарны.
+- `notification-web`: `MongoTransactionManager` зарегистрирован
+  proactively (future-proof consumer-path'ы).
+
+**Runbook:** `docs/runbooks/mongo-indexes-verify.md` — проверка
+индексов + TTL после deploy (M13 G6 fail-fast).
+
+**Rollback (если Bitnami image не подойдёт):** сохранить mongo:7 image
+tag в backup, revert `docker-compose*.yml` на legacy `MONGO_INITDB_*`
+env + init-mongo.js, retire `?replicaSet=rs0` из URI + убрать
+`MongoTransactionManager` bean. Data format совместим с официальным
+`mongo:7` — dump/restore не требуется.
+
 ### Коллекция: attendances
 
 ```javascript
@@ -415,8 +451,8 @@ db.notification_history.createIndex(
 
 | User | Права | Создаётся в |
 |------|-------|-------------|
-| `MONGO_USER` (default `rct_attendance_user`) | readWrite + dbAdmin на `attendance_db` | `infra/mongo/init-mongo.js` |
-| `MONGO_NOTIFICATION_USER` (default `rct_notification_user`) | readWrite + dbAdmin на `notification_db` | `infra/mongo/init-mongo.js` |
+| `MONGO_USER` (default `rct_attendance_user`) | readWrite + dbAdmin на `attendance_db` | Bitnami `MONGODB_EXTRA_*` env (M13 G7) |
+| `MONGO_NOTIFICATION_USER` (default `rct_notification_user`) | readWrite + dbAdmin на `notification_db` | Bitnami `MONGODB_EXTRA_*` env (M13 G7) |
 
 Compromise одного credential'а не даёт доступа к данным другого
 сервиса. Rotation runbook — `docs/runbooks/secret-rotation.md`.

@@ -309,3 +309,126 @@ automatic startup check, manual `db.getIndexes()`, fix рецепты
 **Проверка:**
 - `notification-app:compileJava` — SUCCESSFUL.
 - `NotificationMongoIndexesIT` — 1/1 passing.
+
+## 2026-04-25 — Группа 7 (Mongo outbox atomicity) — в работе
+
+**Scope realization:** M10/M13 использует `mongo:7` (официальный) с
+auth через `MONGO_INITDB_ROOT_*` + init-mongo.js. Переход на replica
+set требует:
+
+1. **keyFile (опциональный для single-node?)** — нет, Mongo 7
+   **требует** keyFile когда `--replSet` + `--auth` сочетаются. Без
+   `--auth` можно обойтись.
+2. **`rs.initiate()` idempotent** — должен выполниться ПОСЛЕ
+   стартапа mongod, но ДО application connects. Это race, обычно
+   решается через sidecar или healthcheck-based init.
+3. **Classic trap:** MONGO_INITDB_ROOT_USERNAME/PASSWORD env
+   создаёт users только когда data-dir пустой. При `--replSet` на
+   свежем data-dir Mongo падает если `rs.initiate()` не было —
+   createUser из init-mongo.js не выполняется.
+
+**Практические options (обсуждаем с владельцем):**
+
+- **Option A (полный путь):** `mongo:7` + keyFile-gen entrypoint-wrapper
+  + two-stage init (initiate RS → createUser). Сложный, кастомный
+  entrypoint в dev и prod. ~1-2 дня работы + VPS-deploy runbook update
+  (керфайл rotation).
+
+- **Option B (bitnami/mongodb image):** switch с `mongo:7` на
+  `bitnami/mongodb:7` который умеет RS + auth + users out-of-the-box
+  через env (MONGODB_REPLICA_SET_MODE, MONGODB_REPLICA_SET_KEY,
+  MONGODB_ROOT_PASSWORD). Меняется image, volume layout, probably
+  compatible data-format. ~0.5 дня + VPS update (новый image ensure).
+
+- **Option C (оставить standalone + Mongo 7 transactions emulation):**
+  Technically Mongo 7 supports sessions even on standalone, но
+  multi-document transactions требуют RS. @Transactional в MongoOutboxStorage
+  без RS бросит `MongoCommandException: Transaction numbers are only
+  allowed on a replica set member or mongos`. Decline → vault M02
+  CRITICAL #1 в v0.1.
+
+**Testcontainers `MongoDBContainer`** уже запускает RS mode — все
+существующие IT работают с replica set. Значит implementation-side
+в коде (MongoTransactionManager + @Transactional) будет прозрачной;
+hard work именно в docker-compose.
+
+**Решение владельца (2026-04-25):** Option B — `bitnami/mongodb:7.0`.
+Обоснование: минимум legacy shell-scripting, declarative env-based
+config, direct path к K8s/Helm миграции, готовность к 3-node RS
+scale-up без entrypoint-rewrite.
+
+**Plan выполнения Option B:**
+
+1. docker-compose.yml + docker-compose.prod.yml: image `mongo:7` →
+   `bitnami/mongodb:7.0`. Env vars: `MONGODB_REPLICA_SET_MODE=primary`,
+   `MONGODB_REPLICA_SET_NAME=rs0`, `MONGODB_REPLICA_SET_KEY`,
+   `MONGODB_ROOT_USER`, `MONGODB_ROOT_PASSWORD`, `MONGODB_EXTRA_USERNAMES`,
+   `MONGODB_EXTRA_PASSWORDS`, `MONGODB_EXTRA_DATABASES`.
+2. Удалить init-mongo.js (users создаются через env).
+3. Spring URI: добавить `?replicaSet=rs0&authSource=admin` в
+   attendance-app + notification-web.
+4. `MongoTransactionManager` bean в обоих сервисах.
+5. `@Transactional` на выходе domain-операции (attendance markBatch +
+   notification consumer) — чтобы save + outbox были atomic.
+6. IT: transaction-rollback behaviour (принудительный exception между
+   save и publish → outbox запись не committed).
+7. docs/database-schema.md: Mongo RS requirement.
+8. .env.prod.example: MONGODB_REPLICA_SET_KEY generation recipe
+   (openssl rand -base64 756).
+9. Rollback plan в NOTES: держим mongo:7 images как fallback.
+10. VPS migration (в G23 runbook): dump → switch image → restore, ~5min downtime.
+
+## 2026-04-25 — Группа 7 execution summary
+
+**compose changes:**
+- `docker-compose.yml`: mongo-attendance image `mongo:7` → `bitnami/mongodb:7.0`,
+  MONGODB_REPLICA_SET_* env, volume path `/bitnami/mongodb`, healthcheck
+  с start_period 30s, удалён init-mongo.js mount.
+- `docker-compose.prod.yml`: то же + mem_limit увеличен 384m → 512m
+  (Bitnami RS init consumes больше), digest-pin заменён на floating
+  tag `bitnami/mongodb:7.0` до тех пор, пока не проведём `buildx
+  imagetools inspect` для digest-pin (M08 G11 pattern).
+
+**URI changes:**
+- dev + prod SPRING_DATA_MONGODB_URI добавлен `&replicaSet=rs0`.
+- attendance-app application.yml default URI — same.
+- notification-app application.yml default URI — same.
+
+**Spring config:**
+- `services/attendance-service/attendance-app/config/MongoConfig.java`:
+  + `@EnableTransactionManagement`, `mongoTransactionManager` bean.
+- `services/notification-service/notification-app/history/NotificationHistoryMongoConfig.java`:
+  same.
+
+**@Transactional scope в attendance-app:**
+- `ExcuseService` — 4 метода (createExcuse, createExcuseWithFile,
+  updateStatus, applyDecisionFromBot).
+- `CheckinService.checkin` — 1 метод.
+- `MarkingService.markAttendance` + `markBatch` — 2 метода.
+- `LateCheckinService.createRequest/applyDecisionFromWeb/applyDecision`
+  — 3 метода.
+
+Всего 10 tx-точек закрывают M02 CRITICAL #1.
+
+**IT:** `OutboxAtomicityIT` с 2 сценариями — rollback/commit. Использует
+test-nested `@Service TestTxService` (без @TestConfiguration — иначе
+NoUniqueBeanDefinitionException). `@Import(TestTxService.class)`
+поднимает его в test ApplicationContext. 2/2 passing.
+
+**Регрессия:** full attendance integrationTest + notification
+integrationTest — все зелёные после M13 G7.
+
+**Removed files:** `infra/mongo/init-mongo.js` — legacy M10 D2 init
+скрипт; теперь users создаются через Bitnami env.
+
+**TODO (для G13 env infrastructure):**
+- Добавить `MONGODB_REPLICA_SET_KEY` в `.env.prod.example` с generation
+  recipe: `openssl rand -base64 756 | tr -d '\n'`. Rotation (Bitnami
+  docs): при смене key требуется restart всех nodes RS (у нас один
+  node → restart контейнера + rejoin).
+- Документировать в G23 deploy runbook: VPS-migration scenario
+  (dump `mongodump --uri="mongodb://...@old-mongo"` → image switch →
+  `mongorestore` → smoke). Для первого deploy — N/A, fresh install.
+- digest-pin image в docker-compose.prod.yml после staging verify:
+  `docker buildx imagetools inspect bitnami/mongodb:7.0 | grep Digest`.
+  Сейчас floating tag (чтобы не блочить M13).

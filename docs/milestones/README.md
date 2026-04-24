@@ -49,6 +49,7 @@ subagent на diff в конце milestone'а.
 | M10 | [Notification History (stateful notification-web + MongoDB)](M10-notification-history/PLAN.md) | M01, M02, M05 | ~4-5д | ✅ 2026-04-24 |
 | M11 | [OpenAPI Polish (@Schema, customizer, swagger basic-auth)](M11-openapi-polish/PLAN.md) | M01, M10 | ~3д | ✅ 2026-04-24 |
 | M12 | [Auth Contract-first Refactor (auth-api-contract + AuthApi interface)](M12-auth-contract/PLAN.md) | M07, M11 | ~2.5д | ✅ 2026-04-24 |
+| M13 | [Pre-Deploy Hardening (VPS GA blockers)](M13-pre-deploy-hardening/PLAN.md) | M01-M12 | ~5-7д | 🟡 2026-04-25 (7/24 групп: G1-G7 ✅) |
 
 **Parallel tracks:** M04 и M05 можно делать одновременно с M03a/M03b
 (независимы по коду). M06 полностью независим — можно делать когда угодно,

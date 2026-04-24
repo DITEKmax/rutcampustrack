@@ -1,99 +1,137 @@
-# Промпт для следующей сессии — M11 OpenAPI Polish
+# Промпт для следующей сессии — M11 финиш (G3 + G4 + G5)
 
 Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Opus сам откроет
 нужные файлы и продолжит.
 
 ---
 
-**M10 Notification History ✅ закрыт 2026-04-24, tag `v0.0.0-alpha.11`
-(локальный). 11 коммитов M10 + 2 hot-patch'а (`d6c0f14..58fd69f`).**
-
-Локальных коммитов ahead origin: **30** (за всю v0.0.0). Tags
-`v0.0.0-alpha.2..11` локальные. Push всё ещё отложен до явного `go`.
+**M11 Группа 0 (Shared Web Starter Refactor) + G1 + G2 ✅ закрыты
+2026-04-24. 46 коммитов ahead origin/dev. Push всё ещё отложен до явного `go`.**
 
 **Старт новой сессии — дословно:**
 
 > Читаю `docs/milestones/NEXT-SESSION.md` →
 > `docs/milestones/M11-openapi-polish/{PLAN,CHECKLIST,NOTES}.md` →
-> `CLAUDE.md`. Запускаю **M11 OpenAPI Polish**:
+> `CLAUDE.md`. Продолжаю **M11 OpenAPI Polish** — остались G3, G4, G5.
 >
-> **G1 SharedOpenApiCustomizer наполнение:**
-> 1. Создать `services/shared/shared-web/.../openapi/GlobalErrorResponsesCustomizer.java`
->    implements `OpenApiCustomizer`. Автоматически добавлять 7
->    стандартных `@ApiResponse` (400/401/403/404/409/429/500) с
->    `application/problem+json` + `ErrorResponse` schema на все
->    endpoints.
-> 2. Per-endpoint override должен работать (customizer — defaults).
-> 3. Unit `GlobalErrorResponsesCustomizerTest` — smoke + интеграция в
->    academic-service sample.
+> **G3 OpenAPI ↔ runtime conformance (P2-2/3):**
+> 1. Audit `@ApiResponse(responseCode)` vs actual controller returns:
+>    - `ResponseEntity<Void>` для DELETE/PUT/POST mutations → 204
+>      (сейчас ошибочно 200 у некоторых)
+>    - POST creates → 201 + Location header
+>    - Поиск: `grep "ResponseEntity<Void>"` + ручная проверка методов
+> 2. `./gradlew openapi-dump` gradle task per service (springdoc
+>    maven plugin аналог или через MockMvc `/api-docs` dump в `build/openapi/*.yaml`).
+>    В Spring Boot 3 + springdoc 2.8.6 работает через `ForkedRuntime`.
+>    Альтернатива проще: integration test с MockMvc получает
+>    `/api-docs` → сохраняет в `docs/api-spec/{service}.yaml`.
+> 3. Commit initial snapshots `docs/api-spec/{academic,schedule,attendance,notification}.yaml`.
+> 4. CI step `openapi-conformance` в `.github/workflows/ci.yml`:
+>    bootRun → wait health → curl `/api-docs` → oasdiff vs committed
+>    → fail on breaking changes.
+>    Default tool — `oasdiff` (Tufin, Go docker image).
+> 5. NEW-123 → `docs/openapi-conformance.md` runbook.
 >
-> **G2 @Schema на DTO полях:**
-> 1. Audit ~60-80 DTO records / response classes в 4 сервисах
->    (academic/schedule/attendance/notification — auth-service skip,
->    P2-2/2 deferred в v0.1).
-> 2. Priority pass: Request DTO → top-level Response → embedded.
-> 3. `@Schema(description, example)` на каждое поле.
-> 4. notification-api-contract — DTO уже создан в M10, здесь
->    финализируется @Schema.
+> **G4 /swagger-ui basic-auth в prod (P2-2/6):**
+> 1. `infra/nginx/nginx.conf` (prod вариант) — location block:
+>    ```
+>    location ~ ^/(swagger-ui|v3/api-docs|api-docs) {
+>        auth_basic "Swagger UI";
+>        auth_basic_user_file /etc/nginx/htpasswd/swagger;
+>        proxy_pass http://api-gateway:8080;
+>    }
+>    ```
+>    **ВАЖНО:** academic-service использует `springdoc.api-docs.path: /api-docs`
+>    (не дефолт `/v3/api-docs`) — проверь все 4 сервиса, унифицируй regex.
+> 2. `infra/nginx/htpasswd/swagger.template` (пустой, mounted volume).
+> 3. `.env.prod.example` — `SWAGGER_HTPASSWD=<htpasswd -nB swagger>`.
+> 4. `docs/runbooks/swagger-prod-access.md` (NEW-125): как получить доступ
+>    (оператор выполняет `htpasswd -nB swagger` локально, вставляет в
+>    `.env.prod`, `docker compose up -d nginx` — secret rotation раз в
+>    полгода, привязать к `docs/runbooks/secret-rotation.md` из M09).
+> 5. Spring profile `local`: bypass через отдельный nginx compose-override
+>    (или просто `-dev` variant nginx.conf без auth_basic block).
+> 6. Smoke: `curl https://ruttrack.site/swagger-ui/` без creds → 401;
+>    с `-u swagger:pass` → 200.
 >
-> **G3 OpenAPI ↔ runtime conformance:**
-> 1. Audit `@ApiResponse(responseCode = "200")` vs реальные controller
->    returns. `ResponseEntity<Void>` → 204; POST creates → 201 +
->    Location.
-> 2. CI check: `atlassian/swagger-request-validator` или `openapi-diff`
->    runtime `/v3/api-docs` против committed `docs/api-spec/`.
-> 3. Smoke: `./gradlew openapi-dump`.
-> 4. NEW-123 → `docs/openapi-conformance.md` runbook.
->
-> **G4 /swagger-ui basic-auth в prod:**
-> 1. `infra/nginx/nginx.conf` — location block для
->    `/swagger-ui/**` + `/v3/api-docs` с `auth_basic`.
-> 2. `infra/nginx/htpasswd/swagger.template` (пустой template).
-> 3. `.env.prod.example` — `SWAGGER_HTPASSWD`.
-> 4. NEW-125 → `docs/runbooks/swagger-prod-access.md` (rotation).
->
-> **G5 Финализация:**
-> 1. `./gradlew :services:notification-app:test` + аналог 3 сервисов —
->    зелёные.
-> 2. Audit покрытия DTO ≥80% через grep.
-> 3. Post-mortem в PLAN.md.
-> 4. `git tag v0.0.0-alpha.12 -m "M11 OpenAPI Polish закрыт"`.
-> 5. Обновить `NEXT-SESSION.md` на M12 Auth Contract-first.
+> **G5 Финализация M11:**
+> 1. `./gradlew build` + `./gradlew integrationTest` зелёные.
+> 2. Audit покрытия DTO через grep: ожидается ≥80% полей с @Schema —
+>    Acceptance уже достигнут в G2 (89% файлов). Для оставшихся ~8
+>    Response classes (UserResponse, UserCreatedResponse, AssignmentResponse
+>    и т.п. с только class-level @Schema, без per-getter) — проверить,
+>    что springdoc auto-infers schema из getter'ов + types. Если да —
+>    закрыть как acceptable. Если нет — добавить per-getter в
+>    critical DTO.
+> 3. Post-mortem раздел в `docs/milestones/M11-openapi-polish/PLAN.md`
+>    (что пошло по плану, что нет, lessons learned — формат как в
+>    M10 PLAN.md post-mortem).
+> 4. `git tag v0.0.0-alpha.12 -m "M11 OpenAPI Polish закрыт"` (локальный).
+> 5. Обновить `NEXT-SESSION.md` на M12 Auth Contract-first Refactor.
 
 Stop при сюрпризе → NOTES + спросить.
 
 ---
 
-## M10 G1-G9 summary (что сделано)
+## M11 G0-G2 summary (что сделано — 46 коммитов)
+
+### Группа 0 — Shared Web Starter Refactor (9 коммитов)
 
 | Группа | Commit | Scope |
 |--------|--------|-------|
-| G1 | `d6c0f14` | Mongo init-script (оба user'а PoLP D2), compose×2, secret-rotation runbook, future-ideas collMod |
-| G2 | `8746e66` | notification-api-contract: NotificationType enum, NotificationHistoryDto class, UnreadCountDto record, NotificationApi interface |
-| G3 | `cc4b05b` | NotificationHistoryDocument + 3 индекса (TTL env-driven) + Repository + Rabbit history queue+DLQ + Consumer (маппер 9 events, broadcast skip, error isolation) + 12 unit + IT |
-| G4+G5 | `1624346` | CaffeineConfig (unread-count 30s) + NotificationHistoryService (@Cacheable/@CacheEvict + invalidate) + NotificationController (4 endpoints) + gateway route + 11 tests |
-| G6 | `e6b3c34` | PWA: notificationsApi (HATEOAS parser) + useNotificationHistory TanStack hooks + NotificationCenter invalidate на STOMP + markAllRead best-effort + 5 tests |
-| G7 | `4615e23` | web-panel: notification-history.api (Signal-based) + integration в NotificationCenterService + 5 tests |
-| G8 | `c23614f` | docs(architecture/database-schema/data-retention/CLAUDE.md) |
-| G9 hot-patches | `3d3eec6` + `4929d5b` | S4 explicit createCollection + ApplicationReadyEvent index bootstrap; H1 excuse.decided REJECTED через payload.status; H2 Pageable max-size cap |
-| G9 final | `58fd69f` | CHECKLIST G9 ticks + Post-mortem + S5 docker-compose context defer |
+| G0.1 | `8cf3817` | shared-web-api модуль: унифицированный ErrorResponse (10 полей RFC 9457) + FieldError + InvalidParam + 10 unit-тестов |
+| G0.2 | `5d4e26b` | shared-web → Spring Boot starter с @AutoConfiguration (AutoConfiguration.imports заменил scanBasePackages hack) |
+| G0.3 | `86f3ecf` | 3 дубля ErrorResponse в academic/schedule/attendance-api-contract удалены |
+| G0.4 | `0962d47` | academic GlobalExceptionHandler: -7 Spring MVC handler'ов, только domain + @Order(HIGHEST_PRECEDENCE) |
+| G0.5 | `4da3487` | schedule handler: аналогично, SecuritySmokeIT passes |
+| G0.6 | `221b1cb` | attendance handler: аналогично, Geofence/RateLimit/DuplicateKey сохранены |
+| G0.7 | `c3e45a6` | auth handler + auth/dto/ErrorResponse удалён (6-field about:blank → shared 10-field RFC 9457) |
+| G0.8 | `69cbdd4` | notification: убран scanBasePackages hack |
+| G0.9 | `bab10d6` | spring-security-core compileOnly → api (fix NoClassDefFoundError), NotificationErrorHandlingIT invalidParams → fieldErrors, docs (CLAUDE.md, api-error-conventions.md, shared-modules-usage.md) |
 
-## M10 Lessons learned (применяй в M11)
+### G1 — SharedOpenApiCustomizer наполнение (2 коммита)
 
-1. **Mongo @PostConstruct + ensureIndex silently no-op на пустой
-   коллекции в Mongo 7.** Pattern: explicit `createCollection IF NOT
-   EXISTS` + `ApplicationReadyEvent` (не `@PostConstruct`).
-   Retroactive audit для PushMongoConfig — в N9-bundle.
-2. **Decision events (`*.decided`) с binary payload — обязательны
-   payload-aware маппинги.** Юнит-тест rejected path с самого
-   начала.
-3. **Pageable cap (`max-page-size`) — глобальный prep-step.** В M11
-   audit на каждый PagedModel-возвращающий endpoint.
-4. **Hot-patch verification через Testcontainers IT, не docker-compose
-   smoke.** Когда image stale (S5 в M10), smoke даёт false confidence.
-5. **bug-hunter + security-auditor запускать оба, не «или».** Разные
-   модели угроз дают непересекающееся покрытие — H1 (юридически
-   значимый bug) обнаружил bug-hunter, не security.
+| Группа | Commit | Scope |
+|--------|--------|-------|
+| G1 | `8233f88` | GlobalErrorResponsesCustomizer: 7 стандартных error responses (400/401/403/404/409/429/500) + 8 unit + 3 IT в academic-app |
+| G1 docs | `66b9a48` | docs/api-error-conventions.md NEW-122 раздел «Global error responses» |
+
+### G2 — @Schema на DTO (2 коммита)
+
+| Группа | Commit | Scope |
+|--------|--------|-------|
+| G2 partial | `b2404b8` | academic/user DTO — 6 файлов (шаблон для остальных) |
+| G2 full | `de1f1dd` | +155 @Schema в 60 файлах через 3 агентов параллельно (academic/schedule/attendance+notification) |
+
+### Ключевые архитектурные решения (ссылка на NOTES.md)
+
+1. **Один ErrorResponse во всём backend** (было 5 дублей)
+2. **Spring Boot 3 idiomatic AutoConfiguration** — без scanBasePackages hack
+3. **RFC 9457** во всех сервисах (было: RFC 7807 в 4 + about:blank в auth)
+4. **MDC traceId** во всех response body (раньше null в 4 сервисах)
+5. **invalidParams → fieldErrors** (унификация с frontend)
+6. **`@Order(HIGHEST_PRECEDENCE)` domain + `LOWEST_PRECEDENCE` shared** — правильный Spring pattern
+7. **spring-security-core `api(...)`** в shared-web — обязательно для AccessDenied handler resolution
+
+## M11 Lessons learned (применяй в G3-G5 и M12)
+
+1. **Spring @ExceptionHandler resolve'ит класс при bean creation.**
+   `@ExceptionHandler(XxxException.class)` + `compileOnly` → NoClassDefFoundError
+   в runtime для сервисов без классa. Правило: любой класс в @ExceptionHandler
+   должен быть `api(...)` в shared module, не `compileOnly`.
+2. **Breaking changes в shared DTO требуют frontend regen.**
+   invalidParams → fieldErrors сломало только NotificationErrorHandlingIT
+   (frontend уже использовал fieldErrors). Всегда проверять IT тесты
+   которые парсят response body.
+3. **`scanBasePackages` = code smell в Spring Boot 3.** Правильно —
+   `META-INF/spring/AutoConfiguration.imports`. Unblock pattern для
+   следующих shared-* модулей.
+4. **Agent delegation для механической работы окупается.** 155
+   @Schema в 60 файлах × 3 agents параллельно = ~10 min общего времени
+   vs 2+ часа в main context.
+5. **Response classes extends RepresentationModel — springdoc
+   auto-infers из getter'ов + validation.** Class-level @Schema
+   достаточно для baseline — per-getter optional.
 
 ## Правила (без изменений)
 
@@ -105,40 +143,40 @@ Stop при сюрпризе → NOTES + спросить.
 - Hook-reminder'ы READ-BEFORE-EDIT после Read в той же сессии — **ложные**, edit применяется.
 - Атомарные коммиты per группа.
 
-## M11 точки внимания
+## G3 точки внимания
 
-**G1 SharedOpenApiCustomizer:**
-- `shared-web` уже содержит `SharedOpenApiCustomizer` заглушку
-  (M01). Найти через `Grep "OpenApiCustomizer"` и наполнить.
-- 4 сервиса (academic/schedule/attendance/notification) — уже
-  intergrated через `shared-web` зависимость → автоматический pickup.
-- Per-endpoint `@ApiResponses` НЕ перезаписывается customizer'ом
-  (springdoc по умолчанию merge'ит).
+- **springdoc.api-docs.path** — у academic `/api-docs`, у остальных
+  может быть `/v3/api-docs` (дефолт). Проверить все `application.yml`:
+  `grep -rn "api-docs" services/*/src/main/resources/`.
+- **openapi-diff vs oasdiff**: оба в docker. oasdiff быстрее и
+  configurable exclusions (через JSON rules). openapi-diff
+  (Azure) — более строгий default.
+- **CI baseline** — сначала **non-blocking** (warning), потом
+  blocking после 2-3 недель стабилизации спеки.
+- **M10 notification-api-contract уже имеет @Schema** из Группы 0.2 —
+  в G3 conformance snapshot будет включать notification.
 
-**G2 @Schema:**
-- ~60-80 DTO — много, но pattern одинаковый. Можно автогенерировать
-  заглушки `@Schema(description = "TODO")` через скрипт + ручное
-  заполнение в priority-pass.
-- notification-api-contract DTO (M10) уже Class HATEOAS extends
-  `RepresentationModel` — schema annotation на самих полях.
+## G4 точки внимания
 
-**G3 conformance:**
-- `openapi-diff` — потенциально noisy, нужны конфигурируемые exclusions.
-- Smoke `openapi-dump` — Spring Boot dev tool, поищи в build.gradle
-  springdoc dependency.
-- CI gate — рекомендую сначала **non-blocking** (warning), потом
-  blocking после стабилизации specs.
+- **nginx на prod** — только **один** инстанс (`infra/nginx/nginx.conf`).
+  Не все сервисы deployed behind nginx: academic/schedule/attendance
+  выставляются через api-gateway proxy. Swagger-UI на api-gateway
+  или на каждом сервисе? Проверь VPS /opt/rutcampustrack compose.
+- **Password rotation** — связать с `docs/runbooks/secret-rotation.md`
+  (M09), добавить SWAGGER_HTPASSWD в ротацию раз в полгода.
+- **Dev compose** — не должен требовать basic-auth. Используй
+  отдельный `nginx.dev.conf` mount (или Spring profile differentiation,
+  что сложнее — не делай).
 
-**G4 nginx basic-auth:**
-- В prod `infra/nginx/nginx.conf` уже существует с другими locations
-  — добавить блок без ломки routing.
-- `htpasswd` файл должен быть mounted, не committed.
+## G5 потенциальные сюрпризы
 
-**G5 потенциальные сюрпризы:**
-- `springdoc-openapi-starter-webmvc-ui` версия — должна быть
-  совместима с Spring Boot 3.4.1. Проверить `gradle/libs.versions.toml`.
-- Generated TypeScript (M07 QC2) — после M11 пересборка openapi-typescript
-  → новые JSDoc с descriptions. Не lock-step с M11, но affected.
+- **Void mutations audit в G3** может найти 5-10 ошибочных `@ApiResponse("200")`
+  на `ResponseEntity<Void>`. Fix — 1 строка в контракте, но 5-10
+  файлов.
+- **POST creates без Location** — springdoc сам не добавит Location
+  header в response; требует `@ApiResponse(headers = ...)`. Только
+  где строго по HTTP семантике — audit endpoint'ов, не все POST
+  творят resource (некоторые — operation triggers типа `/users/{id}/archive`).
 
 ---
 
@@ -146,16 +184,31 @@ Stop при сюрпризе → NOTES + спросить.
 
 M01-M08 ✅ (см. предыдущие версии NEXT-SESSION.md)
 M09 Prod Release Blockers ✅ 2026-04-24 (tag `v0.0.0-alpha.10` локальный)
-**M10 Notification History ✅ 2026-04-24 (tag `v0.0.0-alpha.11` локальный)**
-**M11 OpenAPI Polish ⬜ — эта сессия**
-M12 Auth Contract-first Refactor ⬜ (планирование в v0.0.0; реализация v0.1)
+M10 Notification History ✅ 2026-04-24 (tag `v0.0.0-alpha.11` локальный)
+**M11 OpenAPI Polish — G0 + G1 + G2 ✅ 2026-04-24, G3+G4+G5 в эту сессию**
+M12 Auth Contract-first Refactor ⬜ (планирование в v0.0.0, реализация в v0.1)
 
 Dependency graph и полный roadmap — `docs/milestones/README.md`.
 
 ## Ожидающие явного `go`
 
-1. `git push origin dev` — **30 коммитов** ahead (станет ~35+ после M11).
-2. `git push origin --tags` — **10 tags**, станет 11 после M11 tag.
+1. `git push origin dev` — **46 коммитов** ahead (станет 50+ после M11 G3-G5).
+2. `git push origin --tags` — **10 tags**, станет 11 после M11 tag
+   `v0.0.0-alpha.12`.
 3. После M11 → **M12 Auth Contract-first Refactor** (планирование в
    v0.0.0, реализация в v0.1). См.
    `docs/future-ideas.md` → «Auth API contract-first refactor».
+
+## Рекомендация perf для следующей сессии
+
+**Full gradlew.bat build** в проекте занимает **~12 минут** (academic
++ schedule + attendance integrationTest — по ~2-3 мин каждый,
+Testcontainers). Во избежание ожидания — использовать:
+
+- `./gradlew.bat compileJava compileTestJava` — быстрая проверка
+  синтаксиса после refactor'а (30 сек)
+- `./gradlew.bat :services:shared:shared-web:test` — только unit
+  (20 сек)
+- `./gradlew.bat :services:academic-service:academic-app:test
+  --tests "ClassName"` — конкретный IT (~1-2 мин)
+- Полный `build` — один раз в конце группы, в background с `&`

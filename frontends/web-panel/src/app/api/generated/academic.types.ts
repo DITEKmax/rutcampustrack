@@ -906,6 +906,10 @@ export interface components {
             telegramId?: number;
             /** Format: date-time */
             createdAt?: string;
+            /**
+             * @description Одноразовый начальный пароль (per D-10). Показывается только при создании, впоследствии недоступен. Admin обязан передать безопасным каналом.
+             * @example Kx9mQ7wP2n
+             */
             initialPassword?: string;
             _links?: components["schemas"]["Links"];
         };

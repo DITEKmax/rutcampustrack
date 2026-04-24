@@ -5856,7 +5856,9 @@
             "format" : "date-time"
           },
           "initialPassword" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Одноразовый начальный пароль (per D-10). Показывается только при создании, впоследствии недоступен. Admin обязан передать безопасным каналом.",
+            "example" : "Kx9mQ7wP2n"
           },
           "_links" : {
             "$ref" : "#/components/schemas/Links"

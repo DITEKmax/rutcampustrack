@@ -72,7 +72,7 @@ public class HomeworkController implements HomeworkApi {
     @RequireRole({UserRole.STUDENT})
     public ResponseEntity<Void> markComplete(Long id) {
         homeworkService.markComplete(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @Override

@@ -453,13 +453,13 @@ class RestApiIT extends AbstractAcademicIntegrationTest {
                 "VALUES (?, ?, ?, 'Test HW', ?, '2040-03-01', 1, NOW(), NOW()) RETURNING id",
                 Long.class, seedGroupId, subjectId, semesterId, seedStudentId);
 
-        // Mark homework as complete (student)
+        // Mark homework as complete (student) — M11 G3: 200→204 (void mutation)
         mockMvc.perform(post("/academic/homeworks/" + homeworkId + "/complete")
                         .header("X-User-Id", seedStudentId)
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", seedGroupId)
                         .header("X-Is-Headman", "false"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Verify it's marked in DB
         Integer count = jdbcTemplate.queryForObject(

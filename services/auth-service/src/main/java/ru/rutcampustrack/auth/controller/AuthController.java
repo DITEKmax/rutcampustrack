@@ -207,13 +207,13 @@ public class AuthController {
     }
 
     @Operation(summary = "Change password", description = "Change password for authenticated user")
-    @ApiResponse(responseCode = "200", description = "Password changed successfully")
+    @ApiResponse(responseCode = "204", description = "Password changed successfully")
     @ApiResponse(responseCode = "401", description = "Current password is incorrect")
     @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request,
                                                Authentication authentication) {
         Long userId = Long.parseLong(authentication.getName());
         authService.changePassword(userId, request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }

@@ -133,7 +133,7 @@ class OtpIT extends AbstractIntegrationTest {
     @Test
     @Sql(scripts = "classpath:sql/reset-student-password.sql",
          executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    void changePassword_withCorrectCurrent_returns200() {
+    void changePassword_withCorrectCurrent_returns204() {
         // Login as student to get access token
         LoginRequest loginRequest = new LoginRequest("student", "password");
         ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
@@ -151,7 +151,7 @@ class OtpIT extends AbstractIntegrationTest {
 
         ResponseEntity<Void> changeResponse = restTemplate.postForEntity(
                 "/auth/change-password", entity, Void.class);
-        assertThat(changeResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(changeResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
         // Verify can login with new password
         LoginRequest newLoginRequest = new LoginRequest("student", "NewPass1x");

@@ -127,3 +127,33 @@ prefill=burst=600 + restore 10 tok/sec».
 (multipart 25MB, 5 req/min per-user) — уже был в `5/5/1`, теперь
 переделан в `1/60/12` по единой формуле, чтобы не держать два стиля
 semantics в одном yml.
+
+## 2026-04-25 — Группа 3 (pagination global cap)
+
+**Реализация:** `EnvironmentPostProcessor` вместо добавления yml в
+`shared-web` (starter не поддерживает nested application.yml как
+дефолты без дополнительного hack'а). `PageableDefaultsPostProcessor`
+добавляет lowest-priority `MapPropertySource` с
+`spring.data.web.pageable.max-page-size=100`. Per-service override
+в `application.yml` перебивает дефолт естественным образом.
+
+**Не тронул:** schedule-app `max-page-size: 200` (из v3.0 phase
+11 RESEARCH — week-range query ~640 lessons/semester; 200 покрывает
+большинство практических запросов). Отдельно задокументирован override
+в `docs/api-pagination.md` как legitimate per-service exception.
+
+**Удалил:** `max-page-size: 100` из `notification-app/application.yml`
+(дубль с shared-web default после M13 G3). `default-page-size: 20` в
+notification-app оставил — это осмысленный local override для UX
+feed'а.
+
+**IT-тесты:** 3 × `PaginationCapIT` в academic/schedule/attendance.
+Каждый вызывает `GET …?size=1000000` и проверяет `page.size ≤ {cap}`.
+Все зелёные. Attendance/academic — cap=100 (shared default),
+schedule — cap=200 (local override).
+
+**Что не покрыл IT:** auth-service и notification-web — у auth
+практически нет пагинации (OTP/login/refresh не Page), а у
+notification-web уже был hot-patch `max-page-size=100` в M10 G9 H2,
+который M13 перевёл в shared default. Если нужны IT на
+`/api/notifications?size=…` — добавлю по запросу.

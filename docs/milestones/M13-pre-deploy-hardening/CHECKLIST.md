@@ -21,9 +21,9 @@
 
 ## Группа 3 — Pagination global cap (security)
 
-- [ ] Добавить `spring.data.web.pageable.max-page-size=100` в `shared-web` default config
-- [ ] IT на 3 endpoint'а (academic/schedule/attendance) — `?size=1000000` → truncated до 100
-- [ ] Документация в `docs/api-pagination.md` — max-page-size = 100
+- [x] Добавить `spring.data.web.pageable.max-page-size=100` в `shared-web` default config _(`PageableDefaultsPostProcessor` + `META-INF/spring.factories`; `EnvironmentPostProcessor` ставит дефолт с lowest priority, per-service override возможен)_
+- [x] IT на 3 endpoint'а (academic/schedule/attendance) — `?size=1000000` → truncated до 100 _(3 × `PaginationCapIT`, все зелёные; schedule проверяет cap=200 из local override, остальные — 100 из shared default)_
+- [x] Документация в `docs/api-pagination.md` — max-page-size = 100 _(новый файл: semantics, per-service cap table, client rules, HATEOAS links, monitoring roadmap)_
 
 ## Группа 4 — `/auth/refresh-body` removal (sunset guard)
 

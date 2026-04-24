@@ -1,17 +1,13 @@
 package ru.rutcampustrack.auth.controller;
 
 import io.jsonwebtoken.Claims;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.rutcampustrack.auth.api.WsTicketApi;
 import ru.rutcampustrack.auth.dto.WsTicketResponse;
 import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
 import ru.rutcampustrack.auth.service.JwtService;
@@ -26,9 +22,7 @@ import ru.rutcampustrack.auth.service.WsTicketService;
  * notification-service SubscriptionAuthInterceptor требует groupId + isHeadman.</p>
  */
 @RestController
-@RequestMapping("/auth")
-@Tag(name = "Authentication", description = "JWT authentication endpoints")
-public class WsTicketController {
+public class WsTicketController implements WsTicketApi {
 
     private final WsTicketService wsTicketService;
     private final JwtService jwtService;
@@ -38,15 +32,9 @@ public class WsTicketController {
         this.jwtService = jwtService;
     }
 
-    @Operation(summary = "Issue WebSocket ticket",
-               description = "Generate short-lived (30s, single-use) ticket for WebSocket handshake. "
-                       + "Client uses it as `?ticket=<value>` query param. Replaces legacy "
-                       + "`?token=<access_jwt>` pattern which leaked JWT into nginx/Gateway logs.")
-    @ApiResponse(responseCode = "200", description = "Ticket issued")
-    @ApiResponse(responseCode = "401", description = "Missing or invalid access token")
-    @PostMapping("/ws-ticket")
+    @Override
     public ResponseEntity<WsTicketResponse> issueTicket(Authentication authentication,
-                                                         HttpServletRequest request) {
+                                                        HttpServletRequest request) {
         long userId = Long.parseLong(authentication.getName());
         String role = extractRole(authentication);
         Claims claims = parseAccessTokenClaims(request);

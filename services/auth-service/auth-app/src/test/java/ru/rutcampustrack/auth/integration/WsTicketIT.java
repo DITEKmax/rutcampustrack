@@ -9,8 +9,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import ru.rutcampustrack.auth.controller.InternalWsTicketController.ConsumeRequest;
-import ru.rutcampustrack.auth.controller.InternalWsTicketController.ConsumeResponse;
+import ru.rutcampustrack.auth.dto.ConsumeWsTicketRequest;
+import ru.rutcampustrack.auth.dto.ConsumeWsTicketResponse;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.dto.WsTicketResponse;
@@ -58,7 +58,7 @@ class WsTicketIT extends AbstractIntegrationTest {
         String accessToken = loginAndGetAccessToken("student");
         String ticket = issueTicket(accessToken);
 
-        ResponseEntity<ConsumeResponse> response = consume(ticket);
+        ResponseEntity<ConsumeWsTicketResponse> response = consume(ticket);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -76,13 +76,13 @@ class WsTicketIT extends AbstractIntegrationTest {
         String ticket = issueTicket(accessToken);
 
         // First consume — ok
-        ResponseEntity<ConsumeResponse> first = consume(ticket);
+        ResponseEntity<ConsumeWsTicketResponse> first = consume(ticket);
         assertThat(first.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         // Second consume — 404 (already consumed)
         ResponseEntity<String> second = restTemplate.exchange(
                 "/internal/consume-ws-ticket", HttpMethod.POST,
-                internalEntity(new ConsumeRequest(ticket)), String.class);
+                internalEntity(new ConsumeWsTicketRequest(ticket)), String.class);
         assertThat(second.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
@@ -90,7 +90,7 @@ class WsTicketIT extends AbstractIntegrationTest {
     void consumeTicket_unknownTicket_returns404() {
         ResponseEntity<String> response = restTemplate.exchange(
                 "/internal/consume-ws-ticket", HttpMethod.POST,
-                internalEntity(new ConsumeRequest("nonexistent-uuid")), String.class);
+                internalEntity(new ConsumeWsTicketRequest("nonexistent-uuid")), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
@@ -101,7 +101,7 @@ class WsTicketIT extends AbstractIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
         ResponseEntity<String> response = restTemplate.exchange(
                 "/internal/consume-ws-ticket", HttpMethod.POST,
-                new HttpEntity<>(new ConsumeRequest("some-ticket"), headers), String.class);
+                new HttpEntity<>(new ConsumeWsTicketRequest("some-ticket"), headers), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
@@ -121,13 +121,13 @@ class WsTicketIT extends AbstractIntegrationTest {
         return response.getBody().ticket();
     }
 
-    private ResponseEntity<ConsumeResponse> consume(String ticket) {
+    private ResponseEntity<ConsumeWsTicketResponse> consume(String ticket) {
         return restTemplate.exchange(
                 "/internal/consume-ws-ticket", HttpMethod.POST,
-                internalEntity(new ConsumeRequest(ticket)), ConsumeResponse.class);
+                internalEntity(new ConsumeWsTicketRequest(ticket)), ConsumeWsTicketResponse.class);
     }
 
-    private HttpEntity<ConsumeRequest> internalEntity(ConsumeRequest body) {
+    private HttpEntity<ConsumeWsTicketRequest> internalEntity(ConsumeWsTicketRequest body) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("X-Internal-Issuer-Secret", INTERNAL_SECRET);

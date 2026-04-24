@@ -1,17 +1,14 @@
 package ru.rutcampustrack.auth.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import ru.rutcampustrack.auth.api.AuthApi;
 import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
@@ -30,9 +27,7 @@ import ru.rutcampustrack.auth.service.TmaService;
 import ru.rutcampustrack.auth.service.WsTicketService;
 
 @RestController
-@RequestMapping("/auth")
-@Tag(name = "Authentication", description = "JWT authentication endpoints")
-public class AuthController {
+public class AuthController implements AuthApi {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
@@ -60,12 +55,8 @@ public class AuthController {
         this.wsTicketService = wsTicketService;
     }
 
-    @Operation(summary = "Login with credentials", description = "Authenticate with login and password, returns JWT token pair + refresh cookie")
-    @ApiResponse(responseCode = "200", description = "Successfully authenticated")
-    @ApiResponse(responseCode = "401", description = "Invalid credentials")
-    @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request,
-                                               HttpServletRequest httpRequest) {
+    @Override
+    public ResponseEntity<TokenResponse> login(LoginRequest request, HttpServletRequest httpRequest) {
         return respondWithCookie(authService.login(request, resolveClientIp(httpRequest)));
     }
 
@@ -88,26 +79,16 @@ public class AuthController {
         return remote == null ? "unknown" : remote;
     }
 
-    @Operation(summary = "Refresh access token",
-               description = "Read refresh token from HttpOnly cookie 'rct_refresh', rotate it, return new access in body + new cookie.")
-    @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully")
-    @ApiResponse(responseCode = "401", description = "Missing, invalid or expired refresh cookie")
-    @PostMapping("/refresh")
-    public ResponseEntity<TokenResponse> refresh(
-            @CookieValue(name = AuthCookies.REFRESH_COOKIE_NAME, required = false) String refreshCookie) {
+    @Override
+    public ResponseEntity<TokenResponse> refresh(String refreshCookie) {
         if (refreshCookie == null || refreshCookie.isBlank()) {
             throw new TokenRefreshException("Missing refresh cookie");
         }
         return respondWithCookie(authService.refresh(new RefreshRequest(refreshCookie)));
     }
 
-    @Operation(summary = "Logout", description = "Invalidate refresh token, ws-tickets, and clear refresh cookie")
-    @ApiResponse(responseCode = "204", description = "Successfully logged out")
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            @CookieValue(name = AuthCookies.REFRESH_COOKIE_NAME, required = false) String refreshCookie,
-            @RequestBody(required = false) RefreshRequest body,
-            Authentication authentication) {
+    @Override
+    public ResponseEntity<Void> logout(String refreshCookie, RefreshRequest body, Authentication authentication) {
         // M03b Группа 8: инвалидируем активные ws-ticket'ы пользователя до revoke refresh —
         // если access-JWT доступен (Bearer прошёл JwtAuthenticationFilter). Если чистый
         // cookie-logout без Bearer — пропускаем, ticket'ы истекут сами через 30s.
@@ -138,51 +119,29 @@ public class AuthController {
                 .build();
     }
 
-    @Operation(summary = "Get RSA public key", description = "Returns RSA public key in PEM format for JWT verification")
-    @ApiResponse(responseCode = "200", description = "Public key retrieved")
-    @GetMapping("/public-key")
+    @Override
     public ResponseEntity<PublicKeyResponse> getPublicKey() {
         return ResponseEntity.ok(authService.getPublicKey());
     }
 
-    @Operation(summary = "Request OTP code",
-               description = "Generate OTP code for Telegram-based authentication. "
-                       + "M09 G2 (08 P0-2): код отправляется пользователю через "
-                       + "notification-bot (RabbitMQ event otp.requested), НЕ возвращается в HTTP body.")
-    @ApiResponse(responseCode = "204", description = "OTP code generated and dispatched to Telegram bot")
-    @ApiResponse(responseCode = "401", description = "Unknown telegram_id or inactive account")
-    @ApiResponse(responseCode = "429", description = "Rate limited — too many requests")
-    @PostMapping("/otp/request")
-    public ResponseEntity<Void> requestOtp(@Valid @RequestBody OtpRequest request) {
+    @Override
+    public ResponseEntity<Void> requestOtp(OtpRequest request) {
         otpService.requestOtp(request);
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Verify OTP code", description = "Verify OTP code and receive JWT token pair + refresh cookie")
-    @ApiResponse(responseCode = "200", description = "OTP verified, JWT pair returned")
-    @ApiResponse(responseCode = "401", description = "Invalid or expired OTP code")
-    @PostMapping("/otp/verify")
-    public ResponseEntity<TokenResponse> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
+    @Override
+    public ResponseEntity<TokenResponse> verifyOtp(OtpVerifyRequest request) {
         return respondWithCookie(otpService.verifyOtp(request));
     }
 
-    @Operation(summary = "Verify OTP code without telegram ID",
-               description = "Verify OTP code by reverse lookup (code → telegramId). Used by web-panel "
-                       + "where the user only enters the 6-digit code received in Telegram bot.")
-    @ApiResponse(responseCode = "200", description = "OTP verified, JWT pair returned")
-    @ApiResponse(responseCode = "401", description = "Invalid or expired OTP code")
-    @PostMapping("/otp/verify-by-code")
-    public ResponseEntity<TokenResponse> verifyOtpByCode(@Valid @RequestBody OtpVerifyByCodeRequest request) {
+    @Override
+    public ResponseEntity<TokenResponse> verifyOtpByCode(OtpVerifyByCodeRequest request) {
         return respondWithCookie(otpService.verifyOtpByCode(request));
     }
 
-    @Operation(summary = "Authenticate via Telegram Mini App",
-               description = "Validate Telegram initData (HMAC-SHA256) and return JWT token pair. "
-                       + "Cookie also set for web-panel fallback; TMA clients read refreshToken from body.")
-    @ApiResponse(responseCode = "200", description = "Successfully authenticated via TMA")
-    @ApiResponse(responseCode = "401", description = "Invalid or tampered initData, or user not linked")
-    @PostMapping("/tma")
-    public ResponseEntity<TokenResponse> tmaAuth(@Valid @RequestBody TmaAuthRequest request) {
+    @Override
+    public ResponseEntity<TokenResponse> tmaAuth(TmaAuthRequest request) {
         return respondWithCookie(tmaService.authenticateWithInitData(request));
     }
 
@@ -192,26 +151,16 @@ public class AuthController {
                 .body(tokens);
     }
 
-    @Operation(summary = "Refresh tokens (body-based, deprecated)",
-               description = "Exchange refresh token in request body for new token pair. "
-                       + "DEPRECATED in M03b — use cookie-based POST /auth/refresh instead. "
-                       + "Planned removal: M04/M05.")
-    @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully")
-    @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
-    @PostMapping("/refresh-body")
-    public ResponseEntity<TokenResponse> refreshBody(@Valid @RequestBody RefreshRequest request) {
+    @Override
+    public ResponseEntity<TokenResponse> refreshBody(RefreshRequest request) {
         return ResponseEntity.ok()
                 .header("Deprecation", "true")
                 .header("Sunset", REFRESH_BODY_SUNSET)
                 .body(authService.refresh(request));
     }
 
-    @Operation(summary = "Change password", description = "Change password for authenticated user")
-    @ApiResponse(responseCode = "204", description = "Password changed successfully")
-    @ApiResponse(responseCode = "401", description = "Current password is incorrect")
-    @PostMapping("/change-password")
-    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request,
-                                               Authentication authentication) {
+    @Override
+    public ResponseEntity<Void> changePassword(ChangePasswordRequest request, Authentication authentication) {
         Long userId = Long.parseLong(authentication.getName());
         authService.changePassword(userId, request);
         return ResponseEntity.noContent().build();

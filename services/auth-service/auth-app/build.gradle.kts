@@ -67,4 +67,7 @@ dependencies {
 
     // M09 G2 (08 P0-2) — contract-тест otp.requested против JSON Schema
     testImplementation(libs.json.schema.validator)
+
+    // M12 G4 — AuthApiContractTest: controllers implement contract interfaces
+    testImplementation(libs.archunit.junit5)
 }

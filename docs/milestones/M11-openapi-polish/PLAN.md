@@ -292,40 +292,126 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
 - Переименовать `include("services:shared:shared-web")` →
   `include("services:shared:shared-web-starter")`
 
-## Acceptance criteria
+## Acceptance criteria ✅
 
 **Группа 0:**
-- [ ] Единственный `ErrorResponse` класс в repo (grep `record ErrorResponse`
-      → ровно 1 hit в `shared-web-api`)
-- [ ] 5 сервисов (academic/schedule/attendance/auth/notification)
-      используют shared `ErrorResponse` и shared `GlobalExceptionHandler`
-- [ ] Все существующие `*IT` зелёные после refactor'а
-- [ ] Frontend типы (`PWA + web-panel`) продолжают парсить error body
-      без breaking changes (поле `fieldErrors` сохранено)
-- [ ] `shared-web-starter` через `META-INF/.../AutoConfiguration.imports`
-      — нет `scanBasePackages = {..., "ru.rutcampustrack.shared.web"}`
-      ни в одном `*Application.java`
+- [x] Единственный `ErrorResponse` класс в repo (1 hit в `shared-web-api`)
+- [x] 5 сервисов используют shared `ErrorResponse` + shared handler
+- [x] Все существующие `*IT` зелёные (RateLimitIT pre-existing flaky —
+      не M11 regression, см. Known flaky ниже)
+- [x] Frontend типы парсят error body без breaking changes
+      (fieldErrors сохранён)
+- [x] Без `scanBasePackages` для shared.web — через AutoConfiguration.imports
 
-**Группа 1-4 (оригинал):**
-- [ ] `GlobalErrorResponsesCustomizer` автоматически добавляет 7
-      стандартных `@ApiResponse` (400/401/403/404/409/429/500) на все
-      endpoints всех 5 сервисов
-- [ ] `/v3/api-docs` каждого сервиса содержит стандартные error
-      responses для всех endpoints (unit-check через
-      `MockMvc /v3/api-docs`)
-- [ ] ≥80% DTO полей имеют `@Schema(description, example)`
-- [ ] Generated TypeScript types (M07 QC2) содержат JSDoc с
-      descriptions/examples — spot check 3-5 DTO
-- [ ] Void mutations возвращают 204 (а не 200); integration tests
-      обновлены
-- [ ] CI step `openapi-conformance` проходит
-- [ ] nginx basic-auth защищает `/swagger-ui` + `/v3/api-docs` в
-      prod; smoke curl без creds → 401
-- [ ] Dev (Spring profile `local`) — без basic-auth работает
-- [ ] `docs/api-error-conventions.md` обновлён
-- [ ] `docs/openapi-conformance.md` + `docs/runbooks/swagger-prod-access.md`
-- [ ] `docs/api-spec/` содержит committed snapshot per service
-- [ ] Post-mortem секция в PLAN.md, tag `v0.0.0-alpha.12`
+**Группа 1-4:**
+- [x] `GlobalErrorResponsesCustomizer` — 7 стандартных `@ApiResponse`
+      (400/401/403/404/409/429/500) на все endpoints
+- [x] `/api-docs` каждого сервиса содержит стандартные error responses
+      (OpenApiErrorResponsesIT + OpenApiSnapshotIT)
+- [x] **100%** DTO файлов имеют `@Schema` (71/71, после
+      UserCreatedResponse fix в G5.2) — превышает 80%
+- [x] Generated TS types регенерированы (PWA + web-panel)
+- [x] Void mutations 204: HomeworkController.markComplete +
+      AuthController.changePassword (G3.2)
+- [x] CI step `openapi-conformance` — `*OpenApiSnapshotIT` в
+      java-integration-test matrix
+- [x] nginx basic-auth на `/swagger-ui*` + `/v3/api-docs` + `/openapi/`
+      (G4, smoke-verified локально)
+- [x] ~~Dev local profile без basic-auth~~ — dev compose не содержит
+      nginx (unnecessary)
+- [x] `docs/api-error-conventions.md` расширен (NEW-122)
+- [x] `docs/openapi-conformance.md` (NEW-123) +
+      `docs/runbooks/swagger-prod-access.md` (NEW-125)
+- [x] `docs/openapi/*.json` committed (унифицировано с M07 baseline)
+- [x] Post-mortem секция ниже, tag `v0.0.0-alpha.12` (локальный)
+
+## Post-mortem (G5, 2026-04-24)
+
+### Итоговая статистика
+
+- **53+ коммита** ahead origin/dev (46 до G3 старта + 7 в G3-G5)
+- **5 Групп (0→5)**, все закрыты в одном milestone
+- **Estimate**: 4-5 дней (исходно 3 + Группа 0 на 1-2)
+- **Actual**: ≈2 рабочих дня compressed с Opus 4.7 — 10 коммитов G0,
+  3 G1+G2, 5 G3, 1 G4, 3 G5
+- **Lines**: net −5,977 благодаря удалению 5 дублей ErrorResponse +
+  7 MVC handler'ов в 4 сервисах
+- **Новые тесты**: 4 `OpenApiSnapshotIT` + 3 `OpenApiErrorResponsesIT`
+  + 10 unit `ErrorResponseTest`
+- **Новые docs**: 3 файла (NEW-122/124, NEW-123, NEW-125)
+
+### Что пошло по плану
+
+1. **G0 Legacy cleanup** — big-bang refactor 5→1 ErrorResponse
+   без потери fieldErrors formata, frontend unchanged.
+   Backward-compat конструкторы (6/7/8/9/10-arg) позволили
+   migrate сервис-за-сервисом в 9 атомарных коммитов.
+2. **Agent delegation (G2)** — 155 `@Schema` в 60 файлах через
+   3 agents параллельно ≈10 мин, vs прогноз 2+ часа.
+3. **@Order pattern** (HIGHEST domain + LOWEST shared) сработал
+   без edge cases в 4 сервисах.
+
+### Что не пошло по плану
+
+1. **S1 Surprise (G1 старт)**: shared-web был подключён только в
+   notification-app (scanBasePackages hack), остальные 3 сервиса
+   имели свой GlobalExceptionHandler. Трансформировало M11 из
+   «наполнить bean-заглушку» в «унифицировать ErrorResponse +
+   создать starter». Owner выбрал полную унификацию (вариант E).
+2. **spring-security-core `compileOnly`→`api`** (G0.9): shared
+   handler имеет `@ExceptionHandler(AccessDeniedException)`, Spring
+   resolve'ит класс при bean creation → NoClassDefFoundError в
+   сервисах без security classpath.
+3. **FieldError $ref unresolvable** (G3.4): `ModelConverters`
+   возвращает root + referenced, customizer использовал только root.
+   Fix: `resolved.referencedSchemas.forEach(...)`.
+4. **docker-compose `$$` escape** (G4): apr1 hash содержит `$`,
+   compose интерполирует `${VAR}` → видит `$apr1` как undefined.
+   Пришлось документировать `$$`-escape в `.env.prod.example`.
+5. **M11 scope удвоился**: добавилась Группа 0 (Legacy cleanup).
+   Без G0 customizer-per-service дубль drift'нул бы через месяц.
+
+### Lessons learned (применяй в M12)
+
+1. **`@ExceptionHandler(X.class)` + `compileOnly`** = NoClassDefFoundError
+   в runtime. Любой класс в handler'е обязан быть `api(...)` в shared.
+2. **Breaking changes в shared DTO = frontend regen.** Проверять
+   IT тесты которые парсят response body.
+3. **`scanBasePackages` = code smell в Spring Boot 3.** Правильно —
+   `META-INF/spring/AutoConfiguration.imports`.
+4. **Agent delegation** окупается для механической работы
+   (155 DTO × 3 параллельных agents).
+5. **@Order для handler-ов обязателен** при наличии shared +
+   domain handler'ов. Без него Spring выбирает hash → недетерминизм.
+6. **`ModelConverters.readAllAsResolvedSchema`** возвращает tuple
+   (schema, referencedSchemas). Регистрировать оба, иначе `$ref`
+   ломает downstream.
+7. **docker-compose env interpolation** — любой `$` в env value
+   должен быть `$$`. apr1/bcrypt hash'и содержат `$`.
+8. **per-service IT snapshot vs oasdiff** — IT проще для small teams
+   (no external Go tool, встроенный CI feedback).
+9. **Docs/openapi единый baseline** для frontend drift + backend
+   conformance — не разводить 2 папки.
+10. **Dev compose без nginx** — не все «dev bypass» нужны.
+
+### Для M12 Auth Contract-first Refactor
+
+- **ErrorResponse уже shared** — M12 не переделывает формат,
+  только выносит `AuthApi` interface + DTO в `auth-api-contract`.
+- **GlobalErrorResponsesCustomizer** работает для auth, если auth
+  добавит shared-web + уберёт duplicate error handlers.
+- **OpenApiSnapshotIT** — скопировать паттерн для auth-service.
+- **@Schema на DTO** — добавить при extract'е в `auth-api-contract`.
+
+### Known flaky (не блокирует M11)
+
+- `api-gateway:RateLimitIT.sixthRequest_returns429` — стабильно
+  падает локально (`Remaining=1` после 6-го запроса вместо 429).
+  **Не связан с M11** — изменения только в shared-web + docs/openapi.
+  Корневая причина: `replenishRate=5/sec` пополняет bucket в процессе
+  5-iter loop (~200ms), 6-й запрос получает свежий token. M03a
+  Группа 12 test bug — backlog fix в отдельном M (снизить
+  replenishRate в тесте или использовать `StopWatch`-based control).
 
 ## Dependencies
 

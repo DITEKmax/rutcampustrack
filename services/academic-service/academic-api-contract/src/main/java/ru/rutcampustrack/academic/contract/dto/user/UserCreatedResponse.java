@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.user;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
@@ -11,6 +12,8 @@ import java.time.OffsetDateTime;
  * Includes all UserResponse fields plus the one-time {@code initialPassword}
  * that the admin must securely deliver to the user (per D-10).
  */
+@Schema(description = "Ответ при создании нового пользователя — все поля UserResponse + " +
+        "одноразовый начальный пароль (показывается только один раз, per D-10)")
 public class UserCreatedResponse extends RepresentationModel<UserCreatedResponse> {
 
     private Long id;
@@ -86,6 +89,9 @@ public class UserCreatedResponse extends RepresentationModel<UserCreatedResponse
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 
+    @Schema(description = "Одноразовый начальный пароль (per D-10). Показывается только " +
+            "при создании, впоследствии недоступен. Admin обязан передать безопасным каналом.",
+            example = "Kx9mQ7wP2n")
     public String getInitialPassword() { return initialPassword; }
     public void setInitialPassword(String initialPassword) { this.initialPassword = initialPassword; }
 }

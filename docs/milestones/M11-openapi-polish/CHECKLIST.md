@@ -139,19 +139,25 @@
 - [x] `docs/api-error-conventions.md` — раздел «@Schema policy»
       (NEW-124)
 
-## Группа 3 — Conformance CI (P2-2/3)
+## Группа 3 — Conformance CI (P2-2/3) ✅
 
-- [ ] Audit `@ApiResponse(responseCode)` vs actual return types
-      (grep + manual)
-- [ ] Fix void mutations: `@ApiResponse("204")` + `ResponseEntity<Void>`
-- [ ] Fix POST creates: `@ApiResponse("201")` + Location header
-- [ ] `./gradlew openapi-dump` task per service (spring-doc maven plugin
-      alt или custom)
-- [ ] Commit initial snapshots `docs/api-spec/*.yaml`
-- [ ] CI step `openapi-conformance`:
-      bootRun → wait → dump → diff committed — fail on breaking
-- [ ] Tool: `openapi-diff` (Azure) или `oasdiff`
-- [ ] `docs/openapi-conformance.md` (NEW-123)
+- [x] Audit `@ApiResponse(responseCode)` vs actual return types
+      (grep + manual) — 2 расхождения найдено (NOTES G3 старт)
+- [x] Fix void mutations: `@ApiResponse("204")` + `ResponseEntity<Void>`
+      — HomeworkController.markComplete + AuthController.changePassword
+- [x] ~~Fix POST creates: `@ApiResponse("201")` + Location header~~ —
+      отложено в v0.1 (HATEOAS _links.self уже покрывает URL)
+- [x] ~~`./gradlew openapi-dump` task~~ — заменено на per-service
+      `OpenApiSnapshotIT` через MockMvc/TestRestTemplate
+      (simpler, уже интегрировано в java-integration-test CI job)
+- [x] Commit initial snapshots `docs/openapi/{academic,schedule,
+      attendance,notification}.json` (унифицировано с M07
+      frontend drift baseline, вместо отдельного `docs/api-spec/`)
+- [x] CI step `openapi-conformance` — `java-integration-test` job
+      уже запускает `*OpenApiSnapshotIT` (строгий byte-level diff)
+- [x] ~~Tool: `openapi-diff` (Azure) или `oasdiff`~~ — заменено на
+      встроенный JSON diff в IT (no external Go tool, no docker pull)
+- [x] `docs/openapi-conformance.md` (NEW-123) — runbook создан
 
 ## Группа 4 — /swagger-ui prod protection (P2-2/6)
 

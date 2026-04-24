@@ -36,6 +36,45 @@
 ### S1 — Module уже в варианте (b)
 Разрешено в D1. См. выше.
 
+### S4 — `IndexOperations.ensureIndex` в @PostConstruct не создаёт индексы на пустой коллекции (G9 smoke 2026-04-24)
+
+**Контекст G9.2:** после `docker compose down -v` + `up -d` все
+сервисы стартанули healthy, init-mongo создал обоих user'ов (PoLP D2
+работает). Но проверка `db.notification_history.getIndexes()` показала
+ТОЛЬКО `_id_` — наши 3 кастомных индекса (`idx_user_sent_desc`,
+`idx_user_read`, `ttl_sent_at`) **не созданы**.
+
+Дополнительная диагностика: `listCollections` показывает что
+коллекция `notification_history` СУЩЕСТВУЕТ (UUID присвоен), но 
+индексы отсутствуют. Insert-then-query тест подтвердил: даже после
+первого insert индексы не материализуются.
+
+**Root cause:** `NotificationHistoryMongoConfig.@PostConstruct` запускается
+на стартапе ДО того как любой документ записан. Spring Data MongoDB
+`IndexOperations.ensureIndex` на ещё-несуществующий namespace в Mongo 7
+**silently no-op** (известный quirk: `getMongoCollection` lazy-инициализация
+не пинает create). Коллекция создаётся при первом `repository.save()` —
+но к этому моменту `@PostConstruct` уже отработал.
+
+**Severity:** **HIGH**.
+- Unread-count запрос делает **COLLSCAN** вместо IXSCAN — деградация
+  по мере роста коллекции.
+- **TTL не работает** — retention 30d не применится, документы живут
+  бесконечно (растёт storage).
+
+**Fix (G9 hot-patch):** в `@PostConstruct` явно создать коллекцию
+через `MongoTemplate.createCollection("notification_history")` если
+её нет, ПЕРЕД `ensureIndex`. Pattern из `PushMongoConfig` (M05) —
+там сделано через `if (!mongoTemplate.collectionExists(...))
+mongoTemplate.createCollection(...)`.
+
+Альтернатива (рассмотрена, отклонена): переезд на
+`@EventListener(ApplicationReadyEvent)` — добавляет race с
+RabbitListener'ом (consumer может стартануть раньше index-bootstrap).
+Явный create-then-ensure в `@PostConstruct` — детерминирован.
+
+См. G9.5 hot-patch commit.
+
 ### S2 — Mongo user уже имеет readWrite на notification_db
 `infra/mongo/init-mongo.js` создаёт единый `MONGO_USER` с правами
 `readWrite + dbAdmin` на `notification_db` И `attendance_db`. M05 якобы

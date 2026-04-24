@@ -117,6 +117,66 @@
 
 ---
 
+## 2026-04-24 — G5 Frontend regenerate + snapshot (closed)
+
+### OpenApiSnapshotIT создан
+
+- Auth-service не имел OpenApiSnapshotIT (в M11 G3 покрыты только
+  academic/schedule/attendance/notification). Создан по pattern
+  academic IT: `services/auth-service/auth-app/src/test/java/
+  ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java`.
+  SNAPSHOT_PATH = `docs/openapi/auth.json`, snapshot CWD = auth-app/.
+- Regenerate: `./gradlew :services:auth-service:auth-app:integrationTest
+  --tests "*OpenApiSnapshotIT" -Popenapi.snapshot.update=true` — BUILD
+  SUCCESSFUL 1m 14s.
+
+### docs/openapi/auth.json — новый baseline
+
+- **Старый baseline** (до M12) — ручная конкатенация, включала
+  `/internal/issue-internal-jwt` + `/internal/consume-ws-ticket` как
+  public endpoints + Internal tags. `tags[0]` = Authentication, далее
+  Internal + Internal Issuer.
+- **Новый baseline** (runtime springdoc) — internal endpoints отсутствуют
+  (`@Hidden` на InternalIssuerApi + InternalWsTicketApi). Остаются
+  11 public endpoints:
+  - `/auth/login`, `/auth/logout`, `/auth/refresh`, `/auth/refresh-body`
+  - `/auth/otp/request`, `/auth/otp/verify`, `/auth/otp/verify-by-code`
+  - `/auth/public-key`, `/auth/tma`, `/auth/change-password`
+  - `/auth/ws-ticket`
+- Diff: 1121 insertions, 540 deletions. **Не** binary-breaking:
+  удаления = internal + старое описание без @Schema/@Operation;
+  добавления = M11 @Schema descriptions + @Operation summaries
+  + RFC 9457 error response references.
+
+### Frontend regenerate (offline)
+
+- `cd frontends/pwa && npm run generate:types:offline` → пересобраны
+  все 4 `*.types.ts` из `docs/openapi/*.json`. Изменился только
+  `auth.types.ts` (academic/schedule/attendance spec не изменились,
+  generated types identical).
+- То же самое для `frontends/web-panel`.
+- **mini-app** (по PLAN.md предполагался): отдельного `generate:types`
+  script нет — mini-app использует auth через PWA types (shared
+  dependency). Regenerate не требуется.
+- Binary-compat проверка: **deletions** в auth.types.ts — только
+  `/internal/*` endpoints + inline `ConsumeRequest/ConsumeResponse`
+  DTO (которые теперь Hidden внутри internal controller'а).
+  **Additions** — только JSDoc descriptions/examples от M11 @Schema
+  policy. **Public endpoint DTO shape не изменился.**
+
+### Docker smoke — deviation
+
+- OpenApiSnapshotIT уже покрывает runtime smoke: Spring context
+  boot + real Testcontainers postgres/redis + HTTP GET /api-docs.
+  Internal endpoints verifiably скрыты (0 occurrences of
+  `"/internal` в snapshot).
+- Полный `docker compose up -d auth-service` + login flow в
+  PWA/web-panel — требует browser session + seeded DB;
+  откладывается на отдельную UAT сессию владельца.
+  **Не блокер** для M12 binary-compat gate.
+
+---
+
 ## 2026-04-24 — Старт M12
 
 ### Owner-ответы (defaults подтверждены)

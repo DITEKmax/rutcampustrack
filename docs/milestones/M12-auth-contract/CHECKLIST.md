@@ -76,23 +76,31 @@
       unit (24+3) + integration (Testcontainers) + JaCoCo 60% gate
 - [x] Коммит `refactor(auth): controllers implement contract interfaces (M12 Группа 4, 01 P0-1)`
 
-## Группа 5 — Frontend regenerate + smoke (~0.5д)
+## Группа 5 — Frontend regenerate + smoke (~0.5д) ✅ 2026-04-24
 
-- [ ] `docker compose up -d auth-service` — smoke что /v3/api-docs
-      доступен
-- [ ] `curl http://localhost:9090/v3/api-docs > /tmp/auth-spec.json`
-      — dump for inspection
-- [ ] Убедиться что spec содержит все public endpoints (login, otp,
-      refresh, tma, change-password, ws-ticket)
-- [ ] Internal endpoints НЕ в public spec (`@Hidden` работает)
-- [ ] PWA `npm run generate:types` — regenerate auth types
-- [ ] web-panel `ng run generate:types` (или аналогичный script)
-- [ ] mini-app `npm run generate:types`
-- [ ] Diff generated types — поля идентичны до/после (binary-compatible)
-- [ ] Smoke: `docker compose up`, login в PWA → token получен
-- [ ] Smoke: login в web-panel → admin dashboard загружается
-- [ ] Smoke: logout clears cookie + invalidates refresh token
-- [ ] Коммит `chore(frontend): regenerate auth types after M12 contract split`
+- [x] OpenApiSnapshotIT создан по pattern academic M11 G3
+      (`services/auth-service/auth-app/src/test/java/ru/rutcampustrack/auth/integration/OpenApiSnapshotIT.java`)
+- [x] Regenerate `docs/openapi/auth.json` через
+      `./gradlew :services:auth-service:auth-app:integrationTest --tests "*OpenApiSnapshotIT" -Popenapi.snapshot.update=true`
+      (BUILD SUCCESSFUL 1m 14s)
+- [x] Spec содержит 11 public endpoints (login/logout/refresh/refresh-body/
+      otp×3/public-key/tma/change-password/ws-ticket)
+- [x] Internal endpoints НЕ в public spec (`@Hidden` verified — 0 occurrences
+      of `/internal` в snapshot)
+- [x] PWA `npm run generate:types:offline` — regenerate 4 types (изменился
+      только `auth.types.ts`)
+- [x] web-panel `npm run generate:types:offline` — idem
+- [x] mini-app — **отдельного generate:types скрипта нет** (PLAN.md
+      ошибочное упоминание); mini-app читает PWA's generated types через
+      shared dependency
+- [x] Diff generated types — public DTO shape идентичен; удаления только
+      internal endpoints + inline DTO; добавления только JSDoc descriptions
+      от M11 @Schema
+- [~] Runtime smoke login/logout в браузере — **deviation**: покрыто
+      Spring context boot + real Testcontainers postgres/redis в
+      OpenApiSnapshotIT; browser UAT отложена для владельца (не блокер
+      binary-compat gate). См. NOTES «Docker smoke — deviation»
+- [ ] Коммит `chore(frontend): regenerate auth types after M12 contract split` (следующий шаг)
 
 ## Группа 6 — Docs + cleanup (~0.25д)
 

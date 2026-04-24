@@ -74,6 +74,13 @@ subprojects {
         classpath = sourceSets["test"].runtimeClasspath
         shouldRunAfter("test")
 
+        // M11 G3 — passthrough флаг для OpenApiSnapshotIT (update mode),
+        // иначе forked test JVM не видит CLI -D.
+        if (project.hasProperty("openapi.snapshot.update")) {
+            systemProperty("openapi.snapshot.update",
+                    project.property("openapi.snapshot.update") as String)
+        }
+
         // Отдельная отчётность, не перезаписываем test HTML/XML.
         reports {
             html.outputLocation.set(layout.buildDirectory.dir("reports/integrationTest"))

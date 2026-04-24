@@ -29,9 +29,12 @@ import java.util.Optional;
 public class NotificationHistoryConsumer extends AbstractEventConsumer {
 
     private final NotificationHistoryRepository repository;
+    private final NotificationHistoryService historyService;
 
-    public NotificationHistoryConsumer(NotificationHistoryRepository repository) {
+    public NotificationHistoryConsumer(NotificationHistoryRepository repository,
+                                       NotificationHistoryService historyService) {
         this.repository = repository;
+        this.historyService = historyService;
     }
 
     @RabbitListener(queues = "notification-web.history")
@@ -73,6 +76,7 @@ public class NotificationHistoryConsumer extends AbstractEventConsumer {
                         .traceId(traceId)
                         .build();
                 repository.save(doc);
+                historyService.invalidateUnreadCount(userId);
                 log.debug("history-consumer: persisted {} for user {}", maybeType.get(), userId);
             } catch (Exception ex) {
                 log.warn("history-consumer: persist failed for event {}: {}",

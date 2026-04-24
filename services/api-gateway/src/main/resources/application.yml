@@ -215,6 +215,20 @@ spring:
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
 
+        # M10 G5 — notification history (list / unread-count / mark-read).
+        - id: notification-history
+          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 600
+                redis-rate-limiter.burstCapacity: 600
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
         - id: auth-service-openapi
           uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
           predicates:

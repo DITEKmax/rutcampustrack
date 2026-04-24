@@ -25,11 +25,14 @@ class NotificationHistoryConsumerTest {
     @Mock
     private NotificationHistoryRepository repository;
 
+    @Mock
+    private NotificationHistoryService historyService;
+
     private NotificationHistoryConsumer consumer;
 
     @BeforeEach
     void setUp() {
-        consumer = new NotificationHistoryConsumer(repository);
+        consumer = new NotificationHistoryConsumer(repository, historyService);
     }
 
     @Test
@@ -53,6 +56,7 @@ class NotificationHistoryConsumerTest {
         assertThat(saved.getTraceId()).isEqualTo("trace-xyz");
         assertThat(saved.getSentAt()).isNotNull();
         assertThat(saved.getReadAt()).isNull();
+        verify(historyService).invalidateUnreadCount(42L);
     }
 
     @Test

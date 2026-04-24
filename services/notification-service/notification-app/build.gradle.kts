@@ -55,6 +55,10 @@ dependencies {
     // NEW: MongoDB for push_subscriptions
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
+    // M10 G4 — Caffeine local L1 cache для unread-count endpoint.
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+
     // M05 G7 (NEW-148): ShedLock для cleanupStalePushSubs scheduled job.
     // Mongo provider переиспользует существующий MongoTemplate (коллекция
     // `shedLock` автосоздаётся).

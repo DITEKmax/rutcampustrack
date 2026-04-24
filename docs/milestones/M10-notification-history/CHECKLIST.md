@@ -67,26 +67,37 @@
 
 ## Группа 4 — Service + Caffeine cache
 
-- [ ] `CaffeineConfig.java` — bean `CacheManager` с `unread-count` cache
-      (maximumSize=10000, expireAfterWrite=30s)
-- [ ] `NotificationHistoryService.getUnreadCount(userId)` —
+- [x] `history/CaffeineConfig.java` — `@Bean CacheManager` (Caffeine
+      `maximumSize=10000`, `expireAfterWrite=30s`) на cache `unread-count`
+- [x] build.gradle: `spring-boot-starter-cache` + `caffeine:3.1.8`
+- [x] `NotificationHistoryService.getUnreadCount(userId)` —
       `@Cacheable(cacheNames="unread-count", key="#userId")`
-- [ ] `NotificationHistoryService.markAsRead(id)` — evict cache для userId
-- [ ] STOMP publisher: при publish new notification →
-      `cacheManager.getCache("unread-count").evict(userId)`
-- [ ] Test: Caffeine cache hit/miss + STOMP invalidation
+- [x] `markAsRead` / `markAllRead` — `@CacheEvict` по userId
+- [x] `invalidateUnreadCount(userId)` — `cacheManager.getCache().evict()`,
+      вызывается `NotificationHistoryConsumer` после persist
+- [x] Unit test `NotificationHistoryServiceTest` (6 tests: getUnreadCount,
+      markAsRead true/false, markAllRead, invalidate — null-cache safe)
+- [x] Unit test `NotificationHistoryConsumerTest` дополнен assert на
+      invalidate после persist
 
 ## Группа 5 — REST controller
 
-- [ ] `NotificationController` implements NotificationApi
-- [ ] Endpoint: GET list (pagination + HATEOAS PagedModel)
-- [ ] Endpoint: GET unread-count (Caffeine cached)
-- [ ] Endpoint: PATCH {id}/read
-- [ ] Endpoint: POST mark-all-read
-- [ ] RFC 7807 error handling (shared-web из M01)
-- [ ] api-gateway route `/api/notifications/**` → lb://notification-web
-- [ ] Integration test: полный flow login → publish event → GET list →
-      PATCH read → unread-count decrements
+- [x] `history/NotificationController implements NotificationApi`
+- [x] Endpoint: `GET /notifications` (Pageable + `PagedResourcesAssembler`
+      → HATEOAS PagedModel)
+- [x] Endpoint: `GET /notifications/unread-count` (Caffeine-cached)
+- [x] Endpoint: `PATCH /notifications/{id}/read` — 204 on ok, 403 if
+      not-owner / not-found (не раскрываем существование чужих docs)
+- [x] Endpoint: `POST /notifications/mark-all-read` → 204
+- [x] RFC 7807 error handling — доменный `AccessDeniedException` уже
+      обработан `NotificationExceptionHandler` (M01 shared-web RFC 9457)
+- [x] `@RequireRole({STUDENT, TEACHER, ADMIN})` на всех endpoints
+- [x] api-gateway route `/api/notifications/**` → notification-web:9094
+      с StripPrefix + rate-limiter 600 rps (same как /api/push/**)
+- [x] Unit test `NotificationControllerTest` (5 tests: list/unread/
+      markRead 204/403/markAllRead)
+- [ ] Integration test полного flow — **отложено в G9** (требует
+      full stack + Testcontainers)
 
 ## Группа 6 — Frontend PWA migration
 

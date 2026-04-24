@@ -253,3 +253,67 @@ gateway не применится — это OK, M11 scope для backend servic
 - **Documentation theme/branding** на /swagger-ui (custom CSS) — v0.1.
 
 ---
+
+## G3 старт — audit @ApiResponse vs runtime (2026-04-24)
+
+### Итог прохода по 4 сервисам (20 контрактных интерфейсов + controllers)
+
+**Расхождений найдено: 2** (намного меньше прогноза «5-10»).
+
+| # | File | Метод | Контракт @ApiResponse | Controller return | Fix |
+|---|------|-------|------------------------|-------------------|-----|
+| 1 | `academic-app/.../HomeworkController.java:75` | `markComplete` | 204 (в `HomeworkApi`) | `ResponseEntity.ok().build()` (200) | `.noContent().build()` |
+| 2 | `auth-service/.../AuthController.java:210-217` | `changePassword` | 200 (локальная @ApiResponse) | `ResponseEntity.ok().build()` (200) — body пустой | `@ApiResponse("204")` + `.noContent().build()` |
+
+### Проверенные файлы (без расхождений)
+
+- **Academic** (10 controllers): `UserController`, `GroupController`,
+  `SubjectController`, `SemesterController`, `AssignmentController`,
+  `AssistantController`, `HomeworkController` (кроме markComplete),
+  `ThresholdController`, `DashboardController`. Все `ResponseEntity<Void>`
+  DELETE → `.noContent()` ✅.
+- **Schedule** (4 controllers): `LessonController`, `OneOffLessonController`,
+  `ScheduleItemController`. DELETE → 204, PATCH/cancel/restore → 200 с body ✅.
+- **Attendance** (5 controllers): `CheckinController`, `MarkingController`,
+  `ReportController`, `ExcuseController`, `LateCheckinController`.
+  Нет `ResponseEntity<Void>` — все mutations возвращают ресурс ✅.
+- **Notification** (2 controllers): `NotificationController` —
+  markAsRead/markAllRead возвращают `.noContent()` ✅. `PushController` —
+  subscribe→201 (строка 67), unsubscribe→204 ✅.
+- **Auth** (4 controllers): `AuthController` (logout→204, otp/request→204,
+  остальные Token responses→200 с body), `WsTicketController`,
+  `InternalWsTicketController`, `InternalIssuerController`. Все кроме
+  `changePassword` корректны ✅.
+
+### POST creates без Location header — отложено
+
+Owner-Answers P2-2/3 явно говорит: Location только где строго по HTTP
+семантике — **не operation triggers** (`/users/{id}/archive`,
+`/groups/promote`, `/latecheckin/{requestId}/decision` и т.п.).
+Фактические «POST resource create» endpoints (14 шт):
+`POST /academic/users`, `/academic/groups`, `/academic/subjects`,
+`/academic/semesters`, `/academic/assignments`, `/academic/assistants`,
+`/academic/homeworks`, `/schedule/items`, `/schedule/one-off-lessons`,
+`/attendance/excuses` (+ /with-file), `/attendance/late-checkin/{lessonId}`,
+`/attendance/checkin`, `/push/subscribe`. Добавление Location требует
+ручного `ResponseEntity.created(URI)` в каждом контроллере — отдельный
+backlog, **отложено в v0.1** (не блокирует prod release,
+HATEOAS `_links.self` уже содержит URL ресурса).
+
+### Отклонение от плана PLAN
+
+PLAN ожидал 5-10 ошибочных `@ApiResponse("200")` на
+`ResponseEntity<Void>`. Нашли только 2. Причина: G0 (Group 0) уже
+унифицировала `GlobalExceptionHandler` + контракты, что требовало
+повторной проверки всех контрактов — многие ошибки были замечены и
+исправлены попутно.
+
+## G3 — результаты (в процессе, 2026-04-24)
+
+| Группа | Commit | Scope |
+|--------|--------|-------|
+| G3.1 audit | — | NOTES.md report (2 расхождения найдено) |
+| G3.2 fix | `<pending>` | HomeworkController markComplete 200→204, AuthController changePassword 200→204 + @ApiResponse update |
+| G3.3 snapshot infra | `<pending>` | OpenApiSnapshotIT per service, docs/api-spec/*.yaml |
+| G3.4 CI oasdiff | `<pending>` | .github/workflows/ci.yml new step |
+| G3.5 docs | `<pending>` | docs/openapi-conformance.md runbook NEW-123 |

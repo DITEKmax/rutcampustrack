@@ -1,6 +1,8 @@
 # API Rate Limits (NEW-11)
 
-**Статус:** реализован в M03a (tag `v0.0.0-alpha.3`).
+**Статус:** реализован в M03a (tag `v0.0.0-alpha.3`). Семантика
+X req/min перекалибрована в **M13 G2** (до этого `burstCapacity=5,
+requestedTokens=1` давали фактический предел ~300 req/min).
 
 Документирует лимиты запросов, применяемые Gateway и auth-service на
 уровне отдельных endpoint'ов. Применимо к всем клиентам RutTrack
@@ -13,30 +15,59 @@ Spring Cloud Gateway `RedisRateLimiter` использует token-bucket:
 
 - **`replenishRate`** (tokens/sec) — restore rate, сколько токенов
   восполняется в секунду.
-- **`burstCapacity`** (tokens) — размер бакета, максимум запросов
-  подряд до начала отказов.
-- **`requestedTokens`** — сколько токенов списывается за запрос
-  (всегда `1` в текущей конфигурации).
+- **`burstCapacity`** (tokens) — размер бакета, максимум токенов,
+  которые клиент может накопить.
+- **`requestedTokens`** — сколько токенов списывается за запрос.
 
-**Практическое следствие:** число в таблице ниже — это `burstCapacity`.
-Клиент может сделать N запросов подряд, затем rate-limit throttle'ит
-его до `replenishRate` запросов/сек. Через 60 сек полного бездействия
-бакет снова полон.
+### Формула для цели «X req/min» (M13 G2)
+
+Чтобы bucket давал ровно X запросов в минуту (sustainable rate) с
+full burst первых X запросов сразу, надо подобрать:
+
+```
+replenishRate  = 1                  tok/sec  (= 60 tok/min)
+burstCapacity  = 60                 tok      (= 1 min запас)
+requestedTokens = 60 / X            tok/req
+```
+
+**Steady-state:** `replenishRate × 60 / requestedTokens = 60/(60/X) = X req/min`.
+
+**Burst:** bucket стартует полным (60 токенов). Первые X запросов
+расходуют `X × (60/X) = 60` токенов — все проходят залпом. X+1-й
+получает `429`.
+
+**UX:** после burst на X запросов следующий слот появится через
+`60/X` секунд (время восполнения 1 requestedTokens). Для 5 req/min =
+12 сек, для 10 req/min = 6 сек, для 30 req/min = 2 сек.
+
+> ⚠️ `burstCapacity < requestedTokens` **отказывает первый же запрос**
+> с 429 — token-bucket не может списать больше токенов, чем есть в
+> бакете. Поэтому универсально держим `burstCapacity=60`.
 
 ## Таблица лимитов (Gateway)
 
-| Endpoint                              | Ключ                 | burst / replenish | Комментарий                      |
-|---------------------------------------|----------------------|-------------------|----------------------------------|
-| `POST /api/auth/otp/request`          | IP                   | 1 / 1s            | SMS-cost guard                   |
-| `POST /api/auth/otp/verify-by-code`   | IP                   | 5 / 5s            |                                  |
-| `POST /api/auth/login`                | IP (фильтр 1)        | 5 / 5s            | Hard IP-ceiling против distributed brute |
-| `POST /api/auth/login`                | IP+login composite   | 10 / 10s          | X-Login header, fallback на IP при отсутствии |
-| `POST /api/auth/refresh[-body]`       | userId (X-User-Id)   | 30 / 30s          | Rotation abuse guard             |
-| `POST /api/attendance/check-in`       | userId               | 10 / 10s          | Multi-mark prevention            |
-| `* /api/academic/**`                  | IP                   | 600 / 600s        | DDoS guard                       |
-| `* /api/schedule/**`                  | IP                   | 600 / 600s        | DDoS guard                       |
-| `* /api/attendance/**`                | IP                   | 600 / 600s        | DDoS guard                       |
-| `* /api/push/**`                      | IP                   | 600 / 600s        | DDoS guard                       |
+| Endpoint                              | Ключ                 | Лимит        | requestedTokens | Комментарий                      |
+|---------------------------------------|----------------------|--------------|-----------------|----------------------------------|
+| `POST /api/auth/otp/request`          | IP                   | 1 req/min    | 60              | SMS-cost guard                   |
+| `POST /api/auth/otp/verify-by-code`   | IP                   | 5 req/min    | 12              |                                  |
+| `POST /api/auth/login`                | IP (фильтр 1)        | 5 req/min    | 12              | Hard IP-ceiling против distributed brute |
+| `POST /api/auth/login`                | IP+login composite   | 10 req/min   | 6               | X-Login header, fallback на IP при отсутствии |
+| `POST /api/auth/refresh[-body]`       | userId (X-User-Id)   | 30 req/min   | 2               | Rotation abuse guard             |
+| `POST /api/attendance/check-in`       | userId               | 10 req/min   | 6               | Multi-mark prevention            |
+| `POST /api/attendance/excuses/with-file` | userId            | 5 req/min    | 12              | Multipart upload, 25 MB body (M07 G12) |
+| `* /api/academic/**`                  | IP                   | 600 req/min* | 1               | DDoS guard (legacy, не на формуле M13 G2) |
+| `* /api/schedule/**`                  | IP                   | 600 req/min* | 1               | DDoS guard                       |
+| `* /api/attendance/**`                | IP                   | 600 req/min* | 1               | DDoS guard                       |
+| `* /api/push/**`                      | IP                   | 600 req/min* | 1               | DDoS guard                       |
+| `* /api/notifications/**`             | IP                   | 600 req/min* | 1               | DDoS guard                       |
+
+Для всех M13-формульных RL: `replenishRate=1, burstCapacity=60`.
+
+\* Generic DDoS-guard routes используют legacy-конфигурацию
+`replenishRate=600, burstCapacity=600, requestedTokens=1` — это даёт
+10 tok/sec = 600 req/min sustained, с burst=600. Формально не по формуле
+M13 G2, но semantic цель (600/min) выдерживается за счёт prefill=burst=600
+и restore 10 tok/sec.
 
 **IP извлекается:** `X-Forwarded-For` (первый в списке) → `RemoteAddr` →
 `"unknown"`. Gateway всегда за nginx/cloudflare в prod, поэтому XFF
@@ -55,7 +86,11 @@ Spring Cloud Gateway `RedisRateLimiter` использует token-bucket:
     "detail": "Request rate limit exceeded. Retry later."
   }
   ```
-- **`Retry-After: 60`** — секунды (если downstream не переопределил).
+- **`Retry-After: 60`** — секунды, hardcoded upper bound в
+  `RateLimitProblemDetailsFilter`. Реальный next-slot появится раньше
+  (через `60/X` секунд для route с лимитом X req/min — 12 сек для 5/min,
+  6 сек для 10/min, 2 сек для 30/min). Клиент может быть консервативным
+  и ждать полные 60 сек, либо смотреть `X-RateLimit-Remaining`.
 - **`X-RateLimit-Remaining`, `X-RateLimit-Replenish-Rate`,
   `X-RateLimit-Burst-Capacity`** — информационные headers от
   `RedisRateLimiter`.

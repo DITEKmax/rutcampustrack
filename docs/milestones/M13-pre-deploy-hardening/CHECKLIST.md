@@ -15,9 +15,9 @@
 
 ## Группа 2 — Rate-limit semantics (security, dev unblock)
 
-- [ ] Переделать `application.yml` rate-limit на 6 auth роутов: `replenishRate=1`, `burstCapacity=5`, `requestedTokens=12` → ровно 5 req/min
-- [ ] Обновить `RateLimitIT` — тест на 5 req → 6-й 429 с правильным timing
-- [ ] Обновить `docs/api-rate-limits.md` — семантика
+- [x] Переделать `application.yml` rate-limit на 6 auth роутов: `replenishRate=1`, `burstCapacity=5`, `requestedTokens=12` → ровно 5 req/min _(финальная формула: `burstCapacity=60, requestedTokens=60/X`; owner-формула в NOTES была неточной — `burstCapacity=5 < requestedTokens=12` давало 429 на первом запросе. См. `api-rate-limits.md` «Формула для цели X req/min»)_
+- [x] Обновить `RateLimitIT` — тест на 5 req → 6-й 429 с правильным timing _(после фикса config'а тест прошёл без изменения assertion'ов; добавлен comment-clarification про M13 G2)_
+- [x] Обновить `docs/api-rate-limits.md` — семантика _(заменена таблица burst/replenish на X req/min + requestedTokens; добавлен блок «Формула для цели X req/min» и уточнение про Retry-After как hardcoded upper bound)_
 
 ## Группа 3 — Pagination global cap (security)
 

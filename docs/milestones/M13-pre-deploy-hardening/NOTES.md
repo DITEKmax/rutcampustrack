@@ -85,3 +85,45 @@ _пусто пока_
 на `replenishRate=1/burstCapacity=5/requestedTokens=12` нужно пересчитать
 ожидаемый `Retry-After` в `RateLimitIT.sixthRequest_returns429` (с "60"
 на "12" или что даст Spring Cloud Gateway из остатка токенов).
+
+## 2026-04-25 — Группа 2 (rate-limit semantics)
+
+**Surprise #1 (executed G2):** owner-формула в NOTES.md:46
+(`burstCapacity=5, requestedTokens=12`) **некорректна** — token-bucket
+не может списать больше токенов, чем есть в бакете. При стартовом
+бакете=5 первый же запрос (cost=12) → 429. `RateLimitIT` упал с
+«expected 2xx but was 429».
+
+**Решённая формула (универсальная для всех X req/min):**
+
+```
+replenishRate   = 1 tok/sec   (= 60 tok/min)
+burstCapacity   = 60 tok      (= 1 мин запас)
+requestedTokens = 60 / X
+```
+
+- 5 req/min → `rr=1, bc=60, rt=12` (5 × 12 = 60 tokens = burst)
+- 10 req/min → `rr=1, bc=60, rt=6`
+- 30 req/min → `rr=1, bc=60, rt=2`
+- 1 req/min → `rr=1, bc=60, rt=60`
+
+**Retry-After:** остаётся hardcoded `60` в
+`RateLimitProblemDetailsFilter:73`. Не уточняем per-route — это upper
+bound, клиент может ждать меньше (реально `60/X` сек). Описано в
+`docs/api-rate-limits.md`.
+
+**Проверка:** локально `./gradlew :services:api-gateway:integrationTest
+--tests RateLimitIT` → 2/2 passing. Assertion-ы
+(`Retry-After=60`, 6-й запрос = 429, проблема `type`) остались без
+изменения (`RateLimitProblemDetailsFilter` не route-aware).
+
+**Что не трогал:** generic DDoS-guard (600/600/1 для
+academic/schedule/attendance/notification/push) — owner в debt-report'е
+упомянул только 6 auth routes. Оставил legacy-конфигурацию с пометкой
+в docs «формально не по формуле M13 G2, но выдерживается за счёт
+prefill=burst=600 + restore 10 tok/sec».
+
+**Что включил в scope расширенно:** `attendance-excuse-upload`
+(multipart 25MB, 5 req/min per-user) — уже был в `5/5/1`, теперь
+переделан в `1/60/12` по единой формуле, чтобы не держать два стиля
+semantics в одном yml.

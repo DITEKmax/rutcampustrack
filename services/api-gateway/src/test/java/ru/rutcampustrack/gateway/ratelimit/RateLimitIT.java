@@ -32,6 +32,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>Проверяет контракт 14 P1-2: 5-й запрос на OTP verify-by-code от одного IP
  * проходит (limit=5/min), 6-й получает 429 с RFC 7807 Problem Details
  * + {@code Retry-After}.</p>
+ *
+ * <p>M13 G2 — семантика перекалибрована на настоящий 5 req/min через
+ * token-bucket: {@code replenishRate=1, burstCapacity=60, requestedTokens=12}.
+ * Bucket вмещает 60 токенов, 5 запросов × 12 = 60 тратят всё залпом, 6-й
+ * получает 429. Далее восполнение 1 токен/сек = следующий слот через
+ * 12 сек. {@code Retry-After: 60} остаётся hard-coded upper bound в
+ * {@link ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilter}
+ * и не зависит от route-specific requestedTokens.</p>
  */
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

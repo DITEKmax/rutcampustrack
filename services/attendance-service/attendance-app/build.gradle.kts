@@ -17,6 +17,11 @@ dependencyManagement {
 dependencies {
     implementation(project(":services:attendance-service:attendance-api-contract"))
 
+    // M11 G0.6: shared-web Spring Boot starter (catch-all Spring MVC handler
+    // через @AutoConfiguration). Attendance-domain handler с
+    // @Order(HIGHEST_PRECEDENCE) обрабатывает только domain исключения.
+    implementation(project(":services:shared:shared-web"))
+
     // M02 — shared-outbox + ShedLock (Mongo-storage) + shared-events (D5(a) единый envelope)
     implementation(project(":services:shared:shared-outbox"))
     implementation(project(":services:shared:shared-events"))

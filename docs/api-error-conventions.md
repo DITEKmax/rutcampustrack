@@ -1,7 +1,7 @@
 # API Error & Batch Conventions
 
-**Версия:** v0.0.0 (M05 Группа 4, NEW-145)
-**Последнее обновление:** 2026-04-20
+**Версия:** v0.0.0 (M05 Группа 4 NEW-145 + M11 G0 унификация ErrorResponse)
+**Последнее обновление:** 2026-04-24
 
 Документ фиксирует соглашения об ошибках и batch-операциях REST API
 RutCampusTrack. Большая часть error-schema уже существовала до M05 —
@@ -9,21 +9,32 @@ RutCampusTrack. Большая часть error-schema уже существов
 
 ---
 
-## Error Response Schema (RFC 7807-inspired)
+## Error Response Schema (RFC 9457 Problem Details)
 
-Все сервисы возвращают ошибки через единый `ErrorResponse` record
-(`*-api-contract/exception/ErrorResponse.java`). Обработка
-централизована в `GlobalExceptionHandler` (`@ControllerAdvice` в каждом
-`*-app`).
+**M11 G0 (2026-04-24):** все сервисы возвращают ошибки через **единый**
+`ErrorResponse` record из `shared-web-api/exception/ErrorResponse.java`
+(раньше было 5 дублей: shared-web, 3 `*-api-contract`, auth/dto).
+Обработка централизована в:
+
+- **shared `GlobalExceptionHandler`** (`@Order(LOWEST_PRECEDENCE)`) —
+  catch-all Spring MVC exceptions (validation, noHandler, accessDenied,
+  generic). Приходит в сервис через `shared-web` dependency +
+  `@AutoConfiguration`.
+- **per-service `GlobalExceptionHandler`** (`@Order(HIGHEST_PRECEDENCE)`)
+  — только domain exceptions (ConflictException, GeofenceViolation,
+  InvalidCredentials и т.п.).
+
+Content-Type: `application/problem+json`.
 
 ```json
 {
   "status": 400,
-  "type": "https://ruttrack.site/errors/validation",
-  "title": "Invalid input",
-  "detail": "Поле status не может быть пустым",
-  "instance": "/attendance/marks/batch",
-  "timestamp": "2026-04-20T15:30:00Z",
+  "type": "https://api.rutcampustrack.ru/problems/validation-failed",
+  "title": "Ошибка валидации",
+  "detail": "Одно или несколько полей не прошли проверку",
+  "instance": "/api/attendance/marks/batch",
+  "timestamp": "2026-04-24T15:30:00Z",
+  "traceId": "abc-trace-123",
   "fieldErrors": [
     {
       "field": "items[3].status",
@@ -34,12 +45,20 @@ RutCampusTrack. Большая часть error-schema уже существов
 }
 ```
 
-- `fieldErrors[]` присутствует только при `status == 400`
-  (validation failure).
-- Для batch-endpoints индексированные пути: `items[3].lessonId` —
-  показывает конкретный item и поле.
-- Остальные статусы (403, 404, 409, 500) — `fieldErrors` пустой или
-  отсутствует.
+Extension fields (RFC 9457 «Extension Members»):
+
+- `traceId` — correlation ID из MDC. Сквозной в логи backend'а через
+  P2-3/1 (OpenTelemetry). Присутствует во всех ответах при наличии MDC.
+- `fieldErrors[]` — ошибки валидации body DTO. Только для `400`
+  (`MethodArgumentNotValidException`, `ConstraintViolationException`,
+  batch индексированные пути `items[3].lessonId`).
+- `field` — имя DTO-поля для conflict (`409`, BUG-006-2). Frontend
+  использует для highlight конкретного поля формы.
+- `extras` — дополнительный payload (`scheduleItemsCount`, retry-after
+  и т.п.).
+
+Все extension fields — `@JsonInclude(NON_NULL)`, не попадают в body
+если `null`.
 
 ## Batch Endpoint Conventions (NEW-145)
 

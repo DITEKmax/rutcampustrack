@@ -110,9 +110,18 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 ### REST API
 
 - HATEOAS Level 3: `EntityModel<T>`, `PagedModel<EntityModel<T>>`, `_links`
-- Ошибки: RFC 7807 Problem Details (`ErrorResponse` record)
+- Ошибки: **RFC 9457** Problem Details (единый `ErrorResponse` в
+  `shared-web-api`, 10 полей — M11 G0 устранил 5 дублей). Content-Type
+  `application/problem+json`. Поля-расширения: `traceId` (MDC),
+  `fieldErrors[]` (body validation), `field` + `extras` (BUG-006-2)
 - Swagger/OpenAPI: аннотации `@Operation`, `@ApiResponse` в контрактных интерфейсах
-- `@ControllerAdvice` — централизованная обработка ошибок, контроллер только бросает исключения
+- `@ControllerAdvice` архитектура:
+  - shared `GlobalExceptionHandler` с `@Order(LOWEST_PRECEDENCE)` —
+    catch-all Spring MVC (validation/noHandler/accessDenied/generic) —
+    приходит транзитивно через `shared-web` `@AutoConfiguration`
+  - per-service `GlobalExceptionHandler` с `@Order(HIGHEST_PRECEDENCE)`
+    — только **domain exceptions**. НЕ дублировать Spring MVC handler'ы.
+  - Контроллер только бросает исключения, handler маппит в HTTP status.
 - PUT = полное обновление, PATCH = частичное (отдельные DTO)
 
 ### Пакетная структура (Attendance Service)
@@ -147,8 +156,9 @@ rutcampustrack/
 ├── gradle/
 │   └── libs.versions.toml              ← Version Catalog (shared-модули, M01)
 ├── services/
-│   ├── shared/                         ← shared foundations (M01+M02)
-│   │   ├── shared-web/                    ← RFC 9457 ErrorResponse, handlers, validation, JacksonConfig
+│   ├── shared/                         ← shared foundations (M01+M02+M11)
+│   │   ├── shared-web-api/                ← M11 G0: чистые DTO (ErrorResponse, FieldError, InvalidParam), java-library без Spring
+│   │   ├── shared-web/                    ← M11 G0: Spring Boot starter (handler, JacksonConfig, Customizer, AdminActionAspect) + @AutoConfiguration
 │   │   ├── shared-events/                 ← DomainEvent base, publisher/consumer MDC helpers
 │   │   ├── shared-logback/                ← JSON appender + masking (Bearer/telegram_id/FCM)
 │   │   ├── shared-test-containers/        ← java-test-fixtures модуль: ContainerTestBase + gRPC + WireMock

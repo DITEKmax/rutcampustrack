@@ -7,23 +7,54 @@
 ```kotlin
 // build.gradle.kts сервиса
 dependencies {
+    // M11 G0: shared-web — Spring Boot starter с @AutoConfiguration
+    // (catch-all Spring MVC handler, JacksonConfig, SharedOpenApiCustomizer,
+    // AdminActionAspect). Транзитивно приносит shared-web-api (ErrorResponse,
+    // FieldError, InvalidParam) + spring-security-core (для AccessDenied handler).
     implementation(project(":services:shared:shared-web"))
     implementation(project(":services:shared:shared-events"))
     implementation(project(":services:shared:shared-logback"))
     testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
-
-    // shared-web требует runtime Spring Security для AccessDeniedException handler
-    implementation("org.springframework.security:spring-security-core")
 }
 ```
 
 ```java
-// Application.java — расширить component scan
-@SpringBootApplication(scanBasePackages = {
-    "ru.rutcampustrack.myservice",
-    "ru.rutcampustrack.shared.web"
-})
+// Application.java — M11 G0.8: scanBasePackages НЕ нужен (раньше был
+// hack для подхвата shared-web beans). Теперь через
+// META-INF/spring/AutoConfiguration.imports (Spring Boot 3 idiom).
+@SpringBootApplication
 public class MyServiceApplication { ... }
+```
+
+### API-contract модули
+
+Если у сервиса есть `*-api-contract` модуль (academic/schedule/
+attendance/notification), добавьте зависимость на shared-web-api —
+тогда controller-интерфейсы получат `ErrorResponse` для
+`@ApiResponse(... schema = @Schema(implementation = ErrorResponse.class))`:
+
+```kotlin
+// *-api-contract/build.gradle.kts
+dependencies {
+    api(project(":services:shared:shared-web-api"))
+    // ... jakarta.validation-api, spring-web, swagger-annotations, ...
+}
+```
+
+### Domain exceptions поверх shared handler
+
+Свой `@RestControllerAdvice` с `@Order(Ordered.HIGHEST_PRECEDENCE)`
+обрабатывает domain-specific exceptions. Shared handler с
+`@Order(Ordered.LOWEST_PRECEDENCE)` остаётся catch-all (Spring MVC
+validation / noHandler / accessDenied / generic):
+
+```java
+@RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class GlobalExceptionHandler {
+    @ExceptionHandler(MyDomainException.class)
+    public ResponseEntity<ErrorResponse> handleMyDomain(...) { ... }
+}
 ```
 
 ```xml

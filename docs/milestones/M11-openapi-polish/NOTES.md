@@ -182,6 +182,68 @@ Gateway (WebFlux) ≠ остальные (WebMVC). Gateway не публикуе
 endpoints (только proxy). Customizer от shared-web (WebMVC-only) на
 gateway не применится — это OK, M11 scope для backend services.
 
+## Группа 0 — результаты (2026-04-24, завершена)
+
+10 коммитов, -887 строк legacy в итоге.
+
+| Commit | Scope | Diff |
+|--------|-------|------|
+| G0.1 `8cf3817` | shared-web-api модуль (унифицированный ErrorResponse 10 полей + FieldError + InvalidParam + 10 unit-тестов) | +878 |
+| G0.2 `5d4e26b` | shared-web → Spring Boot starter (SharedWebAutoConfiguration + AutoConfiguration.imports), удалены дубли ErrorResponse/InvalidParam | -36 |
+| G0.3 `86f3ecf` | Удалены 3 дубля в *-api-contract (academic/schedule/attendance), 5 *Api.java мигрированы на shared import | -180 |
+| G0.4 `0962d47` | Academic handler: удалены 7 Spring MVC handler'ов, оставлен domain-only (@Order HIGHEST_PRECEDENCE) | -110 |
+| G0.5 `4da3487` | Schedule handler: аналогично, SecuritySmokeIT passes | -94 |
+| G0.6 `221b1cb` | Attendance handler: аналогично, Geofence/RateLimit/DuplicateKey сохранены | -122 |
+| G0.7 `c3e45a6` | Auth handler: удалён auth/dto/ErrorResponse (6 полей about:blank), handler мигрирован на shared (traceId + problem type URI) | -99 |
+| G0.8 `69cbdd4` | NotificationWebApplication: убран scanBasePackages hack, AutoConfiguration.imports заменил | +3 |
+| G0.9 `<pending>` | Финал: spring-security-core `compileOnly` → `api` (fix NoClassDefFoundError в сервисах без security), NotificationErrorHandlingIT обновлён (invalidParams → fieldErrors), docs (shared-modules-usage.md, api-error-conventions.md, CLAUDE.md) | — |
+
+### Ключевые решения G0
+
+1. **shared-web-api содержит только 3 класса** (ErrorResponse, FieldError,
+   InvalidParam) — чистый java-library без Spring. Validators
+   (StartBeforeEnd/DateRangeValid/ValidFile + их аннотации) остались
+   в shared-web (Spring-dependent: BeanWrapper, MultipartFile). Это
+   упростило G0.1 с 8 задач до 3.
+
+2. **Переименование `invalidParams` → `fieldErrors`** в shared
+   `ErrorResponse`. Унификация с 3 другими сервисами
+   (academic/schedule/attendance всегда использовали `fieldErrors`) и
+   с frontend generated types. `invalidParams` (из shared-web M01) был
+   единственный, использовал `name`/`reason`/`rejectedValue` вместо
+   `field`/`message`/`rejectedValue`.
+
+3. **Backward-compat constructor'ы ErrorResponse** (6-arg/7-arg/8-arg/
+   9-arg + canonical 10-arg) — без этого refactor'ы G0.4-G0.7
+   невозможны за несколько коммитов, только big-bang.
+
+4. **`@Order(HIGHEST_PRECEDENCE)` для domain handler** +
+   `@Order(LOWEST_PRECEDENCE)` для shared handler — Spring выбирает
+   higher-priority, domain не overriden generic. Проверено в academic
+   unit-tests + schedule SecuritySmokeIT.
+
+5. **spring-security-core `compileOnly` → `api`** в shared-web
+   (G0.9 fix). Shared `GlobalExceptionHandler` имеет
+   `@ExceptionHandler(AccessDeniedException.class)` — Spring resolve'ит
+   класс при bean creation. Consumers без spring-security-core
+   (academic, schedule, attendance) падали с NoClassDefFoundError при
+   запуске ApplicationContext. Фикс: `api()` → транзитив ~200KB JAR
+   (только core классы, без SecurityFilterChain/OAuth2).
+
+### Связь с G1-G5
+
+- **G1** SharedOpenApiCustomizer теперь может использовать прямую
+  `@Schema(implementation = ErrorResponse.class)` reference — после
+  G0 единый класс, без $ref строкой.
+- **G2** @Schema на DTO: ErrorResponse + FieldError уже снабжены
+  @Schema в G0.1 (лучшие descriptions из 4 старых версий). Остались
+  только бизнес-DTO.
+- **G3** Conformance: runtime `/v3/api-docs` теперь возвращает один
+  `ErrorResponse` schema для всех сервисов (раньше — 4 разных JSON
+  schemas с одинаковыми именами, но разными полями).
+- **M12 auth-api-contract refactor** — упрощается: `ErrorResponse`
+  уже shared, остаётся только вынести `AuthApi` interface.
+
 ## Deferred в v0.1
 
 - **P2-2/2 auth-service OpenAPI** через `AuthApi` interface — вместе

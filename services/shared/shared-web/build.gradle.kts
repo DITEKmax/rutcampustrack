@@ -31,7 +31,13 @@ dependencies {
     compileOnly("jakarta.validation:jakarta.validation-api")
     compileOnly("com.fasterxml.jackson.core:jackson-databind")
     compileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    compileOnly("org.springframework.security:spring-security-core")
+    // M11 G0.9: api (не compileOnly), потому что SharedWebAutoConfiguration
+    // регистрирует GlobalExceptionHandler с @ExceptionHandler(AccessDeniedException.class).
+    // Spring разрешает этот класс при создании bean'а; сервисы без
+    // spring-security-core в classpath получат NoClassDefFoundError.
+    // spring-security-core — маленький (~200KB), даёт только AccessDeniedException,
+    // GrantedAuthority и т.п. (никаких SecurityFilterChain / OAuth2).
+    api("org.springframework.security:spring-security-core")
     compileOnly("jakarta.servlet:jakarta.servlet-api")
     compileOnly("org.slf4j:slf4j-api")
 

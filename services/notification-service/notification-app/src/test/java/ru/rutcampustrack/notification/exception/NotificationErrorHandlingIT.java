@@ -94,8 +94,11 @@ class NotificationErrorHandlingIT extends ContainerTestBase {
                 .andExpect(jsonPath("$.title").value("Ошибка валидации"))
                 .andExpect(jsonPath("$.instance").value("/push/subscribe"))
                 .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.invalidParams").isArray())
-                .andExpect(jsonPath("$.invalidParams.length()").value(
+                // M11 G0: invalidParams[] → fieldErrors[] (унификация с frontend
+                // и 3 другими сервисами academic/schedule/attendance, которые
+                // всегда использовали fieldErrors).
+                .andExpect(jsonPath("$.fieldErrors").isArray())
+                .andExpect(jsonPath("$.fieldErrors.length()").value(
                         org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
     }
 

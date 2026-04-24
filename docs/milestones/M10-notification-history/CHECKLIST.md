@@ -37,18 +37,33 @@
 
 ## Группа 3 — Backend entity + repository + consumer
 
-- [ ] `domain/NotificationHistory.java` entity (@Document)
-- [ ] Mongo index init через `@Indexed` + manual TTL index (Spring Data
-      `@CompoundIndex` + init-script TTL)
-- [ ] `NotificationHistoryRepository extends MongoRepository`
-- [ ] `NotificationHistoryConsumer` — @RabbitListener на
-      `notification.history` queue
-- [ ] RabbitMQ topology: queue declaration + binding на fanout exchange
-      `notification.events`
-- [ ] Error handling: try/catch без rethrow, warn log с trace_id
-- [ ] Denormalize logic: event → NotificationHistory mapper per type
-- [ ] IT: `NotificationHistoryConsumerIT` — Testcontainers Mongo+Rabbit,
-      publish event → assert persisted
+- [x] `history/NotificationHistoryDocument.java` (@Document
+      collection=notification_history) с полями id/user_id/type/payload/
+      sent_at/read_at/trace_id
+- [x] `history/NotificationHistoryMongoConfig.java` — 3 индекса через
+      `IndexOperations.ensureIndex`: idx_user_sent_desc, idx_user_read,
+      ttl_sent_at (env `NOTIFICATION_HISTORY_TTL_DAYS`)
+- [x] `NotificationHistoryRepository extends MongoRepository` — methods:
+      findByUserIdOrderBySentAtDesc (page), findByUserIdAndReadAtIsNull
+      (page), countByUserIdAndReadAtIsNull, markRead, markAllRead
+- [x] `NotificationHistoryConsumer` — @RabbitListener на
+      `notification-web.history` (D5 naming; PLAN говорил
+      `notification.history`)
+- [x] `NotificationHistoryRabbitConfig` — queue + DLQ + binding на
+      существующий fanout `rut-uit.events` (не `notification.events` —
+      D5)
+- [x] Error handling: try/catch + warn log, no rethrow (acknowledge
+      идёт всё равно — persistence bug должен быть viewable в logs, не
+      зацикливать requeue)
+- [x] Denormalize mapper — 9 user-facing event types (D6);
+      broadcast (lesson.*) и system events skip'аются
+- [x] Unit tests: NotificationHistoryConsumerMapTypeTest (7) +
+      NotificationHistoryConsumerTest (5). `./gradlew :...:test` зелёный
+- [x] IT: `NotificationHistoryConsumerIT` — Testcontainers Mongo+Rabbit,
+      publish → await persist + skip broadcast (запуск отложен в G9
+      full-stack run; awaitility:4.2.2 добавлен)
+- [x] `application.yml` — default URI `notification_db` +
+      `notification.history.ttl-days`
 
 ## Группа 4 — Service + Caffeine cache
 

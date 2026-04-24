@@ -84,3 +84,62 @@ bootstrap-time concern (изменение requires collMod).
   collMod если отличается — pattern Atlassian/Stripe).
 
 ---
+
+## D5 — RabbitMQ: реальное имя exchange + queue naming
+
+**Дата:** 2026-04-24 (G3 старт)
+**Контекст:** PLAN.md:58 говорит о fanout exchange `notification.events`
+и queue `notification.history`. По факту существующий
+`RabbitConfig.java` использует exchange **`rut-uit.events`** и
+существующая delivery queue = **`notification-web.events`**.
+**Решение:**
+- Exchange: оставить `rut-uit.events` (существующий, shared между
+  всеми сервисами — producers publish туда, все consumers bind к нему).
+- History queue: **`notification-web.history`** (aligned с pattern
+  `notification-web.events`, не `notification.history`).
+- DLQ: **`notification-web.history.dlq`** (симметрично существующему
+  `notification-web.events.dlq`).
+- Binding: history queue → fanout exchange `rut-uit.events` (получает
+  ВСЕ events, denormalize mapper в consumer'е фильтрует).
+**Обоснование:** minimal change, consistency с существующими bean
+names и queue naming. PLAN не видел реальные имена — документ
+корректируется в NOTES.
+
+---
+
+## D6 — Denormalize mapper: target user_id per event
+
+**Дата:** 2026-04-24 (G3)
+**Контекст:** `notification_history` индексирован по `user_id`. Для
+каждого события нужно определить "кому принадлежит эта запись".
+Event-schemas проверены — headman_user_id в events НЕ заложен.
+
+**Маппинг event → target user_id (v0.0.0):**
+
+| Event | target user_id | Заметка |
+|-------|----------------|---------|
+| `excuse.requested` | `payload.user_id` | студент (инициатор) — confirmation |
+| `excuse.decided` | `payload.user_id` | студент (результат) |
+| `late_checkin.requested` | `payload.user_id` | студент (инициатор) |
+| `late_checkin.decided` | `payload.user_id` | студент (результат) |
+| `late_checkin.decision` | `payload.user_id` | студент (результат, legacy name) |
+| `lesson.started` | — | **skip** в v0.0.0 (широковещательный event на группу, не user-specific; STOMP push достаточно) |
+| `lesson.closed` | — | **skip** (broadcast) |
+| `lesson.cancelled` | — | **skip** (broadcast) |
+| `attendance.marked` | `payload.user_id` | если есть поле — persist owner'у отметки |
+
+**Решение v0.0.0:** consumer фильтрует через set support'нутых types.
+Unsupported types skip'аются с `log.trace` (не warn — это не ошибка,
+это design: broadcast events не попадают в per-user history).
+
+**Future (v0.1):** headman-facing items (`excuse.requested` на стороне
+старосты как actionable item) — требует резолвить `headman_id` по
+`group_id`. Добавляем в `future-ideas.md`. В v0.0.0 староста увидит
+input только через live STOMP push + свой webpanel-queue без history
+persist.
+
+**Обоснование (industry):** Gmail / Slack / GitHub history — persist
+только per-user actionable items; broadcast announcements держат
+в отдельной коллекции или не хранят. Мы идём тем же путём.
+
+---

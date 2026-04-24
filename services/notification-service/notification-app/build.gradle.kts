@@ -78,6 +78,8 @@ dependencies {
     testImplementation("org.apache.httpcomponents:httpclient:4.5.13")
     testImplementation(testFixtures(project(":services:shared:shared-test-containers")))
     testImplementation(testFixtures(project(":services:shared:shared-security")))
+    // M10 G3: awaitility для eventual consistency assert в Rabbit→Mongo IT.
+    testImplementation("org.awaitility:awaitility:4.2.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

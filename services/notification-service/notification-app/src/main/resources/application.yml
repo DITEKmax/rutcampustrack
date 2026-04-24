@@ -13,11 +13,16 @@ spring:
 
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/attendance_db}
+      # M10 G1 D3: default БД для local dev = notification_db
+      # (notification-web пишет history сюда; prod URI задаётся compose env).
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/notification_db}
 
 notification:
   jwt:
     public-key-path: ${JWT_PUBLIC_KEY_PATH:/keys/public.key}
+  # M10 G3 D4 — retention для notification_history (TTL index).
+  history:
+    ttl-days: ${NOTIFICATION_HISTORY_TTL_DAYS:30}
 
 rutcampustrack:
   security:

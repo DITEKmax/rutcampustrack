@@ -414,10 +414,15 @@ static final ArchRule reportDoesNotAccessCheckinInternals =
 
 #### Notification Web (Java)
 
-**Стек:** Java Spring Boot + Spring WebSocket + webpush-java  
+**Стек:** Java Spring Boot + Spring WebSocket + webpush-java + Caffeine
 **Порт:** 9094
+**Хранилище:** MongoDB `notification_db` (с M10) + Redis (VAPID)
 
-**Роль:** push-уведомления через три канала доставки:
+**Роль:** stateful push-уведомления через три канала доставки **+
+персистентная история** (M10, см. раздел «Notification History» ниже)
+для cross-session unread-count и retrospective просмотра.
+
+**Каналы доставки:**
 
 **Канал 1 — WebSocket (real-time, вкладка открыта):**
 - STOMP endpoint `/ws` с JWT-аутентификацией
@@ -1068,6 +1073,101 @@ Tempo 14d.
 
 **Документация:** `docs/observability.md` (runbook) + `docs/alerts.md`
 (каталог).
+
+### Notification History (M10)
+
+**Цель:** перевести `notification-web` из stateless event forwarder в
+**stateful history store**, чтобы непрочитанные уведомления и история
+сохранялись через logout/login (P2-6/4) и были доступны cross-session
+через REST.
+
+**MongoDB schema** (`notification_db.notification_history`):
+
+```
+{
+  _id:       ObjectId,
+  user_id:   Long,            // adressee
+  type:      String,          // NotificationType enum (11 values)
+  payload:   { ... },         // denormalized snapshot, immutable
+  sent_at:   ISODate,         // server clock на момент persist
+  read_at:   ISODate | null,  // populated при mark-as-read
+  trace_id:  String           // MDC traceId события
+}
+```
+
+Индексы (создаются `NotificationHistoryMongoConfig.@PostConstruct`):
+- `idx_user_sent_desc` — `{user_id:1, sent_at:-1}` для list per user
+- `idx_user_read` — `{user_id:1, read_at:1}` для unread badge
+- `ttl_sent_at` — `{sent_at:1} expireAfterSeconds` env
+  `NOTIFICATION_HISTORY_TTL_DAYS` (default 30, см.
+  `data-retention-policy.md`)
+
+Mongo user — отдельный `notification_user` (PoLP, M10 D2): readWrite
++ dbAdmin только на `notification_db`. Существующий `MONGO_USER`
+остаётся для `attendance_db`. Init-script —
+`infra/mongo/init-mongo.js`.
+
+**Consumer flow** (separate queue от STOMP delivery):
+
+```
+producers (academic / schedule / attendance / auth)
+    ↓ publish event
+fanout exchange `rut-uit.events`
+    ├──► queue `notification-web.events`   → STOMP push (live UX)
+    └──► queue `notification-web.history`  → NotificationHistoryConsumer
+                                              ├─ map event → NotificationType
+                                              ├─ skip broadcast (lesson.*)
+                                              ├─ persist NotificationHistoryDocument
+                                              ├─ invalidateUnreadCount(userId)
+                                              └─ try/catch: warn-log на fail,
+                                                 НЕ rethrow (DLQ
+                                                 `notification-web.history.dlq`
+                                                 для manual replay)
+```
+
+**Маппер** (M10 D6) persist'ит только 9 user-facing event types c
+`payload.user_id` (excuse.*/late_checkin.*/attendance.marked).
+Broadcast-events (`lesson.started`/`closed`/`cancelled`) skip'аются —
+у них нет per-user adressee, STOMP push достаточно для live UX.
+Headman-facing items (excuse.requested на стороне старосты) отложены
+в v0.1 (требуется gRPC resolve `headman_id` по `group_id`).
+
+**REST surface** (`NotificationApi` в `notification-api-contract`,
+гейтуется через `/api/notifications/**` → notification-web:9094 с
+rate-limit 600 rps):
+
+| Метод | Путь | Роль | Описание |
+|-------|------|------|----------|
+| GET | `/notifications?unreadOnly={bool}&page&size` | STUDENT/TEACHER/ADMIN | HATEOAS `PagedModel<EntityModel<NotificationHistoryDto>>` |
+| GET | `/notifications/unread-count` | STUDENT/TEACHER/ADMIN | `{count}` (Caffeine-cached 30s) |
+| PATCH | `/notifications/{id}/read` | STUDENT/TEACHER/ADMIN | 204; 403 если чужое (cache evict per userId) |
+| POST | `/notifications/mark-all-read` | STUDENT/TEACHER/ADMIN | 204 (cache evict per userId) |
+
+**Caffeine cache + STOMP invalidation** (M10 G4):
+
+- `@Cacheable(cacheNames="unread-count", key="#userId")` на
+  `NotificationHistoryService.getUnreadCount` — `maximumSize=10000`,
+  `expireAfterWrite=30s`.
+- `@CacheEvict` при `markAsRead` / `markAllRead`.
+- `invalidateUnreadCount(userId)` вызывается из
+  `NotificationHistoryConsumer` сразу после persist: badge моментально
+  отражает новое событие, не дожидаясь TTL.
+- Single-instance assumption (`CaffeineConfig` javadoc) — при scale-out
+  notification-web cache мигрирует на Redis (P2-6/4).
+
+**Frontend integration** (M10 G6/G7, hybrid strategy D7):
+
+- PWA: `useNotificationHistory` (TanStack `useInfiniteQuery`),
+  `useUnreadCount` + STOMP frame → `queryClient.invalidateQueries`.
+  sessionStorage остаётся authoritative для **broadcast** events
+  (lesson.*) и live UX внутри сессии — backend history только для
+  cross-session sync.
+- web-panel: `NotificationHistoryService` (Signal-based) +
+  `notification-history.api.ts` (HttpClient + HATEOAS parser),
+  интегрирован в `NotificationCenterService` (`refreshUnreadCount()`
+  на STOMP frame, best-effort `markAllRead()`).
+- Полный server-side infinite-scroll UI и optimistic mutations
+  отложены в v0.1 (`future-ideas.md`).
 
 ---
 

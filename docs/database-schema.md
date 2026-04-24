@@ -353,6 +353,76 @@ db.attendances.createIndex(
 
 ---
 
+## MongoDB: notification_db (Notification Web — M10)
+
+### Коллекция: notification_history
+
+Персистентная история user-facing уведомлений (M10 / NEW-166). Каждый
+документ — snapshot события на момент persist (immutable после save).
+Broadcast events (lesson.*) в коллекцию НЕ попадают — для них хватает
+живого STOMP push (см. M10 D6 в `docs/milestones/M10-notification-history/DECISIONS.md`).
+
+```javascript
+{
+  _id:       ObjectId,
+  user_id:   NumberLong,   // адресат уведомления (academic_db.users.id)
+  type:      String,       // NotificationType — 11 значений UPPER_CASE
+                           //   EXCUSE_REQUESTED | EXCUSE_APPROVED | EXCUSE_REJECTED
+                           //   LATE_CHECKIN_REQUESTED | LATE_CHECKIN_APPROVED | LATE_CHECKIN_REJECTED
+                           //   LESSON_STARTED | LESSON_CLOSED | LESSON_CANCELLED | LESSON_REMINDER
+                           //   ATTENDANCE_RED_ZONE
+  payload:   { ... },      // denormalized snapshot event payload
+  sent_at:   ISODate,      // когда событие persisted (server clock)
+  read_at:   ISODate,      // null = непрочитанное
+  trace_id:  String        // MDC traceId для связи с логами/трейсами
+}
+```
+
+### Индексы notification_history
+
+Создаются программно через `NotificationHistoryMongoConfig.@PostConstruct`
+(не Flyway — MongoDB; pattern одинаковый с `PushMongoConfig`):
+
+```javascript
+// Список уведомлений per user, отсортированный DESC (pagination)
+db.notification_history.createIndex(
+  { user_id: 1, sent_at: -1 },
+  { name: "idx_user_sent_desc" }
+);
+
+// Unread badge count (фильтр read_at:null)
+db.notification_history.createIndex(
+  { user_id: 1, read_at: 1 },
+  { name: "idx_user_read" }
+);
+
+// TTL retention 30 дней (env NOTIFICATION_HISTORY_TTL_DAYS)
+db.notification_history.createIndex(
+  { sent_at: 1 },
+  { name: "ttl_sent_at", expireAfterSeconds: 2592000 }
+);
+```
+
+**TTL caveat:** Mongo TTL изменяется только через `collMod` после
+создания индекса. Изменение env var НЕ перезаписывает существующий
+индекс на работающем volume (отложено в `docs/future-ideas.md` —
+«Notification retention collMod auto-reconciler», v0.1).
+
+### Mongo user — separation of concerns (M10 D2)
+
+Один Mongo инстанс (`mongo-attendance` контейнер), две logical БД,
+два user'а (Principle of Least Privilege):
+
+| User | Права | Создаётся в |
+|------|-------|-------------|
+| `MONGO_USER` (default `rct_attendance_user`) | readWrite + dbAdmin на `attendance_db` | `infra/mongo/init-mongo.js` |
+| `MONGO_NOTIFICATION_USER` (default `rct_notification_user`) | readWrite + dbAdmin на `notification_db` | `infra/mongo/init-mongo.js` |
+
+Compromise одного credential'а не даёт доступа к данным другого
+сервиса. Rotation runbook — `docs/runbooks/secret-rotation.md`.
+
+---
+
 ## Redis (Auth Service + Academic Service кэш)
 
 ### Auth Service — эфемерные данные
@@ -422,6 +492,14 @@ public enum AttendanceSource {
 public enum AssistantPermission {
     MARK_ATTENDANCE, MANAGE_EXCUSES, MANAGE_HOMEWORK, CANCEL_LESSONS, VIEW_STATS;
 }
+
+// notification-api-contract (M10 / NEW-167)
+public enum NotificationType {
+    EXCUSE_REQUESTED, EXCUSE_APPROVED, EXCUSE_REJECTED,
+    LATE_CHECKIN_REQUESTED, LATE_CHECKIN_APPROVED, LATE_CHECKIN_REJECTED,
+    LESSON_STARTED, LESSON_CLOSED, LESSON_CANCELLED, LESSON_REMINDER,
+    ATTENDANCE_RED_ZONE;
+}
 ```
 
 ### JPA Lowercase Converter (общий для всех enum-ов)
@@ -467,6 +545,8 @@ public class LowercaseEnumConverter<E extends Enum<E>> implements AttributeConve
 | `schedule_items` | schedule_db | Schedule Service |
 | `lessons` | schedule_db | Schedule Service |
 | `attendances` (коллекция) | attendance_db (MongoDB) | Attendance Service |
+| `notification_history` (коллекция) | notification_db (MongoDB) | Notification Web (M10) |
+| `push_subscriptions` (коллекция) | notification_db (MongoDB) | Notification Web |
 | Redis все ключи | Redis | Auth + Academic + Attendance |
 
 ---

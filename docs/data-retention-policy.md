@@ -18,6 +18,7 @@ Redis) — эфемерные in-memory кэши (Caffeine / Spring `@Cacheable`
 | 3 | **OTP попытки** (`otp_attempts:<tid>`) | Redis (auth-service) | 300 секунд | Redis TTL | Anti-bruteforce окно, синхронизировано с `otp.attempts-window-seconds`. |
 | 4 | **Login rate-limit** (`login_failures:<ip>:<login>`) | Redis (auth-service) | 900 секунд | Redis TTL (composite key, M03a Группа 11) | Block окно 15 мин для (IP, login) комбинации. |
 | 5 | **Web Push subscriptions** | MongoDB `push_subscriptions` (notification-web) | 90 дней без активности | `PushSubscriptionCleanupJob` — `@Scheduled(cron="0 0 3 * * SUN") @SchedulerLock("cleanupStalePushSubs")`. Удаляет подписки с `last_seen < now - 90d`. Поле `last_seen` обновляется bulk `$set` в `WebPushDeliveryService.touchLastSeen` на каждый successful send. На HTTP 410 Gone — мгновенный delete (PUSH-07, D-10). | Устройства могут быть оффлайн неделями; после 90d — вероятно deinstall. Индекс `idx_last_seen` (PushMongoConfig) обеспечивает IXSCAN на cleanup. |
+| 5a | **Notification history** (`notification_history`) | MongoDB `notification_db` (notification-web, M10) | 30 дней с момента `sent_at` | Mongo TTL индекс `ttl_sent_at` на поле `sent_at` с `expireAfterSeconds = NOTIFICATION_HISTORY_TTL_DAYS × 86400` (default 30d). Создаётся в `NotificationHistoryMongoConfig.@PostConstruct`. Mongo TTL monitor cycle = 60s. | Cross-session unread-count + история уведомлений (P2-6/4). Дольше 30d не нужно — pull notification — это активная коммуникация, archived events не востребованы. |
 | 6 | **Outbox events** | PostgreSQL `academic_outbox`, `schedule_outbox`; MongoDB `attendance_outbox` | 7 дней после публикации | `OutboxCleanupJob` (shared-outbox M02) — `@Scheduled` + `@SchedulerLock`. Параметр `rutcampustrack.outbox.retention-days=7`. | Достаточно для replay при broker downtime ≤ 48ч + safety-margin. |
 | 7 | **ShedLock locks** | MongoDB `shedLock`, PostgreSQL `shedlock` | Авто (ShedLock) | Библиотека сама управляет lifecycle. | — |
 | 8 | **Attendance history** (`attendances`, `late_checkin_requests`) | MongoDB (attendance) | Бессрочно (accept) | Нет автоматического удаления. Данные академические — нужны для аналитики по всему периоду обучения. | FZ-152 persona данных: минимум имя/фамилия/студ-ID; чувствительных полей нет. |
@@ -28,6 +29,15 @@ Redis) — эфемерные in-memory кэши (Caffeine / Spring `@Cacheable`
 
 ## Триггеры пересмотра retention
 
+- **Notification history 30d:** если пользователи жалуются «история
+  пропадает раньше времени» — увеличить `NOTIFICATION_HISTORY_TTL_DAYS`
+  env. ВАЖНО: TTL индекс пересоздаётся ТОЛЬКО на fresh volume; для
+  работающего кластера нужен `collMod` запрос (отложено в
+  `future-ideas.md` — «Notification retention collMod auto-reconciler»,
+  v0.1). Если `mongo_db_collection_count{collection="notification_history"}`
+  растёт ≥ N(active_users) × 100 событий/день × 30 — значит TTL
+  monitor не работает (проверить Mongo logs `ttl monitor: deleting
+  documents from notification_history`).
 - **Push-subs 90d:** если Prometheus `mongo_db_collection_count{collection="push_subscriptions"}`
   растёт быстрее чем количество активных пользователей × 2 — значит
   cleanup не догоняет. Проверить: (a) работает ли `@Scheduled`, (b)

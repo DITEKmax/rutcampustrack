@@ -34,7 +34,7 @@ RutCampusTrack — микросервисная система учёта пос
 | M07 | Frontend Hardening | ✅ CSP self-host + openapi-typescript + RFC 7807 + unified STOMP + UX P2-7A (PullToRefresh/swipe/dateNav/bounds/scroll/BottomSheet/geolocation) + ConfirmWithReason + lazy-per-role + sparklines placeholder + a11y baseline — завершён 2026-04-22 |
 | M08 | Test Infrastructure | ✅ 31 `*Test→*IT` rename + Testcontainers reuse + Flyway MigrationIT + Clock-injection + Playwright e2e (8 specs + axe) + frontend unit regression guards + k6 load scaffold + security contracts (GrpcSecretFailFast+TmaIT+SameSiteCookie) + event schema coverage (40 тестов) + STOMP lifecycle IT + PWA reconnect guards + JaCoCo per-module ratchet (+ M09 latecheckin 70% pilot) + Vitest 50%/PWA 38% baseline + pytest-cov 50%/70% baseline + diff-cover 80% + SBOM+cosign keyless + digest-pin 13 images + Trivy SHA-pin + Renovate monthly digest-bump — завершён 2026-04-23 |
 | M09 | Prod Release Blockers (Фаза 3 + event unification) | ✅ OTP через RabbitMQ event (08 P0-2) + MessageDigest.isEqual (01 P0-5) + cleanupOrphans delete (04 P0-6) + landing deep-link (12 P0-2) + latecheckin unit/IT/contract + 70% jacoco gate (14 P0-1) + bot callback unit + 70% handlers coverage (14 P0-2) + lesson.cancelled full snapshot (P2-11/5, V13 миграция cancelled_by/at) + excuse/late_checkin headman role check (06 P1-1) + prod-deploy-checklist + secret-rotation runbook + bot-webhook-migration + resource-limits (NEW-154/155/157) + docker-compose mem_limits + JVM opts + Prometheus ContainerMemoryHigh alert — завершён 2026-04-24 |
-| M10 | Notification History | Stateful notification-web + MongoDB notification_db + notification_history TTL 30d + Caffeine unread-count + NotificationCenter backend pagination |
+| M10 | Notification History | ✅ Stateful notification-web + MongoDB notification_db (PoLP user) + notification_history TTL 30d + Caffeine unread-count 30s + NotificationApi 4 endpoints + PWA/web-panel hybrid integration — завершён 2026-04-24 |
 | M11 | OpenAPI Polish | SharedOpenApiCustomizer наполнение + @Schema на DTO + nginx basic-auth на prod /swagger-ui + OpenAPI↔runtime conformance CI |
 | M12 | Auth Contract-first Refactor | `auth-api-contract` модуль + AuthApi/WsTicketApi/InternalAuthApi interfaces + DTO migration + controller implements + убирает последнее исключение Contract-first правила |
 
@@ -70,7 +70,7 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 | Academic Service | 9091 | Spring Boot | PostgreSQL (academic_db) + Redis cache |
 | Schedule Service | 9092 | Spring Boot | PostgreSQL (schedule_db) |
 | Attendance Service | 9093 | Spring Boot | MongoDB (attendance_db) |
-| Notification Web | 9094 | Spring Boot WebSocket (STOMP) + Caffeine | MongoDB (notification_db) — stateful history store в M10 (NEW-166/167/168); до M10 stateless event forwarder |
+| Notification Web | 9094 | Spring Boot WebSocket (STOMP) + Caffeine | MongoDB (notification_db) — stateful history store (M10, NEW-166/167/168) |
 | Notification Bot | — | Python Aiogram 3 | Redis (reminder msgs) |
 
 Между сервисами: gRPC. Асинхронные события: RabbitMQ (fanout exchange).

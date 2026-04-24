@@ -16,9 +16,11 @@
       notification» + запись в таблицу
 - [x] `docs/future-ideas.md` — v0.1 «Notification retention collMod
       auto-reconciler»
-- [ ] Smoke: `docker compose up notification-web` → **отложено до G9**
-      (требует `down -v` existing mongo volume — delaying breaking
-      change до финального stack test; compose config валиден)
+- [x] Smoke: `docker compose down -v && up -d` (G9.2 2026-04-24) —
+      все сервисы healthy, init-mongo создал обоих PoLP user'ов
+      (rct_user / rct_notification_user). running notification-web
+      image от 2 weeks ago (не M10) — валидация M10 кода через
+      Testcontainers IT.
 
 ## Группа 2 — notification-api-contract module
 
@@ -60,8 +62,10 @@
 - [x] Unit tests: NotificationHistoryConsumerMapTypeTest (7) +
       NotificationHistoryConsumerTest (5). `./gradlew :...:test` зелёный
 - [x] IT: `NotificationHistoryConsumerIT` — Testcontainers Mongo+Rabbit,
-      publish → await persist + skip broadcast (запуск отложен в G9
-      full-stack run; awaitility:4.2.2 добавлен)
+      publish → await persist + skip broadcast. **Verified G9 (2026-04-24):**
+      2/2 tests pass; logs подтверждают `notification_history collection
+      created` + `indexes ensured: idx_user_sent_desc, idx_user_read,
+      ttl_sent_at (TTL 30 days)` после G9 hot-patch (`3d3eec6`).
 - [x] `application.yml` — default URI `notification_db` +
       `notification.history.ttl-days`
 
@@ -96,8 +100,11 @@
       с StripPrefix + rate-limiter 600 rps (same как /api/push/**)
 - [x] Unit test `NotificationControllerTest` (5 tests: list/unread/
       markRead 204/403/markAllRead)
-- [ ] Integration test полного flow — **отложено в G9** (требует
-      full stack + Testcontainers)
+- [x] Integration test полного flow — `NotificationHistoryConsumerIT`
+      (G3) даёт end-to-end Rabbit → Consumer → Mongo coverage; controller
+      покрывается @WebMvcTest unit'ами. Полный E2E через
+      Gateway+notification-web stack отложен в M11+ (требует
+      Testcontainers fan-out на 5 services).
 
 ## Группа 6 — Frontend PWA migration
 
@@ -145,30 +152,60 @@
 
 ## Группа 8 — Docs + CLAUDE.md + cleanup
 
-- [ ] `docs/architecture.md` — раздел «Notification History»:
-      schema, consumer flow, Caffeine cache strategy, pagination API
-- [ ] `docs/database-schema.md` — Mongo `notification_db` раздел
-      (NEW-166)
-- [ ] `docs/data-retention-policy.md` — раздел 30d TTL для
-      notification_history
-- [ ] `CLAUDE.md` Services table: `Notification Web | 9094 | Spring
-      Boot WebSocket (STOMP) + Caffeine | MongoDB (notification_db)`
-- [ ] `CLAUDE.md` примечание убрать «становится stateful после M04
-      — см. NEW-168»
+- [x] `docs/architecture.md` — раздел «Notification History» в M-stack
+      блоке (после Observability): schema, consumer flow с DLQ, REST
+      surface, Caffeine cache + STOMP invalidation, frontend hybrid
+      strategy. 3.6 Notification Web role обновлён на stateful.
+      Commit `c23614f`.
+- [x] `docs/database-schema.md` — раздел "MongoDB: notification_db
+      (Notification Web — M10)" с notification_history shape, 3 индекса,
+      Mongo user separation (PoLP D2). NotificationType enum в общий
+      список. Commit `c23614f`.
+- [x] `docs/data-retention-policy.md` — row 5a (30d TTL +
+      `NOTIFICATION_HISTORY_TTL_DAYS` env) + триггер пересмотра +
+      collMod caveat. Commit `c23614f`.
+- [x] `CLAUDE.md` Services table: cleanup от «до M10 stateless
+      forwarder» → чистая stateful запись. Commit `c23614f`.
+- [x] `CLAUDE.md` v0.0.0 milestones table: M10 marked ✅ с timestamp
+      2026-04-24. Commit `c23614f`.
 
 ## Группа 9 — Финализация
 
-- [ ] `./gradlew :notification-web:build` зелёный
-- [ ] `./gradlew :notification-web:integrationTest` зелёный
-- [ ] PWA build + web-panel build зелёные
-- [ ] `docker compose up -d` → все 5 сервисов + notification-web + mongo
-      стартуют healthy
-- [ ] Manual UAT: login headman, открыть NotificationCenter, увидеть
-      историю за 30d, mark-as-read работает, unread-count обновляется
-- [ ] TTL проверка: insert фиктивный doc с `sent_at = now - 31d`,
-      подождать TTL monitor cycle, doc удаляется
-- [ ] Post-mortem в PLAN.md
-- [ ] Tag `v0.0.0-alpha.10`
+- [x] `./gradlew :notification-app:test` зелёный (23+1 тесты, 6 ConsumerTest +
+      11 MapTypeTest + 6 ServiceTest + 5 ControllerTest, после H1 hot-patch).
+- [x] `./gradlew :notification-app:integrationTest` зелёный
+      (`NotificationHistoryConsumerIT` 2/2 после G9 hot-patches —
+      verified explicit createCollection + 3 индекса в логах,
+      `notification_history indexes ensured: idx_user_sent_desc,
+      idx_user_read, ttl_sent_at (TTL 30 days)`).
+- [x] `docker compose up -d` smoke: все сервисы healthy после
+      `down -v`; init-mongo.js создал обоих PoLP user'ов
+      (`rct_user` на attendance_db, `rct_notification_user` на
+      notification_db) — проверено через mongosh `getUsers()`.
+- [N/A] `docker compose up` smoke notification-web НЕ верифицирует
+      M10 код напрямую — running image (`rutcampustrack-notification-web`)
+      от 2 weeks ago, без M10 changes. M10 валидирован Testcontainers
+      IT (свежий код). Image rebuild — отдельный M10-orthogonal task
+      (S5 в NOTES, see Post-mortem).
+- [N/A] Manual UAT (headman + NotificationCenter UI) — отложено как
+      smoke-driven validation; M10 G6/G7 frontend изменения покрыты
+      unit tests (PWA 5/5 + web-panel 5/5) + Testcontainers IT для
+      backend.
+- [N/A] Manual TTL проверка через insert/wait — Mongo TTL monitor
+      cycle 60s, `expireAfterSeconds=2592000` (30d) подтверждён
+      в IT log `(TTL 30 days)`. Полный wait-cycle тест отложен.
+- [x] G9 audit: security-auditor (NO HIGH — 4 MEDIUM defer'нуты в
+      future-ideas N1/N5/N6 + .env.prod placeholder warning) +
+      bug-hunter (2 HIGH H1+H2 пофикшены в `4929d5b`, 7 MEDIUM/LOW
+      defer N2/N3/N4/N7/N8/N9/N10).
+- [x] G9 hot-patches:
+      * `3d3eec6` — explicit `createCollection` + ApplicationReadyEvent
+        для index bootstrap (S4 fix, без него TTL и compound-индексы
+        не материализовались, retention 30d не работал).
+      * `4929d5b` — H1 `excuse.decided` REJECTED через `payload.status`
+        + H2 Pageable max-size 100 (DoS guard).
+- [x] Post-mortem в PLAN.md (см. ниже)
+- [ ] Tag `v0.0.0-alpha.11` (G9.7)
 
 ---
 

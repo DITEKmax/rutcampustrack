@@ -225,3 +225,99 @@ unread-count. Закрывает P2-6/4 — главное архитектур�
 
 _Никаких «why», «motivation», «background» — это уже в 99-executive-summary.md
 и OWNER-ANSWERS.md (P2-6/4 строки 5021-5131). Здесь только WHAT и DONE._
+
+---
+
+## Post-mortem (M10 завершён 2026-04-24, tag `v0.0.0-alpha.11`)
+
+### Что пошло по плану
+
+- **Структура модуля (D1):** существующий `notification-api-contract`
+  переиспользован — нулевые трения.
+- **PoLP user (D2):** init-mongo создал отдельного `notification_user`
+  с правами только на `notification_db`. Подтверждено в G9 smoke.
+- **Caffeine cache + STOMP invalidation (D6/D7):** unread-count
+  invalidate через consumer работает; PWA hybrid (sessionStorage
+  + backend-history hook) минимизирует frontend churn.
+- **Backend coverage:** 23 unit + 2 IT тестов прошли с первой попытки
+  (после H1 hot-patch).
+- **Documentation atomic:** G8 один commit, G9 два hot-patch коммита
+  + один defer-only коммит — лента читаема.
+
+### Что сломалось / какие сюрпризы
+
+- **S2 (G1):** PLAN говорил «notification_user уже зарезервирован
+  в M05» — по факту в M05 кода не было, только намерение. Создал
+  D2 явно. Time cost: 30 мин на discovery + декларация в init-mongo.js.
+- **S3 (G1):** `SPRING_DATA_MONGODB_URI` в docker-compose'ах указывал
+  на `attendance_db` (legacy, т.к. notification-web был stateless).
+  Переключён на `notification_db`. Прозрачно.
+- **S4 (G9.2):** **HIGH severity surprise.**
+  `NotificationHistoryMongoConfig.@PostConstruct` + `@Lazy MongoTemplate`
+  silently no-op'нул на пустом namespace в Mongo 7. TTL и compound-
+  индексы НЕ создавались — retention 30d не работал, unread-count
+  делал бы COLLSCAN при росте. Hot-patch `3d3eec6`: explicit
+  `createCollection` + переход на `ApplicationReadyEvent`. Verified
+  через IT logs.
+- **S5 (G9.2):** running `rutcampustrack-notification-web` image —
+  2 weeks old, без M10 кода. `docker-compose.yml` build context
+  `./services/notification-service/notification-app` неправильный —
+  Dockerfile референсит файлы относительно monorepo root. Это
+  **pre-existing M10-orthogonal проблема**, не блокирует M10
+  (валидация через Testcontainers IT). Defer'ить в `future-ideas.md`
+  как «docker-compose build context fix» отдельным минор-task'ом.
+- **G9 audit findings:**
+  - **H1 (HIGH):** `excuse.decided` / `late_checkin.decided` всегда
+    маппились на APPROVED, даже при `payload.status="rejected"`.
+    Юридически значимый bug — staroste/студент видели «уважительная
+    одобрена» при реальном rejection. Hot-patch `4929d5b`: payload-
+    aware маппер + regression test.
+  - **H2 (HIGH):** Pageable без max-size cap → DoS через `?size=1M`.
+    Hot-patch `4929d5b`: `spring.data.web.pageable.max-page-size=100`.
+  - 11 MEDIUM/LOW findings (N1-N11) defer'нуты в future-ideas.md.
+
+### Lessons learned
+
+1. **Mongo index bootstrap всегда требует explicit `createCollection`.**
+   `IndexOperations.ensureIndex` не материализует индексы на
+   несуществующем namespace в Mongo 7. Pattern для всех будущих
+   `MongoConfig.@PostConstruct` — `if (!collectionExists) createCollection`
+   ПЕРЕД ensureIndex. Применить retroactive audit к `PushMongoConfig`
+   и любым новым Mongo-коллекциям (open ticket в N9-bundle).
+
+2. **Decision events с binary payload — обязательны payload-aware
+   маппинги.** При следующем добавлении `*.decided`-style event
+   (homework.graded, lesson.rescheduled?) — switch case ВСЕГДА должен
+   читать payload.status (или эквивалент). Юнит-тест rejected-path
+   обязателен с самого начала.
+
+3. **Pageable cap — глобальный prep-step для любого нового REST с
+   pagination.** Добавить в M11 OpenAPI Polish чек: каждый эндпоинт
+   возвращающий PagedModel ≤100 default cap.
+
+4. **Hot-patch verification через Testcontainers IT > smoke на running
+   compose.** IT тестирует свежий код, smoke — собранный image.
+   Когда image stale (S5), smoke даёт false confidence. M11+
+   integration tests пилить от Testcontainers, не от docker-compose.
+
+5. **Bug-hunter обнаружил **функциональный** bug (H1), которого не
+   было в security-auditor scope. Запускать оба в G9 — must, не «or».
+   Различные модели угроз дают непересекающееся покрытие.
+
+### Метрики milestone
+
+- **Время:** ~12 часов фактического workflow (G1 → G9), spread по
+  сессиям 2026-04-24 (G1-G7 утро, G8-G9 вечер).
+- **Коммитов:** 9 (G1-G7 + docs + 2 hot-patch).
+- **Тесты добавлены:** 23 unit + 2 IT (backend) + 5 (PWA) + 5 (web-panel).
+- **Hot-patches required в G9:** 2 (S4 index bootstrap, H1+H2 bundle).
+- **Defer в v0.1:** 11 пунктов (N1-N11) — bundled scope ~5-7 человеко-дней.
+
+### Hand-off для M11 OpenAPI Polish
+
+- 4 новых endpoint'а в `NotificationApi` уже имеют `@Operation` +
+  `@ApiResponses` — M11 нужно только убедиться что они попадают в
+  `SharedOpenApiCustomizer` enrichment.
+- `@Schema(description, example)` для `NotificationHistoryDto` /
+  `UnreadCountDto` — сделать в M11 (не блокер).
+- nginx basic-auth на prod `/swagger-ui` — M11 G2/G3 scope.

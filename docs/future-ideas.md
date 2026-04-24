@@ -709,3 +709,34 @@ history. v0.1: gRPC resolve `headman_id` по `group_id` →
 **Оценка пакета (N1-N11):** 5-7 человеко-дней.
 
 ---
+
+## docker-compose build context fix для notification-web (M10 G9 S5)
+
+**Источник:** M10 G9.2 smoke discovery (2026-04-24).
+
+`docker-compose.yml:155` — `notification-web.build.context:
+./services/notification-service/notification-app`. Но
+`services/notification-service/notification-app/Dockerfile` референсит
+файлы относительно monorepo root (`COPY gradlew .`,
+`COPY services/notification-service/...`). Build из docker-compose
+падает с `failed to compute cache key... not found`.
+
+Текущий running image (`rutcampustrack-notification-web` 2 weeks old)
+сбилжен где-то иначе (CI? ручной build?), но `docker compose build
+notification-web` локально не работает с момента создания.
+
+**Fix (1 minute):**
+```yaml
+notification-web:
+  build:
+    context: .
+    dockerfile: services/notification-service/notification-app/Dockerfile
+```
+
+То же может понадобиться для других сервисов (audit `docker-compose ls
+build context` + сравнение с Dockerfile COPY paths).
+
+**Когда делать:** при следующем M10-orthogonal sweep'е по infrastructure
+(M11+ либо v0.1).
+
+---

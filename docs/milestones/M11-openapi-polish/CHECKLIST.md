@@ -159,16 +159,27 @@
       встроенный JSON diff в IT (no external Go tool, no docker pull)
 - [x] `docs/openapi-conformance.md` (NEW-123) — runbook создан
 
-## Группа 4 — /swagger-ui prod protection (P2-2/6)
+## Группа 4 — /swagger-ui prod protection (P2-2/6) ✅
 
-- [ ] nginx location block с basic-auth
-- [ ] `infra/nginx/htpasswd/swagger.template` (пустой)
-- [ ] Spring profile `local`: bypass basic-auth (через nginx
-      profile differentiation)
-- [ ] `.env.prod.example` — `SWAGGER_HTPASSWD=<htpasswd -nB swagger>`
-- [ ] `docs/runbooks/swagger-prod-access.md` (NEW-125) — как
-      получить доступ, ротация
-- [ ] Smoke: prod curl без creds → 401, с creds → 200
+- [x] nginx location block с basic-auth — уже существовал в
+      `nginx/conf.d/default.conf` (/swagger-ui.html, /swagger-ui/,
+      /v3/api-docs, /openapi/), но отсутствовал `.htpasswd` файл
+      в проекте/mount → 500 Internal Server Error. Fix:
+      материализация из env var на старте nginx контейнера.
+- [x] ~~`infra/nginx/htpasswd/swagger.template` (пустой)~~ —
+      заменено на stateless env-to-file в `docker-compose.prod.yml:nginx.command`
+      (не требует bind-mount, secret'а нет на диске VPS вне `.env.prod`)
+- [x] ~~Spring profile `local`: bypass basic-auth~~ — dev compose
+      (`docker-compose.yml`) не содержит nginx — dev использует
+      прямые порты api-gateway:8080, basic-auth на prod-only
+- [x] `.env.prod.example` — `SWAGGER_HTPASSWD=swagger:$$apr1$$CHANGE$$ME`
+      (docker-compose $$-escape документирован inline)
+- [x] `docs/runbooks/swagger-prod-access.md` (NEW-125) — доступ,
+      rotation (6 мес), при компрометации, failure mode
+      + ссылка добавлена в secret-rotation.md inventory
+- [x] Smoke: `docker run` unit-verified htpasswd материализация +
+      apr1 hash валидирует plain password (локально). VPS smoke
+      выполняется при deploy `go` (не блокирует G4 close)
 
 ## Группа 5 — Финализация
 

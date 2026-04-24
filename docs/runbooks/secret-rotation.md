@@ -23,6 +23,7 @@
 | `ALERT_WEBHOOK_SECRET` / `BOT_ALERT_TOKEN` | alertmanager + bot `/internal/alert` | 1 мин | См. bot-webhook-migration.md |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | notification-web | Невозможно без потери подписок | См. специальную процедуру ниже |
 | `GRAFANA_PASSWORD` | grafana | 1 мин | admin login reset |
+| `SWAGGER_HTPASSWD` | nginx (материализуется в /etc/nginx/.htpasswd) | 0 (только nginx restart) | M11 G4 NEW-125 — см. [swagger-prod-access.md](./swagger-prod-access.md), 6-month cadence |
 | `CORS_ALLOWED_ORIGIN` / `MINI_APP_URL` | gateway / TMA | 0 (только при смене URL) | Не секрет, но часть `.env.prod` |
 | `GHCR_TOKEN` (на VPS для image pull) | docker login | 0 | Вне compose — в `/root/.docker/config.json` |
 

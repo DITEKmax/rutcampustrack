@@ -122,20 +122,21 @@
       (раньше был только M09)
 - [ ] Коммит `docs(m12): Contract-first exception removed + future-ideas cleanup (следующий шаг)`
 
-## Группа 7 — Audit + финализация (~0.25д)
+## Группа 7 — Audit + финализация (~0.25д) ✅ 2026-04-24
 
-- [ ] `./gradlew build` полный — всё зелёное
-- [ ] `./gradlew integrationTest` — всё зелёное
-- [ ] `code-reviewer` агент на M12 diff — фокус: binary-compatibility
-      (DTO shape не изменился), правильные interfaces, OpenAPI
-      полнота
-- [ ] Hot-patches → отдельный коммит
-- [ ] `PLAN.md` → Post-mortem секция (что сюрпризнуло, что
-      отклонилось)
-- [ ] Тег `v0.0.0-alpha.12` или `v0.0.0-rc.2` (в зависимости от
-      порядка с M08-M11)
-- [ ] Hand-off для release-candidate в `NEXT-SESSION.md`
-- [ ] Коммит `docs(m12): закрытие milestone — post-mortem + CHANGELOG + hand-off`
+- [x] `./gradlew build` + `./gradlew integrationTest` зелёные (после
+      hot-patch ad40c53 — pre-existing M11 G5 missed regenerate)
+- [x] `code-reviewer` агент на `a902c16..HEAD`:
+      0 BLOCK, 0 HIGH, 7 MEDIUM/NOTES (3 pre-existing, 4 positive
+      observations), binary-compat confidence 9/10
+- [x] Hot-patch `ad40c53` — academic snapshot regenerate (M11 G5
+      missed regenerate, UserCreatedResponse.initialPassword
+      @Schema description+example). Binary-compat only.
+- [x] `PLAN.md` → Post-mortem секция (коммиты, surprises, deviations,
+      deferred, code review verdict)
+- [x] Тег `v0.0.0-alpha.13` локально
+- [x] `NEXT-SESSION.md` переписан на консолидацию v0.0.0 → GA
+- [ ] Коммит `docs(m12): закрытие milestone — post-mortem + hand-off` (следующий шаг)
 
 ---
 

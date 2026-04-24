@@ -218,5 +218,91 @@ InternalWsTicket) **не публикуются в public OpenAPI**, но всё
 
 ---
 
+## Post-mortem (закрыт 2026-04-24)
+
+### Результаты
+
+**Закрыт за 1 день** (7 коммитов вместо оцененных 2.5 дня). Все 7
+acceptance criteria из раздела выше выполнены.
+
+Коммиты (в порядке):
+
+| SHA | Группа | Описание |
+|---|---|---|
+| `9925376` | G1 | Gradle split auth-service → auth-api-contract + auth-app (80 файлов git mv) |
+| `beafc3e` | G1 fixup | infra files (settings + root build + Dockerfile + CI + scripts + EventSchemaValidator) |
+| `315a317` | G2 | 12 DTO → auth-api-contract (100% rename) |
+| `e3a4adf` | G3 | 4 interface'а (AuthApi + WsTicketApi + 2 Internal) + 2 extracted DTO |
+| `bf2de65` | G4 | controllers implement + ArchUnit (3 правила) + IT import fix |
+| `8d80740` | G5 | OpenApiSnapshotIT + regenerate auth.json + frontend types |
+| `323e08e` | G6 | Docs cleanup (CLAUDE.md/future-ideas/architecture/README/CHANGELOG) |
+
+**Binary-compat verdict (code-reviewer agent, G7):** 9/10 confidence.
+- 11 public endpoints в `docs/openapi/auth.json` неизменны (paths + DTO shape).
+- Internal endpoints `@Hidden` работают (0 вхождений `/internal` в auth.json).
+- `ConsumeWsTicketRequest/Response` snake_case `@JsonProperty` сохранён
+  — старый consumer `notification-web/WsTicketClient` не сломан.
+- 12 existing IT/unit тестов зелёные без изменений бизнес-логики
+  (только import fix для extracted DTO в WsTicketIT).
+- `AuthController.refreshBody` сохраняет `Deprecation: true` + `Sunset`
+  headers в override'е.
+
+### Что сюрпризнуло
+
+1. **CRLF normalization на Windows** — `git add` выдаёт
+   `LF will be replaced by CRLF` для всех Markdown/JSON/Java файлов.
+   В hand-off отмечено как ожидаемое, не содержательное.
+2. **G1 fixup коммит** — при первом `git add -A` в G1 не попали
+   infra-файлы (settings, CI workflows, Dockerfile, scripts).
+   Обнаружено при попытке сборки; потребовался отдельный fixup commit.
+3. **Nested records extraction** — `InternalWsTicketController.ConsumeRequest/
+   Response` были inline-классами в controller'е. При interface-first
+   подходе их пришлось extract в `auth-api-contract/dto/` как
+   standalone records с сохранением snake_case `@JsonProperty`.
+   Binary-compat доказан через diff-spec `docs/openapi/auth.json`.
+4. **`OtpCodeResponse` в PLAN.md** — упомянут, но фактически не
+   существует (12 DTO, не 13). Ошибка копирования из более раннего плана.
+5. **`auth-api-contract` зависит от `spring-security-core` + `jakarta.servlet-api`**
+   — отличает auth от academic/schedule (там авторизация через
+   X-User-Id header + AOP). Auth controllers передают `Authentication`
+   + `HttpServletRequest` в signature interface'ов → контракт
+   зависит от security API.
+6. **OpenApiSnapshotIT для auth отсутствовал** — M11 G3 создал IT
+   только для academic/schedule/attendance/notification. G5 создал
+   по тому же pattern.
+
+### Что отклонилось от PLAN.md
+
+- PLAN.md указывал 14 DTO, фактически 12 (без `OtpCodeResponse` +
+  `ErrorResponse` остался в `shared-web-api`).
+- Отдельный `InternalAuthApi` interface (PLAN.md вариант (a))
+  заменён на `InternalIssuerApi` + `InternalWsTicketApi` (owner-default
+  #3, вариант (b)) — consistency с academic pattern по domain boundary.
+- Full `docker compose up` browser smoke отложен в отдельную UAT
+  владельца (deviation note в NOTES.md «Docker smoke»); OpenApiSnapshotIT
+  через Spring context + Testcontainers postgres/redis покрывает
+  runtime boot + `@Hidden` verification.
+- Frontend regenerate — только PWA + web-panel. mini-app не имеет
+  собственного `generate:types` скрипта (использует PWA shared types).
+
+### Deferred
+
+- Browser-level UAT (login/logout flow в PWA + web-panel) — отдельная
+  сессия владельца.
+- WsTicketController double-parse JWT → `Authentication.details`
+  refactor — v0.1 (M12 neutral, не регрес).
+- `@Valid` на `InternalWsTicketApi.consume` — скрытый дефект
+  (404 vs 400), не регрес.
+
+### Code review verdict
+
+`code-reviewer` agent на range `a902c16..HEAD`:
+- 0 BLOCK
+- 0 HIGH
+- 7 MEDIUM/NOTES — 3 pre-existing (не M12-регрес), 4 positive observations
+- Confidence 9/10 — «Рефакторинг можно тегать v0.0.0-alpha.13»
+
+---
+
 _Никаких «why», «motivation», «background» — это в 99-executive-summary.md
 и OWNER-ANSWERS.md (01 P0-1, P2-2/2). Здесь только WHAT и DONE._

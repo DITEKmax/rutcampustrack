@@ -598,3 +598,24 @@ Fix план v0.1 (dispatcher-уровня идемпотентность):
 дедуп + regression, 0.5-1д на остальные).
 
 ---
+
+## Notification retention collMod auto-reconciler (v0.1)
+
+**Источник:** M10 G1 D4.
+
+В M10 TTL индекс на `notification_history.sent_at` создаётся один раз
+при bootstrap со значением из `NOTIFICATION_HISTORY_TTL_DAYS` (default
+30d). Изменить retention — требует ручной команды `collMod` или drop+
+recreate индекса. Это OK для редких изменений (compliance retention
+раз в год), но не OK для dynamic tuning.
+
+**Идея v0.1:** при старте notification-web в `@PostConstruct` detect
+существующий TTL `expireAfterSeconds` через `db.runCommand({listIndexes:
+"notification_history"})`. Если отличается от env value →
+`db.runCommand({collMod: "notification_history", index: {name:
+"sent_at_ttl", expireAfterSeconds: newValue}})`. Это pattern Atlassian
+/ Stripe для tunable retention без downtime.
+
+**Оценка:** 0.5 дня + IT тест на TTL reconciliation.
+
+---

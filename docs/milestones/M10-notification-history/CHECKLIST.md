@@ -4,13 +4,21 @@
 
 ## Группа 1 — MongoDB schema setup (NEW-166)
 
-- [ ] `infra/mongo-init/notification-db-init.js` — создание DB +
-      user `notification_user` + права readWrite на notification_db
-- [ ] `docker-compose.yml` — mount init script, env
-      `MONGO_NOTIFICATION_USER/PASSWORD`
-- [ ] `docker-compose.prod.yml` — аналогично, prod secrets
-- [ ] Smoke: `docker compose up notification-web` → mongo shows DB,
-      user авторизуется
+- [x] `infra/mongo/init-mongo.js` — создание `notification_user` +
+      права readWrite+dbAdmin на `notification_db` (D2 PoLP; существующий
+      `MONGO_USER` оставлен только для attendance_db)
+- [x] `docker-compose.yml` — mount init script, env
+      `MONGO_NOTIFICATION_USER/PASSWORD`, URI → `notification_db`,
+      `NOTIFICATION_HISTORY_TTL_DAYS` env (D3, D4)
+- [x] `docker-compose.prod.yml` — аналогично + placeholder
+      `CHANGE_ME_BEFORE_DEPLOY` в `.env.prod`
+- [x] `docs/runbooks/secret-rotation.md` — новая секция «MongoDB —
+      notification» + запись в таблицу
+- [x] `docs/future-ideas.md` — v0.1 «Notification retention collMod
+      auto-reconciler»
+- [ ] Smoke: `docker compose up notification-web` → **отложено до G9**
+      (требует `down -v` existing mongo volume — delaying breaking
+      change до финального stack test; compose config валиден)
 
 ## Группа 2 — notification-api-contract module
 

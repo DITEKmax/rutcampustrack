@@ -64,6 +64,9 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       MONGO_USER: ${MONGO_USER}
       MONGO_PASSWORD: ${MONGO_PASSWORD}
+      # M10 G1 D2 — отдельный credential для notification_db (PoLP).
+      MONGO_NOTIFICATION_USER: ${MONGO_NOTIFICATION_USER}
+      MONGO_NOTIFICATION_PASSWORD: ${MONGO_NOTIFICATION_PASSWORD}
     expose:
       - "27017"
     volumes:
@@ -317,7 +320,11 @@ services:
       VAPID_SUBJECT: ${VAPID_SUBJECT}
       # M04 Группа 9 — shared secret для Alertmanager webhook в /internal/alert.
       ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET}
-      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin
+      # M10 G1 D3 — отдельная БД notification_db + отдельный credential
+      # MONGO_NOTIFICATION_USER (PoLP — D2).
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER}:${MONGO_NOTIFICATION_PASSWORD}@mongo-attendance:27017/notification_db?authSource=admin
+      # M10 G1 D4 — retention для notification_history (дней).
+      NOTIFICATION_HISTORY_TTL_DAYS: ${NOTIFICATION_HISTORY_TTL_DAYS:-30}
       # M09 G7 (NEW-157).
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     volumes:

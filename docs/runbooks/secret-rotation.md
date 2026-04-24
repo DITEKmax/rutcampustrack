@@ -12,7 +12,8 @@
 |--------|-----------------|----------|-------------|
 | `POSTGRES_ACADEMIC_PASSWORD` | academic-service + postgres-academic | 2-3 мин | Двусторонний — нужна SQL команда ALTER USER |
 | `POSTGRES_SCHEDULE_PASSWORD` | schedule-service + postgres-schedule | 2-3 мин | То же |
-| `MONGO_ROOT_PASSWORD` + `MONGO_USER/PASSWORD` | attendance/notification-web + mongo | 3-5 мин | Через `db.updateUser()` в admin DB |
+| `MONGO_ROOT_PASSWORD` + `MONGO_USER/PASSWORD` | attendance-service + mongo | 3-5 мин | Через `db.updateUser()` в admin DB |
+| `MONGO_NOTIFICATION_USER/PASSWORD` | notification-web + mongo | 2-3 мин | M10 D2 — отдельный credential на `notification_db` (PoLP) |
 | `REDIS_PASSWORD` | auth/academic/bot + redis | 1-2 мин | `requirepass` в redis.conf + restart |
 | `RABBITMQ_USER/PASSWORD` | все publisher/consumer + rabbit | 3-5 мин | `rabbitmqctl change_password` |
 | `BOT_TOKEN` (Telegram) | notification-bot | 1 мин (только bot restart) | Генерируется через @BotFather |
@@ -63,7 +64,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod \
 **Validation:** `docker logs rct-academic-service --tail 50 | grep
 HikariPool` — `Started` без auth errors.
 
-### MongoDB (attendance)
+### MongoDB — attendance (MONGO_USER)
 
 ```bash
 NEW_MONGO_PASS=$(openssl rand -base64 32)
@@ -75,7 +76,24 @@ docker exec -it rct-mongo-attendance mongosh \
 
 # Обновить .env.prod → MONGO_PASSWORD=$NEW_MONGO_PASS
 # Restart:
-docker compose up -d --no-deps attendance-service notification-web
+docker compose up -d --no-deps attendance-service
+```
+
+### MongoDB — notification (MONGO_NOTIFICATION_USER, M10 D2)
+
+Отдельный credential с правами только на `notification_db` (PoLP).
+Ротация независима от `MONGO_USER`.
+
+```bash
+NEW_NOTIF_PASS=$(openssl rand -base64 32)
+
+docker exec -it rct-mongo-attendance mongosh \
+  -u $MONGO_ROOT_USER -p $MONGO_ROOT_PASSWORD --authenticationDatabase admin \
+  --eval "db.getSiblingDB('admin').updateUser('${MONGO_NOTIFICATION_USER}', {pwd: '$NEW_NOTIF_PASS'});"
+
+# Обновить .env.prod → MONGO_NOTIFICATION_PASSWORD=$NEW_NOTIF_PASS
+# Restart:
+docker compose up -d --no-deps notification-web
 ```
 
 ### Redis

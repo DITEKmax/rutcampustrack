@@ -6,19 +6,11 @@
 
 ## Вопросы к owner'у до старта
 
-1. **Module naming:** текущее имя — `notification-web` (single-module).
-   Contract-first pattern требует `notification-api-contract` +
-   `notification-app`. Варианты:
-   - (a) Переименовать `notification-web` → `notification-app`, создать
-     `notification-api-contract` (breaking: Docker image name, compose)
-   - (b) Оставить `notification-web` как app-модуль, добавить рядом
-     `notification-api-contract` (notification-service — parent group)
-   - (c) Оставить все как есть, контракт добавить как `notification-web-api`
-     submodule (гибрид)
-
-   **Default:** (b) — минимум breaking changes, согласуется с pattern
-   `academic-service/{academic-api-contract, academic-app}`. Docker
-   image остаётся `notification-web`.
+1. **Module naming:** ~~текущее имя — `notification-web` (single-module)~~
+   **РАЗРЕШЕНО (D1, 2026-04-24)** — модуль
+   `services/notification-service/notification-api-contract/` уже существует
+   (с `PushApi` из v6.0). Структура — вариант (b) по факту. M10 добавляет
+   классы в существующий модуль.
 
 2. **NotificationType enum scope:** покрываем ли все 14+ event types
    одним enum'ом? Или разделяем user-facing vs system?
@@ -38,6 +30,48 @@
 5. **TTL 30d — глобально или configurable?** OWNER-ANSWERS говорит
    30d. Делаем константу или env var `NOTIFICATION_HISTORY_TTL_DAYS=30`?
    **Default:** env var с default 30 — для future tuning.
+
+## Фактические surprises (обнаружены при старте G1)
+
+### S1 — Module уже в варианте (b)
+Разрешено в D1. См. выше.
+
+### S2 — Mongo user уже имеет readWrite на notification_db
+`infra/mongo/init-mongo.js` создаёт единый `MONGO_USER` с правами
+`readWrite + dbAdmin` на `notification_db` И `attendance_db`. M05 якобы
+«зарезервировал» отдельного `notification_user`, но по факту в коде
+его нет — есть общий user.
+
+Варианты:
+- **(a) Отдельный `notification_user`** с правами только на `notification_db`.
+  Plus: PoLP / изоляция blast-radius если один credential leak'нет.
+  Minus: +2 env vars (`MONGO_NOTIFICATION_USER/PASSWORD`), breaking для
+  существующих local dev `.env` файлов; два credentials для одной Mongo
+  инстансы — overhead без реального benefit (single-tenant VPS).
+- **(b) Keep shared `MONGO_USER`** — уже readWrite на notification_db.
+  Plus: zero-churn, ноль breaking. Minus: credential одного сервиса
+  даёт доступ к DB другого (notification-web → attendance_db и наоборот).
+
+**Контекст:** PLAN.md:51 утверждает «Mongo user `notification_user`
+создан в M05 как reserved, активируется здесь». В M05 нет такого кода.
+**Default (предлагаю):** вариант (a) — выполняем PLAN как написано,
+PoLP выигрывает. Env vars `MONGO_NOTIFICATION_USER/PASSWORD` с default
+на `rct_notification_user`/`rct_dev_pass` для local dev, rotation в
+.env.prod уже требуется M09 runbook'ом `docs/runbooks/secret-rotation.md`.
+
+### S3 — notification-web.SPRING_DATA_MONGODB_URI указывает на attendance_db
+`docker-compose.yml:161`:
+```
+SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin
+```
+notification-web сейчас не пишет в Mongo (stateless forwarder), поэтому
+URI просто legacy-placeholder. M10 переключает на `notification_db`:
+- Name hostname `mongo-attendance` remains (контейнер физически тот же,
+  хранит и attendance_db и notification_db как разные DB в одном Mongo —
+  matches P2-9/6 «разные DB, один instance»).
+- Authsource остаётся `admin` (root user там).
+- DB в URI: `notification_db`.
+- В compose `docker-compose.prod.yml` — то же изменение.
 
 ## Ожидаемые surprises
 

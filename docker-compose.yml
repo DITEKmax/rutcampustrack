@@ -48,13 +48,19 @@ services:
     image: mongo:7
     container_name: rct-mongo-attendance
     environment:
-      MONGO_INITDB_DATABASE: attendance_db
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-rct_user}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-rct_dev_pass}
+      MONGO_INITDB_DATABASE: admin
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-rct_dev_pass}
+      # M10 G1 D2 — application users (PoLP), создаются init-mongo.js.
+      MONGO_USER: ${MONGO_USER:-rct_user}
+      MONGO_PASSWORD: ${MONGO_PASSWORD:-rct_dev_pass}
+      MONGO_NOTIFICATION_USER: ${MONGO_NOTIFICATION_USER:-rct_notification_user}
+      MONGO_NOTIFICATION_PASSWORD: ${MONGO_NOTIFICATION_PASSWORD:-rct_dev_pass}
     expose:
       - "27017"
     volumes:
       - mongo-data:/data/db
+      - ./infra/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - private_net
     healthcheck:
@@ -158,7 +164,11 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:noreply@rut.ru}
-      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER:-rct_user}:${MONGO_PASSWORD:-rct_dev_pass}@mongo-attendance:27017/attendance_db?authSource=admin
+      # M10 G1 D3 — отдельная БД notification_db + отдельный credential
+      # MONGO_NOTIFICATION_USER (PoLP — D2).
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER:-rct_notification_user}:${MONGO_NOTIFICATION_PASSWORD:-rct_dev_pass}@mongo-attendance:27017/notification_db?authSource=admin
+      # M10 G1 D4 — retention для notification_history (дней).
+      NOTIFICATION_HISTORY_TTL_DAYS: ${NOTIFICATION_HISTORY_TTL_DAYS:-30}
       # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     volumes:

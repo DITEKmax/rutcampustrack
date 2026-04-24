@@ -5,7 +5,7 @@
 #
 # Prerequisites:
 #   docker compose up -d
-#   ./gradlew.bat :services:auth-service:bootRun
+#   ./gradlew.bat :services:auth-service:auth-app:bootRun
 #   AUTH_SERVICE_URL=http://localhost:9090 ./gradlew.bat :services:api-gateway:bootRun
 
 GATEWAY_URL="${GATEWAY_URL:-http://localhost:8080}"
@@ -32,7 +32,7 @@ if ! curl -s --max-time 3 "$GATEWAY_URL" > /dev/null 2>&1; then
     echo ""
     echo "Start the services first:"
     echo "  docker compose up -d"
-    echo "  ./gradlew.bat :services:auth-service:bootRun"
+    echo "  ./gradlew.bat :services:auth-service:auth-app:bootRun"
     echo "  AUTH_SERVICE_URL=http://localhost:9090 ./gradlew.bat :services:api-gateway:bootRun"
     exit 1
 fi

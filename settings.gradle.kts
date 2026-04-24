@@ -18,13 +18,14 @@ include("services:shared:shared-security")
 include("services:shared:shared-observability")
 
 // === API Contracts (чистые модули без Spring Boot) ===
+include("services:auth-service:auth-api-contract")
 include("services:academic-service:academic-api-contract")
 include("services:schedule-service:schedule-api-contract")
 include("services:attendance-service:attendance-api-contract")
 
 // === Spring Boot Applications ===
 include("services:api-gateway")
-include("services:auth-service")
+include("services:auth-service:auth-app")
 include("services:academic-service:academic-app")
 include("services:schedule-service:schedule-app")
 include("services:attendance-service:attendance-app")

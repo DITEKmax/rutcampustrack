@@ -31,7 +31,7 @@ jobs:
           - name: api-gateway
             path: ':services:api-gateway'
           - name: auth-service
-            path: ':services:auth-service'
+            path: ':services:auth-service:auth-app'
           - name: academic-service
             path: ':services:academic-service:academic-app'
           - name: schedule-service
@@ -82,7 +82,7 @@ jobs:
           - name: api-gateway
             path: ':services:api-gateway'
           - name: auth-service
-            path: ':services:auth-service'
+            path: ':services:auth-service:auth-app'
           - name: academic-service
             path: ':services:academic-service:academic-app'
           - name: schedule-service

@@ -9,18 +9,20 @@ COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
-COPY services/auth-service/build.gradle.kts services/auth-service/
-COPY services/auth-service/src services/auth-service/src
+COPY services/auth-service/auth-api-contract/build.gradle.kts services/auth-service/auth-api-contract/
+COPY services/auth-service/auth-api-contract/src services/auth-service/auth-api-contract/src
+COPY services/auth-service/auth-app/build.gradle.kts services/auth-service/auth-app/
+COPY services/auth-service/auth-app/src services/auth-service/auth-app/src
 
 # BuildKit cache mount: persists Gradle wrapper + dependency cache across builds.
 # Requires BuildKit (DOCKER_BUILDKIT=1 locally; enabled by default in docker/build-push-action).
 RUN --mount=type=cache,target=/root/.gradle \
-    chmod +x gradlew && ./gradlew :services:auth-service:bootJar --no-daemon -x test
+    chmod +x gradlew && ./gradlew :services:auth-service:auth-app:bootJar --no-daemon -x test
 
 # Stage 2: Extract layers
 FROM eclipse-temurin:21-jre-alpine AS extractor
 WORKDIR /app
-COPY --from=builder /workspace/services/auth-service/build/libs/*.jar app.jar
+COPY --from=builder /workspace/services/auth-service/auth-app/build/libs/*.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
 # Stage 3: Runtime

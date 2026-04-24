@@ -50,8 +50,8 @@ jobs:
             path: ':services:api-gateway'
             report: 'services/api-gateway/build/reports/jacoco/test/jacocoTestReport.xml'
           - name: auth-service
-            path: ':services:auth-service'
-            report: 'services/auth-service/build/reports/jacoco/test/jacocoTestReport.xml'
+            path: ':services:auth-service:auth-app'
+            report: 'services/auth-service/auth-app/build/reports/jacoco/test/jacocoTestReport.xml'
           - name: academic-service
             path: ':services:academic-service:academic-app'
             report: 'services/academic-service/academic-app/build/reports/jacoco/test/jacocoTestReport.xml'

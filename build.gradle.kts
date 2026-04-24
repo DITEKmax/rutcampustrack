@@ -158,7 +158,7 @@ subprojects {
                 //   shared-logback        100.0%   → 60%
                 //   shared-events          91.8%   → 60%
                 //   shared-web             88.5%   → 60%
-                //   auth-service           81.3%   → 60%
+                //   auth-app               81.3%   → 60%  (M12: ex auth-service)
                 //   notification-app       75.7%   → 60%
                 //   shared-security        70.4%   → 60%
                 //   shared-observability   41.3%   → 39% ratchet
@@ -251,7 +251,7 @@ tasks.register("verifyLogbackJsonInAllServices") {
 
     val expectedServices = listOf(
         "services/api-gateway/src/main/resources",
-        "services/auth-service/src/main/resources",
+        "services/auth-service/auth-app/src/main/resources",
         "services/academic-service/academic-app/src/main/resources",
         "services/schedule-service/schedule-app/src/main/resources",
         "services/attendance-service/attendance-app/src/main/resources",
@@ -290,7 +290,7 @@ tasks.named("check") {
 // и снижение зависимостей.
 val springBootApps = listOf(
     "services/api-gateway",
-    "services/auth-service",
+    "services/auth-service/auth-app",
     "services/academic-service/academic-app",
     "services/schedule-service/schedule-app",
     "services/attendance-service/attendance-app",

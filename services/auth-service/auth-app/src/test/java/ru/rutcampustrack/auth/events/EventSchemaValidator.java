@@ -14,8 +14,8 @@ import java.util.Set;
 
 /**
  * M09 G2 — auth-аналог academic/schedule/attendance EventSchemaValidator.
- * Auth-service лежит на уровне {@code services/auth-service}, поэтому 2
- * уровня вверх до repo root (academic/schedule/attendance — 3 уровня).
+ * M12 G1 — после module split (auth-service → auth-service/auth-app) путь 3
+ * уровня вверх до repo root, как у academic/schedule/attendance.
  */
 public final class EventSchemaValidator {
 
@@ -23,6 +23,7 @@ public final class EventSchemaValidator {
 
     public static Path schemasDir() {
         return Path.of("").toAbsolutePath()
+                .getParent()   // auth-service
                 .getParent()   // services
                 .getParent()   // repo root
                 .resolve("event-schemas");

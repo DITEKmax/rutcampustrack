@@ -18,7 +18,7 @@ import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchResponse;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkResponse;
-import ru.rutcampustrack.attendance.contract.exception.ErrorResponse;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 /**
  * Contract interface for manual attendance marking API (D-11).

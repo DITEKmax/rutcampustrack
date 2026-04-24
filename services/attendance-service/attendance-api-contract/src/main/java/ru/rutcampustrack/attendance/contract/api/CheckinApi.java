@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinRequest;
 import ru.rutcampustrack.attendance.contract.dto.checkin.CheckinResponse;
-import ru.rutcampustrack.attendance.contract.exception.ErrorResponse;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 /**
  * Contract interface for geo-checkin API (D-06).

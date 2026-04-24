@@ -19,7 +19,7 @@ import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentStatsResponse;
-import ru.rutcampustrack.attendance.contract.exception.ErrorResponse;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 import java.time.LocalDate;
 

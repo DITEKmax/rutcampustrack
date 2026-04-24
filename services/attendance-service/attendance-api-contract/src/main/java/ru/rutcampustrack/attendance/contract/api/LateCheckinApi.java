@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.rutcampustrack.attendance.contract.dto.latecheckin.LateCheckinDecisionRequest;
 import ru.rutcampustrack.attendance.contract.dto.latecheckin.LateCheckinRequestResponse;
-import ru.rutcampustrack.attendance.contract.exception.ErrorResponse;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 /**
  * Contract for late-checkin request REST API.

@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-import ru.rutcampustrack.academic.contract.exception.ErrorResponse;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
+import ru.rutcampustrack.shared.web.api.exception.FieldError;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 
 import java.time.Instant;
@@ -195,10 +196,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex,
                                                            HttpServletRequest request) {
-        List<ErrorResponse.FieldError> fieldErrors = ex.getBindingResult()
+        List<FieldError> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(fe -> new ErrorResponse.FieldError(
+                .map(fe -> new FieldError(
                         fe.getField(),
                         fe.getRejectedValue(),
                         fe.getDefaultMessage()

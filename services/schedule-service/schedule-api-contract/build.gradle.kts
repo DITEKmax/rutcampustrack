@@ -6,6 +6,9 @@ group = "ru.rutcampustrack"
 version = "0.1.0"
 
 dependencies {
+    // M11 G0.3: единый источник ErrorResponse/FieldError для всех контрактов
+    api(project(":services:shared:shared-web-api"))
+
     api("jakarta.validation:jakarta.validation-api:3.1.0")
     api("org.springframework:spring-web:6.2.1")
     // Spring Data Commons (for Pageable, PagedResourcesAssembler)

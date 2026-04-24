@@ -47,8 +47,11 @@ dependencies {
     implementation("org.hibernate.validator:hibernate-validator")
     implementation("org.aspectj:aspectjweaver")
 
-    // OpenApiCustomizer-заглушка для M06 — компилируется только если на classpath.
+    // OpenApiCustomizer (M06 M01 заглушка + M11 G1 наполнение) + swagger-core
+    // (ModelConverters для registerErrorResponseSchema) — compileOnly, т.к.
+    // springdoc активируется только если consumer имеет springdoc starter.
     compileOnly(libs.springdoc.openapi.starter.common)
+    compileOnly("io.swagger.core.v3:swagger-core-jakarta:2.2.27")
 
     // Tests: здесь как обычное веб-приложение, нужен полный starter.
     testImplementation("org.springframework.boot:spring-boot-starter-web")

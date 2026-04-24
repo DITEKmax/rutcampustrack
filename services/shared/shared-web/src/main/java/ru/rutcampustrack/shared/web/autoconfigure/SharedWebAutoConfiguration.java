@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Import;
 import ru.rutcampustrack.shared.web.audit.AdminActionAspect;
+import ru.rutcampustrack.shared.web.config.GlobalErrorResponsesCustomizer;
 import ru.rutcampustrack.shared.web.config.JacksonConfig;
 import ru.rutcampustrack.shared.web.config.SharedOpenApiCustomizer;
 import ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler;
@@ -27,6 +28,7 @@ import ru.rutcampustrack.shared.web.exception.GlobalExceptionHandler;
         GlobalExceptionHandler.class,
         JacksonConfig.class,
         SharedOpenApiCustomizer.class,
+        GlobalErrorResponsesCustomizer.class,
         AdminActionAspect.class
 })
 public class SharedWebAutoConfiguration {

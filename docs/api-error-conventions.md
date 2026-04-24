@@ -60,6 +60,46 @@ Extension fields (RFC 9457 «Extension Members»):
 Все extension fields — `@JsonInclude(NON_NULL)`, не попадают в body
 если `null`.
 
+## Global error responses (NEW-122, M11 G1)
+
+**M11 G1 (2026-04-24):** `GlobalErrorResponsesCustomizer` в
+`shared-web` автоматически добавляет 7 стандартных error responses
+ко всем OpenAPI operations всех сервисов. `@ApiResponse` в
+`*-api-contract` интерфейсах можно **не дублировать** — customizer
+покрывает default case.
+
+Стандартные статусы + default descriptions:
+
+| Status | Description (RU) | Когда возвращается |
+|--------|------------------|--------------------|
+| 400 | Ошибка валидации запроса | `MethodArgumentNotValidException`, `ConstraintViolationException`, `HttpMessageNotReadableException`, `MissingServletRequestParameterException`, `MethodArgumentTypeMismatchException` |
+| 401 | Требуется аутентификация | `InvalidCredentialsException`, `TokenRefreshException`, `OtpExpiredException`, `TmaValidationException` (auth-service); отсутствие JWT |
+| 403 | Доступ запрещён | Spring Security `AccessDeniedException`, per-service `AccessDeniedException`, `GeofenceBlockedException` |
+| 404 | Ресурс не найден | `ResourceNotFoundException`, `NoHandlerFoundException`, `NoResourceFoundException` |
+| 409 | Конфликт данных | `ConflictException`, `DataIntegrityViolationException`, `DuplicateKeyException` |
+| 429 | Превышен лимит запросов | `RateLimitException`, `OtpRateLimitException` |
+| 500 | Внутренняя ошибка сервера | generic `Exception` catch-all (не включает stack trace в body) |
+
+Все responses имеют `content: application/problem+json` +
+`schema: $ref #/components/schemas/ErrorResponse` (единая schema из
+`shared-web-api`).
+
+Per-endpoint override работает:
+
+```java
+@Operation(summary = "Создать пользователя")
+@ApiResponses({
+    @ApiResponse(responseCode = "201", description = "Пользователь создан"),
+    // Если определить 409 здесь с custom description — customizer
+    // сохранит description, но добавит content schema автоматически.
+    @ApiResponse(responseCode = "409", description = "Логин уже используется")
+})
+```
+
+Customizer подключается автоматически через
+`SharedWebAutoConfiguration` (M11 G0.2). Сервису достаточно
+`implementation(project(":shared-web"))` + springdoc starter.
+
 ## Batch Endpoint Conventions (NEW-145)
 
 ### Transactional semantics

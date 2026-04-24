@@ -24,70 +24,57 @@
 - [x] EventSchemaValidator.java — +1 уровень вверх для schemasDir()
 - [x] Коммит `refactor(auth): split into auth-api-contract + auth-app Gradle modules (M12 Группа 1, 01 P0-1)`
 
-## Группа 2 — DTO migration (~0.5д)
+## Группа 2 — DTO migration (~0.5д) ✅ 2026-04-24 (commit 315a317)
 
-- [ ] `auth-api-contract/src/main/java/ru/rutcampustrack/auth/dto/`
-      — создать package
-- [ ] git mv `LoginRequest.java` в contract-module
-- [ ] git mv `TokenResponse.java`
-- [ ] git mv `OtpRequest.java`, `OtpVerifyRequest.java`,
-      `OtpVerifyByCodeRequest.java`, `OtpCodeResponse.java`
-- [ ] git mv `RefreshRequest.java`
-- [ ] git mv `TmaAuthRequest.java`
-- [ ] git mv `ChangePasswordRequest.java`
-- [ ] git mv `WsTicketResponse.java`
-- [ ] git mv `InternalIssueRequest.java`, `InternalIssueResponse.java`,
-      `PublicKeyResponse.java`
-- [ ] **НЕ переносить:** `ErrorResponse.java` — используется
-      shared-web из M01
-- [ ] Проверить что каждый DTO — Java `record` (конвертировать
-      classes где возможно)
-- [ ] Убрать Lombok annotations если есть (на всякий случай grep
-      `@Data`, `@Builder` в contract-module)
-- [ ] Fix imports в auth-app (все references к DTO — через новый
-      package)
-- [ ] `./gradlew :auth-app:compileJava` зелёный
-- [ ] Коммит `refactor(auth): move DTO to auth-api-contract module (M12 Группа 2)`
+- [x] `auth-api-contract/.../auth/dto/` — создан через git mv
+- [x] git mv 12 DTO (Login/Token/Otp×3/Refresh/Tma/ChangePwd/WsTicket/
+      InternalIssue×2/PublicKey) — 100% rename
+- [x] `ErrorResponse` — не переносим, shared-web-api из M01
+- [x] Все 12 DTO — уже Java `record` без Lombok, конвертация не нужна
+- [x] Package `ru.rutcampustrack.auth.dto` не изменился — imports работают через contract dependency
+- [x] `./gradlew :auth-app:compileJava` + `:test` зелёные (24 unit)
+- [x] Коммит `refactor(auth): move DTO to auth-api-contract module (M12 Группа 2)`
+- **Отклонение:** PLAN.md упоминает OtpCodeResponse — такого DTO нет (12, не 13).
 
-## Группа 3 — AuthApi interface (~0.5д)
+## Группа 3 — AuthApi interface (~0.5д) ✅ 2026-04-24 (commit e3a4adf)
 
-- [ ] `auth-api-contract/.../api/AuthApi.java` — public endpoints
-      interface с `@RequestMapping("/auth")`
-- [ ] Endpoints в AuthApi: login, logout, otp/request,
-      otp/verify-by-code, refresh, change-password, tma/login
-- [ ] Каждый endpoint: `@Operation(summary, description)`,
-      `@ApiResponse(responseCode, description)`, `@RequestBody`
-      description
-- [ ] `@Schema(description, example)` на request DTO fields
-      (pass-1 для public endpoints)
-- [ ] `auth-api-contract/.../api/WsTicketApi.java` — ws-ticket
-      endpoints
-- [ ] `auth-api-contract/.../api/InternalAuthApi.java` — internal
-      issuer + ws-ticket endpoints
-- [ ] `InternalAuthApi` помечен `@Hidden` (springdoc скрывает из
-      public swagger-ui)
-- [ ] `./gradlew :auth-api-contract:build` зелёный
-- [ ] Коммит `feat(auth): add AuthApi + WsTicketApi + InternalAuthApi interfaces (M12 Группа 3, P2-2/2)`
+- [x] `AuthApi.java` — 10 public endpoints (`@RequestMapping("/auth")`):
+      login, refresh, logout, public-key, otp/request, otp/verify,
+      otp/verify-by-code, tma, refresh-body, change-password.
+      Константа REFRESH_COOKIE_NAME = "rct_refresh" (copy from AuthCookies).
+- [x] Каждый endpoint: `@Operation` + `@ApiResponse` (2-3 на endpoint)
+- [x] `WsTicketApi.java` — POST /auth/ws-ticket (bearer JWT guarded)
+- [x] `InternalIssuerApi.java` — POST /internal/issue-internal-jwt (`@Hidden`)
+- [x] `InternalWsTicketApi.java` — POST /internal/consume-ws-ticket (`@Hidden`)
+- [x] Раздельные Internal API (owner-default #3, не один `InternalAuthApi`)
+- [x] Extracted 2 DTO (nested → standalone): ConsumeWsTicketRequest,
+      ConsumeWsTicketResponse (binary-compat snake_case JsonProperty сохранён)
+- [x] auth-api-contract build.gradle.kts + spring-security-core + jakarta.servlet-api
+      (controllers передают Authentication + HttpServletRequest в signature interface)
+- [x] `./gradlew :auth-api-contract:build` + `:auth-app:compileJava` зелёные
+- [x] Коммит `feat(auth): add AuthApi + WsTicketApi + InternalIssuerApi + InternalWsTicketApi interfaces (M12 Группа 3, P2-2/2)`
+- **@Schema на DTO fields** — отложено (pass-2 в G5/G7 через OpenApiSnapshotIT)
 
-## Группа 4 — Controller refactor (~0.5д)
+## Группа 4 — Controller refactor (~0.5д) ✅ 2026-04-24 (commit bf2de65)
 
-- [ ] `AuthController implements AuthApi` — добавить implements,
-      убрать `@RequestMapping` с class level
-- [ ] Убрать `@GetMapping`/`@PostMapping`/`@PutMapping` со всех
-      методов AuthController (наследуются из interface)
-- [ ] `WsTicketController implements WsTicketApi` — аналогично
-- [ ] `InternalIssuerController implements InternalAuthApi`
-- [ ] `InternalWsTicketController implements InternalAuthApi`
-      (или отдельный InternalWsTicketApi если scope разный)
-- [ ] Grep проверка: `@RequestMapping` / `@GetMapping` /
-      `@PostMapping` отсутствуют в `auth-app/src/main/java/.../controller/`
-- [ ] `AuthApiContractTest` — ArchUnit rule: все классы в
-      `.controller` package должны `implement` что-то из
-      `auth-api-contract...api` package
-- [ ] `./gradlew :auth-app:test` зелёный (existing IT/unit без
-      изменений)
-- [ ] `./gradlew :auth-app:integrationTest` зелёный
-- [ ] Коммит `refactor(auth): controllers implement contract interfaces (M12 Группа 4, 01 P0-1)`
+- [x] AuthController implements AuthApi
+- [x] Убраны `@RequestMapping` + `@Tag` с class-level
+- [x] Убраны `@GetMapping`/`@PostMapping` + `@Operation`/`@ApiResponse` со всех методов
+- [x] `@Valid`, `@RequestBody`, `@CookieValue` — тоже убраны с controller (наследуются от interface)
+- [x] WsTicketController implements WsTicketApi
+- [x] InternalIssuerController implements InternalIssuerApi
+- [x] InternalWsTicketController implements InternalWsTicketApi
+      (nested records ConsumeRequest/ConsumeResponse удалены — заменены на DTO из contract)
+- [x] WsTicketIT import fix: `ConsumeRequest`/`ConsumeResponse` → `ConsumeWsTicketRequest`/`Response`
+- [x] AuthApiContractTest (ArchUnit, 3 правила):
+      - `@RequestMapping` отсутствует на class-level в `..controller..`
+      - `@GetMapping`/`@PostMapping`/`@Put`/`@Patch`/`@Delete`/`@RequestMapping` на method-level
+        отсутствуют в `..controller..`
+      - `@RestController` implement'ит один из 4 Api interfaces
+- [x] archunit.junit5 добавлен в auth-app testImplementation
+- [x] `./gradlew :services:auth-service:auth-app:check` зелёный (2m 31s):
+      unit (24+3) + integration (Testcontainers) + JaCoCo 60% gate
+- [x] Коммит `refactor(auth): controllers implement contract interfaces (M12 Группа 4, 01 P0-1)`
 
 ## Группа 5 — Frontend regenerate + smoke (~0.5д)
 

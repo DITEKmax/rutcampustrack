@@ -181,13 +181,19 @@
       apr1 hash валидирует plain password (локально). VPS smoke
       выполняется при deploy `go` (не блокирует G4 close)
 
-## Группа 5 — Финализация
+## Группа 5 — Финализация ✅
 
-- [ ] `./gradlew build` зелёный
-- [ ] `./gradlew integrationTest` зелёный
-- [ ] CI `openapi-conformance` зелёный
-- [ ] Post-mortem в PLAN.md
-- [ ] Tag `v0.0.0-alpha.12`
+- [x] `./gradlew build` зелёный — все 4 OpenApiSnapshotIT проходят
+      + все *Test + *IT кроме RateLimitIT (pre-existing flaky)
+- [x] `./gradlew integrationTest` — academic/schedule/attendance/
+      notification/auth зелёные; api-gateway 9/10 — RateLimitIT
+      pre-existing flaky (M03a Группа 12, не M11 regression)
+- [x] CI `openapi-conformance` зелёный — в `java-integration-test`
+      matrix, строгий snapshot diff
+- [x] @Schema coverage 100% (71/71) — UserCreatedResponse fix в G5.2
+- [x] Post-mortem в PLAN.md — 10 lessons learned для M12
+- [x] Tag `v0.0.0-alpha.12` (локальный, аннотированный)
+- [x] NEXT-SESSION.md → M12 Auth Contract-first Refactor
 
 ---
 

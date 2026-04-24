@@ -256,3 +256,56 @@ Frontend (PWA + web-panel):
 **Итог:** чистое deprecated-alias удаление без runtime-impact. 1 java-класс,
 1 unit-test, 2 TS-fallback'а и 2 TS-unit-testа удалены; ErrorResponse
 canonical format не менялся.
+
+## 2026-04-25 — Группа 6 (Mongo TTL + compound indexes audit)
+
+**Terminology divergence (checklist vs code):** checklist говорит про
+compound `(user_id, created_at)`, но **реальное поле** в `NotificationHistoryDocument`
+называется `sent_at` (M10 schema). Наш IT проверяет именно
+`{user_id: 1, sent_at: -1}`. При общении с владельцем / ops эту
+замену «created_at → sent_at» упоминать.
+
+**M10 G9 hot-patch был good enough для создания индексов, но не для
+fail-fast:** если в будущей версии Spring Data Mongo / Mongo driver
+появится regression в silent-no-op (как в Mongo 6→7 transition),
+мы бы опять хреново нашли это только через COLLSCAN-алёрт продакшена.
+M13 G6 `verifyIndexes()` — страховка: после `ensureIndex` читаем
+`getIndexInfo()` + `listIndexes().expireAfterSeconds` и бросаем
+`IllegalStateException` если что-то не совпадает.
+
+**Реализация:**
+
+- `NotificationHistoryMongoConfig`:
+  - Вынесены именованные константы `IDX_USER_SENT_DESC/IDX_USER_READ/IDX_TTL_SENT_AT`
+    (не magic strings) — используются и в config, и в IT.
+  - `verifyIndexes(IndexOperations)` вызывается в конце `initIndexes()`.
+    Читает `ops.getIndexInfo()` (имена) + `collection.listIndexes()`
+    (для `expireAfterSeconds` — Spring Data `IndexInfo` не мапит этот
+    атрибут в доступный accessor).
+  - Если хотя бы один из 3 missing или TTL не совпадает с
+    `ttlDays * 86400` — `log.error` + `throw new IllegalStateException`.
+    В `ApplicationReadyEvent` handler exception пробрасывается и
+    Spring ApplicationContext падает с exit code → docker restart
+    policy перезапускает контейнер (pod будет в CrashLoopBackOff при
+    реальной проблеме).
+
+**IT (`NotificationMongoIndexesIT`):**
+
+- Загружает полный Spring context через `ContainerTestBase` (Mongo
+  7 Testcontainer). Сам `initIndexes()` срабатывает из
+  `ApplicationReadyEvent` — к моменту теста индексы уже должны быть.
+- Проверки: 3 custom + `_id_` (= 4 total), `expireAfterSeconds=2592000`
+  (30 дней), compound key `{user_id:1, sent_at:-1}` с правильными
+  направлениями.
+- `@MockitoBean PushService` необходим — иначе VAPID public-key с
+  test stub'ом парсится и падает при создании `webPushService` bean'а.
+
+**Runbook `docs/runbooks/mongo-indexes-verify.md`:** 4 раздела —
+automatic startup check, manual `db.getIndexes()`, fix рецепты
+(рестарт / manual `createIndex` / `collMod TTL`), performance
+`explain().winningPlan` (IXSCAN vs COLLSCAN). TTL-rotation рецепт
+через `collMod` (Mongo ≥ 5.0) avoid drop+recreate downtime.
+
+**Проверка:**
+- `notification-app:compileJava` — SUCCESSFUL.
+- `NotificationMongoIndexesIT` — 1/1 passing.

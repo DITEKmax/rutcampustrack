@@ -49,10 +49,10 @@
 
 ## Группа 6 — Notification TTL + compound indexes (M10 S4 audit)
 
-- [ ] Аудит `NotificationMongoConfig` — startup verify: TTL 30d + compound `(user_id, created_at)` реально создаются (а не silent no-op)
-- [ ] Добавить fail-fast на startup если индексы не созданы (log.error + fail context)
-- [ ] IT на чистой Mongo: `getIndexes()` содержит обе expected
-- [ ] Runbook: `runbooks/mongo-indexes-verify.md` — как проверить вручную на VPS после deploy
+- [x] Аудит `NotificationMongoConfig` — startup verify: TTL 30d + compound `(user_id, created_at)` реально создаются (а не silent no-op) _(аудит ok: `NotificationHistoryMongoConfig` с M10 G9 hot-patch использует `@EventListener(ApplicationReadyEvent)` + `createCollection()` перед `ensureIndex()`. Поле называется `sent_at` (не `created_at` — checklist terminology divergence, зафиксировано в NOTES))_
+- [x] Добавить fail-fast на startup если индексы не созданы (log.error + fail context) _(добавлен `verifyIndexes()` в `NotificationHistoryMongoConfig`: читает `getIndexInfo()` и `listIndexes().expireAfterSeconds` — бросает `IllegalStateException` если один из 3 индексов отсутствует или TTL не совпадает. Константы `IDX_USER_SENT_DESC/IDX_USER_READ/IDX_TTL_SENT_AT` вынесены для reuse в IT)_
+- [x] IT на чистой Mongo: `getIndexes()` содержит обе expected _(новый `NotificationMongoIndexesIT`: проверяет 3 custom + `_id_` + `expireAfterSeconds=2592000` + compound key `{user_id:1, sent_at:-1}`. 1/1 passing на Testcontainers Mongo)_
+- [x] Runbook: `runbooks/mongo-indexes-verify.md` — как проверить вручную на VPS после deploy _(новый `docs/runbooks/mongo-indexes-verify.md`: автоматический startup check, ручная команда `db.getIndexes()`, fix рецепты (рестарт / manual createIndex / collMod TTL), performance IXSCAN check)_
 
 ## Группа 7 — Mongo outbox atomicity (M02 CRITICAL #1)
 

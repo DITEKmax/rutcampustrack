@@ -1,6 +1,7 @@
 package ru.rutcampustrack.notification.history;
 
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
@@ -8,9 +9,13 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.index.IndexInfo;
 import org.springframework.data.mongodb.core.index.IndexOperations;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * MongoDB index configuration для коллекции notification_history (M10 G3).
@@ -32,12 +37,25 @@ import java.time.Duration;
  * коллекцию через {@code createCollection} ПЕРЕД ensureIndex и
  * привязываемся к {@link ApplicationReadyEvent} вместо @PostConstruct,
  * чтобы MongoTemplate был полностью инициализирован.
+ *
+ * <p><b>M13 G6 fail-fast:</b> после ensureIndex явно проверяем
+ * {@code getIndexInfo()} — все 3 ожидаемых индекса должны присутствовать,
+ * иначе бросаем {@link IllegalStateException} и Spring контекст падает.
+ * Это защищает от silent-no-op регрессии в будущих версиях Spring Data
+ * MongoDB / Mongo driver.
  */
 @Configuration
 @Slf4j
 public class NotificationHistoryMongoConfig {
 
     private static final String COLLECTION = "notification_history";
+
+    static final String IDX_USER_SENT_DESC = "idx_user_sent_desc";
+    static final String IDX_USER_READ = "idx_user_read";
+    static final String IDX_TTL_SENT_AT = "ttl_sent_at";
+
+    private static final Set<String> EXPECTED_INDEXES = Set.of(
+            IDX_USER_SENT_DESC, IDX_USER_READ, IDX_TTL_SENT_AT);
 
     private final MongoTemplate mongoTemplate;
     private final int ttlDays;
@@ -60,19 +78,79 @@ public class NotificationHistoryMongoConfig {
         String i1 = ops.ensureIndex(new Index()
                 .on("user_id", Sort.Direction.ASC)
                 .on("sent_at", Sort.Direction.DESC)
-                .named("idx_user_sent_desc"));
+                .named(IDX_USER_SENT_DESC));
 
         String i2 = ops.ensureIndex(new Index()
                 .on("user_id", Sort.Direction.ASC)
                 .on("read_at", Sort.Direction.ASC)
-                .named("idx_user_read"));
+                .named(IDX_USER_READ));
 
         String i3 = ops.ensureIndex(new Index()
                 .on("sent_at", Sort.Direction.ASC)
                 .expire(Duration.ofDays(ttlDays))
-                .named("ttl_sent_at"));
+                .named(IDX_TTL_SENT_AT));
 
         log.info("notification_history indexes ensured: {}, {}, {} (TTL {} days)",
                 i1, i2, i3, ttlDays);
+
+        verifyIndexes(ops);
+    }
+
+    /**
+     * M13 G6 fail-fast: после ensureIndex читаем текущие index-definitions из
+     * Mongo через {@code getIndexInfo()} и проверяем наличие всех 3 ожидаемых
+     * по имени + TTL expireAfter у ttl_sent_at. Если хотя бы один отсутствует
+     * или TTL не совпадает — бросаем IllegalStateException (Spring ApplicationReadyEvent
+     * handler — exception здесь уронит контекст только если swallow'ем не
+     * является listener policy; для гарантии используем
+     * {@link IllegalStateException} + explicit log.error).
+     */
+    private void verifyIndexes(IndexOperations ops) {
+        List<IndexInfo> actual = ops.getIndexInfo();
+        Set<String> actualNames = actual.stream()
+                .map(IndexInfo::getName)
+                .collect(Collectors.toSet());
+
+        Set<String> missing = EXPECTED_INDEXES.stream()
+                .filter(name -> !actualNames.contains(name))
+                .collect(Collectors.toSet());
+
+        if (!missing.isEmpty()) {
+            String msg = "notification_history missing indexes: " + missing
+                    + " (actual: " + actualNames + "). "
+                    + "Runbook: runbooks/mongo-indexes-verify.md";
+            log.error(msg);
+            throw new IllegalStateException(msg);
+        }
+
+        // TTL sanity: ttl_sent_at должен иметь expireAfter > 0.
+        // Spring Data IndexInfo не даёт прямой expireAfter accessor — читаем
+        // raw через collection.listIndexes (fallback на sanity-check).
+        long ttlSeconds = readTtlSecondsRaw();
+        long expected = Duration.ofDays(ttlDays).toSeconds();
+        if (ttlSeconds != expected) {
+            String msg = "notification_history ttl_sent_at expireAfterSeconds=" + ttlSeconds
+                    + ", expected " + expected + " (" + ttlDays + " days). "
+                    + "Возможно, индекс остался от предыдущей конфигурации — "
+                    + "для изменения TTL требуется drop+recreate на пустой коллекции "
+                    + "или collMod (см. runbooks/mongo-indexes-verify.md).";
+            log.error(msg);
+            throw new IllegalStateException(msg);
+        }
+
+        log.info("notification_history indexes verified: {} (TTL {}s)", actualNames, ttlSeconds);
+    }
+
+    private long readTtlSecondsRaw() {
+        // listIndexes возвращает все index-definitions со всеми Mongo атрибутами,
+        // включая expireAfterSeconds. Spring Data IndexOperations.getIndexInfo()
+        // теряет это поле (не маппит в IndexInfo до M10 stack версии).
+        for (Document idx : mongoTemplate.getCollection(COLLECTION).listIndexes()) {
+            if (IDX_TTL_SENT_AT.equals(idx.getString("name"))) {
+                Number ttl = idx.get("expireAfterSeconds", Number.class);
+                return ttl != null ? ttl.longValue() : -1L;
+            }
+        }
+        return -1L;
     }
 }

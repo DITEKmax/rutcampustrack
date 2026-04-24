@@ -34,10 +34,18 @@
 
 ## Группа 5 — `InvalidParam` deprecated alias migration
 
-- [ ] Удалить `fieldErrors` field из `ErrorResponse` в `shared-web-api`
-- [ ] Удалить маппинг `fieldErrors` из `GlobalExceptionHandler` в `shared-web`
-- [ ] Обновить frontend axios interceptors: убрать fallback на `fieldErrors`
-- [ ] Regenerate OpenAPI snapshots — проверить, что `invalidParams` остаётся единственным
+> **Коррекция checklist (M13 G5):** исходная формулировка путала
+> направление миграции. Реальный замысел (из v0.0.0-debt.md:108 и
+> M11 NOTES): удалить **legacy `InvalidParam` Java-record** — он был
+> deprecated alias после M11 G0 canonical-rename на `FieldError`.
+> Backend canonical остался `ErrorResponse.fieldErrors: List<FieldError>`
+> (не менялся). Frontend TS-level имя `invalidParams` — это RFC 9457
+> compliance на frontend-стороне, остаётся.
+
+- [x] Удалить `fieldErrors` field из `ErrorResponse` в `shared-web-api` _(N/A — canonical, не удалять. Удалён сам `InvalidParam.java` record + `invalidParamAllFields` test в ErrorResponseTest. Backend `ErrorResponse.fieldErrors` не менялся)_
+- [x] Удалить маппинг `fieldErrors` из `GlobalExceptionHandler` в `shared-web` _(N/A — canonical format. Handler уже выдаёт fieldErrors с M11 G0. Минорный cleanup: обновлены comments `FieldError.java`/`ErrorResponse.java`/`shared-web/build.gradle.kts` про M13 G5 alias removal + @DisplayName в `NotificationErrorHandlingIT` с "invalidParams[]" на "fieldErrors[]" для синхронизации с реальным форматом)_
+- [x] Обновить frontend axios interceptors: убрать fallback на `fieldErrors` _(обратно: убрали fallback на **invalidParams** в `RawErrorBody.invalidParams?` и `coerceInvalidParams`. Теперь frontend читает только canonical backend `fieldErrors` и выдаёт TS `invalidParams`. Удалены `принимает post-M11 invalidParams shape` unit-tests в PWA и web-panel. 166/166 PWA + 476/476 web-panel зелёные)_
+- [x] Regenerate OpenAPI snapshots — проверить, что `invalidParams` остаётся единственным _(5 snapshot'ов regenerate через `OpenApiSnapshotIT -Popenapi.snapshot.update=true` — нет diff'а, т.к. `InvalidParam` schema в spec'ах отсутствовала изначально (canonical уже был `fieldErrors`). Frontend types regenerate — нет diff'а)_
 
 ## Группа 6 — Notification TTL + compound indexes (M10 S4 audit)
 

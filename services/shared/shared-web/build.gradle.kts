@@ -16,9 +16,9 @@ dependencyManagement {
 // Содержит Spring beans (GlobalExceptionHandler, JacksonConfig,
 // SharedOpenApiCustomizer, AdminActionAspect) + SharedWebAutoConfiguration
 // (регистрируется через META-INF/spring/AutoConfiguration.imports).
-// DTO-типы (ErrorResponse, FieldError, InvalidParam) вынесены в
-// shared-web-api и приходят через `api(...)` — consumers видят их
-// транзитивно.
+// DTO-типы (ErrorResponse, FieldError) вынесены в shared-web-api и
+// приходят через `api(...)` — consumers видят их транзитивно.
+// M13 G5 удалил legacy InvalidParam deprecated alias.
 dependencies {
     // M11 G0.2: единый источник DTO-типов для всего backend + транзитив
     // для consumers (academic/schedule/attendance/notification/auth).

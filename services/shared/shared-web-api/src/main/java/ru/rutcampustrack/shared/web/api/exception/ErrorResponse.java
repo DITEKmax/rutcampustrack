@@ -10,9 +10,10 @@ import java.util.Map;
 /**
  * Унифицированный формат ошибки API по RFC 9457 (обновлённый RFC 7807)
  * Problem Details. Единственный {@code ErrorResponse} во всём backend
- * (M11 G0 устранил 5 дублей: shared-web/InvalidParam,
- * academic-api-contract/ErrorResponse, schedule-api-contract,
- * attendance-api-contract, auth/dto).
+ * (M11 G0 устранил 4 дубля: academic-api-contract/ErrorResponse,
+ * schedule-api-contract, attendance-api-contract, auth/dto.
+ * M13 G5 удалил пятый — legacy {@code InvalidParam} alias из
+ * shared-web-api).
  *
  * <p>Используется shared {@code GlobalExceptionHandler} (catch-all
  * Spring MVC exceptions, LOWEST_PRECEDENCE) и сервисными

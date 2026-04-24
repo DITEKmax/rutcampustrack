@@ -3,10 +3,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 /**
  * RFC 9457 (ex-RFC 7807) Problem Details parser — Angular side.
  *
- * M07 G4 (QC3): единая нормализация ошибок от backend'а. Backend сейчас
- * отдаёт `fieldErrors` (pre-M11 shape в attendance/academic/schedule-
- * service) либо `invalidParams` (shared-web shape, post-M11). Adapter
- * приводит к `invalidParams` как того требует RFC 9457.
+ * M07 G4 (QC3) + M13 G5: единая нормализация ошибок от backend'а.
+ * Backend canonical (M11 G0) = `fieldErrors: FieldError[]`. Adapter
+ * переименовывает на TS-уровне в `invalidParams` как того требует
+ * RFC 9457 Extension Members.
  */
 
 export interface InvalidParam {
@@ -43,8 +43,8 @@ interface RawErrorBody {
   instance?: string;
   timestamp?: string;
   traceId?: string;
+  /** M11 G0 canonical. Backend shape: { field, rejectedValue?, message }. */
   fieldErrors?: Array<{ field?: string; rejectedValue?: unknown; message?: string }>;
-  invalidParams?: Array<{ field?: string; rejectedValue?: unknown; message?: string }>;
   field?: string;
   extras?: Record<string, unknown>;
 }
@@ -69,7 +69,7 @@ function fallbackTitle(status: number): string {
 }
 
 function coerceInvalidParams(raw: RawErrorBody): InvalidParam[] {
-  const source = raw.invalidParams ?? raw.fieldErrors ?? [];
+  const source = raw.fieldErrors ?? [];
   return source
     .filter((item): item is { field?: string; rejectedValue?: unknown; message?: string } => !!item)
     .map((item) => ({

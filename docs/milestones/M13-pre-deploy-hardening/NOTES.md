@@ -207,3 +207,52 @@ initData, NOT cookie /auth/refresh» (была отсылка к refresh-body).
 `./gradlew :services:auth-service:auth-app:integrationTest` (AuthIT,
 TmaIT, OpenApiSnapshotIT) + `:services:api-gateway:integrationTest`
 (все RL/security IT) — BUILD SUCCESSFUL, 0 failures.
+
+## 2026-04-25 — Группа 5 (`InvalidParam` deprecated alias migration)
+
+**Surprise #1:** исходная формулировка checklist'а («удалить
+`fieldErrors` из ErrorResponse», «убрать fallback на `fieldErrors` в
+frontend») была **инвертирована** относительно реального замысла
+v0.0.0-debt.md:108 и M11 G0 history.
+
+**Реальное состояние до M13 G5:**
+- Backend canonical (M11 G0): `ErrorResponse.fieldErrors: List<FieldError>`.
+- `InvalidParam.java` — **legacy record** в shared-web-api, помечен
+  deprecated в M11 (migration path → v0.1), **не используется** ни в
+  одном production-коде (только в `ErrorResponseTest.invalidParamAllFields`).
+- Frontend `invalidParams: InvalidParam[]` — **TS-level имя** для
+  RFC 9457 compliance, coercer читает backend `fieldErrors` и переименовывает.
+- Frontend coercer имел **pre-M11 fallback** — читал также
+  `raw.invalidParams` (на случай если backend когда-то его отдавал).
+
+**Выполнено (правильное направление):**
+
+Backend:
+- Удалён `services/shared/shared-web-api/.../InvalidParam.java`.
+- Удалён `invalidParamAllFields` test в `ErrorResponseTest.java`.
+- Обновлены comments: `FieldError.java`, `ErrorResponse.java`,
+  `shared-web/build.gradle.kts` — M13 G5 alias removal записан.
+- Фикс misleading `@DisplayName` в `NotificationErrorHandlingIT`:
+  «invalidParams[]» → «fieldErrors[]».
+
+Frontend (PWA + web-panel):
+- `RawErrorBody.invalidParams?` удалён — остался только `fieldErrors?`.
+- `coerceInvalidParams(raw)` читает только `raw.fieldErrors ?? []`
+  (раньше `raw.invalidParams ?? raw.fieldErrors ?? []`).
+- Обновлены comments в `pwa/src/api/problemDetails.ts` и
+  `web-panel/src/app/core/errors/problem-details.ts`.
+- Удалены unit-tests «принимает post-M11 invalidParams shape»
+  (PWA problemDetails.test.ts и web-panel problem-details.spec.ts).
+
+**Проверка:**
+- `shared-web-api:build` — SUCCESSFUL.
+- PWA `npm test --run` — **166/166** passing.
+- web-panel `npm test` — **476/476** passing (67 test files).
+- OpenAPI snapshots regenerate через `OpenApiSnapshotIT -Popenapi.snapshot.update=true`
+  в 5 сервисах — **0 diff** (InvalidParam schema в spec'ах не было).
+- frontend types regenerate через `npm run generate:types:offline` —
+  **0 diff**.
+
+**Итог:** чистое deprecated-alias удаление без runtime-impact. 1 java-класс,
+1 unit-test, 2 TS-fallback'а и 2 TS-unit-testа удалены; ErrorResponse
+canonical format не менялся.

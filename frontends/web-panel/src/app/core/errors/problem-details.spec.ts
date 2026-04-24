@@ -31,22 +31,6 @@ describe('parseProblemDetails', () => {
     ]);
   });
 
-  it('принимает post-M11 invalidParams shape без переименования', () => {
-    const err = new HttpErrorResponse({
-      status: 400,
-      error: {
-        title: 'Bad',
-        detail: 'x',
-        invalidParams: [{ field: 'name', message: 'required' }],
-      },
-    });
-
-    const p = parseProblemDetails(err);
-    expect(p.invalidParams).toEqual([
-      { field: 'name', rejectedValue: undefined, message: 'required' },
-    ]);
-  });
-
   it('синтезирует fallback для plain-text 502', () => {
     const err = new HttpErrorResponse({
       status: 502,

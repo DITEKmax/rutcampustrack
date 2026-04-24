@@ -1,10 +1,11 @@
 /**
  * RFC 9457 (ex-RFC 7807) Problem Details parser.
  *
- * M07 G4 (QC3): единая нормализация ошибок от backend'а в типизированный
- * shape. Backend сейчас отдаёт `fieldErrors` (pre-M11 shape) либо
- * `invalidParams` (shared-web shape, post-M11) — adapter унифицирует в
- * `invalidParams` как того требует RFC 9457.
+ * M07 G4 (QC3) + M13 G5: единая нормализация ошибок от backend'а в
+ * типизированный shape. Backend после M11 G0 canonical shape =
+ * `fieldErrors: FieldError[]`. Adapter переименовывает в
+ * `invalidParams` на TS-уровне как того требует RFC 9457 Extension
+ * Members.
  *
  * Парсер терпим к тому, что backend может вернуть не-JSON (network error,
  * CORS, HTML 502), либо JSON без обязательных полей. В таких случаях
@@ -24,8 +25,8 @@ export interface InvalidParam {
 
 /**
  * Нормализованный ProblemDetails для frontend consumers. Имя поля
- * `invalidParams` соответствует RFC 9457; если backend отдаёт legacy
- * `fieldErrors` — adapter их переименовывает.
+ * `invalidParams` соответствует RFC 9457; backend отдаёт
+ * `fieldErrors` (canonical после M11 G0) — adapter переименовывает.
  */
 export interface ProblemDetails {
   status: number
@@ -52,10 +53,8 @@ type RawErrorBody = {
   instance?: string
   timestamp?: string
   traceId?: string
-  /** Pre-M11 name — shape: { field, rejectedValue?, message } (attendance, schedule, academic). */
+  /** M11 G0 canonical. Backend shape: { field, rejectedValue?, message }. */
   fieldErrors?: Array<{ field?: string; rejectedValue?: unknown; message?: string }>
-  /** Post-M11 name — shape: { field, rejectedValue?, message } (shared-web ErrorResponse). */
-  invalidParams?: Array<{ field?: string; rejectedValue?: unknown; message?: string }>
   field?: string
   extras?: Record<string, unknown>
 }
@@ -81,7 +80,7 @@ function fallbackTitle(status: number): string {
 }
 
 function coerceInvalidParams(raw: RawErrorBody): InvalidParam[] {
-  const source = raw.invalidParams ?? raw.fieldErrors ?? []
+  const source = raw.fieldErrors ?? []
   return source
     .filter((item): item is { field?: string; rejectedValue?: unknown; message?: string } => !!item)
     .map((item) => ({

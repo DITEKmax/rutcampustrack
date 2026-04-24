@@ -10,7 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  *
  * <p>M11 G0: единственный top-level {@code FieldError} во всём backend —
  * заменяет inner record'ы из 3 {@code *-api-contract}/ErrorResponse
- * (academic/schedule/attendance) и {@code InvalidParam} из shared-web.
+ * (academic/schedule/attendance). M13 G5 удалил legacy {@code InvalidParam}
+ * deprecated alias — {@link FieldError} — canonical и единственный.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Ошибка валидации одного поля DTO (RFC 9457 Extension Member)")

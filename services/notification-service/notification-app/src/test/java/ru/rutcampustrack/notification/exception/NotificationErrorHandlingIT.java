@@ -80,7 +80,7 @@ class NotificationErrorHandlingIT extends ContainerTestBase {
     }
 
     @Test
-    @DisplayName("POST /push/subscribe с невалидным body → 400 + problem+json + invalidParams[]")
+    @DisplayName("POST /push/subscribe с невалидным body → 400 + problem+json + fieldErrors[]")
     void invalidBodyReturnsRfc7807() throws Exception {
         // SubscribeRequest требует endpoint (NotBlank) и keys (NotNull с p256dh/auth NotBlank).
         // Пустой body нарушает validation → MethodArgumentNotValidException.

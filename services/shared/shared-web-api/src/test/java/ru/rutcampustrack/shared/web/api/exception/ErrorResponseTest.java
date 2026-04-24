@@ -126,15 +126,6 @@ class ErrorResponseTest {
     }
 
     @Test
-    @DisplayName("M11 G0: InvalidParam record — все поля")
-    void invalidParamAllFields() {
-        InvalidParam ip = new InvalidParam("groupId", "Параметр обязателен", null);
-        assertThat(ip.name()).isEqualTo("groupId");
-        assertThat(ip.reason()).isEqualTo("Параметр обязателен");
-        assertThat(ip.rejectedValue()).isNull();
-    }
-
-    @Test
     @DisplayName("M11 G0: FieldError record — все accessors")
     void fieldErrorAccessors() {
         FieldError fe = new FieldError("email", "not-an-email", "Невалидный email");

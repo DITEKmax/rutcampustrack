@@ -9,6 +9,76 @@
 
 ### Added
 
+- **M12 Auth Contract-first Refactor** — последнее structural нарушение
+  Contract-first правила закрыто (2.5 дня, 6 коммитов,
+  `a902c16..HEAD`, планируется tag `v0.0.0-alpha.13`).
+  - **G1 Gradle module split** (`9925376`) — `services/auth-service/`
+    разделён на `auth-api-contract` (java-library, без Lombok) +
+    `auth-app` (Spring Boot runtime). 80 файлов `git mv`,
+    `settings.gradle.kts` + `build.gradle.kts` root + Dockerfile +
+    CI workflows + `scripts/verify-gateway-e2e.sh` обновлены.
+    `EventSchemaValidator.schemasDir()` +1 уровень вверх.
+  - **G2 DTO migration** (`315a317`) — 12 DTO (Login/Token/Otp×3/
+    Refresh/Tma/ChangePwd/WsTicket/InternalIssue×2/PublicKey)
+    перенесены в `auth-api-contract` через 100% `git mv`. Все 12 —
+    Java `record` без Lombok. `ErrorResponse` остался в
+    `shared-web-api` (M01 single source).
+  - **G3 Interfaces** (`e3a4adf`) — 4 interface'а с `@Operation`/
+    `@ApiResponse`: `AuthApi` (10 public endpoints), `WsTicketApi`
+    (1 endpoint), `InternalIssuerApi` + `InternalWsTicketApi` оба
+    с `@Hidden` (internal не в public /v3/api-docs). Раздельные
+    internal interfaces по domain boundary. Nested records
+    `InternalWsTicketController.ConsumeRequest/Response` extracted
+    в `auth-api-contract/dto/ConsumeWsTicketRequest.java` +
+    `ConsumeWsTicketResponse.java` (binary-compat через
+    `@JsonProperty` snake_case). `auth-api-contract` build добавлены
+    `spring-security-core` + `jakarta.servlet-api` (controllers
+    передают `Authentication` + `HttpServletRequest` в signature).
+  - **G4 Controller refactor + ArchUnit** (`bf2de65`) — `AuthController`,
+    `WsTicketController`, `InternalIssuerController`,
+    `InternalWsTicketController` все `implements` соответствующие
+    interface'ы; убраны все mapping annotations + `@Valid`/
+    `@RequestBody`/`@CookieValue`/`@Operation` (наследуются от
+    interface). `AuthApiContractTest` ArchUnit с 3 правилами:
+    (a) нет `@RequestMapping` на class-level в controller;
+    (b) нет method-level mapping annotations в controller;
+    (c) каждый `@RestController` implement'ит один из 4 Api.
+    `WsTicketIT` import fix. Full `:auth-app:check` зелёный
+    (24 unit + 12 IT + JaCoCo 60% gate, 2m 31s).
+  - **G5 Frontend regenerate + conformance** (`8d80740`) — новый
+    `OpenApiSnapshotIT` для auth-service (pattern academic M11 G3).
+    `docs/openapi/auth.json` регенерирован из runtime springdoc
+    (заменяет ручную конкатенацию M11). Frontend'ы
+    `pwa` + `web-panel` пересобрали `auth.types.ts` через
+    `generate:types:offline` — изменился только `auth.types.ts`;
+    deletions = internal endpoints + inline DTO (теперь hidden),
+    additions = JSDoc descriptions от M11 `@Schema` policy.
+    Mini-app использует PWA shared types.
+  - **Binary-compat подтверждён:** 11 public endpoints
+    (login/logout/refresh/refresh-body/otp×3/public-key/tma/
+    change-password/ws-ticket) — DTO shape идентичен, URL paths
+    идентичны, HTTP status codes идентичны, Content-Type headers
+    идентичны. Internal `/internal/issue-internal-jwt` +
+    `/internal/consume-ws-ticket` теперь `@Hidden` (не в public
+    spec), но функционально работают без изменений.
+  - **CLAUDE.md очищен:** раздел «Contract-first → Исключения»
+    убрал блок «auth-service — временный нарушитель»; единственное
+    исключение теперь — `api-gateway` (прокси, собственного REST
+    API не публикует). `docs/future-ideas.md` разделы
+    «Auth API contract-first refactor (v0.1)» + «Auth-service
+    OpenAPI (P2-2/2, v0.1)» удалены (перенесено и закрыто в M12).
+
+- **M11 OpenAPI Polish** — `@Schema` 100% coverage + nginx basic-auth
+  + OpenAPI ↔ runtime conformance IT (academic/schedule/attendance/
+  notification). `docs/openapi/*.json` snapshot'ы как single source
+  of truth для CI drift-guard. Tag `v0.0.0-alpha.12` локально.
+
+- **M10 Notification History** — stateful notification-web с
+  MongoDB `notification_db` (PoLP user), `notification_history`
+  TTL 30d, Caffeine `unread-count` cache 30s, `NotificationApi`
+  4 endpoints, hybrid STOMP + polling integration в PWA + web-panel.
+  Tag `v0.0.0-alpha.11` локально.
+
 - **M09 Prod Release Blockers** — закрытие P0 из аудита + event
   unification + prod-deploy hardening (8 групп, ~12 коммитов,
   `2996652..<tag>`, планируется tag `v0.0.0-alpha.10`).

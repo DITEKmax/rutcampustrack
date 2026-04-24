@@ -102,25 +102,25 @@
       binary-compat gate). См. NOTES «Docker smoke — deviation»
 - [ ] Коммит `chore(frontend): regenerate auth types after M12 contract split` (следующий шаг)
 
-## Группа 6 — Docs + cleanup (~0.25д)
+## Группа 6 — Docs + cleanup (~0.25д) ✅ 2026-04-24
 
-- [ ] `CLAUDE.md` — раздел «Contract-first → Исключения»:
-      - Убрать строку "auth-service — единственный нарушитель
-        правила (01 P0-1), auth-api-contract отложен в v0.1 backlog
-        (M09 D1, docs/future-ideas.md)"
-      - Оставить только api-gateway исключение
-- [ ] `docs/architecture.md` — auth-service раздел обновить:
-      mention auth-api-contract + auth-app структуру; таблица
-      сервисов показывает contract-first compliance
-- [ ] `docs/future-ideas.md` — удалить раздел «Auth API contract-first
-      refactor (v0.1)» (перенесено в M12)
-- [ ] `docs/future-ideas.md` — удалить ошибочный раздел «P2-2/4
-      @Schema на всех DTO + P2-2/3 swagger-request-validator CI
-      (v0.1)» (эти пункты закрыты M11)
-- [ ] `docs/milestones/README.md` — M12 статус ✅ + дата
-- [ ] `CLAUDE.md` v0.0.0 Milestones table — M12 строка + статус ✅
-- [ ] `CHANGELOG.md [Unreleased]` — M12 entry
-- [ ] Коммит `docs(m12): Contract-first exception removed + future-ideas cleanup`
+- [x] `CLAUDE.md` — раздел «Contract-first → Исключения»: блок
+      «auth-service — временный нарушитель» удалён; оставлено только
+      `api-gateway` исключение (единственное)
+- [x] `CLAUDE.md` — структура репозитория: auth-service теперь
+      показывает `auth-api-contract/` + `auth-app/`
+- [x] `CLAUDE.md` — v0.0.0 Milestones table: M11 ✅ 2026-04-24, M12
+      ✅ 2026-04-24 (раньше M10 был отмечен, M11/M12 — новые)
+- [x] `docs/architecture.md` — `### 3.2 Auth Service` дополнен строкой
+      про Gradle-модули (M12) — auth-api-contract + auth-app split
+- [x] `docs/future-ideas.md` — удалены разделы «Auth API contract-first
+      refactor (v0.1)» + «Auth-service OpenAPI (P2-2/2, v0.1)»
+      (перенесено и закрыто в M12). Раздел «P2-2/3+/4 @Schema
+      + swagger-request-validator» уже отсутствует (удалён M11 G5).
+- [x] `docs/milestones/README.md` — M10/M11/M12 ✅ 2026-04-24
+- [x] `CHANGELOG.md [Unreleased]` — добавлены M12 + M11 + M10 entries
+      (раньше был только M09)
+- [ ] Коммит `docs(m12): Contract-first exception removed + future-ideas cleanup (следующий шаг)`
 
 ## Группа 7 — Audit + финализация (~0.25д)
 

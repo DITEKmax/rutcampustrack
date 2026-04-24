@@ -100,9 +100,10 @@
 
 ### 3.2 Auth Service
 
-**Стек:** Java Spring Boot  
-**Порт:** 9090  
+**Стек:** Java Spring Boot
+**Порт:** 9090
 **Хранилище:** Redis
+**Gradle-модули (M12):** `auth-api-contract` (java-library, DTO + interfaces `AuthApi`/`WsTicketApi`/`InternalIssuerApi`/`InternalWsTicketApi`, без Lombok) + `auth-app` (Spring Boot runtime, controllers `implements` интерфейсы). Contract-first compliant — mapping annotations только в интерфейсах.
 
 **Роль:** выдача и управление токенами. Единственный сервис, знающий секреты подписи JWT.
 

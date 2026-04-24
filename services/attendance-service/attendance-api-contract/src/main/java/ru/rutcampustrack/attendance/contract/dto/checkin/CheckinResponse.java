@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.contract.dto.checkin;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 
@@ -10,6 +11,7 @@ import java.time.Instant;
  * Extends RepresentationModel for HATEOAS _links.
  * No Lombok per contract module rules.
  */
+@Schema(description = "Результат геоотметки студента: присвоенный статус, ID пары, время отметки")
 public class CheckinResponse extends RepresentationModel<CheckinResponse> {
 
     private AttendanceStatus status;

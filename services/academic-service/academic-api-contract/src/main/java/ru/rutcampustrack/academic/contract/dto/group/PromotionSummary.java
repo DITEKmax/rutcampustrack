@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.group;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.List;
  *   <li>{@link #executed} — {@code true} если изменения применены в БД.</li>
  * </ul>
  */
+@Schema(description = "Итог операции промоушена групп (preview или execute, HATEOAS Level 3 с _links)")
 public class PromotionSummary extends RepresentationModel<PromotionSummary> {
 
     private List<PromotionPreviewItem> toPromote = new ArrayList<>();
@@ -58,6 +60,7 @@ public class PromotionSummary extends RepresentationModel<PromotionSummary> {
      * Конфликт для отдельного префикса (весь префикс пропущен).
      * reason: {@code "name_conflict" | "unknown_type" | "parse_error"}.
      */
+    @Schema(description = "Конфликт для отдельного префикса (весь префикс пропущен: name_conflict / unknown_type / parse_error)")
     public static class PrefixConflict {
         private String prefix;
         private String reason;

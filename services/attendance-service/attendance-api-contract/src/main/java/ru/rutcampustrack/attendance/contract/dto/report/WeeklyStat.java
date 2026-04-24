@@ -1,9 +1,12 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * One week of student attendance stats for the dashboard line chart (v9.0).
  * week: ISO week number (1..53); label: "Н{weekOfSemester}" for display convenience.
  */
+@Schema(description = "Недельная точка графика посещаемости: номер недели семестра, ISO-неделя, label, счётчики, %")
 public class WeeklyStat {
 
     private final int weekOfSemester;

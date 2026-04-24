@@ -1,5 +1,6 @@
 package ru.rutcampustrack.schedule.contract.dto.item;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
@@ -14,6 +15,7 @@ import java.time.OffsetDateTime;
  * D-16: teacherId removed. Teacher access to journals is resolved via JOIN
  * ScheduleItem × TeacherSubjectGroup, not by slot-level teacher assignment.
  */
+@Schema(description = "Шаблон пары в расписании (повторяющийся слот: день недели + номер пары + тип недели) с HATEOAS-ссылками")
 public class ScheduleItemResponse extends RepresentationModel<ScheduleItemResponse> {
 
     private Long id;

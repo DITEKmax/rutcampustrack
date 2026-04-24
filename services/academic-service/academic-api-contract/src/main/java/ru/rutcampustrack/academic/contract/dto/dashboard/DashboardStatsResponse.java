@@ -1,10 +1,12 @@
 package ru.rutcampustrack.academic.contract.dto.dashboard;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 /**
  * Response DTO for admin dashboard summary statistics with HATEOAS links.
  */
+@Schema(description = "Сводная статистика для админ-дашборда (HATEOAS Level 3 с _links)")
 public class DashboardStatsResponse extends RepresentationModel<DashboardStatsResponse> {
 
     private long totalStudents;

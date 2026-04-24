@@ -1,10 +1,12 @@
 package ru.rutcampustrack.academic.contract.dto.assignment;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 /**
  * Response DTO for a teacher-subject-group assignment with HATEOAS links.
  */
+@Schema(description = "Назначение преподавателя на предмет/группу/семестр (HATEOAS Level 3 с _links)")
 public class AssignmentResponse extends RepresentationModel<AssignmentResponse> {
 
     private Long id;

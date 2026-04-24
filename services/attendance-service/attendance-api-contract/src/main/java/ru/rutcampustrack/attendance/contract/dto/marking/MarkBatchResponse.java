@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.contract.dto.marking;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
  * <p>Не содержит HATEOAS _links per-item (noise на 30+ items);
  * self-link добавляется на уровне MarkBatchResponse.
  */
+@Schema(description = "Результат пакетной отметки: список персистированных записей и их количество")
 public class MarkBatchResponse extends RepresentationModel<MarkBatchResponse> {
 
     private List<MarkResponse> items;

@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.subject;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
@@ -12,6 +13,7 @@ import java.util.List;
  * <p>Phase 60-01: добавлены {@code groupId} и {@code teacherIds} — для UI
  * отображения привязки к группе и списка назначенных преподавателей (D-15, D-19).
  */
+@Schema(description = "Предмет (HATEOAS Level 3 с _links; включает groupId и teacherIds)")
 public class SubjectResponse extends RepresentationModel<SubjectResponse> {
 
     private Long id;

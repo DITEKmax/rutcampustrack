@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
  * Extends RepresentationModel for HATEOAS _links support.
  * Plain Java class — no Lombok (contract module rule).
  */
+@Schema(description = "Статистика посещаемости студента: разбивка по предметам и общий агрегированный результат")
 public class StudentStatsResponse extends RepresentationModel<StudentStatsResponse> {
 
     private final List<SubjectStats> subjects;

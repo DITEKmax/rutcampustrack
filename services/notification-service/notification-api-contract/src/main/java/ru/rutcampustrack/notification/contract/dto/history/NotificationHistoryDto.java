@@ -1,5 +1,6 @@
 package ru.rutcampustrack.notification.contract.dto.history;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
 
@@ -12,6 +13,7 @@ import java.util.Map;
  * <p>CLAUDE.md: Response DTO = class (для HATEOAS RepresentationModel).
  * payload — snapshot события на момент persist, immutable после save.
  */
+@Schema(description = "Запись истории уведомлений пользователя (TTL 30 дней): тип, payload-snapshot, времена отправки/прочтения")
 public class NotificationHistoryDto extends RepresentationModel<NotificationHistoryDto> {
 
     private String id;

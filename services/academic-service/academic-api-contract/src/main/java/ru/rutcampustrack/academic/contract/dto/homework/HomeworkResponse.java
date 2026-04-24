@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.homework;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.time.OffsetDateTime;
  * <p>Phase 61 / D-01: {@code lessonDate} + {@code lessonNumber} определяют пару, к которой
  * привязано задание. Привязка фиксируется при create и не редактируется (см. D-04/D-05).
  */
+@Schema(description = "Домашнее задание (HATEOAS Level 3 с _links; completed — per-student)")
 public class HomeworkResponse extends RepresentationModel<HomeworkResponse> {
 
     private Long id;

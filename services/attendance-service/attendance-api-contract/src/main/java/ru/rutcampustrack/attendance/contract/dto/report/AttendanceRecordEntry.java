@@ -1,9 +1,12 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Single attendance record entry for student records list (RPRT-04).
  * Plain Java class — no Lombok (contract module rule).
  */
+@Schema(description = "Запись истории посещаемости студента: ID пары, предмет, дата, номер, статус, источник, причина")
 public class AttendanceRecordEntry {
 
     private final Long lessonId;

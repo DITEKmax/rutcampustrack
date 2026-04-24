@@ -1,10 +1,13 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Donut-chart breakdown of a student's attendance by status (v9.0 dashboard).
  * "forgotToCheckin" is a sub-slice of present — records with source=LATE_CHECKIN
  * (student asked headman to confirm because they forgot to geo-mark).
  */
+@Schema(description = "Разбивка посещаемости по статусам для donut-chart дашборда (present/absent/excused/free/forgot/cancelled)")
 public class StatusBreakdown {
 
     private final int present;

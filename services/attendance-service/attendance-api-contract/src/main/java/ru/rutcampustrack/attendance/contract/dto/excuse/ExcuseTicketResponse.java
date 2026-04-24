@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.contract.dto.excuse;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 
@@ -13,6 +14,7 @@ import java.util.List;
  *
  * status is exposed as a lowercase string matching Mongo storage and event payloads.
  */
+@Schema(description = "Excuse-тикет студента: ID, связанные пары, тип, комментарий, статус, метаданные решения")
 public class ExcuseTicketResponse extends RepresentationModel<ExcuseTicketResponse> {
 
     private final String id;

@@ -1,5 +1,6 @@
 package ru.rutcampustrack.schedule.contract.dto.oneoff;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.time.OffsetDateTime;
  * Extends RepresentationModel for HATEOAS Level 3 compliance.
  * No Lombok — contract modules use plain Java classes with explicit constructors and getters.
  */
+@Schema(description = "Разовая пара вне шаблона расписания с HATEOAS-ссылками (Phase 60-03, D-04)")
 public class OneOffLessonResponse extends RepresentationModel<OneOffLessonResponse> {
 
     private Long id;

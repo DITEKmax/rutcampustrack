@@ -1,9 +1,12 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Nested DTO representing one student's attendance status in a lesson attendance list (RPRT-01).
  * Plain Java class — no Lombok (contract module rule).
  */
+@Schema(description = "Запись посещаемости студента в списке пары: ID, имя, статус, символ, источник, причина excuse")
 public class StudentAttendanceEntry {
 
     private final Long userId;

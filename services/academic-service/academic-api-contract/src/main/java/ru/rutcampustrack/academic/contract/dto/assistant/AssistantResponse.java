@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.assistant;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.academic.contract.enums.AssistantPermission;
 
@@ -9,6 +10,7 @@ import java.util.List;
 /**
  * Response DTO for a headman assistant record with HATEOAS links.
  */
+@Schema(description = "Помощник старосты с набором делегированных прав (HATEOAS Level 3 с _links)")
 public class AssistantResponse extends RepresentationModel<AssistantResponse> {
 
     private Long id;

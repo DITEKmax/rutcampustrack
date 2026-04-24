@@ -1,11 +1,13 @@
 package ru.rutcampustrack.academic.contract.dto.threshold;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 /**
  * Response DTO for the effective resolved threshold for a student/group/subject combination.
  * The level indicates which tier of the threshold hierarchy provided the value.
  */
+@Schema(description = "Эффективный порог для комбинации студент/группа/предмет (HATEOAS Level 3; level = subject|group|global)")
 public class ResolvedThresholdResponse extends RepresentationModel<ResolvedThresholdResponse> {
 
     private int minPercentage;

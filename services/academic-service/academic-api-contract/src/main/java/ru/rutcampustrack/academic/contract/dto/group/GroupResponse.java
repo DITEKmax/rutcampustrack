@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.group;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.OffsetDateTime;
@@ -9,6 +10,7 @@ import java.time.OffsetDateTime;
  *
  * <p>BUG-006-5: поле {@code code} удалено, {@code name} — единственный идентификатор.
  */
+@Schema(description = "Студенческая группа (HATEOAS Level 3 с _links)")
 public class GroupResponse extends RepresentationModel<GroupResponse> {
 
     private Long id;

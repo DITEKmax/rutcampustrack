@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.contract.dto.latecheckin;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.Instant;
@@ -10,6 +11,7 @@ import java.time.Instant;
  * Plain class (no Lombok) — contract module rule.
  * status is lowercase to match Mongo storage and event payloads.
  */
+@Schema(description = "Запрос поздней отметки от студента к старосте: ID, студент, пара, статус, метаданные решения")
 public class LateCheckinRequestResponse extends RepresentationModel<LateCheckinRequestResponse> {
 
     private final String id;

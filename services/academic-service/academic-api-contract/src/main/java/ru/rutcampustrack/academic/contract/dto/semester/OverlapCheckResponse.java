@@ -1,5 +1,7 @@
 package ru.rutcampustrack.academic.contract.dto.semester;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Response DTO for semester overlap check endpoint.
  *
@@ -11,7 +13,12 @@ package ru.rutcampustrack.academic.contract.dto.semester;
  * @param conflictingName  human-readable name of the first conflicting semester,
  *                         or {@code null} when no overlap was found.
  */
+@Schema(description = "Результат проверки перекрытия диапазона дат с существующими семестрами")
 public record OverlapCheckResponse(
+        @Schema(description = "true — диапазон пересекает существующий семестр", example = "false")
         boolean overlaps,
+
+        @Schema(description = "Название первого конфликтующего семестра или null",
+                example = "Весенний 2026")
         String conflictingName
 ) {}

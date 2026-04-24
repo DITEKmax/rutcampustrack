@@ -1,5 +1,6 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
  * One-call response combining overall %, status donut breakdown,
  * per-week timeseries, and top missed subjects — avoids chatty clients.
  */
+@Schema(description = "Сводка для главного экрана студента: общий %, donut по статусам, недельный тренд, топ пропусков")
 public class StudentDashboardResponse extends RepresentationModel<StudentDashboardResponse> {
 
     private final OverallStats overall;

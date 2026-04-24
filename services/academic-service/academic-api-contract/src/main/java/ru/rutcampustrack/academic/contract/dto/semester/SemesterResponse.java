@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.semester;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDate;
@@ -8,6 +9,7 @@ import java.time.OffsetDateTime;
 /**
  * Response DTO for an academic semester with HATEOAS links.
  */
+@Schema(description = "Академический семестр (HATEOAS Level 3 с _links)")
 public class SemesterResponse extends RepresentationModel<SemesterResponse> {
 
     private Long id;

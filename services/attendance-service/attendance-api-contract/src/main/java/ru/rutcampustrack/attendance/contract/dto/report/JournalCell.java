@@ -1,11 +1,14 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * One cell in the journal grid (D-08) — represents attendance for a student on a given date/lesson.
  * Plain Java class — no Lombok (contract module rule).
  * lessonId added (Phase 55 D-01) to support headman cell-click marking via
  * PUT /attendance/lessons/{lessonId}/students/{userId}.
  */
+@Schema(description = "Ячейка журнала: ID пары, дата, номер пары, статус, символ (б/н/у/сп/отменена) и причина excuse")
 public class JournalCell {
 
     private final Long lessonId;

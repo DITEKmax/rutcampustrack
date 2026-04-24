@@ -1,10 +1,13 @@
 package ru.rutcampustrack.attendance.contract.dto.report;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Attendance stats for one subject (RPRT-03, D-13).
  * subjectName is resolved via gRPC GetSubjectsByIds call in the service layer.
  * Plain Java class — no Lombok (contract module rule).
  */
+@Schema(description = "Статистика по одному предмету: ID, название, счётчики статусов, процент посещения")
 public class SubjectStats {
 
     private final Long subjectId;

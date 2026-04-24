@@ -1,11 +1,14 @@
 package ru.rutcampustrack.academic.contract.dto.group;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Одна запись в плане промоушена групп (BUG-006-6 / план 58-06).
  *
  * <p>В preview возвращается перед записью в БД; в execute — подтверждение выполнения.
  * {@code to} равен {@code null} для архивации.
  */
+@Schema(description = "Одна запись в плане промоушена групп (переименование или архивация)")
 public class PromotionPreviewItem {
 
     public enum Action { PROMOTE, ARCHIVE }

@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.threshold;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.OffsetDateTime;
@@ -8,6 +9,7 @@ import java.time.OffsetDateTime;
  * Response DTO for a stored attendance threshold record with HATEOAS links.
  * Null groupId = global threshold; null subjectId = applies to all subjects in group.
  */
+@Schema(description = "Запись порога посещаемости (HATEOAS Level 3 с _links; null groupId = global, null subjectId = all subjects in group)")
 public class ThresholdResponse extends RepresentationModel<ThresholdResponse> {
 
     private Long id;

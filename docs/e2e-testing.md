@@ -41,9 +41,23 @@ npm run test:ui
 npm run report
 ```
 
-Default `baseURL = http://localhost`. Для VPS:
+Default `baseURL = https://localhost` (M13 G25.3 — e2e compose
+терминирует HTTPS через self-signed cert, нужно потому что
+`AuthCookies` выставляет `Secure` flag на refresh cookie).
+`ignoreHTTPSErrors: true` в `playwright.config.ts` принимает self-signed.
+
+Для VPS:
 ```bash
 E2E_BASE_URL=https://ruttrack.site npm test
+```
+
+Для **локального dev** stack'а (без HTTPS, через `gradle bootRun` +
+`npm run dev`):
+```bash
+E2E_BASE_URL=http://localhost npm test
+# T1/T3/T4 specs из auth-token-lifecycle упадут — refresh cookie
+# `Secure` flag без HTTPS browser'ом отбрасывается. Используй CI
+# compose ниже для полного покрытия.
 ```
 
 ## Инфраструктура
@@ -60,24 +74,15 @@ Playwright тестам нужно **живое окружение**:
 (из M07) запускает 5 сервисов, `cd frontends/web-panel && npm run
 start` / `cd frontends/pwa && npm run dev` — фронты.
 
-## CI job (отложен до M09)
+## CI job (M13 G22 + G25.3)
 
-**В CI job `e2e-tests` не включён в v0.0.0.** Причина: требуется
-`docker-compose up` + ожидание healthy + запуск Playwright + teardown
-— ~15 минут CI time + комплексная оркестрация. VPS/staging стабильного
-окружения нет до M09 (prod-deploy-checklist).
+**`e2e-auth` job** в `.github/workflows/ci.yml` бежит на каждый push.
+Setup: docker-compose.e2e.yml stack + Playwright @smoke specs (8 тестов
+в 2 specs). Детали — секции «CI integration» и «CI compose» ниже.
 
-**Plan для M09**:
-1. `.github/workflows/e2e.yml` — workflow_dispatch + nightly schedule.
-2. GH runner: `docker compose -f docker-compose.ci.yml up -d
-   --wait` (healthchecks + `depends_on: condition: service_healthy`).
-3. Seed test users через Flyway (academic V2 seed или отдельная
-   V-скрипта в test profile).
-4. `cd tests/e2e && npm install && npm test`.
-5. On failure — upload traces/screenshots/videos как artifacts (14d
-   retention).
-
-Эти шаги — scope Группы 12 M08 (финализация) или M09.
+Полный suite (включая `headman-mark`, `student-excuse`,
+`role-*` × 4 specs) остаётся локальной командой `npm test`. Перенос
+полного suite в CI — scope v0.1 (требует scaling beyond `@smoke`).
 
 ## Post-deploy smoke (scripts/smoke-prod.sh)
 
@@ -157,7 +162,9 @@ const lessonCard = page.locator('[data-testid="lesson-card"]').first();
 
 ## Известные ограничения v0.0.0
 
-- **Без CI job** — ручной прогон локально. См. M09 plan выше.
+- **CI job: только `@smoke`** — 8 тестов в 2 specs (`auth.spec.ts`,
+  `auth-token-lifecycle.spec.ts`). Полный suite (8 specs, ~30+ тестов)
+  — локальный `npm test`. Расширение CI на full suite — scope v0.1.
 - **Seed test users** — `student`/`teacher`/`admin`/`headman` захардкожены
   в `fixtures/users.ts`. Синхронизация с `V2__seed_test_data.sql`
   требуется вручную (ArchUnit правило — идея для v0.1).
@@ -186,28 +193,104 @@ A: Увеличить `expect({ timeout: 10_000 })` локально для WebS
 **Q: Как подключить VPN/proxy?**
 A: `playwright.config.ts` — добавить `use.proxy.server = 'socks5://...'`.
 
-## CI integration (M13 G22)
+## CI integration (M13 G22 + G25.3)
 
 GitHub Actions job `e2e-auth` (`.github/workflows/ci.yml`):
 
-1. Java 21 + Node 22 + Gradle setup.
-2. `./gradlew assemble` — собрать все backend service jar'ы.
-3. `npm ci && npm run build` для PWA + mini-app + web-panel frontends.
-4. `docker compose up -d --build` — поднять полный dev stack (5 backend +
-   gateway + nginx + Postgres×2 + Mongo + Redis + Rabbit + 4 frontend-nginx).
-5. Wait для healthchecks (max 4 мин, polls каждые 5 сек).
+1. **`actions/checkout@v4` + `actions/setup-node@v4`** (Node 22).
+2. **`docker/setup-buildx-action@v3`** — buildx нужен для BuildKit
+   cache mount (`--mount=type=cache,target=/root/.gradle` в backend
+   Dockerfile'ах). Без buildx default driver игнорирует cache mounts.
+3. **Generate self-signed TLS cert** — `bash tests/e2e/infra/scripts/generate-test-certs.sh`.
+   `AuthCookies` выставляет `Secure` flag → HTTPS обязателен.
+4. **`docker compose -f docker-compose.e2e.yml up -d --build`** — поднять
+   standalone e2e stack (см. ниже «CI compose: docker-compose.e2e.yml»).
+5. Wait для healthchecks (max 8 мин, polls каждые 5 сек × 96).
+   Cold CI runner: pulls + builds ~3-5 мин, Mongo RS init + 5 backend
+   service start ~2-3 мин.
 6. `cd tests/e2e && npm install && npx playwright install --with-deps chromium`.
 7. Запуск **только `@smoke`-grouped specs** (`--grep @smoke`):
    - `auth.spec.ts` × 3 теста
    - `auth-token-lifecycle.spec.ts` × 5 тестов (M13 G22)
+   `E2E_BASE_URL=https://localhost` через self-signed TLS.
    Полный suite остаётся локальной командой `npm test`.
 8. `--project=chromium` only (WebKit пропущен в CI чтобы держать runtime
-   < 5 мин; локально `npm test` гонит оба).
+   < 30 мин; локально `npm test` гонит оба).
 9. На failure — upload `playwright-report/` + `docker logs` для всех
    контейнеров (artefacts retention 7 дней).
 
-**Cost:** ~5-7 мин на ubuntu-latest runner. Trigger — push на любую ветку
-(paths-ignore не относится к `tests/`).
+**Cost:** ~10-15 мин на ubuntu-latest runner (cold) / ~6-8 мин (warm cache).
+`timeout-minutes: 30`. Trigger — push на любую ветку (paths-ignore не
+относится к `tests/`).
+
+## CI compose: docker-compose.e2e.yml (M13 G25.3)
+
+Standalone (НЕ override prod) compose — minimal prod-like stack для
+эфемерного CI runner'а. **17 контейнеров**:
+
+| Группа | Контейнеры |
+|--------|------------|
+| Infra (5) | postgres-academic, postgres-schedule, mongo-attendance (Bitnami RS rs0), redis, rabbitmq |
+| Backend (5) | auth-service, academic-service, schedule-service, attendance-service, api-gateway |
+| Notification (2) | notification-web, notification-bot |
+| Frontend (4) | pwa-nginx, mini-app-nginx, web-panel-nginx, landing-nginx |
+| Reverse-proxy (1) | nginx (HTTP→HTTPS + self-signed TLS termination) |
+
+**Что НЕ включено vs prod:**
+- Observability (tempo, alertmanager, prometheus, grafana, loki,
+  promtail, blackbox-exporter, cadvisor, node-exporter)
+- Certbot (SSL termination через self-signed cert вместо Let's Encrypt)
+- `mem_limit` / `mem_reservation` (CI runner ~7GB, лишние ограничения =
+  OOMKill flap)
+- Digest-pin'ы образов (Renovate ротейтит — лишний noise в e2e)
+
+**Тестовые секреты** — `tests/e2e/.env.ci` (committed, помечены
+`# CI-ONLY — НЕ ИСПОЛЬЗОВАТЬ В PROD`). Все значения статичные плейсхолдеры
+для эфемерного stack'а.
+
+**JWT keys** — auth-service сам генерирует RSA-3072 key pair на старте
+в `JwtService.init()`, пишет в named volume `jwt-keys`. Notification-web
+читает через тот же volume `:ro`. Никаких commit'нутых fixture'ов.
+
+**Bitnami Mongo replica set** — env-based init
+(`MONGODB_REPLICA_SET_MODE=primary`, `MONGODB_REPLICA_SET_NAME=rs0`),
+как в dev/prod compose. Single-node primary без secondaries.
+
+**Self-signed TLS** — `tests/e2e/infra/certs/{server.crt,server.key}`,
+генерируется `tests/e2e/infra/scripts/generate-test-certs.sh` (openssl
+RSA-2048, CN=localhost, 365d). Certs gitignored, генерируются перед
+каждым `docker compose up`.
+
+**Локальный smoke-прогон:**
+```bash
+# 1. Test secrets
+cp tests/e2e/.env.ci .env
+
+# 2. TLS cert (idempotent — skip если уже есть)
+bash tests/e2e/infra/scripts/generate-test-certs.sh
+
+# 3. Boot stack (~10-15 мин cold, ~3-5 мин warm)
+docker compose -f docker-compose.e2e.yml up -d --build
+
+# 4. Wait healthy
+docker compose -f docker-compose.e2e.yml ps
+
+# 5. Run specs
+cd tests/e2e
+npm install
+npx playwright install --with-deps chromium
+npx playwright test --project=chromium --grep @smoke
+
+# 6. Cleanup
+cd ../..
+docker compose -f docker-compose.e2e.yml down -v
+rm .env
+```
+
+**Trade-off vs dev compose** (`docker-compose.yml`): dev compose не
+содержит backend Java сервисов (запускаются через `gradle bootRun`
+локально). e2e compose self-contained и build всё from source — это
+prod-like, но cold build тратит ~10 мин.
 
 ## Источники
 

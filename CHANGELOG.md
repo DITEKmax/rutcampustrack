@@ -9,6 +9,34 @@
 
 ### Added
 
+- **M13 G25 — CI hot-fixes + e2e infrastructure** (re-open после первого
+  push в `origin/dev`, planned tag `v0.0.0-alpha.15`).
+  CI прогон commit `3db123b` обнаружил 3 проблемы, которые M13 G24 final
+  verification не поймал — re-open вместо M14 (M13 domain = pre-deploy
+  hardening, CI green = pre-deploy hardening). Tag `v0.0.0-alpha.14`
+  остаётся валидным.
+  - **G25.1 Ruff format hot-fix** — 9 файлов в `services/notification-bot/`
+    (5 prod + 4 test) отформатированы через `ruff format`. Lesson: ruff
+    pre-commit hook отсутствовал, code форматировался IDE auto-format
+    с другим стилем. TODO v0.1: `.pre-commit-config.yaml` hook.
+  - **G25.2 Watchdog mock signature** — детерминированный регресс M13 G8
+    (не flaky timing). `bot/__main__.py:65` добавил `idempotency_guard=`
+    параметр в `start_consumer`, но 4 mock'а в `test_consumer_watchdog.py`
+    остались с старой signature → TypeError → бесконечный watchdog flap
+    → 10s timeout fail. Fix: `idempotency_guard=None` в 4 mock signatures.
+  - **G25.3 docker-compose.e2e.yml** — standalone e2e stack для CI
+    (17 контейнеров: 5 backend + 5 infra + 2 notification + 4 frontend +
+    1 reverse-proxy nginx). Reverse-proxy терминирует HTTPS через
+    self-signed cert (нужно потому что `AuthCookies` выставляет `Secure`
+    flag → на HTTP browser cookie отбрасывает → T1 spec падает).
+    JWT keys auth-service генерирует сам в shared volume. Bitnami Mongo
+    replica set через env-based init. Test secrets — `tests/e2e/.env.ci`
+    (committed, помечены CI-ONLY). Locally: `bash tests/e2e/infra/scripts/generate-test-certs.sh
+    && docker compose -f docker-compose.e2e.yml up -d --build`.
+    Surprise: dev `docker-compose.yml` не содержит backend Java сервисов
+    (запускаются через `gradle bootRun`); G22 commit добавил CI job без
+    локальной проверки этого design'а.
+
 - **M13 Pre-Deploy Hardening** (24 группы, ~30 коммитов на ветке `dev`,
   `v0.0.0-alpha.13..HEAD`, планируется tag `v0.0.0-alpha.14`).
   Закрытие всех VPS GA blockers перед first prod deploy. Highlights:

@@ -71,6 +71,21 @@ public class LessonService {
     }
 
     /**
+     * M13 G9 — read-доступ к ресурсам группы. STUDENT видит только свою группу;
+     * ADMIN/TEACHER — любую (TEACHER ведёт занятия в нескольких группах).
+     */
+    private void requireGroupReadAccess(Long targetGroupId) {
+        UserRole role = requestContext.getRole();
+        if (role == UserRole.ADMIN || role == UserRole.TEACHER) {
+            return;
+        }
+        Long ownGroupId = requestContext.getGroupId();
+        if (ownGroupId == null || !ownGroupId.equals(targetGroupId)) {
+            throw new AccessDeniedException("Расписание принадлежит другой группе");
+        }
+    }
+
+    /**
      * Resolves a lesson by ID and validates headman ownership for the lesson's group.
      */
     private LessonWithItem findLessonAndValidateGroup(Long lessonId) {
@@ -240,6 +255,8 @@ public class LessonService {
                                                     LocalDate to,
                                                     List<LessonStatus> statuses,
                                                     Pageable pageable) {
+        // M13 G9 — STUDENT видит расписание только своей группы
+        requireGroupReadAccess(groupId);
         List<String> effectiveStatuses = (statuses == null || statuses.isEmpty())
                 ? List.of(LessonStatus.PLANNED.name().toLowerCase(),
                           LessonStatus.ACTIVE.name().toLowerCase(),

@@ -65,6 +65,21 @@ public class ScheduleItemService {
     }
 
     /**
+     * M13 G9 — read-доступ. STUDENT видит template'ы только своей группы;
+     * ADMIN/TEACHER — любые.
+     */
+    private void requireGroupReadAccess(Long targetGroupId) {
+        UserRole role = requestContext.getRole();
+        if (role == UserRole.ADMIN || role == UserRole.TEACHER) {
+            return;
+        }
+        Long ownGroupId = requestContext.getGroupId();
+        if (ownGroupId == null || !ownGroupId.equals(targetGroupId)) {
+            throw new AccessDeniedException("Шаблон расписания принадлежит другой группе");
+        }
+    }
+
+    /**
      * Creates a new schedule template.
      * Validates headman ownership, group existence, and active semester.
      */
@@ -108,8 +123,11 @@ public class ScheduleItemService {
      */
     @Transactional(readOnly = true)
     public ScheduleItem getScheduleItem(Long id) {
-        return scheduleItemRepository.findById(id)
+        ScheduleItem item = scheduleItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", id));
+        // M13 G9 — STUDENT видит шаблон только своей группы
+        requireGroupReadAccess(item.getGroupId());
+        return item;
     }
 
     /**
@@ -117,6 +135,8 @@ public class ScheduleItemService {
      */
     @Transactional(readOnly = true)
     public Page<ScheduleItem> listScheduleItems(Long groupId, Long semesterId, Pageable pageable) {
+        // M13 G9 — STUDENT не может листать шаблоны чужой группы передавая чужой groupId
+        requireGroupReadAccess(groupId);
         return scheduleItemRepository.findByGroupIdAndSemesterIdAndIsActiveTrue(groupId, semesterId, pageable);
     }
 

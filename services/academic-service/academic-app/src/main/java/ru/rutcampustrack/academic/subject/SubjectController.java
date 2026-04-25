@@ -37,7 +37,8 @@ public class SubjectController implements SubjectApi {
 
     @Override
     public ResponseEntity<EntityModel<SubjectResponse>> getSubject(Long id) {
-        Subject subject = subjectService.getSubject(id);
+        // M13 G9 — getSubjectForRead делает groupId-check для STUDENT
+        Subject subject = subjectService.getSubjectForRead(id);
         return ResponseEntity.ok(subjectAssembler.toModel(subject));
     }
 

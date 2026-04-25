@@ -525,3 +525,105 @@ integrationTest — все зелёные после M13 G7.
 M13. **Не моё (M09 retrospective gap), но требует фикс — см. отдельный
 вопрос владельцу в Группе 24 (либо добавить как G8 follow-up
 оne-line patch). Мой `IdempotencyGuardTest` зелёный, не связан.**
+
+## 2026-04-25 — Группа 9 (SecurityIdorIT — NEW-31 retrospective)
+
+**G9.0 — fix EventSchemaCoverageTest whitelist (one-liner):**
+добавлен `otp.requested` в `EXPECTED_EVENT_SCHEMAS`. Pre-existing
+baseline drift из M09 G2. Решение владельца: «Чинить когда считаешь
+нужным, до конца M13». Сделал в G9 чтобы можно было гонять
+shared-events:test.
+
+**Surprise (executor scope creep):** owner ожидал «1-2 IDOR баг(а)»
+(см. CHECKLIST G9.5 «ожидаем 1-2»). По факту найдено **12 IDOR'ов**:
+- 9 в academic
+- 3 в schedule
+- 0 в attendance (already correctly secured)
+- 0 в notification-web (already correctly secured)
+
+Owner подтвердил («fix all + IT ВСЕХ во всех сервисах»). Эта группа
+оказалась в 6× больше изначального scope, занимает ~2 дня.
+
+### Найденные IDOR'ы
+
+**Academic (9):**
+
+| # | Endpoint | Service-метод | Vulnerability | Fix |
+|---|----------|---------------|---------------|-----|
+| A1 | `GET /academic/homeworks/{id}` | `HomeworkService.getHomework` | STUDENT читает любое ДЗ по id | `assertCanReadGroup(homework.getGroupId())` |
+| A2 | `GET /academic/homeworks?groupId=X&semesterId=Y` | `HomeworkService.listHomeworks` | STUDENT передаёт чужой groupId | same helper |
+| A3 | `POST /academic/homeworks/{id}/complete` | `HomeworkService.markComplete` | STUDENT отмечает чужое ДЗ | `getHomework()` теперь делает groupId-check |
+| A4 | `DELETE /academic/homeworks/{id}/complete` | `HomeworkService.unmarkComplete` | same | added `getHomework()` call |
+| A5 | `GET /academic/assistants?groupId=X` | `AssistantService.listAssistants` | Headman A видит assistant'ов group B | `assertOwnGroup(groupId)` |
+| A6 | `POST /academic/assistants` | `AssistantService.assignAssistant` | Headman A назначает assistant в group B | `assertOwnGroup(request.groupId())` |
+| A7 | `PATCH /academic/assistants/{id}/permissions` | `AssistantService.updatePermissions` | Headman A правит assistant'а group B | `assertOwnGroup(assistant.getGroupId())` |
+| A8 | `DELETE /academic/assistants/{id}` | `AssistantService.revokeAssistant` | same | same |
+| A9 | `GET /academic/subjects/{id}` | `SubjectService.getSubject` (Cacheable) | STUDENT читает subject другой группы | new `getSubjectForRead` (controller вызывает); `assertCanReadSubject` ADMIN/TEACHER bypass |
+| A10 | `GET /academic/assignments?groupId=X` | `AssignmentService.listAssignments` | STUDENT передаёт чужой groupId | `assertOwnGroup(groupId)` (ADMIN bypass) |
+| A11 | `POST /academic/assignments` | `AssignmentService.assignTeacher` | Headman A создаёт assignment в group B | `assertOwnGroup(request.groupId())` |
+| A12 | `DELETE /academic/assignments/{id}` | `AssignmentService.removeAssignment` | Headman A удаляет assignment group B | `assertOwnGroup(assignment.getGroupId())` |
+
+**Schedule (3):**
+
+| # | Endpoint | Service-метод | Fix |
+|---|----------|---------------|-----|
+| S1 | `GET /schedule/groups/{groupId}/lessons` | `LessonService.getLessonsForGroup` | new `requireGroupReadAccess(groupId)` (STUDENT-own-group, ADMIN/TEACHER any) |
+| S2 | `GET /schedule/items/{id}` + `?groupId=X` | `ScheduleItemService.getScheduleItem`/`listScheduleItems` | same helper |
+| S3 | `GET /schedule/one-off-lessons?groupId=X` | `OneOffLessonService.listOneOffLessons` | same helper |
+
+Schedule **write-операции** (cancel/restore/blockLesson/...) уже были
+защищены через gRPC `academicGrpcClient.isHeadman(userId, groupId)` —
+fix не требовался, IT документирует.
+
+**Attendance & notification-web — IDOR не найдены:**
+
+- attendance: `ExcuseService.getGroupTickets`/`getTicketById`/`updateStatus`
+  уже сравнивают `ticket.groupId == requestContext.groupId`;
+  `LateCheckinService.applyDecisionFromWeb`/`listPendingForHeadman` same;
+  `MarkingService.markAttendance/markBatch` проверяет lesson.groupId
+  через gRPC + double-check `academicGrpcClient.isHeadman` (M05 audit
+  fix); `ReportService.authorizeHeadmanOrTeacher` правильно сравнивает
+  groupId либо teacher-subject связь.
+- notification-web: `NotificationController` не принимает userId из
+  path/body — всегда `requestContext.getUserId()`. `markAsRead`
+  возвращает 403 (не 404) на чужой id (anti-enumeration).
+  `PushController.unsubscribe` scoped к `userId+endpoint`.
+
+### IT-покрытие
+
+| Service | Тестов | Endpoint'ов под IDOR-проверкой | Fix?    |
+|---------|--------|--------------------------------|---------|
+| academic | 13 | 11 | ✅ 9 fix'ов |
+| schedule | 11 | 11 | ✅ 3 fix'а |
+| attendance | 10 | 10 | none — already secured |
+| notification-web | 4 | 4 | none — already secured |
+| **Итого** | **38** | **36** | 12 fix'ов |
+
+AC-17 требует ≥10 endpoint'ов с {userId}/{groupId}/{lessonId} —
+**превышено в 3.6 раза.**
+
+### Nuances для executor'а
+
+1. **`@Cacheable` + groupId-check:** `SubjectService.getSubject(id)`
+   помечен `@Cacheable("subject", key="#id")`. Если делать
+   groupId-check **внутри** этого метода, кэш сохранит данные
+   первого вызова + результат теста зависит от того кто первым
+   прочитал. Решение: оставил `getSubject` как low-level cacheable
+   accessor, добавил **отдельный** `getSubjectForRead(id)` для
+   controller'а с groupId-check. Внутренние usage'ы (update/addTeacher)
+   используют low-level + сами проверяют ownership через
+   `assertSubjectBelongsToHeadmanGroup`.
+
+2. **TEACHER read access:** TEACHER может видеть homework/расписание
+   любой группы (он может вести предмет в нескольких группах). Поэтому
+   в `assertCanReadGroup`/`requireGroupReadAccess` ADMIN+TEACHER
+   bypass'ятся. Если в будущем нужно ужесточить TEACHER до «только
+   свои группы» — тут единый knob.
+
+3. **Schedule items teacher_id column:** test seed первой версии
+   использовал `teacher_id` колонку, которая была удалена в V3
+   (`drop_teacher_id.sql`). Проверять реальную схему перед seed'ом.
+
+4. **headman_assistants column naming:** `assigned_by`/`assigned_at`,
+   не `granted_by`/`created_at`. Для будущих refactor'ов — стандартизировать
+   везде на одно name? (deferred — v0.1 OPS).

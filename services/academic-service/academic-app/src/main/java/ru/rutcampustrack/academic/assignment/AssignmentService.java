@@ -45,9 +45,26 @@ public class AssignmentService {
         }
     }
 
+    /**
+     * M13 G9 — headman управляет назначениями только своей группы.
+     * ADMIN видит всё, TEACHER читает свои назначения через {@link #getMyAssignments}.
+     */
+    private void assertOwnGroup(Long groupId) {
+        UserRole role = requestContext.getRole();
+        if (role == UserRole.ADMIN) {
+            return;
+        }
+        Long ownGroupId = requestContext.getGroupId();
+        if (ownGroupId == null || !ownGroupId.equals(groupId)) {
+            throw new AccessDeniedException("Назначение принадлежит другой группе");
+        }
+    }
+
     @Transactional
     public TeacherSubjectGroup assignTeacher(AssignTeacherRequest request) {
         requireHeadman();
+        // M13 G9 — request.groupId должен совпадать с группой headman'а
+        assertOwnGroup(request.groupId());
 
         // Find teacher by employee number
         User teacher = userRepository.findByEmployeeNumber(request.employeeNumber())
@@ -73,6 +90,8 @@ public class AssignmentService {
 
     @Transactional(readOnly = true)
     public Page<TeacherSubjectGroup> listAssignments(Long groupId, Long semesterId, Pageable pageable) {
+        // M13 G9 — STUDENT/headman читает только свою группу; ADMIN — любую
+        assertOwnGroup(groupId);
         List<TeacherSubjectGroup> list = assignmentRepository.findByGroupIdAndSemesterId(groupId, semesterId);
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), list.size());
@@ -85,6 +104,8 @@ public class AssignmentService {
         requireHeadman();
         TeacherSubjectGroup assignment = assignmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment", "id", id));
+        // M13 G9 — assignment должен принадлежать группе headman'а
+        assertOwnGroup(assignment.getGroupId());
         assignmentRepository.delete(assignment);
     }
 

@@ -79,6 +79,20 @@ public class OneOffLessonService {
     }
 
     /**
+     * M13 G9 — read-доступ. STUDENT видит one-off lessons только своей группы.
+     */
+    private void requireGroupReadAccess(Long targetGroupId) {
+        UserRole role = requestContext.getRole();
+        if (role == UserRole.ADMIN || role == UserRole.TEACHER) {
+            return;
+        }
+        Long ownGroupId = requestContext.getGroupId();
+        if (ownGroupId == null || !ownGroupId.equals(targetGroupId)) {
+            throw new AccessDeniedException("Разовая пара принадлежит другой группе");
+        }
+    }
+
+    /**
      * Creates a one-off lesson after RBAC, semester lookup (D-23), and conflict check (D-09).
      */
     public OneOffLesson createOneOffLesson(CreateOneOffLessonRequest request) {
@@ -140,6 +154,8 @@ public class OneOffLessonService {
      */
     @Transactional(readOnly = true)
     public List<OneOffLesson> listOneOffLessons(Long groupId, LocalDate dateFrom, LocalDate dateTo) {
+        // M13 G9 — STUDENT видит one-off lessons только своей группы
+        requireGroupReadAccess(groupId);
         return oneOffLessonRepository.findByGroupIdAndDateBetween(groupId, dateFrom, dateTo);
     }
 

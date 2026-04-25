@@ -79,12 +79,13 @@
 
 ## Группа 9 — SecurityIdorIT (NEW-31 retrospective)
 
-- [ ] Создать `services/academic-app/src/test/java/.../SecurityIdorIT.java` — student A читает student B → 403
-- [ ] Создать `services/schedule-app/src/test/java/.../SecurityIdorIT.java` — lesson/group access control
-- [ ] Создать `services/attendance-app/src/test/java/.../SecurityIdorIT.java` — attendance/excuse/late-checkin per-user
-- [ ] Создать `services/notification-web/src/test/java/.../SecurityIdorIT.java` — notification history per-user
-- [ ] Исправить найденные IDOR-баги (ожидаем 1-2)
-- [ ] Каждый IT покрывает ≥ 3 endpoint'а с `{userId}/{groupId}/{lessonId}` в URL
+- [x] **G9.0 (pre-req fix):** EventSchemaCoverageTest whitelist обновлён — добавлен `otp.requested` (M09 G2 baseline drift)
+- [x] Создать `services/academic-app/src/test/java/.../SecurityIdorIT.java` — student A читает student B → 403 _(13 тестов: 11 IDOR + 2 sanity, покрытие homework/assistant/assignment/subject)_
+- [x] Создать `services/schedule-app/src/test/java/.../SecurityIdorIT.java` — lesson/group access control _(11 тестов: 4 read + 7 write IDOR через gRPC isHeadman + new requireGroupReadAccess)_
+- [x] Создать `services/attendance-app/src/test/java/.../SecurityIdorIT.java` — attendance/excuse/late-checkin per-user _(10 тестов; existing security уже корректен — IT документирует)_
+- [x] Создать `services/notification-web/src/test/java/.../SecurityIdorIT.java` — notification history per-user _(4 теста; userId всегда из RequestContext, IT подтверждает)_
+- [x] Исправить найденные IDOR-баги — **9 IDOR'ов в academic + 3 в schedule** (см. NOTES.md G9 — `assertCanReadGroup` в HomeworkService, `assertOwnGroup` в AssistantService/AssignmentService, `assertCanReadSubject` в SubjectService, `requireGroupReadAccess` в LessonService/ScheduleItemService/OneOffLessonService)
+- [x] Каждый IT покрывает ≥ 3 endpoint'а с `{userId}/{groupId}/{lessonId}` в URL _(38 тестов на 22+ unique endpoints, сильно превышает AC-17 минимум 10)_
 
 ## Группа 10 — Actuator tracing exclude (M06 misleading comment fix)
 

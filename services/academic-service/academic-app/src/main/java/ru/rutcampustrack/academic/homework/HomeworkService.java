@@ -94,6 +94,23 @@ public class HomeworkService {
         }
     }
 
+    /**
+     * M13 G9: STUDENT может видеть ДЗ только своей группы (включая headman+assistant).
+     * ADMIN/TEACHER видят любое. TEACHER здесь не используется (HomeworkController
+     * @RequireRole указывает STUDENT/ADMIN для list, без role для get) — но добавляем
+     * TEACHER для будущего расширения, чтобы не блокировать read-only роль.
+     */
+    private void assertCanReadGroup(Long groupId) {
+        UserRole role = requestContext.getRole();
+        if (role == UserRole.ADMIN || role == UserRole.TEACHER) {
+            return;
+        }
+        Long ownGroupId = requestContext.getGroupId();
+        if (ownGroupId == null || !ownGroupId.equals(groupId)) {
+            throw new AccessDeniedException("ДЗ принадлежит другой группе");
+        }
+    }
+
     @Transactional
     public Homework createHomework(CreateHomeworkRequest request) {
         // D-06: роль-гard (HEADMAN / assistant c manage_homework)
@@ -134,12 +151,17 @@ public class HomeworkService {
 
     @Transactional(readOnly = true)
     public Homework getHomework(Long id) {
-        return homeworkRepository.findById(id)
+        Homework homework = homeworkRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Homework", "id", id));
+        // M13 G9 — STUDENT видит ДЗ только своей группы
+        assertCanReadGroup(homework.getGroupId());
+        return homework;
     }
 
     @Transactional(readOnly = true)
     public Page<Homework> listHomeworks(Long groupId, Long semesterId, Pageable pageable) {
+        // M13 G9 — STUDENT не может листать ДЗ чужой группы передавая чужой groupId
+        assertCanReadGroup(groupId);
         List<Homework> list = homeworkRepository.findByGroupIdAndSemesterId(groupId, semesterId);
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), list.size());
@@ -184,7 +206,7 @@ public class HomeworkService {
 
     @Transactional
     public void markComplete(Long homeworkId) {
-        // Check homework exists
+        // M13 G9 — getHomework делает groupId-check; нельзя отмечать чужое ДЗ
         getHomework(homeworkId);
         Long studentId = requestContext.getUserId();
         if (completionRepository.existsByHomeworkIdAndStudentId(homeworkId, studentId)) {
@@ -196,6 +218,8 @@ public class HomeworkService {
 
     @Transactional
     public void unmarkComplete(Long homeworkId) {
+        // M13 G9 — getHomework делает groupId-check
+        getHomework(homeworkId);
         Long studentId = requestContext.getUserId();
         HomeworkCompletion completion = completionRepository
                 .findByHomeworkIdAndStudentId(homeworkId, studentId)

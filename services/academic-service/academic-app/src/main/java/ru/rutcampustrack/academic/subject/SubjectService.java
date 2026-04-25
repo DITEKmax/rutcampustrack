@@ -82,6 +82,20 @@ public class SubjectService {
     }
 
     /**
+     * M13 G9 — STUDENT может читать subject только своей группы. ADMIN/TEACHER — любой.
+     */
+    private void assertCanReadSubject(Subject subject) {
+        UserRole role = requestContext.getRole();
+        if (role == UserRole.ADMIN || role == UserRole.TEACHER) {
+            return;
+        }
+        Long ownGroupId = requestContext.getGroupId();
+        if (ownGroupId == null || !ownGroupId.equals(subject.getGroupId())) {
+            throw new AccessDeniedException("Предмет принадлежит другой группе");
+        }
+    }
+
+    /**
      * Phase 60-01 / D-02: атомарное создание предмета + N записей
      * teacher_subject_groups на активный семестр. При сбое одного insert —
      * полный откат транзакции.
@@ -114,6 +128,19 @@ public class SubjectService {
     public Subject getSubject(Long id) {
         return subjectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", id));
+    }
+
+    /**
+     * M13 G9 — публичный read с groupId-check для controller'а.
+     * STUDENT видит subject только своей группы; ADMIN/TEACHER — любой.
+     * Внутренние вызовы (update/addTeacher/...) используют {@link #getSubject}
+     * напрямую и сами проверяют ownership через {@code assertSubjectBelongsToHeadmanGroup}.
+     */
+    @Transactional(readOnly = true)
+    public Subject getSubjectForRead(Long id) {
+        Subject subject = getSubject(id);
+        assertCanReadSubject(subject);
+        return subject;
     }
 
     /**

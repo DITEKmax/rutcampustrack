@@ -70,4 +70,7 @@ dependencies {
 
     // M12 G4 — AuthApiContractTest: controllers implement contract interfaces
     testImplementation(libs.archunit.junit5)
+
+    // M13 G10 — InMemorySpanExporter + SimpleSpanProcessor для ActuatorSamplingIT
+    testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.43.0")
 }

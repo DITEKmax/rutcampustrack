@@ -83,6 +83,4 @@ def validate_startup_config(settings: "Settings") -> None:
     if not settings.bot_token or settings.bot_token == "placeholder":
         missing.append("BOT_TOKEN (Telegram bot token)")
     if missing:
-        raise StartupError(
-            "Missing mandatory configuration:\n  - " + "\n  - ".join(missing)
-        )
+        raise StartupError("Missing mandatory configuration:\n  - " + "\n  - ".join(missing))

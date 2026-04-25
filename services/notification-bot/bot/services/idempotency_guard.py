@@ -47,9 +47,7 @@ class BotIdempotencyGuard:
         else:
             auth = f":{password}@" if password else ""
             url = f"redis://{auth}{host}:{port}"
-            self._redis = aioredis.from_url(
-                url, max_connections=10, decode_responses=True
-            )
+            self._redis = aioredis.from_url(url, max_connections=10, decode_responses=True)
         self._consumer_id = consumer_id
         self._ttl = ttl_seconds
 
@@ -75,10 +73,7 @@ class BotIdempotencyGuard:
                 "После M13 G8 все publisher'ы обязаны заполнять event_id.",
                 self._consumer_id,
             )
-            raise ValueError(
-                f"Event без event_id rejected (fail-closed, M13 G24-fix-6): "
-                f"consumer={self._consumer_id}"
-            )
+            raise ValueError(f"Event без event_id rejected (fail-closed, M13 G24-fix-6): consumer={self._consumer_id}")
         key = self._key(event_id)
         # SET key value NX EX ttl — атомарный insert-or-fail.
         # Redis exception пробрасывается — caller отлавливает и реджектит

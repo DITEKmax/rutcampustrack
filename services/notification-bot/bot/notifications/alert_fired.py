@@ -114,9 +114,11 @@ async def handle_alert_fired(
                 disable_web_page_preview=True,
             )
 
-        await send_queue.put(SendTask(
-            coroutine_factory=_send,
-            chat_id=cid,
-            # category=None — системное сообщение: prefs не применяется,
-            # глобальный notification toggle не отключает.
-        ))
+        await send_queue.put(
+            SendTask(
+                coroutine_factory=_send,
+                chat_id=cid,
+                # category=None — системное сообщение: prefs не применяется,
+                # глобальный notification toggle не отключает.
+            )
+        )

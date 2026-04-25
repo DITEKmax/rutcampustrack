@@ -60,6 +60,7 @@ def prefs_message_factory():
 
 # ====================================================== main_keyboard
 
+
 def test_main_keyboard_has_login_and_settings_buttons():
     kb = main_keyboard()
     labels = [btn.text for row in kb.keyboard for btn in row]
@@ -76,10 +77,9 @@ def test_main_keyboard_ignores_legacy_arg():
 
 # ====================================================== cmd_open_settings
 
+
 @pytest.mark.asyncio
-async def test_cmd_open_settings_shows_menu_with_all_categories_default_on(
-    prefs_message_factory, prefs_client
-):
+async def test_cmd_open_settings_shows_menu_with_all_categories_default_on(prefs_message_factory, prefs_client):
     msg = prefs_message_factory("⚙️ Настройки уведомлений", user_id=100)
 
     await cmd_open_settings(msg, prefs_client=prefs_client)
@@ -115,10 +115,9 @@ async def test_cmd_open_settings_when_globally_disabled_hides_categories(
 
 # ====================================================== cb_toggle_global
 
+
 @pytest.mark.asyncio
-async def test_toggle_global_from_on_to_off_sets_redis_key(
-    prefs_callback_factory, prefs_client, fake_redis
-):
+async def test_toggle_global_from_on_to_off_sets_redis_key(prefs_callback_factory, prefs_client, fake_redis):
     cb = prefs_callback_factory("prefs:global:toggle", user_id=100)
 
     await cb_toggle_global(cb, prefs_client=prefs_client)
@@ -130,9 +129,7 @@ async def test_toggle_global_from_on_to_off_sets_redis_key(
 
 
 @pytest.mark.asyncio
-async def test_toggle_global_from_off_to_on_deletes_redis_key(
-    prefs_callback_factory, prefs_client, fake_redis
-):
+async def test_toggle_global_from_off_to_on_deletes_redis_key(prefs_callback_factory, prefs_client, fake_redis):
     await fake_redis.set("bot:notif:100", "off")
     cb = prefs_callback_factory("prefs:global:toggle", user_id=100)
 
@@ -145,10 +142,9 @@ async def test_toggle_global_from_off_to_on_deletes_redis_key(
 
 # ====================================================== cb_toggle_category
 
+
 @pytest.mark.asyncio
-async def test_toggle_category_lessons_from_on_to_off(
-    prefs_callback_factory, prefs_client, fake_redis
-):
+async def test_toggle_category_lessons_from_on_to_off(prefs_callback_factory, prefs_client, fake_redis):
     cb = prefs_callback_factory("prefs:cat:lessons", user_id=100)
 
     await cb_toggle_category(cb, prefs_client=prefs_client)
@@ -173,9 +169,7 @@ async def test_toggle_category_homework_from_off_to_on_removes_hash_field(
 
 
 @pytest.mark.asyncio
-async def test_toggle_category_unknown_answers_without_redis_write(
-    prefs_callback_factory, prefs_client, fake_redis
-):
+async def test_toggle_category_unknown_answers_without_redis_write(prefs_callback_factory, prefs_client, fake_redis):
     cb = prefs_callback_factory("prefs:cat:not_a_real_category", user_id=100)
 
     await cb_toggle_category(cb, prefs_client=prefs_client)
@@ -188,9 +182,7 @@ async def test_toggle_category_unknown_answers_without_redis_write(
 
 
 @pytest.mark.asyncio
-async def test_toggle_category_covers_all_known_categories(
-    prefs_callback_factory, prefs_client, fake_redis
-):
+async def test_toggle_category_covers_all_known_categories(prefs_callback_factory, prefs_client, fake_redis):
     """Smoke: каждая категория из CATEGORIES может быть переключена без ошибок."""
     from bot.services.notification_prefs import CATEGORIES
 

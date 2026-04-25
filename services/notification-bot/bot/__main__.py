@@ -201,11 +201,13 @@ async def main() -> None:
     )
 
     # Start watchdog with dispatcher
-    _consumer_task = asyncio.create_task(run_with_watchdog(
-        config.rabbitmq_url,
-        dispatcher=dispatcher,
-        idempotency_guard=idempotency_guard,
-    ))
+    _consumer_task = asyncio.create_task(
+        run_with_watchdog(
+            config.rabbitmq_url,
+            dispatcher=dispatcher,
+            idempotency_guard=idempotency_guard,
+        )
+    )
 
     # Start bot polling (handle_signals=False — Pitfall 5: signals managed by main loop)
     _bot_task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))

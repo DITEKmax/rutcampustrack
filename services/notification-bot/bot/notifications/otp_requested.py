@@ -70,9 +70,7 @@ async def handle_otp_requested(
         return
 
     await tracker.finalize_with_bot_msg(telegram_id, bot_message.message_id)
-    asyncio.create_task(
-        _cleanup_after_expiry(telegram_id, ttl_seconds=int(ttl_seconds), bot=bot, tracker=tracker)
-    )
+    asyncio.create_task(_cleanup_after_expiry(telegram_id, ttl_seconds=int(ttl_seconds), bot=bot, tracker=tracker))
 
 
 async def _cleanup_after_expiry(

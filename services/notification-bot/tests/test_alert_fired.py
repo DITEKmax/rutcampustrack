@@ -25,13 +25,15 @@ def test_parse_admin_ids_mixed():
 
 
 def test_format_message_critical():
-    msg = _format_message({
-        "name": "ServiceDown",
-        "severity": "critical",
-        "status": "firing",
-        "summary": "auth-service down",
-        "description": "scrape failed 1m",
-    })
+    msg = _format_message(
+        {
+            "name": "ServiceDown",
+            "severity": "critical",
+            "status": "firing",
+            "summary": "auth-service down",
+            "description": "scrape failed 1m",
+        }
+    )
     assert "ServiceDown" in msg
     assert "[CRITICAL]" in msg
     assert "🔔" in msg
@@ -41,36 +43,42 @@ def test_format_message_critical():
 
 
 def test_format_message_resolved():
-    msg = _format_message({
-        "name": "OutboxLagHigh",
-        "severity": "warning",
-        "status": "resolved",
-    })
+    msg = _format_message(
+        {
+            "name": "OutboxLagHigh",
+            "severity": "warning",
+            "status": "resolved",
+        }
+    )
     assert "✅" in msg
     assert "🟡" in msg
     assert "[WARNING]" in msg
 
 
 def test_format_message_truncates_long_description():
-    msg = _format_message({
-        "name": "Foo",
-        "severity": "warning",
-        "status": "firing",
-        "description": "x" * 5000,
-    })
+    msg = _format_message(
+        {
+            "name": "Foo",
+            "severity": "warning",
+            "status": "firing",
+            "description": "x" * 5000,
+        }
+    )
     # 3500 char cap + suffix должен сработать
     assert len(msg) < 5000
     assert "[truncated]" in msg
 
 
 def test_format_message_escapes_html():
-    msg = _format_message({
-        "name": "Test<script>",
-        "severity": "warning",
-        "status": "firing",
-        "summary": "<img src=x>",
-        "description": "alert & more",
-    })
+    msg = _format_message(
+        {
+            "name": "Test<script>",
+            "severity": "warning",
+            "status": "firing",
+            "summary": "<img src=x>",
+            "description": "alert & more",
+        }
+    )
     # bold tags мы пишем сами, но юзерские значения должны быть escape'нуты
     assert "<script>" not in msg
     assert "&lt;script&gt;" in msg

@@ -627,3 +627,104 @@ AC-17 требует ≥10 endpoint'ов с {userId}/{groupId}/{lessonId} —
 4. **headman_assistants column naming:** `assigned_by`/`assigned_at`,
    не `granted_by`/`created_at`. Для будущих refactor'ов — стандартизировать
    везде на одно name? (deferred — v0.1 OPS).
+
+## 2026-04-25 — Группа 10 (Actuator tracing exclude)
+
+**Surprise (executor → owner):** изначальный hand-off дизайн через
+OpenTelemetry `Sampler` bean **не работает** в Spring Boot 3.4 +
+Micrometer Bridge 1.4.1.
+
+**Что не сработало:**
+
+1. Реализован `ActuatorTracingExcludeSampler` (java-class, `@AutoConfiguration`
+   bean типа `io.opentelemetry.sdk.trace.samplers.Sampler`).
+2. `@AutoConfiguration(before = OpenTelemetryTracingAutoConfiguration.class)`
+   + `@ConditionalOnMissingBean(Sampler.class)` — auto-config корректно
+   подхватился (1 IT pass).
+3. **Корень проблемы:** в Spring Boot 3.4 attribute `url.path` /
+   `http.target` устанавливается на http server span **после** вызова
+   `Sampler#shouldSample`. Sampler видит пустой `Attributes` для http
+   server span. Span name на момент `shouldSample` тоже не содержит path
+   (финальное `"http get /actuator/health"` устанавливается позже).
+4. Результат: span попадает в exporter + 5 child internal observation
+   span'ов (security filterchain before/after, authorize request,
+   secured request) — spam в Tempo продолжается.
+
+**Решение (выбрано после консультации с владельцем «выбери что считаешь
+не legacy»):** заменён на **`SpanExportingPredicate`** — официальный
+Spring Boot 3.x mechanism. Видит финальный `FinishedSpan` после
+финализации (со всеми tags + name). `OpenTelemetryTracingAutoConfiguration`
+собирает все predicate'ы через `ObjectProvider<SpanExportingPredicate>`
+и оборачивает в `CompositeSpanExporter` — фильтр работает между
+`BatchSpanProcessor` и OTLP exporter, до сетевого экспорта в Tempo.
+
+**Stratergy для child spans:** Filter запоминает `trace_id` отброшенного
+root в LRU set (capacity 256). Все последующие spans с тем же `trace_id`
+дропаются. Capacity 256 покрывает 5 сервисов × 2 actuator endpoints ×
+30s probe interval с большим запасом, без memory bloat.
+
+**Path lookup в FinishedSpan tags:** покрыты 4 ключа для устойчивости
+к instrumentation drift — `url.path` (semconv 1.20+), `http.target`
+(legacy ≤ 1.29), `http.url` (Spring Boot WebMvc Brave-style),
+`uri` (старая M11 Brave bridge convention). Plus span name содержит
+`/actuator/` в финальном виде. Любого совпадения достаточно для DROP.
+
+**Дополнительный fail-fast:** filter применяет только локальный path-match
+в момент `isExportable(root)`. Если в будущем наименование поменяется
+без обновления `PATH_TAG_KEYS` — root **попадёт** в exporter, child
+тоже. Не silent-no-op: spam в Tempo сразу видно. Регрессия покрывается
+end-to-end IT (`ActuatorSpanFilterIT.healthEndpoint_doesNotProduceAnyExportedSpan`).
+
+**Где сделана реализация:**
+
+- `services/shared/shared-observability/src/main/java/.../ActuatorTracingExcludeFilter.java`
+  — основной класс (LRU + path-match logic). Plain `java-library` стиль,
+  без Lombok.
+- `services/shared/shared-observability/src/main/java/.../SharedObservabilityAutoConfiguration.java`
+  — `@AutoConfiguration` + `@ConditionalOnClass(SpanExportingPredicate.class)`.
+- `services/shared/shared-observability/src/main/resources/META-INF/spring/AutoConfiguration.imports`
+  — регистрация в Spring Boot.
+- `services/shared/shared-observability/build.gradle.kts` — `compileOnly
+  micrometer-tracing:1.4.1` (= транзитивная версия в bridge-otel).
+  Удалён `compileOnly opentelemetry-sdk` (Sampler не нужен) — модуль
+  остаётся pure java-library без obtrusive tracing deps.
+- `services/auth-service/auth-app/.../ActuatorSpanFilterIT.java` —
+  end-to-end IT через `InMemorySpanExporter` + `tracerProvider.forceFlush()`.
+
+**Tests:**
+
+- `ActuatorTracingExcludeFilterTest` (shared-observability) — **13 unit
+  cases**: actuator drop по name/url.path/uri/http.url/http.target,
+  child spans drop по trace_id, business pass, substring guard, LRU
+  eviction, null handling.
+- `ActuatorSpanFilterIT` (auth-app, `integrationTest`) — **3 IT cases**:
+  filter bean регистрация, /actuator/health → 0 spans в exporter,
+  бизнес /auth/login → spans есть.
+
+**Application.yml fix:** `auth-service:application.yml:108-110` TODO(M07)
+заменён на правдивое описание про `ActuatorTracingExcludeFilter`.
+В **остальных 4 сервисах** (academic/schedule/attendance/notification)
+такого misleading TODO нет — auto-config через shared-observability
+работает прозрачно.
+
+**Documentation:** `docs/observability.md` — новый раздел «Sampling policy
+(M13 G10)» с таблицей endpoints/decisions, объяснением выбора
+SpanExportingPredicate vs Sampler, описанием child-span strategy,
+property override для disable.
+
+**Что НЕ применено в этой группе:**
+
+- Property для управления `lruCapacity` через application.yml — не
+  нужно для v0.0.0, default 256 покрывает реалистичные patterns.
+- Metric counter `actuator_spans_dropped_total` — было бы nice-to-have,
+  но не критично; если spam в Tempo вернётся, end-to-end IT всё ещё
+  ловит регрессию. Откладываю в v0.1 (если будет нужно).
+
+**Применимость к остальным 4 сервисам:** auto-config из shared-observability
+автоматически активируется во всех 5 backend (auth/academic/schedule/
+attendance/notification-web) — все они уже имеют `implementation(project(
+":services:shared:shared-observability"))` в build.gradle.kts (M04 G7).
+IT написан только в auth-app — sampler-логика generic, в остальных
+сервисах паттерн идентичный (Spring Boot WebMvc instrumentation
+одинаковая). Если потом окажется нужно — IT можно скопировать в любой
+сервис без изменений.

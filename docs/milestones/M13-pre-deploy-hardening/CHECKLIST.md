@@ -89,10 +89,10 @@
 
 ## Группа 10 — Actuator tracing exclude (M06 misleading comment fix)
 
-- [ ] Создать `shared-observability/ActuatorTracingExcludeSampler` — OpenTelemetry Sampler bean
-- [ ] IT: GET `/actuator/health` → span не попадает в in-memory exporter
-- [ ] Поправить misleading comment в `application.yml:108` — теперь правда
-- [ ] Обновить `docs/observability.md` — sampling policy
+- [x] Создать `shared-observability/ActuatorTracingExcludeSampler` — OpenTelemetry Sampler bean _(заменён на `ActuatorTracingExcludeFilter` — `SpanExportingPredicate`. Sampler не работает в Spring Boot 3.4 — `url.path` устанавливается на span после `Sampler#shouldSample`. См. NOTES «Группа 10 — Surprise». Auto-config в shared-observability через `@ConditionalOnClass(SpanExportingPredicate.class)`)_
+- [x] IT: GET `/actuator/health` → span не попадает в in-memory exporter _(`ActuatorSpanFilterIT` в auth-app: filter bean регистрация + 0 spans для /actuator/health (root + children через trace_id LRU) + sanity для бизнес /auth/login. 3/3 passing)_
+- [x] Поправить misleading comment в `application.yml:108` — теперь правда _(TODO(M07) → описание про ActuatorTracingExcludeFilter в shared-observability M13 G10. Только auth-service application.yml имел этот TODO; в 4 остальных нет)_
+- [x] Обновить `docs/observability.md` — sampling policy _(новый раздел «Sampling policy (M13 G10)» с таблицей endpoints/decisions, выбором SpanExportingPredicate vs Sampler, child-span LRU strategy, property override для disable)_
 
 ## Группа 11 — `mem_limit` на aux containers
 

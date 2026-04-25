@@ -44,6 +44,54 @@ Python-бот → structlog JSON ───────────────�
   handler'ом (Java-сторона), bot делает аналогичное через
   `bind_trace_context()`.
 
+## Sampling policy (M13 G10)
+
+| Endpoint | Decision | Где применяется | Почему |
+|----------|----------|-----------------|--------|
+| `/actuator/**` | **drop** | `ActuatorTracingExcludeFilter` (shared-observability) | Health/prometheus probes — высокочастотный шум, не имеет диагностической ценности |
+| Бизнес-эндпоинты `/api/**` | **sample 100%** | Spring Boot `OpenTelemetryTracingAutoConfiguration` (default `probability=1.0`) | M04 baseline для v0.0.0 (малый traffic, ловим всё) |
+| Внутренние spans (security/JPA) | наследуют от parent | OTel `parentBased` sampler | Стандартный OTel design |
+
+### Где сделан фильтр
+
+`services/shared/shared-observability/src/main/java/.../ActuatorTracingExcludeFilter.java`
+— bean типа `io.micrometer.tracing.exporter.SpanExportingPredicate`. Spring
+Boot 3.x tracing auto-config (`OpenTelemetryTracingAutoConfiguration#otelSpanProcessor`)
+собирает все predicate'ы через `ObjectProvider<SpanExportingPredicate>` и
+оборачивает их в `CompositeSpanExporter` — фильтр срабатывает между
+`BatchSpanProcessor` и OTLP exporter (т.е. до сетевого экспорта в Tempo).
+
+### Почему `SpanExportingPredicate`, а не `Sampler`
+
+В Spring Boot 3.4 + Micrometer Bridge attribute `url.path` устанавливается
+на http server span **после** вызова `Sampler#shouldSample`. Sampling-time
+дроп для actuator paths поэтому невозможен — sampler не видит URL в момент
+своего вызова. `SpanExportingPredicate` видит финальный `FinishedSpan` со
+всеми tags и финализированным `name` (типично `"http get /actuator/health"`).
+
+### Стратегия для child spans
+
+Spring Security/JPA генерируют 5–7 child spans внутри одного http server
+request (security filterchain before/after, authorize request, secured
+request). Фильтр запоминает `trace_id` отброшенного root в LRU set
+(capacity 256) и дропает все последующие spans того же trace_id. Capacity
+256 покрывает 5 сервисов × 2 actuator endpoints × 30s probe interval ×
+∞-time без накопления memory bloat.
+
+### Property override (если когда-то понадобится включить actuator tracing)
+
+Filter применяется через auto-config, не имеет on/off property. Чтобы
+временно отключить — добавить в `application-dev.yml` целевого сервиса
+exclude-bean:
+
+```yaml
+spring.autoconfigure.exclude:
+  - ru.rutcampustrack.shared.observability.SharedObservabilityAutoConfiguration
+```
+
+Не делайте этого в `application.yml` / `application-prod.yml`: actuator
+spam нагружает Tempo на ровном месте.
+
 ## Быстрые ссылки в Grafana
 
 - **Business KPIs & Health** (`business-kpis-m04`) — 8 панелей: checkin

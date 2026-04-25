@@ -69,7 +69,11 @@ services:
   mongo-attendance:
     # Bitnami declarative replica set (rs0, single-node primary).
     # Легасии namespace bitnamilegacy/ — см. M13 G24-fix-3 в prod compose.
-    image: bitnamilegacy/mongodb:7.0
+    # M13 G25.11 — digest pin: floating :7.0 tag в апреле 2026 был
+    # обновлён, новая image создаёт MONGODB_EXTRA_USERNAMES в `test` db
+    # вместо `admin` → AuthenticationFailed с authSource=admin.
+    # Closing the gap: используем тот же digest, что и prod compose.
+    image: bitnamilegacy/mongodb:7.0@sha256:16a57fa081f18e7acd1b4de1cd74f3e294cc6de861007e6fe3a418eb61db8a54
     container_name: rct-mongo-attendance
     environment:
       MONGODB_REPLICA_SET_MODE: primary
@@ -142,7 +146,11 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_KEY_DIR: /keys
       TMA_BOT_TOKEN: ${TMA_BOT_TOKEN}
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC"
+      # M13 G25.10 — `-Djava.security.egd=file:/dev/./urandom`: на CI runner
+      # KeyPairGenerator.initialize(3072) висит на /dev/random blocking entropy
+      # (RSA 3072 генерация never returns на холодном GitHub Actions runner).
+      # urandom non-blocking, криптостойкость equivalent для post-Java 8 JVMs.
+      JAVA_TOOL_OPTIONS: "-Djava.security.egd=file:/dev/./urandom -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC"
     volumes:
       - jwt-keys:/keys
     expose:

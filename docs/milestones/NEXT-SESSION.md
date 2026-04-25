@@ -1,207 +1,169 @@
-# Промпт для следующей сессии — M13 re-open: G25 (CI hot-fixes + e2e infrastructure)
+# Промпт для следующей сессии — M13 G25 (продолжение): проверить CI #131, fix остатки, tag
 
 Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Opus сам
 откроет нужные файлы и продолжит.
 
 ---
 
-**M13 был закрыт 2026-04-25 (tag `v0.0.0-alpha.14` локально, push'нут на
-origin). После push в `origin/dev` (commit `3db123b`, +99 commits ahead)
-CI обнаружил 3 проблемы. M13 re-open в виде Группы 25 чтобы закрыть
-ВСЁ перед VPS dry-run.**
+**M13 G25 в процессе. На origin/dev 6 коммитов G25.1..G25.6,
+последний `ed40d36`. CI run #131 (`24933795015`) был запущен в конце
+прошлой сессии — статус нужно проверить в этой.**
 
-## Текущая позиция (на конец прошлой сессии 2026-04-25)
+## Текущая позиция (на конец сессии 2026-04-25)
 
-**Push сделан, CI красный:**
+**4 коммита G25 push'нуты, 2 итерации fix'ов выполнены:**
 
-1. ✅ **Шаг 1 (push)** — `dev` на origin = `3db123b`. 13 alpha tags
-   на origin (alpha.2-14). Tag `v0.0.0-alpha.14` → `c9861f7`.
-2. ⚠️ **Шаг 2 (CI)** — выполнен, но **3 фейла на commit `3db123b`**:
-   - **Python lint & test:** `ruff format --check` падает на 9 файлах
-     (5 prod + 4 test). Локально fix применён (`ruff format .`),
-     но **не закоммичен**.
-   - **Python coverage:** `test_consumer_watchdog::test_watchdog_restarts_on_consumer_failure`
-     FAIL — детерминированный регресс M13 G8 (mock не принимает новый
-     параметр `idempotency_guard`). Локально fix применён к 4 mock
-     signature в `tests/test_consumer_watchdog.py`, **не закоммичен**.
-   - **Playwright E2E auth flow:** Docker build fail на multi-stage
-     COPY paths. Корневая проблема — dev `docker-compose.yml` не
-     содержит backend Java сервисов, а `Dockerfile` notification-web
-     ожидает build context = root репо. **Не fix'нуто, требует
-     инфраструктурную работу.**
+| Коммит | Группа | Что сделано | CI status |
+|--------|--------|-------------|-----------|
+| `981f2b1` | G25.1 | ruff format compliance (9 .py файлов) | ✅ green в #129+ |
+| `b373b3e` | G25.2 | watchdog mock signature `idempotency_guard=None` | ✅ green в #129+ |
+| `be71ed1` | G25.3 | docker-compose.e2e.yml + self-signed TLS + CI integration | ❌ #129 (compile fail) |
+| `346c147` | G25.4 | CHANGELOG + e2e-testing.md docs | ✅ no CI gate |
+| `549e9dc` | G25.5 | `COPY services/shared` в 6 backend Dockerfiles | ❌ #130 (next blocker) |
+| `ed40d36` | G25.6 | `gitOutput()` try/catch IOException | 🟡 #131 (running, проверить!) |
 
-## План на новую сессию — M13 Группа 25
+## Стратегия: двухфазная (per моё решение прошлой сессии)
+1. Push без tag → ждём CI зелёный.
+2. Когда CI зелёный → tag `v0.0.0-alpha.15` с message "M13 G25 ✅ CI green".
+3. Если красный → G25.7+ fix cycle.
 
-Подробности в `docs/milestones/M13-pre-deploy-hardening/CHECKLIST.md`
-секция **«Группа 25 — CI hot-fixes + e2e-auth job infrastructure»**
-и `NOTES.md` секция **«Группа 25 — CI hot-fixes + e2e-auth infrastructure»**.
+## Что делать в этой сессии (по порядку)
 
-### G25.1 — закоммитить ruff fix _(15 мин)_
+### Шаг 1 — проверить CI #131 status
 
 ```bash
-# Локально уже применено: 9 файлов отформатированы
-git status                          # покажет 9 изменённых .py файлов
-cd services/notification-bot && py -m ruff format --check . && py -m ruff check .
-# оба должны пройти
-git add services/notification-bot/bot services/notification-bot/tests
-git commit -m "style(notification-bot): ruff format compliance (M13 G25.1)"
+curl -s "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs/24933795015/jobs?per_page=30" | py -c "
+import json, sys
+from datetime import datetime
+data = json.load(sys.stdin)
+print(f'{\"job\":<55} {\"status\":<12} {\"conclusion\":<12} duration')
+print('-' * 95)
+for j in data.get('jobs', []):
+    started, completed = j.get('started_at'), j.get('completed_at')
+    if started and completed:
+        s = datetime.fromisoformat(started.replace('Z','+00:00'))
+        c = datetime.fromisoformat(completed.replace('Z','+00:00'))
+        dur = f'{int((c-s).total_seconds())}s'
+    elif started:
+        s = datetime.fromisoformat(started.replace('Z','+00:00'))
+        dur = f'~{int((datetime.now(s.tzinfo)-s).total_seconds())}s (running)'
+    else: dur = '-'
+    print(f'{j[\"name\"][:55]:<55} {j[\"status\"]:<12} {j.get(\"conclusion\") or \"-\":<10} {dur}')
+"
 ```
 
-### G25.2 — закоммитить watchdog mock fix _(15 мин)_
+URL: https://github.com/DITEKmax/rutcampustrack/actions/runs/24933795015
 
+### Шаг 2 — два сценария
+
+**Сценарий A: CI #131 зелёный (е2е-auth тоже success)**
+
+Tag и финал G25:
 ```bash
-# Локально уже применено: 4 mock signature в test_consumer_watchdog.py
-cd services/notification-bot && py -m pytest tests/test_consumer_watchdog.py -v
-# должно быть 6 PASSED
-git add services/notification-bot/tests/test_consumer_watchdog.py
-git commit -m "test(notification-bot): mock_start_consumer signature update for M13 G8 (M13 G25.2)"
-```
-
-### G25.3 — docker-compose.e2e.yml + CI integration _(2-4 часа)_
-
-**Это основная работа G25.** План:
-
-1. **Создать `docker-compose.e2e.yml`** — minimal prod-like stack:
-   - Все 5 backend Java сервисов (auth, academic, schedule,
-     attendance, gateway) с `context: .` + правильный path к
-     Dockerfile
-   - 6 инфра контейнеров (postgres × 2, mongo, redis, rabbitmq;
-     БЕЗ tempo/alertmanager — observability не нужен в e2e)
-   - 4 nginx (pwa, mini-app, web-panel, landing)
-   - 2 notification (web + bot)
-   - **Всего ~17 контейнеров**, ~3-4 мин boot на CI runner
-
-2. **Тестовые JWT keys.** Два варианта:
-   - **A. Generate в job step** (чище): `openssl genrsa -out test.key 2048 && openssl rsa -in test.key -pubout -out test.pub`. Сложнее: пробросить в правильный path внутри auth-service container.
-   - **B. Commit fixture** (быстрее): `tests/e2e/keys/{private,public}.key` помеченные `# CI-ONLY — DO NOT USE IN PROD`. Gitignored ANY `*.pem`/`*.key` сейчас не пускает `tests/e2e/keys/*.key` — добавить exception в `.gitignore`.
-   - **Рекомендуемый: B** (упрощает debugging, single source of truth).
-
-3. **Тестовые секреты** в `tests/e2e/.env.ci` — committed:
-   ```
-   POSTGRES_ACADEMIC_PASSWORD=ci-test-only
-   POSTGRES_SCHEDULE_PASSWORD=ci-test-only
-   MONGO_ROOT_PASS=ci-test-only
-   REDIS_PASSWORD=ci-test-only
-   RABBITMQ_USER=test
-   RABBITMQ_PASSWORD=ci-test-only
-   GRPC_SECRET=ci-test-grpc-secret
-   JWT_PUBLIC_KEY_PATH=/keys/public.key
-   JWT_PRIVATE_KEY_PATH=/keys/private.key
-   ...
-   ```
-
-4. **Bitnami MongoDB replica set init** — критичная неизвестная.
-   Bitnami's mongo standalone work, replica set требует `rs.initiate()`.
-   В M13 G7 (production) это делается через `docker exec` после
-   container up. В CI:
-   - Вариант 1: `MONGODB_REPLICA_SET_MODE=primary` + `MONGODB_REPLICA_SET_NAME=rs0` env vars (Bitnami auto-init)
-   - Вариант 2: post-up step `docker exec rct-mongo-attendance mongosh --eval 'rs.initiate()'`
-   - Проверить **локально** перед push.
-
-5. **Обновить `.github/workflows/ci.yml` e2e-auth job:**
-   ```yaml
-   - name: Boot full stack (e2e compose)
-     run: |
-       cp tests/e2e/.env.ci .env
-       docker compose -f docker-compose.e2e.yml up -d --build
-       # increase poll timeout to 6 min for full prod-like stack
-   ```
-
-6. **Локальная проверка** перед push:
-   ```bash
-   cp tests/e2e/.env.ci .env
-   docker compose -f docker-compose.e2e.yml up -d --build
-   # ждать ~3-5 мин для healthy
-   docker compose -f docker-compose.e2e.yml ps
-   cd tests/e2e && npx playwright test --grep @smoke --project=chromium
-   docker compose -f docker-compose.e2e.yml down -v
-   ```
-
-7. **Коммит:**
-   ```
-   test(e2e): docker-compose.e2e.yml + test JWT keys + CI integration (M13 G25.3)
-   ```
-
-### G25.4 — финализация _(15 мин)_
-
-```bash
-# CHANGELOG.md — секция G25 в [Unreleased]
-# docs/e2e-testing.md — раздел "CI compose: docker-compose.e2e.yml"
-git add CHANGELOG.md docs/e2e-testing.md
-git commit -m "docs(m13): finalize G25 — CHANGELOG + e2e-testing.md (M13 G25.4)"
-git tag -a v0.0.0-alpha.15 -m "M13 G25 ✅ — CI green: ruff + watchdog + e2e compose"
-git push origin dev
+git fetch origin
+git checkout dev
+git pull origin dev
+git tag -a v0.0.0-alpha.15 -m "M13 G25 ✅ — CI green: ruff + watchdog + e2e compose + Docker shared modules + git fallback"
 git push origin v0.0.0-alpha.15
 ```
 
-## После G25 ✅: возвращаемся к ОРИГИНАЛЬНОМУ плану
+Затем переходим к Шагу 3 оригинального плана (VPS dry-run).
 
-3. **Шаг 3 — Live VPS dry-run** по `docs/prod-deploy-checklist.md`
-   (owner-driven). Зафиксировать findings в M13 NOTES.md G23 секции.
-4. **Шаг 4 — Tag `v0.0.0` GA** после успешного dry-run + любые
-   follow-up patches. Bump version в root `build.gradle.kts` +
-   `frontends/*/package.json` на `0.0.0`. Push tag.
+**Сценарий B: e2e-auth fail с новой ошибкой**
 
-## Старт новой сессии — дословно
+Анализ — что упало:
 
-> Читаю в порядке:
->
-> 1. `docs/milestones/NEXT-SESSION.md` — этот файл
-> 2. `docs/milestones/M13-pre-deploy-hardening/CHECKLIST.md` —
->    Группа 25 секция
-> 3. `docs/milestones/M13-pre-deploy-hardening/NOTES.md` —
->    Группа 25 секция (3 surprises + 4 unknowns)
-> 4. `docker-compose.yml` (dev — 12 containers) +
->    `docker-compose.prod.yml` (prod-full — все services + observability)
-> 5. `services/notification-service/notification-app/Dockerfile` —
->    понять multi-stage COPY contract
-> 6. `.github/workflows/ci.yml` lines 232-317 — current e2e-auth job
-> 7. `tests/e2e/auth-token-lifecycle.spec.ts` — что собственно
->    тестируется
->
-> Спрашиваю владельца: **starting G25.1?** (быстрый ruff коммит).
-> Потом G25.2 (mock fix коммит). Потом G25.3 (основная работа).
+1. **Если compile error** в каком-то новом сервисе (academic/schedule/
+   attendance/notification/auth) — посмотри какой transitive dep
+   missing. G25.5 покрыл shared modules, но возможно есть ещё какой-то
+   COPY missing (например `proto/` для notification-app — проверь).
 
-## Pending decisions (для new conversation)
+2. **Если runtime error** (контейнер не стартует — Spring Boot fail):
+   - Скачать docker logs из CI artifacts (https://github.com/DITEKmax/rutcampustrack/actions/runs/24933795015 → Artifacts).
+   - Типичные блокеры:
+     - **JWT keys не сгенерены** — auth-service первый стартует, должен записать `/keys/public.key` в named volume `jwt-keys`. Проверь auth-service logs.
+     - **Mongo replica set не init'ится** в эфемерном container — Bitnami `MONGODB_REPLICA_SET_MODE=primary` обычно работает, но requires `start_period: 60s` (уже стоит). Если timeout — увеличить до 90s.
+     - **gRPC fail-fast** — если `GRPC_SECRET` пустой/wrong, academic/schedule/attendance не стартуют. Проверь `tests/e2e/.env.ci`.
+     - **Spring property missing** — какой-то env var из `.env.prod` обязательный, но не положили в `.env.ci`. Compare `.env.ci` ↔ `.env.prod.example`.
 
-1. **JWT key strategy** — A (generate in CI) или B (commit fixture).
-   Рекомендация: B.
-2. **Bitnami Mongo init** — env-based (вариант 1) или post-up `docker exec`
-   (вариант 2). Локально протестировать оба перед commit.
-3. **e2e compose: override prod либо самостоятельный?** — рекомендация:
-   самостоятельный `docker-compose.e2e.yml` без observability stack
-   (proще debug, быстрее boot, меньше container'ов).
+3. **Если Playwright fail** (компоуз green, тесты не проходят):
+   - **T1 cookie test**: `Secure` flag требует HTTPS — мы это решили self-signed. Проверь что Playwright `ignoreHTTPSErrors: true` работает (config line 40).
+   - **T2 admin redirect**: требует seed users (`admin`/`admin_test_pass` в `V2__seed_test_data.sql`). Если миграция не применилась — fail.
+   - **T5 STOMP reconnect**: нужен notification-web + работающий WebSocket через nginx. nginx config `/api/ws/` уже proxy_pass.
+
+4. **Если timeout 30 min** — стек слишком долго билдится. Возможно нужно
+   добавить registry cache для Docker layers (`docker/build-push-action`
+   с `cache-from: type=gha`).
+
+### Шаг 3 — fix cycle (G25.7+)
+
+Каждый fix = новый commit `(M13 G25.N)`, push, наблюдение CI. Tag
+только когда **всё зелёное**.
+
+### Шаг 4 — после CI зелёный → tag → продолжить оригинальный план
+
+После `v0.0.0-alpha.15` ✅:
+- **Шаг 3 (оригинальный)**: Live VPS dry-run по `docs/prod-deploy-checklist.md`
+  (owner-driven). Findings → M13 NOTES.md G23 секция.
+- **Шаг 4 (оригинальный)**: Tag `v0.0.0` GA + bump version в root
+  `build.gradle.kts` + `frontends/*/package.json` на `0.0.0`. Push tag.
+
+## Контекст недавно решённых блокеров
+
+### G25.5 — shared modules COPY (compile fail)
+
+**Проблема**: api-gateway compile упал в Docker:
+```
+error: package ru.rutcampustrack.shared.observability does not exist
+```
+6 backend Dockerfile'ов копировали только свой api-contract+app, но
+не shared modules. Активировалось только в G25.3 — раньше backend
+сервисы никогда не build'ились через Docker в CI.
+
+**Fix**: одна строка `COPY services/shared services/shared` в каждом
+из 6 Dockerfile'ов.
+
+### G25.6 — generateGitProperties IOException (runtime fail на gradle)
+
+**Проблема**: `ProcessBuilder("git").start()` выбрасывает IOException
+в Docker (нет git binary, `.git/` исключён через `.dockerignore`).
+`gitOutput()` имел fallback `"unknown"` для exit!=0, но IOException
+происходит ДО `proc.exitValue()`.
+
+**Fix**: try/catch IOException в `build.gradle.kts:300-308`. git.properties
+генерируется с `"unknown"` значениями для Docker builds.
 
 ## Local state на момент hand-off
 
-Локально применены **uncommitted** изменения:
-
 ```
-services/notification-bot/bot/__main__.py                          (ruff format)
-services/notification-bot/bot/config.py                            (ruff format)
-services/notification-bot/bot/notifications/alert_fired.py         (ruff format)
-services/notification-bot/bot/notifications/otp_requested.py       (ruff format)
-services/notification-bot/bot/services/idempotency_guard.py        (ruff format)
-services/notification-bot/tests/test_alert_fired.py                (ruff format)
-services/notification-bot/tests/test_callback_excuse.py            (ruff format)
-services/notification-bot/tests/test_callback_late_checkin.py      (ruff format)
-services/notification-bot/tests/test_callback_prefs.py             (ruff format)
-services/notification-bot/tests/test_consumer_watchdog.py          (4 mock signatures)
+Working tree: clean
+Branch: dev (synced with origin)
+Last commit: ed40d36 fix(build): generateGitProperties не падает при отсутствии git binary (M13 G25.6)
 ```
 
-Проверить через `git diff --stat` перед коммитом G25.1.
+Никаких uncommitted изменений. CI ожидает результата на `ed40d36`.
 
----
+## Pending decisions для new conversation
+
+1. **Если CI #131 зелёный** — какие smoke specs прошли? Если `auth-token-lifecycle` все 5 T1-T5 прошли — отлично. Если `auth.spec.ts` (старый smoke) тоже зелёный — двойная гарантия.
+
+2. **Если CI #131 красный с runtime error** — нужно ли локальный smoke prep'ить полный stack (15+ мин cold build), или сразу анализ docker logs из CI artifacts?
 
 ## История milestone'ов (архив)
 
 M01-M08 ✅ (см. git tags `v0.0.0-alpha.1..alpha.9`).
-M09 Prod Release Blockers ✅ 2026-04-24 (`v0.0.0-alpha.10`).
-M10 Notification History ✅ 2026-04-24 (`v0.0.0-alpha.11`).
-M11 OpenAPI Polish ✅ 2026-04-24 (`v0.0.0-alpha.12`).
-M12 Auth Contract-first Refactor ✅ 2026-04-24 (`v0.0.0-alpha.13`).
+M09-M12 ✅ 2026-04-24 (`alpha.10..alpha.13`).
 M13 Pre-Deploy Hardening ✅ 2026-04-25 (`v0.0.0-alpha.14`)
-**→ re-open Группа 25** (CI hot-fixes + e2e infra) → `v0.0.0-alpha.15`.
+**→ re-open Группа 25** (CI hot-fixes + e2e infra) → ожидает `v0.0.0-alpha.15`.
+
+G25 sub-progress:
+- G25.1 ✅ ruff format
+- G25.2 ✅ watchdog mock fix
+- G25.3 ✅ docker-compose.e2e.yml created
+- G25.4 ✅ CHANGELOG + docs
+- G25.5 ✅ Dockerfile shared modules COPY
+- G25.6 ✅ generateGitProperties IOException fix
+- 🟡 CI #131 (`ed40d36`) — нужно проверить в этой сессии
 
 Debt report (источник scope M13) — `docs/report-before-v0.0.0/v0.0.0-debt.md`.
 Dependency graph и полный roadmap — `docs/milestones/README.md`.

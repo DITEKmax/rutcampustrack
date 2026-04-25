@@ -1570,3 +1570,155 @@ estimate. После dry-run findings — могут понадобиться 1-
 > _- [TBD] command X fail'ил с error Y → fix Z_
 > _- [TBD] step N оказался unclear → переписан в..._
 > _- [TBD] missing prereq A → добавлен в §1.X_
+
+---
+
+## Группа 25 — CI hot-fixes + e2e-auth infrastructure (re-open 2026-04-25)
+
+### Контекст re-open
+
+После закрытия M13 G24 + tag `v0.0.0-alpha.14` владелец инициировал
+push в `origin/dev` (commit `3db123b`, +99 commits ahead). CI прогон
+обнаружил **3 проблемы**, которые M13 G24 final verification не
+поймал, потому что:
+
+1. **G24 verification бежал `gradle clean build + integrationTest`** — это
+   Java стек. Python-тесты notification-bot бегут отдельным `pytest`
+   и не входят в Gradle aggregation → ruff format + flaky watchdog
+   тест не отлавливались.
+2. **CI e2e-auth job ни разу не запускался успешно** в M13 G22 —
+   commit добавил job в `ci.yml` без локальной проверки, что dev
+   `docker-compose.yml` содержит backend сервисы. Это типичный
+   "writer's block" — спецификация работает, инфра не валидировалась.
+
+**Решение:** вместо открытия M14 — re-open M13 как Группа 25. M13
+domain — pre-deploy hardening, а CI green = pre-deploy hardening
+по определению. Tag `v0.0.0-alpha.14` остаётся валидным (на M13 G24
+final verification commit `c9861f7`); G25 → новый tag `v0.0.0-alpha.15`.
+
+### G25 surprise 1 — ruff format never enforced before push
+
+В M13 не было локального ruff prе-commit hook'а. Code был отформатирован
+**outside ruff** (IDE auto-format с другим стилем). 9 файлов: 5 production +
+4 test. CI это первый раз бежит ruff на фактический notification-bot код
+→ 9 reformat warnings.
+
+Fix: один `ruff format .` локально. Files affected:
+
+- `bot/__main__.py` (production entry point)
+- `bot/config.py` (Pydantic BaseSettings)
+- `bot/notifications/alert_fired.py`, `bot/notifications/otp_requested.py`
+- `bot/services/idempotency_guard.py` (M13 G8 + G24-fix-1 затронуто)
+- `tests/test_alert_fired.py`, `tests/test_callback_excuse.py`,
+  `tests/test_callback_late_checkin.py`, `tests/test_callback_prefs.py`
+
+**Lesson:** добавить ruff в pre-commit (либо `.pre-commit-config.yaml`
+hook на notification-bot path) — TODO в v0.1.
+
+### G25 surprise 2 — test_consumer_watchdog flap = детерминированный fail
+
+CI repository: `services/notification-bot/tests/test_consumer_watchdog.py`
+тест `test_watchdog_restarts_on_consumer_failure` упал с timeout 10s.
+На первый взгляд — flaky (timing-зависимый watchdog). По факту —
+**регресс M13 G8**.
+
+**Root cause:**
+- `bot/__main__.py:65` (M13 G8): `start_consumer(rabbitmq_url, dispatcher=dispatcher, idempotency_guard=idempotency_guard)`
+- Тест mock'ает `start_consumer` через `patch(side_effect=mock_start_consumer)` где `mock_start_consumer(url: str, dispatcher=None)` — без `idempotency_guard` параметра
+- Real call: `mock_start_consumer(url, dispatcher=X, idempotency_guard=Y)` → `TypeError: unexpected keyword argument 'idempotency_guard'`
+- TypeError ловится `except Exception:` в `run_with_watchdog` → watchdog рестартует через 5s
+- Второй вызов снова получает тот же TypeError → бесконечный flap
+- `second_call_event.set()` (line 30) **никогда не достигается** → `await asyncio.wait_for(..., timeout=10)` → fail
+
+**Fix:** одна строка — добавить `idempotency_guard=None` в signature
+4 mock'ов в `test_consumer_watchdog.py` (lines 24, 49, 61, 85).
+
+**Why missed in G8 + G24:** unit тесты прогонялись через
+`pytest tests/` в notification-bot, но G24-fix-6 fixed только
+EventConsumerTest infrastructure (Java + Python). watchdog test
+смотрелся в стек "M08 baseline тестов" — не в стек "G8 модификации".
+PreToolUse hook не существовал.
+
+**Lesson:** при добавлении нового параметра в production API —
+grep всех `mock` / `side_effect` для этого symbol'а. M13 не имел
+такого contract test'а — TODO в v0.1.
+
+### G25 surprise 3 — dev docker-compose ≠ полный stack
+
+**Дизайн dev `docker-compose.yml`** (с момента инициализации проекта):
+12 контейнеров — 6 инфра (postgres × 2, mongo, redis, rabbitmq, tempo)
++ 1 alertmanager + 1 notification-web + 1 notification-bot + 4 nginx
+(pwa, mini-app, web-panel, landing). **Backend Java сервисы
+отсутствуют** — auth/academic/schedule/attendance/gateway запускаются
+через `gradle bootRun` локально (M07 G3 workflow,
+`docker-compose.override.yml` exposes ports на host).
+
+**M13 G22 commit `d340755`** (Playwright auth lifecycle E2E + CI
+e2e-auth job) **не учитывал** этот дизайн: добавлен job
+`docker compose up -d --build` без compose селектора. CI bizly
+использует **dev** compose который не содержит auth-service →
+e2e тесты будут получать 502 от nginx.
+
+**Дополнительно:** Dockerfile `services/notification-service/notification-app/Dockerfile`
+multi-stage build с `COPY gradlew .`, `COPY settings.gradle.kts .`,
+`COPY services/notification-service/notification-app/src ...` —
+ожидает **build context = root репо**. Dev compose даёт ему
+`context: ./services/notification-service/notification-app/` →
+build fail на первом `COPY gradlew` (gradlew не в notification-app/).
+
+**`docker-compose.prod.yml`** правильный (`context: .`), но
+требует 30+ env переменных из `.env.prod` (production secrets,
+JWT keys в `keys/`, GPG passphrase, etc.) — не подходит для
+эфемерного CI runner.
+
+**G25.3 решение (план):**
+
+Вариант **B** (правильный): создать `docker-compose.e2e.yml` —
+override на prod с тестовыми секретами + JWT keys generated в
+job step. Преимущества:
+- prod-like e2e (тот же Dockerfile, тот же multi-stage build)
+- ловит регрессии в build stage (как сейчас)
+- каждый push автоматически валидирует auth lifecycle в браузере
+
+Альтернатива **C** (быстрая): disable e2e-auth job в `ci.yml`
+(`if: false`), VPS dry-run = первая и единственная точка проверки.
+
+**Выбран B** (owner decision 2026-04-25 в чате после CI fail
+показал все 3 проблемы). Trade-off: +2-4 часа работы сейчас,
+но избавляемся от костыля и автоматическая валидация на каждый
+push — это окупится сразу после первого регресса в auth.
+
+### G25 — критичные неизвестные перед стартом
+
+1. **Bitnami MongoDB replica set init в эфемерном container** —
+   `bitnamilegacy/mongodb:7.0` нужна `rs.initiate()` после первого
+   start. M13 G7 это решил в prod через `docker exec` после container
+   up. В CI runner: либо init script в Dockerfile (override
+   bitnami's entrypoint), либо `wait + docker exec` в job step.
+   Risk: первый прогон может тормозить на 30-60s.
+
+2. **Healthcheck poll 4 min из M13 G22** — может быть мало для
+   полного prod stack (5 backend services + 2 nginx + Mongo replica
+   set init). Real prod boot: ~90s. CI cold runner: до 3 min только
+   на pull images. Возможно увеличение до 6 min либо использование
+   `--wait` flag.
+
+3. **JWT key generation strategy** — `openssl genrsa` в job step (no
+   commit) либо test fixture pair `tests/e2e/keys/` (committed,
+   marked DO NOT USE IN PROD). Первое — чище, второе — быстрее.
+   Решение в G25.3 step "JWT keys".
+
+4. **GHCR auth для prod images** — `docker-compose.prod.yml`
+   ссылается на `ghcr.io/ditekmax/rutcampustrack/...`. Если
+   `IMAGE_TAG=latest` ещё не push'ен, build будет local. Возможно
+   нужен fallback: если ghcr-image отсутствует → build from
+   source. Проверить как `docker compose build` обрабатывает
+   `image:` + `build:` оба поля.
+
+### G25 progress log
+
+> _В реальном времени дополняется при выполнении:_
+> _- [TBD] G25.1 ruff fix — applied locally, тесты_
+> _- [TBD] G25.2 watchdog mock fix — applied, pytest зелёный_
+> _- [TBD] G25.3 e2e infra — какой Bitnami init pattern выбран, JWT keys где_
+> _- [TBD] G25.4 финализация — alpha.15 tag commit_

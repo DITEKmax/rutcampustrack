@@ -229,6 +229,62 @@
 - [ ] Обновить `docs/milestones/README.md` — M13 row
 - [ ] Обновить `CHANGELOG.md` [Unreleased] → [0.0.0]
 
+## Группа 25 — CI hot-fixes + e2e-auth job infrastructure (re-open)
+
+**Контекст:** После push в `dev` (commit `3db123b`, 2026-04-25) CI обнаружил
+3 проблемы. Решено re-open M13 в виде Группы 25, чтобы закрыть все ДО
+VPS dry-run и tag `v0.0.0`. Tag `v0.0.0-alpha.14` остаётся валидным —
+G25 → новый tag `v0.0.0-alpha.15`.
+
+### G25.1 — ruff format hot-fix (notification-bot)
+
+- [ ] Прогнать `ruff format .` в `services/notification-bot/` (9 файлов локально)
+- [ ] Локально: `ruff format --check .` + `ruff check .` — оба зелёные
+- [ ] Коммит: `style(notification-bot): ruff format compliance (M13 G25.1)`
+
+_Файлы (по CI логу): `bot/__main__.py`, `bot/config.py`, `bot/notifications/alert_fired.py`, `bot/notifications/otp_requested.py`, `bot/services/idempotency_guard.py`, `tests/test_alert_fired.py`, `tests/test_callback_excuse.py`, `tests/test_callback_late_checkin.py`, `tests/test_callback_prefs.py`._
+
+### G25.2 — test_consumer_watchdog mock signature fix
+
+- [ ] В `tests/test_consumer_watchdog.py`: 4 mock'а `mock_start_consumer(url, dispatcher=None)` → добавить `idempotency_guard=None`
+- [ ] Локально `pytest tests/test_consumer_watchdog.py -v` — 6 PASS
+- [ ] Коммит: `test(notification-bot): mock_start_consumer signature update for M13 G8 (M13 G25.2)`
+
+_Регресс M13 G8: `__main__.py:65` вызывает `start_consumer(url, dispatcher=..., idempotency_guard=...)`, mock получал TypeError → watchdog flap → 10s timeout → fail. Тест `test_watchdog_restarts_on_consumer_failure` падал детерминированно, не flaky._
+
+### G25.3 — docker-compose.e2e.yml infrastructure
+
+**Корневая проблема:** dev `docker-compose.yml` содержит только инфра + 2
+notification контейнера. Backend сервисы (auth/academic/schedule/attendance/gateway)
+запускаются через `gradle bootRun` локально и **отсутствуют в compose**.
+G22 commit добавил CI e2e-auth job, который пытается `docker compose up`,
+но Dockerfile notification-web ожидает **build context = root репо** (multi-stage
+COPY `gradlew`, `settings.gradle.kts`, `services/notification-service/...`),
+а dev compose даёт ему context `./services/notification-service/notification-app/` →
+build fail на `"/services/notification-service/notification-app/src": not found`.
+
+`docker-compose.prod.yml` имеет правильный context: `.` для всех сервисов,
+но требует 30+ env-переменных из `.env.prod` (production secrets).
+
+- [ ] Создать `docker-compose.e2e.yml` — override на `prod` с тестовыми секретами либо самостоятельный compose с минимальной инфрой + 5 backend сервисов + 4 nginx + 2 notification
+- [ ] Создать `tests/e2e/.env.ci` — тестовые секреты (gitignore либо commit с явной маркой `[FOR CI ONLY — NOT PROD]`)
+- [ ] JWT keys: либо генерация в job step `openssl genrsa` либо commit'нутый test fixture pair в `tests/e2e/keys/`
+- [ ] Решить fate Bitnami MongoDB digest для CI (replica set init на ephemeral container) — best-effort `mongod --replSet rs0` с автоинициализацией
+- [ ] Обновить `.github/workflows/ci.yml` e2e-auth job: `docker compose -f docker-compose.e2e.yml up -d --build` + правильный path для healthcheck poll
+- [ ] Локально проверить compose поднимается чисто (Windows Docker Desktop): `docker compose -f docker-compose.e2e.yml up -d` → все healthy в 4 мин
+- [ ] Локально прогнать Playwright: `cd tests/e2e && npx playwright test --grep @smoke --project=chromium` → 5 specs зелёные
+- [ ] Push, дождаться CI e2e-auth → зелёный
+- [ ] Коммит: `test(e2e): docker-compose.e2e.yml + test JWT keys + CI integration (M13 G25.3)`
+
+### G25.4 — финализация G25
+
+- [ ] Обновить `CHANGELOG.md` — секция G25 в [Unreleased]
+- [ ] Обновить `docs/e2e-testing.md` — раздел про CI compose
+- [ ] Tag `v0.0.0-alpha.15` на финальном коммите G25.4
+- [ ] Push tag
+
+**После G25 ✅:** возвращаемся к Шагу 3 (VPS dry-run по `prod-deploy-checklist.md`).
+
 ---
 
 _Если задача превращается в 6+ часов работы — разрежь её. Если группа

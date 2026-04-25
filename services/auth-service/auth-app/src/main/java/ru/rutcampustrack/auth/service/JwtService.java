@@ -165,25 +165,42 @@ public class JwtService {
     }
 
     /**
-     * M13 G25.13 — non-blocking SecureRandom для RSA generation.
+     * M13 G25.14 — explicit /dev/urandom seed + SHA1PRNG software CSPRNG.
      *
-     * <p>Корневая причина hang'а на CI: KeyPairGenerator с default-SecureRandom
-     * на JDK 21 alpine иногда упирается в /dev/random и игнорирует
-     * `-Djava.security.egd=file:/dev/./urandom` (флаг читается не всеми
-     * provider'ами). На холодном GitHub Actions runner entropy pool пустой
-     * → init-process висит несколько минут.
+     * <p>Корневая причина hang'а на CI: на alpine musl JDK 21 ВСЕ native-PRNG
+     * provider'ы (NativePRNG, NativePRNGNonBlocking — G25.13 не помог; DRBG
+     * тоже instantiate'ится через default SecureRandom seed) под капотом
+     * читают /dev/random при init/reseed, игнорируя
+     * `-Djava.security.egd=file:/dev/./urandom`. На холодном GitHub Actions
+     * Azure runner entropy pool пустой → блок на минуты.
      *
-     * <p>NativePRNGNonBlocking явно использует /dev/urandom (Linux) и не блокирует.
-     * На Windows алгоритм отсутствует — fallback на default SecureRandom (там
-     * проблемы с blocking entropy нет, dev-машинам достаточно).
+     * <p>Bullet-proof решение: читаем 32 байта напрямую из /dev/urandom
+     * (Linux gurantee: urandom NEVER blocks, в отличие от /dev/random) и
+     * seedим SHA1PRNG — software-only CSPRNG, никаких дальнейших I/O reads.
+     * Криптостойкость 256-bit seed equivalent default SecureRandom.
+     *
+     * <p>На Windows /dev/urandom отсутствует — fallback на default SecureRandom
+     * (Windows CSPRNG через Crypto API non-blocking).
      */
     private static SecureRandom nonBlockingSecureRandom() {
-        try {
-            return SecureRandom.getInstance("NativePRNGNonBlocking");
-        } catch (NoSuchAlgorithmException e) {
-            log.debug("NativePRNGNonBlocking unavailable (likely non-Linux), falling back to default SecureRandom");
-            return new SecureRandom();
+        Path urandom = Paths.get("/dev/urandom");
+        if (Files.exists(urandom)) {
+            try {
+                byte[] seed = new byte[32];
+                try (var is = Files.newInputStream(urandom)) {
+                    int read = is.read(seed);
+                    if (read != seed.length) {
+                        throw new IOException("Short read from /dev/urandom: " + read);
+                    }
+                }
+                SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+                random.setSeed(seed);
+                return random;
+            } catch (IOException | NoSuchAlgorithmException e) {
+                log.warn("Failed to seed SHA1PRNG from /dev/urandom, falling back to default SecureRandom", e);
+            }
         }
+        return new SecureRandom();
     }
 
     private void writeKeyToFile(Key key, Path path, String type) throws IOException {

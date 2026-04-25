@@ -40,6 +40,13 @@ COPY --from=extractor /app/spring-boot-loader/ ./
 COPY --from=extractor /app/snapshot-dependencies/ ./
 COPY --from=extractor /app/application/ ./
 
+# M13 G25.9 — pre-create /keys с owner=app до volume mount.
+# Docker при первом mount пустого named volume на существующий каталог
+# в image копирует ownership/mode каталога в volume. Без этого
+# JwtService.writeKeyToFile падает AccessDeniedException на чистом VPS
+# (root:root mount, USER app не имеет write).
+RUN mkdir -p /keys && chown app:app /keys
+
 USER app
 EXPOSE 9090
 

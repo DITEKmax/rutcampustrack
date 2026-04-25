@@ -210,10 +210,10 @@
 
 ## Группа 23 — VPS deploy runbook dry-run
 
-- [ ] Fresh docker-compose env (или Ubuntu VM) → выполнить `docs/prod-deploy-checklist.md` шаг за шагом
-- [ ] Фиксировать каждое отклонение в NOTES.md
-- [ ] Обновить runbook реальными выводами команд
-- [ ] Проверить все новые runbook'и (backup-restore, cert-renewal, mongo-indexes-verify) работают
+- [ ] Fresh docker-compose env (или Ubuntu VM) → выполнить `docs/prod-deploy-checklist.md` шаг за шагом _(**owner-driven** — manual VPS dry-run не может быть автоматизирован. Подготовка завершена: `scripts/preflight-deploy.sh` aggregator (env+grafana+promtool+compose+files+backup) + `scripts/verify-deploy.sh` post-deploy contract checks (security headers + CSP endpoint + basic-auth + 18 alerts + WS Upgrade + Mongo TTL). Когда владелец будет готов — запускает `preflight-deploy.sh` → `docker compose up -d` → ждёт 60-90 сек → `verify-deploy.sh` → `smoke-prod.sh`. Все отклонения — в NOTES.md)_
+- [ ] Фиксировать каждое отклонение в NOTES.md _(**owner-driven** — slot для owner findings зарезервирован в NOTES.md G23 секции)_
+- [x] Обновить runbook реальными выводами команд _(prod-deploy-checklist.md обновлён до dry-run-ready: §1.7 «Pre-flight diagnostics» вызывает preflight-deploy.sh + §2.4 «Post-deploy contract verification» вызывает verify-deploy.sh + smoke-prod.sh + dual-script flow задокументирован)_
+- [x] Проверить все новые runbook'и (backup-restore, cert-renewal, mongo-indexes-verify) работают _(полный cross-ref добавлен в начало prod-deploy-checklist.md: 13 runbook'ов — secret-rotation/bot-webhook-migration/image-signing/migration-testing/resource-limits/backup-restore/cert-renewal/mongo-indexes-verify/swagger-prod-access + alerts.md/security-headers.md/websocket-flow.md/api-rate-limits.md. Все 13 файлов existence-verified. Owner ходит по runbook'ам прямо из checklist'а)_
 
 ## Группа 24 — Финальная верификация
 

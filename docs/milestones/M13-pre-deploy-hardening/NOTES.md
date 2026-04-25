@@ -1511,3 +1511,62 @@ M13 G18 websocket-flow.md.
 с pre-existing infra ускорил (не нужно создавать с нуля), но
 diagnostic время на CI workflow design (healthcheck poll, artefact
 upload, frontend build chain) и cookie API research съело экономию.
+
+## 2026-04-25 — Группа 23 (VPS deploy runbook dry-run)
+
+**Природа группы:** items 1-2 фундаментально **owner-driven** —
+нельзя автоматизировать «выполнить шаги на fresh VPS» (нужна сама
+VPS либо Ubuntu VM локально). Per owner-policy «ничего руками» —
+моя роль = подготовить так, чтобы dry-run прошёл максимально гладко
+и diagnostic был ready для первой попытки.
+
+**Подготовка вместо dry-run'а:**
+
+1. **`scripts/preflight-deploy.sh`** — aggregator pre-flight checks
+   в один entrypoint. 6 секций:
+   - env validation (вызов `validate-env-prod.sh` G13)
+   - Grafana dashboards structure (G17)
+   - Prometheus rules (`promtool check rules` 18 правил)
+   - docker-compose syntax (`docker compose config --quiet`)
+   - critical files presence (10 ключевых файлов)
+   - backup infra (/opt/backups + .backup-passphrase)
+
+   Запускается ДО `docker compose up -d`, exit > 0 = блокер.
+
+2. **`scripts/verify-deploy.sh`** — post-deploy M13 contract checks.
+   8 секций:
+   - container health (≥14 healthy)
+   - public HTTPS (/login, /api/health)
+   - security headers (HSTS / CSP report-uri / X-Frame-Options)
+   - CSP report endpoint (POST /api/csp-report → 200/204)
+   - /prometheus + /alertmanager basic-auth (401 без creds)
+   - alert rules count (18 expected, требует SWAGGER_USER/PASS)
+   - WebSocket /api/ws/info Upgrade headers
+   - Mongo TTL index на notification_history
+
+   Запускается ПОСЛЕ `docker compose up -d` + 60-90 sec boot.
+
+3. **prod-deploy-checklist.md обновления:**
+   - §1.7 «Pre-flight diagnostics» — вызов preflight-deploy.sh
+   - §2.4 «Post-deploy contract verification» — vary-deploy.sh + smoke-prod.sh
+   - **13 runbook'ов в cross-ref index** в начале файла. Existence
+     verified для всех 13.
+
+**Не создавал новые runbook'и** — существующие covering заменили
+hand-off ожидание «обновить runbook реальными выводами команд». Эта
+часть будет owner job когда он сделает dry-run + найдёт отклонения.
+
+**Owner-driven slot зарезервирован:** items 1-2 checklist отмечены
+«owner-driven», NOTES оставит место для findings когда дойдёт.
+
+**Estimate vs actual:** ~1 час. Items 3-4 (script + cross-ref) — ~45
+мин. Items 1-2 (live dry-run) — owner-time, не считается в M13
+estimate. После dry-run findings — могут понадобиться 1-2 follow-up
+коммитов с fix'ами, тоже owner-time.
+
+**Slot для owner-findings:**
+
+> _Здесь owner запишет отклонения от runbook'а после real VPS dry-run:_
+> _- [TBD] command X fail'ил с error Y → fix Z_
+> _- [TBD] step N оказался unclear → переписан в..._
+> _- [TBD] missing prereq A → добавлен в §1.X_

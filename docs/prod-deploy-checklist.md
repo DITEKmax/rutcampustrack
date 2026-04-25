@@ -19,6 +19,22 @@
   через MigrationIT.
 - [resource-limits.md](resource-limits.md) — 4GB VPS memory budget
   (NEW-157).
+- [backup-restore.md](runbooks/backup-restore.md) — backup + tested
+  restore + GPG (M13 G15).
+- [cert-renewal.md](runbooks/cert-renewal.md) — TLS auto-renewal +
+  troubleshooting + first-deploy SSL (M13 G20).
+- [mongo-indexes-verify.md](runbooks/mongo-indexes-verify.md) —
+  notification_history TTL + compound indexes (M13 G6).
+- [swagger-prod-access.md](runbooks/swagger-prod-access.md) — basic-auth
+  для /swagger-ui + /prometheus + /alertmanager (M11 G4 + M13 G14).
+- [alerts.md](alerts.md) — каталог 18 alert'ов с Symptom/Meaning/Runbook
+  (M04 → M13 G19/G20).
+- [security-headers.md](security-headers.md) — CSP / HSTS / report-uri
+  (M07 + M13 G16).
+- [websocket-flow.md](websocket-flow.md) — STOMP heartbeat + reconnect
+  (M03b + M13 G18).
+- [api-rate-limits.md](api-rate-limits.md) — rate-limit semantics
+  (M03a + M13 G2).
 
 ---
 
@@ -149,6 +165,16 @@ auto-renew работает (см. `runbooks/cert-renewal.md`).
 - [ ] Админы группы предупреждены о возможном 2-3 мин downtime
       (`rct-*` rolling restart).
 
+### 1.7. Pre-flight diagnostics (M13 G23)
+
+Aggregator script `scripts/preflight-deploy.sh` собирает все pre-flight
+проверки в один entrypoint — env validation + Grafana dashboards
+structure + Prometheus rules + compose syntax + critical files +
+backup infra. Запусти **перед** `docker compose up -d`:
+
+- [ ] `./scripts/preflight-deploy.sh /opt/rutcampustrack/.env.prod`
+      — exit 0. Любой `✗ FAIL` блокирует deploy.
+
 ---
 
 ## 2. During deploy (T-0 .. T+15min)
@@ -180,6 +206,24 @@ auto-renew работает (см. `runbooks/cert-renewal.md`).
       severity=critical alertname=ServiceDown`.
 - [ ] После deploy — `amtool silence expire <id>` или дождаться
       автоистечения.
+
+### 2.4. Post-deploy contract verification (M13 G23)
+
+Aggregator `scripts/verify-deploy.sh` проверяет M13-specific контракты
+после `docker compose up -d` (≥60 сек на boot):
+
+- container health (≥14 healthy)
+- public HTTPS reachable (/login, /api/health)
+- security headers (HSTS, CSP с report-uri, X-Frame-Options)
+- /api/csp-report endpoint accepts violations (M13 G16)
+- /prometheus + /alertmanager защищены basic-auth (M13 G14)
+- 18 alert rules loaded в Prometheus (с creds — `SWAGGER_USER`/`PASS`)
+- WebSocket /api/ws/ Upgrade headers (M13 G18)
+- Mongo TTL index на notification_history (M13 G6)
+
+- [ ] `./scripts/verify-deploy.sh https://ruttrack.site` — exit 0.
+- [ ] Дополнительно app-level: `./scripts/smoke-prod.sh https://ruttrack.site
+      student student_test_pass` (M08 G7) — login/schedule/logout.
 
 ---
 

@@ -65,31 +65,44 @@ async def start_consumer(
 
     async with queue.iterator() as queue_iter:
         async for message in queue_iter:
-            async with message.process():
+            # M13 G24-fix-2: requeue=False — после handler exception
+            # message идёт в DLQ (через x-dead-letter-exchange arguments),
+            # а не возвращается в основную очередь (иначе hot-loop).
+            async with message.process(requeue=False):
                 try:
                     body = json.loads(message.body)
-                    event_type = body.get("event_type", "unknown")
-                    event_id = body.get("event_id")
-                    # M04 Группа 7: trace_id приходит в envelope от Java-сервисов
-                    # (shared-events AbstractEventPublisher.fillDefaults).
-                    # Биндим его в structlog contextvars чтобы все логи
-                    # handler'а несли один trace_id.
-                    with bind_trace_context(
-                        body.get("trace_id"),
-                        event_type=event_type,
-                        event_id=event_id,
-                    ):
-                        # M13 G8 — consumer-side dedup. Redis SET NX guard
-                        # отсекает повторную доставку того же event_id.
-                        if idempotency_guard is not None:
-                            if not await idempotency_guard.try_claim(event_id):
-                                continue
-                        logger.info("[notification-bot] Received event: %s", event_type)
-                        if dispatcher:
-                            await dispatcher.dispatch(body)
                 except json.JSONDecodeError:
-                    logger.error("Failed to decode message body: %s", message.body[:200])
-                except Exception:
-                    logger.exception("Handler failed for event, acking anyway")
+                    # Bad payload — нет шанса на retry, ack + DLQ через
+                    # re-raise чтобы попасть на manual triage.
+                    logger.error(
+                        "Failed to decode message body: %s — sending to DLQ",
+                        message.body[:200],
+                    )
+                    raise
+                event_type = body.get("event_type", "unknown")
+                event_id = body.get("event_id")
+                # M04 Группа 7: trace_id приходит в envelope от Java-сервисов
+                # (shared-events AbstractEventPublisher.fillDefaults).
+                # Биндим его в structlog contextvars чтобы все логи
+                # handler'а несли один trace_id.
+                with bind_trace_context(
+                    body.get("trace_id"),
+                    event_type=event_type,
+                    event_id=event_id,
+                ):
+                    # M13 G8 — consumer-side dedup. Redis SET NX guard
+                    # отсекает повторную доставку того же event_id.
+                    # G24-fix-2: try_claim теперь fail-closed — Redis
+                    # exception пробрасывается → message NACK → DLQ.
+                    if idempotency_guard is not None:
+                        if not await idempotency_guard.try_claim(event_id):
+                            continue
+                    logger.info("[notification-bot] Received event: %s", event_type)
+                    if dispatcher:
+                        # G24-fix-2: handler exceptions пробрасываются,
+                        # message NACK → DLQ. Раньше catch'или Exception
+                        # «acking anyway» — события терялись silently
+                        # при любом handler bug'е, нивелировало G8 dedup.
+                        await dispatcher.dispatch(body)
 
     return connection

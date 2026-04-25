@@ -15,7 +15,7 @@ RutCampusTrack — микросервисная система учёта пос
 - **v7.0**: ЗАВЕРШЕНА (Frontends — Mini App, Web Panel, Landing) — фазы 33-40
 - **v8.0**: ЗАВЕРШЕНА (CI/CD, Deployment & Documentation) — фазы 41-48
 - **v9.0**: ЗАВЕРШЕНА (Frontend Unification — Single Login & Role-Based Web Clients) — фазы 49-57 + Phase 58 (BUG-006 Admin Fixes) + Phase 59 (Excuse Tickets Backend) + Phase 60 (Headman Schedule Management)
-- **v0.0.0**: В РАБОТЕ (Pre-release hardening по аудиту) — 12 milestones в `docs/milestones/`, активный — см. `docs/milestones/README.md`
+- **v0.0.0**: ЗАВЕРШЕНА (Pre-release hardening по аудиту) — 13 milestones в `docs/milestones/`, готова к first VPS deploy
 - Полный план v0.0.0: `docs/report-before-v0.0.0/99-executive-summary.md`
 - Исходный аудит: `docs/report-before-v0.0.0/` (16 отчётов, OWNER-ANSWERS.md, COVERAGE-AUDIT.md)
 - Полный план v1.0-v9.0: `.planning/ROADMAP.md`, отчёты: `docs/phase-{N}-report.md`
@@ -37,6 +37,7 @@ RutCampusTrack — микросервисная система учёта пос
 | M10 | Notification History | ✅ Stateful notification-web + MongoDB notification_db (PoLP user) + notification_history TTL 30d + Caffeine unread-count 30s + NotificationApi 4 endpoints + PWA/web-panel hybrid integration — завершён 2026-04-24 |
 | M11 | OpenAPI Polish | ✅ SharedOpenApiCustomizer наполнение + @Schema на DTO (100% coverage) + nginx basic-auth на prod /swagger-ui + OpenAPI↔runtime conformance IT (academic/schedule/attendance/notification) — завершён 2026-04-24 |
 | M12 | Auth Contract-first Refactor | ✅ auth-api-contract + auth-app Gradle split + 12 DTO migration + 4 interfaces (AuthApi/WsTicketApi/InternalIssuerApi/InternalWsTicketApi) + controllers implement + ArchUnit contract test + OpenApiSnapshotIT + @Hidden на internal endpoints — завершён 2026-04-24 |
+| M13 | Pre-Deploy Hardening | ✅ 24 групп — flaky tests + rate-limit semantics + pageable cap + /auth/refresh-body removal + InvalidParam migration + Mongo TTL/RS/@Transactional + consumer dedup (PG+Mongo+bot Redis) + 12 IDOR fixes + Actuator tracing exclude + mem_limit 26 containers + healthcheck IT + .env.prod validator + Prometheus/Alertmanager basic-auth + backup/restore GPG + CSP report endpoint + Grafana dashboards + STOMP heartbeat 10s/10s + 18 alerts catalog + blackbox-exporter SSL alerts + Flyway CONCURRENTLY guard + Playwright auth lifecycle E2E + preflight/verify-deploy scripts + B1-B5 + H2-H5 fixes — завершён 2026-04-25 |
 
 Начало и порядок выполнения: `docs/milestones/README.md`. Workflow
 описан там же — per milestone ведётся PLAN + CHECKLIST + NOTES + DECISIONS.

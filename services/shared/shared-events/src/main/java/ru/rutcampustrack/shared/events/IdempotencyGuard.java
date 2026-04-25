@@ -21,11 +21,14 @@ import java.util.UUID;
  * }
  * }</pre>
  *
- * <p>Поведение при отсутствии {@code event_id} в envelope: helper
- * пропускает событие (return {@code true}) с warn-логом — это
- * совместимость с pre-M13 publisher'ами, которые могли не заполнять
- * {@code event_id}. После M13 G8 все наши publisher'ы заполняют через
- * {@link AbstractEventPublisher#fillDefaults}.
+ * <p>Поведение при отсутствии {@code event_id} в envelope (M13 G24-fix-6):
+ * helper пробрасывает {@link IllegalStateException} с ERROR-логом
+ * (fail-closed). После M13 G8 все наши publisher'ы заполняют event_id
+ * через {@link AbstractEventPublisher#fillDefaults} — событие без id =
+ * либо bug в новом publisher'е, либо forged message. Раньше (до G24-fix-6)
+ * fail-open возвращал true → security-auditor отметил это как H3:
+ * compromise broker creds + drop event_id = bypass replay-защиты. Теперь
+ * @Transactional handler rollback → DLQ → manual triage.
  *
  * <p>Helper потокобезопасен — не хранит state, всё в {@link IdempotencyStore}.
  */
@@ -43,19 +46,25 @@ public class IdempotencyGuard {
      * Пытается claim'ить событие из envelope. Возвращает {@code true}
      * если consumer должен обработать, {@code false} если duplicate.
      *
-     * <p>Если в envelope нет {@code event_id} — пропускаем (true) с
-     * warn-логом.
+     * <p>Если в envelope нет валидного {@code event_id} — кидает
+     * {@link IllegalStateException} (M13 G24-fix-6 fail-closed). Caller
+     * через @Transactional handler делает rollback, message идёт в DLQ.
      *
      * @param consumerId логический id consumer'а
      * @param envelope   сырой envelope (Map из Jackson после @RabbitListener)
+     * @throws IllegalStateException если event_id отсутствует или malformed
      */
     public boolean tryClaim(String consumerId, Map<String, Object> envelope) {
         UUID eventId = extractEventId(envelope);
         if (eventId == null) {
             String eventType = envelope == null ? null : (String) envelope.get("event_type");
-            log.warn("Idempotency: event without event_id, processing without dedup (consumer={}, event_type={})",
+            log.error("Idempotency: rejecting event без event_id (fail-closed) — "
+                            + "consumer={}, event_type={}. После M13 G8 все publisher'ы "
+                            + "обязаны заполнять event_id (AbstractEventPublisher.fillDefaults).",
                     consumerId, eventType);
-            return true;
+            throw new IllegalStateException(
+                    "Event без event_id rejected (fail-closed, M13 G24-fix-6): "
+                            + "consumer=" + consumerId + ", event_type=" + eventType);
         }
         boolean claimed = store.tryClaim(consumerId, eventId);
         if (!claimed) {

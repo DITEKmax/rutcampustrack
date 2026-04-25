@@ -45,12 +45,12 @@ services:
       retries: 5
 
   mongo-attendance:
-    # M13 G7 (Option B) — bitnami/mongodb:7 для declarative replica set
-    # setup (MongoTransactionManager в attendance-app + notification-web
-    # требует RS для multi-doc transactions). Image managed by VMware
-    # Tanzu (ex-Bitnami), production-grade, compatible с `mongo:7` data
-    # format (rollback: revert image + MONGO_INITDB_* env; см. NOTES.md).
-    image: bitnami/mongodb:7.0
+    # M13 G7 (Option B) — bitnami mongodb для declarative replica set
+    # setup. M13 G24-fix-3: bitnami/ → bitnamilegacy/ (Bitnami в Aug 2025
+    # убрали versioned tags). Dev compose без digest-pin'а (acceptable
+    # для local dev, prod compose pinned). TODO v0.1: возможный switch
+    # на mongo:7-jammy + custom rs.initiate entrypoint script.
+    image: bitnamilegacy/mongodb:7.0
     container_name: rct-mongo-attendance
     environment:
       # Replica set bootstrap — single-node rs0 (primary + 0 secondaries).

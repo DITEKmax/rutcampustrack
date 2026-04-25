@@ -178,6 +178,16 @@ if [ "${#mongo_key}" -lt 1000 ] || [ "${#mongo_key}" -gt 1030 ]; then
     err "MONGODB_REPLICA_SET_KEY length ${#mongo_key} != ~1024 (expected 756 raw bytes base64). Generate: openssl rand -base64 756 | tr -d '\\n'"
 fi
 
+# M13 G24-fix-4: explicit guard против dev-placeholder из docker-compose.yml.
+# Dev compose имеет fallback `rct_dev_replica_set_key_must_be_replaced_in_prod_environment_security`
+# на случай если MONGODB_REPLICA_SET_KEY не выставлен. Если оператор
+# скопирует dev .env → .env.prod без замены, length check (69 chars)
+# тоже ловит — но явный value-check даёт actionable сообщение.
+DEV_PLACEHOLDER="rct_dev_replica_set_key_must_be_replaced_in_prod_environment_security"
+if [ "$mongo_key" = "$DEV_PLACEHOLDER" ]; then
+    err "MONGODB_REPLICA_SET_KEY = dev placeholder из docker-compose.yml. Это ПУБЛИЧНО известный keyfile (любой кто читает репо может authenticate в RS). Сгенерируй уникальный: openssl rand -base64 756 | tr -d '\\n'"
+fi
+
 # Telegram bot tokens — формат: digits:chars (e.g. "8744653460:AAF-guQdXoMBDmS...").
 TELEGRAM_REGEX='^[0-9]{9,12}:[A-Za-z0-9_-]{30,}$'
 check_regex BOT_TOKEN "$TELEGRAM_REGEX" "Telegram bot token (digits:chars)"

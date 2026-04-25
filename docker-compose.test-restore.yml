@@ -56,7 +56,8 @@ services:
 
   test-mongo-attendance:
     # Bitnami RS для совместимости с prod backup (mongodump делался с replicaSet=rs0).
-    image: bitnami/mongodb:7.0
+    # M13 G24-fix-3: bitnami/ → bitnamilegacy/ (Aug 2025 namespace migration).
+    image: bitnamilegacy/mongodb:7.0
     container_name: rct-test-mongo-attendance
     environment:
       MONGODB_REPLICA_SET_MODE: primary

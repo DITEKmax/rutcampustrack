@@ -59,34 +59,39 @@ class BotIdempotencyGuard:
     async def try_claim(self, event_id: Optional[str]) -> bool:
         """Пытается claim'ить event_id. True если новый, False если дубль.
 
-        - None / blank event_id → True (no-dedup, warn).
-        - Redis ошибка → True + log.error (fail-open: лучше дубль обработать,
-          чем потерять событие при transient Redis блипе).
+        - None / blank event_id → ValueError (M13 G24-fix-6 fail-closed).
+          После M13 G8 все publisher'ы обязаны заполнять event_id
+          (Java AbstractEventPublisher.fillDefaults). Событие без id =
+          либо bug в новом publisher'е, либо forged message в обход
+          replay-защиты. Caller (event_consumer) делает NACK → DLQ.
+        - Redis ошибка → пробрасывает исключение (M13 G24-fix-2: ранее
+          fail-open возвращал True, что в паре с handler-exception swallow
+          делало replay-защиту бесполезной). Теперь caller реджектит
+          message → DLQ → manual triage.
         """
         if not event_id:
-            logger.warning(
-                "Idempotency: event without event_id, processing without dedup (consumer=%s)",
+            logger.error(
+                "Idempotency: rejecting event без event_id (fail-closed) — consumer=%s. "
+                "После M13 G8 все publisher'ы обязаны заполнять event_id.",
                 self._consumer_id,
             )
-            return True
+            raise ValueError(
+                f"Event без event_id rejected (fail-closed, M13 G24-fix-6): "
+                f"consumer={self._consumer_id}"
+            )
         key = self._key(event_id)
-        try:
-            # SET key value NX EX ttl — атомарный insert-or-fail
-            ok = await self._redis.set(key, "1", nx=True, ex=self._ttl)
-            if ok:
-                return True
-            logger.info(
-                "Idempotency: duplicate event skipped (consumer=%s, event_id=%s)",
-                self._consumer_id,
-                event_id,
-            )
-            return False
-        except Exception:
-            logger.exception(
-                "Idempotency: Redis error claiming event_id=%s, fail-open (will process)",
-                event_id,
-            )
+        # SET key value NX EX ttl — атомарный insert-or-fail.
+        # Redis exception пробрасывается — caller отлавливает и реджектит
+        # message в DLQ (см. event_consumer.py).
+        ok = await self._redis.set(key, "1", nx=True, ex=self._ttl)
+        if ok:
             return True
+        logger.info(
+            "Idempotency: duplicate event skipped (consumer=%s, event_id=%s)",
+            self._consumer_id,
+            event_id,
+        )
+        return False
 
     async def close(self) -> None:
         await self._redis.aclose()

@@ -28,20 +28,22 @@ class EventConsumerTest {
     @Mock
     private WebPushDeliveryService webPushDeliveryService;
 
+    @Mock
+    private ru.rutcampustrack.shared.events.IdempotencyGuard idempotencyGuard;
+
     private EventConsumer consumer;
 
     @BeforeEach
     void setUp() {
-        consumer = new EventConsumer(messagingTemplate, webPushDeliveryService,
-                new ru.rutcampustrack.shared.events.IdempotencyGuard(NOOP_STORE));
+        // M13 G24-fix-6: real IdempotencyGuard теперь fail-closed на missing
+        // event_id (throws IllegalStateException). Test envelope'ы — STOMP
+        // routing focus, не event_id semantics. Mock'аем guard.tryClaim →
+        // true чтобы тесты остались о routing'е. lenient — некоторые тесты
+        // (unknown event_type) early-return до tryClaim.
+        org.mockito.Mockito.lenient()
+                .when(idempotencyGuard.tryClaim(any(), any())).thenReturn(true);
+        consumer = new EventConsumer(messagingTemplate, webPushDeliveryService, idempotencyGuard);
     }
-
-    /** M13 G8 — claim всегда успешен; в unit-tests envelope-ы без event_id и так skip'аются guard'ом. */
-    private static final ru.rutcampustrack.shared.events.IdempotencyStore NOOP_STORE =
-            new ru.rutcampustrack.shared.events.IdempotencyStore() {
-                @Override public boolean tryClaim(String c, java.util.UUID e) { return true; }
-                @Override public long deleteProcessedBefore(java.time.Instant before) { return 0; }
-            };
 
     // --- Existing STOMP routing tests (must all still pass) ---
 

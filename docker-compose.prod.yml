@@ -55,11 +55,24 @@ services:
     restart: unless-stopped
 
   mongo-attendance:
-    # M13 G7 (Option B): bitnami/mongodb:7.0 — declarative replica set
+    # M13 G7 (Option B): bitnami mongodb — declarative replica set
     # setup (RS required для MongoTransactionManager multi-doc transactions).
-    # M08 G11 digest-pin — update: docker buildx imagetools inspect bitnami/mongodb:7.0
-    # и заменить digest после verify на staging.
-    image: bitnami/mongodb:7.0
+    #
+    # M13 G24-fix-3: namespace switched bitnami/ → bitnamilegacy/.
+    # В Aug 2025 Bitnami убрали versioned tags из bitnami/ (только :latest
+    # и платная подписка). bitnamilegacy/ — официальный frozen fallback
+    # без security updates. Acceptable risk: single-node RS, internal
+    # network only, нельзя атаковать извне.
+    #
+    # TODO v0.1: оценить миграцию на mongo:7-jammy + custom entrypoint
+    # с rs.initiate() init-script. Возврат к Option A из M13 G7 (был
+    # rejected в пользу Bitnami declarative setup). Альтернативы —
+    # percona/percona-server-mongodb:7 либо Bitnami Secure Images по
+    # подписке. Re-evaluate через 3 месяца после v0.0.0 GA.
+    #
+    # M08 G11 digest-pin — update:
+    #   docker buildx imagetools inspect bitnamilegacy/mongodb:7.0
+    image: bitnamilegacy/mongodb:7.0@sha256:16a57fa081f18e7acd1b4de1cd74f3e294cc6de861007e6fe3a418eb61db8a54
     container_name: rct-mongo-attendance
     environment:
       # Single-node replica set (primary + 0 secondaries).

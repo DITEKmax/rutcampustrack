@@ -11,6 +11,8 @@ import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,16 +30,18 @@ class NotificationHistoryConsumerTest {
     @Mock
     private NotificationHistoryService historyService;
 
+    @Mock
+    private ru.rutcampustrack.shared.events.IdempotencyGuard idempotencyGuard;
+
     private NotificationHistoryConsumer consumer;
 
     @BeforeEach
     void setUp() {
-        consumer = new NotificationHistoryConsumer(repository, historyService,
-                new ru.rutcampustrack.shared.events.IdempotencyGuard(
-                        new ru.rutcampustrack.shared.events.IdempotencyStore() {
-                            @Override public boolean tryClaim(String c, java.util.UUID e) { return true; }
-                            @Override public long deleteProcessedBefore(java.time.Instant before) { return 0; }
-                        }));
+        // M13 G24-fix-6: real IdempotencyGuard теперь fail-closed на missing
+        // event_id. Mock'аем guard.tryClaim → true чтобы тесты остались о
+        // routing'е. lenient — некоторые тесты skip'аются до tryClaim.
+        lenient().when(idempotencyGuard.tryClaim(any(), any())).thenReturn(true);
+        consumer = new NotificationHistoryConsumer(repository, historyService, idempotencyGuard);
     }
 
     @Test

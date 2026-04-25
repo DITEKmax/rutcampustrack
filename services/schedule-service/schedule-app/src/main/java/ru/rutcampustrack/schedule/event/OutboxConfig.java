@@ -29,10 +29,22 @@ import java.time.Clock;
  * Storage активен всегда (нужен DomainEventListener даже в тестах),
  * а Publisher guarded {@code @Profile("!test")}.
  *
- * <p>Внимание: {@link Storage} не создаёт LockProvider — он уже есть в
- * {@code SchedulingConfig}. Если {@code SchedulingConfig} guarded
- * {@code @Profile("!test")}, то в тестах LockProvider-а нет, но Publisher
- * тоже в тестах не стартует — @SchedulerLock не проверяется.
+ * <p>M13 G24-fix-5 — про LockProvider:
+ * <ul>
+ *   <li><b>В prod</b>: {@code SchedulingConfig} активен (Profile != "test"),
+ *       создаёт LockProvider. {@code IdempotencyCleanupJob} +
+ *       {@code OutboxPublisherJob} + {@code OutboxCleanupJob} в Publisher
+ *       блоке используют {@code @SchedulerLock} — работает корректно.</li>
+ *   <li><b>В test</b>: оба ({@code SchedulingConfig} + {@code Publisher})
+ *       guarded {@code @Profile("!test")} — не активны, LockProvider не
+ *       создаётся, но {@code @SchedulerLock} тоже не вызывается (no
+ *       jobs scheduled).</li>
+ * </ul>
+ * <p><b>Invariant</b>: schedule-app зависит от SchedulingConfig для
+ * LockProvider'а (в отличие от academic, где LockProvider в
+ * OutboxConfig.Storage). Если кто-то удалит/перенесёт SchedulingConfig —
+ * prod scheduler упадёт «no LockProvider bean defined». Регрессия
+ * покрыта {@code OutboxLockProviderIT} (M13 G24-fix-5).
  */
 @Configuration
 public class OutboxConfig {

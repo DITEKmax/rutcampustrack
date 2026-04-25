@@ -9,6 +9,27 @@
 
 ### Added
 
+- **M13 Pre-Deploy Hardening** (24 группы, ~30 коммитов на ветке `dev`,
+  `v0.0.0-alpha.13..HEAD`, планируется tag `v0.0.0-alpha.14`).
+  Закрытие всех VPS GA blockers перед first prod deploy. Highlights:
+  - **G7 Mongo replica set** — `bitnamilegacy/mongodb:7.0` digest-pinned
+    + `MongoTransactionManager` + `@Transactional` на 8+ service methods.
+  - **G8 Consumer dedup** по `event_id` — `IdempotencyStore` (Jpa+Mongo)
+    + 4 Java consumers + Python bot Redis SET NX EX.
+  - **G9 IDOR hardening** — 12 IDOR fixes + `SecurityIdorIT` × 4 services.
+  - **G18 STOMP heartbeat** 10s/10s — surprise: comment утверждал
+    «Spring default 10s/10s», но heartbeat был 0/0 без TaskScheduler.
+  - **G19 RabbitMQ Prometheus** — image switch + 4 new alerts. Surprise:
+    `DLQBacklog` был silent dangling 6 milestone'ов без exporter.
+  - **G20 SSL cert expiry** — blackbox-exporter + 3 alerts. Renewal hook
+    не нужен — nginx auto-reload каждые 5 мин (M13 G14).
+  - **G24 BLOCKERS fix** — после code-reviewer + security-auditor:
+    `MongoIdempotencyStore` bypass'ил MongoTransactionManager session
+    (`getCollection().insertOne` → `mongoTemplate.insert`); bot
+    fail-open + handler swallow заменены на fail-closed → DLQ;
+    Java/Python idempotency guards rejектят missing event_id (replay
+    защита); nginx `client_max_body_size 8k` на `/api/csp-report`.
+
 - **M12 Auth Contract-first Refactor** — последнее structural нарушение
   Contract-first правила закрыто (2.5 дня, 6 коммитов,
   `a902c16..HEAD`, планируется tag `v0.0.0-alpha.13`).

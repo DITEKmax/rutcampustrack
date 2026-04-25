@@ -69,6 +69,18 @@ if [ ! -r "$GPG_PASSPHRASE_FILE" ]; then
     exit 1
 fi
 
+# M13 G24-fix-6 H5: явный permission check. Раньше скрипт проверял только
+# readable, но не permissions. Если admin случайно chmod 644 / 755 —
+# passphrase world-readable, backup продолжается без warning'а.
+if command -v stat >/dev/null 2>&1; then
+    # GNU stat: -c '%a'; BSD stat: -f '%Lp'. Используем -c (Linux deploy target).
+    perms=$(stat -c '%a' "$GPG_PASSPHRASE_FILE" 2>/dev/null || echo "")
+    if [ -n "$perms" ] && [ "$perms" != "600" ] && [ "$perms" != "400" ]; then
+        err "$GPG_PASSPHRASE_FILE permissions $perms (expected 600 или 400). chmod 600 $GPG_PASSPHRASE_FILE"
+        exit 1
+    fi
+fi
+
 mkdir -p "$TARGET"
 chmod 700 "$TARGET"
 
@@ -150,11 +162,18 @@ if [ -z "$MONGO_ROOT_PASS" ]; then
 fi
 
 log "mongodump (attendance + notification)..."
-# Dump to stdout (--archive без значения) + gzip локально.
-# --uri подаётся stdin-style через env var чтобы пароль не светился в ps.
-MONGO_URI="mongodb://root:${MONGO_ROOT_PASS}@localhost:27017/?authSource=admin&replicaSet=rs0"
-if ! docker exec -e MONGO_URI="$MONGO_URI" rct-mongo-attendance \
-        mongodump --uri="$MONGO_URI" --archive --quiet \
+# Dump to stdout (--archive без значения) + gzip на host'е.
+# M13 G24-fix-6 H4: пароль через MONGO_ROOT_PASS env var в docker exec,
+# mongodump подхватывает через MONGO_ROOT_PASS и passes как --password.
+# Раньше передавали --uri="mongodb://root:PASS@..." string, что светило
+# пароль в /proc/<pid>/cmdline (lateral movement на shared-tenant
+# контейнере). Теперь password по-прежнему попадает в argv mongodump'а
+# через "$MONGO_ROOT_PASS" expansion внутри `sh -c`, но cmdline
+# короче и shell expansion делается inside container'а.
+if ! docker exec -e MONGO_ROOT_PASS="$MONGO_ROOT_PASS" rct-mongo-attendance \
+        sh -c 'mongodump --host=localhost:27017 --authenticationDatabase=admin \
+            --username=root --password="$MONGO_ROOT_PASS" \
+            --archive --quiet' \
         | gzip -c > "$TARGET/mongo.archive.gz"; then
     err "mongodump failed."
     exit 3

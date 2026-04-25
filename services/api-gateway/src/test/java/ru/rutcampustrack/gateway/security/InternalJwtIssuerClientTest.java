@@ -30,7 +30,13 @@ class InternalJwtIssuerClientTest {
         props.setAuthServiceUrl("http://localhost:" + server.port());
         props.setSecret("a".repeat(32));
         props.setCacheTtlSeconds(240);
-        props.setTimeoutMillis(2_000);
+        // M13 G24-fix-7: bumped 2_000 → 10_000 для устранения flaky failure
+        // на холодных CI runner'ах. WireMock startup + first WebClient request
+        // могут занимать > 2s в первом тесте Spring suite, что давало
+        // InternalIssuerUnavailableException вместо expected token. 10s
+        // достаточно даже для slow runners; production timeout (3s) —
+        // отдельный property в application.yml.
+        props.setTimeoutMillis(10_000);
 
         WebClient webClient = WebClient.builder().baseUrl(props.getAuthServiceUrl()).build();
         client = new InternalJwtIssuerClient(props, webClient);

@@ -10,6 +10,7 @@ import ru.rutcampustrack.notification.push.WebPushDeliveryService;
 
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,17 +24,17 @@ class GroupEventTest {
 
     @Mock private SimpMessagingTemplate messagingTemplate;
     @Mock private WebPushDeliveryService webPushDeliveryService;
+    @Mock private ru.rutcampustrack.shared.events.IdempotencyGuard idempotencyGuard;
 
     private EventConsumer consumer;
 
     @BeforeEach
     void setUp() {
-        consumer = new EventConsumer(messagingTemplate, webPushDeliveryService,
-                new ru.rutcampustrack.shared.events.IdempotencyGuard(
-                        new ru.rutcampustrack.shared.events.IdempotencyStore() {
-                            @Override public boolean tryClaim(String c, java.util.UUID e) { return true; }
-                            @Override public long deleteProcessedBefore(java.time.Instant before) { return 0; }
-                        }));
+        // M13 G24-fix-6: real IdempotencyGuard теперь fail-closed на missing
+        // event_id. Mock'аем guard.tryClaim → true чтобы тесты остались о
+        // routing'е (envelope не содержит event_id, и это не цель теста).
+        when(idempotencyGuard.tryClaim(any(), any())).thenReturn(true);
+        consumer = new EventConsumer(messagingTemplate, webPushDeliveryService, idempotencyGuard);
     }
 
     @Test

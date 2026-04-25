@@ -46,22 +46,35 @@ async def test_different_consumer_ids_are_independent(fake_redis):
 
 
 @pytest.mark.asyncio
-async def test_missing_event_id_passes_without_dedup(guard):
-    # None / blank event_id — fail-open, обработать без dedup.
-    assert await guard.try_claim(None) is True
-    assert await guard.try_claim("") is True
+async def test_missing_event_id_fails_closed(guard):
+    """M13 G24-fix-6: missing event_id → ValueError (fail-closed).
+
+    После M13 G8 все publisher'ы заполняют event_id. Событие без id =
+    либо bug в новом publisher'е, либо forged message в обход replay-
+    защиты. Caller (event_consumer) делает NACK → DLQ → manual triage.
+    """
+    with pytest.raises(ValueError, match="event_id"):
+        await guard.try_claim(None)
+    with pytest.raises(ValueError, match="event_id"):
+        await guard.try_claim("")
 
 
 @pytest.mark.asyncio
-async def test_redis_error_fails_open(monkeypatch, guard):
-    """При сбое Redis возвращаем True (fail-open) — лучше дубль чем потерянное событие."""
+async def test_redis_error_fails_closed(monkeypatch, guard):
+    """M13 G24-fix-2: при сбое Redis exception пробрасывается (fail-closed).
+
+    До G24-fix-2 try_claim возвращал True при Redis ошибке (fail-open).
+    В паре с handler-exception swallow в event_consumer это означало:
+    любой transient Redis блип + любой handler bug = event silently lost.
+    Теперь exception пробрасывается → caller делает NACK → DLQ → triage.
+    """
 
     async def boom(*args, **kwargs):
         raise RuntimeError("redis down")
 
-    # _redis это AsyncMock-совместимый объект; патчим .set
     monkeypatch.setattr(guard._redis, "set", boom)
-    assert await guard.try_claim("event-X") is True
+    with pytest.raises(RuntimeError, match="redis down"):
+        await guard.try_claim("event-X")
 
 
 @pytest.mark.asyncio

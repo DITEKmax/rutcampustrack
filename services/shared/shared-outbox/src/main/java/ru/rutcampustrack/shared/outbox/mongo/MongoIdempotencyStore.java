@@ -1,10 +1,10 @@
 package ru.rutcampustrack.shared.outbox.mongo;
 
-import com.mongodb.MongoWriteException;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -23,13 +23,16 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
  *
  * <p>Коллекция {@code event_consumer_processed}: документ
  * {@code {consumer_id, event_id, processed_at}} + compound unique index
- * на {@code (consumer_id, event_id)}. {@link #tryClaim} делает
- * {@code insertOne} и ловит duplicate-key — это атомарная операция,
- * не требующая транзакции.
+ * на {@code (consumer_id, event_id)}.
  *
- * <p>Caller всё равно оборачивает handler в {@code @Transactional} —
- * на replica set tryClaim участвует в multi-doc tx (см. M13 G7),
- * откатываясь вместе с handler'ом при rollback.
+ * <p>Caller оборачивает handler в {@code @Transactional} — на replica set
+ * (M13 G7) {@link #tryClaim} участвует в multi-doc tx через
+ * {@code MongoTransactionManager} session, откатываясь вместе с handler'ом
+ * при rollback. M13 G24-fix-1: явно используем
+ * {@code mongoTemplate.insert(Document, collectionName)} вместо
+ * {@code getCollection().insertOne()} — последний обходит session binding
+ * и ломает atomicity guarantee (claim коммитится даже когда handler
+ * throws → event lost при redelivery, false-positive duplicate).
  */
 public class MongoIdempotencyStore implements IdempotencyStore {
 
@@ -83,24 +86,17 @@ public class MongoIdempotencyStore implements IdempotencyStore {
                 .append("event_id", eventId.toString())
                 .append("processed_at", Date.from(Instant.now()));
         try {
-            mongoTemplate.getCollection(collectionName).insertOne(doc);
+            // mongoTemplate.insert участвует в активной MongoTransactionManager
+            // session — claim откатится если handler throws (M13 G24-fix-1).
+            mongoTemplate.insert(doc, collectionName);
             return true;
-        } catch (org.springframework.dao.DuplicateKeyException
-                 | com.mongodb.DuplicateKeyException ex) {
+        } catch (DuplicateKeyException ex) {
+            // Spring DataAccessException wrapper для E11000 — единственная
+            // ожидаемая ошибка от insert на коллекции с unique-индексом.
+            // Прочие исключения (WriteConcernError, network) пробрасываются.
             log.debug("Idempotency claim conflict for {}|{} (already processed)",
                     consumerId, eventId);
             return false;
-        } catch (MongoWriteException ex) {
-            // E11000 duplicate key — единственный ожидаемый MongoWriteException
-            // на insertOne с unique-индексом. Прочие коды (e.g. WriteConcernError)
-            // должны проброситься, чтобы caller увидел сбой.
-            if (ex.getError().getCategory()
-                    == com.mongodb.ErrorCategory.DUPLICATE_KEY) {
-                log.debug("Idempotency claim conflict for {}|{} (already processed)",
-                        consumerId, eventId);
-                return false;
-            }
-            throw ex;
         }
     }
 

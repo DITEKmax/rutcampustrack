@@ -63,29 +63,40 @@ class IdempotencyGuardTest {
     }
 
     @Test
-    void tryClaim_envelopeWithoutEventId_passesWithoutDedup() {
+    void tryClaim_envelopeWithoutEventId_throwsFailClosed() {
+        // M13 G24-fix-6: fail-closed — раньше fail-open пропускал legacy events.
+        // После M13 G8 все publisher'ы заполняют event_id; missing = bug либо
+        // forged. Caller @Transactional handler делает rollback → DLQ.
         Map<String, Object> envelope = new HashMap<>();
         envelope.put("event_type", "legacy.event");
 
-        // No event_id → guard returns true, store untouched.
-        assertThat(guard.tryClaim("academic", envelope)).isTrue();
-        assertThat(guard.tryClaim("academic", envelope)).isTrue();
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> guard.tryClaim("academic", envelope))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("event_id")
+                .hasMessageContaining("legacy.event");
         assertThat(store.size()).isZero();
     }
 
     @Test
-    void tryClaim_malformedEventId_passesWithoutDedup() {
+    void tryClaim_malformedEventId_throwsFailClosed() {
+        // Malformed event_id (не UUID) → extractEventId возвращает null →
+        // та же fail-closed ветка что и для missing event_id.
         Map<String, Object> envelope = new HashMap<>();
         envelope.put("event_id", "not-a-uuid");
         envelope.put("event_type", "lesson.started");
 
-        assertThat(guard.tryClaim("academic", envelope)).isTrue();
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> guard.tryClaim("academic", envelope))
+                .isInstanceOf(IllegalStateException.class);
         assertThat(store.size()).isZero();
     }
 
     @Test
-    void tryClaim_nullEnvelope_passesWithoutDedup() {
-        assertThat(guard.tryClaim("academic", null)).isTrue();
+    void tryClaim_nullEnvelope_throwsFailClosed() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> guard.tryClaim("academic", null))
+                .isInstanceOf(IllegalStateException.class);
         assertThat(store.size()).isZero();
     }
 

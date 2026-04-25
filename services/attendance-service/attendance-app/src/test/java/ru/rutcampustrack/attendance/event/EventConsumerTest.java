@@ -1,18 +1,25 @@
 package ru.rutcampustrack.attendance.event;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.rutcampustrack.attendance.excuse.ExcuseService;
+import ru.rutcampustrack.attendance.latecheckin.LateCheckinService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for EventConsumer routing logic.
@@ -20,6 +27,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
  * D-09 (semester.archived → SemesterCacheService.refresh()) is proven here rather than
  * via integration test: the prior IT was flaky under cached-Spring-context reuse where
  * EventConsumer held a stale mock reference — see git history for details.
+ *
+ * <p>M13 G24-fix-7 follow-up: добавлен @Mock IdempotencyGuard + setup
+ * stub'а tryClaim → true. До этого fix'а EventConsumer.idempotencyGuard
+ * (added в M13 G8) был null в тесте, а NPE случался только начиная с
+ * fail-closed G24-fix-6 (раньше null guard'а не вызывался — старый
+ * условный flow). Теперь явный mock покрывает M13 G8 + G24-fix-6.
  */
 @ExtendWith(MockitoExtension.class)
 class EventConsumerTest {
@@ -30,8 +43,28 @@ class EventConsumerTest {
     @Mock
     private SemesterCacheService semesterCacheService;
 
+    @Mock
+    private LateCheckinService lateCheckinService;
+
+    @Mock
+    private ExcuseService excuseService;
+
+    @Mock
+    private IdempotencyGuard idempotencyGuard;
+
     @InjectMocks
     private EventConsumer eventConsumer;
+
+    @BeforeEach
+    void setUp() {
+        // Default: первый delivery — claim успешен, handler выполняется.
+        // lenient — тесты missingEventType / lessonStarted делают early
+        // return до tryClaim, для них stub не используется. STRICT_STUBS
+        // считал бы это test failure — lenient допускает unused stubbing.
+        org.mockito.Mockito.lenient()
+                .when(idempotencyGuard.tryClaim(eq(EventConsumer.CONSUMER_ID), any()))
+                .thenReturn(true);
+    }
 
     private Map<String, Object> envelope(String eventType, Map<String, Object> payload) {
         return Map.of(

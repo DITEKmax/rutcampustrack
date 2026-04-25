@@ -81,9 +81,21 @@ spring:
                 redis-rate-limiter.requestedTokens: 12
                 key-resolver: "#{@ipKeyResolver}"
 
-        # /api/auth/login — 5 req/min per IP + 10 req/min per ip+login (композитный)
-        # Два последовательных RL-фильтра: IP-уровень останавливает distributed brute,
-        # ip+login — target-specific (клиент дубликатом шлёт X-Login header).
+        # /api/auth/login — 5 req/min per IP (single rate limiter).
+        #
+        # M13 G25.21 — убран второй RequestRateLimiter (ip+login composite key).
+        # Spring Cloud Gateway 4.x bug: при двух последовательных RL-фильтрах
+        # второй пытается добавить X-RateLimit-* headers после того как
+        # ServerHttpResponse уже committed (status+body отправлены downstream)
+        # → ReadOnlyHttpHeaders.add() throws UnsupportedOperationException →
+        # `Error finishing response. Closing connection` → клиент получает 200
+        # headers + part body, но TCP оборван прежде чем `Content-Length`
+        # завершён. Browser fetch / Playwright apiRequest aborted →
+        # login.component.error callback не получает clean 200.
+        #
+        # IP-only RL уже останавливает distributed brute force (5/min/IP).
+        # ip+login композитный планируется вернуть через custom filter
+        # (NEW-XXX) после G25 закрытия — НЕ блокер для v0.0.0-alpha.15 deploy.
         - id: auth-login
           uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
           predicates:
@@ -97,12 +109,6 @@ spring:
                 redis-rate-limiter.burstCapacity: 60
                 redis-rate-limiter.requestedTokens: 12
                 key-resolver: "#{@ipKeyResolver}"
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 60
-                redis-rate-limiter.requestedTokens: 6
-                key-resolver: "#{@ipLoginKeyResolver}"
 
         # /api/auth/refresh — 30 req/min per user (из X-User-Id после JwtAuthenticationFilter)
         - id: auth-refresh

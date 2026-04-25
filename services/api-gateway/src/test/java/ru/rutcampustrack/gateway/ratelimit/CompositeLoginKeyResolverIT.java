@@ -34,6 +34,10 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
  * + composite 10/min. IP-only срабатывает первым на 6-м запросе с одного IP, поэтому
  * тест отправляет запросы с разных IP чтобы пересечь именно composite-порог.</p>
  */
+@org.junit.jupiter.api.Disabled("M13 G25.21 — composite RL filter временно убран из application.yml "
+        + "(Spring Cloud Gateway 4.x bug: два последовательных RequestRateLimiter "
+        + "trip ReadOnlyHttpHeaders при response-commit). Тест вернётся когда composite "
+        + "будет реализован через custom GlobalFilter без mutation после committed response.")
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CompositeLoginKeyResolverIT {

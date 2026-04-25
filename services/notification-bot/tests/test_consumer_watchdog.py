@@ -21,7 +21,7 @@ async def test_watchdog_restarts_on_consumer_failure():
     call_count = 0
     second_call_event = asyncio.Event()
 
-    async def mock_start_consumer(url: str, dispatcher=None):
+    async def mock_start_consumer(url: str, dispatcher=None, idempotency_guard=None):
         nonlocal call_count
         call_count += 1
         if call_count == 1:
@@ -46,7 +46,7 @@ async def test_watchdog_restarts_on_consumer_failure():
 async def test_watchdog_propagates_cancelled_error():
     """CancelledError from start_consumer is re-raised, not swallowed."""
 
-    async def mock_start_consumer(url: str, dispatcher=None):
+    async def mock_start_consumer(url: str, dispatcher=None, idempotency_guard=None):
         raise asyncio.CancelledError()
 
     with patch("bot.__main__.start_consumer", side_effect=mock_start_consumer):
@@ -58,7 +58,7 @@ async def test_watchdog_restarts_on_normal_exit():
     """When start_consumer returns normally (silent death), watchdog restarts it."""
     call_count = 0
 
-    async def mock_start_consumer(url: str, dispatcher=None):
+    async def mock_start_consumer(url: str, dispatcher=None, idempotency_guard=None):
         nonlocal call_count
         call_count += 1
         if call_count == 1:
@@ -82,7 +82,7 @@ async def test_health_up_during_reconnect():
     """Health returns 200 while watchdog task is running (even if consumer is failing)."""
     started = asyncio.Event()
 
-    async def mock_start_consumer(url: str, dispatcher=None):
+    async def mock_start_consumer(url: str, dispatcher=None, idempotency_guard=None):
         started.set()
         await asyncio.sleep(9999)
 

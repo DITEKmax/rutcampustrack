@@ -40,10 +40,20 @@ public class FailOpenRateLimiter extends AbstractRateLimiter<RedisRateLimiter.Co
     @Override
     public Mono<Response> isAllowed(String routeId, String id) {
         return delegate.isAllowed(routeId, id)
+                // M13 G25.22 — strip X-RateLimit-* headers из Response. Spring Cloud
+                // Gateway 4.x bug: RequestRateLimiterGatewayFilterFactory tries to add
+                // эти headers в exchange.getResponse().getHeaders() ПОСЛЕ того как
+                // downstream proxy уже committed response (chunked transfer-encoding +
+                // slow auth-service). ReadOnlyHttpHeaders.add() throws
+                // UnsupportedOperationException → "Error finishing response. Closing
+                // connection" → клиент получает 200 + part body, но TCP оборван →
+                // browser fetch rejects → login.component "Не удалось подключиться
+                // к серверу". Пустой headers Map обходит mutation.
+                .map(response -> new Response(response.isAllowed(), Map.of()))
                 .onErrorResume(this::isRedisUnavailable, ex -> {
                     log.warn("Rate-limiter fail-open: Redis unavailable for route={} key={}: {}",
                             routeId, id, ex.toString());
-                    return Mono.just(new Response(true, Map.of("X-RateLimit-FailOpen", "true")));
+                    return Mono.just(new Response(true, Map.of()));
                 });
     }
 

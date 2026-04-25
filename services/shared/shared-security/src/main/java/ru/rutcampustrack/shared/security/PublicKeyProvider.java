@@ -55,7 +55,18 @@ public class PublicKeyProvider {
     public PublicKey getPublicKey() {
         PublicKey key = publicKeyRef.get();
         if (key == null) {
-            throw new IllegalStateException("Public key not yet loaded from Auth Service");
+            // M13 G25.22 — lazy retry если init() failed (auth-service ещё не был
+            // готов на старте). До этого fix downstream services навсегда оставались
+            // без public key до next scheduled refresh (default 60 min) → JWT validation
+            // ломалась на каждом authenticated request. Synchronous fetch здесь дёшев
+            // (HTTP к auth-service в private network ~10ms) и срабатывает только до
+            // первого успешного init.
+            log.warn("Public key not loaded yet, attempting lazy fetch from Auth Service");
+            fetchAndCache();
+            key = publicKeyRef.get();
+            if (key == null) {
+                throw new IllegalStateException("Public key not yet loaded from Auth Service");
+            }
         }
         return key;
     }

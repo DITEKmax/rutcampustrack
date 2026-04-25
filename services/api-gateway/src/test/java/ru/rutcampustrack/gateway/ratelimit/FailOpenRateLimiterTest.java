@@ -24,7 +24,7 @@ class FailOpenRateLimiterTest {
     private final FailOpenRateLimiter limiter = new FailOpenRateLimiter(delegate, configurationService);
 
     @Test
-    @DisplayName("Delegate allowed=true → проходит без модификации")
+    @DisplayName("Delegate allowed=true → проходит, headers stripped (G25.22)")
     void delegateAllowed_passThrough() {
         when(delegate.isAllowed(any(), any()))
                 .thenReturn(Mono.just(new RateLimiter.Response(true, Map.of("X-RateLimit-Remaining", "5"))));
@@ -32,13 +32,15 @@ class FailOpenRateLimiterTest {
         StepVerifier.create(limiter.isAllowed("route-1", "key-1"))
                 .assertNext(r -> {
                     assertThat(r.isAllowed()).isTrue();
-                    assertThat(r.getHeaders()).containsEntry("X-RateLimit-Remaining", "5");
+                    // M13 G25.22 — headers всегда пусты (workaround Spring Cloud Gateway 4.x bug
+                    // ReadOnlyHttpHeaders.add после committed response). См. FailOpenRateLimiter.
+                    assertThat(r.getHeaders()).isEmpty();
                 })
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("Delegate allowed=false (normal rate-limit rejection) → остаётся false, НЕ fail-open")
+    @DisplayName("Delegate allowed=false (normal rate-limit rejection) → остаётся false, headers stripped")
     void delegateDenied_remainsDenied() {
         when(delegate.isAllowed(any(), any()))
                 .thenReturn(Mono.just(new RateLimiter.Response(false, Map.of("X-RateLimit-Remaining", "0"))));
@@ -46,13 +48,13 @@ class FailOpenRateLimiterTest {
         StepVerifier.create(limiter.isAllowed("route-1", "key-1"))
                 .assertNext(r -> {
                     assertThat(r.isAllowed()).isFalse();
-                    assertThat(r.getHeaders()).doesNotContainKey("X-RateLimit-FailOpen");
+                    assertThat(r.getHeaders()).isEmpty();
                 })
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("RedisConnectionFailureException → fail-open (allowed=true + X-RateLimit-FailOpen)")
+    @DisplayName("RedisConnectionFailureException → fail-open (allowed=true, headers пусты)")
     void redisConnectionFailure_failsOpen() {
         when(delegate.isAllowed(any(), any()))
                 .thenReturn(Mono.error(new RedisConnectionFailureException("Redis down")));
@@ -60,7 +62,7 @@ class FailOpenRateLimiterTest {
         StepVerifier.create(limiter.isAllowed("route-1", "key-1"))
                 .assertNext(r -> {
                     assertThat(r.isAllowed()).isTrue();
-                    assertThat(r.getHeaders()).containsEntry("X-RateLimit-FailOpen", "true");
+                    assertThat(r.getHeaders()).isEmpty();
                 })
                 .verifyComplete();
     }

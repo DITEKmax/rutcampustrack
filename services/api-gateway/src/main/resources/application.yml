@@ -38,8 +38,16 @@ spring:
             allowed-headers: "*"
             allow-credentials: true
             max-age: 3600
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      # M13 G25.22 — убран `default-filters: DedupeResponseHeader` (CORS dedup).
+      # Spring Cloud Gateway 4.x bug: DedupeResponseHeader пытается mutate
+      # response headers ПОСЛЕ того как RequestRateLimiter уже committed
+      # X-RateLimit-* + downstream service committed status+body. Второй mutator
+      # упирается в ReadOnlyHttpHeaders.add → UnsupportedOperationException →
+      # `Error finishing response. Closing connection` → клиент получает 200
+      # headers + part body, но TCP оборван прежде завершения chunked encoding.
+      # CORS дубликатов нет (только globalcors source), filter не нужен.
+      # default-filters:
+      #   - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
       routes:
         # === Rate-limited routes (specific first, wins over generic auth-service) ===
 
@@ -105,8 +113,13 @@ spring:
             - StripPrefix=1
             - name: RequestRateLimiter
               args:
+                # M13 G25.22 — burstCapacity 600 / requestedTokens 12 = 50 запросов
+                # залпом перед ban. Раньше было 60/12=5, что не хватало для
+                # параллельных smoke-тестов с retry (8 specs × 2 workers × 2 retries
+                # = до 32 запросов от одного IP CI runner'а). Replenish=1/sec
+                # сохраняет steady-state ≈ 5 req/min/IP против distributed brute.
                 redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 60
+                redis-rate-limiter.burstCapacity: 600
                 redis-rate-limiter.requestedTokens: 12
                 key-resolver: "#{@ipKeyResolver}"
 

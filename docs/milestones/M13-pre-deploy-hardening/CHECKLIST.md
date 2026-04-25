@@ -106,11 +106,11 @@
 
 ## Группа 12 — Healthcheck directives + health indicators
 
-- [ ] Добавить `healthcheck:` directive на 5 backend в docker-compose.prod.yml (curl /actuator/health, interval 30s, start_period 60s)
-- [ ] Проверить что curl доступен в backend image (Dockerfile), если нет — использовать wget/--spider
-- [ ] Обновить `depends_on: service_healthy` на критичные зависимости (gateway → auth, consumers → rabbitmq)
-- [ ] Проверить Spring Boot actuator health indicators: `rabbit`, `db`, `mongo`, `redis` включены во всех 5 backend
-- [ ] IT: kill rabbitmq → academic-service `/actuator/health` возвращает DOWN
+- [x] Добавить `healthcheck:` directive на 5 backend в docker-compose.prod.yml _(уже сделано M06 G2 + M09 G7 — все 5 backend имеют compose-level `healthcheck:` блок с wget /actuator/health, interval 15s, timeout 5s, retries 5, start_period 30-60s)_
+- [x] Проверить что curl доступен в backend image (Dockerfile), если нет — использовать wget/--spider _(все Dockerfile уже используют `wget -qO- http://localhost:PORT/actuator/health` — alpine wget доступен. HEALTHCHECK дублирован на image level и compose level)_
+- [x] Обновить `depends_on: service_healthy` на критичные зависимости (gateway → auth, consumers → rabbitmq) _(уже сделано M06 G2 + M09 G7 — все backend ждут DB/Redis/Rabbit `service_healthy`. api-gateway ждёт `service_healthy` для всех 5 downstream)_
+- [x] Проверить Spring Boot actuator health indicators: `rabbit`, `db`, `mongo`, `redis` включены во всех 5 backend _(дефолт Spring Boot — все включены автоматически. В application.yml не выставлено `enabled: false`. Test profile `application-test.yml` отключает rabbit/redis indicators чтобы остальные IT не падали без containers — это корректно, prod profile не затронут)_
+- [x] IT: kill rabbitmq → academic-service `/actuator/health` возвращает DOWN _(`HealthDegradationIT` в academic-app: own dedicated RabbitMQContainer без reuse + override `management.health.rabbit.enabled=true` чтобы не конфликтовать с application-test.yml. 2 теста: healthUp pre-stop + healthDown post-stop через `RABBITMQ.stop()` → 503 SERVICE_UNAVAILABLE с `components.rabbit.status: DOWN`. Awaitility 10s window для health indicator update. 2/2 passing)_
 
 ## Группа 13 — Environment secrets infrastructure
 

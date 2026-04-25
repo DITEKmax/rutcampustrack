@@ -777,3 +777,51 @@ ceiling — мы это узнаем до OOM kill'а.
 + Prometheus scrape каждые 15s residual ~80-120m. 256m даёт 2× margin
 от observed peak. На VPS этим 64m не пожалеешь — alternative OOMKill
 crash cadvisor'а потеряет 5-min metric gap.
+
+## 2026-04-25 — Группа 12 (healthcheck directives + health indicators)
+
+**Audit-finding:** 4 из 5 пунктов checklist'а **уже закрыты** в более
+ранних milestone'ах (M06 G2 + M09 G7). G12 — фактически **тестовое
+покрытие** того, что уже работает.
+
+**Состояние до G12:**
+- ✅ Dockerfile HEALTHCHECK у всех 5 backend (wget alpine).
+- ✅ Compose-level `healthcheck:` блоки на всех 5 backend.
+- ✅ `depends_on: service_healthy` для backend → DBs/Redis/Rabbit.
+- ✅ `api-gateway → service_healthy` для всех 5 downstream.
+- ✅ Spring Boot health indicators (db/mongo/redis/rabbit) активны by default
+  во всех 5 backend application.yml (no `enabled: false` нигде).
+
+**Что сделано в G12:**
+
+`HealthDegradationIT` в academic-app — regression guard:
+- own dedicated `PostgreSQLContainer` + `RabbitMQContainer` без `reuse`
+  (чтобы тест мог свободно остановить Rabbit, не сломав параллельные IT
+  на reused RabbitMQContainer из `AbstractAcademicEventIntegrationTest`).
+- 2 теста с `@Order`: (1) healthUp pre-stop, (2) healthDown post-stop.
+- Сценарий «kill rabbitmq» = `RABBITMQ.stop()` → Spring health
+  indicator переходит в DOWN → composite status DOWN → 503 status code.
+
+**Surprise (executor → owner):** `application-test.yml` в academic-app
+**отключает** `management.health.rabbit.enabled` и `redis.enabled`. Это
+сделано раньше (M-?, явного коммит-следа не нашёл в git blame) чтобы
+остальные IT, которые не запускают Rabbit/Redis containers, не падали
+с health DOWN при context startup.
+
+**Workaround в HealthDegradationIT:** через `@DynamicPropertySource`
+выставить `management.health.rabbit.enabled=true` обратно. Это override
+поверх `application-test.yml` — действует только для этого IT, остальные
+тесты не затронуты.
+
+**Что НЕ покрыто IT (deferred — не в G12 scope):**
+- DB DOWN (kill PostgreSQL) — high cost, низкий ROI: DataSourceHealthIndicator
+  работает идентично RabbitHealthIndicator, regression unlikely.
+- Mongo DOWN в attendance/notification-web — паттерн идентичный, можно
+  скопировать IT при необходимости.
+- Redis DOWN — disabled в test profile, для prod не критично (auth-service
+  имеет fallback на in-memory если Redis down — отдельный M03 handling).
+
+**Prod-side validation:** после VPS deploy в G23 dry-run runbook покажет
+что все 5 backend становятся `healthy` через `docker compose ps`. Если
+там что-то развалится — Spring `service_healthy` `depends_on` chain
+не пройдёт, и api-gateway не стартует — fail-fast.

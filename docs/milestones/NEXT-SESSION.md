@@ -13,7 +13,7 @@
 
 ## Прогресс M13 на 2026-04-25
 
-**7 из 24 групп закрыто** (G1-G7). 72 коммита ahead origin/dev.
+**9 из 24 групп закрыто** (G1-G9). 74 коммита ahead origin/dev.
 Push отложен до M13 completion + явного `go`.
 
 | G | Commit | Тема | Итог |
@@ -25,22 +25,30 @@ Push отложен до M13 completion + явного `go`.
 | 5 | `94e1072` | InvalidParam alias | legacy record + frontend fallback удалены |
 | 6 | `7073de8` | Mongo indexes fail-fast | `verifyIndexes()` throws + IT + runbook |
 | 7 | `0301c1b` | Mongo replica set + @Transactional | Option B (bitnami/mongodb:7.0), closes M02 CRITICAL #1 |
+| 8 | `494821f` | Consumer-side dedup по event_id | shared-events `IdempotencyGuard` + 4 Java consumers + Python bot, closes M02 CRITICAL #2 |
+| 9 | `465b9c9` | SecurityIdorIT + 12 IDOR fixes | 9 IDOR в academic, 3 в schedule. 38 IT тестов на 36 endpoints. closes NEW-31 |
 
-**Следующая — Группа 8 (Consumer-side dedup по event_id, M02 CRITICAL #2).**
-Самая большая группа M13: 10 checklist items.
+**Следующая — Группа 10 (Actuator tracing exclude, M06 misleading comment fix).**
+Должна быть быстрой — однострочный config fix + custom OpenTelemetry Sampler.
 
 ## Key decisions зафиксированы в NOTES
 
 - **Rate-limit формула** (G2): `burstCapacity=60, requestedTokens=60/X`
-  (владелец в NOTES.md:46 описал `bc=5`, это было некорректно —
-  Spring не списывает больше токенов чем в бакете).
+  (универсальная для всех X req/min).
 - **Mongo RS** (G7): Option B = `bitnami/mongodb:7.0`, declarative
-  env-based RS setup. Альтернативы A (custom entrypoint) и C (skip
-  transactions) отклонены владельцем 2026-04-25.
-- **InvalidParam** (G5): checklist описывал направление миграции
-  инвертированно — реально удалён `InvalidParam.java` + frontend
-  fallback на pre-M11 shape. Backend canonical `ErrorResponse.fieldErrors`
-  не менялся (он и был canonical после M11 G0).
+  env-based RS setup.
+- **InvalidParam** (G5): удалён `InvalidParam.java` legacy record +
+  frontend fallback. Backend canonical `ErrorResponse.fieldErrors` не менялся.
+- **Idempotency design** (G8): `IdempotencyGuard` helper-class (не AOP).
+  PostgreSQL — `INSERT ... ON CONFLICT DO NOTHING` (важно: persist+flush+catch
+  ставит Spring tx в rollback-only). Mongo — `insertOne` + catch DUPLICATE_KEY.
+- **IDOR scope creep** (G9): owner ожидал 1-2 баг(а), нашли **12**.
+  Owner подтвердил «fix all + IT во всех сервисах». G9 был ~2× больше
+  изначального scope.
+- **TEACHER read access** (G9): TEACHER bypass'ятся в
+  `assertCanReadGroup`/`requireGroupReadAccess` (TEACHER ведёт предмет
+  в нескольких группах). Если потом надо ужесточить — единый knob в
+  helper'е каждого service'а.
 
 ## Старт новой сессии — дословно
 
@@ -49,7 +57,7 @@ Push отложен до M13 completion + явного `go`.
 > 1. `docs/milestones/NEXT-SESSION.md` — этот файл (cursor позиция, текущая группа)
 > 2. `docs/milestones/M13-pre-deploy-hardening/PLAN.md` — scope, 23 acceptance criteria
 > 3. `docs/milestones/M13-pre-deploy-hardening/CHECKLIST.md` — 24 группы, атомарные задачи
-> 4. `docs/milestones/M13-pre-deploy-hardening/NOTES.md` — решения владельца + nuance'ы для executor'а
+> 4. `docs/milestones/M13-pre-deploy-hardening/NOTES.md` — решения владельца + nuance'ы для executor'а (особенно G9 раздел про 12 IDOR)
 > 5. `docs/report-before-v0.0.0/v0.0.0-debt.md` — debt report (контекст зачем делаем каждую группу)
 > 6. `docs/milestones/README.md` — таблица всех milestone'ов
 > 7. `CLAUDE.md` — правила кодирования проекта
@@ -71,51 +79,36 @@ Push отложен до M13 completion + явного `go`.
 
 ## Scope M13 (23 тематических группы + G24 финализация)
 
-Порядок выбран так, чтобы early-groups давали dev-feedback loop для последующих.
 Полный checklist — `M13-pre-deploy-hardening/CHECKLIST.md`.
 
-| G | Тема | Cross-ref v0.0.0-debt |
-|---|------|----------------------|
-| 1 | 3 pre-existing flaky тестов fix (`EventSchemaRefTest`, `RateLimitIT`, `ExcuseEventContractIT`) | dev-unblock |
-| 2 | Rate-limit `replenishRate` семантика (реальные 5 req/min вместо 300) | M03a |
-| 3 | Pageable max-size cap global (`spring.data.web.pageable.max-page-size=100`) | M10 H2 |
-| 4 | `/auth/refresh-body` удаление (Sunset 2026-06-01) | M03b |
-| 5 | `InvalidParam` deprecated alias migration (удалить `fieldErrors`) | M11 |
-| 6 | Mongo TTL + compound indexes startup verify | M10 S4 |
-| 7 | Mongo replica set + `@Transactional` (attendance + notification-web) | M02 CRITICAL #1 |
-| 8 | Consumer `event_id` dedup — 5 consumer'ов (4 Java + bot) + Python equiv | M02 CRITICAL #2 |
-| 9 | `SecurityIdorIT` в 4 сервисах (NEW-31, призрак через 3 milestone) | M03a |
-| 10 | `/actuator/**` exclude from tracing sampling (custom OTel Sampler) | M06 |
-| 11 | `mem_limit` на nginx/certbot/exporters/cadvisor/promtail | M09 |
-| 12 | `healthcheck:` в docker-compose + Spring health indicators | M04 G4 |
-| 13 | `.env.prod.example` + `scripts/validate-env-prod.sh` | deploy hygiene |
-| 14 | Prometheus + Alertmanager UI за nginx basic-auth + nginx fail-fast | M11 G4 |
-| 15 | `scripts/backup.sh` + `scripts/restore.sh` + tested restore + `.env.prod` GPG | DR |
-| 16 | CSP audit + `/api/csp-report` endpoint + metric | M07 + NEW-54 |
-| 17 | Grafana dashboards sanity + retention (Prometheus/Tempo 14d) | M04 |
-| 18 | WebSocket nginx config + STOMP heartbeat + offline/online smoke | M07 |
-| 19 | Alertmanager → Telegram E2E smoke + `docs/alerts.md` каталог 15+ alert'ов | M04 G9 |
-| 20 | Certbot renewal hook + blackbox-exporter SSL expiry alert < 30d | availability |
-| 21 | Flyway `CONCURRENTLY` ArchUnit guard + runbook EXPLAIN 2-weeks | M05 |
-| 22 | Playwright E2E auth flow (login/logout/refresh/WS reconnect) | M03b → M08 → M13 |
-| 23 | VPS deploy runbook dry-run (fresh docker-compose / Ubuntu VM) | M09 |
-| 24 | Финальная верификация + code-reviewer + security-auditor + tag | GA |
+| G | Тема | Cross-ref v0.0.0-debt | Статус |
+|---|------|----------------------|--------|
+| 1 | 3 pre-existing flaky тестов fix | dev-unblock | ✅ |
+| 2 | Rate-limit `replenishRate` семантика | M03a | ✅ |
+| 3 | Pageable max-size cap global | M10 H2 | ✅ |
+| 4 | `/auth/refresh-body` удаление | M03b | ✅ |
+| 5 | `InvalidParam` deprecated alias migration | M11 | ✅ |
+| 6 | Mongo TTL + compound indexes startup verify | M10 S4 | ✅ |
+| 7 | Mongo replica set + `@Transactional` | M02 CRITICAL #1 | ✅ |
+| 8 | Consumer `event_id` dedup | M02 CRITICAL #2 | ✅ |
+| 9 | `SecurityIdorIT` в 4 сервисах + 12 IDOR fixes | M03a / NEW-31 | ✅ |
+| **10** | **`/actuator/**` exclude from tracing sampling** | **M06** | ⬜ **СЛЕДУЮЩАЯ** |
+| 11 | `mem_limit` на nginx/certbot/exporters/cadvisor/promtail | M09 | ⬜ |
+| 12 | `healthcheck:` в docker-compose + Spring health indicators | M04 G4 | ⬜ |
+| 13 | `.env.prod.example` + `scripts/validate-env-prod.sh` | deploy hygiene | ⬜ |
+| 14 | Prometheus + Alertmanager UI за nginx basic-auth + nginx fail-fast | M11 G4 | ⬜ |
+| 15 | `scripts/backup.sh` + `scripts/restore.sh` + tested restore + `.env.prod` GPG | DR | ⬜ |
+| 16 | CSP audit + `/api/csp-report` endpoint + metric | M07 + NEW-54 | ⬜ |
+| 17 | Grafana dashboards sanity + retention (Prometheus/Tempo 14d) | M04 | ⬜ |
+| 18 | WebSocket nginx config + STOMP heartbeat + offline/online smoke | M07 | ⬜ |
+| 19 | Alertmanager → Telegram E2E smoke + `docs/alerts.md` каталог 15+ alert'ов | M04 G9 | ⬜ |
+| 20 | Certbot renewal hook + blackbox-exporter SSL expiry alert < 30d | availability | ⬜ |
+| 21 | Flyway `CONCURRENTLY` ArchUnit guard + runbook EXPLAIN 2-weeks | M05 | ⬜ |
+| 22 | Playwright E2E auth flow (login/logout/refresh/WS reconnect) | M03b → M08 → M13 | ⬜ |
+| 23 | VPS deploy runbook dry-run (fresh docker-compose / Ubuntu VM) | M09 | ⬜ |
+| 24 | Финальная верификация + code-reviewer + security-auditor + tag | GA | ⬜ |
 
-**Estimate:** 5-7 человеко-дней.
-
-## Ключевые решения владельца (из сессии 2026-04-24)
-
-Контекст почему каждая группа входит в M13 — `v0.0.0-debt.md`. Конкретные
-варианты решений записаны в `M13-pre-deploy-hardening/NOTES.md` раздел
-«Итоговые решения владельца по спорным пунктам».
-
-**Топ-5 самых важных для executor'а:**
-
-1. **Rate-limit math (G2):** `replenishRate=1`, `burstCapacity=5`, `requestedTokens=12` → ровно 5 req/min. UX: после 5 ошибок — 12 сек на следующий запрос.
-2. **Mongo replica set (G7):** `rs.initiate()` на standalone Mongo → restart с `--replSet rs0`. И в dev, и в prod. `MongoTransactionManager` bean нужен для **обоих** сервисов (attendance + notification-web).
-3. **Consumer dedup schema (G8):** `event_consumer_processed (consumer_id, event_id, processed_at)` + `UNIQUE(consumer_id, event_id)`. В Mongo — compound unique index. Cleanup через ShedLock-job раз в день, delete `processed_at < now() - 7 days`.
-4. **refresh-body удаляем (G4):** даже если grep покажет usage в frontend — прод с тестовыми данными, пользователей попросим перезайти. Сначала меняем frontend на cookie-flow, потом удаляем endpoint.
-5. **Backup (G15):** 4 DB + `.env.prod` GPG-encrypted, 7-day retention, VPS-snapshot хостера остаётся как страховка 2-го уровня. Tested restore обязателен при setup'е.
+**Estimate remaining:** ~3-4 человеко-дня (G10-G24).
 
 ## Запрос владельца по тестам
 
@@ -125,9 +118,17 @@ Push отложен до M13 completion + явного `go`.
 явно спросить у владельца: "писать тесты для группы X?"** До ответа —
 реализация без тестов (только implementation + runtime smoke).
 
-## Git state на 2026-04-25 (после сессии G1-G7)
+**G9 решение владельца:** «fix all + IT ВСЕХ во всех сервисах,
+важно сразу настроить корректно логику и избавиться от таких багов».
+Применять этот же стандарт к остальным группам если возникнет
+choice между «минимальный fix» и «полный hardening».
+
+## Git state на 2026-04-25 (после сессии G8-G9)
 
 ```
+465b9c9 fix(security): IDOR — все 12 находок в academic+schedule (M13 G9, NEW-31)
+494821f feat(events): consumer-side dedup по event_id (M13 G8, M02 CRITICAL #2)
+e839887 docs(m13): hand-off для следующей сессии — G1-G7 ✅, старт G8
 0301c1b feat(attendance): Mongo replica set + @Transactional для outbox atomicity (M13 G7)
 7073de8 feat(notification): fail-fast startup verify Mongo indexes (M13 G6)
 94e1072 refactor: удалён InvalidParam deprecated alias (M13 G5)
@@ -138,92 +139,67 @@ dfb5419 feat(shared-web): global Pageable cap max-page-size=100 (M13 G3)
 ...
 ```
 
-Ahead origin/dev: **72 коммита** (push отложен до GA tag после M13).
+Ahead origin/dev: **74 коммита** (push отложен до GA tag после M13).
 Локальный tree чистый (untracked: `.coverage`, `docs/report-before-v0.0.0/v0.0.0-debt.md`).
 
-## Hand-off для Группы 8 (Consumer-side dedup по event_id)
+## Hand-off для Группы 10 (Actuator tracing exclude)
 
-**Cross-ref debt:** M02 CRITICAL #2. Consumer duplicates (RabbitMQ
-re-delivery) могут обработать один event дважды. Сейчас дедупа нет
-ни в academic/schedule/attendance/notification-web (Java consumer'ы),
-ни в notification-bot (Python).
+**Cross-ref debt:** M06. Comment в `application.yml:108` «Health-check
+исключены» **misleading** — sampling не выключен, "spam в Tempo
+продолжается". Defer M07 → не сделано → defer M13 G10.
 
-**Owner-sanctioned schema (NOTES.md:48, debt.md и NEXT-SESSION.md:116):**
+**6 checklist items для G10:**
 
-```sql
--- PostgreSQL (academic + schedule)
-CREATE TABLE event_consumer_processed (
-    consumer_id   VARCHAR(100) NOT NULL,
-    event_id      VARCHAR(100) NOT NULL,
-    processed_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    UNIQUE(consumer_id, event_id)
-);
-CREATE INDEX idx_ecp_cleanup ON event_consumer_processed (processed_at);
-```
-
-```javascript
-// MongoDB (attendance + notification-web): compound unique index
-// на коллекции event_consumer_processed
-db.event_consumer_processed.createIndex(
-  { consumer_id: 1, event_id: 1 },
-  { unique: true, name: 'uniq_consumer_event' }
-);
-db.event_consumer_processed.createIndex(
-  { processed_at: 1 },
-  { name: 'idx_ecp_cleanup' }
-);
-```
-
-**Cleanup policy:** ShedLock-job раз в день, delete
-`processed_at < now() - 7 days`. Retention 7d достаточно — RabbitMQ
-не хранит события дольше (dead-letter TTL + autoAck pattern).
-
-**10 checklist items для G8:**
-
-1. `shared-events/EventIdempotent` — аннотация + aspect (вокруг @RabbitListener).
-2. Schema + Flyway migration V{N+1} для academic + schedule (PostgreSQL).
-3. Collection + index init для attendance + notification-web (Mongo).
-4. `@EventIdempotent(consumer="academic")` × academic consumer methods.
-5. `@EventIdempotent(consumer="schedule")` × schedule consumer methods.
-6. `@EventIdempotent(consumer="attendance")` × attendance consumer methods.
-7. `@EventIdempotent(consumer="notification-web")` × notification consumer methods.
-8. Python equiv в notification-bot: Redis `SET consumed:{event_id} NX EX 3600` + early-return при hit.
-9. IT per service (4 Java + Python): publish event × 2 → consumer видит × 1.
-10. ShedLock cleanup job для Postgres + Mongo (может быть shared в shared-events).
+1. Создать `shared-observability/ActuatorTracingExcludeSampler` —
+   OpenTelemetry Sampler bean. Sampler interface от
+   `io.opentelemetry.sdk.trace.samplers.Sampler` — метод
+   `shouldSample(...)` возвращает `SamplingResult.drop()` если span
+   из `/actuator/*` URL, иначе делегирует на parent sampler.
+2. Wire в Spring Boot config — заменить default sampler. Обычно через
+   `@Bean public Sampler customSampler()` либо через micrometer
+   `OpenTelemetryAutoConfiguration` customizer.
+3. IT: `GET /actuator/health` → проверить что span не попадает в
+   in-memory exporter. Использовать `InMemorySpanExporter` из
+   opentelemetry-sdk-testing.
+4. Поправить misleading comment в `application.yml:108` — теперь
+   правда «sampler drops actuator spans».
+5. Обновить `docs/observability.md` — sampling policy section.
+6. Применить к 5 сервисам (auth, academic, schedule, attendance,
+   notification-web) либо положить в shared-observability auto-config.
 
 **Сложности / nuances для executor'а:**
 
-- **Aspect около @RabbitListener:** нужно Spring-AOP pointcut
-  `@annotation(EventIdempotent)`. Method должен принимать `Message` или
-  `@Header("event_id")`. Extract event_id из payload (JSON) либо из
-  `x-rut-event-id` RabbitMQ header (проверить что публишер его ставит —
-  `shared-outbox` OutboxPublisherJob должен это делать).
-- **Mongo collection для dedup** — deploy'ить как часть shared-outbox
-  (та же Mongo connection) или как отдельную collection в domain-db?
-  Скорее всего в domain-db каждого сервиса (простое `@EnableMongoAuditing`
-  на Config).
-- **Postgres Flyway versioning:** проверить текущий V{N} на каждом
-  сервисе: academic последний был, schedule, etc. (`grep "V[0-9]" services/*/src/main/resources/db/migration`).
-- **Aspect — unit-testable**: можно вывести в абстракцию `IdempotencyStore`
-  с Jpa/Mongo impl (аналог `OutboxStorage` pattern из M02).
-- **Python dedup**: использовать существующий Redis connect в
-  `notification-bot`. Pattern — `SET consumed:{event_id} 1 NX EX 3600`.
-  Ключ-префикс отдельный от OTP/reminder ключей.
-- **Tests:** для G8 **нужны** новые IT (checklist требует IT per service).
-  Перед стартом каждого new-IT item в G8 sprosi владельца «писать
-  тесты для G8.X?».
+- **Sampler Bean placement:** OpenTelemetry instrumentation
+  настраивается через `OpenTelemetrySdk.builder().setTracerProvider(...)`.
+  В Spring Boot 3.4 + Micrometer Tracing Bridge — bean type
+  `io.opentelemetry.sdk.trace.samplers.Sampler` подхватывается
+  через `OpenTelemetryAutoConfigurationCustomizer`. Проверить что
+  обычный `@Bean Sampler` сработает; если нет — использовать
+  `@Bean OpenTelemetryAutoConfigurationCustomizer`.
+- **URL extraction из span:** в OpenTelemetry HTTP server span
+  `name` = `HTTP GET` либо custom; URL в attribute
+  `url.path` (semconv 1.20+) либо `http.target` (legacy).
+  Sampler читает attribute через `Attributes attributes` параметр
+  `shouldSample`. Tested: `attributes.get(AttributeKey.stringKey("url.path"))`.
+- **shared-observability vs per-service:** sampler — generic, place
+  в shared-observability как `@Bean` через `@AutoConfiguration`.
+  Все 5 сервисов уже зависят от shared-observability (M04 G7).
+- **Test pattern:** `InMemorySpanExporter` + `SimpleSpanProcessor`
+  собирают spans, после `mockMvc.perform(get("/actuator/health"))`
+  assert что `exporter.getFinishedSpanItems()` НЕ содержит span
+  с `url.path=/actuator/health`. Бизнес-endpoint (не actuator)
+  должен генерить span — sanity-check.
+- **Tests:** для G10 нужны IT (1-2 теста на shared-observability либо
+  любого сервиса). Перед запуском спросить у владельца «писать тесты для G10?».
 
-**Рекомендую разбить G8 на 2-3 коммита:**
-- G8-infra: `EventIdempotent` aspect + helper + schema/collection
-  (без attach к consumer'ам). Тесты helper'а unit-level.
-- G8-apply-java: `@EventIdempotent` на 4 сервисах + IT × 4.
-- G8-apply-python: Redis dedup в bot + pytest dedup test.
+**Рекомендую разбить G10 на 2 коммита:**
+- G10-impl: Sampler + bean wiring + comment fix + doc update.
+- G10-test: IT для actuator-exclusion + sanity-check бизнес span'ов.
 
 ## Mini-app
 
-**НЕ упоминать в M13 scope.** Владелец решил: релиз в v0.0.0 после
-отточки PWA, отдельная сессия (не в M13). Mini-app CORS проверен —
-same-origin через `/mini-app/`, дополнительных config'ов не требуется.
+**НЕ упоминать в M13 scope.** Релиз в v0.0.0 после отточки PWA,
+отдельная сессия.
 
 ## Что ждёт после M13 (для контекста, не для работы)
 
@@ -237,7 +213,7 @@ same-origin через `/mini-app/`, дополнительных config'ов н
 
 ## Pending-действия, ожидающие явного `go`
 
-1. `git push origin dev` — **65+ коммитов** ahead (будет больше после M13).
+1. `git push origin dev` — **74 коммита** ahead (будет больше после M13).
 2. `git push origin --tags` — 13 tags локально (alpha.1-13), после M13 +1-2.
 3. Final `v0.0.0` tag.
 4. VPS migration.
@@ -251,7 +227,7 @@ M09 Prod Release Blockers ✅ 2026-04-24 (`v0.0.0-alpha.10`).
 M10 Notification History ✅ 2026-04-24 (`v0.0.0-alpha.11`).
 M11 OpenAPI Polish ✅ 2026-04-24 (`v0.0.0-alpha.12`).
 M12 Auth Contract-first Refactor ✅ 2026-04-24 (`v0.0.0-alpha.13`).
-**M13 Pre-Deploy Hardening ⬜ В РАБОТЕ (start 2026-04-25).**
+**M13 Pre-Deploy Hardening ⬜ В РАБОТЕ (G1-G9 ✅, старт G10).**
 
 Debt report (источник scope M13) — `docs/report-before-v0.0.0/v0.0.0-debt.md`.
 Dependency graph и полный roadmap — `docs/milestones/README.md`.

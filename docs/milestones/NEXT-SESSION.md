@@ -11,9 +11,9 @@
 **Сейчас идёт M13 — Pre-Deploy Hardening (VPS GA blockers).**
 **После M13 → tag `v0.0.0` GA → push → VPS deploy.**
 
-## Прогресс M13 на 2026-04-25
+## Прогресс M13 на 2026-04-25 (конец сессии)
 
-**14 из 24 групп закрыто** (G1-G14). 83 коммита ahead origin/dev.
+**16 из 24 групп закрыто** (G1-G16). **88 коммитов** ahead origin/dev.
 Push отложен до M13 completion + явного `go`.
 
 | G | Commit | Тема | Итог |
@@ -32,9 +32,11 @@ Push отложен до M13 completion + явного `go`.
 | 12 | `8948825` | Health degradation IT | `HealthDegradationIT` в academic — stop Rabbit → /actuator/health = 503 + rabbit DOWN. 4/5 пунктов уже были закрыты M06+M09 |
 | 13 | `5e5aad4` | `.env.prod.example` + validator | 22 required vars, pure-bash dot-env parser (без shell eval — пароли содержат shell-specials). **Real-world catch:** validator нашёл 4 проблемы в owner's .env.prod |
 | 14 | `1f836da` | Prometheus/Alertmanager lockdown | 2 новых nginx locations за basic-auth + --web.external-url + `nginx/scripts/entrypoint.sh` fail-fast (5 checks на SWAGGER_HTPASSWD) |
+| 15 | `3c92807` + `c5d8dc2` | Backup infrastructure | `scripts/backup.sh` (pg_dump×2 + mongodump×1 + GPG symmetric) + `restore.sh` + `test-restore.sh` + `docker-compose.test-restore.yml` + cron.d + `runbooks/backup-restore.md` + ShellCheck CI. **Surprise:** одна Mongo хостит 2 БД (`attendance_db`+`notification_db`) → один archive атомарно, не два dump'а |
+| 16 | `153de6a` + `3e9566a` | CSP audit + report endpoint | `/csp-report` endpoint (byte[] + manual ObjectMapper — MappingJackson2HttpMessageConverter не знает `application/csp-report`), counter `security.csp.violations{directive, blocked_uri_host}`, 14 unit + 5 IT тестов, nginx `report-uri` + `report-to` + `Report-To` header, `docs/security-headers.md`. Browser smoke deferred в G23 per владелец |
 
-**Следующая — Группа 15 (Backup infrastructure)** — **самая большая
-из оставшихся**, блокер DR перед prod deploy. Estimate ~2-3 часа.
+**Следующая — Группа 17 (Grafana dashboards sanity + retention)**.
+Маленькая (5 checklist items), ~1 час.
 
 ## Key decisions зафиксированы в NOTES
 
@@ -71,6 +73,37 @@ Push отложен до M13 completion + явного `go`.
   провёл полную rotation всех passwords в `.env.prod` + добавил 3
   missing secrets (MONGODB_REPLICA_SET_KEY, INTERNAL_ISSUER_SECRET,
   ALERT_WEBHOOK_SECRET) — готово для VPS deploy.
+- **Backup: одна Mongo** (G15 surprise): hand-off указывал «mongodump × 2»,
+  но в prod compose одна `rct-mongo-attendance` с обеими БД
+  (`attendance_db` + `notification_db`). Один `mongodump --archive`
+  атомарно — проще и FK-consistent между `excuse` и
+  `notification_history`.
+- **Backup tested-restore design** (G15): `docker-compose.test-restore.yml`
+  с tmpfs volumes + ephemeral random passwords, project name
+  `rct-test-restore`. Row count verification — smoke (backup валиден),
+  **не** parity с prod (риск нагрузки). Guaranteed teardown через
+  `trap cleanup EXIT`.
+- **Symmetric GPG** (G15): AES256 + passphrase в Bitwarden. Rejected
+  asymmetric (меньше friction, всё равно passphrase в password manager).
+  Offsite backup (S3/B2) deferred в v0.1 — VPS-snapshot провайдера
+  как 2-й слой.
+- **ShellCheck CI** (G15 proactive): `.github/workflows/ci.yml` + fixed
+  pre-existing SC2064 в `smoke-prod.sh` + SC2164 в
+  `m07-g3-launch-services.sh`. 8/8 bash-скриптов проходят
+  `--severity=warning`.
+- **CSP `application/csp-report` 415 surprise** (G16): Spring MVC
+  `MappingJackson2HttpMessageConverter` не матчит non-`+json` MIME
+  types → `@PostMapping(consumes=...)` возвращал 415 до handler.
+  Решение: `byte[]` + `@RequestHeader Content-Type` + manual
+  `ObjectMapper.readValue`. Один endpoint, switch по Content-Type.
+- **CSP low-cardinality labels** (G16): `directive` — только имя
+  (lowercase, без source list), `blocked_uri_host` — только host
+  (без path), special values (inline/eval/data:) обрезаются до 32 chars.
+  Критично для Prometheus label cardinality.
+- **CSP routing** (G16): Browser → nginx `/api/csp-report` → gateway
+  (StripPrefix=1, rate-limit 60/min per-IP, PUBLIC_PATHS) →
+  notification-web `/csp-report` (`@Hidden`, excluded из
+  `NotificationUserContextFilter`).
 
 ## Старт новой сессии — дословно
 
@@ -119,9 +152,9 @@ Push отложен до M13 completion + явного `go`.
 | 12 | `healthcheck:` в docker-compose + Spring health indicators | M04 G4 | ✅ |
 | 13 | `.env.prod.example` + `scripts/validate-env-prod.sh` | deploy hygiene | ✅ |
 | 14 | Prometheus + Alertmanager UI за nginx basic-auth + nginx fail-fast | M11 G4 | ✅ |
-| **15** | **`scripts/backup.sh` + `scripts/restore.sh` + tested restore + `.env.prod` GPG** | **DR** | ⬜ **СЛЕДУЮЩАЯ** |
-| 16 | CSP audit + `/api/csp-report` endpoint + metric | M07 + NEW-54 | ⬜ |
-| 17 | Grafana dashboards sanity + retention (Prometheus/Tempo 14d) | M04 | ⬜ |
+| 15 | `scripts/backup.sh` + `scripts/restore.sh` + tested restore + `.env.prod` GPG | DR | ✅ |
+| 16 | CSP audit + `/api/csp-report` endpoint + metric | M07 + NEW-54 | ✅ |
+| **17** | **Grafana dashboards sanity + retention (Prometheus/Tempo 14d)** | **M04** | ⬜ **СЛЕДУЮЩАЯ** |
 | 18 | WebSocket nginx config + STOMP heartbeat + offline/online smoke | M07 | ⬜ |
 | 19 | Alertmanager → Telegram E2E smoke + `docs/alerts.md` каталог 15+ alert'ов | M04 G9 | ⬜ |
 | 20 | Certbot renewal hook + blackbox-exporter SSL expiry alert < 30d | availability | ⬜ |
@@ -130,111 +163,113 @@ Push отложен до M13 completion + явного `go`.
 | 23 | VPS deploy runbook dry-run (fresh docker-compose / Ubuntu VM) | M09 | ⬜ |
 | 24 | Финальная верификация + code-reviewer + security-auditor + tag | GA | ⬜ |
 
-**Estimate remaining:** ~2-3 человеко-дня (G15-G24).
+**Estimate remaining:** ~1-2 человеко-дня (G17-G24).
 
-## Запрос владельца по тестам
+## Запрос владельца по тестам и manual verification
 
-Владелец на старте M13 сказал: «при выполнении скажу написать тесты».
-**Значит при старте каждой группы, где задача требует новые тесты
-(new endpoint / new service / new security check), executor должен
-явно спросить у владельца: "писать тесты для группы X?"** До ответа —
-реализация без тестов (только implementation + runtime smoke).
+Владелец сказал на G16: **«Я не хочу руками делать пока ничего если
+что потом сообщу обо всех ошибках. сделай что можно автоматически
+сделать»**.
 
-**G9 решение владельца:** «fix all + IT ВСЕХ во всех сервисах,
-важно сразу настроить корректно логику и избавиться от таких багов».
-Применять этот же стандарт к остальным группам если возникнет
-choice между «минимальный fix» и «полный hardening».
+**Значит:**
+1. **НЕ ПРОСИТЬ** владельца открывать frontends в браузере, делать
+   manual smoke, щёлкать DevTools.
+2. **Всё что возможно автоматизировать** — автоматизировать (IT +
+   unit + Testcontainers + Playwright).
+3. Manual verification items в checklist — помечать **«deferred в G23
+   VPS dry-run»** и двигать дальше. В G23 owner сам пройдёт весь
+   runbook руками на fresh VPS / Ubuntu VM и сообщит о реальных
+   ошибках одним batch'ем.
 
-## Git state на 2026-04-25 (после сессии G10-G14)
+**Исключения:** если checklist item требует **owner decision** (scope,
+design choice) — спрашивать в начале группы. Если **реализация** — делать.
+
+**G9 стандарт (сохраняется):** при choice между «минимальный fix» и
+«полный hardening» — полный hardening, «важно сразу настроить корректно
+логику и избавиться от таких багов».
+
+## Git state на 2026-04-25 (после сессии G15-G16)
 
 ```
+3e9566a feat(nginx): CSP report-uri + report-to + docs/security-headers.md (M13 G16)
+153de6a feat(notification): /csp-report endpoint + counter (M13 G16)
+c5d8dc2 test(infra): test-restore.sh + shellcheck CI + G15 checklist (M13 G15)
+3c92807 feat(infra): backup.sh + restore.sh + daily cron (M13 G15)
+8e23aed docs(m13): hand-off для следующей сессии — G1-G14 ✅, старт G15
 1f836da feat(infra): Prometheus/Alertmanager UI lockdown + nginx fail-fast (M13 G14)
 5e5aad4 feat(infra): .env.prod.example + validate-env-prod.sh (M13 G13)
-8948825 test(academic): IT health degradation при stopped Rabbit (M13 G12)
-472263a feat(infra): mem_limit на 9 aux containers (M13 G11)
-595b6e1 test(observability): IT actuator-exclusion filter (M13 G10)
-9574d91 feat(observability): drop /actuator/** spans до OTLP exporter (M13 G10)
-37b4795 docs(m13): hand-off для следующей сессии — G1-G9 ✅, старт G10
-465b9c9 fix(security): IDOR — все 12 находок в academic+schedule (M13 G9, NEW-31)
-494821f feat(events): consumer-side dedup по event_id (M13 G8, M02 CRITICAL #2)
 ...
 ```
 
-Ahead origin/dev: **83 коммита** (push отложен до GA tag после M13).
-Локальный tree чистый (untracked: `.coverage`, `docs/report-before-v0.0.0/v0.0.0-debt.md`).
+Ahead origin/dev: **88 коммитов** (push отложен до GA tag после M13).
+Локальный tree чистый (untracked: `.coverage`,
+`docs/report-before-v0.0.0/v0.0.0-debt.md`).
 
-## Hand-off для Группы 15 (Backup infrastructure)
+## Hand-off для Группы 17 (Grafana dashboards sanity + retention)
 
-**Cross-ref debt:** DR — **нет ничего**. Сейчас если VPS rm-rf'нут,
-всё потеряно. После G15 — 7-day daily backup + tested restore
-procedure. **Блокер VPS deploy — без этого GA нельзя.**
+**Cross-ref debt:** M04 observability. После M04 G10 Grafana
+dashboards + Prometheus/Tempo retention были настроены, но проверка
+«non-zero данные показываются» была deferred. Теперь перед GA
+убеждаемся, что dashboards живы + retention правильный (14 дней,
+not default 15d или infinite).
 
-**7 checklist items для G15:**
+**5 checklist items для G17:**
 
-1. `scripts/backup.sh` — pg_dump × 2 (academic + schedule) + mongodump
-   × 2 (attendance + notification) + `.env.prod` GPG-encrypt. Output —
-   `/opt/backups/{date}/` с 4 `.gz` + 1 `.env.prod.gpg`.
-2. Retention: `find /opt/backups -name "*.gz" -mtime +7 -delete` + same
-   для `.gpg`. Встроено в `backup.sh` либо отдельный `cleanup-backups.sh`.
-3. `scripts/restore.sh $date` — параметризованный restore: принимает
-   date suffix и восстанавливает все 4 БД.
-4. **Tested restore:** backup → локальная Postgres/Mongo (Docker-compose
-   test setup) → `restore.sh` → row count matches. Acceptance criteria.
-5. Cron config: `/etc/cron.d/rutcampustrack-backup` — раз в сутки 03:00
-   UTC (06:00 MSK — вне пар).
-6. GPG key generation: добавить в `docs/prod-deploy-checklist.md`
-   (G13 раздел 1.0) — `gpg --gen-key` + private key backup в password
-   manager (Bitwarden/1Password).
-7. `runbooks/backup-restore.md` (новый) — полный runbook: setup GPG,
-   daily automation, test restore quarterly, disaster recovery scenario
-   (VPS wiped, restore из remote backup on fresh VPS).
+1. `docker compose up -d` → открыть Grafana → 3 dashboard'а
+   (business-kpis, system-health, tracing) показывают non-zero данные.
+2. Проверить `prometheus --storage.tsdb.retention.time=14d` в
+   docker-compose.
+3. Проверить `tempo.yml` retention 14d.
+4. Проверить Loki retention (если включён).
+5. `.env.prod.example`: `GRAFANA_ADMIN_PASSWORD` — не дефолт
+   `admin/admin`.
 
 **Сложности / nuances для executor'а:**
 
-- **pg_dump vs. pg_dumpall:** у нас 2 разных Postgres containers
-  (academic + schedule) с разными паролями. `pg_dump` per-DB — проще
-  чем unified `pg_dumpall`. Путь: `docker exec rct-postgres-academic
-  pg_dump -U rct_user academic_db | gzip > /opt/backups/{date}/academic.sql.gz`.
-  Password приходит через env var `PGPASSWORD` внутри container'а
-  (auto-set Postgres image).
+- **Item 1 — manual browser** → per owner policy «ничего руками», **defer**
+  smoke'а в G23. Но automated check возможен:
+  `docker exec rct-grafana wget -qO- http://localhost:3000/api/dashboards/uid/business-kpis`
+  → JSON dashboard definition. Grep за panel `"type":` count → gauge
+  что dashboard structure OK. Data validation — только при running
+  стеке с синтетическим load, **not practical** в CI. Принять: item 1
+  = «dashboard structure validates + provisioning files present».
+- **Item 2 — Prometheus retention.** Проверить в
+  `docker-compose.prod.yml` на prometheus service `command:` args.
+  Должен быть `--storage.tsdb.retention.time=14d` (не default 15d,
+  не выше). М06 ставил digest-pin, M13 G14 добавил `--web.external-url`
+  — проверить что оба присутствуют + retention явно прописан.
+- **Item 3 — Tempo retention.** Искать `infra/tempo/tempo.yml`,
+  секция `compactor: block_retention: 14d` (Tempo convention). Опечатка
+  (как `14 days` вместо `14d`) — silent accepted by Tempo но uses
+  default. Tight check.
+- **Item 4 — Loki retention.** Loki может быть не включён — проверить
+  `docker-compose.prod.yml`. Если есть — искать в `infra/loki/loki.yml`
+  `limits_config: retention_period: 336h` (= 14d). Если Loki отключён —
+  mark item as «N/A (Loki не используется на v0.0.0)».
+- **Item 5 — GRAFANA_ADMIN_PASSWORD в .env.prod.example.** Проверить
+  что переменная уже есть (она добавлялась в M04). Если default выставлен
+  как пример — заменить на CHANGE_ME + добавить generation hint
+  (`openssl rand -base64 16`). Также добавить в
+  `scripts/validate-env-prod.sh` → REQUIRED_VARS (если нет).
 
-- **mongodump для bitnami/mongodb RS (M13 G7):** `docker exec rct-mongo-attendance
-  mongodump --archive=/tmp/attendance.archive --uri="mongodb://root:${MONGO_ROOT_PASSWORD}@localhost:27017?authSource=admin&replicaSet=rs0"`.
-  Мы НЕ можем hardcode пароль в `backup.sh` — читать из `/opt/rutcampustrack/.env.prod`
-  через `source` (или parser dot-env как в validate-env-prod.sh).
+**Что точно automated possible:**
+- Items 2-5 — grep / config parsing / validation script tweak.
+- Item 1 partial — dashboard JSON structure validation без running стека.
 
-- **notification-web Mongo отдельный user (PoLP):** `MONGO_NOTIFICATION_USER`
-  (не root). Root credential нужен для dump, notification user —
-  scoped для runtime.
+**Что deferred в G23:**
+- Item 1 живой smoke (non-zero данные в UI) — manual, G23.
 
-- **GPG encryption `.env.prod`:** `gpg --symmetric --cipher-algo AES256
-  --output .env.prod.gpg .env.prod`. Passphrase — из password manager
-  (НЕ в скрипте!). Альтернатива — asymmetric с public key recipient
-  (меньше friction для decrypt, но требует keyring на VPS).
+**Рекомендую разбить G17 на 1-2 коммита:**
+- G17-config: retention checks (items 2-4) + .env.prod.example item 5.
+  Один коммит, мелкий diff.
+- G17-dashboards (если нужно): JSON structure check (item 1 automated
+  partial) + NOTES обновление с «живой smoke deferred G23».
 
-- **Tested restore — что именно:** row count matches на academic.users,
-  schedule.lessons, attendance.attendances, notification_history. Не
-  full data equality (test'ы лечат это через IT), a liveness row count.
+**Estimate G17:** ~30-60 минут (самая маленькая из оставшихся групп).
 
-- **Cron on bitnami-Debian VPS:** `/etc/cron.d/` OR systemd timer.
-  Simpler — cron.d для idempotency. Script должен быть self-contained
-  (resolve `.env.prod` path, logging в `/var/log/rutcampustrack-backup.log`).
-
-- **Storage location:** `/opt/backups/` на VPS hosted disk. Дополнительно
-  **offsite copy** (S3/Backblaze B2 / provider snapshot) — **deferred
-  в v0.1** (owner решение в debt-report #19: «VPS hostpr snapshot как
-  2-й слой»). Для M13 — только local 7-day retention.
-
-- **Tests:** для G15 IT не нужен — restore idempotency проверяется
-  manual через docker-compose test-stack. Перед запуском спросить
-  у владельца «писать automated tested-restore test или manual ok?».
-
-**Рекомендую разбить G15 на 3 коммита:**
-- G15-impl: `backup.sh` + `restore.sh` + `.env.prod` GPG encrypt logic.
-- G15-cron-doc: cron.d конфиг + `runbooks/backup-restore.md` + update
-  `prod-deploy-checklist.md` (секция 1.0 добавить шаг про GPG key gen).
-- G15-tested-restore: если владелец OK на tested restore workflow —
-  отдельный `scripts/test-restore.sh` + CI job (optional).
+**После G17 — G18 (WebSocket reliability).** Также 4 checklist items,
+manual smoke (PWA offline/online) deferred в G23. Остальное (nginx
+config + STOMP heartbeat + docs) — automated.
 
 ## Mini-app
 
@@ -244,7 +279,7 @@ procedure. **Блокер VPS deploy — без этого GA нельзя.**
 ## Что ждёт после M13 (для контекста, не для работы)
 
 После закрытия всех 23 AC:
-1. Tag `v0.0.0-alpha.14` или сразу `v0.0.0` (решит владелец).
+1. Tag `v0.0.0-alpha.15+` либо сразу `v0.0.0` (решит владелец).
 2. `CHANGELOG.md` `[Unreleased]` → `[0.0.0]` с сегодняшней датой.
 3. Version bump: root `build.gradle.kts` + `frontends/*/package.json` на `0.0.0`.
 4. `docker-compose.prod.yml` image tags на `:v0.0.0`.
@@ -253,7 +288,7 @@ procedure. **Блокер VPS deploy — без этого GA нельзя.**
 
 ## Pending-действия, ожидающие явного `go`
 
-1. `git push origin dev` — **83 коммита** ahead (будет больше после M13).
+1. `git push origin dev` — **88 коммитов** ahead (будет больше после M13).
 2. `git push origin --tags` — 13 tags локально (alpha.1-13), после M13 +1-2.
 3. Final `v0.0.0` tag.
 4. VPS migration.
@@ -267,7 +302,7 @@ M09 Prod Release Blockers ✅ 2026-04-24 (`v0.0.0-alpha.10`).
 M10 Notification History ✅ 2026-04-24 (`v0.0.0-alpha.11`).
 M11 OpenAPI Polish ✅ 2026-04-24 (`v0.0.0-alpha.12`).
 M12 Auth Contract-first Refactor ✅ 2026-04-24 (`v0.0.0-alpha.13`).
-**M13 Pre-Deploy Hardening ⬜ В РАБОТЕ (G1-G14 ✅, старт G15).**
+**M13 Pre-Deploy Hardening ⬜ В РАБОТЕ (G1-G16 ✅, старт G17).**
 
 Debt report (источник scope M13) — `docs/report-before-v0.0.0/v0.0.0-debt.md`.
 Dependency graph и полный roadmap — `docs/milestones/README.md`.

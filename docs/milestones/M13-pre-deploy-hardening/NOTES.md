@@ -904,3 +904,65 @@ secrets выделены отдельно для upgrade-сценария со �
 PAT, DB passwords. Предложил полную rotation одной операцией (вместо
 порционной). Пользователь rotation'нул passwords + добавил 3 missing
 secrets. Финальный `validate-env-prod.sh` зелёный → готов для VPS deploy.
+
+## 2026-04-25 — Группа 14 (Swagger + Prometheus/Alertmanager lockdown)
+
+**Реализовано:**
+
+1. **`/prometheus/` + `/alertmanager/` за nginx basic-auth:**
+   - 2 location blocks в `nginx/conf.d/default.conf` рядом с `/grafana/`
+     (single консистентный `auth_basic_user_file` для всех admin UI).
+   - `proxy_pass http://rct-prometheus:9090/` с trailing slash → nginx
+     strip'ает `/prometheus/` prefix перед forwarding'ом.
+
+2. **`--web.external-url` + `--web.route-prefix=/`** на prometheus и
+   alertmanager:
+   - `external-url=https://ruttrack.site/prometheus/` — UI генерирует
+     absolute links через этот prefix (Graph/Targets/Alerts ссылки
+     не ломаются через reverse-proxy).
+   - `route-prefix=/` — service всё ещё слушает на `/` внутри container'а
+     (nginx делает strip), без этого prometheus попытался бы expect'ить
+     `/prometheus/*` входящих запросов и вернул 404.
+
+3. **`nginx/scripts/entrypoint.sh`** — fail-fast перед `exec nginx`:
+   - Check 1: `SWAGGER_HTPASSWD` defined + non-empty.
+   - Check 2: format match `login:$apr1$*` либо `login:$2y$*` (после
+     compose escape `$$` → `$`). Защита от regression если кто-то
+     забудет double-`$$` в `.env.prod`.
+   - Check 3: post-write `.htpasswd` non-empty (защита от disk-full).
+   - Background safety-net loop (5min `nginx -s reload`) preserved
+     из inline command (M11 G4).
+   - Старый inline `command` (multi-line `printf > .htpasswd && ...`)
+     убран — entrypoint скрипт mount'ится volume'ом, чище читается.
+
+**Surprise (compose env-file parsing):**
+
+Owner отротировал `MONGODB_REPLICA_SET_KEY` (1024 base64 chars), но
+docker-compose env-parser упал на unquoted значениях с `+` и `/`:
+```
+failed to read .env.prod: line N: unexpected character "+" in variable name
+```
+
+Причина: `+` и `/` встречаются в base64 alphabet, и **без quoting
+docker-compose интерпретирует их как multi-line continuation**. Fix:
+обернуть key в double quotes — `MONGODB_REPLICA_SET_KEY="..."`.
+
+`.env.prod.example` обновлён с этим warning'ом (CRITICAL block перед
+переменной), `validate-env-prod.sh` уже корректно strip'ает quotes
+при парсинге (был сделан так при G13).
+
+**Что НЕ сделано (deferred):**
+
+- IT для basic-auth lockdown — runtime smoke (curl с/без auth)
+  работает в G23 deploy dry-run. Inline IT с nginx Testcontainer
+  излишен.
+- Audit log для basic-auth попыток — nginx access log уже пишет
+  `$remote_user` в существующем `log_format main` (см. nginx.conf:13-15).
+  Loki/Promtail подхватывают через docker logs driver.
+- IP allowlist на admin UI (extra layer) — owner ответил «v0.1»
+  в debt-report (#7 X-Forwarded-For).
+
+**Validation:**
+- `docker compose -f docker-compose.prod.yml --env-file .env.prod
+  config --quiet` → exit 0 (после fix MONGODB_REPLICA_SET_KEY quoting).
+- `validate-env-prod.sh` → ✓ all 24 vars passed.

@@ -122,14 +122,14 @@
 
 ## Группа 14 — Swagger basic-auth + Prometheus/Alertmanager lockdown
 
-- [ ] Добавить `SWAGGER_AUTH_USER` + `SWAGGER_AUTH_PASS` в `.env.prod.example`
-- [ ] Runbook: генерация `.htpasswd` через `htpasswd -B -c` (bcrypt), не apr1
-- [ ] Добавить `location /prometheus/` в `nginx/conf.d/default.conf` с basic-auth
-- [ ] Добавить `location /alertmanager/` в `nginx/conf.d/default.conf` с basic-auth
-- [ ] Добавить `--web.external-url=https://ruttrack.site/prometheus/` к prometheus command
-- [ ] Добавить `--web.external-url=https://ruttrack.site/alertmanager/` к alertmanager command
-- [ ] Создать `nginx/entrypoint.sh` — fail-fast если `.htpasswd` отсутствует или пустой
-- [ ] Обновить `nginx` image / Dockerfile — использовать новый entrypoint
+- [x] Добавить `SWAGGER_AUTH_USER` + `SWAGGER_AUTH_PASS` в `.env.prod.example` _(N/A — `SWAGGER_HTPASSWD` уже был в `.env.prod.example` (M11 G4) с инструкцией по генерации, расщеплять на USER + PASS не нужно. M13 G13 enriched шаблон с двумя альтернативами генерации (htpasswd -nB bcrypt, openssl passwd -apr1 fallback) + `$$` escape warning)_
+- [x] Runbook: генерация `.htpasswd` через `htpasswd -B -c` (bcrypt), не apr1 _(уже зафиксировано в комментариях `.env.prod.example` + `docs/runbooks/swagger-prod-access.md` (M11 G4). G14 ничего нового не добавляет — bcrypt уже preferred)_
+- [x] Добавить `location /prometheus/` в `nginx/conf.d/default.conf` с basic-auth _(добавлен — proxy_pass на rct-prometheus:9090, `auth_basic` + `.htpasswd`)_
+- [x] Добавить `location /alertmanager/` в `nginx/conf.d/default.conf` с basic-auth _(добавлен — proxy_pass на rct-alertmanager:9093, `auth_basic` + `.htpasswd`)_
+- [x] Добавить `--web.external-url=https://ruttrack.site/prometheus/` к prometheus command _(+`--web.route-prefix=/` чтобы prometheus отвечал на root внутри container'а; nginx делает path strip через `proxy_pass http://...:9090/` с trailing slash)_
+- [x] Добавить `--web.external-url=https://ruttrack.site/alertmanager/` к alertmanager command _(+`--web.route-prefix=/` same reason; добавлено в `entrypoint:` block, который уже был для secret-write)_
+- [x] Создать `nginx/entrypoint.sh` — fail-fast если `.htpasswd` отсутствует или пустой _(`nginx/scripts/entrypoint.sh`: 5 fail-fast checks — env var defined + non-empty + format `login:$apr1$...` либо `login:$2y$...` (защита от unescaped `$$` regression) + post-write file non-empty. Inline `nginx.command` заменён на `entrypoint: ["/bin/sh", "/usr/local/bin/entrypoint.sh"]` + volume mount)_
+- [x] Обновить `nginx` image / Dockerfile — использовать новый entrypoint _(не нужен custom Dockerfile — entrypoint mount'ится volume'ом as ro в standard nginx:1.27-alpine. Это симметрично с другими nginx config files (nginx.conf, conf.d, dhparam.pem) и проще поддерживать)_
 
 ## Группа 15 — Backup infrastructure
 

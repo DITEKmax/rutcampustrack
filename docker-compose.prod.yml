@@ -518,6 +518,13 @@ services:
       # (incident analysis + weekly review). NEW-66: review по
       # накоплению disk usage.
       - '--storage.tsdb.retention.time=14d'
+      # M13 G14 — UI за nginx reverse-proxy под /prometheus/ с basic-auth.
+      # --web.external-url ставит base URL для absolute links в UI; без
+      # него Graph/Targets/Alerts пишут absolute "/graph" без prefix'а и
+      # ломаются через proxy. --web.route-prefix нужен чтобы prometheus
+      # сам отвечал на /prometheus/* (иначе upstream отдаёт 404).
+      - '--web.external-url=https://ruttrack.site/prometheus/'
+      - '--web.route-prefix=/'
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       # M04 Группа 9 — rule files подключаются через prometheus.yml
@@ -557,13 +564,20 @@ services:
       - alertmanager-data:/alertmanager
     # Записываем secret в volume at startup — alertmanager не поддерживает
     # env-vars в yaml напрямую, credentials_file единственный путь.
+    # M13 G14 — --web.external-url ставит base URL для absolute links в UI.
+    # --web.route-prefix=/ — alertmanager слушает на / внутри container'а,
+    # nginx strip'ает /alertmanager/ prefix через proxy_pass с trailing slash.
     entrypoint:
       - /bin/sh
       - -c
       - |
         mkdir -p /etc/alertmanager && \
         echo -n "$${ALERT_WEBHOOK_SECRET}" > /etc/alertmanager/secret && \
-        exec /bin/alertmanager --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/alertmanager
+        exec /bin/alertmanager \
+          --config.file=/etc/alertmanager/alertmanager.yml \
+          --storage.path=/alertmanager \
+          --web.external-url=https://ruttrack.site/alertmanager/ \
+          --web.route-prefix=/
     expose:
       - "9093"
     networks:
@@ -681,6 +695,10 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/dhparam.pem:/etc/nginx/dhparam.pem:ro
+      # M13 G14 — fail-fast entrypoint: validate SWAGGER_HTPASSWD format
+      # перед стартом nginx. Без этого пустой .htpasswd → silent security
+      # regression (любой пароль проходит).
+      - ./nginx/scripts/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
       - certbot-conf:/etc/letsencrypt:ro
       - certbot-www:/var/www/certbot:ro
     networks:
@@ -693,12 +711,17 @@ services:
     mem_limit: 256m
     mem_reservation: 32m
     restart: unless-stopped
-    # Startup sequence:
-    # 1. Materialize .htpasswd from $SWAGGER_HTPASSWD env (M11 G4).
-    # 2. Background loop reloads nginx every 5 minutes as a safety net for cases
-    #    when deploy.yml's explicit `nginx -s reload` step is skipped or fails.
-    #    Primary reload path is GitHub Actions deploy.yml after git pull.
-    command: "/bin/sh -c 'printf \"%s\\n\" \"$$SWAGGER_HTPASSWD\" > /etc/nginx/.htpasswd && chmod 644 /etc/nginx/.htpasswd && (while :; do sleep 5m; nginx -s reload; done &) && nginx -g \"daemon off;\"'"
+    # M13 G14 — fail-fast entrypoint:
+    # 1. Validate SWAGGER_HTPASSWD env var (defined + non-empty + правильный
+    #    format `login:$apr1$...` либо `login:$2y$...`). Без этих проверок
+    #    /swagger-ui / /prometheus/ / /alertmanager/ basic-auth могла бы
+    #    silently accept'ить любой password при пустом .htpasswd.
+    # 2. Materialize .htpasswd from env (preserves M11 G4 behaviour).
+    # 3. Background loop reloads nginx every 5 min (safety-net для cases
+    #    когда deploy.yml's explicit `nginx -s reload` step skipped/failed).
+    #    Primary reload path: GitHub Actions deploy.yml.
+    # 4. Foreground nginx daemon.
+    entrypoint: ["/bin/sh", "/usr/local/bin/entrypoint.sh"]
 
   certbot:
     # M08 G11 — digest-pin + explicit tag (было implicit :latest, supply-chain риск).

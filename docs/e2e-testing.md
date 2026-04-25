@@ -7,6 +7,7 @@ Playwright end-to-end тесты для RutCampusTrack.
 | Spec | Сценарий | Roles |
 |------|----------|-------|
 | `auth.spec.ts` | login → schedule visible → logout clears state | student, admin |
+| `auth-token-lifecycle.spec.ts` (M13 G22) | HttpOnly cookie + role-guard + refresh + logout cookie clear + offline/online STOMP reconnect | student, admin |
 | `headman-mark.spec.ts` | headman bulk-mark → WebSocket live-update | headman |
 | `student-excuse.spec.ts` | excuse + 10MB PDF upload → headman approves | student, headman |
 | `admin-create-user.spec.ts` | admin creates user → initial_password visible | admin |
@@ -185,9 +186,33 @@ A: Увеличить `expect({ timeout: 10_000 })` локально для WebS
 **Q: Как подключить VPN/proxy?**
 A: `playwright.config.ts` — добавить `use.proxy.server = 'socks5://...'`.
 
+## CI integration (M13 G22)
+
+GitHub Actions job `e2e-auth` (`.github/workflows/ci.yml`):
+
+1. Java 21 + Node 22 + Gradle setup.
+2. `./gradlew assemble` — собрать все backend service jar'ы.
+3. `npm ci && npm run build` для PWA + mini-app + web-panel frontends.
+4. `docker compose up -d --build` — поднять полный dev stack (5 backend +
+   gateway + nginx + Postgres×2 + Mongo + Redis + Rabbit + 4 frontend-nginx).
+5. Wait для healthchecks (max 4 мин, polls каждые 5 сек).
+6. `cd tests/e2e && npm install && npx playwright install --with-deps chromium`.
+7. Запуск **только `@smoke`-grouped specs** (`--grep @smoke`):
+   - `auth.spec.ts` × 3 теста
+   - `auth-token-lifecycle.spec.ts` × 5 тестов (M13 G22)
+   Полный suite остаётся локальной командой `npm test`.
+8. `--project=chromium` only (WebKit пропущен в CI чтобы держать runtime
+   < 5 мин; локально `npm test` гонит оба).
+9. На failure — upload `playwright-report/` + `docker logs` для всех
+   контейнеров (artefacts retention 7 дней).
+
+**Cost:** ~5-7 мин на ubuntu-latest runner. Trigger — push на любую ветку
+(paths-ignore не относится к `tests/`).
+
 ## Источники
 
 - M08 PLAN.md Группа 5 — `docs/milestones/M08-test-infrastructure/PLAN.md`
 - M08 DECISIONS D1 (mini-app skip) — `docs/milestones/M08-test-infrastructure/DECISIONS.md`
 - M07 G10 a11y baseline — `docs/a11y-checklist.md`
+- M13 G18 STOMP heartbeat — `docs/websocket-flow.md`
 - Playwright docs — https://playwright.dev/

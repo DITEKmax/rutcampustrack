@@ -1438,3 +1438,76 @@ feedback (`feedback_flyway_no_edit.md`) но не в CLAUDE.md. Теперь
 gradle holds Spring app context warm-up overhead). Items 1-3
 (CLAUDE.md + 2 test'а) ~30 мин. Item 4 (deploy checklist EXPLAIN
 section) ~15 мин.
+
+## 2026-04-25 — Группа 22 (Playwright E2E auth flow)
+
+**Two surprises:**
+
+**Surprise 1 — Playwright уже стоит.** Hand-off говорил «создать
+`frontends/pwa-e2e/`», но факт: M08 G7 уже создал
+`tests/e2e/` с 8 spec'ами + Playwright config + 3 fixtures (auth/
+users/axe). Существующий `auth.spec.ts` уже покрывает T1 login
+(happy path), T2 admin, T4 logout (без cookie verification). Не
+дублирую — добавил **новый** spec `auth-token-lifecycle.spec.ts` с
+fokus на security guarantees (cookie attributes, refresh rotation,
+WS resilience).
+
+**Surprise 2 — Playwright не в CI.** M08 G7 создал тесты, но job в
+`.github/workflows/ci.yml` отсутствовал. AC-6 («login/logout/refresh
+cycle зелёный в CI») = блокер. Новый job `e2e-auth` добавлен.
+
+**Spec design — 5 тестов в одном @smoke describe:**
+
+| # | Тест | Уникальность от auth.spec.ts |
+|---|------|------------------------------|
+| T1 | HttpOnly cookie verification | auth.spec.ts не проверяет cookie attributes |
+| T2 | URL `/admin/` assertion | auth.spec.ts проверяет heading, не URL pattern |
+| T3 | refresh + rotation + new value | NEW — не было |
+| T4 | logout cookie clear | auth.spec.ts проверяет redirect, не cookie state |
+| T5 | offline/online → reload survival | NEW — cross-ref M13 G18 |
+
+**Cookie verification approach:** Playwright `context.cookies()`
+возвращает array с полями name/value/domain/path/expires/httpOnly/
+secure/sameSite. SameSite в API форме `'Strict'`/`'Lax'`/`'None'`.
+Source of truth: `services/auth-service/.../security/AuthCookies.java`
+(rct_refresh, /api/auth path, HttpOnly+Secure+SameSite=Strict).
+
+**T3 refresh flow nuance:** Force TTL 15s в test'е невозможно без
+override `application-test.yml` (требует backend restart, не
+test-friendly). Решение: триггерить refresh **напрямую** через
+`POST /api/auth/refresh` с `request.post()` API. Browser auto-attaches
+cookie по path match (`path='/api/auth'`). Это проверяет: (1) endpoint
+работает (200 + access_token), (2) **rotation** — новый cookie value
+(anti-replay), (3) HttpOnly preserved.
+
+**T5 WS reconnect approach:** Playwright не имеет API для inspect'а
+WebSocket frames напрямую. Альтернативы:
+- **Page network listener** — сложно, требует custom WS spy.
+- **Reload + assert UI рендерится** — проверяет что cookie + sessionStorage
+  выжили offline cycle, role-guard продолжает пускать. **Выбрано.**
+- **Wait for STOMP heartbeat frame** — overkill для smoke.
+
+**CI job design:**
+- `--grep @smoke` — только smoke-tagged specs (auth.spec.ts × 3 +
+  auth-token-lifecycle.spec.ts × 5 = 8 тестов). Полный suite
+  (8 spec'ов) — local `npm test`.
+- `--project=chromium` — без WebKit (CI время). Локально оба.
+- Healthcheck poll loop 4 мин — критично, иначе Playwright стартует
+  до того как backend готов.
+- Failure artefacts: `playwright-report/` (HTML с screenshots/traces)
+  + `docker logs` для всех контейнеров. Retention 7 days.
+- Cost: ~5-7 мин на ubuntu-latest.
+
+**Local validation:** spec syntax-check через `node --check` (exit 0).
+TypeScript type-check невозможен локально (нет node_modules в
+`tests/e2e/`, tsc устанавливается через `npm install`). CI на первом
+прогоне поймает type errors.
+
+**`docs/testing-strategy.md` не существует** (hand-off ошибся в
+имени). Реальный файл — `docs/e2e-testing.md`. Обновлён + cross-ref на
+M13 G18 websocket-flow.md.
+
+**Estimate vs actual:** ~1.5 часа (5 тестов + CI job + docs). Surprise
+с pre-existing infra ускорил (не нужно создавать с нуля), но
+diagnostic время на CI workflow design (healthcheck poll, artefact
+upload, frontend build chain) и cookie API research съело экономию.

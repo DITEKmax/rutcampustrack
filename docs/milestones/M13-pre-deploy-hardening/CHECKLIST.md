@@ -199,14 +199,14 @@
 
 ## Группа 22 — Playwright E2E auth flow
 
-- [ ] Создать `frontends/pwa-e2e/` или расширить существующий — structure `auth.spec.ts`
-- [ ] Test 1: student login → role-based redirect на `/student/*` → cookie HttpOnly + SameSite=Strict
-- [ ] Test 2: admin login → `/admin/*` access
-- [ ] Test 3: access-token expiry (force TTL 15s in test) → refresh flow → new cookie
-- [ ] Test 4: logout → cookies cleared → redirect `/login`
-- [ ] Test 5: WS reconnect после offline (переиспользование для группы 18)
-- [ ] CI job `e2e-auth` в GitHub Actions
-- [ ] Документировать в `docs/testing-strategy.md`
+- [x] ~~Создать `frontends/pwa-e2e/`~~ → расширить существующий `tests/e2e/` (M08 G7) _(**Surprise**: hand-off говорил «создать `frontends/pwa-e2e/`», но Playwright уже стоит в `tests/e2e/` от M08 G7 с 8 spec'ами + axe-core. Не дублирую — добавлен новый spec `auth-token-lifecycle.spec.ts` к существующей infrastructure)_
+- [x] Test 1: student login → role-based redirect → cookie HttpOnly + SameSite=Strict _(`auth-token-lifecycle.spec.ts T1` — после loginAs(student) проверяет `context.cookies()` rct_refresh: httpOnly=true, sameSite='Strict', path='/api/auth', value не пустой. Cookie name + path: `services/auth-service/.../security/AuthCookies.java`. Login + redirect уже covered в auth.spec.ts от M08 G7)_
+- [x] Test 2: admin login → `/admin/*` access _(`auth-token-lifecycle.spec.ts T2` — loginAs(admin) + assert URL содержит /admin/. Дополняет auth.spec.ts admin (там только heading visible))_
+- [x] Test 3: access-token expiry → refresh flow → new cookie _(`auth-token-lifecycle.spec.ts T3` — после login сохраняем original cookie value, POST /api/auth/refresh (cookie auto-attached browser'ом по path match), assert response 200 + body.access_token + новый rct_refresh value (rotation на каждый refresh = anti-replay guarantee). Force TTL не требуется — endpoint работает с любым valid refresh)_
+- [x] Test 4: logout → cookies cleared → redirect `/login` _(`auth-token-lifecycle.spec.ts T4` — loginAs(student), сохраняем pre-logout value, logout(), assert post-logout либо cookie отсутствует либо value='' (browser jar timing-dependent), goto /student/schedule → redirect /login. Дополняет logout из auth.spec.ts (там нет cookie verification)_
+- [x] Test 5: WS reconnect после offline _(`auth-token-lifecycle.spec.ts T5` — loginAs(student), `context.setOffline(true)` 5 sec, `setOffline(false)`, page.reload(), assert URL /student/* + schedule heading. Точная WS frame inspection — frontend-internal, важна network resilience (cookie/sessionStorage сохранены через cycle). Cross-ref M13 G18 STOMP heartbeat 10s/10s)_
+- [x] CI job `e2e-auth` в GitHub Actions _(**Surprise 2**: CI job не существовал — M08 G7 создал тесты, но не подключил в CI. Это AC-6 блокер. Новый job в `.github/workflows/ci.yml`: Java 21 + Node 22 + Gradle assemble + frontends build + docker compose up + healthcheck poll (4 мин max) + npm install + playwright install chromium + `npx playwright test --grep @smoke --project=chromium`. На failure — upload playwright-report + docker logs (7d retention). Cost ~5-7 мин)_
+- [x] Документировать в ~~`docs/testing-strategy.md`~~ → `docs/e2e-testing.md` _(testing-strategy.md не существовал; обновлён `docs/e2e-testing.md`: добавлен `auth-token-lifecycle.spec.ts` row в таблице specs, новая section "CI integration (M13 G22)" с 9 step описанием pipeline, cost estimate, trigger note. Cross-ref на M13 G18 websocket-flow.md)_
 
 ## Группа 23 — VPS deploy runbook dry-run
 

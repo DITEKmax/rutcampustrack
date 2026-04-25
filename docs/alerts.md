@@ -17,7 +17,7 @@ RabbitMQ `alert.fired` → notification-bot consumer → admin chat
 Inhibit-rule: `ServiceDown` подавляет `HealthCheckDown` для того же
 target (один сигнал достаточен).
 
-## Каталог (15 alert'ов)
+## Каталог (18 alert'ов)
 
 ### 1. ServiceDown
 **Файл:** `infra/prometheus/rules/service-health.yml` · severity=critical · for=1m
@@ -332,6 +332,72 @@ clock skew между сервисами).
 
 ---
 
+### 16. SslCertExpiresSoon
+**Файл:** `infra/prometheus/rules/ssl-expiry.yml` · severity=warning · for=10m
+
+#### Symptom
+`TLS-cert <instance> истекает через <N> дней`. Threshold: < 30 дней.
+
+#### Meaning
+Метрика `probe_ssl_earliest_cert_expiry` от blackbox-exporter probing'а
+`https://ruttrack.site` показывает что cert истекает менее чем через
+30 дней. Let's Encrypt **должен** auto-renew (certbot loop каждые 12h
++ nginx auto-reload каждые 5 мин), но что-то сломалось.
+
+#### Runbook
+1. `docker exec rct-certbot certbot certificates` — какие certs
+   зарегистрированы и когда истекают.
+2. Если no certs / fail — manual renew:
+   `docker exec rct-certbot certbot renew --force-renewal`.
+3. Logs certbot: `docker logs rct-certbot --tail 100 | grep -E "renew|error"`.
+4. Если ACME challenge fail — проверь nginx `/.well-known/acme-challenge/`
+   доступен на :80 (HTTP), firewall не блочит.
+5. См. `docs/runbooks/cert-renewal.md` для full troubleshooting.
+
+---
+
+### 17. SslCertExpiresUrgently
+**Файл:** `ssl-expiry.yml` · severity=critical · for=5m
+
+#### Symptom
+`URGENT: cert <instance> истекает через <N> дней`. Threshold: < 7 дней.
+
+#### Meaning
+Auto-renew не сработал за **23+ дня** (от 30d threshold выше до 7d).
+Будит ночью — service degradation imminent.
+
+#### Runbook
+1. Manual force-renewal **сейчас**:
+   `docker exec rct-certbot certbot renew --force-renewal`.
+2. Если Let's Encrypt rate-limit (5/week per domain): подождать сброса
+   или DNS-01 challenge через alternative provider.
+3. Если ACME HTTP-01 challenge fail: `curl http://ruttrack.site/.well-known/acme-challenge/test`
+   должен вернуть 404 (не 502/connection refused).
+4. Backup plan: temporary self-signed cert чтобы не потерять HTTPS
+   полностью, потом разобрать root cause.
+
+---
+
+### 18. SslProbeFailed
+**Файл:** `ssl-expiry.yml` · severity=critical · for=10m
+
+#### Symptom
+`Blackbox probe <instance> fail'ит`.
+
+#### Meaning
+`probe_success == 0` ≥ 10 мин. Не удаётся завершить TLS handshake к
+HTTPS endpoint'у. Cert уже expired, revoked, либо HTTPS endpoint down.
+
+#### Runbook
+1. Если параллельно `ServiceDown{job="nginx"}` или `ServiceDown` для
+   backend — root cause там.
+2. `openssl s_client -connect ruttrack.site:443 -servername ruttrack.site`
+   — посмотри cert details, errors.
+3. Проверь DNS: `nslookup ruttrack.site` — A-record указывает на VPS?
+4. Если cert expired — см. `SslCertExpiresUrgently` runbook.
+
+---
+
 ## Cross-ref — файлы и labels
 
 | Alert | Rule file | Source metric | Severity |
@@ -351,6 +417,9 @@ clock skew между сервисами).
 | HighRequestLatency | service-health.yml | http_server_requests_seconds_bucket | warning |
 | CheckinRateZero | service-health.yml | attendance_checkin_total | warning |
 | InternalJwtFallbackUnexpected | service-health.yml | internal_jwt_fallback_total | warning |
+| SslCertExpiresSoon | ssl-expiry.yml | probe_ssl_earliest_cert_expiry | warning |
+| SslCertExpiresUrgently | ssl-expiry.yml | probe_ssl_earliest_cert_expiry | critical |
+| SslProbeFailed | ssl-expiry.yml | probe_success | critical |
 
 ## E2E test (alertmanager → Telegram)
 
@@ -420,3 +489,6 @@ UI Alertmanager доступен через `https://ruttrack.site/alertmanager/
   - Добавлены `RabbitMQQueueBacklog`, `RabbitMQConnectionLost`,
     `HighErrorRate`, `HighRequestLatency`. Итого 15 alerts (AC-13 «15+»).
   - Документ полностью переработан под Symptom/Meaning/Runbook standard.
+- **M13 G20** (2026-04-25): blackbox-exporter + 3 SSL alerts:
+  `SslCertExpiresSoon` (30d warning), `SslCertExpiresUrgently` (7d
+  critical), `SslProbeFailed` (probe_success == 0 critical). Итого 18.

@@ -1310,3 +1310,60 @@ short stub). Полная переработка под Symptom/Meaning/Runbook 
 **Estimate vs actual:** ~1.5 часа (image switch + 4 new alerts +
 полный rewrite alerts.md + promtool validation). Image switch surprise
 + owner approval round добавил overhead.
+
+## 2026-04-25 — Группа 20 (Certbot renewal hook + cert expiry alert)
+
+**Surprise (приятный) — renewal hook уже не нужен.** Hand-off NOTES
+описывал 3 варианта для item 5 (deploy-hook docker.sock / sidecar
+inotifywait / cron 12h reload), требующих owner-decision. Реальность:
+M13 G14 уже добавил **5-min reload loop** в `nginx/scripts/entrypoint.sh:57`
+(`( while :; do sleep 5m; nginx -s reload 2>/dev/null || true; done ) &`).
+Это превышает baseline «cron 12h» в 144 раза.
+
+→ Item 5 закрыт **N/A** + документировано в runbook'е почему отдельный
+hook не нужен + почему 3 альтернативы rejected:
+
+| Подход | Reject reason |
+|--------|----------------|
+| `--deploy-hook 'docker exec ...'` | docker.sock mount = full host control. Security risk. |
+| sidecar inotifywait | Усложняет stack ради 5-min latency benefit. |
+| cron на host | Нарушает «всё в compose» principle. |
+| **5-min reload loop в nginx entrypoint** | ✅ Текущее решение. |
+
+**3 SSL alerts вместо 1.** Hand-off требовал только `SslCertExpiresSoon`,
+но per G9 standard «полный hardening» добавил 2 escalation/coverage:
+
+- `SslCertExpiresSoon` (warning, < 30d) — early warning, auto-renew
+  должен сработать.
+- `SslCertExpiresUrgently` (critical, < 7d) — auto-renew **не**
+  сработал за 23+ дня, manual intervention. Будит ночью.
+- `SslProbeFailed` (critical, probe_success == 0 ≥ 10m) — TLS handshake
+  fail совсем (cert expired/revoked, HTTPS endpoint down, DNS broken).
+
+**Итого alerts catalog: 18** (G19 закончил на 15, +3 SSL).
+
+**blackbox-exporter design choice:** 64m mem_limit (lightweight probe),
+private network only, expose 9115 internally. Config с
+`fail_if_not_ssl: true` явно — мы probing'уем HTTPS, plain HTTP должен
+fail (ловит DNS hijack / accidental :80 probing).
+
+**Prometheus relabel:** официальный pattern из blackbox-exporter docs:
+`__address__ → __param_target → instance label`, finally `__address__ →
+blackbox-exporter:9115`. Без relabel'а instance label был бы
+`blackbox-exporter:9115`, а target в metric'е — undefined.
+
+**docs/prod-deploy-checklist.md §1.5b** — новая секция для **first
+deploy** на чистый VPS. 2-phase: HTTP-only phase для ACME challenge →
+certbot certonly → restore HTTPS config → full stack up. Subsequent
+deploys проходят без этой секции (cert уже выпущен, auto-renew работает).
+
+**Validation:**
+- `promtool check rules` — SUCCESS 10/2/3/3 = **18 rules** total.
+- `docker compose -f docker-compose.prod.yml config --quiet` — exit 0
+  с blackbox-exporter добавлен.
+- blackbox-exporter digest получен через `docker buildx imagetools
+  inspect prom/blackbox-exporter:v0.25.0` — pin'нен по convention M08 G11.
+
+**Estimate vs actual:** ~1 час (item 5 ожидаемо был самый сложный —
+оказался N/A ✓). Items 1-4 (blackbox + scrape + alerts + catalog) ~30
+мин. Items 6-7 (runbook + deploy checklist) ~30 мин.

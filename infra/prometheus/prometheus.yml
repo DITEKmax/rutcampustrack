@@ -60,3 +60,25 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets: ['rabbitmq:15692']
+
+  # M13 G20 — blackbox-exporter probe'ит публичный HTTPS endpoint
+  # ruttrack.site. Экспортирует probe_ssl_earliest_cert_expiry для alert'а
+  # SslCertExpiresSoon. Relabel-pattern из официальной blackbox docs:
+  # __param_target = target из static_configs, instance label =
+  # original target (для grouping в alerts), __address__ → blackbox-exporter
+  # service.
+  - job_name: 'blackbox-https'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    scrape_interval: 60s
+    static_configs:
+      - targets:
+          - https://ruttrack.site
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

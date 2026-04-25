@@ -111,6 +111,38 @@
       migration, на случай rollback (см. §4.2).
 - [ ] Verify: `ls /opt/backups/$(date -u +%Y-%m-%d)/` → 4 файла.
 
+### 1.5b. SSL / DNS (только first deploy на чистый VPS) — M13 G20
+
+Только при **первом** deploy. Для subsequent deploys cert уже выпущен,
+auto-renew работает (см. `runbooks/cert-renewal.md`).
+
+- [ ] DNS A-record `ruttrack.site` → `<VPS_PUBLIC_IP>` создан.
+      Verify: `dig +short ruttrack.site` возвращает IP.
+- [ ] HTTP-only phase: закомментировать `server { listen 443 ssl; ... }`
+      block в `nginx/conf.d/default.conf` временно. Оставить только
+      :80 server с `/.well-known/acme-challenge/` location.
+      80→443 redirect отключить (пока нет cert, redirect ломает ACME).
+- [ ] `docker compose -f docker-compose.prod.yml up -d nginx`.
+- [ ] Smoke ACME endpoint: `curl http://ruttrack.site/.well-known/acme-challenge/test`
+      → 404 (не connection refused). Если refused — firewall/DNS issue.
+- [ ] Получить cert через certbot (one-shot):
+      ```bash
+      docker compose -f docker-compose.prod.yml run --rm \
+        -v /opt/rutcampustrack/certbot-conf:/etc/letsencrypt \
+        -v /opt/rutcampustrack/certbot-www:/var/www/certbot \
+        certbot/certbot:latest certonly --webroot -w /var/www/certbot \
+        -d ruttrack.site \
+        --email <admin@example.com> --agree-tos --no-eff-email
+      ```
+- [ ] `git checkout nginx/conf.d/default.conf` — restore полный config.
+- [ ] `docker compose -f docker-compose.prod.yml up -d` (full stack).
+- [ ] Smoke HTTPS: `curl -I https://ruttrack.site/` → 200/301.
+      `openssl s_client -connect ruttrack.site:443 -servername ruttrack.site
+      < /dev/null 2>&1 | grep "Verify return code"` → `0 (ok)`.
+- [ ] Verify auto-renew loop: `docker logs rct-certbot --tail 5` →
+      `Cert not yet due for renewal` либо empty (success). Полный
+      runbook: `docs/runbooks/cert-renewal.md`.
+
 ### 1.6. Communication
 - [ ] Release window уточнён — не пересекается с парами
       (8:00–20:00 MSK — деплоим в ночь или выходные).

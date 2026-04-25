@@ -182,13 +182,13 @@
 
 ## Группа 20 — Certbot renewal hook + cert expiry alert
 
-- [ ] Добавить `blackbox-exporter` контейнер в docker-compose.prod.yml
-- [ ] Scrape target в `prometheus.yml` — probe `https://ruttrack.site`
-- [ ] Создать `infra/prometheus/rules/ssl-expiry.yml` — alert `SslCertExpiresSoon` когда `probe_ssl_earliest_cert_expiry - time() < 30*86400`
-- [ ] Добавить alert в `docs/alerts.md`
-- [ ] Certbot renewal hook: `--deploy-hook "touch /shared/reload-nginx"` + nginx sidecar inotifywait → `nginx -s reload` (или cron-based reload каждые 12h как simpler fallback)
-- [ ] Runbook `runbooks/cert-renewal.md` — troubleshooting + first-deploy SSL steps
-- [ ] Обновить `docs/prod-deploy-checklist.md` — DNS A-record + HTTP-only phase → cert → HTTPS phase
+- [x] Добавить `blackbox-exporter` контейнер в docker-compose.prod.yml _(`prom/blackbox-exporter:v0.25.0` digest-pin, mem_limit 64m, expose 9115. Config `infra/blackbox/blackbox.yml` — module `http_2xx` с `fail_if_not_ssl: true`, `valid_http_versions: [HTTP/1.1, HTTP/2.0]`, `preferred_ip_protocol: ip4`)_
+- [x] Scrape target в `prometheus.yml` — probe `https://ruttrack.site` _(новый job `blackbox-https`, scrape_interval 60s, official relabel pattern: `__address__ → __param_target → instance label`, `__address__ → blackbox-exporter:9115`)_
+- [x] Создать `infra/prometheus/rules/ssl-expiry.yml` — alert `SslCertExpiresSoon` когда `< 30 дней` _(3 alert rules в одном файле: `SslCertExpiresSoon` (warning, < 30d), `SslCertExpiresUrgently` (critical, < 7d, для случаев когда auto-renew всё ещё не сработал за 23+ дней), `SslProbeFailed` (critical, probe_success == 0). Все 3 проходят `promtool check rules`)_
+- [x] Добавить alert в `docs/alerts.md` _(добавлены alerts #16-18 в каталог. Каждый — Symptom/Meaning/Runbook + cross-ref таблица. Каталог теперь 18 alerts (10 service-health + 2 resource-limits + 3 rabbitmq + 3 ssl-expiry))_
+- [x] Certbot renewal hook _(**Surprise**: M13 G14 nginx entrypoint **уже** делает auto-reload каждые 5 мин (`nginx/scripts/entrypoint.sh:57` — `( while :; do sleep 5m; nginx -s reload 2>/dev/null \|\| true; done ) &`). Это превышает hand-off baseline «cron 12h». Renewed cert подхватывается автоматически в течение ≤5 мин. Отдельный certbot deploy-hook не нужен. Документировано в `cert-renewal.md` + `alerts.md` runbook'ах. Альтернативы (docker.sock mount, sidecar inotifywait, cron на host) rejected с обоснованием в runbook'е)_
+- [x] Runbook `runbooks/cert-renewal.md` — troubleshooting + first-deploy SSL steps _(новый файл: архитектура (certbot loop ↔ certbot-conf volume ↔ nginx auto-reload), first-deploy 5-step SSL setup (DNS → HTTP-only → certonly → restore HTTPS), automated renewal flow + verify, observability metric, troubleshooting (5 сценариев: cert не renew, nginx не reload, rate-limit, SslProbeFailed, manual renewal через docker run), rejected hook альтернативы)_
+- [x] Обновить `docs/prod-deploy-checklist.md` — DNS A-record + HTTP-only phase → cert → HTTPS phase _(новая секция §1.5b «SSL / DNS (только first deploy на чистый VPS)» между Backup и Communication. 9 checklist items: DNS A-record, HTTP-only phase, certbot certonly, restore HTTPS, smoke openssl s_client, verify auto-renew loop. Помечена «только при первом deploy» — для subsequent cert уже выпущен)_
 
 ## Группа 21 — Flyway CONCURRENTLY guard
 

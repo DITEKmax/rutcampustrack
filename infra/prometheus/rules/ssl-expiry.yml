@@ -1,0 +1,49 @@
+# M13 G20 — SSL certificate expiry alerts (от blackbox-exporter probe).
+#
+# Источник: blackbox-https scrape job в prometheus.yml. Метрика
+# probe_ssl_earliest_cert_expiry — Unix timestamp expiration (секунды).
+# `time()` Prometheus function — current timestamp. Разница в секундах,
+# делим на 86400 в alert description'ах для UX.
+
+groups:
+  - name: ssl-expiry
+    rules:
+      # WARNING — cert истекает через < 30 дней. Дает достаточно времени
+      # отреагировать (Let's Encrypt renewal runs каждые 12h, должно
+      # автоматически restart'ить, но если что-то сломалось — 30d
+      # окно для manual renew).
+      - alert: SslCertExpiresSoon
+        expr: |
+          (probe_ssl_earliest_cert_expiry - time()) / 86400 < 30
+          and probe_success{job="blackbox-https"} == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "TLS-cert {{ $labels.instance }} истекает через {{ $value | printf \"%.1f\" }} дней"
+          description: "Сертификат для {{ $labels.instance }} истекает через {{ $value | printf \"%.1f\" }} дней. Let's Encrypt должен auto-renew (certbot loop sleep 12h), nginx auto-reload каждые 5 мин подхватит. Если cert не обновляется — см. docs/runbooks/cert-renewal.md."
+
+      # CRITICAL — < 7 дней. Если auto-renew всё ещё не сработал, надо
+      # руками разбираться. ACME challenge может быть сломан (DNS,
+      # firewall на :80), rate-limit Let's Encrypt (5/week per domain).
+      - alert: SslCertExpiresUrgently
+        expr: |
+          (probe_ssl_earliest_cert_expiry - time()) / 86400 < 7
+          and probe_success{job="blackbox-https"} == 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "URGENT: cert {{ $labels.instance }} истекает через {{ $value | printf \"%.1f\" }} дней"
+          description: "Auto-renew не сработал за 23+ дня. Manual intervention срочно: `docker exec rct-certbot certbot renew --force-renewal`. Если ACME challenge fail — проверь nginx /.well-known/acme-challenge/ + firewall :80."
+
+      # Probe failure — не можем dotter cert info вообще. Cert может быть
+      # уже expired либо HTTPS endpoint down.
+      - alert: SslProbeFailed
+        expr: probe_success{job="blackbox-https"} == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Blackbox probe {{ $labels.instance }} fail'ит"
+          description: "Не удаётся probing'нуть HTTPS endpoint {{ $labels.instance }} 10 мин. Возможные причины: nginx down (см. ServiceDown alert), TLS handshake fail (cert expired/revoked), DNS issue."

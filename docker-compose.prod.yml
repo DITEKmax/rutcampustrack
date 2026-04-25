@@ -512,6 +512,27 @@ services:
     restart: unless-stopped
     privileged: true
 
+  # M13 G20 — blackbox-exporter probe'ит публичный URL https://ruttrack.site,
+  # экспортирует метрики probe_success, probe_ssl_earliest_cert_expiry,
+  # probe_http_status_code. Используется для alert'а SslCertExpiresSoon
+  # (cert < 30d) — без этого Prometheus не имеет visibility на TLS-cert
+  # expiry (внутренние сервисы scrape'ят /actuator/prometheus, certificate
+  # info там не экспортируется).
+  # Update: docker buildx imagetools inspect prom/blackbox-exporter:v0.25.0
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0@sha256:67847e8aaec3c4852a2c7d84d5344e7931521962988c48df00cd980cd1b490a2
+    container_name: rct-blackbox-exporter
+    volumes:
+      - ./infra/blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    expose:
+      - "9115"
+    networks:
+      - private_net
+    # Lightweight: probe overhead minimal, scrape interval 60s. 64m headroom.
+    mem_limit: 64m
+    mem_reservation: 16m
+    restart: unless-stopped
+
   prometheus:
     # M08 G11 — digest-pin (было semver-only M06 P2-9/2). Update:
     #   docker buildx imagetools inspect prom/prometheus:v2.55.1

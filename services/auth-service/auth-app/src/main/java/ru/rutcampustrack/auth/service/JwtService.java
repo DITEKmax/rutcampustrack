@@ -6,6 +6,8 @@ import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.auth.config.JwtProperties;
@@ -90,9 +92,35 @@ public class JwtService {
         log.info("RSA kid resolved: {}", keyId);
 
         publicKeyPem = buildPem(publicKey.getEncoded(), "PUBLIC KEY");
-        log.info("RSA public key PEM serialized, caching in Redis...");
-        redisTemplate.opsForValue().set("jwt:public_key", publicKeyPem, Duration.ofSeconds(3600));
-        log.info("RSA key pair ready (kid={}), public key cached in Redis", keyId);
+        log.info("RSA key pair ready (kid={}), public key PEM serialized "
+                + "(Redis cache scheduled to ApplicationReadyEvent)", keyId);
+    }
+
+    /**
+     * M13 G25.17 — Redis cache населяется ПОСЛЕ context refresh.
+     *
+     * <p>JwtService.init() в @PostConstruct не должен блокироваться на
+     * Redis: Lettuce/Netty lazy-инициализирует event loop и connection pool
+     * при первом use, на холодном CI runner это может занять 30+ секунд из-за
+     * Netty entropy/DNS init и default command timeout. Healthcheck не
+     * успевает зеленеть в start_period 60s.
+     *
+     * <p>Перенос в ApplicationReadyEvent гарантирует: (1) Tomcat готов
+     * принимать /actuator/health, (2) Redis cache best-effort — если падает,
+     * downstream сервисы либо ретраят, либо забирают public key через
+     * /auth/.well-known/jwks.json endpoint (если такой есть; иначе через
+     * первый failed parse + retry). На prod connection pool warm после
+     * первого fetch.
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void cachePublicKeyInRedis() {
+        try {
+            log.info("Caching public key in Redis (post-startup)...");
+            redisTemplate.opsForValue().set("jwt:public_key", publicKeyPem, Duration.ofSeconds(3600));
+            log.info("Public key cached in Redis successfully");
+        } catch (Exception e) {
+            log.warn("Failed to cache public key in Redis (will retry on next signing): {}", e.toString());
+        }
     }
 
     public String generateAccessToken(User user) {

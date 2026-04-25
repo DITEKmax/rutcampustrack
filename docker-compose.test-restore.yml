@@ -1,0 +1,83 @@
+# M13 G15 — изолированный test-compose stack для проверки backup/restore.
+#
+# Использование:
+#   docker compose -f docker-compose.test-restore.yml \
+#     --env-file .env.test-restore \
+#     -p rct-test-restore \
+#     up -d
+#
+# Отличия от prod compose:
+#   - Контейнеры с префиксом rct-test-*.
+#   - Отдельная сеть rct-test-net.
+#   - Volumes tmpfs (данные ephemeral — teardown полностью стирает).
+#   - БЕЗ app-сервисов (auth/academic/schedule/attendance/notification).
+#   - Минимальный набор: 2 postgres + 1 mongo (все с RS rs0).
+#
+# Используется только из scripts/test-restore.sh.
+
+services:
+  test-postgres-academic:
+    image: postgres:16
+    container_name: rct-test-postgres-academic
+    environment:
+      POSTGRES_DB: academic_db
+      POSTGRES_USER: rct_user
+      POSTGRES_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
+    expose:
+      - "5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - rct-test-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rct_user -d academic_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  test-postgres-schedule:
+    image: postgres:16
+    container_name: rct-test-postgres-schedule
+    environment:
+      POSTGRES_DB: schedule_db
+      POSTGRES_USER: rct_user
+      POSTGRES_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD}
+    expose:
+      - "5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - rct-test-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rct_user -d schedule_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  test-mongo-attendance:
+    # Bitnami RS для совместимости с prod backup (mongodump делался с replicaSet=rs0).
+    image: bitnami/mongodb:7.0
+    container_name: rct-test-mongo-attendance
+    environment:
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_REPLICA_SET_NAME: rs0
+      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY}
+      MONGODB_ROOT_USER: root
+      MONGODB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGODB_ADVERTISED_HOSTNAME: test-mongo-attendance
+    expose:
+      - "27017"
+    tmpfs:
+      - /bitnami/mongodb
+    networks:
+      - rct-test-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+      start_period: 40s
+
+networks:
+  rct-test-net:
+    name: rct-test-net

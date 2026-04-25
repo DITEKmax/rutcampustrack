@@ -133,13 +133,16 @@
 
 ## Группа 15 — Backup infrastructure
 
-- [ ] Создать `scripts/backup.sh`: pg_dump × 2 + mongodump × 2 + `.env.prod` GPG-encrypt
-- [ ] Retention: `find /opt/backups -name "*.gz" -mtime +7 -delete` + `*.gpg -mtime +7 -delete`
-- [ ] Создать `scripts/restore.sh $date` — параметризованный restore
-- [ ] Tested restore: backup → локальная Postgres/Mongo (Docker) → row count matches
-- [ ] Cron config: `/etc/cron.d/rutcampustrack-backup` (раз в сутки 3:00 UTC)
-- [ ] GPG key generation: добавить в `docs/prod-deploy-checklist.md`
-- [ ] Создать `runbooks/backup-restore.md` — полный runbook
+- [x] Создать `scripts/backup.sh`: pg_dump × 2 + mongodump × 1 + `.env.prod` GPG-encrypt _(Surprise: в prod у нас 2 Postgres контейнера, но **одна** Mongo-инстанция (`rct-mongo-attendance`) с двумя DB — `attendance_db` и `notification_db`. Один `mongodump --archive` с `authSource=admin&replicaSet=rs0` дампит обе БД атомарно. Формула retention = `/opt/backups/YYYY-MM-DD/` → 4 файла: `academic.sql.gz`, `schedule.sql.gz`, `mongo.archive.gz`, `env.prod.gpg`)_
+- [x] Retention: `find /opt/backups -mindepth 1 -maxdepth 1 -type d -mtime +7 -exec rm -rf` — integrated в `backup.sh` _(сам скрипт; -mindepth 1 чтобы не удалить сам BACKUP_DIR; `-exec rm -rf +` эффективнее чем per-find delete)_
+- [x] Создать `scripts/restore.sh $date` — параметризованный restore _(+ `--target=prod|test` + `--with-env` (optional decrypt) + `--confirm-prod` safety guard против случайного destructive restore на prod. Для postgres DROP+CREATE DATABASE через template1 connection + pg_terminate_backend для existing connections. Для mongo — `mongorestore --drop --archive`)_
+- [x] Tested restore: backup → локальная Postgres/Mongo (Docker) → row count matches _(automated `scripts/test-restore.sh` + изолированный `docker-compose.test-restore.yml` — 2 postgres + 1 mongo с tmpfs, ephemeral random passwords, project name `rct-test-restore`. Verify: `academic_db.users>=1` (seed admin) + `schedule_db.tables>=1` (schema exists) + `attendance_db.collections>=1` + `notification_db` может быть пустой (normal на fresh deploy, WARN не FAIL). Guaranteed teardown через `trap cleanup EXIT`)_
+- [x] Cron config: `/etc/cron.d/rutcampustrack-backup` (раз в сутки 3:00 UTC) _(03:00 UTC = 06:00 MSK — вне учебного расписания. `MAILTO=''` чтобы не спамить в stock cron MTA. Логи → `/var/log/rutcampustrack-backup.log` + logrotate config)_
+- [x] GPG key generation: добавить в `docs/prod-deploy-checklist.md` _(§1.0 расширен: passphrase в password manager + `/opt/rutcampustrack/.backup-passphrase` chmod 600. Полный setup в `docs/runbooks/backup-restore.md §First-time setup`. Symmetric GPG (AES256) выбран — меньше friction чем asymmetric, passphrase в BW/1Password)_
+- [x] Создать `runbooks/backup-restore.md` — полный runbook _(First-time setup (6 шагов) + Daily automation + Manual prod restore + Automated test-restore (quarterly) + DR scenario (VPS wiped → restore on fresh VPS) + Troubleshooting (GPG bad session key, pg_restore database already exists, mongorestore auth failed, cron не запускает, backup size). Deferred в v0.1: offsite (S3/B2 rclone), Prometheus last-backup-age alert, integrity check)_
+- [x] ShellCheck CI job _(NEW в G15 — proactive: `.github/workflows/ci.yml` + shellcheck --severity=warning scripts/*.sh. Pre-existing warning'и в `smoke-prod.sh` (SC2064 trap quoting) + `m07-g3-launch-services.sh` (SC2164 `cd || exit`) исправлены per path. Все 8 bash-скриптов проходят без warnings)_
+- [x] .gitignore: `.backup-passphrase`, `*.gpg`, `.env.test-restore` _(защита от случайного commit passphrase file + GPG-зашифрованных backup'ов + ephemeral test env)_
+- [x] `docs/prod-deploy-checklist.md §4.2 DB rollback` обновлён — `restore.sh` вместо raw `psql` command _(rollback после failed migration теперь одной командой + docker compose stop/start downstream services per runbook)_
 
 ## Группа 16 — CSP audit + report endpoint
 

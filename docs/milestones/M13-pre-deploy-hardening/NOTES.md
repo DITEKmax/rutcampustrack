@@ -966,3 +966,83 @@ docker-compose интерпретирует их как multi-line continuation*
 - `docker compose -f docker-compose.prod.yml --env-file .env.prod
   config --quiet` → exit 0 (после fix MONGODB_REPLICA_SET_KEY quoting).
 - `validate-env-prod.sh` → ✓ all 24 vars passed.
+
+## 2026-04-25 — Группа 15 (Backup infrastructure)
+
+**Решения владельца:**
+- Symmetric GPG (AES256, passphrase в Bitwarden) — не asymmetric.
+- Automated `test-restore.sh` (B) — не manual runbook check (A).
+- Offsite copy (S3/B2) — deferred в v0.1 (подтверждено, VPS-snapshot
+  провайдера как 2-й слой достаточен для v0.0.0 GA).
+- ShellCheck CI job — добавить proactive (не обсуждалось владельцем,
+  но низкий risk high value).
+
+**Surprise: «mongodump × 2» в hand-off НЕ существует.**
+В `docker-compose.prod.yml` **одна** Mongo-инстанция
+(`rct-mongo-attendance`) хостит обе БД — `attendance_db` и
+`notification_db`. Один `mongodump --archive` дампит обе атомарно
+(важно для FK consistency между `excuse` в attendance и
+`notification_history` через event flow). Упрощает backup и restore.
+
+**Архитектура backup set (`/opt/backups/YYYY-MM-DD/`):**
+- `academic.sql.gz` — pg_dump academic_db (plain SQL, gzip)
+- `schedule.sql.gz` — pg_dump schedule_db (plain SQL, gzip)
+- `mongo.archive.gz` — mongodump --archive (обе БД), gzip
+- `env.prod.gpg` — gpg --symmetric --cipher-algo AES256 .env.prod
+
+**Restore safety guards:**
+- `--confirm-prod` обязателен для `--target=prod` (double opt-in
+  против случайного destructive restore).
+- Postgres DROP DATABASE через template1 connection + pg_terminate_backend
+  чтобы сбросить active connections перед DROP.
+- Mongo `mongorestore --drop` — drop existing collections перед restore.
+
+**Test-compose дизайн (`docker-compose.test-restore.yml`):**
+- Project name `rct-test-restore` — изоляция от prod `rutcampustrack_*`.
+- Tmpfs volumes (не bind mount) — гарантированный teardown.
+- Ephemeral random passwords генерятся на каждый запуск test-restore.sh
+  (ни один secret не пересекается с prod).
+- Bitnami Mongo RS identical prod setup — важно для compatibility
+  с prod backup (сделан с `replicaSet=rs0` в URI).
+
+**Row count verification — что именно проверяем:**
+- `academic_db.users >= 1` — seeded admin существует (если 0 — backup
+  явно corrupt).
+- `schedule_db.tables >= 1` — schema intact (fresh DB может быть
+  empty of data, но tables от Flyway миграций должны быть).
+- `attendance_db.collections >= 1` — что-то impl'ено после v0.0.0 GA.
+- `notification_db.collections` — WARN only (может быть пуст на fresh
+  deploy до первого notification).
+
+**НЕ делаем row-count parity с prod** — tested-restore это smoke
+(backup разворачивается успешно), не consistency check. Parity
+пришлось бы делать из live prod psql (риск нагрузки на prod DB).
+
+**ShellCheck existing scripts fix (proactive):**
+- `smoke-prod.sh:30` — SC2064 `trap "rm -f $COOKIE_JAR" EXIT` →
+  `trap 'rm -f "$COOKIE_JAR"' EXIT` (single quotes, late expansion).
+- `m07-g3-launch-services.sh:11` — SC2164 `cd "$(dirname "$0")/.."` →
+  `cd "$(dirname "$0")/.." || exit 1` (fail-fast если dirname broken).
+
+После fix — 7/7 существующих + 3/3 новых bash-скриптов проходят
+shellcheck с `--severity=warning` clean.
+
+**GPG passphrase setup — single point of failure:**
+- Потеря passphrase = восстановить `.env.prod` из backup НЕВОЗМОЖНО.
+- Mitigation в runbook: passphrase в password manager (Bitwarden)
+  + записать в password manager как отдельную entry «RutCampusTrack
+  — backup GPG passphrase».
+- Passphrase НЕ в `.env.prod` (circular dependency — без `.env.prod`
+  нельзя decrypt `.env.prod.gpg`). Отдельный файл `.backup-passphrase`.
+
+**Deferred в v0.1 (зафиксировано в runbook):**
+- Offsite backup (S3/Backblaze B2 через rclone).
+- Prometheus metric `backup_last_success_timestamp_seconds` +
+  alert `BackupMissing` при >26h без backup (textfile collector).
+- Backup integrity check scheduled в CI (weekly test-restore).
+
+**Estimated backup size growth:**
+- v0.0.0 GA (fresh): ~90 KB total.
+- 1 year production: ~600 MB (schedule dominates — lessons 1 year ×
+  500 per semester).
+- Trigger для reconsider retention / offsite urgency: >1 GB total.

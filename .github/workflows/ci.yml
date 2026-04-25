@@ -200,3 +200,15 @@ jobs:
       - name: Install, test, build
         working-directory: frontends/${{ matrix.app }}
         run: npm ci && npm test && npm run build
+
+  # M13 G15 — ShellCheck lint для всех bash-скриптов.
+  # Gate на ошибки уровня `error` и `warning`; `info`/`style` не блочат.
+  shellcheck:
+    name: ShellCheck scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Lint scripts/*.sh
+        run: shellcheck --severity=warning scripts/*.sh

@@ -27,7 +27,7 @@ LOGIN="${2:-student}"
 PASSWORD="${3:-student_test_pass}"
 
 COOKIE_JAR=$(mktemp)
-trap "rm -f $COOKIE_JAR" EXIT
+trap 'rm -f "$COOKIE_JAR"' EXIT
 
 echo "=== Smoke test: $BASE_URL ==="
 

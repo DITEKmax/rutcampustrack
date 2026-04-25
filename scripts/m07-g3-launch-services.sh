@@ -8,7 +8,7 @@
 
 set -u
 mkdir -p /tmp/rct-logs
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 export JAVA_HOME="C:\\Users\\maksd\\.jdks\\ms-21.0.9"
 

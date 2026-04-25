@@ -83,17 +83,22 @@ services:
       MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY}
       MONGODB_ROOT_USER: root
       MONGODB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      # Bitnami MONGODB_EXTRA_USERNAMES/PASSWORDS/DATABASES заменяет
-      # legacy init-mongo.js M10 D2 (создавал users через
-      # /docker-entrypoint-initdb.d).
-      MONGODB_EXTRA_USERNAMES: ${MONGO_USER},${MONGO_NOTIFICATION_USER}
-      MONGODB_EXTRA_PASSWORDS: ${MONGO_PASSWORD},${MONGO_NOTIFICATION_PASSWORD}
-      MONGODB_EXTRA_DATABASES: attendance_db,notification_db
       MONGODB_ADVERTISED_HOSTNAME: mongo-attendance
+      # M13 G25.12 — application users создаются через явный init-script
+      # /docker-entrypoint-initdb.d/init-mongo.js (idempotent на existing
+      # volume — Bitnami пропускает initdb scripts при non-empty data dir).
+      # Замена MONGODB_EXTRA_USERNAMES/PASSWORDS/DATABASES — в digest
+      # sha256:16a57fa Bitnami declarative-механизм создаёт users в `test`
+      # вместо `admin` → AuthenticationFailed с authSource=admin.
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_NOTIFICATION_USER: ${MONGO_NOTIFICATION_USER}
+      MONGO_NOTIFICATION_PASSWORD: ${MONGO_NOTIFICATION_PASSWORD}
     expose:
       - "27017"
     volumes:
       - mongo-data:/bitnami/mongodb
+      - ./infra/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - private_net
     # M09 G7 (NEW-157). Bitnami RS init может потреблять больше памяти чем

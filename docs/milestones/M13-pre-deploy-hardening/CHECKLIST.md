@@ -96,12 +96,13 @@
 
 ## Группа 11 — `mem_limit` на aux containers
 
-- [ ] Добавить `mem_limit: 256m` на nginx в docker-compose.prod.yml
-- [ ] Добавить `mem_limit: 128m` на certbot
-- [ ] Добавить `mem_limit: 128m` на node-exporter
-- [ ] Добавить `mem_limit: 256m` на cadvisor
-- [ ] Добавить `mem_limit: 256m` на promtail
-- [ ] `docker compose config` — валидация syntax
+- [x] Добавить `mem_limit: 256m` на nginx в docker-compose.prod.yml _(reverse proxy + SSL termination + WebSocket fan-out, 5m residual + buffers под high keepalive)_
+- [x] Добавить `mem_limit: 128m` на certbot _(Python ACME client, peak только во время renew)_
+- [x] Добавить `mem_limit: 128m` на node-exporter _(резидент ~15-25m, запас под /proc reading peaks)_
+- [x] Добавить `mem_limit: 256m` на cadvisor _(scrape всех containers, ~50-150m под нагрузкой)_
+- [x] Добавить `mem_limit: 256m` на promtail _(tails docker logs всех containers, batch buffer + positions file)_
+- [x] **(extended scope)** `mem_limit: 64m` на 4 frontend-nginx (pwa/mini-app/web-panel/landing) — статика, ~5-10m residual. Симметрично с reverse-proxy nginx, чтобы не оставлять unbounded контейнеры в prod.
+- [x] `docker compose config` — валидация syntax _(0 errors с dummy SWAGGER_HTPASSWD; 26/26 контейнеров имеют mem_limit, total budget 6.1GB на 8GB VPS, 1.9GB host overhead)_
 
 ## Группа 12 — Healthcheck directives + health indicators
 

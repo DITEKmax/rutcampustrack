@@ -475,6 +475,11 @@ services:
       - "9100"
     networks:
       - private_net
+    # M13 G11 (NEW-154/155/157) — bound aux container memory.
+    # node-exporter — резидентный footprint ~15-25m, 128m даёт запас
+    # под /proc reading peaks без OOM на 8GB VPS.
+    mem_limit: 128m
+    mem_reservation: 32m
     restart: unless-stopped
 
   cadvisor:
@@ -493,6 +498,10 @@ services:
       - "8080"
     networks:
       - private_net
+    # M13 G11 — cadvisor scrape'ает все containers, ~50-150m residual
+    # под нагрузкой. 256m с запасом.
+    mem_limit: 256m
+    mem_reservation: 64m
     restart: unless-stopped
     privileged: true
 
@@ -645,6 +654,10 @@ services:
       - private_net
     depends_on:
       - loki
+    # M13 G11 — promtail tails docker logs всех containers, batch buffer
+    # + positions file. ~50-100m под нагрузкой, 256m даёт большой запас.
+    mem_limit: 256m
+    mem_reservation: 64m
     restart: unless-stopped
 
   # ============================================================
@@ -675,6 +688,10 @@ services:
     depends_on:
       api-gateway:
         condition: service_healthy
+    # M13 G11 — reverse proxy + SSL termination + WebSocket fan-out.
+    # nginx alpine ~5m residual, 256m под высокий keepalive load + buffers.
+    mem_limit: 256m
+    mem_reservation: 32m
     restart: unless-stopped
     # Startup sequence:
     # 1. Materialize .htpasswd from $SWAGGER_HTPASSWD env (M11 G4).
@@ -694,12 +711,21 @@ services:
     networks:
       - private_net
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h; done'"
+    # M13 G11 — certbot Python runtime + ACME client. Sleeps большинство
+    # времени, peak только во время renew (~30-50m). 128m с запасом.
+    mem_limit: 128m
+    mem_reservation: 32m
     restart: unless-stopped
 
   # ============================================================
   # FRONTEND CONTAINERS
   # ============================================================
 
+  # M13 G11 (extended scope) — все 4 frontend-nginx контейнеров отдают
+  # только статику (Angular/React build artefacts + Tailwind CSS).
+  # Resident footprint ~5-10m, 64m mem_limit достаточен с большим запасом
+  # на keepalive connections + sendfile buffers. Симметрично с reverse-proxy
+  # nginx, чтобы не оставлять unbounded контейнеры в prod.
   pwa-nginx:
     build:
       context: ./frontends/pwa
@@ -710,6 +736,8 @@ services:
       - "80"
     networks:
       - private_net
+    mem_limit: 64m
+    mem_reservation: 16m
     restart: unless-stopped
 
   mini-app-nginx:
@@ -722,6 +750,8 @@ services:
       - "80"
     networks:
       - private_net
+    mem_limit: 64m
+    mem_reservation: 16m
     restart: unless-stopped
 
   web-panel-nginx:
@@ -734,6 +764,8 @@ services:
       - "80"
     networks:
       - private_net
+    mem_limit: 64m
+    mem_reservation: 16m
     restart: unless-stopped
 
   landing-nginx:
@@ -746,6 +778,8 @@ services:
       - "80"
     networks:
       - private_net
+    mem_limit: 64m
+    mem_reservation: 16m
     restart: unless-stopped
 
 networks:

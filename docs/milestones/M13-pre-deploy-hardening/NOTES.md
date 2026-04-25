@@ -728,3 +728,52 @@ IT написан только в auth-app — sampler-логика generic, в 
 сервисах паттерн идентичный (Spring Boot WebMvc instrumentation
 одинаковая). Если потом окажется нужно — IT можно скопировать в любой
 сервис без изменений.
+
+## 2026-04-25 — Группа 11 (mem_limit на aux containers)
+
+**Scope расширение (предложено executor'ом, owner OK):** изначальный
+checklist 5 контейнеров (nginx/certbot/node-exporter/cadvisor/promtail).
+По факту обнаружено ещё 4 unbounded — frontend-nginx (pwa/mini-app/
+web-panel/landing). Добавлены к G11 как extended scope, чтобы не
+оставлять unbounded контейнеры в prod.
+
+**Финальный memory budget (8GB VPS):**
+
+| Категория | Контейнеры | Memory |
+|-----------|------------|--------|
+| Databases | postgres×2 + mongo + redis + rabbitmq | 1344m |
+| Backend (Spring Boot + bot) | 5 sb + 2 ng + bot | 2816m |
+| Observability | prometheus + alertmanager + tempo + grafana + loki + node-exporter + cadvisor + promtail | 1312m |
+| Reverse proxy + cert | nginx + certbot | 384m |
+| Frontends (extended scope) | 4 × nginx (pwa/mini-app/web-panel/landing) | 256m |
+| **Total mem_limit** | 26 контейнеров | **6112m (6.1 GB)** |
+| **Host overhead** | kernel + Docker daemon + sshd + sessions | **1.9 GB** |
+
+Все 26 контейнеров теперь имеют mem_limit + mem_reservation. **Ноль
+unbounded.** Soft reservation (`mem_reservation`) ставлен на 25-50%
+от `mem_limit` — Docker не выселяет в первую очередь под memory
+pressure (чтобы DB не убились, если resource peak).
+
+**Validation:** `SWAGGER_HTPASSWD=dummy docker compose -f
+docker-compose.prod.yml config --quiet` → exit 0, 0 errors. 26 mem_limit
+entries в expanded config.
+
+**Что НЕ ставил:**
+
+- `cpus:` лимиты — owner ответил «v0.1» в debt-report'е (#26 VPS
+  capacity). 4-core VPS, single-разработчик, нет noisy-neighbor проблемы.
+- Memory swap limit (`memswap_limit`) — без swap на VPS (zram отключён),
+  не нужен.
+- ulimits — не было upstream запроса, дефолты Docker'а адекватны.
+
+**Регрессия-страховка:** M09 G7 уже добавил Prometheus alert
+`ContainerMemoryHigh` (cadvisor metric `container_memory_usage_bytes /
+container_spec_memory_limit_bytes > 0.85`). После prod-deploy с этими
+mem_limit'ами alert сработает если контейнер реально упрётся в
+ceiling — мы это узнаем до OOM kill'а.
+
+**Trade-off observed:** для cadvisor 256m vs 192m. cadvisor читает
+данные всех container's `/sys/fs/cgroup` + Docker stats, при 26 containers
++ Prometheus scrape каждые 15s residual ~80-120m. 256m даёт 2× margin
+от observed peak. На VPS этим 64m не пожалеешь — alternative OOMKill
+crash cadvisor'а потеряет 5-min metric gap.

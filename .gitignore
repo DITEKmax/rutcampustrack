@@ -8,6 +8,7 @@ out/
 # Frontend: vitest coverage output
 frontends/*/coverage/
 # Python: pytest-cov output
+.coverage
 services/notification-bot/.coverage
 services/notification-bot/coverage.xml
 

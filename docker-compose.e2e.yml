@@ -154,6 +154,12 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_KEY_DIR: /keys
       TMA_BOT_TOKEN: ${TMA_BOT_TOKEN}
+      # M13 G25.23 — INTERNAL_ISSUER_SECRET для token-exchange endpoint.
+      # Должен совпадать с api-gateway INTERNAL_ISSUER_SECRET, иначе
+      # InternalIssuerSecretFilter возвращает 401 на /internal/issue-internal-jwt
+      # → downstream services не могут получить internal JWT → user видит
+      # "Service Unavailable: Internal token issuer is currently unavailable".
+      INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
       # M13 G25.10 — `-Djava.security.egd=file:/dev/./urandom`: на CI runner
       # KeyPairGenerator.initialize(3072) висит на /dev/random blocking entropy
       # (RSA 3072 генерация never returns на холодном GitHub Actions runner).

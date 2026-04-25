@@ -38,13 +38,16 @@ test.describe('Auth flow @smoke', () => {
     expect(invalidResponse.status(), `invalid creds got ${invalidResponse.status()}, body: ${invalidBody}`).toBe(401);
   });
 
-  test('student login → schedule visible → logout clears state', async ({ page }) => {
+  test('student login → dashboard visible → logout clears state', async ({ page }) => {
     const user = TEST_USERS.student;
 
     await loginAs(page, user);
 
-    // Schedule page должна отрендериться
-    await expect(page.getByRole('heading', { name: /расписание/i })).toBeVisible();
+    // M13 G25.23 — student-headman landing = /headman/dashboard, heading = "Добрый вечер"
+    // (level=2 в layout.component, time-of-day greeting). URL уже asserted в loginAs,
+    // здесь просто verify что dashboard "чувствуется" rendered (любой heading из
+    // sidebar nav links: "Кабинет старосты", "Расписание", etc).
+    await expect(page.getByRole('link', { name: /кабинет старосты/i })).toBeVisible();
 
     // axe baseline
     await assertNoA11yCriticalOrSerious(page);
@@ -58,7 +61,11 @@ test.describe('Auth flow @smoke', () => {
 
   test('admin login → dashboard visible', async ({ page }) => {
     await loginAs(page, TEST_USERS.admin);
-    await expect(page.getByRole('heading', { name: /дашборд|обзор|панель/i })).toBeVisible();
+    // M13 G25.23 — admin dashboard heading = "Добрый вечер, администратор"
+    // (level=2, time-of-day greeting). Sidebar nav проверка более стабильна
+    // против изменений приветствия — admin layout всегда содержит ссылку
+    // "Пользователи" в sidebar.
+    await expect(page.getByRole('link', { name: /пользователи/i }).first()).toBeVisible();
     await assertNoA11yCriticalOrSerious(page);
   });
 

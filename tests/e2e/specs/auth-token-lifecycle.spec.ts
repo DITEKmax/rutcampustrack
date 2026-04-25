@@ -51,7 +51,6 @@ test.describe('Auth token lifecycle @smoke', () => {
 
   test('T3: refresh endpoint выдаёт новый cookie по существующей сессии', async ({
     page,
-    request,
   }) => {
     await loginAs(page, TEST_USERS.student);
 
@@ -59,13 +58,15 @@ test.describe('Auth token lifecycle @smoke', () => {
     const before = (await page.context().cookies()).find((c) => c.name === REFRESH_COOKIE);
     expect(before, 'pre-refresh cookie должна быть').toBeDefined();
 
-    // POST /api/auth/refresh — браузер автоматически прицепит
-    // rct_refresh cookie (path=/api/auth match'ится).
-    const response = await request.post('/api/auth/refresh');
+    // M13 G25.23 — page.request shares cookies с browser context, в отличие от
+    // top-level `request` fixture (отдельный API context, без cookies от login).
+    // Без этого refresh получает 401 (нет rct_refresh cookie в request).
+    const response = await page.request.post('/api/auth/refresh');
     expect(response.status(), 'refresh должен вернуть 200').toBe(200);
 
     const body = await response.json();
-    expect(body.access_token, 'response должен содержать новый access_token').toBeTruthy();
+    // Backend возвращает accessToken (camelCase, см. TokenResponse DTO).
+    expect(body.accessToken, 'response должен содержать новый accessToken').toBeTruthy();
 
     // Новый refresh cookie выставлен (rotation на каждый refresh —
     // anti-replay guarantee).
@@ -125,12 +126,16 @@ test.describe('Auth token lifecycle @smoke', () => {
     // verification (open WS frame, subscribe replay) — frontend-internal
     // detail; здесь проверяем что страница не падает после offline+online
     // cycle и role-guard всё ещё пускает.
+    //
+    // M13 G25.23 — student-headman пользователь (seed: is_headman=true)
+    // landing = /headman/dashboard, не /student/. Cookie сохранилась через
+    // offline cycle → role-guard пропускает на /headman/*.
     await page.reload();
-    await expect(page).toHaveURL(/\/student\//, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/headman\//, { timeout: 15_000 });
 
-    // Schedule heading должен снова отрендериться (cookie сохранилась
-    // через offline cycle, sessionStorage тоже).
-    await expect(page.getByRole('heading', { name: /расписание/i })).toBeVisible({
+    // Sidebar nav должен снова отрендериться (cookie + sessionStorage
+    // сохранились через offline cycle).
+    await expect(page.getByRole('link', { name: /кабинет старосты/i })).toBeVisible({
       timeout: 10_000,
     });
   });

@@ -23,9 +23,9 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
 }
 
 export async function logout(page: Page): Promise<void> {
-  // Menu drawer → logout (структура web-panel'а из M07).
-  await page.getByRole('button', { name: /меню/i }).click();
-  await page.getByRole('menuitem', { name: /выйти/i }).click();
+  // M13 G25.23 — web-panel sidebar содержит прямую кнопку "Выйти"
+  // (не menuitem в drawer). См. layout.component navigation aside footer.
+  await page.getByRole('button', { name: /выйти/i }).click();
 
   // Ожидаем redirect на /login + очистку state.
   await expect(page).toHaveURL(/\/login$/, { timeout: 10_000 });

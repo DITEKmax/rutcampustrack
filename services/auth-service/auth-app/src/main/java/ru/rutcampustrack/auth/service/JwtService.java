@@ -57,8 +57,16 @@ public class JwtService {
 
         if (Files.exists(privateKeyPath) && Files.exists(publicKeyPath)) {
             log.info("Loading RSA keys from filesystem: {}", keyDir.toAbsolutePath());
-            privateKey = loadPrivateKey(privateKeyPath);
-            publicKey = loadPublicKey(publicKeyPath);
+            try {
+                privateKey = loadPrivateKey(privateKeyPath);
+                log.info("RSA private key parsed (PKCS#8, {} bytes)", privateKey.getEncoded().length);
+                publicKey = loadPublicKey(publicKeyPath);
+                log.info("RSA public key parsed (X.509, {} bytes)", publicKey.getEncoded().length);
+            } catch (Exception e) {
+                log.error("Failed to load RSA keys from filesystem (path={}): {}",
+                        keyDir.toAbsolutePath(), e.toString(), e);
+                throw e;
+            }
         } else {
             // REC-04: Generate RSA 3072-bit keys (NIST recommended)
             log.info("Generating new RSA 3072-bit key pair in: {}", keyDir.toAbsolutePath());
@@ -79,8 +87,10 @@ public class JwtService {
             keyId = UUID.randomUUID().toString().substring(0, 8);
             Files.writeString(kidPath, keyId);
         }
+        log.info("RSA kid resolved: {}", keyId);
 
         publicKeyPem = buildPem(publicKey.getEncoded(), "PUBLIC KEY");
+        log.info("RSA public key PEM serialized, caching in Redis...");
         redisTemplate.opsForValue().set("jwt:public_key", publicKeyPem, Duration.ofSeconds(3600));
         log.info("RSA key pair ready (kid={}), public key cached in Redis", keyId);
     }

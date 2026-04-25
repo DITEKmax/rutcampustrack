@@ -9,6 +9,11 @@ COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
+# M13 G25.5 — shared modules (auth-app зависит от shared-observability,
+# shared-events, shared-web, shared-logback). До G25 multi-stage build
+# никогда не запускался в CI (auth-service в dev compose отсутствовал).
+COPY services/shared services/shared
+
 COPY services/auth-service/auth-api-contract/build.gradle.kts services/auth-service/auth-api-contract/
 COPY services/auth-service/auth-api-contract/src services/auth-service/auth-api-contract/src
 COPY services/auth-service/auth-app/build.gradle.kts services/auth-service/auth-app/

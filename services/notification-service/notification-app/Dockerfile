@@ -9,6 +9,9 @@ COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
+# M13 G25.5 — shared modules (notification-app транзитивно зависит от shared-*).
+COPY services/shared services/shared
+
 # API contract module
 COPY services/notification-service/notification-api-contract/build.gradle.kts \
      services/notification-service/notification-api-contract/

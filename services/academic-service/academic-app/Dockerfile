@@ -15,6 +15,9 @@ COPY settings.gradle.kts .
 # Proto files for gRPC stub generation
 COPY proto proto
 
+# M13 G25.5 — shared modules (academic-app транзитивно зависит от shared-*).
+COPY services/shared services/shared
+
 # API contract module
 COPY services/academic-service/academic-api-contract/build.gradle.kts \
      services/academic-service/academic-api-contract/

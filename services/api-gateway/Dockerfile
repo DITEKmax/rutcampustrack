@@ -9,6 +9,11 @@ COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
 
+# M13 G25.5 — shared modules (api-gateway зависит от shared-observability,
+# shared-logback). До G25 multi-stage build никогда не запускался
+# в CI (api-gateway в dev compose отсутствовал).
+COPY services/shared services/shared
+
 COPY services/api-gateway/build.gradle.kts services/api-gateway/
 COPY services/api-gateway/src services/api-gateway/src
 

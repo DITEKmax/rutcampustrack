@@ -64,7 +64,7 @@ public class JwtService {
             log.info("Generating new RSA 3072-bit key pair in: {}", keyDir.toAbsolutePath());
             Files.createDirectories(keyDir);
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-            generator.initialize(3072);
+            generator.initialize(3072, nonBlockingSecureRandom());
             KeyPair keyPair = generator.generateKeyPair();
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
@@ -162,6 +162,28 @@ public class JwtService {
             builder.claim("group_id", groupId);
         }
         return builder.signWith(privateKey, Jwts.SIG.RS256).compact();
+    }
+
+    /**
+     * M13 G25.13 — non-blocking SecureRandom для RSA generation.
+     *
+     * <p>Корневая причина hang'а на CI: KeyPairGenerator с default-SecureRandom
+     * на JDK 21 alpine иногда упирается в /dev/random и игнорирует
+     * `-Djava.security.egd=file:/dev/./urandom` (флаг читается не всеми
+     * provider'ами). На холодном GitHub Actions runner entropy pool пустой
+     * → init-process висит несколько минут.
+     *
+     * <p>NativePRNGNonBlocking явно использует /dev/urandom (Linux) и не блокирует.
+     * На Windows алгоритм отсутствует — fallback на default SecureRandom (там
+     * проблемы с blocking entropy нет, dev-машинам достаточно).
+     */
+    private static SecureRandom nonBlockingSecureRandom() {
+        try {
+            return SecureRandom.getInstance("NativePRNGNonBlocking");
+        } catch (NoSuchAlgorithmException e) {
+            log.debug("NativePRNGNonBlocking unavailable (likely non-Linux), falling back to default SecureRandom");
+            return new SecureRandom();
+        }
     }
 
     private void writeKeyToFile(Key key, Path path, String type) throws IOException {

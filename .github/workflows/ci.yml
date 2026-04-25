@@ -232,51 +232,49 @@ jobs:
   e2e-auth:
     name: Playwright E2E auth flow
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
+      # M13 G25.3 — buildx нужен для BuildKit cache mount
+      # (`--mount=type=cache,target=/root/.gradle` в backend Dockerfile'ах).
+      # Default docker driver игнорирует cache mounts → каждый build
+      # повторно скачивает Gradle dependencies (+5-10 мин на CI).
+      # Frontend bundles — Docker multi-stage сам делает npm ci/build,
+      # ничего pre-build не нужно.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew
+      # M13 G25.3 — self-signed TLS cert для reverse-proxy nginx.
+      # AuthCookies.java выставляет `Secure` flag → на чистом HTTP browser
+      # cookie отбрасывает → T1 spec падает. TLS termination на e2e nginx
+      # обходит проблему без изменения production code.
+      - name: Generate self-signed TLS cert
+        run: bash tests/e2e/infra/scripts/generate-test-certs.sh
 
-      - name: Build all backend services
-        run: ./gradlew assemble --no-daemon -x test
-
-      - name: Build all frontend bundles
+      - name: Boot e2e stack (docker-compose.e2e.yml)
         run: |
-          for app in pwa mini-app web-panel; do
-            (cd frontends/$app && npm ci && npm run build)
-          done
-
-      - name: Boot full stack (docker-compose dev)
-        run: |
-          docker compose up -d --build
-          # Wait для healthchecks. Critical containers — все backends +
-          # nginx + rabbit + postgres + mongo. Timeout 4 мин.
-          for i in $(seq 1 48); do
-            unhealthy=$(docker compose ps --format json | jq -r 'select(.Health=="unhealthy") | .Name' || echo "")
-            starting=$(docker compose ps --format json | jq -r 'select(.Health=="starting") | .Name' || echo "")
+          cp tests/e2e/.env.ci .env
+          docker compose -f docker-compose.e2e.yml up -d --build
+          # Polling до 8 мин — full prod-like stack (5 backend Java
+          # сервисов с Gradle build, Bitnami Mongo RS init, gateway
+          # depends_on chain). Cold CI runner pulls images + builds
+          # ~3-5 мин до первого health check.
+          for i in $(seq 1 96); do
+            unhealthy=$(docker compose -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="unhealthy") | .Name' || echo "")
+            starting=$(docker compose -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="starting") | .Name' || echo "")
             if [ -z "$unhealthy" ] && [ -z "$starting" ]; then
               echo "All services healthy"
               break
             fi
-            echo "[$i/48] waiting — starting: $starting | unhealthy: $unhealthy"
+            echo "[$i/96] waiting — starting: $starting | unhealthy: $unhealthy"
             sleep 5
           done
-          docker compose ps
+          docker compose -f docker-compose.e2e.yml ps
 
       - name: Install Playwright + browsers
         working-directory: tests/e2e
@@ -287,7 +285,9 @@ jobs:
       - name: Run auth-flow @smoke specs (chromium only)
         working-directory: tests/e2e
         env:
-          E2E_BASE_URL: http://localhost
+          # M13 G25.3 — HTTPS через self-signed cert на reverse-proxy
+          # nginx. ignoreHTTPSErrors=true в playwright.config.ts.
+          E2E_BASE_URL: https://localhost
           CI: 'true'
         run: npx playwright test --project=chromium --grep @smoke
 
@@ -303,8 +303,8 @@ jobs:
         if: failure()
         run: |
           mkdir -p docker-logs
-          for c in $(docker compose ps --services); do
-            docker compose logs --no-color $c > docker-logs/$c.log 2>&1 || true
+          for c in $(docker compose -f docker-compose.e2e.yml ps --services); do
+            docker compose -f docker-compose.e2e.yml logs --no-color $c > docker-logs/$c.log 2>&1 || true
           done
 
       - name: Upload docker logs

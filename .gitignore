@@ -36,6 +36,8 @@ Thumbs.db
 # === Environment ===
 .env
 *.env.local
+# M13 G25.3 — CI test secrets для e2e (committed, marked CI-ONLY).
+!tests/e2e/.env.ci
 
 # === Logs ===
 *.log
@@ -78,6 +80,9 @@ keys/
 nginx/dhparam.pem
 nginx/conf.d/*.bak
 nginx/conf.d/*.disabled
+
+# M13 G25.3 — self-signed e2e certs (generated on demand, never committed).
+tests/e2e/infra/certs/
 
 .claude/worktrees/
 .claude/settings.local.json

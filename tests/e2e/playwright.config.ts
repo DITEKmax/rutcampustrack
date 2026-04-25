@@ -33,7 +33,11 @@ export default defineConfig({
   ] as any,
 
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'http://localhost',
+    // M13 G25.3 — e2e compose терминирует HTTPS через self-signed cert
+    // (нужно потому что AuthCookies выставляет `Secure` flag — на HTTP
+    // browser cookie отбросит). ignoreHTTPSErrors=true принимает self-signed.
+    baseURL: process.env.E2E_BASE_URL || 'https://localhost',
+    ignoreHTTPSErrors: true,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

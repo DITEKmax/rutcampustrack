@@ -298,13 +298,23 @@ val springBootApps = listOf(
 )
 
 fun gitOutput(vararg args: String): String {
-    val proc = ProcessBuilder("git", *args)
-        .directory(rootDir)
-        .redirectErrorStream(true)
-        .start()
-    val out = proc.inputStream.bufferedReader().readText().trim()
-    proc.waitFor()
-    return if (proc.exitValue() == 0) out else "unknown"
+    // M13 G25.6: try/catch вокруг ProcessBuilder.start() — в эфемерных
+    // build environments (Docker multi-stage, CI без git binary) запуск
+    // git выбрасывает IOException до того как мы доходим до exitValue().
+    // Возвращаем "unknown" — git.properties всё равно генерируется,
+    // просто без реальных значений (актуально для Docker build, где
+    // .git/ исключён через .dockerignore).
+    return try {
+        val proc = ProcessBuilder("git", *args)
+            .directory(rootDir)
+            .redirectErrorStream(true)
+            .start()
+        val out = proc.inputStream.bufferedReader().readText().trim()
+        proc.waitFor()
+        if (proc.exitValue() == 0) out else "unknown"
+    } catch (e: java.io.IOException) {
+        "unknown"
+    }
 }
 
 tasks.register("generateGitProperties") {

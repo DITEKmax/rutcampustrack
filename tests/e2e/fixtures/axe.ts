@@ -24,12 +24,20 @@ export async function assertNoA11yCriticalOrSerious(page: Page, scope = 'main'):
   );
 
   if (blocking.length > 0) {
+    // M13 G25.24 — расширенный report: target HTML, failureSummary, html snippet.
+    // Раньше было только {rule,impact,nodes:count,helpUrl} — невозможно понять
+    // какой именно элемент нарушает контраст. Теперь видно exact selector +
+    // computed colors из axe-core deep info.
     const report = blocking.map((v) => ({
       rule: v.id,
       impact: v.impact,
       description: v.description,
-      nodes: v.nodes.length,
       helpUrl: v.help,
+      affectedNodes: v.nodes.map((n) => ({
+        target: n.target,
+        html: n.html?.slice(0, 200),
+        failureSummary: n.failureSummary,
+      })),
     }));
     throw new Error(
       `axe-core found ${blocking.length} CRITICAL/SERIOUS violations:\n` +

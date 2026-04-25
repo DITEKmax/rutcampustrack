@@ -12,8 +12,8 @@ import type { TestUser } from './users';
 export async function loginAs(page: Page, user: TestUser): Promise<void> {
   await page.goto('/login');
 
-  await page.getByLabel(/логин/i).fill(user.login);
-  await page.getByLabel(/пароль/i).fill(user.password);
+  await page.getByRole('textbox', { name: /логин/i }).fill(user.login);
+  await page.getByRole('textbox', { name: /пароль/i }).fill(user.password);
   await page.getByRole('button', { name: /войти/i }).click();
 
   await expect(page).toHaveURL(

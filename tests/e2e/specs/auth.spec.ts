@@ -42,8 +42,8 @@ test.describe('Auth flow @smoke', () => {
 
   test('invalid password → error shown, no redirect', async ({ page }) => {
     await page.goto('/login');
-    await page.getByLabel(/логин/i).fill(TEST_USERS.student.login);
-    await page.getByLabel(/пароль/i).fill('WRONG_PASSWORD');
+    await page.getByRole('textbox', { name: /логин/i }).fill(TEST_USERS.student.login);
+    await page.getByRole('textbox', { name: /пароль/i }).fill('WRONG_PASSWORD');
     await page.getByRole('button', { name: /войти/i }).click();
 
     // Должна остаться на /login и показать ошибку (RFC 7807 toast или inline)

@@ -16,6 +16,28 @@ import { assertNoA11yCriticalOrSerious } from '../fixtures/axe';
  */
 
 test.describe('Auth flow @smoke', () => {
+  // M13 G25.20 — diagnostic: direct API call to surface real status code
+  // before we trust UI-driven login. CI логи компактны, status code из этого
+  // теста + текст ответа подскажут где блок (gateway 502/auth 401/timeout).
+  test('diagnostic: direct POST /api/auth/login returns expected status', async ({ request }) => {
+    const validResponse = await request.post('/api/auth/login', {
+      data: { login: 'admin', password: 'password' },
+      failOnStatusCode: false,
+    });
+    const validBody = await validResponse.text();
+    console.log(`[DIAG] valid login: status=${validResponse.status()} body=${validBody.slice(0, 500)}`);
+
+    const invalidResponse = await request.post('/api/auth/login', {
+      data: { login: 'admin', password: 'WRONG' },
+      failOnStatusCode: false,
+    });
+    const invalidBody = await invalidResponse.text();
+    console.log(`[DIAG] invalid login: status=${invalidResponse.status()} body=${invalidBody.slice(0, 500)}`);
+
+    expect(validResponse.status(), `valid creds got ${validResponse.status()}, body: ${validBody}`).toBe(200);
+    expect(invalidResponse.status(), `invalid creds got ${invalidResponse.status()}, body: ${invalidBody}`).toBe(401);
+  });
+
   test('student login → schedule visible → logout clears state', async ({ page }) => {
     const user = TEST_USERS.student;
 

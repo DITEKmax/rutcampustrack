@@ -96,10 +96,12 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 
 - Все значения в PostgreSQL хранятся в **нижнем регистре**
 - Миграции через Flyway (`src/main/resources/db/migration/V{N}__description.sql`)
+- **НИКОГДА** не редактируй applied миграции (checksum mismatch ломает prod boot). Создавай V{N+1}__patch.sql
 - `ddl-auto: validate` — Hibernate только проверяет, НЕ создаёт схему
 - Soft delete для пользователей (status = 'archived'), никогда DELETE
 - PK: `BIGSERIAL` (Long в Java)
 - Временные метки: `TIMESTAMPTZ` (UTC)
+- **CREATE INDEX на prod-таблицах** (users / groups / lessons / homeworks / schedule_items / one_off_lessons и аналогичные hot-tables) — обязательно `CREATE INDEX CONCURRENTLY ... IF NOT EXISTS`. Plain `CREATE INDEX` блокирует таблицу на время build'а, что = downtime в prod. CONCURRENTLY требует **single-statement миграцию** (не работает в transaction): добавь `-- ##` в начало файла либо вынеси index в отдельную миграцию. Backstop через `MigrationConcurrentlyTest` в каждом Postgres-сервисе (M13 G21) — fail при baseline cutoff exceeded
 
 ### REST API
 

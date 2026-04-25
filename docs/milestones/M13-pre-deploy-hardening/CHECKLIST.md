@@ -192,10 +192,10 @@
 
 ## Группа 21 — Flyway CONCURRENTLY guard
 
-- [ ] Обновить `CLAUDE.md` — правило «CREATE INDEX CONCURRENTLY на prod-таблицах, миграция single-statement»
-- [ ] Создать ArchUnit test `MigrationArchTest.java` в каждом service с Postgres
-- [ ] Rule: все `CREATE INDEX` на `users|groups|lessons|attendances|...` (hot таблицы) должны содержать `CONCURRENTLY`
-- [ ] Обновить `docs/prod-deploy-checklist.md` — секция «через 2 недели → EXPLAIN ANALYZE top-queries из pg_stat_statements»
+- [x] Обновить `CLAUDE.md` — правило «CREATE INDEX CONCURRENTLY на prod-таблицах, миграция single-statement» _(добавлено в раздел «База данных»: правило про CONCURRENTLY + IF NOT EXISTS + single-statement (`-- ##` либо отдельная миграция). Параллельно добавлен явный pin «НИКОГДА не редактируй applied миграции» (был в memory feedback, не в CLAUDE.md))_
+- [x] Создать ~~ArchUnit~~ unit-test `MigrationConcurrentlyTest.java` в каждом service с Postgres _(**Surprise**: только 2 PG-сервиса (academic + schedule); auth/notification на Redis/Mongo. ArchUnit для .sql не подходит (не Java) — заменён на JUnit unit-test с regex parsing. По одному файлу в academic-app + schedule-app, baseline cutoff per service: V18 academic / V14 schedule. Both passing)_
+- [x] Rule: все `CREATE INDEX` на `users|groups|lessons|...` (hot таблицы) должны содержать `CONCURRENTLY` _(**Surprise 2**: 0 existing миграций используют CONCURRENTLY → нельзя редактировать applied (checksum). Решение: grandfather все V≤cutoff, проверять только V>cutoff. Существующие plain CREATE INDEX оставлены as-is. Verified negative case: tmp V99 с plain CREATE INDEX → test fail; positive case с CONCURRENTLY → test pass)_
+- [x] Обновить `docs/prod-deploy-checklist.md` — секция «через 2 недели → EXPLAIN ANALYZE top-queries из pg_stat_statements» _(новая секция §5 «T+2 weeks — performance audit»: pg_stat_statements включить если нет, top-10 slow queries query, EXPLAIN ANALYZE для > 100ms mean time, fix через CONCURRENTLY index, cross-ref MigrationConcurrentlyTest, correlate с HikariPoolExhaustion/HighRequestLatency alerts (M13 G19), reset stats)_
 
 ## Группа 22 — Playwright E2E auth flow
 

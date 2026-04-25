@@ -255,7 +255,51 @@ auto-renew работает (см. `runbooks/cert-renewal.md`).
 
 ---
 
-## 5. Checklist summary (copy-paste для release PR)
+## 5. T+2 weeks — performance audit (M13 G21)
+
+После 2 недель prod traffic'а — accumulated `pg_stat_statements` даёт
+реалистичный workload picture. Цель: catch'ить slow queries которые в
+load-test'ах не проявились.
+
+- [ ] `pg_stat_statements` включён (default в Postgres 14+):
+      ```sql
+      SHOW shared_preload_libraries;  -- должен включать pg_stat_statements
+      ```
+      Если нет — добавь в `docker-compose.prod.yml` postgres command
+      `-c shared_preload_libraries=pg_stat_statements` + restart.
+
+- [ ] Top-10 slow queries по mean time (academic_db):
+      ```bash
+      docker exec rct-pg-academic psql -U $POSTGRES_ACADEMIC_USER -d academic_db -c \
+        "SELECT query, calls, mean_exec_time, total_exec_time
+         FROM pg_stat_statements
+         WHERE query NOT LIKE '%pg_stat%'
+         ORDER BY mean_exec_time DESC LIMIT 10;"
+      ```
+      Аналогично для schedule_db.
+
+- [ ] Для каждой query > 100ms mean time — `EXPLAIN ANALYZE`.
+      Если видим Seq Scan на больших таблицах (users / lessons /
+      homeworks / schedule_items) — нужен index. Создавай **только
+      через CREATE INDEX CONCURRENTLY** (см. CLAUDE.md «База данных»).
+
+- [ ] Проверь `MigrationConcurrentlyTest` в academic-app + schedule-app —
+      зелёный. Каждая новая миграция с CREATE INDEX автоматически
+      проверяется на CONCURRENTLY (M13 G21).
+
+- [ ] HikariPoolExhaustion / HighRequestLatency alerts (M13 G19) за
+      последние 2 недели — если fire'или, сильно correlate'нут с
+      slow queries из top-10. Fix accordingly.
+
+- [ ] Reset `pg_stat_statements` после fix'а:
+      ```sql
+      SELECT pg_stat_statements_reset();
+      ```
+      Чтобы следующий audit cycle не учитывал старые данные.
+
+---
+
+## 6. Checklist summary (copy-paste для release PR)
 
 ```markdown
 ## Deploy v0.x.y

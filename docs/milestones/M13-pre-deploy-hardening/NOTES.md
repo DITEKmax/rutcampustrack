@@ -1367,3 +1367,74 @@ deploys проходят без этой секции (cert уже выпуще�
 **Estimate vs actual:** ~1 час (item 5 ожидаемо был самый сложный —
 оказался N/A ✓). Items 1-4 (blackbox + scrape + alerts + catalog) ~30
 мин. Items 6-7 (runbook + deploy checklist) ~30 мин.
+
+## 2026-04-25 — Группа 21 (Flyway CONCURRENTLY guard)
+
+**Two surprises:**
+
+**Surprise 1 — только 2 PG-сервиса.** Hand-off говорил «в каждом
+service с Postgres». Реальность: только academic-app + schedule-app
+используют PostgreSQL (auth-service на Redis, notification-web и
+attendance — на Mongo). Test'ы созданы только в этих двух.
+
+**Surprise 2 — 0 existing миграций с CONCURRENTLY.** Все 18 academic
++ 14 schedule миграций — plain `CREATE INDEX`. Это значит каждая
+наша prod migration теоретически блокировала таблицу. На малом
+dataset (test users + предсказуемый load) impact был незаметен; на
+real prod с 1k+ rows и concurrent traffic блокировка была бы
+видимой.
+
+**Нельзя редактировать applied миграции** (memory feedback
+`feedback_flyway_no_edit.md` — checksum mismatch ломает prod boot).
+→ Решение: **grandfather** V ≤ cutoff (V18 academic, V14 schedule),
+test проверяет только future migrations. CLAUDE.md правило явно
+говорит про CONCURRENTLY для **prod-таблиц**, не trying to retroactively
+fix all existing.
+
+**Cutoff bumping protocol:** при добавлении V19+/V15+ с
+CONCURRENTLY — bump соответствующий `BASELINE_CUTOFF` в test'е
+(signal что guard caught и пропустил). Это сохраняет «новые миграции
+проверяются» semantics без false-positive на уже принятой migration.
+
+**ArchUnit не подошёл.** ArchUnit оперирует Java classpath'ом; .sql
+файлы — resources. Заменён на JUnit unit-test с regex parsing —
+проще, быстрее (мс), не требует ArchUnit dep'а в build.gradle.
+
+**Regex pattern:**
+- `CREATE_INDEX = create\s+(?:unique\s+)?index\b` — захват и
+  CREATE INDEX, и CREATE UNIQUE INDEX.
+- `CONCURRENTLY = create\s+(?:unique\s+)?index\s+concurrently\b` —
+  должен быть **сразу** после INDEX (snippet 80 chars от позиции
+  CREATE INDEX). Это catch'ит случаи когда кто-то напишет
+  `CREATE INDEX foo` + позже `... CONCURRENTLY` в одном файле как
+  два разных statement'а — НЕ матчится как valid.
+- `stripComments` — убирает `/* */` block + `--` line comments перед
+  matching, чтобы commented-out CREATE INDEX в комментарии не
+  тригерил false-positive.
+
+**Validation:**
+- Both tests passing (existing migrations grandfathered).
+- Negative case verified: tmp V99 с plain CREATE INDEX → test fail
+  с явным сообщением `V99 (V99__test_g21_BAD.sql) содержит plain
+  CREATE INDEX без CONCURRENTLY: 'CREATE INDEX idx_test_g21 ON
+  users(role);'. Замени на CREATE INDEX CONCURRENTLY IF NOT EXISTS
+  + добавь -- ## в начало файла...`.
+- Positive case verified: tmp V99 с CONCURRENTLY → pass.
+
+**EXPLAIN ANALYZE follow-up — section §5.** T+2 weeks — typical
+window когда `pg_stat_statements` накапливает реалистичный workload.
+Top-10 slow queries → EXPLAIN ANALYZE → если Seq Scan на hot tables,
+add index через CONCURRENTLY. Cross-ref'нул на
+`MigrationConcurrentlyTest` (новая миграция автоматически проверяется)
++ HikariPoolExhaustion / HighRequestLatency alerts (M13 G19) для
+correlation pattern'а.
+
+**CLAUDE.md update — bonus.** Параллельно добавил явный pin «НИКОГДА
+не редактируй applied миграции» — это правило было в memory
+feedback (`feedback_flyway_no_edit.md`) но не в CLAUDE.md. Теперь
+любой новый чат прочитает правило сразу.
+
+**Estimate vs actual:** ~45 мин (включая negative case verification —
+gradle holds Spring app context warm-up overhead). Items 1-3
+(CLAUDE.md + 2 test'а) ~30 мин. Item 4 (deploy checklist EXPLAIN
+section) ~15 мин.

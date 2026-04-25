@@ -114,11 +114,11 @@
 
 ## Группа 13 — Environment secrets infrastructure
 
-- [ ] Создать `.env.prod.example` — все 20+ переменных с командой генерации и описанием
-- [ ] Добавить `.env.prod` в `.gitignore` (проверить, что уже есть)
-- [ ] Создать `scripts/validate-env-prod.sh` — shell script, проверяет наличие + формат (JWT_SECRET base64 ≥32, TELEGRAM_BOT_TOKEN regex, etc.)
-- [ ] Тест: broken `.env.prod` (missing JWT_SECRET) → script exit 1 с явным сообщением
-- [ ] Обновить `docs/prod-deploy-checklist.md` — шаги генерации secrets
+- [x] Создать `.env.prod.example` — все 20+ переменных с командой генерации и описанием _(обновлён существующий — был неполный: добавлены MONGODB_REPLICA_SET_KEY (M13 G7), INTERNAL_ISSUER_SECRET (M03a), ALERT_WEBHOOK_SECRET (M04 G9), NOTIFICATION_HISTORY_TTL_DAYS, NOTIFICATION_WS_ALLOWED_ORIGINS, ADMIN_TELEGRAM_IDS. Удалены лишние GHCR_TOKEN/GRAFANA_LOGIN не используемые в compose. 22 required + 5 optional vars, каждая с командой генерации и описанием)_
+- [x] Добавить `.env.prod` в `.gitignore` (проверить, что уже есть) _(уже было — `.env.prod` + `.env` + `*.env.local` все в .gitignore)_
+- [x] Создать `scripts/validate-env-prod.sh` — shell script, проверяет наличие + формат (JWT_SECRET base64 ≥32, TELEGRAM_BOT_TOKEN regex, etc.) _(чистый bash, dot-env parser через ассоциативный массив (не shell eval — пароли могут содержать `;~'()@`). Format checks: passwords ≥8 chars, GRPC_SECRET/INTERNAL_ISSUER ≥32 chars, MONGODB_REPLICA_SET_KEY ровно ~1024 chars, Telegram tokens regex, VAPID длины 87/43, mailto:/https:// для VAPID_SUBJECT, $$apr1$$/$$2y$$ для SWAGGER_HTPASSWD, hex 64 для ALERT_WEBHOOK_SECRET, https:// для URLs)_
+- [x] Тест: broken `.env.prod` (missing JWT_SECRET) → script exit 1 с явным сообщением _(exit codes: 1 file missing, 2 required vars missing, 3 format errors. Validator реально нашёл 4 проблемы в актуальном `.env.prod` владельца — 3 missing secrets + 1 placeholder-not-replaced — пользователь регенерировал и validator показал ✓ all passed. Real-world value доказан)_
+- [x] Обновить `docs/prod-deploy-checklist.md` — шаги генерации secrets _(новый раздел 1.0 «Environment secrets (M13 G13)» перед всеми pre-deploy checks: cp .env.prod.example, генерация secrets, chmod 600, validate-env-prod.sh, scp на VPS, повторная валидация на VPS, backup в password manager. Отдельный sub-block про rotation и про критичные новые secrets для upgrade с старого .env.prod)_
 
 ## Группа 14 — Swagger basic-auth + Prometheus/Alertmanager lockdown
 

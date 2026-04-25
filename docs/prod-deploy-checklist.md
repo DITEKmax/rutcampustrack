@@ -24,6 +24,34 @@
 
 ## 1. Pre-deploy (T-30min)
 
+### 1.0. Environment secrets (M13 G13) — first deploy / rotation
+
+**При первом deploy** на свежий VPS:
+
+- [ ] `cp .env.prod.example .env.prod` — создать локальный prod env файл.
+- [ ] Сгенерировать все 22 required secrets — список и команды в самом
+      `.env.prod.example` (в комментариях каждой переменной).
+- [ ] `chmod 600 .env.prod` — restrict access (только owner read/write).
+- [ ] `./scripts/validate-env-prod.sh .env.prod` — exit 0 (все 22 vars
+      присутствуют, форматы корректны). Любой `✗ FAIL` — блокер deploy.
+- [ ] `scp .env.prod root@<vps>:/opt/rutcampustrack/.env.prod` —
+      доставить на VPS. **НЕ** через git (gitignored).
+- [ ] На VPS повторить `./scripts/validate-env-prod.sh /opt/rutcampustrack/.env.prod`
+      — sanity-check после copy.
+- [ ] Backup `.env.prod` в password manager (Bitwarden/1Password) —
+      single source of truth.
+
+**При rotation** (раз в 6 мес или при подозрении на leak):
+
+- [ ] См. [secret-rotation.md](runbooks/secret-rotation.md) — порядок
+      ротации с минимальным downtime (rolling per-service).
+- [ ] После rotation — `validate-env-prod.sh` снова на старом и новом VPS env.
+
+**Обязательные новые secrets (при upgrade со старого .env.prod):**
+- `MONGODB_REPLICA_SET_KEY` (M13 G7) — без него `mongo-attendance` не стартует.
+- `INTERNAL_ISSUER_SECRET` (M03a) — без него gateway → auth token-exchange падает.
+- `ALERT_WEBHOOK_SECRET` (M04 G9) — без него Alertmanager → notification-web webhook 401.
+
 ### 1.1. Git + CI state
 - [ ] Ветка `main` — `git fetch && git status` чистый.
 - [ ] Последний коммит в `main` имеет зелёный CI (все workflows:

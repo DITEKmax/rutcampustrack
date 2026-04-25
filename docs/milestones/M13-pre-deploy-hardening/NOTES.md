@@ -825,3 +825,82 @@ crash cadvisor'а потеряет 5-min metric gap.
 что все 5 backend становятся `healthy` через `docker compose ps`. Если
 там что-то развалится — Spring `service_healthy` `depends_on` chain
 не пройдёт, и api-gateway не стартует — fail-fast.
+
+## 2026-04-25 — Группа 13 (Environment secrets infrastructure)
+
+**Audit findings:**
+
+1. **`.env.prod.example` уже существовал** (M11 G4 baseline), но был
+   неполный: отсутствовали `MONGODB_REPLICA_SET_KEY` (M13 G7),
+   `INTERNAL_ISSUER_SECRET` (M03a), `ALERT_WEBHOOK_SECRET` (M04 G9).
+2. **Реальный `.env.prod` владельца имел те же 3 пробела** — без них
+   `docker compose up -d` упал бы на старте (Mongo RS init / gateway
+   token-exchange / Alertmanager webhook 401).
+3. **+1 placeholder** не заменён: `MONGO_NOTIFICATION_PASSWORD=CHANGE_ME_BEFORE_DEPLOY`.
+4. **Comose использует 28 уникальных env vars**, из них 22 required +
+   6 с defaults (`IMAGE_TAG:-latest`, `ADMIN_TELEGRAM_IDS:-0` etc.).
+
+**Validator design — non-trivial decision:**
+
+Первая итерация использовала `set -a; . file; set +a` (стандартный
+bash idiom для load env). **Сломалась на real `.env.prod`** — пароли
+содержат shell-special chars (`;`, `~`, `'`, `(`, `@`, `}`) без quoting
+(Docker-compose их не требует, parses dot-env literally). При `.`
+sourcing bash их evaluate'ил и валился: `bJH: command not found`.
+
+**Решение:** parse dot-env вручную через bash regex
+(`[[ "$line" =~ ^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]`),
+заполнять associative array `ENV[var]=value`, читать через
+helper `env_get()`. Это — **тот же подход, что использует
+docker-compose** (key=value literal, no shell eval), и устойчив к
+любым chars в значениях.
+
+**Real-world value доказан в этой же сессии:**
+
+Пользователь запустил validator на своём `.env.prod` → validator нашёл
+4 реальные проблемы (3 missing secrets + placeholder). Пользователь
+сгенерировал недостающие, validator показал `✓ Все validations passed`
++ 24/24 vars. **Это и есть G13's purpose** — pre-flight catch вместо
+broken deploy.
+
+**Format checks (12 правил):**
+
+| Var | Check |
+|-----|-------|
+| All `*_PASSWORD` | length ≥ 8 (≥ 16 для `MONGO_ROOT_PASSWORD`) |
+| `GRPC_SECRET`, `INTERNAL_ISSUER_SECRET` | length ≥ 32 (HMAC-SHA256 min) |
+| `MONGODB_REPLICA_SET_KEY` | length ~1024 (756 raw bytes base64, Mongo keyfile spec) |
+| `BOT_TOKEN`, `TMA_BOT_TOKEN`, `BOT_ALERT_TOKEN` | regex `^[0-9]{9,12}:[A-Za-z0-9_-]{30,}$` |
+| `VAPID_PUBLIC_KEY` | length 80-90 (P-256 EC = 87 chars) |
+| `VAPID_PRIVATE_KEY` | length 40-50 (= 43 chars) |
+| `VAPID_SUBJECT` | starts with `mailto:` или `https://` (RFC 8292) |
+| `CORS_ALLOWED_ORIGIN`, `MINI_APP_URL` | starts with `https://` |
+| `NOTIFICATION_WS_ALLOWED_ORIGINS` | starts with `https://` (если задан) |
+| `SWAGGER_HTPASSWD` | regex `^login:\$\$(apr1\|2y)` (DOUBLE dollar для compose escape) |
+| `ALERT_WEBHOOK_SECRET` | regex `^[a-f0-9]{64}$` (hex 32 bytes) — warning |
+| `ADMIN_TELEGRAM_IDS` | non-empty + ≠ 0 — warning |
+
+**Exit codes (UX-friendly для CI):**
+- 0 — all valid, ready to deploy
+- 1 — file missing/unreadable (early exit)
+- 2 — required vars missing/CHANGE_ME (deploy блокер)
+- 3 — format errors (deploy блокер)
+
+**Что НЕ покрыл validator (deferred — out of scope):**
+- Cross-validation `BOT_TOKEN === TMA_BOT_TOKEN` (compose это не enforces,
+  но runtime упадёт при mismatch initData verification).
+- `MONGO_USER`/`MONGO_NOTIFICATION_USER` ≠ default `rct_user` — не
+  security risk, optional.
+- DB connectivity smoke (psql / mongosh) — это деплоймент-time, не
+  validation-time. Разумно отдать smoke-prod.sh после deploy.
+
+**Documentation:** `docs/prod-deploy-checklist.md` новый раздел 1.0
+«Environment secrets (M13 G13)» перед всеми pre-deploy checks. Чек-лист
+для first-deploy + rotation. Mongo RS / Internal issuer / Alert webhook
+secrets выделены отдельно для upgrade-сценария со старым `.env.prod`.
+
+**Security-side win:** во время audit'а заметил, что текущий `.env.prod`
+владельца содержит реальные prod values — Telegram bot tokens, GHCR
+PAT, DB passwords. Предложил полную rotation одной операцией (вместо
+порционной). Пользователь rotation'нул passwords + добавил 3 missing
+secrets. Финальный `validate-env-prod.sh` зелёный → готов для VPS deploy.

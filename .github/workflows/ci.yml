@@ -303,9 +303,14 @@ jobs:
         if: failure()
         run: |
           mkdir -p docker-logs
-          for c in $(docker compose -f docker-compose.e2e.yml ps --services); do
-            docker compose -f docker-compose.e2e.yml logs --no-color $c > docker-logs/$c.log 2>&1 || true
+          # `ps --services` без флагов выводит только running сервисы — exited
+          # контейнеры (Mongo crash на старте) пропадают. `config --services`
+          # возвращает все сервисы из compose-файла, гарантирует полный snapshot.
+          for c in $(docker compose -f docker-compose.e2e.yml config --services); do
+            docker compose -f docker-compose.e2e.yml logs --no-color "$c" > "docker-logs/$c.log" 2>&1 || true
           done
+          # Дополнительно — `docker compose ps -a` для exit codes / health.
+          docker compose -f docker-compose.e2e.yml ps -a > docker-logs/_compose-ps.txt 2>&1 || true
 
       - name: Upload docker logs
         if: failure()

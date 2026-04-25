@@ -146,13 +146,15 @@
 
 ## Группа 16 — CSP audit + report endpoint
 
-- [ ] Локальный smoke: `docker compose up -d` → открыть 3 frontends → DevTools Console → 0 CSP violations
-- [ ] Fix any violation found (expected: Material Design chunks, Grafana iframe)
-- [ ] Создать `CspReportController` в notification-web с endpoint POST `/api/csp-report`
-- [ ] Metric: `csp_violations_total{directive, blocked_uri}` counter
-- [ ] Обновить nginx CSP header: `report-uri /api/csp-report; report-to default`
-- [ ] IT: POST mock violation → metric incrementится + structured log
-- [ ] Создать `docs/security-headers.md` — policy документирование
+- [ ] ~~Локальный smoke: `docker compose up -d` → открыть 3 frontends → DevTools Console → 0 CSP violations~~ **Deferred в G23 VPS dry-run** _(владелец: manual browser verification делается вручную на VPS deploy; реальные violations browser'ы теперь отправят на `/api/csp-report` → Loki/Prometheus, автоматический catch)_
+- [ ] ~~Fix any violation found (expected: Material Design chunks, Grafana iframe)~~ **Deferred** _(Grafana iframe уже обработан: `/grafana/` location override'ит CSP на empty — см. default.conf:153. Material Design chunks: `style-src 'self' 'unsafe-inline'` уже разрешает inline styles, потому что Angular Material injectит CSS в runtime. Остальное — в G23 verify + fix в v0.1 если что-то найдётся)_
+- [x] Создать `CspReportController` в notification-web с endpoint POST `/api/csp-report` _(Surprise: Spring MVC `MappingJackson2HttpMessageConverter` не регистрирует `application/csp-report` как JSON → `@PostMapping(consumes=...)` возвращал 415. Решил через `byte[]` body + manual `ObjectMapper.readValue`. Принимает 3 MIME: `application/csp-report`, `application/reports+json`, `application/json`. `@Hidden` чтобы не попадать в public OpenAPI snapshot. Роутинг Browser → nginx `/api/csp-report` → gateway (StripPrefix=1) → notification-web `/csp-report`)_
+- [x] Metric: `csp_violations_total{directive, blocked_uri}` counter _(название привёл к convention `security.csp.violations` в `MetricNames.CSP_VIOLATIONS`, Prometheus export'ится как `security_csp_violations_total`. Tags: `directive` (нормализован — только имя без source list, lowercase), `blocked_uri_host` (только host из URI без path/query, обрезается до 32 chars для special `inline`/`eval`/`data:`). Low-cardinality чтобы не взорвать Prometheus label cardinality)_
+- [x] Обновить nginx CSP header: `report-uri /api/csp-report; report-to default` _(в `nginx/conf.d/default.conf`: `report-uri /api/csp-report; report-to csp-endpoint;` (легаси + modern Reporting API) + `Report-To` header с JSON group definition `{"group":"csp-endpoint","max_age":10886400,"endpoints":[{"url":"/api/csp-report"}]}`. Compatibility: Firefox/Safari используют `report-uri`, Chrome 97+ — `report-to` + `Report-To`)_
+- [x] IT: POST mock violation → metric incrementится + structured log _(`CspReportIT` в `@SpringBootTest + @AutoConfigureMockMvc`, extends `ContainerTestBase` (Mongo/Rabbit Testcontainers). 5 кейсов: legacy format, modern reports+json, json-fallback с top-level fields, unsupported Content-Type → 415, noAuthRequired (verify filter exclude работает). Counter delta verified через `MeterRegistry` inject. + Unit test 14 кейсов с `SimpleMeterRegistry`)_
+- [x] Создать `docs/security-headers.md` — policy документирование _(полный документ: обзор всех security headers (HSTS/CSP/X-Frame/Referrer/Permissions), детальная CSP policy с обоснованием каждой директивы, Report-To config, CSP report endpoint routing + auth + rate-limit + Content-Type handling, observability queries для Grafana, runbook CSP triage, deferred items SRI/COOP/nonce, история изменений)_
+- [x] Gateway PUBLIC_PATHS + rate-limit _(NEW: `/api/csp-report` добавлен в `JwtAuthenticationFilter.PUBLIC_PATHS` + новый route `notification-csp-report` с `RequestRateLimiter` 1 tok/sec + burst 60 per-IP (flood защита))_
+- [x] NotificationUserContextFilter exclude _(NEW: `/csp-report` в `isExcludedPath` — browser не носит Internal JWT)_
 
 ## Группа 17 — Grafana dashboards sanity + retention
 

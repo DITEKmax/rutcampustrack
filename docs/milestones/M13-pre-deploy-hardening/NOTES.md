@@ -1046,3 +1046,97 @@ shellcheck с `--severity=warning` clean.
 - 1 year production: ~600 MB (schedule dominates — lessons 1 year ×
   500 per semester).
 - Trigger для reconsider retention / offsite urgency: >1 GB total.
+
+## 2026-04-25 — Группа 16 (CSP audit + report endpoint)
+
+**Решения владельца:**
+- Smoke browser verification deferred в G23 VPS dry-run (владелец
+  сказал «не хочу руками делать пока, потом сообщу об ошибках»).
+  Полагаемся на real-world catch через `/api/csp-report` → metric.
+- Поддержать оба формата (legacy + Reporting API) — максимальная
+  совместимость.
+- Через gateway (not nginx bypass) — consistent с остальными routes.
+- IT + unit test (не skip'аем).
+
+**Surprise: Spring MVC + `application/csp-report` → 415 в IT.**
+
+Mapping через `@PostMapping(consumes = "application/csp-report")` не
+работает: `MappingJackson2HttpMessageConverter` по умолчанию поддерживает
+только `application/json` + `application/*+json` (matches regex). MIME
+`application/csp-report` — БЕЗ `+json` suffix — не матчится, Jackson
+converter не способен десериализовать body в `@RequestBody Map`, Spring
+возвращает 415 ДО вызова handler'а.
+
+Попытки:
+- Добавить `@PostMapping(consumes = {"application/csp-report", ...})` —
+  не помогает, consumes только фильтрует routing, не регистрирует converter.
+- Расширить Jackson MIME types через `WebMvcConfigurer` — работает,
+  но глобальный impact на converter (риск регрессии в других endpoints).
+
+**Решение:** принимаем body как `byte[]` + `@RequestHeader Content-Type`
++ парсим вручную через inject'ed `ObjectMapper`. Один endpoint, switch
+по Content-Type. Zero cross-impact на остальной API.
+
+**Routing dataflow:**
+```
+Browser CSP violation
+  → POST https://ruttrack.site/api/csp-report
+  → nginx (TLS termination)
+  → gateway /api/csp-report (StripPrefix=1, rate-limit 60/min per-IP)
+  → notification-web /csp-report
+  → CspReportController.receive(Content-Type, byte[])
+  → switch Content-Type → parseLegacy | parseReportsApi
+  → recordViolation(directive, blockedUri, documentUri)
+    → Micrometer Counter increment (tags: directive, blocked_uri_host)
+    → log.warn structured → Loki
+  → ResponseEntity.noContent() (204)
+```
+
+**Low-cardinality labels:**
+- `directive` — только имя (без source list). Пример: «script-src 'self'
+  https://cdn.example.com» → «script-src». Lowercase.
+- `blocked_uri_host` — только host (без path / query / fragment). Пример:
+  «https://evil.example.com/malware.js?id=123» → «evil.example.com».
+- Special CSP values: `inline`, `eval`, `data:...`, `blob:...` — браузер
+  отдаёт их без scheme (CSP spec). Обрезаем до 32 chars, сохраняем as-is
+  lowercase. Редко > 32 (обычно «inline», «eval»).
+- Malformed URIs → fallback label «unknown».
+
+**Gateway rate-limit rationale:**
+- 1 tok/sec + burst 60 per-IP = 60 requests/min sustainable, burst до 60
+  сразу. Malicious сайт с iframe'ом ruttrack.site + много forbidden
+  scripts мог бы генерировать 100+ violations/sec от одного visitor.
+- Reporting API: Chrome сам rate-limits `reports+json` batch до 1 per 60s,
+  поэтому 60 req/min это высокий потолок.
+
+**@Hidden для OpenAPI:**
+- `/csp-report` НЕ часть пользовательского API. Infrastructure endpoint
+  (browser callback).
+- `@Hidden` на контроллере исключает из springdoc-generated OpenAPI.
+- `AlertController /internal/alert` **не @Hidden** — был в M04 G9, попал
+  в snapshot как раз чтобы Alertmanager webhook config виден. Не трогаю
+  в M13.
+
+**CSP report endpoint path decision:**
+- nginx path: `/api/csp-report` (под `/api/` umbrella).
+- gateway StripPrefix: `/csp-report` (ожидаемо для Spring).
+- Alternative «отдельный `/internal/csp-report` в обход gateway» —
+  rejected: (1) менее consistent, (2) требует специальной nginx location,
+  (3) не reuse существующей rate-limit infrastructure.
+
+**Frontend changes: none.**
+Frontends не меняются — браузер сам шлёт отчёты согласно `report-uri`
+директиве из CSP header (nginx add'ит). PWA/web-panel/landing — without
+explicit code.
+
+**Deferred в v0.1:**
+- **Alert rules** для `CspViolationSpike` (rate > 10/5min). Пока observation
+  через manual Grafana queries + Loki.
+- **nonce-based CSP** (replace `style-src 'unsafe-inline'` с
+  `style-src 'nonce-<random>'`). Требует refactor Angular/PWA build pipeline
+  для nonce injection.
+- **SRI (Subresource Integrity)** для `<script src>` / `<link href>`.
+  Пока все third-party resources self-host'еются (M07 G4), так что low
+  impact. Нужно при добавлении любого CDN.
+- **COOP / COEP** headers. Нужны если будем использовать
+  `SharedArrayBuffer` или требовать Spectre mitigations.

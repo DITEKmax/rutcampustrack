@@ -166,10 +166,10 @@
 
 ## Группа 18 — WebSocket reliability
 
-- [ ] Обновить `nginx/conf.d/default.conf` — location `/ws`: `proxy_read_timeout 300s`, `proxy_http_version 1.1`, `Upgrade` + `Connection` headers, `proxy_buffering off`
-- [ ] Проверить STOMP heartbeat в `WebSocketConfig.java` notification-web — `setHeartbeatValue(new long[]{10000, 10000})`
-- [ ] Локальный smoke: PWA notification-center → Chrome DevTools offline 30s → online → STOMP reconnect автоматический
-- [ ] Документировать nginx/STOMP config в `docs/websocket-flow.md`
+- [x] Обновить `nginx/conf.d/default.conf` — location `/ws`: `proxy_read_timeout 300s`, `proxy_http_version 1.1`, `Upgrade` + `Connection` headers, `proxy_buffering off` _(location `/api/ws/` — http_version 1.1 + Upgrade + Connection + read_timeout 86400s уже были (M03b/M07). Добавлен `proxy_buffering off` (M13 G18) — без этого heartbeat 1-byte фреймы (`\n`) задерживаются nginx-буфером. read_timeout 86400s >> required 300s, оставлен — idle WS поддерживаются heartbeat'ом)_
+- [x] Проверить STOMP heartbeat в `WebSocketConfig.java` notification-web — `setHeartbeatValue(new long[]{10000, 10000})` _(**Surprise**: comment утверждал «Default Spring heartbeat (10s server, 10s client) — no custom tuning needed» — это **неверно**. По умолчанию `enableSimpleBroker` без `setHeartbeatValue` + `setTaskScheduler` даёт **0/0 (off)**. Добавлены оба + dedicated `ThreadPoolTaskScheduler` bean (pool size 1, daemon, prefix `stomp-heartbeat-`). Comment поправлен. Регрессия покрыта `WebSocketConfigTest.stompHeartbeatScheduler_isInitializedDaemonThread`. `StompIntegrationIT` зелёный с новым scheduler bean)_
+- [x] ~~Локальный smoke: PWA notification-center → Chrome DevTools offline 30s → online → STOMP reconnect автоматический~~ **Deferred в G23 VPS dry-run** _(per owner-policy «ничего руками». Frontend reconnect-логика покрыта unit-тестами: `useStompCheckin.test.ts` × 3 (finite reconnectDelay 1-5000ms, ticket re-fetch на reconnect, reconnect mandatory) + `notification-center.service.spec.ts` (exponential backoff config). @stomp/stompjs default heartbeat 10s/10s — симметрично backend'у)_
+- [x] Документировать nginx/STOMP config в `docs/websocket-flow.md` _(новый файл: handshake (POST /api/auth/ws-ticket → SockJS factory с async ticket fetch → TicketHandshakeInterceptor → SubscriptionAuthInterceptor anti-IDOR), heartbeat 10s/10s rationale, nginx config rationale (proxy_buffering off / read_timeout 86400s), reconnect стратегия + tests inventory, troubleshooting (4 сценария))_
 
 ## Группа 19 — Alertmanager → Telegram E2E + alerts catalog
 

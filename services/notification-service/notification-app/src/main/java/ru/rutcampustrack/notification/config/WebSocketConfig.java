@@ -1,9 +1,11 @@
 package ru.rutcampustrack.notification.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -16,7 +18,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
  * {@code ?ticket=<uuid>} at HTTP Upgrade (replaces legacy
  * {@code JwtHandshakeInterceptor} which accepted raw JWT in URL).
  * Per D-04: Simple in-memory broker on /topic — group topics: /topic/group/{groupId}.
- * Per D-10: Default Spring heartbeat (10s server, 10s client) — no custom tuning needed.
+ * M13 G18: STOMP heartbeat 10s/10s (server→client + client→server). Без явного
+ * setHeartbeatValue + TaskScheduler Spring выдаёт heartbeat 0/0 (off) —
+ * idle соединения за nginx могут зависать как half-open. Frontend
+ * (@stomp/stompjs) по умолчанию шлёт 10s/10s, теперь backend симметрично.
  * Per Pitfall 6: setApplicationDestinationPrefixes is NOT called —
  *   this service never receives messages FROM clients via STOMP SEND frames.
  */
@@ -57,8 +62,26 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // D-04: Simple in-memory broker on /topic — group topics: /topic/group/{groupId}
         // Headman-only events use /topic/group/{groupId}/headman (Pitfall 2 avoidance)
-        config.enableSimpleBroker("/topic");
+        // M13 G18: heartbeat 10s/10s. Требует TaskScheduler — без него
+        // setHeartbeatValue silently игнорируется Spring'ом.
+        config.enableSimpleBroker("/topic")
+                .setHeartbeatValue(new long[]{10_000L, 10_000L})
+                .setTaskScheduler(stompHeartbeatScheduler());
         // Pitfall 6: Do NOT call setApplicationDestinationPrefixes
         // — this service never receives messages FROM clients
+    }
+
+    /**
+     * Dedicated scheduler для STOMP heartbeat task'ов (M13 G18).
+     * Pool size 1 достаточен — heartbeat sender'ы lightweight + non-blocking.
+     */
+    @Bean
+    public ThreadPoolTaskScheduler stompHeartbeatScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(1);
+        scheduler.setThreadNamePrefix("stomp-heartbeat-");
+        scheduler.setDaemon(true);
+        scheduler.initialize();
+        return scheduler;
     }
 }

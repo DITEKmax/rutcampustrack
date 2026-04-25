@@ -1190,3 +1190,57 @@ structure check + 5 retention/security audit pass'ов.
 
 **Estimate vs actual:** ~30 мин (audit + script + CI). Самая маленькая
 из групп, как и ожидалось.
+
+## 2026-04-25 — Группа 18 (WebSocket reliability)
+
+**Surprise — heartbeat был факически off:** `WebSocketConfig.java`
+содержал comment «Default Spring heartbeat (10s server, 10s client) —
+no custom tuning needed». Это **неверно**: при использовании
+`enableSimpleBroker` без явного `setHeartbeatValue` + `setTaskScheduler`
+Spring выдаёт heartbeat **0/0 (off)** — silent. Idle WebSocket'ы
+зависают как half-open за nginx / firewall'ом / corporate proxy.
+
+**Fix:**
+```java
+config.enableSimpleBroker("/topic")
+        .setHeartbeatValue(new long[]{10_000L, 10_000L})
+        .setTaskScheduler(stompHeartbeatScheduler());
+```
+
+`stompHeartbeatScheduler` — dedicated `ThreadPoolTaskScheduler` bean
+(pool size 1, daemon, prefix `stomp-heartbeat-`). Без TaskScheduler
+`setHeartbeatValue` silently no-op'ит — это и было проблемой.
+
+**Тесты:**
+- `WebSocketConfigTest.stompHeartbeatScheduler_isInitializedDaemonThread`
+  — unit, проверяет что bean создаётся и initialize() сделана. Catch'ит
+  регрессию (если кто-то удалит TaskScheduler).
+- `StompIntegrationIT` — full Spring context bootstrap зелёный с
+  новым scheduler. Полноценный heartbeat-frame e2e IT skipped — слишком
+  тяжело (ждать live frame через Testcontainers сетевой timeout).
+
+**Frontend heartbeat:** `@stomp/stompjs` по дефолту шлёт 10s/10s
+(`heartbeatIncoming = 10000`, `heartbeatOutgoing = 10000`). Симметрично
+backend'у, явная конфигурация на frontend не нужна.
+
+**nginx changes:** добавлен `proxy_buffering off` в `location /api/ws/`.
+Без этого 1-byte heartbeat фреймы (`\n`) накапливаются в nginx-буфере
+и не доходят до клиента вовремя. `proxy_read_timeout 86400s` уже стоял
+(M03b), >> требуемых 300s — оставил.
+
+**Reconnect smoke (item 3) deferred в G23** per owner-policy. Frontend
+покрыт unit-тестами:
+- `useStompCheckin.test.ts` × 3: finite reconnectDelay (1-5000ms),
+  ticket re-fetch при reconnect (иначе single-use UUID невалидный),
+  reconnect mandatory (`reconnectDelay > 0`).
+- `notification-center.service.spec.ts`: exponential backoff lifecycle.
+
+**Doc создан:** `docs/websocket-flow.md` — single source of truth.
+Покрывает: архитектура (browser → nginx → gateway → notification-web),
+ticket handshake (4 шага), heartbeat rationale, nginx config rationale,
+reconnect стратегия, test inventory, troubleshooting (4 сценария
+включая «зависает после ~60s» и «401 на каждый CONNECT»).
+
+**Estimate vs actual:** ~1 час (включая diagnosis surprise heartbeat-off
++ test debug — `getPoolSize()` lazy returns 0 пока thread не создан,
+заменил на `getScheduledExecutor() != null`).

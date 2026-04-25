@@ -46,17 +46,41 @@ groups:
           summary: "Outbox lag {{ $value | humanizeDuration }} в {{ $labels.job }}"
           description: "Старейшее pending-событие висит > 5 мин. Проверь RabbitMQ + publisher job logs. Событие: {{ $labels.instance }}."
 
-      # DLQ накопление — consumer падает на message'ах, они улетают в
-      # DLQ-очередь. Значение > 0 уже подозрительно, > 10 точно
-      # проблема.
-      - alert: DLQBacklog
-        expr: rabbitmq_queue_messages{queue=~".*\\.dlq"} > 10
+      # DLQBacklog перенесён в rabbitmq.yml (M13 G19) — был silent
+      # dangling до image switch на management-alpine.
+
+  - name: http-sli
+    rules:
+      # M13 G19 — SLI alerts на http_server_requests_seconds (Spring
+      # Boot Actuator default metric). 5xx rate > 1 req/sec на сервис
+      # = регрессия release / зависимость отвалилась / panic loop.
+      - alert: HighErrorRate
+        expr: |
+          sum by (job) (
+            rate(http_server_requests_seconds_count{status=~"5.."}[5m])
+          ) > 1
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "DLQ {{ $labels.queue }} > 10 сообщений"
-          description: "{{ $value }} сообщений в DLQ. Consumer постоянно падает — проверь handler exceptions."
+          summary: "HTTP 5xx rate > 1 req/s в {{ $labels.job }}"
+          description: "{{ $labels.job }} возвращает {{ $value | printf \"%.2f\" }} req/sec ошибок 5xx за последние 5 мин. Проверь логи + последние deploy'и."
+
+      # p95 latency > 2 сек — аномалия для всех endpoint'ов кроме
+      # batch upload'ов. Использует _bucket метрику для quantile().
+      - alert: HighRequestLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (job, le) (
+              rate(http_server_requests_seconds_bucket[5m])
+            )
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 latency > 2s в {{ $labels.job }}"
+          description: "{{ $labels.job }} p95={{ $value | printf \"%.2f\" }}s за последние 10 мин. Проверь HikariPoolExhaustion + downstream latency + slow queries."
 
   - name: infra
     rules:

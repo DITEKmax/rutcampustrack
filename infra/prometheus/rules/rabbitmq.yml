@@ -1,0 +1,45 @@
+# M13 G19 — RabbitMQ alert rules (после image switch на management-alpine).
+#
+# DLQBacklog был перенесён сюда из service-health.yml (был silent
+# dangling до G19 из-за отсутствия rabbitmq_prometheus экспортёра).
+# RabbitMQQueueBacklog покрывает non-DLQ очереди (consumer'ы отстают).
+# RabbitMQConnectionLost — все consumer'ы отвалились.
+groups:
+  - name: rabbitmq
+    rules:
+      # DLQ накопление — consumer постоянно падает на message'ах,
+      # они улетают в DLQ-очередь. > 10 сообщений = точно проблема.
+      # До M13 G19 алёрт был silent (rabbitmq_queue_messages не
+      # экспортировался без management plugin'а).
+      - alert: DLQBacklog
+        expr: rabbitmq_queue_messages{queue=~".*\\.dlq"} > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "DLQ {{ $labels.queue }} > 10 сообщений"
+          description: "{{ $value }} сообщений в DLQ {{ $labels.queue }}. Consumer постоянно падает — проверь handler exceptions в Loki ({service=~\"rct-.*\"} |= \"DLQ\")."
+
+      # Non-DLQ очереди — нормально иметь pending messages, но если
+      # > 1000 сообщений висит 5 мин, consumer не справляется (slow
+      # processing, deadlock, нехватка thread'ов).
+      - alert: RabbitMQQueueBacklog
+        expr: rabbitmq_queue_messages{queue!~".*\\.dlq"} > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Очередь {{ $labels.queue }} > 1000 pending"
+          description: "{{ $value }} pending messages в {{ $labels.queue }} > 5 мин. Consumer отстаёт — проверь thread pool / DB latency / external calls."
+
+      # Consumer'ы отвалились — connection count = 0 значит ни один
+      # сервис не подключён к Rabbit. Catastrophic для асинхронного
+      # eventing — все события копятся, outbox lag растёт.
+      - alert: RabbitMQConnectionLost
+        expr: rabbitmq_connections == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ без активных подключений"
+          description: "Ни один сервис не подключён к RabbitMQ. Все consumer'ы отвалились или RabbitMQ перезапустился без graceful reconnect. Проверь network + service logs."

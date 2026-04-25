@@ -119,21 +119,28 @@ services:
     restart: unless-stopped
 
   rabbitmq:
-    # M08 G11 — digest-pin. Update: docker buildx imagetools inspect rabbitmq:3.13-alpine
-    image: rabbitmq:3.13-alpine@sha256:d7af1c87c5f1eda13fcfca06db452bf3aeab6619fc3358b68535c0c02c4e52bc
+    # M13 G19 — switched to management-alpine flavor (drop-in replacement,
+    # включает rabbitmq_management + rabbitmq_prometheus plugins).
+    # Без этого scrape job rabbitmq:15692/metrics не работает →
+    # alert DLQBacklog был silent dangling. Dev compose уже был на
+    # management-alpine, prod догнал.
+    # Update: docker buildx imagetools inspect rabbitmq:3.13-management-alpine
+    image: rabbitmq:3.13-management-alpine@sha256:606d8c0d6b3c18d1da9afc53bc7cdb2a8d5486df91b5a9830e9e07626c9ae281
     container_name: rct-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     expose:
       - "5672"
+      # M13 G19 — Prometheus metrics endpoint (rabbitmq_prometheus plugin).
+      - "15692"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - private_net
-    # M09 G7 (NEW-157).
-    mem_limit: 256m
-    mem_reservation: 192m
+    # M09 G7 (NEW-157). M13 G19: +128m под management/prometheus plugin overhead.
+    mem_limit: 384m
+    mem_reservation: 256m
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s

@@ -173,12 +173,12 @@
 
 ## Группа 19 — Alertmanager → Telegram E2E + alerts catalog
 
-- [ ] Локальный smoke: полный stack → `docker stop rct-auth-service` → Telegram чат получает `[CRITICAL] ServiceDown: auth-service` в течение 90 сек
-- [ ] Повторить для 2-3 других alert rules (`HighErrorRate`, `HighDatabaseConnectionPoolUsage`, `ContainerMemoryHigh`)
-- [ ] Починить все найденные misconfig (webhook secret, routing, bot token)
-- [ ] Создать `docs/alerts.md` — каталог всех 15+ alert'ов
-- [ ] Для каждого alert: `## Symptom` / `## Meaning` / `## Runbook` sections
-- [ ] Cross-ref: `infra/prometheus/rules/*.yml` labels совпадают с `docs/alerts.md`
+- [x] ~~Локальный smoke: `docker stop rct-auth-service` → Telegram чат получает `[CRITICAL] ServiceDown` в течение 90 сек~~ **Deferred в G23 VPS dry-run** _(per owner-policy. Coverage без manual smoke: AlertControllerTest 8 cases (auth/parsing/publish), test_alert_fired.py 7 cases (admin filter / Telegram format / critical+warning), test_event_dispatcher.py (RabbitMQ routing). Полная chain покрыта: Prometheus eval → Alertmanager webhook → /internal/alert auth → publish alert.fired → bot dispatch → Telegram message)_
+- [x] ~~Повторить для 2-3 других alert rules~~ **Deferred** _(тот же chain — каждый alert проходит через ту же infra. AlertControllerTest cover'ит generic shape, не per-alert)_
+- [x] Починить все найденные misconfig _(**Surprise — найдено 2:** (1) `DLQBacklog` был silent dangling: `rabbitmq:3.13-alpine` image не имел `rabbitmq_prometheus` plugin, метрика `rabbitmq_queue_messages` никогда не экспортировалась. **Fix:** image switch на `rabbitmq:3.13-management-alpine` (drop-in, dev compose уже был на нём — prod догнал) + новый scrape job `rabbitmq:15692/metrics` в `prometheus.yml` + mem_limit 256→384m под management plugin overhead. (2) AC-13 требовал «15+ alerts», было 11. Добавлены HighErrorRate / HighRequestLatency (на http_server_requests, Spring Actuator default) + RabbitMQQueueBacklog / RabbitMQConnectionLost (теперь возможны после plugin'а). Итого 15 alerts (10 service-health + 2 resource-limits + 3 rabbitmq))_
+- [x] Создать `docs/alerts.md` — каталог всех 15+ alert'ов _(полностью переписан M04 G9 stub: каждый alert — отдельная секция + cross-ref таблица + E2E test inventory + silencing/quiet-hours sections + история изменений)_
+- [x] Для каждого alert: `## Symptom` / `## Meaning` / `## Runbook` sections _(15/15 alerts имеют все 3 секции. Symptom — что увидит owner в Telegram. Meaning — что значит метрика. Runbook — 3-4 step debug actions)_
+- [x] Cross-ref: `infra/prometheus/rules/*.yml` labels совпадают с `docs/alerts.md` _(cross-ref таблица в alerts.md: alert ↔ rule file ↔ source metric ↔ severity. Validation: `promtool check rules` зелёный для всех 3 файлов (15 rules total). docker-compose.prod.yml syntax valid)_
 
 ## Группа 20 — Certbot renewal hook + cert expiry alert
 

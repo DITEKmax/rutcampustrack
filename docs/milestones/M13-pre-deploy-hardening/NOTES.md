@@ -1244,3 +1244,69 @@ reconnect стратегия, test inventory, troubleshooting (4 сценари�
 **Estimate vs actual:** ~1 час (включая diagnosis surprise heartbeat-off
 + test debug — `getPoolSize()` lazy returns 0 пока thread не создан,
 заменил на `getScheduledExecutor() != null`).
+
+## 2026-04-25 — Группа 19 (Alertmanager → Telegram E2E + alerts catalog)
+
+**Two surprises:**
+
+**Surprise 1 — DLQBacklog silent dangling.** Алёрт ссылался на метрику
+`rabbitmq_queue_messages`, но `rabbitmq:3.13-alpine` image не имел
+`rabbitmq_prometheus` plugin. Метрика никогда не экспортировалась →
+alert никогда не fire'ил. Это значит: с M04 (когда DLQBacklog был
+добавлен) до M13 G19 — **6 milestone'ов** mock-coverage. Если бы
+consumer реально валился в DLQ — мы бы узнали через бизнес-симптомы
+(missing notifications), не через alert.
+
+**Fix:** image switch `rabbitmq:3.13-alpine` →
+`rabbitmq:3.13-management-alpine` (drop-in replacement, +management
++ prometheus plugins). Dev compose **уже был** на management-alpine —
+prod просто отстал. Digest pin updated через `docker buildx imagetools
+inspect`. mem_limit 256m → 384m под management overhead. Новый
+expose port 15692. Scrape job `rabbitmq` в `prometheus.yml`.
+
+**Surprise 2 — AC-13 «15+» missed.** Существовало 11 alerts, не 15.
+Добавил 4 для prod-readiness:
+
+| Alert | File | Severity | Metric |
+|-------|------|----------|--------|
+| HighErrorRate | service-health.yml | warning | http_server_requests_seconds_count{status=~"5.."} |
+| HighRequestLatency | service-health.yml | warning | http_server_requests_seconds_bucket (p95) |
+| RabbitMQQueueBacklog | rabbitmq.yml | warning | rabbitmq_queue_messages{queue!~".*\.dlq"} |
+| RabbitMQConnectionLost | rabbitmq.yml | critical | rabbitmq_connections == 0 |
+
+`http_server_requests_seconds_*` — Spring Boot Actuator default,
+без code-changes. Rabbit metrics — благодаря image switch.
+
+DLQBacklog **перенесён** из `service-health.yml` в `rabbitmq.yml`
+(новый файл) — domain coherence. `service-health.yml` теперь
+`service-health` + `outbox-eventing` + `http-sli` + `infra` +
+`business-anomaly` (10 rules). `resource-limits.yml` 2 rules.
+`rabbitmq.yml` 3 rules. **Итого 15.**
+
+**Validation:** `promtool check rules infra/prometheus/rules/*.yml` →
+SUCCESS (10/2/3 rules). `docker compose -f docker-compose.prod.yml
+config --quiet` → exit 0.
+
+**Items 1-3 (live smoke) deferred per owner-policy.** Coverage без
+manual smoke полная:
+
+| Этап chain | Test |
+|------------|------|
+| Prometheus eval | promtool check (CI / G23) |
+| Alertmanager → /internal/alert auth | AlertControllerTest × 4 (Bearer happy/missing/wrong/empty-secret) |
+| Webhook payload parsing | AlertControllerTest × 4 (happy/malformed/empty/non-string) |
+| RabbitMQ alert.fired publish | AlertControllerTest.happyPath_publishesEachAlertAndReturns200 |
+| Bot consumer dispatch | test_event_dispatcher.py |
+| Bot Telegram format | test_alert_fired.py × 3 (critical/warning/admin filter) |
+
+Полный chain покрыт unit/IT — single-thread coverage. Live smoke на
+VPS one-batch'ом в G23.
+
+**Doc rewrite:** `docs/alerts.md` существовал с M04 G9 (8 alerts,
+short stub). Полная переработка под Symptom/Meaning/Runbook standard
+× 15 + cross-ref таблица + E2E test inventory + silencing examples
++ история изменений M04 → M13.
+
+**Estimate vs actual:** ~1.5 часа (image switch + 4 new alerts +
+полный rewrite alerts.md + promtool validation). Image switch surprise
++ owner approval round добавил overhead.

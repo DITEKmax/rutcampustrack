@@ -52,3 +52,11 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['notification-web:9094']
+
+  # M13 G19 — RabbitMQ Prometheus plugin (rabbitmq_prometheus, port 15692).
+  # Включается через image rabbitmq:3.13-management-alpine. Покрывает
+  # alert'ы DLQBacklog / RabbitMQQueueBacklog / RabbitMQConnectionLost.
+  - job_name: 'rabbitmq'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['rabbitmq:15692']

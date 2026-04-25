@@ -1,153 +1,374 @@
-# Alerts Catalog
+# Alerts catalog — RutCampusTrack
 
-Все правила в `infra/prometheus/rules/service-health.yml`. Routing —
-`infra/alertmanager/alertmanager.yml`. Доставка — через
-`notification-web:9094/internal/alert` → RabbitMQ `alert.fired` →
-notification-bot → Telegram админы (`ADMIN_TELEGRAM_IDS`).
+Каталог всех Prometheus alert'ов. Cross-ref `infra/prometheus/rules/*.yml`.
+Alertmanager routing описан в `infra/alertmanager/alertmanager.yml`,
+flow до Telegram админа — `notification-web /internal/alert` →
+RabbitMQ `alert.fired` → notification-bot consumer → admin chat
+(`ADMIN_TELEGRAM_IDS`).
 
-**Severity levels:**
+## Severity и routing
 
-- **critical** — fire всегда (включая 22:00-08:00 MSK quiet hours).
-  Ожидание: разбудить on-call. Примеры: сервис упал полностью.
-- **warning** — muted в тихий час (warning, накопившиеся за ночь,
-  придут в 08:00 MSK одной пачкой). Примеры: высокий heap, медленный
-  publisher.
+| Severity | Routing | Тихий час 22:00–08:00 MSK |
+|----------|---------|----------------------------|
+| `critical` | webhook немедленно | будит ночью (mute не применяется) |
+| `warning` | webhook | mute'ится, накопившиеся придут утром |
 
-## Группа `service-health`
+`group_wait: 30s`, `group_interval: 5m`, `repeat_interval: 3h`.
+Inhibit-rule: `ServiceDown` подавляет `HealthCheckDown` для того же
+target (один сигнал достаточен).
 
-### ServiceDown (critical)
+## Каталог (15 alert'ов)
 
-**Triggers:** `up == 0` в течение `1m`.
+### 1. ServiceDown
+**Файл:** `infra/prometheus/rules/service-health.yml` · severity=critical · for=1m
 
-**Что значит:** Prometheus 4+ раз подряд не scrape'ил `/actuator/prometheus`
-на target'е. Сервис либо crashed, либо network изоляция.
+#### Symptom
+В Telegram: `[CRITICAL] ServiceDown: <job>`. Prometheus не может scrape
+target ≥ 1 минуту.
 
-**Runbook:**
-1. `docker compose ps` — контейнер down? restart loop?
-2. `docker logs rct-<service> --tail 200` — stack trace старта?
-3. Проверь зависимости (DB, Redis, RabbitMQ): `up{job=~"postgres|redis|.."}`.
-4. Если scheduled restart (deploy) — silence alert на `30m`.
+#### Meaning
+Сервис либо упал (process exit), либо сеть/Docker сломаны. `up == 0`
+включает все scrape jobs: backend services, alertmanager,
+node-exporter, cadvisor, rabbitmq.
 
-**Inhibited by:** ничего (это самый низкий уровень).
+#### Runbook
+1. `docker compose ps` — статус контейнера. Если `Restarting (XX)` —
+   crashloop, см. `docker logs rct-<job> --tail 100`.
+2. Если контейнер up но scrape fail — проверь network alias / port:
+   `docker exec rct-prometheus wget -qO- http://<job>:<port>/actuator/prometheus`.
+3. Если intentional restart (deploy/migration) — silence в Alertmanager
+   на 15 мин: `docker exec rct-alertmanager amtool silence add alertname=ServiceDown job=<job> --duration=15m`.
 
-**Inhibits:** `HealthCheckDown` для того же target.
+**Inhibits:** HealthCheckDown для того же target.
 
-### HealthCheckDown (warning)
+---
 
-**Triggers:** `health_status{status!="UP"} == 1` в течение `2m`.
+### 2. HealthCheckDown
+**Файл:** `service-health.yml` · severity=warning · for=2m
 
-**Что значит:** `/actuator/health` вернул `DOWN`/`OUT_OF_SERVICE`.
-Сервис жив, но зависимость (DB/Rabbit/Redis/Mongo) деградирует.
+#### Symptom
+`<instance> health=DOWN`. Spring Boot Actuator health endpoint вернул
+не-UP (DOWN либо OUT_OF_SERVICE).
 
-**Runbook:**
-1. `curl -s http://<host>:<port>/actuator/health | jq` — какая deps
-   упала?
-2. Проверь соответствующий контейнер (Postgres/Mongo/Redis/Rabbit).
-3. Логи сервиса — `{service="<svc>"} |= "connection refused"`?
+#### Meaning
+Сервис up (process жив), но dependency сломана: RabbitMQ unreachable,
+Postgres connection pool exhausted, Mongo replica set не сформирован,
+Redis за timeout.
 
-## Группа `outbox-eventing`
+#### Runbook
+1. `curl http://<host>:<port>/actuator/health` — ищи `components.<name>.status: DOWN`.
+2. По имени dependency: проверь её через `docker compose ps` + healthcheck.
+3. Если RabbitMQ DOWN — также сработает `RabbitMQConnectionLost`.
+4. Если несколько сервисов одновременно — общий dependency upstream.
 
-### OutboxLagHigh (warning)
+---
 
-**Triggers:** `outbox_lag_seconds > 300` в течение `2m`.
+### 3. OutboxLagHigh
+**Файл:** `service-health.yml` · severity=warning · for=2m
 
-**Что значит:** Старейшая pending-запись в outbox висит > 5 мин.
-Publisher job не справляется или RabbitMQ недоступен.
+#### Symptom
+`Outbox lag <duration> в <job>`. Старейшее pending-событие в
+`event_outbox` table висит > 5 мин.
 
-**Runbook:**
-1. RabbitMQ health: `docker logs rct-rabbitmq`, management UI
-   (`localhost:15672` в dev).
-2. Сервис-источник логи: `{service="<svc>"} |= "OutboxPublisher"`.
-3. `outbox.published.total` vs `outbox.failed.total` — rate failed?
-4. Если много failed — DLQ или retry loop. Проверь причину в
-   `last_error` (`outbox` table / collection).
+#### Meaning
+Publisher job не справляется или RabbitMQ недоступен. Метрика
+`outbox_lag_seconds` экспортируется per-event-type через
+`OutboxMetrics` (M02). Растущий lag → backpressure на event'ах.
 
-### DLQBacklog (warning)
+#### Runbook
+1. Проверь RabbitMQ: `docker exec rct-rabbitmq rabbitmqctl status`.
+2. Logs publisher'а: `{job=~"rct-.*"} |= "outbox" |= "publish"` в Loki.
+3. Если Rabbit OK — publisher job отказался либо `application-prod.yml`
+   `outbox.publisher.enabled=false`. Перезапусти сервис.
+4. Если lag > 30 мин — manual trigger через `POST /actuator/scheduledtasks` (admin-only).
 
-**Triggers:** `rabbitmq_queue_messages{queue=~".*\\.dlq"} > 10` в
-течение `5m`.
+---
 
-**Что значит:** Consumer систематически падает на message'ах, они
-улетают в dead-letter queue.
+### 4. DLQBacklog
+**Файл:** `infra/prometheus/rules/rabbitmq.yml` · severity=warning · for=5m
 
-**Runbook:**
-1. Выбери consumer из `queue` label (`notification-web.events.dlq`
-   → notification-web; `notification-bot.events.dlq` → bot).
-2. Логи consumer'а — ищи exception'ы.
-3. Если payload invalid (schema breaking) — исправь publisher + purge
-   DLQ вручную (не retry автоматически, можно зациклить).
+#### Symptom
+`DLQ <queue> > 10 сообщений`.
 
-## Группа `infra`
+#### Meaning
+Consumer постоянно падает на сообщениях, они улетают в DLQ. M13 G19:
+до этого alert был silent dangling (rabbitmq_prometheus plugin не был
+включён в `rabbitmq:3.13-alpine` image).
 
-### DiskUsageHigh (warning)
+#### Runbook
+1. Имя consumer'а — из `<queue>`: `notification-web.events.dlq` →
+   notification-web. `attendance.events.dlq` → attendance.
+2. Logs consumer'а: `{job=<consumer>} |= "DLQ" or |= "exception"`.
+3. Inspect message: `docker exec rct-rabbitmq rabbitmqctl get_messages <queue> 1`.
+4. Fix root cause → republish из DLQ если payload валидный (manual,
+   через RabbitMQ management UI `/api/queues/<vhost>/<dlq>/get`).
 
-**Triggers:** `container_fs_usage_bytes / container_fs_limit_bytes > 0.80`
-в течение `10m`.
+---
 
-**Что значит:** Контейнер использует > 80% своего filesystem'а.
+### 5. RabbitMQQueueBacklog
+**Файл:** `rabbitmq.yml` · severity=warning · for=5m
 
-**Runbook:**
-1. `docker system df` — какой volume жирный? (обычно logs или
-   Postgres data).
-2. Mongo `db.stats()` / PG `pg_total_relation_size()` — найти большие
-   таблицы/коллекции.
-3. Старые backup'ы / docker images: `docker image prune`.
+#### Symptom
+`Очередь <queue> > 1000 pending`. Non-DLQ очереди.
 
-### JvmHeapPressure (warning)
+#### Meaning
+Consumer не справляется. Slow processing, deadlock в DB, нехватка
+worker thread'ов, или просто burst events overflow.
 
-**Triggers:** `jvm_memory_used_bytes{area="heap"} /
-jvm_memory_max_bytes{area="heap"} > 0.90` в течение `5m`.
+#### Runbook
+1. `docker exec rct-rabbitmq rabbitmqctl list_queues name messages messages_ready consumers`.
+2. Если `consumers = 0` — consumer service вообще не подключён,
+   также увидишь `RabbitMQConnectionLost`.
+3. Если `consumers > 0` но messages растут — смотри latency consumer'а
+   (`http_server_requests_seconds` в HighRequestLatency).
+4. Если транзитный peak — wait + observe; если sustainable load — bump
+   `concurrency` consumer (`spring.rabbitmq.listener.simple.concurrency`).
 
-**Что значит:** JVM heap > 90% использован. GC не успевает или
-утечка.
+---
 
-**Runbook:**
+### 6. RabbitMQConnectionLost
+**Файл:** `rabbitmq.yml` · severity=critical · for=1m
+
+#### Symptom
+`RabbitMQ без активных подключений`.
+
+#### Meaning
+`rabbitmq_connections == 0`. Catastrophic — все consumer'ы отвалились
+или Rabbit перезапустился без graceful reconnect клиентов. Все
+async-events копятся, outbox lag растёт.
+
+#### Runbook
+1. `docker compose ps rabbitmq` — up?
+2. `docker logs rct-rabbitmq --tail 50` — ошибки startup / network.
+3. Restart consumer-сервисов чтобы триггернуть reconnect:
+   `docker compose restart academic-service schedule-service attendance-service notification-web notification-bot`.
+4. Проверь `RABBITMQ_USER` / `RABBITMQ_PASSWORD` в `.env.prod` —
+   credentials change?
+
+---
+
+### 7. ContainerMemoryHigh
+**Файл:** `infra/prometheus/rules/resource-limits.yml` · severity=warning · for=5m
+
+#### Symptom
+`Контейнер <name> > 90% memory`.
+
+#### Meaning
+Контейнер использует > 90% своего mem_limit ≥ 5 мин. Утечка, cache
+overgrowth или недооценённый budget. Все 26 контейнеров имеют
+`mem_limit` после M11 G11 (6.1GB total на 8GB VPS).
+
+#### Runbook
+1. `docker stats --no-stream rct-<name>` — точное использование.
+2. Heap dump для Java сервисов:
+   `docker exec <name> jcmd 1 GC.heap_dump /tmp/heap.hprof`.
+3. Если transient (request burst) — wait. Sustainable — bump
+   `mem_limit` в `docker-compose.prod.yml` + update `docs/resource-limits.md`.
+4. См. также `JvmHeapPressure` для Java-specific heap saturation.
+
+---
+
+### 8. ContainerWithoutMemoryLimit
+**Файл:** `resource-limits.yml` · severity=warning · for=10m
+
+#### Symptom
+`Контейнер <name> без mem_limit`.
+
+#### Meaning
+Контейнер запущен без `mem_limit`. Защита от division-by-zero в
+`ContainerMemoryHigh` + сигнал что новый сервис добавили без budget.
+В норме fire'ить не должен (после M11 G11 все 26 имеют limit).
+
+#### Runbook
+1. Найди сервис в `docker-compose.prod.yml` — должен быть `mem_limit:`.
+2. Если новый — добавь limit + update `docs/resource-limits.md` table.
+
+---
+
+### 9. DiskUsageHigh
+**Файл:** `service-health.yml` · severity=warning · for=10m
+
+#### Symptom
+`Disk <device> > 80%`.
+
+#### Meaning
+cAdvisor видит > 80% использования filesystem на VPS. На 120GB VPS
+80% = 96GB.
+
+#### Runbook
+1. SSH на VPS: `df -h`, `du -sh /var/lib/docker/volumes/* | sort -h | tail`.
+2. Очисти старые backups: `find /opt/backups -mtime +14 -delete`
+   (retention 7d уже автомат — M13 G15).
+3. Docker prune: `docker system prune --volumes -f` (ОСТОРОЖНО — удаляет
+   unused volumes; сначала `docker volume ls`).
+4. Logs rotation: проверь `/etc/docker/daemon.json` `log-opts.max-size`.
+
+---
+
+### 10. JvmHeapPressure
+**Файл:** `service-health.yml` · severity=warning · for=5m
+
+#### Symptom
+`JVM heap > 90% в <application>`.
+
+#### Meaning
+Java сервис использует > 90% configured `-Xmx` heap. Возможна утечка
+либо memory-heavy запрос (отчёты с большими date range).
+
+#### Runbook
 1. Grafana → Spring Boot APM → JVM memory панели. Растёт linearly =
    утечка, пила = GC-pattern.
-2. Снять heap dump:
-    ```bash
-    docker exec rct-<service> jmap -dump:live,format=b,file=/tmp/heap.hprof <pid>
-    ```
-3. Analyze в Eclipse MAT / VisualVM.
-4. Быстрый workaround: рестарт. Долгосрочно — найти leak.
+2. `docker exec rct-<app> jcmd 1 GC.heap_info` — current usage.
+3. Heap dump: `jcmd 1 GC.heap_dump /tmp/heap.hprof` + analyse через
+   Eclipse MAT.
+4. Sustainable — bump `JAVA_OPTS=-Xmx<N>m` (M09 G7 NEW-154).
 
-## Группа `business-anomaly`
+---
 
-### CheckinRateZero (warning)
+### 11. HikariPoolExhaustion
+**Файл:** `service-health.yml` · severity=warning · for=5m
 
-**Triggers:** В рабочие часы (09:00-18:00 MSK, пн-пт):
-```
-(rate(attendance_checkin_total[10m]) == 0)
-  or absent(attendance_checkin_total)
-```
-в течение `10m`.
+#### Symptom
+`HikariCP pool > 80% в <application>`.
 
-**Что значит:** Студенты не отмечаются совсем. Возможные причины:
-Gateway роутинг сломан, attendance-service упал, геоотметка
-повсеместно отвергается (campus boundary baг?).
+#### Meaning
+> 80% pool занято ≥ 5 мин. Concurrent queries растут быстрее чем pool
+spec'нут. Рискует connection-timeout. Hot-spot connections ≠ closed
+(leak — `leak-detection-threshold=60s` логирует).
 
-**Runbook:**
-1. attendance-service UP? `up{job="attendance-service"}`.
-2. `Grafana → CheckinRateZero панель → разбивка по статусам` — может,
-   все `absent` (никого нет в кампусе)? Это норма в каникулы — silence.
-3. api-gateway лог: `{service="api-gateway"} |~ "attendance"`. 500-ки?
+#### Runbook
+1. Logs: `{application=<app>} |= "HikariPool" |= "leak"` в Loki.
+2. Slow queries: `pg_stat_statements` ORDER BY total_exec_time DESC
+   (через `psql -h <vps>`).
+3. Если конкретная query — оптимизируй (composite index из M05) либо
+   bump `spring.datasource.hikari.maximum-pool-size`.
+4. Также проверь `HighRequestLatency` для коррелирующего endpoint'а.
 
-### InternalJwtFallbackUnexpected (warning)
+---
 
-**Triggers:** `rate(internal_jwt_fallback_total[5m]) > 0.1` в течение
-`5m`.
+### 12. HighErrorRate
+**Файл:** `service-health.yml` · severity=warning · for=5m
 
-**Что значит:** KI-2 silent fallback — какой-то service-to-service
-вызов идёт через legacy `X-User-*` headers вместо Internal JWT.
-Регрессия M03a rollout.
+#### Symptom
+`HTTP 5xx rate > 1 req/s в <job>`.
 
-**Runbook:**
-1. Label `job` + `from`/`to` покажет downstream service где fallback
-   сработал.
-2. Grep в upstream (каллер) — где Gateway/API-client не шлёт
-   `X-Internal-Token`.
-3. M03a spec: `docs/internal-jwt-spec.md`. Проверить что issuer
-   подписывает все запросы.
+#### Meaning
+Сервис возвращает > 1 запрос в секунду 5xx за 5 мин. Регрессия после
+deploy, dependency отвалилась, panic loop. Метрика
+`http_server_requests_seconds_count` экспортируется Spring Boot
+Actuator из коробки.
+
+#### Runbook
+1. Tempo trace search по `http.status_code=500` за последние 5 мин →
+   stack trace ошибки.
+2. Logs: `{job=<job>}, level=ERROR` в Loki.
+3. Если correlate с deploy time — rollback (`docker compose pull` +
+   prev tag).
+4. Если correlate с upstream issue (`HealthCheckDown`) — root cause
+   там.
+
+---
+
+### 13. HighRequestLatency
+**Файл:** `service-health.yml` · severity=warning · for=10m
+
+#### Symptom
+`p95 latency > 2s в <job>`.
+
+#### Meaning
+95-percentile latency request'а > 2 секунд за 10 мин. Slow path:
+N+1 queries, missing index, cache miss storm, downstream slow.
+
+#### Runbook
+1. Tempo: trace search top-by-duration → найди slow span.
+2. Если DB span — `pg_stat_statements`, добавь index, M05 patterns.
+3. Если RestTemplate / WebClient к downstream — другой service slow,
+   проверь `HighRequestLatency{job=<downstream>}` параллельно.
+4. Если cache-related — Redis miss rate в Grafana
+   (`redis_keyspace_hits / redis_keyspace_total`).
+
+---
+
+### 14. CheckinRateZero
+**Файл:** `service-health.yml` · severity=warning · for=10m
+
+#### Symptom
+`Нет гео-отметок 10 минут подряд в рабочее время` (UTC 06–15, Mon–Fri).
+
+#### Meaning
+`rate(attendance_checkin_total) == 0` либо counter совсем отсутствует
+(M09 G11 H5 fix добавил `absent()` branch — без этого fresh restart
++ 0 отметок не fire'ил alert). В рабочее время аномалия: gateway не
+пускает, клиенты offline массово, либо геоотметка повсеместно отваливается.
+
+#### Runbook
+1. Smoke endpoint: `curl https://ruttrack.site/api/health` → должен
+   вернуть 200 без auth.
+2. Manual check: открыть PWA как студент → попробовать отметиться.
+3. Logs gateway: `{job="api-gateway"} |= "/api/attendance"` за 10 мин.
+4. Если intentional pause (учебный праздник) — silence на день:
+   `amtool silence add alertname=CheckinRateZero --duration=24h --comment="Каникулы"`.
+
+---
+
+### 15. InternalJwtFallbackUnexpected
+**Файл:** `service-health.yml` · severity=warning · for=5m
+
+#### Symptom
+`KI-2 fallback rate=<value>/s в <job>`.
+
+#### Meaning
+Service-to-service вызов не несёт Internal JWT (M03a). В норме = 0.
+Rate > 0.1/s = регрессия (новый endpoint не получил token, либо
+clock skew между сервисами).
+
+#### Runbook
+1. Counter `internal_jwt_fallback_total` имеет labels `from`/`to` —
+   identify пара сервисов.
+2. Logs от service: `{job=<from>} |= "internal_jwt_fallback"` →
+   stack trace вызова.
+3. Чаще всего fix — добавить `@Bean InternalJwtIssuer` injection в
+   новый client / restTemplate (M03a pattern). См. `shared-security`.
+
+---
+
+## Cross-ref — файлы и labels
+
+| Alert | Rule file | Source metric | Severity |
+|-------|-----------|---------------|----------|
+| ServiceDown | service-health.yml | up | critical |
+| HealthCheckDown | service-health.yml | health_status | warning |
+| OutboxLagHigh | service-health.yml | outbox_lag_seconds | warning |
+| DLQBacklog | rabbitmq.yml | rabbitmq_queue_messages | warning |
+| RabbitMQQueueBacklog | rabbitmq.yml | rabbitmq_queue_messages | warning |
+| RabbitMQConnectionLost | rabbitmq.yml | rabbitmq_connections | critical |
+| ContainerMemoryHigh | resource-limits.yml | container_memory_usage_bytes | warning |
+| ContainerWithoutMemoryLimit | resource-limits.yml | container_spec_memory_limit_bytes | warning |
+| DiskUsageHigh | service-health.yml | container_fs_usage_bytes | warning |
+| JvmHeapPressure | service-health.yml | jvm_memory_used_bytes | warning |
+| HikariPoolExhaustion | service-health.yml | hikaricp_connections_active | warning |
+| HighErrorRate | service-health.yml | http_server_requests_seconds_count | warning |
+| HighRequestLatency | service-health.yml | http_server_requests_seconds_bucket | warning |
+| CheckinRateZero | service-health.yml | attendance_checkin_total | warning |
+| InternalJwtFallbackUnexpected | service-health.yml | internal_jwt_fallback_total | warning |
+
+## E2E test (alertmanager → Telegram)
+
+**Coverage без manual smoke** (M13 G19, owner-policy «ничего руками»):
+
+| Этап | Test |
+|------|------|
+| Prometheus eval rules | `promtool check rules infra/prometheus/rules/*.yml` (G23 dry-run) |
+| Alertmanager → webhook | `AlertControllerTest` (8 cases, notification-web) |
+| Webhook auth (Bearer) | `AlertControllerTest.missingAuthorization_returns401_andDoesNotPublish` |
+| Webhook → RabbitMQ publish | `AlertControllerTest.happyPath_publishesEachAlertAndReturns200` |
+| RabbitMQ → bot dispatcher | `test_event_dispatcher.py::test_alert_fired_routing` |
+| Bot → Telegram format | `test_alert_fired.py::test_format_message_critical` |
+| Admin filter | `test_alert_fired.py::test_parse_admin_ids_mixed` |
+
+**Live smoke** (`docker stop rct-auth-service` → ждать Telegram alert)
+— deferred в G23 VPS dry-run. На VPS owner один batch'ом проверит
+все alerts вместе с другими runbook'ами.
 
 ## Silencing alerts
 
@@ -165,19 +386,37 @@ docker exec rct-alertmanager amtool silence add \
 docker exec rct-alertmanager amtool silence query
 ```
 
+UI Alertmanager доступен через `https://ruttrack.site/alertmanager/`
+(basic-auth, M13 G14).
+
 ## Quiet hours (22:00-08:00 MSK)
 
 Определены в `alertmanager.yml` `time_intervals.quiet-hours-msk`
 (`19:00-05:00 UTC`). Только `warning` severity уходит в mute; `critical`
-всегда fire'ит.
-
-Изменить — отредактировать `alertmanager.yml` + передеплой
-Alertmanager контейнера.
+всегда fire'ит. Изменить — отредактировать `alertmanager.yml` +
+`docker compose restart alertmanager`.
 
 ## Изменение каталога
 
-1. Добавь правило в `infra/prometheus/rules/service-health.yml`.
-2. Добавь раздел в этот файл (severity, trigger, runbook).
-3. Обнови Grafana dashboard если нужна визуализация.
-4. `docker compose restart prometheus alertmanager`.
-5. Верифицировать `amtool alert query` после fire.
+1. Добавь правило в `infra/prometheus/rules/<group>.yml`.
+2. Validate: `promtool check rules infra/prometheus/rules/*.yml`.
+3. Добавь раздел в этот файл (Symptom / Meaning / Runbook).
+4. Обнови cross-ref таблицу + History changes.
+5. Grafana dashboard если нужна визуализация.
+6. `docker compose restart prometheus alertmanager` на prod.
+
+## История изменений
+
+- **M04 G9** (2026-04-20): создана базовая infra (Alertmanager → webhook
+  → bot → Telegram), 9 первых alerts.
+- **M09 G7** (2026-04-24): + ContainerMemoryHigh, ContainerWithoutMemoryLimit
+  (NEW-157).
+- **M09 G11** (2026-04-24): CheckinRateZero — `absent()` branch fix.
+- **M13 G19** (2026-04-25):
+  - Switched rabbitmq image на `:3.13-management-alpine` (digest pin) —
+    включает rabbitmq_prometheus plugin.
+  - Scrape job `rabbitmq:15692/metrics` в prometheus.yml.
+  - Перенесён `DLQBacklog` в `rabbitmq.yml` (был silent dangling).
+  - Добавлены `RabbitMQQueueBacklog`, `RabbitMQConnectionLost`,
+    `HighErrorRate`, `HighRequestLatency`. Итого 15 alerts (AC-13 «15+»).
+  - Документ полностью переработан под Symptom/Meaning/Runbook standard.

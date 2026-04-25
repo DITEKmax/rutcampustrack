@@ -237,6 +237,24 @@ spring:
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
 
+        # M13 G16 — CSP violation reports от браузеров.
+        # Публичный endpoint (no auth); rate-limit агрессивный per-IP
+        # (flood защита — malicious сайт с iframe может спамить).
+        # 60 req/min per IP = 1 req/sec bucket, burstCapacity 60.
+        - id: notification-csp-report
+          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+          predicates:
+            - Path=/api/csp-report
+            - Method=POST
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 60
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
         - id: auth-service-openapi
           uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
           predicates:

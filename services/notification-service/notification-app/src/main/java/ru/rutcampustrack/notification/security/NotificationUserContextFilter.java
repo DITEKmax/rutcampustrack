@@ -56,10 +56,13 @@ public class NotificationUserContextFilter extends DualModeUserContextFilter {
         // WebSocket upgrade uses TicketHandshakeInterceptor (M03b Группа 4).
         // /internal/alert — Alertmanager webhook, auth через Bearer secret
         // (M04 Группа 9; M06 заменит на mTLS).
+        // /api/csp-report — CSP violation reports от браузеров (M13 G16).
+        // Браузеры не носят Internal JWT; flood защита — nginx rate-limit.
         // + infrastructure paths (actuator/api-docs/swagger-ui) from base class.
         String path = request.getRequestURI();
         return path.startsWith("/ws")
                 || path.startsWith("/internal/alert")
+                || path.startsWith("/csp-report")
                 || isInfrastructurePath(request);
     }
 }

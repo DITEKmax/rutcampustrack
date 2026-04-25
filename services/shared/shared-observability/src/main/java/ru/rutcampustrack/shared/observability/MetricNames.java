@@ -31,6 +31,13 @@ public final class MetricNames {
      */
     public static final String INTERNAL_JWT_FALLBACK = "internal_jwt.fallback";
 
+    /**
+     * Counter (M13 G16): CSP violation report от браузера.
+     * Tags: {@code directive} (violated directive), {@code blocked_uri_host}
+     * (только хост, без path — избежать high-cardinality).
+     */
+    public static final String CSP_VIOLATIONS = "security.csp.violations";
+
     /** Gauge: число студентов в красной зоне (≥ N пропусков подряд). */
     public static final String STUDENTS_IN_RED_ZONE = "attendance.students_in_red_zone";
     /** Gauge: число активных STOMP WebSocket-сессий. */

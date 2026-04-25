@@ -158,11 +158,11 @@
 
 ## Группа 17 — Grafana dashboards sanity + retention
 
-- [ ] `docker compose up -d` → открыть Grafana → 3 dashboard'а (business-kpis, system-health, tracing) показывают non-zero данные
-- [ ] Проверить `prometheus --storage.tsdb.retention.time=14d` в docker-compose
-- [ ] Проверить `tempo.yml` retention 14d
-- [ ] Проверить Loki retention (если включён)
-- [ ] `.env.prod.example`: `GRAFANA_ADMIN_PASSWORD` — не дефолт `admin/admin`
+- [x] ~~`docker compose up -d` → открыть Grafana → 3 dashboard'а показывают non-zero данные~~ **Live smoke deferred в G23** _(per owner-policy «ничего руками»). Замещено automated `scripts/validate-grafana-dashboards.sh` + CI job `grafana-dashboards` — проверяет 6 dashboard JSON'ов на valid JSON + uid + title + ≥ 1 panel. Surprise: dashboards 6 (не 3 как в hand-off): `business-kpis-m04`, `docker-monitoring`, `grpc-latency`, `logs-overview`, `node-exporter`, `springboot-apm`. system-health разнесён по 3, tracing встроен в springboot-apm + grpc-latency + Tempo explore_(
+- [x] Проверить `prometheus --storage.tsdb.retention.time=14d` в docker-compose _(`docker-compose.prod.yml:520` — pre-existing M04 G10. Также `--web.external-url=https://ruttrack.site/prometheus/` + `--web.route-prefix=/` от M13 G14)_
+- [x] Проверить `tempo.yml` retention 14d _(`infra/tempo/tempo.yml:23` `compactor.compaction.block_retention: 336h` — pre-existing M04 G10. `336h` exactly = 14d в Go duration формате; `14d` НЕ валидный Go duration → silent default, поэтому `336h` корректнее)_
+- [x] Проверить Loki retention (если включён) _(`infra/loki/loki.yml:43` `limits_config.retention_period: 336h` + `compactor.retention_enabled: true` + `delete_request_store: filesystem` — pre-existing M04 G10. Loki включён в `docker-compose.prod.yml:637`)_
+- [x] `.env.prod.example`: `GRAFANA_ADMIN_PASSWORD` — не дефолт `admin/admin` _(переменная названа `GRAFANA_PASSWORD` (исторически M04 G10 не меняю на rename) в `.env.prod.example:118` со значением `CHANGE_ME` + командой генерации `openssl rand -base64 16`. В `validate-env-prod.sh:104` уже в REQUIRED_VARS (CHANGE_ME → exit 2) + `:167` `check_min_length GRAFANA_PASSWORD 8`. Pre-existing M13 G13)_
 
 ## Группа 18 — WebSocket reliability
 

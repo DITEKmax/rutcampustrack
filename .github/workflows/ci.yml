@@ -212,3 +212,14 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y shellcheck
       - name: Lint scripts/*.sh
         run: shellcheck --severity=warning scripts/*.sh
+
+  # M13 G17 — структурная валидация Grafana dashboard JSON-файлов.
+  # Catch'ит broken JSON / missing uid|title / 0 panels до VPS deploy.
+  # Live smoke (non-zero данные) deferred в G23 VPS dry-run.
+  grafana-dashboards:
+    name: Grafana dashboards structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate dashboards
+        run: bash scripts/validate-grafana-dashboards.sh

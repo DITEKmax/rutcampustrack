@@ -1140,3 +1140,53 @@ explicit code.
   impact. Нужно при добавлении любого CDN.
 - **COOP / COEP** headers. Нужны если будем использовать
   `SharedArrayBuffer` или требовать Spectre mitigations.
+
+## 2026-04-25 — Группа 17 (Grafana dashboards sanity + retention)
+
+**Audit-only group, без code-изменений в backend/frontend.** Все 5
+checklist items закрыты validation'ом (✅) или ссылкой на закрытое
+ранее.
+
+**Что нашёл при аудите:**
+
+| Item | Где | Статус |
+|------|-----|--------|
+| 1 — dashboards structure | `infra/grafana/provisioning/dashboards/` — 6 файлов | автомат валидация (script + CI), live smoke deferred G23 |
+| 2 — Prometheus retention 14d | `docker-compose.prod.yml:520` `--storage.tsdb.retention.time=14d` | ✅ pre-existing (M04 G10) |
+| 3 — Tempo retention | `infra/tempo/tempo.yml:23` `compactor.compaction.block_retention: 336h` | ✅ pre-existing (M04 G10) |
+| 4 — Loki retention | `infra/loki/loki.yml:43` `limits_config.retention_period: 336h` + `compactor.retention_enabled: true` | ✅ pre-existing (M04 G10) |
+| 5 — `GRAFANA_PASSWORD` non-default | `.env.prod.example:118` `CHANGE_ME` + `validate-env-prod.sh:104` REQUIRED + `:167` min_length 8 | ✅ pre-existing (M13 G13) |
+
+**Surprise — naming divergence:**
+hand-off в `NEXT-SESSION.md` ожидал 3 dashboards (`business-kpis`,
+`system-health`, `tracing`) и переменную `GRAFANA_ADMIN_PASSWORD`. Факт
+после аудита:
+- 6 dashboards: `business-kpis-m04`, `Docker and system monitoring`,
+  `gRPC Client Latency (M05 G8)`, `RutCampusTrack — Логи системы`,
+  `Node Exporter Full`, `SpringBoot APM Dashboard`. Покрытие шире чем
+  ожидалось — system-health фактически разнесён по 3 dashboard'ам
+  (docker-monitoring + node-exporter + springboot-apm), а tracing
+  встроен в springboot-apm + grpc-latency. Tempo datasource даёт raw
+  trace search через explore tab (не отдельный dashboard).
+- Переменная называется `GRAFANA_PASSWORD` (короче), не
+  `GRAFANA_ADMIN_PASSWORD`. Это исторический выбор M04 G10. Не меняю —
+  rename только ради совпадения с hand-off — churn.
+
+**Tempo retention format `336h` vs `14d`:** Tempo принимает Go duration
+формат. `336h` = 14 дней exactly, `14d` НЕ валидный Go duration
+(silent default). Текущее `336h` — правильно.
+
+**Что добавил (proactive hardening):**
+- `scripts/validate-grafana-dashboards.sh` — pre-flight validator
+  (broken JSON / missing uid|title / 0 panels). Использует node для
+  парсинга. Verified 6/6 ✓ + negative cases (broken/empty/no-uid → exit 2).
+- CI job `grafana-dashboards` в `.github/workflows/ci.yml` — catch'ит
+  regression если кто-то commit'ит broken dashboard JSON. Дёшево
+  (~5 сек на ubuntu-latest, node pre-installed).
+
+**Live smoke (item 1 «non-zero данные»):** deferred в G23 VPS dry-run
+per owner-policy («ничего руками»). Sufficient для G17 — automated
+structure check + 5 retention/security audit pass'ов.
+
+**Estimate vs actual:** ~30 мин (audit + script + CI). Самая маленькая
+из групп, как и ожидалось.

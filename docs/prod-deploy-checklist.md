@@ -38,6 +38,10 @@
       доставить на VPS. **НЕ** через git (gitignored).
 - [ ] На VPS повторить `./scripts/validate-env-prod.sh /opt/rutcampustrack/.env.prod`
       — sanity-check после copy.
+- [ ] `./scripts/validate-grafana-dashboards.sh` (M13 G17) — exit 0
+      (все 6 dashboards валидны: business-kpis, docker-monitoring,
+      grpc-latency, logs-overview, node-exporter, springboot-apm).
+      Любой `✗ FAIL` (broken JSON / missing uid / 0 panels) — блокер.
 - [ ] Backup `.env.prod` в password manager (Bitwarden/1Password) —
       single source of truth.
 - [ ] **GPG passphrase** для backup-шифрования `.env.prod` (M13 G15) —

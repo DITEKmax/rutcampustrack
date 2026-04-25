@@ -40,6 +40,10 @@
       — sanity-check после copy.
 - [ ] Backup `.env.prod` в password manager (Bitwarden/1Password) —
       single source of truth.
+- [ ] **GPG passphrase** для backup-шифрования `.env.prod` (M13 G15) —
+      сгенерировать `openssl rand -base64 32`, сохранить в password
+      manager, записать в `/opt/rutcampustrack/.backup-passphrase` (chmod 600).
+      Подробнее — [backup-restore.md §First-time setup](runbooks/backup-restore.md).
 
 **При rotation** (раз в 6 мес или при подозрении на leak):
 
@@ -81,15 +85,27 @@
       (проверить `git diff HEAD~ -- docker-compose.prod.yml | grep sha256`).
 - [ ] Trivy security scan зелёный (или accepted exceptions документированы).
 
-### 1.5. Backup (снэпшоты прод-данных)
-- [ ] `postgres-academic` dump: `docker exec rct-postgres-academic
-      pg_dump -U rct_user academic_db | gzip > /backup/academic-$(date
-      +%Y%m%d).sql.gz`
-- [ ] `postgres-schedule` dump аналогично.
-- [ ] `attendance_db` (MongoDB): `docker exec rct-mongo-attendance
-      mongodump --archive=/backup/attendance-$(date +%Y%m%d).archive`.
+### 1.5. Backup (снэпшоты прод-данных) — M13 G15
+
+**Автоматизировано через `/etc/cron.d/rutcampustrack-backup` (03:00 UTC daily).**
+Полный setup + DR процедура — [backup-restore.md](runbooks/backup-restore.md).
+
+**Первый deploy:**
+- [ ] GPG passphrase сгенерирован (`openssl rand -base64 32`) и сохранён
+      в password manager (Bitwarden/1Password) как «RutCampusTrack — backup GPG passphrase».
+- [ ] `/opt/rutcampustrack/.backup-passphrase` создан на VPS, `chmod 600`, owner `root`.
+- [ ] `gnupg` установлен: `sudo apt-get install -y gnupg`.
+- [ ] Cron: `sudo cp infra/cron/rutcampustrack-backup /etc/cron.d/ && sudo systemctl restart cron`.
+- [ ] Logrotate: `/etc/logrotate.d/rutcampustrack-backup` настроен (см. runbook).
+- [ ] `/opt/backups` создан, `chmod 700`, owner `root`.
+- [ ] Smoke-test: `sudo scripts/backup.sh` → все 4 файла в `/opt/backups/$(date -u +%Y-%m-%d)/`.
 - [ ] VAPID-ключи на VPS в `/opt/rutcampustrack/.env.prod` —
       скопированы в менеджер секретов (1Password / Bitwarden).
+
+**Перед каждым deploy (pre-flight backup):**
+- [ ] `sudo /opt/rutcampustrack/scripts/backup.sh` — manual backup перед
+      migration, на случай rollback (см. §4.2).
+- [ ] Verify: `ls /opt/backups/$(date -u +%Y-%m-%d)/` → 4 файла.
 
 ### 1.6. Communication
 - [ ] Release window уточнён — не пересекается с парами
@@ -175,13 +191,25 @@
   новые таблицы): rollback приложения без undo schema — backward
   совместимо.
 - **Breaking migration** (DROP COLUMN, NOT NULL на existing): restore
-  из dump (см. 1.5).
+  из backup через `scripts/restore.sh` (M13 G15).
   ```bash
-  docker exec -i rct-postgres-academic psql -U rct_user academic_db
-    < /backup/academic-YYYYMMDD.sql
+  # Остановить downstream-сервисы (держат connections)
+  docker compose -f docker-compose.prod.yml stop \
+      auth-service academic-service schedule-service \
+      attendance-service notification-web notification-bot api-gateway
+
+  # Восстановить ВСЕ БД из последнего pre-deploy backup (§1.5)
+  sudo /opt/rutcampustrack/scripts/restore.sh $(date -u +%Y-%m-%d) \
+      --target=prod --confirm-prod
+
+  # Поднять обратно (image уже откатан в §4.1)
+  docker compose -f docker-compose.prod.yml start \
+      auth-service academic-service schedule-service \
+      attendance-service notification-web notification-bot api-gateway
   ```
   **Это destructive** — user-данные между backup и rollback потеряются.
-  Всегда предпочитаем forward-only migrations.
+  Всегда предпочитаем forward-only migrations. Подробнее —
+  [backup-restore.md](runbooks/backup-restore.md).
 
 ### 4.3. Communication (если критично)
 - Telegram-канал «RUT Track Status» (если создан) — сообщение о

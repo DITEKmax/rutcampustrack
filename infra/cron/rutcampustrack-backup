@@ -1,0 +1,22 @@
+# M13 G15 — daily backup cron для prod VPS.
+#
+# Установка:
+#   sudo cp infra/cron/rutcampustrack-backup /etc/cron.d/rutcampustrack-backup
+#   sudo chmod 644 /etc/cron.d/rutcampustrack-backup
+#   sudo systemctl restart cron
+#
+# Расписание: 03:00 UTC = 06:00 MSK = вне учебного расписания.
+# Owner: root (нужен для docker exec + запись в /opt/backups).
+# Логи: /var/log/rutcampustrack-backup.log (appending). Ротация — через
+# logrotate (см. docs/runbooks/backup-restore.md).
+#
+# MAILTO='' отключает автоматическую email notification cron (если SMTP
+# в ОС не настроен, иначе spammer). Ошибки → stderr → .log → Prometheus
+# textfile collector (следующий итератор hardening).
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=''
+
+# m h dom mon dow user  command
+0 3 * * * root /opt/rutcampustrack/scripts/backup.sh /opt/rutcampustrack/.env.prod >> /var/log/rutcampustrack-backup.log 2>&1

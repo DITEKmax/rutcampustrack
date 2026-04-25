@@ -61,6 +61,11 @@ docker-compose.override.yml
 
 # Production secrets
 .env.prod
+.backup-passphrase
+*.gpg
+
+# M13 G15 — test-restore артефакты (локальный test-compose stack)
+.env.test-restore
 
 # JWT RSA keys (generated at runtime)
 keys/

@@ -9,10 +9,10 @@ Cross-reference документации по тестированию в RutCam
 | Java unit (`*Test`) | JUnit 5 + Mockito | — (inline in build.gradle.kts) |
 | Java integration (`*IT`) | JUnit 5 + Spring Boot Test + Testcontainers | `docs/operations/runbooks/dev-setup.md` (reuse setup) |
 | Flyway миграции | FlywayMigrationIT per-service | `docs/operations/runbooks/migration-testing.md` (NEW-159) |
-| Golden fixtures + property-based | JUnit parameterized + `@RepeatedTest` | `docs/golden-tests.md` (NEW-160) |
+| Golden fixtures + property-based | JUnit parameterized + `@RepeatedTest` | `docs/testing/golden-tests.md` (NEW-160) |
 | Frontend unit (PWA, web-panel) | Vitest + Testing Library | этот файл, секция ниже |
-| E2E flows | Playwright + axe-core | `docs/e2e-testing.md` (NEW-161) |
-| Load | k6 (локально) | `docs/load-testing.md` (NEW-163) |
+| E2E flows | Playwright + axe-core | `docs/testing/e2e-testing.md` (NEW-161) |
+| Load | k6 (локально) | `docs/testing/load-testing.md` (NEW-163) |
 | Security contracts | JUnit IT + pytest (notification-bot) | этот файл, секция «Security contract tests» |
 
 ## Frontend unit testing
@@ -177,7 +177,7 @@ pytest -m security_contract
 
 ### Property-based / golden fixtures
 
-См. `docs/golden-tests.md`.
+См. `docs/testing/golden-tests.md`.
 
 ## Источники
 

@@ -305,7 +305,7 @@ frontend wiring).
 
 ## jqwik property-based testing для v0.1
 
-**Источник:** M08 Группа 4 (2026-04-22), `docs/golden-tests.md`.
+**Источник:** M08 Группа 4 (2026-04-22), `docs/testing/golden-tests.md`.
 
 **Текущее состояние (v0.0.0):**
 Property tests реализованы через standard JUnit + random loops +
@@ -389,7 +389,7 @@ release — accept'ится текущий hybrid-подход.
 
 **Текущее состояние (v0.0.0, M08):**
 В `tests/load/` лежат 2 k6-скрипта (`bulk-mark.js`,
-`geolocation-flood.js`) + `docs/performance-baseline.md` с первыми
+`geolocation-flood.js`) + `docs/performance/performance-baseline.md` с первыми
 числами p50/p95/p99. Release-engineer прогоняет руками перед каждым
 release tag локально против `docker compose up`. CI load-job нет.
 

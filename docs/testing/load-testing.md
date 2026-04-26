@@ -6,7 +6,7 @@ k6 нагрузочные тесты для RutCampusTrack.
 
 **k6 baseline** — фиксирует числа производительности hot-path
 endpoint'ов ПОСЛЕ M05 оптимизаций. Release-engineer прогоняет перед
-каждым release-tag'ом и сравнивает с `docs/performance-baseline.md`:
+каждым release-tag'ом и сравнивает с `docs/performance/performance-baseline.md`:
 нет регрессии → proceed, есть регрессия → investigate.
 
 **v0.0.0 scope (M08 D2):** manual-only прогон локально против
@@ -117,7 +117,7 @@ CHKN-06, Geofence validation CHKN-01, gRPC getActiveLesson).
 
 ## Baseline reference
 
-`docs/performance-baseline.md` содержит числа после первого прогона
+`docs/performance/performance-baseline.md` содержит числа после первого прогона
 (M08 Группа 7). При любом prod-release:
 
 1. Прогнать оба скрипта локально.
@@ -166,8 +166,8 @@ running (2m00.0s), 00/10 VUs, 1200 complete and 0 interrupted iterations
 ## Связанные документы
 
 - `docs/future-ideas.md` — Full load suite (Gatling/JMeter) → v0.1
-- `docs/performance-baseline.md` — baseline numbers
-- `docs/connection-pool-tuning.md` (NEW-147) — HikariCP config
+- `docs/performance/performance-baseline.md` — baseline numbers
+- `docs/performance/connection-pool-tuning.md` (NEW-147) — HikariCP config
   (M05 G6)
 - `docs/api/api-error-conventions.md` (NEW-145) — 200/207 vs partial
   success semantics (M05 G4)

@@ -36,7 +36,7 @@
   `spring-boot-starter-test`. Проверить первый тест до массового
   применения.
 - **k6 на Windows dev** — `k6 run` требует установки k6, нельзя через
-  npm. `docs/load-testing.md` должен включить Windows install steps
+  npm. `docs/testing/load-testing.md` должен включить Windows install steps
   (Chocolatey/winget).
 - **Coverage gate может фейлить первый PR** — baseline устанавливается
   после первого прогона. Иметь план: «PR-1 вводит gate с baseline из

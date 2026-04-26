@@ -12,7 +12,7 @@ virtualization + WSL I/O overhead). M08 DECISION D2 требует manual
 Первый запись будет сделан release-engineer'ом перед созданием
 `v0.0.0` tag против prod-like VPS staging.
 
-k6-скрипты и инфраструктура готовы — см. `docs/load-testing.md`.
+k6-скрипты и инфраструктура готовы — см. `docs/testing/load-testing.md`.
 
 ## Как обновлять
 
@@ -88,6 +88,6 @@ caution tale для будущего refactor'а.
 
 ## Связанные документы
 
-- `docs/load-testing.md` (NEW-163) — как запускать
+- `docs/testing/load-testing.md` (NEW-163) — как запускать
 - `tests/load/README.md` — quick reference для скриптов
 - `docs/future-ideas.md` — Full load suite v0.1

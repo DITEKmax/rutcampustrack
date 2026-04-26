@@ -450,7 +450,7 @@
     с retention 90d (configurable). `PushCleanupConfig` подключает
     `shedlock-provider-mongo` LockProvider + bootstrap
     `backfillMissingLastSeen` на `ApplicationReadyEvent`.
-  - **`docs/data-retention-policy.md`** (NEW-148) — 12-rows matrix
+  - **`docs/security/data-retention-policy.md`** (NEW-148) — 12-rows matrix
     (push-subs 90д, refresh-tokens 7д, OTP 5м, attendance accept,
     outbox 48h, ...).
 
@@ -463,7 +463,7 @@
   - **Alert `HikariPoolExhaustion`** в
     `infra/prometheus/rules/service-health.yml` — `(active/max) > 0.80
     for 5m`, severity warning, routed через M04 Alertmanager.
-  - **`docs/connection-pool-tuning.md`** (NEW-147) — формула sizing,
+  - **`docs/performance/connection-pool-tuning.md`** (NEW-147) — формула sizing,
     текущие значения, триггеры пересмотра, smoke-тест процедура.
 
 - **M05 Performance — Группа 5 (Single-pass accumulators + SQL
@@ -508,7 +508,7 @@
   - **Programmatic rbac eviction** в `UserService.patchUser` /
     `transferStudent` (при смене `is_headman` / `group_id`) — в M05 G9
     перенесено в afterCommit-хук.
-  - **`docs/caching-strategy.md`** (NEW-144) — TTL matrix
+  - **`docs/performance/caching-strategy.md`** (NEW-144) — TTL matrix
     (7 namespaces), invalidation triggers, consistency trade-offs,
     Redis-as-L1 rationale, migration plan.
 
@@ -562,7 +562,7 @@
     `AcademicPerformanceIT`, `LateCheckinPerformanceIT`. 4 запроса <
     50ms на seed-dataset (12k lessons, 1800 TSG, 1800 homeworks,
     6000 late_checkin). Best: 8/8/8/10 ms.
-  - **`docs/performance-indexes.md`** — runbook: seed-dataset
+  - **`docs/performance/performance-indexes.md`** — runbook: seed-dataset
     spec, EXPLAIN before/after по 4 hot queries, деферренные
     индексы (D3 на `attendances`, D4 no-op для `one_off_lessons`),
     expand/contract процесс для новых индексов.

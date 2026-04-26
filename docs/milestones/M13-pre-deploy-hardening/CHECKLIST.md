@@ -152,7 +152,7 @@
 - [x] Metric: `csp_violations_total{directive, blocked_uri}` counter _(название привёл к convention `security.csp.violations` в `MetricNames.CSP_VIOLATIONS`, Prometheus export'ится как `security_csp_violations_total`. Tags: `directive` (нормализован — только имя без source list, lowercase), `blocked_uri_host` (только host из URI без path/query, обрезается до 32 chars для special `inline`/`eval`/`data:`). Low-cardinality чтобы не взорвать Prometheus label cardinality)_
 - [x] Обновить nginx CSP header: `report-uri /api/csp-report; report-to default` _(в `nginx/conf.d/default.conf`: `report-uri /api/csp-report; report-to csp-endpoint;` (легаси + modern Reporting API) + `Report-To` header с JSON group definition `{"group":"csp-endpoint","max_age":10886400,"endpoints":[{"url":"/api/csp-report"}]}`. Compatibility: Firefox/Safari используют `report-uri`, Chrome 97+ — `report-to` + `Report-To`)_
 - [x] IT: POST mock violation → metric incrementится + structured log _(`CspReportIT` в `@SpringBootTest + @AutoConfigureMockMvc`, extends `ContainerTestBase` (Mongo/Rabbit Testcontainers). 5 кейсов: legacy format, modern reports+json, json-fallback с top-level fields, unsupported Content-Type → 415, noAuthRequired (verify filter exclude работает). Counter delta verified через `MeterRegistry` inject. + Unit test 14 кейсов с `SimpleMeterRegistry`)_
-- [x] Создать `docs/security-headers.md` — policy документирование _(полный документ: обзор всех security headers (HSTS/CSP/X-Frame/Referrer/Permissions), детальная CSP policy с обоснованием каждой директивы, Report-To config, CSP report endpoint routing + auth + rate-limit + Content-Type handling, observability queries для Grafana, runbook CSP triage, deferred items SRI/COOP/nonce, история изменений)_
+- [x] Создать `docs/security/security-headers.md` — policy документирование _(полный документ: обзор всех security headers (HSTS/CSP/X-Frame/Referrer/Permissions), детальная CSP policy с обоснованием каждой директивы, Report-To config, CSP report endpoint routing + auth + rate-limit + Content-Type handling, observability queries для Grafana, runbook CSP triage, deferred items SRI/COOP/nonce, история изменений)_
 - [x] Gateway PUBLIC_PATHS + rate-limit _(NEW: `/api/csp-report` добавлен в `JwtAuthenticationFilter.PUBLIC_PATHS` + новый route `notification-csp-report` с `RequestRateLimiter` 1 tok/sec + burst 60 per-IP (flood защита))_
 - [x] NotificationUserContextFilter exclude _(NEW: `/csp-report` в `isExcludedPath` — browser не носит Internal JWT)_
 
@@ -206,7 +206,7 @@
 - [x] Test 4: logout → cookies cleared → redirect `/login` _(`auth-token-lifecycle.spec.ts T4` — loginAs(student), сохраняем pre-logout value, logout(), assert post-logout либо cookie отсутствует либо value='' (browser jar timing-dependent), goto /student/schedule → redirect /login. Дополняет logout из auth.spec.ts (там нет cookie verification)_
 - [x] Test 5: WS reconnect после offline _(`auth-token-lifecycle.spec.ts T5` — loginAs(student), `context.setOffline(true)` 5 sec, `setOffline(false)`, page.reload(), assert URL /student/* + schedule heading. Точная WS frame inspection — frontend-internal, важна network resilience (cookie/sessionStorage сохранены через cycle). Cross-ref M13 G18 STOMP heartbeat 10s/10s)_
 - [x] CI job `e2e-auth` в GitHub Actions _(**Surprise 2**: CI job не существовал — M08 G7 создал тесты, но не подключил в CI. Это AC-6 блокер. Новый job в `.github/workflows/ci.yml`: Java 21 + Node 22 + Gradle assemble + frontends build + docker compose up + healthcheck poll (4 мин max) + npm install + playwright install chromium + `npx playwright test --grep @smoke --project=chromium`. На failure — upload playwright-report + docker logs (7d retention). Cost ~5-7 мин)_
-- [x] Документировать в ~~`docs/testing-strategy.md`~~ → `docs/e2e-testing.md` _(testing-strategy.md не существовал; обновлён `docs/e2e-testing.md`: добавлен `auth-token-lifecycle.spec.ts` row в таблице specs, новая section "CI integration (M13 G22)" с 9 step описанием pipeline, cost estimate, trigger note. Cross-ref на M13 G18 websocket-flow.md)_
+- [x] Документировать в ~~`docs/testing-strategy.md`~~ → `docs/testing/e2e-testing.md` _(testing-strategy.md не существовал; обновлён `docs/testing/e2e-testing.md`: добавлен `auth-token-lifecycle.spec.ts` row в таблице specs, новая section "CI integration (M13 G22)" с 9 step описанием pipeline, cost estimate, trigger note. Cross-ref на M13 G18 websocket-flow.md)_
 
 ## Группа 23 — VPS deploy runbook dry-run
 
@@ -279,7 +279,7 @@ build fail на `"/services/notification-service/notification-app/src": not foun
 ### G25.4 — финализация G25
 
 - [ ] Обновить `CHANGELOG.md` — секция G25 в [Unreleased]
-- [ ] Обновить `docs/e2e-testing.md` — раздел про CI compose
+- [ ] Обновить `docs/testing/e2e-testing.md` — раздел про CI compose
 - [ ] Tag `v0.0.0-alpha.15` на финальном коммите G25.4
 - [ ] Push tag
 

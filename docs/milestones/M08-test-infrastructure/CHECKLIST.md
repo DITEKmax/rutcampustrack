@@ -78,18 +78,18 @@
       academic-service — `DisplayNameGoldenTest`
 - [~] jqwik `@Property` для `parityFlipsEveryWeek`,
       `nameFormatterStable` — реализованы через standard JUnit
-      `@RepeatedTest(100)` без jqwik dep (см. `docs/golden-tests.md`
+      `@RepeatedTest(100)` без jqwik dep (см. `docs/testing/golden-tests.md`
       rationale); migration на jqwik → v0.1
 - [x] `CheckinService` — constructor `Clock clock` + `clock.instant()`
       вместо `Instant.now()` — commit `f61537b`
 - [x] `LateCheckinService` — аналогично
 - [x] `ExcuseService` — аналогично
 - [~] Тесты на fixed Clock (`Clock.fixed(Instant.parse(...), ZoneId.of(...))`)
-      — pattern документирован в `docs/golden-tests.md`. Конкретные
+      — pattern документирован в `docs/testing/golden-tests.md`. Конкретные
       fixed-Clock tests добавятся при появлении новых time-зависимых
       фич; существующие тесты не сломались от Clock-injection
       (Spring DI корректно подбирает system Clock).
-- [x] `docs/golden-tests.md` (NEW-160)
+- [x] `docs/testing/golden-tests.md` (NEW-160)
 
 ## Группа 5 — Playwright E2E (P2-8/5 + M03b defer)
 
@@ -112,12 +112,12 @@
 - [x] Axe rules scope: WCAG 2.1 AA, severity CRITICAL+SERIOUS
 - [~] CI job `e2e-tests` после `integration-test`:
       docker-compose up → Playwright → teardown — **defer в M09**
-      (требует stable staging; подробно в `docs/e2e-testing.md`)
+      (требует stable staging; подробно в `docs/testing/e2e-testing.md`)
 - [~] Artifacts upload: screenshots, traces on failure — configured в
       playwright.config.ts (`outputDir`, `reporter html`), CI upload
       вместе с job M09
 - [x] `scripts/smoke-prod.sh` (curl /actuator/health + login + schedule)
-- [x] `docs/e2e-testing.md` (NEW-161)
+- [x] `docs/testing/e2e-testing.md` (NEW-161)
 
 ## Группа 6 — Frontend unit tests (P2-8/6)
 
@@ -144,17 +144,17 @@
       `clear-all-client-state.spec.ts` (10 P0-4 regression guard)
 - [~] Vitest coverage config — exclude generated/`*.d.ts` — в Группе 10
       (coverage gate)
-- [x] `docs/testing.md` — раздел «Frontend unit testing» (NEW-162)
+- [x] `docs/testing/testing.md` — раздел «Frontend unit testing» (NEW-162)
 
 ## Группа 7 — Load tests (P2-8/7)
 
 - [x] `tests/load/bulk-mark.js` — k6, 10 VU, 2 min, p95<500ms
 - [x] `tests/load/geolocation-flood.js` — 50 VU × 30s, p95<1000ms
       (rate<0.05 с учётом CHKN-07 rate-limits)
-- [~] Первый прогон → `docs/performance-baseline.md` с метриками —
+- [~] Первый прогон → `docs/performance/performance-baseline.md` с метриками —
       шаблон создан, реальные числа ожидают первого прогона в
       Группе 12 (финализация) или при следующем session
-- [x] `docs/load-testing.md` (NEW-163) — как запускать, interpret
+- [x] `docs/testing/load-testing.md` (NEW-163) — как запускать, interpret
 - [x] Full load suite в future-ideas.md (v0.1) — уже есть секция
       Gatling/JMeter в future-ideas.md
 
@@ -186,7 +186,7 @@
       не реализован. Записано в NOTES.md. Defer: создать в M09
       (Prod Release Blockers) как часть ролевой IDOR-защиты, сейчас
       Gateway JWT validator + role-filter покрывает основные векторы.
-- [x] `docs/testing.md` — раздел «Security contract tests» (NEW-164)
+- [x] `docs/testing/testing.md` — раздел «Security contract tests» (NEW-164)
       — commit `bef5c0a`. Обновлён с реальными классами, командами запуска
       и объяснением D6 (почему нет `CsrfDoubleSubmitIT`).
 

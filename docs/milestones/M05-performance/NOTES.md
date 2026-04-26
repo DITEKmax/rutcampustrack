@@ -218,7 +218,7 @@ PLAN.md и OWNER-ANSWERS (3756-3810).
   RBAC write-side (changeHeadman), (5) Redis cache metrics биндинг
   через `MeterRegistry` (RedisCache не экспонирует hit/miss нативно —
   нужен CacheEventListener или custom wrapper), (6)
-  `docs/caching-strategy.md`.
+  `docs/performance/caching-strategy.md`.
 
 **B. Заменить Redis на Caffeine** (буквальная читка OWNER-ANSWERS).
 - – Снести работающий кеш = регрессионный риск.
@@ -279,7 +279,7 @@ CHECKLIST остаётся галочка как вычеркнутая с refer
   `CacheMeterBinder` для Redis (когда/если появится — сейчас только
   Caffeine/EhCache поддержаны нативно).
 
-`docs/caching-strategy.md` описывает факт отсутствия hit/miss counter
+`docs/performance/caching-strategy.md` описывает факт отсутствия hit/miss counter
 для Redis в v0.0.0 + этот workaround-план.
 
 ## 2026-04-21 — Группа 8 итоги
@@ -324,7 +324,7 @@ runtime-guard отклонён после сломавшихся integration-т�
   retention-boundary тестов.
 - Refresh-token TTL audit закрыт без правок: `EX=604800` (7d)
   подтверждён grep'ом + чтение `AuthService.java`.
-- `docs/data-retention-policy.md` (NEW-148) — 12-rows retention matrix.
+- `docs/security/data-retention-policy.md` (NEW-148) — 12-rows retention matrix.
 
 ## 2026-04-20 — Группа 7 audit surprise: push_subscriptions в MongoDB
 

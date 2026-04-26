@@ -1,6 +1,6 @@
 # tests/e2e — Playwright E2E suite
 
-Main runbook: `docs/e2e-testing.md`.
+Main runbook: `docs/testing/e2e-testing.md`.
 
 ## Quick reference
 

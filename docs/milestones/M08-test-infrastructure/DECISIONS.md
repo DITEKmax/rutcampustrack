@@ -34,7 +34,7 @@ baseline (см. future-ideas.md «Mini-app unification after M12»).
 (per-PR / nightly) или оставить manual прогон release-engineer'ом?
 
 **Решение:** **Manual-only.** В `tests/load/` лежат 2 k6-скрипта
-(`bulk-mark.js`, `geolocation-flood.js`) + `docs/performance-baseline.md`
+(`bulk-mark.js`, `geolocation-flood.js`) + `docs/performance/performance-baseline.md`
 с первыми числами. Release-engineer прогоняет локально перед каждым
 release tag. CI load-job НЕ создаётся.
 
@@ -73,7 +73,7 @@ release tag. CI load-job НЕ создаётся.
 - Legacy-модули имеют низкую coverage → любой touch тянет % вниз.
 
 **Trade-off:** первый PR не блокируется, далее все изменения строгие.
-`docs/testing.md` FAQ: как посмотреть незакрытые строки, как
+`docs/testing/testing.md` FAQ: как посмотреть незакрытые строки, как
 пометить legacy через `@ExcludeFromCoverage` / JaCoCo `excludes`.
 
 ---

@@ -1504,7 +1504,7 @@ TypeScript type-check невозможен локально (нет node_modules
 прогоне поймает type errors.
 
 **`docs/testing-strategy.md` не существует** (hand-off ошибся в
-имени). Реальный файл — `docs/e2e-testing.md`. Обновлён + cross-ref на
+имени). Реальный файл — `docs/testing/e2e-testing.md`. Обновлён + cross-ref на
 M13 G18 websocket-flow.md.
 
 **Estimate vs actual:** ~1.5 часа (5 тестов + CI job + docs). Surprise

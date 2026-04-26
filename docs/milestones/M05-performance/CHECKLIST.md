@@ -10,7 +10,7 @@ _Уточнено 2026-04-20 по результатам аудита схемы
       late_checkin_requests, teacher_subject_groups, homeworks). Скрипт
       `docs/milestones/M05-performance/seed-perf.sql` или Python-script.
 - [x] EXPLAIN ANALYZE «before» для 4 hot queries — записано в
-      `docs/performance-indexes.md`:
+      `docs/performance/performance-indexes.md`:
   1. `LessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn`
      (schedule) — Hash Join via idx_lessons_date, 0.764ms.
   2. `LateCheckinRepository.findByGroupIdAndStatusOrderByCreatedAtAsc`
@@ -134,7 +134,7 @@ DECISIONS D6. Caffeine НЕ вводится. Academic-service уже имеет
       isHeadman_negative (false кешируется), ttlMatchesConfiguredValue
       (TTL 55-60s). Counter-based hit-rate пришлось заменить на key-
       presence из-за deferred metrics биндинга (см. выше).
-- [x] `docs/caching-strategy.md` (NEW-144): TTL matrix (7 namespaces),
+- [x] `docs/performance/caching-strategy.md` (NEW-144): TTL matrix (7 namespaces),
       invalidation triggers (declarative + programmatic), consistency
       trade-offs (Q13b race activateSemester), Redis-as-L1 rationale
       (D6), observability секция с deferred metrics, migration plan
@@ -202,8 +202,8 @@ in-memory pagination OOM-risk в LessonService._
 - [x] `application.yml` academic/schedule: `hikari.{maximum-pool-size:20, minimum-idle:5, connection-timeout:5000, idle-timeout:600000, max-lifetime:1800000, leak-detection-threshold:60000}`. auth-service меньше (pool=10, idle=3 — read-only login). attendance — no-op (MongoDB).
 - [x] Prometheus scrape `hikaricp_connections_*` автоматически через Micrometer + spring-boot-actuator (M04 baseline).
 - [x] Alert rule `HikariPoolExhaustion` в `infra/prometheus/rules/service-health.yml` — `(active/max) > 0.80 for 5m`, severity warning.
-- [x] `docs/connection-pool-tuning.md` (NEW-147) — формула `cpu_cores × 2 + spindles`, текущие значения, триггеры пересмотра (HikariPoolExhaustion firing / pending>0 / scale-out / read-replicas), smoke-тест в документе.
-- [~] **Manual smoke-тест** (30 concurrent HTTP): процедура описана в docs/connection-pool-tuning.md, выполнение отложено до production-deploy (не блокирует M05 — integration-тесты 3 сервисов зелёные с новым pool).
+- [x] `docs/performance/connection-pool-tuning.md` (NEW-147) — формула `cpu_cores × 2 + spindles`, текущие значения, триггеры пересмотра (HikariPoolExhaustion firing / pending>0 / scale-out / read-replicas), smoke-тест в документе.
+- [~] **Manual smoke-тест** (30 concurrent HTTP): процедура описана в docs/performance/connection-pool-tuning.md, выполнение отложено до production-deploy (не блокирует M05 — integration-тесты 3 сервисов зелёные с новым pool).
 
 ## Группа 7 — Cleanup push-subs + retention audit (P2-10/7)
 
@@ -233,7 +233,7 @@ _Scope уточнён 2026-04-20 по результатам аудита — с
       `AuthService.refresh:125` / `TmaService:78` / `OtpService:192`.
       `refresh-token-expiration=604800` в `application.yml:57`. Фикс не
       требуется.
-- [x] `docs/data-retention-policy.md` (NEW-148): таблица с 12 видами
+- [x] `docs/security/data-retention-policy.md` (NEW-148): таблица с 12 видами
       данных — retention, mechanism, триггеры пересмотра. Bootstrap
       backfill описан, deferred items M06+ зафиксированы.
 - [x] Integration-тест `PushSubscriptionCleanupJobIT` (ContainerTestBase):
@@ -305,10 +305,10 @@ D11. Deadline уже везде (19 callsite'ов), параллелизация
 
 ## Группа 10 — Documentation + закрытие milestone
 
-- [x] `docs/performance-indexes.md` (создан в G1).
-- [x] `docs/caching-strategy.md` (создан в G3).
-- [x] `docs/connection-pool-tuning.md` (создан в G6).
-- [x] `docs/data-retention-policy.md` (создан в G7).
+- [x] `docs/performance/performance-indexes.md` (создан в G1).
+- [x] `docs/performance/caching-strategy.md` (создан в G3).
+- [x] `docs/performance/connection-pool-tuning.md` (создан в G6).
+- [x] `docs/security/data-retention-policy.md` (создан в G7).
 - [x] `docs/api/api-error-conventions.md` (создан в G4, sibling runbook).
 - [x] `docs/future-ideas.md` (создан в G5, sibling runbook).
 - [x] `docs/architecture/architecture.md` §11.1 — блок «Performance & Ops runbooks»

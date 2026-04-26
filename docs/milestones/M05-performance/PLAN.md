@@ -121,14 +121,14 @@
 ## Acceptance criteria
 
 - [ ] Все миграции Flyway применены, schema validate проходит.
-- [ ] `docs/performance-indexes.md` (NEW-142) — таблица «запрос → indexes → p50 до → p50 после» с EXPLAIN ANALYZE на 10k+ rows.
+- [ ] `docs/performance/performance-indexes.md` (NEW-142) — таблица «запрос → indexes → p50 до → p50 после» с EXPLAIN ANALYZE на 10k+ rows.
 - [ ] Integration-тесты: query time assertion `< 50ms` (regression guard) для 3 hot queries.
-- [ ] `docs/caching-strategy.md` (NEW-144) — TTL matrix
+- [ ] `docs/performance/caching-strategy.md` (NEW-144) — TTL matrix
       (groups/group_members/users/active_semester/campus_geofence/rbac/subject),
       invalidation triggers, trade-offs, Redis-as-L1 rationale (D6),
       future-ideas «Caffeine L1+L2 при multi-instance».
-- [ ] `docs/connection-pool-tuning.md` (NEW-147) — формулы, текущие значения, Grafana alert.
-- [ ] `docs/data-retention-policy.md` (NEW-148) — таблица хранения: push-subs 90д, refresh-tokens 7д, OTP 5м, attendance history accept.
+- [ ] `docs/performance/connection-pool-tuning.md` (NEW-147) — формулы, текущие значения, Grafana alert.
+- [ ] `docs/security/data-retention-policy.md` (NEW-148) — таблица хранения: push-subs 90д, refresh-tokens 7д, OTP 5м, attendance history accept.
 - [ ] ArchUnit rule NEW-143 (repo → Pageable/EntityGraph/projection) в `check` phase, ловит violation fake commit.
 - [ ] CI-lint NEW-149 (gRPC deadline required) в `check` phase.
 - [ ] Bulk mark-attendance: 30 отметок через `/batch` endpoint < 500ms (до было 6000ms через sequential await).
@@ -136,7 +136,7 @@
       metrics `cache.gets{result=hit|miss, cache=...}` не экспонированы.
       Попытка `MetricsCacheManagerDecorator` сломала namespace-specific
       TTL в `RedisCacheManager`. Обоснование и альтернатива
-      (`@Aspect`-подход) зафиксированы в `docs/caching-strategy.md`
+      (`@Aspect`-подход) зафиксированы в `docs/performance/caching-strategy.md`
       §«Observability» и `docs/future-ideas.md`. Integration-тест
       `RbacCacheIT` проверяет presence key'ев + TTL вместо counter'ов.
 - [ ] `./gradlew build` зелёный (включая integration tests + ArchUnit + CI-lint).
@@ -149,10 +149,10 @@
 
 ## Artifacts
 
-- `docs/performance-indexes.md` (новый)
-- `docs/caching-strategy.md` (новый)
-- `docs/connection-pool-tuning.md` (новый)
-- `docs/data-retention-policy.md` (новый)
+- `docs/performance/performance-indexes.md` (новый)
+- `docs/performance/caching-strategy.md` (новый)
+- `docs/performance/connection-pool-tuning.md` (новый)
+- `docs/security/data-retention-policy.md` (новый)
 - `docs/architecture/architecture.md` — раздел «Caching» + обновление HikariCP sizing
 - `CHANGELOG.md [Unreleased]` — M05 секция
 - Flyway миграции × 3-4 сервиса
@@ -232,7 +232,7 @@ Deferred (обоснованные):
    Повторять для M06/M07/M08.
 2. **Caffeine вводить не надо.** Redis L1 с namespaces + TTL + `@Cacheable`
    закрывает все use-cases без L2 hybrid. Документ
-   `docs/caching-strategy.md` — single source of truth.
+   `docs/performance/caching-strategy.md` — single source of truth.
 3. **Lightweight milestone-workflow без GSD-агентов** сработал для
    8-групповой M05 полностью. Сэкономил ~60-70% токенов относительно
    M01-M03b (где был RESEARCH/VERIFICATION). Оставить формат для M06+.

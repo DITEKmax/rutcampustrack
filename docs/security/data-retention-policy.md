@@ -7,7 +7,7 @@
 обеспечивается автоматическое удаление и когда нужно пересматривать
 retention. Покрывает все «долгоживущие» хранилища (PostgreSQL, MongoDB,
 Redis) — эфемерные in-memory кэши (Caffeine / Spring `@Cacheable`) не
-включены, их TTL описан в `docs/caching-strategy.md`.
+включены, их TTL описан в `docs/performance/caching-strategy.md`.
 
 ## Retention matrix
 

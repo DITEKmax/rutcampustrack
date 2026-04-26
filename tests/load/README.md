@@ -1,6 +1,6 @@
 # tests/load — k6 scripts
 
-Main runbook: `docs/load-testing.md` (NEW-163).
+Main runbook: `docs/testing/load-testing.md` (NEW-163).
 
 ## Quick reference
 
@@ -15,7 +15,7 @@ k6 run tests/load/bulk-mark.js
 k6 run tests/load/geolocation-flood.js
 ```
 
-Baseline numbers: `docs/performance-baseline.md`.
+Baseline numbers: `docs/performance/performance-baseline.md`.
 
 ## Scripts
 

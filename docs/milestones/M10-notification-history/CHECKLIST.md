@@ -161,7 +161,7 @@
       (Notification Web — M10)" с notification_history shape, 3 индекса,
       Mongo user separation (PoLP D2). NotificationType enum в общий
       список. Commit `c23614f`.
-- [x] `docs/data-retention-policy.md` — row 5a (30d TTL +
+- [x] `docs/security/data-retention-policy.md` — row 5a (30d TTL +
       `NOTIFICATION_HISTORY_TTL_DAYS` env) + триггер пересмотра +
       collMod caveat. Commit `c23614f`.
 - [x] `CLAUDE.md` Services table: cleanup от «до M10 stateless

@@ -180,7 +180,7 @@ features, refactor beyond what the task requires» из CLAUDE.md:**
 **не** вводить Caffeine. Scope Группы 3 превращается в: добавить
 недостающие namespaces (`rbac`, `subject`) + публичный метод
 `isHeadmanFor(userId, groupId)` + `@CacheEvict` на соответствующих
-write-side методах + Redis cache metrics биндинг + `docs/caching-strategy.md`.
+write-side методах + Redis cache metrics биндинг + `docs/performance/caching-strategy.md`.
 
 **Контекст расхождения.** OWNER-ANSWERS 3756-3810 предписывает
 Caffeine in-memory TTL+size для v0.0.0 («Single-instance ok»).
@@ -233,7 +233,7 @@ eviction при смене `is_headman` флага (`UserService.patchUser:225-2
 | **`@CacheEvict("subject")` на updateSubject/deleteSubject** | ⬜ **добавляется в M05** |
 | **`@CacheEvict("rbac")` при смене `is_headman`/`group_id` в patchUser** | ⬜ **добавляется в M05** |
 | **Redis cache metrics через `MeterRegistry` (hit/miss counter)** | ⬜ **добавляется в M05** |
-| **`docs/caching-strategy.md` (NEW-144)** | ⬜ **добавляется в M05** |
+| **`docs/performance/caching-strategy.md` (NEW-144)** | ⬜ **добавляется в M05** |
 | **Integration-тест hit-rate на rbac cache** | ⬜ **добавляется в M05** |
 
 **Обновление устаревшего решения:** `AcademicGrpcServiceImpl.isHeadman:127`

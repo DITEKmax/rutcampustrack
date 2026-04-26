@@ -94,7 +94,7 @@
 - `runbooks/backup-restore.md` (новый) — backup + tested restore procedure
 - `runbooks/cert-renewal.md` (новый) — SSL troubleshooting
 - `docs/operations/monitoring/alerts.md` (новый) — каталог 15+ alert'ов (symptom / meaning / runbook)
-- `docs/security-headers.md` (новый) — CSP policy документирование
+- `docs/security/security-headers.md` (новый) — CSP policy документирование
 - `CLAUDE.md` / шаблон миграций — правило «CREATE INDEX CONCURRENTLY» для prod-таблиц
 - `.gitignore` — проверить `.env.prod` + GPG keys
 
@@ -142,7 +142,7 @@
 - `runbooks/backup-restore.md` (новый)
 - `runbooks/cert-renewal.md` (новый)
 - `docs/operations/monitoring/alerts.md` (новый) — каталог 15+ alert'ов
-- `docs/security-headers.md` (новый) — CSP policy
+- `docs/security/security-headers.md` (новый) — CSP policy
 - `.env.prod.example` (новый)
 - `scripts/validate-env-prod.sh` (новый)
 - `scripts/backup.sh` + `scripts/restore.sh` (новые)

@@ -67,7 +67,7 @@
 - Clock-injection: `CheckinService` + `LateCheckinService` +
   `ExcuseService` принимают `Clock` через constructor (04 P2-4 — убрать
   hardcoded `Europe/Moscow` без Clock)
-- NEW-160 `docs/golden-tests.md`
+- NEW-160 `docs/testing/golden-tests.md`
 
 ### E2E: Playwright + post-deploy smoke (P2-8/5)
 - `tests/e2e/` directory с Playwright config (Chromium + WebKit)
@@ -87,7 +87,7 @@
 - `scripts/smoke-prod.sh` — post-deploy curl: /actuator/health + login
   + schedule (docker-compose.prod.yml context)
 - Отдельный CI job `e2e-tests` после `integration-test`
-- NEW-161 `docs/e2e-testing.md`
+- NEW-161 `docs/testing/e2e-testing.md`
 
 ### Frontend unit-тесты (P2-8/6)
 - **Hooks (Vitest):**
@@ -107,14 +107,14 @@
   STOMP сервисах + `sessionStorage.removeItem`
 - MSW (mock service worker) для 401 → refresh flow
 - Mini-app (14 P2-12) → ACCEPT, не делаем
-- NEW-162 расширение `docs/testing.md` — «критичные frontend unit»
+- NEW-162 расширение `docs/testing/testing.md` — «критичные frontend unit»
 
 ### Нагрузочные тесты (P2-8/7 — minimal)
 - `tests/load/bulk-mark.js` — k6: `vus:10`, `duration:'2m'`,
   thresholds: `http_req_duration p95<500`, `http_req_failed<0.01`
 - `tests/load/geolocation-flood.js` — 50 VU одновременно checkin'аются
-- `docs/performance-baseline.md` — baseline метрики после первого прогона
-- NEW-163 `docs/load-testing.md` + `tests/load/` directory
+- `docs/performance/performance-baseline.md` — baseline метрики после первого прогона
+- NEW-163 `docs/testing/load-testing.md` + `tests/load/` directory
 - Full load-suite (JMeter/Gatling) → v0.1 (future-ideas.md)
 
 ### Security contract-тесты (P2-8/8)
@@ -126,7 +126,7 @@
   - **CsrfDoubleSubmitIT** (shared-web или gateway): POST без
     `X-CSRF-TOKEN` → 403; mismatched cookie+header → 403; matched → 200
 - Parallel `SecurityIdorIT` (NEW-31 из M03a) — оставить
-- NEW-164 расширение `docs/testing.md` — «Security contract tests»
+- NEW-164 расширение `docs/testing/testing.md` — «Security contract tests»
 
 ### Coverage gate (P2-8/1 + QD2)
 - **Java:** JaCoCo per-module, gate **60% line**, exclude generated/DTO
@@ -207,8 +207,8 @@
 
 ### Load
 - `tests/load/bulk-mark.js`, `geolocation-flood.js`
-- `docs/performance-baseline.md` (NEW)
-- `docs/load-testing.md` (NEW — NEW-163)
+- `docs/performance/performance-baseline.md` (NEW)
+- `docs/testing/load-testing.md` (NEW — NEW-163)
 
 ### Frontend
 - `frontends/pwa/src/**/*.test.{ts,tsx}` — новые hooks/components tests
@@ -228,11 +228,11 @@
 
 ### Docs
 - `docs/operations/runbooks/migration-testing.md` (NEW-159)
-- `docs/golden-tests.md` (NEW-160)
-- `docs/e2e-testing.md` (NEW-161)
-- `docs/testing.md` — расширение (NEW-162, NEW-164)
-- `docs/load-testing.md` (NEW-163)
-- `docs/performance-baseline.md`
+- `docs/testing/golden-tests.md` (NEW-160)
+- `docs/testing/e2e-testing.md` (NEW-161)
+- `docs/testing/testing.md` — расширение (NEW-162, NEW-164)
+- `docs/testing/load-testing.md` (NEW-163)
+- `docs/performance/performance-baseline.md`
 - `docs/operations/runbooks/image-signing-verification.md` (NEW-165)
 
 ## Acceptance criteria
@@ -290,12 +290,12 @@
 - `scripts/smoke-prod.sh` — post-deploy smoke
 - `services/shared/shared-test-containers/` (iteration 2)
 - `docs/operations/runbooks/migration-testing.md` (NEW-159)
-- `docs/golden-tests.md` (NEW-160)
-- `docs/e2e-testing.md` (NEW-161)
-- `docs/load-testing.md` (NEW-163)
-- `docs/performance-baseline.md`
+- `docs/testing/golden-tests.md` (NEW-160)
+- `docs/testing/e2e-testing.md` (NEW-161)
+- `docs/testing/load-testing.md` (NEW-163)
+- `docs/performance/performance-baseline.md`
 - `docs/operations/runbooks/image-signing-verification.md` (NEW-165)
-- `docs/testing.md` — расширения NEW-162/164
+- `docs/testing/testing.md` — расширения NEW-162/164
 - `.github/workflows/ci.yml` — split jobs + coverage gate
 - `.github/workflows/security.yml` — SBOM + cosign + Trivy sha-pin
 
@@ -393,11 +393,11 @@ security contracts + event schema + Stomp IT + Playwright fixtures).
 
 **Новых docs (NEW-*):**
 - NEW-159 `docs/operations/runbooks/migration-testing.md`
-- NEW-160 `docs/golden-tests.md`
-- NEW-161 `docs/e2e-testing.md`
-- NEW-162 `docs/testing.md` (расширен frontend + security)
-- NEW-163 `docs/load-testing.md`
-- NEW-164 `docs/testing.md` security-contract section
+- NEW-160 `docs/testing/golden-tests.md`
+- NEW-161 `docs/testing/e2e-testing.md`
+- NEW-162 `docs/testing/testing.md` (расширен frontend + security)
+- NEW-163 `docs/testing/load-testing.md`
+- NEW-164 `docs/testing/testing.md` security-contract section
 - NEW-165 `docs/operations/runbooks/image-signing-verification.md`
 
 **Baseline coverage (locally 2026-04-23):**

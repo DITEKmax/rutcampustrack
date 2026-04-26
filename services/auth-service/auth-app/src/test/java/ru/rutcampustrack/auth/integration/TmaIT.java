@@ -84,7 +84,7 @@ class TmaIT extends AbstractIntegrationTest {
      * window. Telegram docs explicitly allow replays up to 24h, so we verify the
      * window enforcement is in place rather than a per-hash one-shot guard.
      *
-     * <p>Captured in docs/testing.md — Security contract tests: TMA replay semantics.
+     * <p>Captured in docs/testing/testing.md — Security contract tests: TMA replay semantics.
      */
     @Test
     void tma_withReplayedInitDataInsideWindow_returnsToken() {

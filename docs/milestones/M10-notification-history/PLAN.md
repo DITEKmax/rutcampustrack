@@ -161,7 +161,7 @@ unread-count. Закрывает P2-6/4 — главное архитектур�
 - `docs/architecture/architecture.md` — раздел «Notification History» (NEW)
 - `docs/architecture/database-schema.md` — раздел Mongo `notification_db`
   (NEW-166)
-- `docs/data-retention-policy.md` — обновление: notification_history
+- `docs/security/data-retention-policy.md` — обновление: notification_history
   30d TTL (NEW-148 расширение)
 
 ### CLAUDE.md
@@ -217,7 +217,7 @@ unread-count. Закрывает P2-6/4 — главное архитектур�
 - `infra/mongo-init/notification-db-init.js` — Mongo schema/user
 - `docs/architecture/architecture.md` — Notification History section
 - `docs/architecture/database-schema.md` — Mongo schema (NEW-166)
-- `docs/data-retention-policy.md` — 30d TTL раздел
+- `docs/security/data-retention-policy.md` — 30d TTL раздел
 - Frontend: TanStack Query hooks + Angular services для notifications
 - CLAUDE.md: обновлён service table + URL layout если нужно
 

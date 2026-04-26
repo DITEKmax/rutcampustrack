@@ -3671,7 +3671,7 @@ connection pool defaults (HikariCP=10), cleanup push-подписок,
 параллелизация hot-path gRPC (checkin).
 
 - **P2-10/1 — Composite indexes на hot queries:** **(a)** Добавить
-  composite indexes миграциями + `docs/performance-indexes.md` с
+  composite indexes миграциями + `docs/performance/performance-indexes.md` с
   EXPLAIN ANALYZE before/after.
   - **Мотивация:**
     - 03 P2-2: schedule без composite index на
@@ -3698,7 +3698,7 @@ connection pool defaults (HikariCP=10), cleanup push-подписок,
     - EXPLAIN ANALYZE до и после (на test-datasets с 10k+ rows).
     - Integration-тест: query time assertion `< 50ms` (regression
       guard).
-    - `docs/performance-indexes.md` — таблица «запрос → indexes → p50
+    - `docs/performance/performance-indexes.md` — таблица «запрос → indexes → p50
       до → p50 после». Обновляется при добавлении новых индексов.
   - **Каскад:**
     - 02 P2-4, 03 P2-2, 03 P2-8, 04 P2-9 → 🔧 TO-FIX.
@@ -3707,7 +3707,7 @@ connection pool defaults (HikariCP=10), cleanup push-подписок,
     - NEW-74 (PR-template expand/contract) — индексы добавляются как
       expand-step, не требуют rollback-скрипта.
   - **Estimate:** ~3 часа (5-6 миграций + EXPLAIN + integration-тесты).
-  - **NEW-142:** `docs/performance-indexes.md` с before/after EXPLAIN.
+  - **NEW-142:** `docs/performance/performance-indexes.md` с before/after EXPLAIN.
     Артефакт для v0.1 capacity-planning. Runbook «как добавить новый
     индекс» с шаблоном EXPLAIN + Flyway migration + regression test.
 
@@ -3806,7 +3806,7 @@ connection pool defaults (HikariCP=10), cleanup push-подписок,
     - NEW-144 (caching-strategy.md).
   - **Estimate:** ~1 день (audit + cache-annotations + invalidation
     + integration-тесты на cache hit/miss).
-  - **NEW-144:** `docs/caching-strategy.md` — какие cache'и, TTL,
+  - **NEW-144:** `docs/performance/caching-strategy.md` — какие cache'и, TTL,
     invalidation triggers, trade-offs консистентности. Раздел
     «Miграция на Redis при multi-instance» (ссылка на v0.1).
 
@@ -3932,7 +3932,7 @@ connection pool defaults (HikariCP=10), cleanup push-подписок,
     - QA4 (бизнес-метрики) + NEW-62 (bot webhook) — alert routes.
     - NEW-147 (connection-pool-tuning.md).
   - **Estimate:** ~2 часа (3 yml + alert + smoke-тест).
-  - **NEW-147:** `docs/connection-pool-tuning.md` — формулы, текущие
+  - **NEW-147:** `docs/performance/connection-pool-tuning.md` — формулы, текущие
     значения, Grafana alert rules. Раздел «Когда пересматривать»
     (при изменении CPU cores, scale-out, введении read-replicas).
 
@@ -3957,7 +3957,7 @@ connection pool defaults (HikariCP=10), cleanup push-подписок,
       ```
     - Audit auth-service: подтвердить `redis.set("refresh:<hash>",
       uid, EX=604800)` (7d). Если нет EX — фикс.
-    - `docs/data-retention-policy.md` — таблица «что хранится →
+    - `docs/security/data-retention-policy.md` — таблица «что хранится →
       retention → cleanup mechanism».
   - **Каскад:**
     - 05 P2-7 → 🔧 TO-FIX.
@@ -3966,7 +3966,7 @@ connection pool defaults (HikariCP=10), cleanup push-подписок,
     - Redis keyspace (NEW-45) — refresh-token TTL документируется.
   - **Estimate:** ~3 часа (Flyway migration + service update +
     @Scheduled + тесты).
-  - **NEW-148:** `docs/data-retention-policy.md` — объединяет
+  - **NEW-148:** `docs/security/data-retention-policy.md` — объединяет
     retention push_subs (90d), refresh-tokens (7d), attendance-marks
     (accept - history), excuse-tickets (accept - history), OTP
     (5 min TTL). Триггер пересмотра (связано с NEW-66).
@@ -4362,7 +4362,7 @@ postgres shared password, dev/prod passwords, JVM resource limits.
     - `.env` (dev) — оставить как есть, `rct_dev_pass` для всех.
     - README: «**ВНИМАНИЕ:** `.env` содержит dev-пароли (одинаковые).
       Для RBAC-тестирования используется Testcontainers (см.
-      `/docs/testing.md`). `.env.prod` — отдельный файл с
+      `/docs/testing/testing.md`). `.env.prod` — отдельный файл с
       индивидуальными паролями, не commit'ится.»
     - NEW-22 (inline-comments в .env.prod.example) — расширить
       комментарий про dev vs prod структуру.
@@ -4372,7 +4372,7 @@ postgres shared password, dev/prod passwords, JVM resource limits.
     - NEW-22 (env inline-comments).
     - NEW-156 (testing.md).
   - **Estimate:** ~10 мин (README update).
-  - **NEW-156:** `docs/testing.md` — стратегия: unit (mockito) /
+  - **NEW-156:** `docs/testing/testing.md` — стратегия: unit (mockito) /
     integration (Testcontainers) / e2e (через docker-compose). Раздел
     «RBAC integration tests» — paradigm: Testcontainers с уникальными
     creds per test run, НЕ через `.env`.
@@ -4584,7 +4584,7 @@ academic, TMA HMAC не тестируется, CSRF/CSP тесты отсутс
   - **NEW-158:** модуль `shared-test-containers` с reusable fixtures:
     Postgres, Mongo, Redis, RabbitMQ containers (with reuse). Helper-
     методы для gRPC in-process и WireMock. Документация в
-    `docs/testing.md` (NEW-156) раздел «Testcontainers conventions».
+    `docs/testing/testing.md` (NEW-156) раздел «Testcontainers conventions».
 
 - **P2-8/3 — Flyway MigrationIT + data-preservation test:** **(a) +
   (b) частично** — MigrationIT в schedule обязательно, data-preservation
@@ -4696,7 +4696,7 @@ academic, TMA HMAC не тестируется, CSRF/CSP тесты отсутс
     - NEW-160 (golden-tests.md docs).
   - **Estimate:** ~1.5 дня (golden files + parametrized tests +
     jqwik dependency + Clock-injection refactor).
-  - **NEW-160:** `docs/golden-tests.md` — когда golden vs
+  - **NEW-160:** `docs/testing/golden-tests.md` — когда golden vs
     property-based, fixture update policy, JSON structure convention.
     Подсказка для ревью: diff в golden JSON виден как список
     «ожидание изменилось».
@@ -4738,7 +4738,7 @@ academic, TMA HMAC не тестируется, CSRF/CSP тесты отсутс
     - NEW-161 (e2e-testing.md).
   - **Estimate:** ~3-5 дней (Playwright setup + CI integration + 4
     tests + flaky-mitigation + smoke-scripts).
-  - **NEW-161:** `docs/e2e-testing.md` + `tests/e2e/` директория с
+  - **NEW-161:** `docs/testing/e2e-testing.md` + `tests/e2e/` директория с
     Playwright config (multi-browser Chromium+WebKit), fixtures,
     fixture-data. Раздел «как писать новый e2e тест» в NEW-108
     contributing.md.
@@ -4786,7 +4786,7 @@ academic, TMA HMAC не тестируется, CSRF/CSP тесты отсутс
   - **Estimate:** ~2-3 дня (5 hooks + 2 components + SW + MSW + CI
     integration).
   - **NEW-162:** список «критичных frontend юнитов» в
-    `docs/testing.md` (NEW-156) — обновляется при добавлении новых
+    `docs/testing/testing.md` (NEW-156) — обновляется при добавлении новых
     critical flows. PR-template checklist «новый hook → unit-тест
     обязателен».
 
@@ -4819,9 +4819,9 @@ academic, TMA HMAC не тестируется, CSRF/CSP тесты отсутс
       ```
     - `tests/load/geolocation-flood.js`: 50 VU одновременно
       checkin'аются в 10:30 (пик пары).
-    - Runbook `docs/load-testing.md`: «перед релизом запусти оба
+    - Runbook `docs/testing/load-testing.md`: «перед релизом запусти оба
       scenarios, зафиксируй p95/p99 в baseline.md».
-    - Baseline file `docs/performance-baseline.md` — результаты
+    - Baseline file `docs/performance/performance-baseline.md` — результаты
       каждого релиза, тренд.
     - Полный load-suite → v0.1 (future-ideas.md).
   - **Каскад:**
@@ -4831,7 +4831,7 @@ academic, TMA HMAC не тестируется, CSRF/CSP тесты отсутс
     - NEW-163 (load-testing.md + performance-baseline.md).
   - **Estimate:** ~1 день (k6 install + 2 scripts + runbook +
     baseline file).
-  - **NEW-163:** `docs/load-testing.md` + `tests/load/` + `docs/performance-baseline.md`.
+  - **NEW-163:** `docs/testing/load-testing.md` + `tests/load/` + `docs/performance/performance-baseline.md`.
     Раздел «когда запускать» (pre-release + при major-архитектурных
     изменениях). Future-ideas.md: full load-suite (JMeter/Gatling)
     → v0.1.
@@ -4871,7 +4871,7 @@ academic, TMA HMAC не тестируется, CSRF/CSP тесты отсутс
   - **Estimate:** ~1 день (3 теста × ~2 часа + документация).
   - **NEW-164:** `SecurityContractsIT` test-suite (параллельно с
     `SecurityIdorIT` NEW-31) — fail-fast startup checks, HMAC/signed-
-    payload validation, CSRF contracts. Описан в `docs/testing.md`
+    payload validation, CSRF contracts. Описан в `docs/testing/testing.md`
     раздел «Security contract tests».
 
 **Итого P2-8 (8 вопросов):** все совпали с рекомендациями.

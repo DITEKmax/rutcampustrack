@@ -162,6 +162,47 @@ security/code review + hot-patches = 1-2д).
 
 ---
 
+### Landing JS — `var` → `const`/`let` (ES6+ modernization)
+
+**Текущее состояние:**
+`frontends/landing/dist/assets/js/main.js` (189 строк) и
+`theme-bootstrap.js` (15 строк) написаны в pre-ES6 стиле — 20 объявлений
+через `var` вместо `let`/`const`. Файлы используются в production
+(landing на `/presentation/`), `dist/` это canonical source, не build
+output (см. `frontends/landing/package.json` description: "no bundler:
+dist/ is canonical source").
+
+**Идея:**
+Переписать на современный стандарт:
+- `const` по умолчанию (для всего что не переприсваивается, ~17 случаев)
+- `let` только для счётчиков циклов (`for (var archI = 1; archI <= 6; archI++)`
+  → `let archI`) и аккумуляторов (`var obj = { v: 0 }` если переприсваивается)
+- Никаких `var`
+
+**Зачем:**
+- Block-scoping вместо function-scoping (фикс classic loop-closure bug,
+  хотя в текущем коде он не триггерится).
+- Ошибка при redeclaration вместо silent overwrite.
+- Современный стандарт ES6+ (поддерживается всеми браузерами с ~2017).
+- Чище в обзоре PR.
+
+**Scope:**
+- `main.js` — 18 `var` → проверить каждый, выбрать `const`/`let`.
+- `theme-bootstrap.js` — 2 `var`.
+- `no-js-flag.js` (5 строк) — проверить, скорее всего без изменений.
+
+**Что НЕ трогать:**
+- `frontends/*/dist/**/*.js` от других frontend'ов (vite/angular bundler outputs — генерируются автоматически).
+- `frontends/landing/dist/assets/vendor/gsap/*.min.js` — third-party.
+- `frontends/*/coverage/lcov-report/*.js` — istanbul autogen.
+
+**Trigger:** в любой момент, низкоприоритетно. Подходит для бородатого
+дня без активных PR.
+
+**Estimate:** ~1 час (включая локальный smoke-test landing'а в браузере).
+
+---
+
 ## NEW-146: Mongo aggregation pipeline для ReportService (M05 G5 deferred)
 
 **Origin:** M05 Группа 5 / DECISIONS D9. OWNER-ANSWERS P2-10/5

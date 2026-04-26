@@ -11,6 +11,7 @@ import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -41,8 +42,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link ru.rutcampustrack.gateway.ratelimit.RateLimitProblemDetailsFilter}
  * и не зависит от route-specific requestedTokens.</p>
  */
+// M14 G9: @ActiveProfiles("test") нужен для RequiredSecretsValidator
+// (G4 v2) skip — IT использует Testcontainers Redis + WireMock auth,
+// REDIS_PASSWORD/INTERNAL_ISSUER_SECRET не выставлены в env.
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class RateLimitIT {
 
     // M08 D5 — reuse=true; локально через ~/.testcontainers.properties.

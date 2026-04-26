@@ -29,10 +29,22 @@ class RequiredSecretsValidatorTest {
     private final RequiredSecretsValidator validator = new RequiredSecretsValidator();
     private final SpringApplication app = new SpringApplication();
 
+    /**
+     * M14 G9: validator теперь автоматически skip'ает себя если JUnit
+     * на classpath (universal test detection). Чтобы unit-тесты могли
+     * verify "throws when missing" путь — каждый test устанавливает
+     * `skip-junit-detection=true` для override.
+     */
+    private static MockEnvironment newEnv() {
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty(RequiredSecretsValidator.SKIP_JUNIT_DETECTION_PROPERTY, "true");
+        return env;
+    }
+
     @Test
     @DisplayName("missing required var → IllegalStateException с actionable сообщением")
     void missingRequiredVar_throws() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = newEnv();
         env.setProperty("rutcampustrack.security.required-env-vars", "REDIS_PASSWORD");
         // REDIS_PASSWORD не задан
 
@@ -48,7 +60,7 @@ class RequiredSecretsValidatorTest {
     @Test
     @DisplayName("blank required var → treated as missing")
     void blankRequiredVar_treatedAsMissing() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = newEnv();
         env.setProperty("rutcampustrack.security.required-env-vars", "GRPC_SECRET");
         env.setProperty("GRPC_SECRET", "   ");  // whitespace-only
 
@@ -60,7 +72,7 @@ class RequiredSecretsValidatorTest {
     @Test
     @DisplayName("all required vars present → no exception")
     void allPresent_noException() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = newEnv();
         env.setProperty("rutcampustrack.security.required-env-vars",
                 "REDIS_PASSWORD,RABBITMQ_PASSWORD,INTERNAL_ISSUER_SECRET");
         env.setProperty("REDIS_PASSWORD", "real-redis-pass");
@@ -73,7 +85,7 @@ class RequiredSecretsValidatorTest {
     @Test
     @DisplayName("active profile=test → skip validation даже если vars missing")
     void testProfile_skipsValidation() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = newEnv();
         env.setActiveProfiles("test");
         env.setProperty("rutcampustrack.security.required-env-vars", "REDIS_PASSWORD");
         // REDIS_PASSWORD не задан — но мы в test profile
@@ -84,7 +96,7 @@ class RequiredSecretsValidatorTest {
     @Test
     @DisplayName("active profile=local → skip validation даже если vars missing")
     void localProfile_skipsValidation() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = newEnv();
         env.setActiveProfiles("local");
         env.setProperty("rutcampustrack.security.required-env-vars", "REDIS_PASSWORD");
 
@@ -94,7 +106,7 @@ class RequiredSecretsValidatorTest {
     @Test
     @DisplayName("required-env-vars property не задан → no validation (opt-in mechanism)")
     void noOptIn_noValidation() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = newEnv();
         // rutcampustrack.security.required-env-vars не задан
 
         assertThatNoException().isThrownBy(() -> validator.postProcessEnvironment(env, app));
@@ -103,7 +115,7 @@ class RequiredSecretsValidatorTest {
     @Test
     @DisplayName("blank required-env-vars → no validation")
     void blankRequiredList_noValidation() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = newEnv();
         env.setProperty("rutcampustrack.security.required-env-vars", "   ");
 
         assertThatNoException().isThrownBy(() -> validator.postProcessEnvironment(env, app));
@@ -112,7 +124,7 @@ class RequiredSecretsValidatorTest {
     @Test
     @DisplayName("multiple missing vars — все указаны в exception message")
     void multipleMissing_allInMessage() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = newEnv();
         env.setProperty("rutcampustrack.security.required-env-vars",
                 "REDIS_PASSWORD,RABBITMQ_PASSWORD,INTERNAL_ISSUER_SECRET");
         env.setProperty("REDIS_PASSWORD", "set");
@@ -129,12 +141,28 @@ class RequiredSecretsValidatorTest {
     @Test
     @DisplayName("CSV с пробелами и пустыми элементами — корректно парсится")
     void csvParsing_robustToWhitespace() {
-        MockEnvironment env = new MockEnvironment();
+        MockEnvironment env = newEnv();
         env.setProperty("rutcampustrack.security.required-env-vars",
                 " REDIS_PASSWORD ,  , RABBITMQ_PASSWORD ");
         env.setProperty("REDIS_PASSWORD", "set");
         env.setProperty("RABBITMQ_PASSWORD", "set");
 
+        assertThatNoException().isThrownBy(() -> validator.postProcessEnvironment(env, app));
+    }
+
+    @Test
+    @DisplayName("M14 G9: JUnit на classpath → skip даже если vars missing (universal test detection)")
+    void junitOnClasspath_skipsValidation() {
+        // Не вызываем newEnv() (без skip-junit-detection override) →
+        // validator должен skip'нуть из-за JUnit на classpath.
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty("rutcampustrack.security.required-env-vars", "REDIS_PASSWORD");
+        // REDIS_PASSWORD не задан, profile не test/local — НО JUnit на
+        // classpath (мы запущены из gradle test) → skip.
+
+        assertThat(RequiredSecretsValidator.JUNIT_ON_CLASSPATH)
+                .as("JUnit должен быть на classpath в unit-тестах")
+                .isTrue();
         assertThatNoException().isThrownBy(() -> validator.postProcessEnvironment(env, app));
     }
 }

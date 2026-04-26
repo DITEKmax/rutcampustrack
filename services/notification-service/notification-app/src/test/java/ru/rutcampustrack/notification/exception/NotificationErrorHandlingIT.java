@@ -34,9 +34,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <p>Расширяет {@link ContainerTestBase} — реальные Mongo/Rabbit через
  * Testcontainers (P2-8/2), spring-properties пробрасываются автоматически.
  */
+// M14 G9: legacy-headers-enabled=true override — после G1 (CRIT-01)
+// production default флипнут на false, и DualModeUserContextFilter в
+// strict mode отбрасывает запросы без Internal JWT с 401. Этот IT
+// использует MockMvc + ручную установку RequestContext через bean,
+// без реального gateway-issued JWT. Override включает legacy mode
+// чтобы handler-маппинг работал (validation/method-not-allowed/access-denied).
+// Аналогично SecurityIdorIT в M14 G1 — notification-service не имеет
+// общего application-test.yml override (как academic/schedule/attendance).
 @SpringBootTest(properties = {
         "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
-        "vapid.private-key=test-priv"
+        "vapid.private-key=test-priv",
+        "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true"
 })
 @AutoConfigureMockMvc
 class NotificationErrorHandlingIT extends ContainerTestBase {

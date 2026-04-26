@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -52,7 +53,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   <li>Отсутствие Authorization header → 401.</li>
  * </ul>
  */
+// M14 G9: @ActiveProfiles("test") нужен для RequiredSecretsValidator
+// (G4 v2) skip — IT использует WireMock auth-service, REDIS_PASSWORD/
+// INTERNAL_ISSUER_SECRET не выставлены в env (DynamicPropertySource
+// override-ит только нужные конкретно для теста props).
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class InternalJwtIssuerIT {
 
     private static KeyPair externalKeyPair;

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -25,7 +26,12 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
  * порт (127.0.0.1:1 = connection refused) — 10 запросов должны пройти (allowed=true),
  * НЕ застрять и не дать 429.
  */
+// M14 G9: @ActiveProfiles("test") нужен чтобы RequiredSecretsValidator
+// (G4 v2) skip'ал — у этого IT нет .env / DynamicPropertySource для
+// REDIS_PASSWORD/INTERNAL_ISSUER_SECRET (test использует Redis с
+// connection refused для fail-open verification).
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class FailOpenIT {
 
     static WireMockServer WIREMOCK;

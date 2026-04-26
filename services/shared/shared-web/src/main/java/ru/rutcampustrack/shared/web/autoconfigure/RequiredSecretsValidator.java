@@ -56,9 +56,63 @@ public class RequiredSecretsValidator implements EnvironmentPostProcessor {
     static final String SKIP_PROFILE_TEST = "test";
     static final String SKIP_PROFILE_LOCAL = "local";
 
+    /**
+     * JUnit Jupiter API class — присутствует на classpath ТОЛЬКО в test scope
+     * (build.gradle.kts добавляет JUnit как `testImplementation`). Production
+     * deploy не имеет JUnit на classpath. Детекция через `Class.forName` —
+     * universal test-context indicator, не зависит от {@code @ActiveProfiles}.
+     */
+    private static final String JUNIT_TEST_CLASS = "org.junit.jupiter.api.Test";
+
+    /**
+     * Property для отключения JUnit-skip в unit-тестах самого validator'а
+     * (нам нужно verify "throws when missing" путь). Production deploy
+     * никогда это не выставляет (а если и выставит — JUnit отсутствует,
+     * skip-detection вообще не активен).
+     */
+    static final String SKIP_JUNIT_DETECTION_PROPERTY =
+            "rutcampustrack.security.required-secrets-validator.skip-junit-detection";
+
+    /**
+     * Cached result: is JUnit on classpath? (вычисляется один раз, не на
+     * каждый EnvironmentPostProcessor invocation). Package-private для
+     * verification в unit-тестах.
+     */
+    static final boolean JUNIT_ON_CLASSPATH = isClassPresent(JUNIT_TEST_CLASS);
+
+    private static boolean isClassPresent(String className) {
+        try {
+            Class.forName(className, false, RequiredSecretsValidator.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment,
                                        SpringApplication application) {
+        // M14 G9: универсальный test detection через JUnit на classpath.
+        // Production deploy → JUnit отсутствует → validator активен.
+        // Любой test (gradle test/integrationTest, IDE run, CI) → JUnit
+        // присутствует → skip независимо от @ActiveProfiles. Решает
+        // regression в IT'ах без `@ActiveProfiles("test")` (M14 G9 found
+        // 14 таких IT в notification-service / api-gateway / academic /
+        // auth — добавлять в каждый @ActiveProfiles не масштабируется
+        // и хрупко).
+        //
+        // Unit-тесты этого validator'а сами устанавливают
+        // SKIP_JUNIT_DETECTION_PROPERTY=true, чтобы verify "throws when
+        // missing" путь — это безопасно, потому что property в production
+        // никогда не set, а если set — JUnit всё равно отсутствует
+        // (skip-detection не имеет эффекта).
+        boolean skipJunitDetection = Boolean.parseBoolean(
+                environment.getProperty(SKIP_JUNIT_DETECTION_PROPERTY, "false"));
+        if (JUNIT_ON_CLASSPATH && !skipJunitDetection) {
+            log.debug("RequiredSecretsValidator: skip (JUnit on classpath — test context)");
+            return;
+        }
+
         Set<String> activeProfiles = Set.of(environment.getActiveProfiles());
         if (activeProfiles.contains(SKIP_PROFILE_TEST)
                 || activeProfiles.contains(SKIP_PROFILE_LOCAL)) {

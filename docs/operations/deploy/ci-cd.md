@@ -96,7 +96,7 @@ M06 Группа 5 (NEW-105).
   - TanStack (`@tanstack/*`).
 - Special rules:
   - `grafana/loki` major → manual (schema migration, см.
-    `docs/runbooks/loki-major-upgrade.md`).
+    `docs/operations/runbooks/loki-major-upgrade.md`).
   - `cadvisor` + `promtail` digest → auto-merge (M06 D2).
 - Dashboard issue — всегда up-to-date лист pending updates.
 

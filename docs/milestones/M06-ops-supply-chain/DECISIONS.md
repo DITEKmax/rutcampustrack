@@ -42,7 +42,7 @@ deps).
 - Docker image без `curl` на ~7MB меньше.
 - notification-bot остаётся с `curl` (python:3.12-slim, уже установлен
   в Dockerfile:3, health endpoint http://localhost:8081/health).
-- `docs/dockerfile-conventions.md` (NEW-150) зафиксирует правило
+- `docs/operations/deploy/dockerfile-conventions.md` (NEW-150) зафиксирует правило
   «HEALTHCHECK через wget для Java, curl только если он уже в base
   image».
 

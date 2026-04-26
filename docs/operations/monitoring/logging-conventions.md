@@ -131,4 +131,4 @@ per-update, биндит в structlog contextvars. EventPublisher дальше
 {service="attendance-service"} | json | userId="42"
 ```
 
-См. также `docs/observability.md` раздел «Типичные запросы».
+См. также `docs/operations/monitoring/observability.md` раздел «Типичные запросы».

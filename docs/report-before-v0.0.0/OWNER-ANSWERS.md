@@ -616,7 +616,7 @@ _(отвечено: 4 / 10)_
   - Удалить соответствующий gRPC-вызов `ListLessons` если он больше
     нигде не нужен.
   - Удалить тесты cleanup-логики (если есть).
-  - В `docs/runbooks/` или новый `docs/admin-scripts.md` — шаблон
+  - В `docs/operations/runbooks/` или новый `docs/operations/deploy/admin-scripts.md` — шаблон
     разового скрипта на `mongosh`/Spring CLI для ручной чистки, когда
     реально потребуется. В проде этот скрипт запускать вручную после
     бекапа.
@@ -628,9 +628,9 @@ _(отвечено: 4 / 10)_
   - Отчёт 04 P0-6: раздел «Как чинить → вариант (b) schedule + guard»
     → помечается «отклонён владельцем», убирается.
   **Estimate:** ~1 час (удаление + тест «старт без schedule работает»
-  + пометка в docs/admin-scripts.md).
+  + пометка в docs/operations/deploy/admin-scripts.md).
   **NEW:**
-  - **NEW-33:** документ `docs/admin-scripts.md` — шаблоны разовых
+  - **NEW-33:** документ `docs/operations/deploy/admin-scripts.md` — шаблоны разовых
     админ-задач (cleanup orphans, backfill, recovery). Цель: когда
     реально понадобится — не изобретать заново.
 
@@ -746,7 +746,7 @@ _(отвечено: 4 / 12)_
   - **NEW-36:** добавить в `docs/architecture/architecture.md` раздел «Shared-DB
     паттерны» со списком: auth→academic_db (users), notification→attendance_db
     (push_subscriptions). Чтобы новый разработчик понимал ownership.
-  - **NEW-37:** runbook переноса миграции в `docs/runbooks/flyway-migration-move.md`
+  - **NEW-37:** runbook переноса миграции в `docs/operations/runbooks/flyway-migration-move.md`
     — пошаговый чеклист с `flyway repair` и проверками.
 
 - **Q-P0-4.** `SubscriptionAuthInterceptor` IDOR — удаление чужой
@@ -1398,7 +1398,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   **Estimate:** ~3-4 человеко-дня (конфиг 5 сервисов + Tempo setup +
   Python instrumentation + тестирование end-to-end trace видимости).
   **NEW:**
-  - **NEW-58:** `docs/observability.md` — раздел «Distributed tracing»,
+  - **NEW-58:** `docs/operations/monitoring/observability.md` — раздел «Distributed tracing»,
     формат trace_id, как читать span-tree в Grafana, типичные dashboards.
   - **NEW-59:** OTLP exporter требует порт 4317 (gRPC) — добавить в
     docker-compose internal network.
@@ -1468,7 +1468,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   - **NEW-62:** `notification-bot` получает новый endpoint
     `POST /internal/alert` (Python FastAPI или добавить в Aiogram webapp)
     для приёма Alertmanager webhook'ов → рассылка Telegram админу.
-  - **NEW-63:** `docs/alerts.md` — список алертов, порогов, runbook
+  - **NEW-63:** `docs/operations/monitoring/alerts.md` — список алертов, порогов, runbook
     «что делать при срабатывании».
   - **NEW-64:** «тихий час» для не-critical алертов — параметр
     `inhibit_rules` в Alertmanager или логика в notification-bot.
@@ -1484,7 +1484,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   - `loki.yaml`: `limits_config.retention_period: 336h` (14d).
   - `prometheus.yml`: `--storage.tsdb.retention.time=14d` в command.
   - `grafana/tempo`: retention 14d (из QA2).
-  - Задокументировать в `docs/observability.md` → раздел «Retention».
+  - Задокументировать в `docs/operations/monitoring/observability.md` → раздел «Retention».
   - Включить мониторинг disk usage через `cadvisor` (уже есть в инфре),
     алерт «disk > 80%» (добавить в QA4 alert-набор).
   **Последствия (каскад):**
@@ -1613,7 +1613,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
     (> 14д) — недостаточно, но это accepted tradeoff.
   **Закрывает:** cross-cutting audit-log вопрос.
   **Что делается:**
-  - Документировать в `docs/observability.md` → раздел «Audit через
+  - Документировать в `docs/operations/monitoring/observability.md` → раздел «Audit через
     логи»: как найти «кто создал user X», «кто удалил lesson Y»
     через LogQL-queries.
   - Примеры queries: `{service="academic"} |= "action=archive"
@@ -1630,7 +1630,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   - **NEW-72:** `@AdminAction(entity="group", action="archive")`
     аннотация + AOP aspect — гарантирует единый формат в логах. Часть
     shared-web модуля (из 16a). Упрощает LogQL-queries.
-  - **NEW-73:** в `docs/observability.md` примеры LogQL-запросов для
+  - **NEW-73:** в `docs/operations/monitoring/observability.md` примеры LogQL-запросов для
     типичных audit-вопросов («кто удалил group X», «все действия
     admin user 42 за сутки»).
 
@@ -1646,7 +1646,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
     rename, change type). Add-column идёт напрямую.
   **Закрывает:** 13 P1-? (rollback-стратегия).
   **Что делается:**
-  - `docs/runbooks/flyway-expand-contract.md` — пошаговый чеклист:
+  - `docs/operations/runbooks/flyway-expand-contract.md` — пошаговый чеклист:
     1. Expand: добавить новое поле/таблицу рядом со старым (V_N).
     2. Deploy code: читает из обоих, пишет в оба.
     3. Backfill: миграция копирует старые данные в новые (V_N+1).
@@ -1660,12 +1660,12 @@ health-checks. Ответы зафиксированы 2026-04-18.
   - C0-7 (JWT cookie) — breaking change, но не для БД (только API).
     Не требует expand/contract.
   - NEW-37 (Flyway migration move runbook из 16b) — связан, один
-    раздел в `docs/runbooks/`.
+    раздел в `docs/operations/runbooks/`.
   **Estimate:** ~2 часа (runbook + PR-template + один пример).
   **NEW:**
   - **NEW-74:** PR-template `.github/pull_request_template.md` с
     чеклистом «breaking-migration → expand/contract».
-  - **NEW-75:** шаблон expand/contract в `docs/runbooks/` —
+  - **NEW-75:** шаблон expand/contract в `docs/operations/runbooks/` —
     копипастабельный для новых случаев.
 
 - **QB4 — `homework_submissions` без soft-delete?**
@@ -2096,7 +2096,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   - 13 P0-? (deploy gate) — уже закрыто через C0-8 branch protection.
   **Estimate:** ~3 часа (deploy.yml + compose + .env.prod wiring + smoke).
   **NEW:**
-  - **NEW-96:** `docs/runbooks/rollback.md` — пошаговая инструкция
+  - **NEW-96:** `docs/operations/runbooks/rollback.md` — пошаговая инструкция
     отката, с примерами команд, проверками health после отката.
   - **NEW-97:** GHCR retention policy — хранить последние 50 SHA-тегов
     + все semver-теги. Остальные удалять через scheduled workflow.
@@ -2218,7 +2218,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   - Tempo из QA2 — новый container, применяется тот же принцип.
   **Estimate:** ~3 часа (digest-пиннинг × 2 + Renovate config + docs).
   **NEW:**
-  - **NEW-102:** `docs/infra/container-trust.md` — политика «что
+  - **NEW-102:** `docs/operations/deploy/container-trust.md` — политика «что
     требует digest, что tag», обоснование. Защита от будущих
     «добавил новый privileged container без digest».
 
@@ -2295,9 +2295,9 @@ health-checks. Ответы зафиксированы 2026-04-18.
     PR-presence check).
   - NEW-28 (ShedLock audit) — Renovate bump версии ShedLock сам.
   **Estimate:** ~3 часа (GitHub App install + renovate.json + первый
-  PR-test + документация in `docs/ci-cd.md`).
+  PR-test + документация in `docs/operations/deploy/ci-cd.md`).
   **NEW:**
-  - **NEW-105:** `docs/ci-cd.md` с описанием всей цепочки: GitHub
+  - **NEW-105:** `docs/operations/deploy/ci-cd.md` с описанием всей цепочки: GitHub
     Actions, Renovate, Dependabot, Trivy, deploy flow. Для будущих
     разработчиков.
 
@@ -2907,7 +2907,7 @@ QC2 type-gen (`openapi-typescript` + `openapi-fetch`). Зафиксирован�
   - **Каскад:**
     - QC2 — generated TS-типы не зависят от тегов, но Swagger-UI станет
       читаемым.
-    - NEW-105 (`docs/ci-cd.md`) — ссылается на Swagger-UI как основной
+    - NEW-105 (`docs/operations/deploy/ci-cd.md`) — ссылается на Swagger-UI как основной
       API-reference.
   - **Estimate:** ~30-45 минут (~20 interfaces × несколько минут).
 
@@ -3020,7 +3020,7 @@ QC2 type-gen (`openapi-typescript` + `openapi-fetch`). Зафиксирован�
   - **Estimate:** ~2 часа (ErrorResponse +1 поле, handler логика, smoke-тест).
   - **NEW-130:** Grafana dashboard «Incident lookup» — panel «Найти по
     trace_id» (LogQL + Tempo trace view). Документировать в
-    `docs/observability.md` (NEW-58) как «если клиент сообщает trace=abc123,
+    `docs/operations/monitoring/observability.md` (NEW-58) как «если клиент сообщает trace=abc123,
     см. dashboard X».
 
 - **P2-3/2 — `MethodArgumentNotValidException` формат:** **(b)** RFC 7807
@@ -3298,7 +3298,7 @@ QC2 type-gen (`openapi-typescript` + `openapi-fetch`). Зафиксирован�
     exponential backoff через RabbitMQ TTL queue vs in-process sleep.
     Решить при имплементации. Рекомендация — RabbitMQ TTL queue (не
     блокирует consumer).
-  - **NEW-136:** runbook `docs/runbooks/rabbit-dlq-recovery.md` — как
+  - **NEW-136:** runbook `docs/operations/runbooks/rabbit-dlq-recovery.md` — как
     читать DLQ, решать проблему, replay events. Nested с NEW-133 (migration
     runbook).
 
@@ -4070,7 +4070,7 @@ postgres shared password, dev/prod passwords, JVM resource limits.
     - NEW-150 (dockerfile-conventions.md).
   - **Estimate:** ~2 часа (5 Dockerfile + compose depends_on +
     smoke-тест `docker-compose up --wait`).
-  - **NEW-150:** `docs/dockerfile-conventions.md` — общий шаблон FROM,
+  - **NEW-150:** `docs/operations/deploy/dockerfile-conventions.md` — общий шаблон FROM,
     USER (non-root), WORKDIR, HEALTHCHECK, labels, security-best-practices
     (apk install без `update`, multi-stage builds). Часть NEW-108
     contributing.md.
@@ -4109,7 +4109,7 @@ postgres shared password, dev/prod passwords, JVM resource limits.
     - NEW-102 (container-trust.md) — обновить таблицу pinning strategy.
     - NEW-151 (runbook Loki major upgrade).
   - **Estimate:** ~1 час (compose правка + Renovate config).
-  - **NEW-151:** `docs/runbooks/loki-major-upgrade.md` — процедура
+  - **NEW-151:** `docs/operations/runbooks/loki-major-upgrade.md` — процедура
     для major-версии: backup data, schema check, canary, rollback.
     Применяется при Renovate PR для Loki major.
 
@@ -4150,7 +4150,7 @@ postgres shared password, dev/prod passwords, JVM resource limits.
     - NEW-152 (nginx-conf review checklist).
   - **Estimate:** ~30 мин (nginx.conf правка + comment + integration-
     тест на `curl -F` 26MB файлом → 413).
-  - **NEW-152:** `docs/nginx-config.md` — review checklist для nginx:
+  - **NEW-152:** `docs/operations/deploy/nginx-config.md` — review checklist для nginx:
     per-location limits, rate-limit zones, timeouts, security headers
     (C0-6 CSP), gzip, cache-control. Ссылки в NEW-55 (PWA CSP) и
     NEW-56 (CI-check headers).
@@ -4281,7 +4281,7 @@ postgres shared password, dev/prod passwords, JVM resource limits.
   - **Estimate:** ~1 день (Alertmanager контейнер + config + Prometheus
     rerouting + Loki ruler setup + bot webhook schema update + 2-3
     начальных rule'а + smoke-тест).
-  - **NEW-153:** `infra/alertmanager/alertmanager.yml` + `docs/alerts.md`
+  - **NEW-153:** `infra/alertmanager/alertmanager.yml` + `docs/operations/monitoring/alerts.md`
     (NEW-63 расширение) — routing tree, grouping labels, inhibition
     rules, silencing procedures. Runbook «как добавить новый alert».
   - **NEW-154:** bot `/internal/alert` endpoint — переход на
@@ -4343,7 +4343,7 @@ postgres shared password, dev/prod passwords, JVM resource limits.
       credentials trade-offs».
     - NEW-155 (quarterly rotation runbook).
   - **Estimate:** ~30 мин (docs + runbook).
-  - **NEW-155:** `docs/runbooks/secret-rotation.md` — quarterly
+  - **NEW-155:** `docs/operations/runbooks/secret-rotation.md` — quarterly
     procedure: rotate `POSTGRES_ACADEMIC_PASSWORD`, `BOT_TOKEN`,
     `GHCR_TOKEN`, `VAPID_PRIVATE_KEY`, `JWT_SECRET`. Downtime estimate
     = ~2 мин per rolling restart. Checklist.
@@ -4439,7 +4439,7 @@ postgres shared password, dev/prod passwords, JVM resource limits.
     - NEW-157 (resource-limits.md).
   - **Estimate:** ~2 часа (compose правки × 5 сервисов + smoke-тест
     под нагрузкой + Prometheus alert rule).
-  - **NEW-157:** `docs/resource-limits.md` — VPS budget, per-service
+  - **NEW-157:** `docs/operations/deploy/resource-limits.md` — VPS budget, per-service
     memory allocation, JVM flags, alerts. Раздел «Когда scale-up»
     (triggers: consistent 80%+ memory, p99 latency degradation).
 
@@ -4635,7 +4635,7 @@ academic, TMA HMAC не тестируется, CSRF/CSP тесты отсутс
     - NEW-74 (PR-template expand/contract) — checklist «MigrationIT
       обновлён».
   - **Estimate:** ~1 день (3 сервиса + helper + P1-миграции тесты).
-  - **NEW-159:** runbook `docs/runbooks/migration-testing.md` —
+  - **NEW-159:** runbook `docs/operations/runbooks/migration-testing.md` —
     когда data-preservation тест обязателен (P1 data-critical), когда
     fresh-install достаточно. Шаблон теста.
 
@@ -4959,7 +4959,7 @@ JSON log-format.
     - NEW-165 (logging-conventions.md).
   - **Estimate:** ~1 день (3 места audit + MaskingProvider в
     shared-logback + masking-tests).
-  - **NEW-165:** `docs/logging-conventions.md` — whitelist allowed
+  - **NEW-165:** `docs/operations/monitoring/logging-conventions.md` — whitelist allowed
     fields (`event_type`, `trace_id`, `user_id` для admin, `ip`,
     `path`, `status`, `reason_code`). Banned: `event.toString()`,
     `request.getQueryString()`, `subscription.getEndpoint()`,

@@ -61,10 +61,10 @@ readiness).
 
 ### Документы
 
-- `docs/observability.md` — runbook (новый): tracing flow, dashboards, retention, audit через Loki, типичные LogQL/TraceQL запросы.
-- `docs/alerts.md` — список алертов + порогов + runbook на каждое срабатывание.
+- `docs/operations/monitoring/observability.md` — runbook (новый): tracing flow, dashboards, retention, audit через Loki, типичные LogQL/TraceQL запросы.
+- `docs/operations/monitoring/alerts.md` — список алертов + порогов + runbook на каждое срабатывание.
 - `docs/architecture/architecture.md` — раздел «Observability stack» (схема: app → OTLP → Tempo / Prometheus / Loki → Grafana → Alertmanager → bot).
-- `docs/logging-conventions.md` — whitelist полей MDC, политика masking (уже есть baseline в shared-logback).
+- `docs/operations/monitoring/logging-conventions.md` — whitelist полей MDC, политика masking (уже есть baseline в shared-logback).
 - `CHANGELOG.md [Unreleased]` — секция M04.
 
 ## Acceptance criteria
@@ -91,8 +91,8 @@ readiness).
 
 - `services/shared/shared-observability/` — новый shared-модуль.
 - `infra/observability/` — Tempo/Loki/Prometheus/Alertmanager/Grafana configs.
-- `docs/observability.md` — runbook (новый, ~250 строк).
-- `docs/alerts.md` — alert catalog (новый).
+- `docs/operations/monitoring/observability.md` — runbook (новый, ~250 строк).
+- `docs/operations/monitoring/alerts.md` — alert catalog (новый).
 - `docs/architecture/architecture.md` — раздел «Observability stack».
 - `CHANGELOG.md [Unreleased]` — M04 секция.
 - Контейнеры: `tempo`, `alertmanager` (новые), Loki/Prom/Grafana — config-update.
@@ -163,8 +163,8 @@ readiness).
   `infra/prometheus/rules/service-health.yml`,
   `infra/grafana/provisioning/dashboards/business-kpis.json`,
   + tempo/loki config обновления.
-- Docs: `docs/observability.md`, `docs/alerts.md`,
-  `docs/logging-conventions.md` (3 новых), раздел в
+- Docs: `docs/operations/monitoring/observability.md`, `docs/operations/monitoring/alerts.md`,
+  `docs/operations/monitoring/logging-conventions.md` (3 новых), раздел в
   `docs/architecture/architecture.md`.
 - 8 counter'ов + 3 gauge'а зарегистрированы в Prometheus scrape.
 - 8 alert rules + Alertmanager routing + webhook endpoint.

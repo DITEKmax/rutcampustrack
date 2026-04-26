@@ -322,7 +322,7 @@ grep -rln "import logging\|logger =" services/notification-bot/ | head
 - notification-service `POST /internal/alert` (D2=(a) webhook →
   RabbitMQ → bot). Auth: internal-secret header (M06 заменит на mTLS)
 - bot consumer для `alert.fired` → forward Telegram админу
-- `docs/alerts.md` — каталог + runbook
+- `docs/operations/monitoring/alerts.md` — каталог + runbook
 - Smoke: kill auth → alert в Telegram через 30-60с
 
 **G10 — Retention + Grafana dashboard.** QA5 + NEW-66.
@@ -349,10 +349,10 @@ M04. Также pre-existing backlog из G1-G8:
    pre-existing business-rule failure (G6 deferred → attendance seeds)
 
 **G12 — Documentation + закрытие.** Finishing pass:
-- `docs/observability.md` runbook (~200-250 строк, новый)
-- `docs/alerts.md` каталог (создать/финализировать, часть в G9)
+- `docs/operations/monitoring/observability.md` runbook (~200-250 строк, новый)
+- `docs/operations/monitoring/alerts.md` каталог (создать/финализировать, часть в G9)
 - `docs/architecture/architecture.md` раздел «Observability stack»
-- `docs/logging-conventions.md`
+- `docs/operations/monitoring/logging-conventions.md`
 - `CHANGELOG.md [Unreleased]` M04 секция
 - `CLAUDE.md` «Текущий статус» → M04 ✅
 - `docs/milestones/README.md` → ✅ + дата
@@ -493,11 +493,11 @@ JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9" ./gradlew.bat build -x test
 ### G12 — documentation + закрытие
 
 Ещё не начато. Список задач из CHECKLIST Группа 12:
-- `docs/observability.md` runbook (~200-250 строк, новый)
-- `docs/alerts.md` каталог + runbook (часть добавлена в G9 rules,
+- `docs/operations/monitoring/observability.md` runbook (~200-250 строк, новый)
+- `docs/operations/monitoring/alerts.md` каталог + runbook (часть добавлена в G9 rules,
   нужен дополнительный overview doc)
 - `docs/architecture/architecture.md` — раздел «Observability stack»
-- `docs/logging-conventions.md` финализировать
+- `docs/operations/monitoring/logging-conventions.md` финализировать
 - `CHANGELOG.md [Unreleased]` M04 секция
 - `CLAUDE.md` «Текущий статус» → M04 ✅ + дата
 - `docs/milestones/README.md` → ✅ + дата

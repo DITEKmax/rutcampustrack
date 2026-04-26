@@ -174,7 +174,7 @@
       прямые порты api-gateway:8080, basic-auth на prod-only
 - [x] `.env.prod.example` — `SWAGGER_HTPASSWD=swagger:$$apr1$$CHANGE$$ME`
       (docker-compose $$-escape документирован inline)
-- [x] `docs/runbooks/swagger-prod-access.md` (NEW-125) — доступ,
+- [x] `docs/operations/runbooks/swagger-prod-access.md` (NEW-125) — доступ,
       rotation (6 мес), при компрометации, failure mode
       + ссылка добавлена в secret-rotation.md inventory
 - [x] Smoke: `docker run` unit-verified htpasswd материализация +

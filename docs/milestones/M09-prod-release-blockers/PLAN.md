@@ -10,7 +10,7 @@
 
 Закрывает остаток **Фазы 3 «Точечные P0»** из `99-executive-summary.md`,
 подвисшие события P2-11/5 и P2-11/8 из M02 defer'ов, и создаёт
-`docs/prod-deploy-checklist.md` с сопутствующими runbook'ами
+`docs/operations/deploy/prod-deploy-checklist.md` с сопутствующими runbook'ами
 (NEW-154, NEW-155, NEW-157). Минимум, необходимый для выхода v0.0.0
 в прод.
 
@@ -27,7 +27,7 @@
   схема `otp.requested` (08 P0-2 cascade)
 - **01 P0-5** (Q-P0-5) — `MessageDigest.isEqual` в `OtpService.verifyOtp`
 - **04 P0-6** (Q-P0-6) — удалить `@PostConstruct cleanupOrphans` +
-  `docs/admin-scripts.md` шаблон
+  `docs/operations/deploy/admin-scripts.md` шаблон
 - **12 P0-2** (Q-P0-2 landing) — deep-link `https://t.me/<bot_username>`
 - **14 P0-1** (Q-P0-1 tests) — unit + integration + contract-тесты для
   `attendance-service/latecheckin/`
@@ -69,22 +69,22 @@
   - NEW-121 — audit asymmetric flow (bot publishes through REST vs event)
 
 ### Supporting artifacts (из Точечных P0)
-- **NEW-33** — `docs/admin-scripts.md` (шаблоны разовых админ-задач)
+- **NEW-33** — `docs/operations/deploy/admin-scripts.md` (шаблоны разовых админ-задач)
 - **NEW-51** — документация `<bot_username>` в `.env.prod.example`
 - **NEW-52** — `event-schemas/late-checkin-{requested,approved,rejected}.json`
 - **NEW-53** — `notification-bot/tests/integration/conftest.py` фикстуры
 
 ### Prod-deploy checklist (из M06 defer'ов)
-- **`docs/prod-deploy-checklist.md`** (NEW) — оглавление со списком
+- **`docs/operations/deploy/prod-deploy-checklist.md`** (NEW) — оглавление со списком
   runbook'ов перед каждым деплоем
-- **NEW-155** `docs/runbooks/secret-rotation.md` — quarterly
+- **NEW-155** `docs/operations/runbooks/secret-rotation.md` — quarterly
   процедура: rotate POSTGRES_*, BOT_TOKEN, GHCR_TOKEN, VAPID_PRIVATE_KEY,
   JWT_SECRET; downtime ~2 мин per rolling restart
-- **NEW-154** `docs/runbooks/bot-webhook-migration.md` —
+- **NEW-154** `docs/operations/runbooks/bot-webhook-migration.md` —
   `/internal/alert` endpoint migration на Alertmanager payload schema
   (`{status, receiver, alerts[], groupLabels, commonLabels, externalURL}`),
   связан с QA4+NEW-62
-- **NEW-157** `docs/resource-limits.md` — VPS 4GB memory budget
+- **NEW-157** `docs/operations/deploy/resource-limits.md` — VPS 4GB memory budget
   per-service, `-XX:MaxRAMPercentage=75.0`, `-XX:InitialRAMPercentage=50.0`,
   `restart: unless-stopped`, Prometheus alert
   `container_memory_usage_bytes / container_spec_memory_limit_bytes > 0.9 for 5m`
@@ -138,11 +138,11 @@
   (через `VITE_TELEGRAM_BOT_USERNAME` env)
 
 ### Docs
-- `docs/admin-scripts.md` — NEW-33 runbook
-- `docs/prod-deploy-checklist.md` — NEW (оглавление с пре-деплой checklist)
-- `docs/runbooks/secret-rotation.md` — NEW-155
-- `docs/runbooks/bot-webhook-migration.md` — NEW-154
-- `docs/resource-limits.md` — NEW-157
+- `docs/operations/deploy/admin-scripts.md` — NEW-33 runbook
+- `docs/operations/deploy/prod-deploy-checklist.md` — NEW (оглавление с пре-деплой checklist)
+- `docs/operations/runbooks/secret-rotation.md` — NEW-155
+- `docs/operations/runbooks/bot-webhook-migration.md` — NEW-154
+- `docs/operations/deploy/resource-limits.md` — NEW-157
 - `docs/architecture/architecture.md` — раздел «Lesson lifecycle» (NEW-118)
 - `docs/future-ideas.md` — разделы «Auth API contract-first (v0.1)»
   + «P2-2/2 auth OpenAPI (v0.1)»
@@ -181,13 +181,13 @@
       валидируют schemas.
 - [ ] Bot excuse callback проверяет `is_headman` перед publish
       (06 P1-1 fix); unit-тест с student-role → rejected.
-- [ ] `docs/prod-deploy-checklist.md` — оглавление + checklist
+- [ ] `docs/operations/deploy/prod-deploy-checklist.md` — оглавление + checklist
       перед каждым деплоем.
-- [ ] `docs/runbooks/secret-rotation.md` — quarterly procedure с
+- [ ] `docs/operations/runbooks/secret-rotation.md` — quarterly procedure с
       пошаговым списком.
-- [ ] `docs/runbooks/bot-webhook-migration.md` — Alertmanager payload
+- [ ] `docs/operations/runbooks/bot-webhook-migration.md` — Alertmanager payload
       schema + `/internal/alert` migration.
-- [ ] `docs/resource-limits.md` — memory budget таблица +
+- [ ] `docs/operations/deploy/resource-limits.md` — memory budget таблица +
       Prometheus alert rule.
 - [ ] `docker-compose.prod.yml` имеет `mem_limit` per-service +
       `restart: unless-stopped`; JVM opts `-XX:MaxRAMPercentage=75.0`.
@@ -207,11 +207,11 @@
 
 ## Artifacts
 
-- `docs/admin-scripts.md` — NEW-33 runbook
-- `docs/prod-deploy-checklist.md` — NEW (оглавление)
-- `docs/runbooks/secret-rotation.md` — NEW-155
-- `docs/runbooks/bot-webhook-migration.md` — NEW-154
-- `docs/resource-limits.md` — NEW-157
+- `docs/operations/deploy/admin-scripts.md` — NEW-33 runbook
+- `docs/operations/deploy/prod-deploy-checklist.md` — NEW (оглавление)
+- `docs/operations/runbooks/secret-rotation.md` — NEW-155
+- `docs/operations/runbooks/bot-webhook-migration.md` — NEW-154
+- `docs/operations/deploy/resource-limits.md` — NEW-157
 - `docs/architecture/architecture.md` — «Lesson lifecycle» раздел (NEW-118)
 - `event-schemas/otp-requested.json` — 08 P0-2
 - `event-schemas/late-checkin-{requested,approved,rejected}.json` — NEW-52

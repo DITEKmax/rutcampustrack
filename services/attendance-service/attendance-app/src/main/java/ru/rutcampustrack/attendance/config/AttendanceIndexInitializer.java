@@ -32,7 +32,7 @@ import java.util.List;
  *
  * M09 Группа 1 (04 P0-6): startup orphan cleanup удалён — riskful mass-delete
  * при schedule-service outage/misconfig. Разовые очистки — через
- * docs/admin-scripts.md (mongosh runbook).
+ * docs/operations/deploy/admin-scripts.md (mongosh runbook).
  */
 @Slf4j
 @Configuration

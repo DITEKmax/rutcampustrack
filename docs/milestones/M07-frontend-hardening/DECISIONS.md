@@ -188,7 +188,7 @@ upload. Лимит 2m global более чем достаточно для JSON 
 
 **Implication:** если в v0.1 появится file-based avatar upload
 (non-preset, custom image), добавить `location = /api/academic/users/
-me/avatar { client_max_body_size 5m }` и обновить `docs/nginx-config.md`.
+me/avatar { client_max_body_size 5m }` и обновить `docs/operations/deploy/nginx-config.md`.
 
 ---
 

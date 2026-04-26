@@ -124,7 +124,7 @@ verification снова зелёный.
 1. Проверить что notification-web startup log содержит
    `notification_history collection created` (M10 G9 hot-patch pattern).
 2. Если нет — есть проблема с connect'ом Mongo → auth (wrong user /
-   password / authSource). См. `docs/runbooks/dev-setup.md` раздел
+   password / authSource). См. `docs/operations/runbooks/dev-setup.md` раздел
    Mongo.
 
 ## Performance check (опционально)

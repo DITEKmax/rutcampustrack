@@ -167,14 +167,14 @@
     `found && is_headman`; fail-closed на gRPC error. NOTES audit
     всех bot→backend REST/gRPC — нет asymmetric decision-flows.
   - **G7 prod-deploy hardening** (NEW-154/155/157) —
-    `docs/prod-deploy-checklist.md` + `runbooks/secret-rotation.md`
-    + `runbooks/bot-webhook-migration.md` + `docs/resource-limits.md`
+    `docs/operations/deploy/prod-deploy-checklist.md` + `runbooks/secret-rotation.md`
+    + `runbooks/bot-webhook-migration.md` + `docs/operations/deploy/resource-limits.md`
     (4GB VPS budget). `docker-compose.prod.yml` — `mem_limit`/
     `mem_reservation` для 14 контейнеров; `JAVA_TOOL_OPTIONS`
     (MaxRAMPercentage=75, G1GC, HeapDumpOnOOM) для 6 Java; redis
     `--maxmemory 96m allkeys-lru`. Prometheus rule
     `ContainerMemoryHigh` (>90% for 5m) + `ContainerWithoutMemoryLimit`.
-  - **G8 docs cleanup** — `docs/admin-scripts.md` (NEW-33) —
+  - **G8 docs cleanup** — `docs/operations/deploy/admin-scripts.md` (NEW-33) —
     6 runbook templates (orphan cleanup, backfill, stuck outbox,
     refresh-token invalidation, cache flush, JWT rotation);
     `future-ideas.md` разделы Auth contract-first refactor (v0.1) +
@@ -315,7 +315,7 @@
     skip-links, color contrast, SMIL replace) отложен в M08/v0.1.
   - **nginx per-location + PR-template** (P2-9/3, NEW-74, NEW-108,
     NEW-152, commit `65640f4`) — global `client_max_body_size 2m` +
-    25m on `/api/attendance/excuses/with-file`. `docs/nginx-config.md`
+    25m on `/api/attendance/excuses/with-file`. `docs/operations/deploy/nginx-config.md`
     runbook. `.github/pull_request_template.md` +
     `docs/contributing.md`.
   - **G12 audit hot-patches** (commit `82cf482`) —
@@ -333,20 +333,20 @@
   - **HEALTHCHECK в 7 Dockerfile** (P2-9/1, NEW-150) — metadata
     живёт с образом, `docker run` без compose тоже работает. Java
     через `wget -qO- /actuator/health`, bot через `curl /health`.
-    `docs/dockerfile-conventions.md`.
+    `docs/operations/deploy/dockerfile-conventions.md`.
   - **SHA-tagging через `${IMAGE_TAG:-latest}`** (QD1, 13 P1-1/2/4) —
     11 образов параметризованы; `deploy.yml` передаёт `github.sha` →
     reproducible rollback. Убран дублирующий `up -d` после `sleep 30`,
     заменён на `--wait --wait-timeout 120`. mini-app tag `:${sha}`.
   - **Digest-пин cadvisor + promtail** (QD4, NEW-102) — multi-arch
-    manifest-list digests. `docs/infra/container-trust.md` — policy.
+    manifest-list digests. `docs/operations/deploy/container-trust.md` — policy.
   - **Observability semver-pin** (P2-9/2, NEW-151) — `loki:3.2.1`,
     `prometheus:v2.55.1`, `grafana:11.3.1`, `node-exporter:v1.8.2`.
-    `docs/runbooks/loki-major-upgrade.md` — expand-contract schema.
+    `docs/operations/runbooks/loki-major-upgrade.md` — expand-contract schema.
   - **Renovate + Dependabot** (QD4+QD6, NEW-105) — auto-merge
     patch/pin/digest после CI, manual minor/major, groupings,
     loki major manual-only. Dependabot security-only × 7 ecosystems.
-    `docs/ci-cd.md` — полный CI/CD runbook.
+    `docs/operations/deploy/ci-cd.md` — полный CI/CD runbook.
   - **Trivy + Gitleaks CI + SECURITY.md** (QD5, NEW-103) — 4 jobs
     (trivy-repo SARIF + trivy-config + gitleaks + weekly trivy-images
     matrix). `.pre-commit-config.yaml`. `SECURITY.md` disclosure policy.
@@ -622,9 +622,9 @@
     self-invocation, AlertController unchecked cast, CheckinRateZero
     absent() branch, PII masking, Telegram description truncate).
     Подробности в `docs/milestones/M04-observability/NOTES.md`.
-  - **Документация** — `docs/observability.md` runbook,
-    `docs/alerts.md` каталог, раздел Observability в
-    `docs/architecture/architecture.md`, `docs/logging-conventions.md`.
+  - **Документация** — `docs/operations/monitoring/observability.md` runbook,
+    `docs/operations/monitoring/alerts.md` каталог, раздел Observability в
+    `docs/architecture/architecture.md`, `docs/operations/monitoring/logging-conventions.md`.
 
 - **M03b Secure Boundaries Part B** — JWT HttpOnly cookie + WS-ticket
   handshake + logout lifecycle + hot-patches из M03a (tag
@@ -716,7 +716,7 @@
 
 ### Documentation
 
-- `docs/auth-flow.md` — полный runbook cookie + ws-ticket + logout
+- `docs/auth/auth-flow.md` — полный runbook cookie + ws-ticket + logout
   lifecycle (диаграммы, cookie контракт, endpoints, breaking changes,
   security-свойства, rate-limits).
 - `docs/milestones/M03b-jwt-cookie-ws-ticket/` — PLAN, CHECKLIST, NOTES,

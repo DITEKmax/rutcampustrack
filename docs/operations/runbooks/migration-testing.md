@@ -150,7 +150,7 @@ startup Spring-контекста. `FlywayMigrationIT` паттерн не пр�
 
 Локальный DX trade-off: +10-15s на каждый прогон `FlywayMigrationIT`
 (container startup). Остальные `*IT` используют reuse через
-Abstract базы (см. `docs/runbooks/dev-setup.md`).
+Abstract базы (см. `docs/operations/runbooks/dev-setup.md`).
 
 ## FAQ
 

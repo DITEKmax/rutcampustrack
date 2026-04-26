@@ -312,7 +312,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 - [~] ~~`/api/academic/users/me/avatar` → 5m~~ — **отложено** (D6).
       Endpoint принимает JSON preset-id, не multipart; 2m global
       достаточно. Вернуться при появлении file-based avatar upload.
-- [x] `docs/nginx-config.md` (NEW-152) — runbook: limits, security
+- [x] `docs/operations/deploy/nginx-config.md` (NEW-152) — runbook: limits, security
       headers, CSP, upstream routing, reload checklist, troubleshooting.
 - [x] `.github/pull_request_template.md` (NEW-74) — scope, areas
       touched, verification, risk — с labels `landing-review` и

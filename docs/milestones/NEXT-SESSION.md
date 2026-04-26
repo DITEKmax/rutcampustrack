@@ -15,7 +15,7 @@
 SSL bootstrap, secret generation, JWT keypair generation, Flyway
 initial migration, healthcheck verification на всех 26 контейнерах.
 
-Главный документ: `docs/prod-deploy-checklist.md` (372 строки, секции
+Главный документ: `docs/operations/deploy/prod-deploy-checklist.md` (372 строки, секции
 1.0-6). Этот промпт — **wrapper** который добавляет M14-specific
 context + Claude assistance protocol.
 
@@ -64,7 +64,7 @@ deploy** — нет previous-deploy опыта:
    volume пустой → keys генерятся. **Subsequent deploys**: idempotent
    skip через `[ ! -f /keys/private.key ]` filesystem guard. Если
    keys генерируются повторно — invalidate всех issued JWT (см.
-   `docs/runbooks/secret-rotation.md`).
+   `docs/operations/runbooks/secret-rotation.md`).
 
 3. **G4 v2 — RequiredSecretsValidator fail-fast.**
    Container exit-1 на boot если **любой** required env var не set
@@ -93,7 +93,7 @@ deploy** — нет previous-deploy опыта:
 
 ## Deploy timeline (T-30min → T+1h)
 
-Следуй `docs/prod-deploy-checklist.md` секции 1-3. Я (Claude) помогаю с:
+Следуй `docs/operations/deploy/prod-deploy-checklist.md` секции 1-3. Я (Claude) помогаю с:
 
 - **парсинг output команд** — если `docker compose ps` показывает
   unhealthy контейнер, объяснить какой именно health check failed +
@@ -161,7 +161,7 @@ Per M14 G4 v2 inventory (см. application.yml каждого сервиса):
 
 #### 1.5b SSL / DNS bootstrap — **first deploy**
 
-См. `docs/runbooks/cert-renewal.md`. Включает:
+См. `docs/operations/runbooks/cert-renewal.md`. Включает:
 - `nginx/dhparam.pem` генерация (deploy.yml авто-генерит при first deploy)
 - Let's Encrypt через certbot (один раз на чистом VPS)
 - TLS auto-renewal cron
@@ -253,11 +253,11 @@ attendance.marked counter = 0 (никто пока не отметился). Cri
 
 Открыть https://ruttrack.site/alertmanager (basic-auth). Должны быть
 0 firing alerts если deploy успешный. Если firing — открыть
-`docs/alerts.md`, найти runbook для конкретного alert'а.
+`docs/operations/monitoring/alerts.md`, найти runbook для конкретного alert'а.
 
 ### T+2 weeks: Performance audit
 
-См. `docs/prod-deploy-checklist.md` секция 5. Проверки:
+См. `docs/operations/deploy/prod-deploy-checklist.md` секция 5. Проверки:
 - query latency p99 на academic/schedule/attendance
 - Mongo collection sizes + index usage (`db.notification_history.stats()`)
 - Postgres slow query log (`pg_stat_statements`)
@@ -310,7 +310,7 @@ M16 «Performance Tuning».
    времени чем ожидали, какие manual steps нужно автоматизировать в
    M16+.
 2. **`docs/milestones/M15-first-vps-deploy/CHECKLIST.md`** — копия
-   `docs/prod-deploy-checklist.md` с галочками + любыми deviations.
+   `docs/operations/deploy/prod-deploy-checklist.md` с галочками + любыми deviations.
 3. **Возможный hot-fix commit** если deploy выявит prod-only bug,
    который не виден в e2e (rare, но возможно — например DNS issue,
    SSL chain mismatch, VPS firewall).
@@ -341,12 +341,12 @@ Probable causes:
 
 **Symptom: SSL handshake fails**
 
-См. `docs/runbooks/cert-renewal.md` § "First-deploy SSL bootstrap".
+См. `docs/operations/runbooks/cert-renewal.md` § "First-deploy SSL bootstrap".
 Возможно DNS не propagated либо certbot rate limit.
 
 **Symptom: Telegram bot не отвечает на /start**
 
-См. `docs/runbooks/bot-webhook-migration.md`. Probable: webhook URL не
+См. `docs/operations/runbooks/bot-webhook-migration.md`. Probable: webhook URL не
 set либо BOT_TOKEN неверный.
 
 ## История milestone'ов (архив)
@@ -360,15 +360,15 @@ set либо BOT_TOKEN неверный.
 
 ## Reference docs
 
-- `docs/prod-deploy-checklist.md` — **главный чек-лист** (372 строки)
-- `docs/runbooks/secret-rotation.md` — quarterly rotation
-- `docs/runbooks/cert-renewal.md` — TLS bootstrap + renewal
-- `docs/runbooks/bot-webhook-migration.md` — Telegram webhook
-- `docs/runbooks/image-signing-verification.md` — cosign verify
-- `docs/runbooks/migration-testing.md` — Flyway dry-run
-- `docs/runbooks/backup-restore.md` — backup + GPG
-- `docs/runbooks/mongo-indexes-verify.md` — TTL + compound indexes
-- `docs/alerts.md` — каталог 18 alert'ов
+- `docs/operations/deploy/prod-deploy-checklist.md` — **главный чек-лист** (372 строки)
+- `docs/operations/runbooks/secret-rotation.md` — quarterly rotation
+- `docs/operations/runbooks/cert-renewal.md` — TLS bootstrap + renewal
+- `docs/operations/runbooks/bot-webhook-migration.md` — Telegram webhook
+- `docs/operations/runbooks/image-signing-verification.md` — cosign verify
+- `docs/operations/runbooks/migration-testing.md` — Flyway dry-run
+- `docs/operations/runbooks/backup-restore.md` — backup + GPG
+- `docs/operations/runbooks/mongo-indexes-verify.md` — TTL + compound indexes
+- `docs/operations/monitoring/alerts.md` — каталог 18 alert'ов
 - `docs/url-layout.md` — production URL routing (web-panel + PWA + API)
 - `docs/architecture/architecture.md` — сервисы, ports, dependencies
 

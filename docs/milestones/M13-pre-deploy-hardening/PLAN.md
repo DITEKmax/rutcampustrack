@@ -33,7 +33,7 @@
 13. **Swagger basic-auth hardening + fail-fast** (M11 G4 setup finalize)
 14. **`.env.prod.example` + validation script** (M09 partial)
 15. **VPS deploy runbook dry-run** (M09 untested → tested)
-16. **Alertmanager → Telegram E2E smoke + `docs/alerts.md`** (M04 G9 deferred)
+16. **Alertmanager → Telegram E2E smoke + `docs/operations/monitoring/alerts.md`** (M04 G9 deferred)
 17. **Healthcheck directives в `docker-compose.prod.yml` + health indicators** (M04 G4 deferred)
 18. **Backup script + tested restore + `.env.prod` GPG** (нет ничего → есть 7-day retention)
 19. **WebSocket nginx config + STOMP heartbeat smoke** (M07 partial)
@@ -90,10 +90,10 @@
 
 ### Documentation
 
-- `docs/prod-deploy-checklist.md` — финализировать после dry-run, добавить SSL/DNS initial steps
+- `docs/operations/deploy/prod-deploy-checklist.md` — финализировать после dry-run, добавить SSL/DNS initial steps
 - `runbooks/backup-restore.md` (новый) — backup + tested restore procedure
 - `runbooks/cert-renewal.md` (новый) — SSL troubleshooting
-- `docs/alerts.md` (новый) — каталог 15+ alert'ов (symptom / meaning / runbook)
+- `docs/operations/monitoring/alerts.md` (новый) — каталог 15+ alert'ов (symptom / meaning / runbook)
 - `docs/security-headers.md` (новый) — CSP policy документирование
 - `CLAUDE.md` / шаблон миграций — правило «CREATE INDEX CONCURRENTLY» для prod-таблиц
 - `.gitignore` — проверить `.env.prod` + GPG keys
@@ -118,7 +118,7 @@
 - [x] **AC-10** Mongo replica set + @Transactional _(G7: bitnami/mongodb:7.0 single-node RS. MongoTransactionManager bean в attendance + notification-web. @Transactional на 8+ service methods. OutboxAtomicityIT 2/2 passing — saveAndFail rollback оба, saveAndCommit оба сохранены)_
 - [x] **AC-11** /api/csp-report endpoint + metric _(G16: notification-web CspReportController, byte[] + manual ObjectMapper (Spring MVC не знает application/csp-report MIME). Counter security.csp.violations с low-cardinality labels (directive name only, blocked_uri_host only). CspReportIT 5 cases + unit 14 cases. nginx CSP `report-uri /api/csp-report`)_
 - [x] **AC-12** ~~Dry-run VPS deploy~~ → **owner-driven G23** _(scripts/preflight-deploy.sh + verify-deploy.sh подготовлены. Полные cross-ref на 13 runbook'ов в начале prod-deploy-checklist. Live VPS dry-run — owner-time slot после M13 close)_
-- [x] **AC-13** docs/alerts.md ≥ 15 alerts _(G19+G20: 18 alerts catalog с Symptom/Meaning/Runbook + cross-ref таблица. 10 service-health + 2 resource-limits + 3 rabbitmq + 3 ssl-expiry. Все validate'ятся promtool check rules)_
+- [x] **AC-13** docs/operations/monitoring/alerts.md ≥ 15 alerts _(G19+G20: 18 alerts catalog с Symptom/Meaning/Runbook + cross-ref таблица. 10 service-health + 2 resource-limits + 3 rabbitmq + 3 ssl-expiry. Все validate'ятся promtool check rules)_
 - [x] **AC-14** /prometheus/ и /alertmanager/ basic-auth + --web.external-url _(G14: nginx locations + auth_basic + .htpasswd materialized из SWAGGER_HTPASSWD env через nginx/scripts/entrypoint.sh fail-fast (5 checks). prometheus и alertmanager оба с --web.external-url + --web.route-prefix)_
 - [x] **AC-15** SSL cert renewal _(G20: blackbox-exporter + 3 SSL alerts (SslCertExpiresSoon 30d / SslCertExpiresUrgently 7d / SslProbeFailed). Renewal hook не нужен — M13 G14 уже добавил nginx auto-reload каждые 5 мин (превышает baseline cron 12h). Полный cert-renewal.md runbook + first-deploy SSL phase в prod-deploy-checklist §1.5b)_
 - [x] **AC-16** /auth/refresh-body removed _(G4: backend endpoint + DTO + tests удалены, frontend regenerate показал 0 runtime usage. Gateway PUBLIC_PATHS обновлены. AuthIT+TmaIT тесты удалены)_
@@ -138,10 +138,10 @@
 
 ## Artifacts
 
-- `docs/prod-deploy-checklist.md` — **tested** step-by-step VPS deploy
+- `docs/operations/deploy/prod-deploy-checklist.md` — **tested** step-by-step VPS deploy
 - `runbooks/backup-restore.md` (новый)
 - `runbooks/cert-renewal.md` (новый)
-- `docs/alerts.md` (новый) — каталог 15+ alert'ов
+- `docs/operations/monitoring/alerts.md` (новый) — каталог 15+ alert'ов
 - `docs/security-headers.md` (новый) — CSP policy
 - `.env.prod.example` (новый)
 - `scripts/validate-env-prod.sh` (новый)

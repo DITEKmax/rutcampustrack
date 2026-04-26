@@ -60,7 +60,7 @@ if [ ! -r "$ENV_FILE" ]; then
 fi
 
 if [ ! -f "$GPG_PASSPHRASE_FILE" ]; then
-    err "$GPG_PASSPHRASE_FILE not found. См. docs/runbooks/backup-restore.md (setup)."
+    err "$GPG_PASSPHRASE_FILE not found. См. docs/operations/runbooks/backup-restore.md (setup)."
     exit 1
 fi
 

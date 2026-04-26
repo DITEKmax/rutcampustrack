@@ -124,7 +124,7 @@ logout lifecycle.
   **deferred to M08** (Test Infrastructure).
 - [x] `./gradlew build` зелёный + `npm run build` зелёный (PWA 122/122,
   web-panel 444/444 + `npm run build` OK).
-- [x] `docs/auth-flow.md` — полный runbook cookie+ticket+logout.
+- [x] `docs/auth/auth-flow.md` — полный runbook cookie+ticket+logout.
 
 **CSRF infrastructure удалена из scope** (DECISIONS 2026-04-20) — acceptance
 criterion «mutating request без X-CSRF-Token → 403» удалён, same-origin +
@@ -154,7 +154,7 @@ criterion «mutating request без X-CSRF-Token → 403» удалён, same-or
 - `frontends/pwa/src/lib/auth/clearAllClientState.ts`.
 - `frontends/pwa/src/lib/auth/useAuth.ts` — breaking rewrite.
 - `frontends/web-panel/src/app/core/auth/clear-all-client-state.service.ts`.
-- `docs/auth-flow.md` — cookie+ticket lifecycle с диаграммой.
+- `docs/auth/auth-flow.md` — cookie+ticket lifecycle с диаграммой.
 - `docs/architecture/architecture.md` раздел «Auth flow (cookie + ws-ticket)».
 - `CHANGELOG.md [Unreleased]` — Breaking changes section.
 - Tag `v0.0.0-alpha.4` на финальном коммите.

@@ -151,7 +151,7 @@ if [ -n "${SWAGGER_USER:-}" ] && [ -n "${SWAGGER_PASS:-}" ]; then
     if [ "$RULES_COUNT" -ge 18 ]; then
         ok "$RULES_COUNT alert rules loaded (≥18 expected)"
     else
-        err "Только $RULES_COUNT alert rules (ожидалось ≥18 — см. docs/alerts.md)"
+        err "Только $RULES_COUNT alert rules (ожидалось ≥18 — см. docs/operations/monitoring/alerts.md)"
         OVERALL_FAIL=2
     fi
 else
@@ -200,9 +200,9 @@ if [ $OVERALL_FAIL -eq 0 ]; then
 else
     echo -e "${RED}${BOLD}✗ Verification failed (exit $OVERALL_FAIL)${NC}"
     echo "Fix issues выше. Runbook'и:"
-    echo "  - docs/prod-deploy-checklist.md"
-    echo "  - docs/alerts.md"
-    echo "  - docs/runbooks/cert-renewal.md"
-    echo "  - docs/runbooks/mongo-indexes-verify.md"
+    echo "  - docs/operations/deploy/prod-deploy-checklist.md"
+    echo "  - docs/operations/monitoring/alerts.md"
+    echo "  - docs/operations/runbooks/cert-renewal.md"
+    echo "  - docs/operations/runbooks/mongo-indexes-verify.md"
     exit "$OVERALL_FAIL"
 fi

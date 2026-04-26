@@ -28,7 +28,7 @@
   - Кандидат #14 (Swagger) — **вариант C** (runbook + fail-fast).
   - Кандидат #15 (env.prod) — **вариант C** (example + validation script).
   - Кандидат #16 (deploy runbook) — **вариант C** (dry-run only, backup/rollback/zero-downtime → v0.1).
-  - Кандидат #17 (Alertmanager E2E) — **вариант B** (smoke + docs/alerts.md каталог).
+  - Кандидат #17 (Alertmanager E2E) — **вариант B** (smoke + docs/operations/monitoring/alerts.md каталог).
   - Кандидат #18 (healthcheck) — **вариант B** (directives + health indicators).
   - Кандидат #19 (backup) — **вариант C** (backup + tested restore + .env.prod GPG, 7d retention, VPS-snapshot хостера как 2-й слой).
   - Кандидат #20 (WebSocket) — **вариант A** (nginx + STOMP smoke).
@@ -189,7 +189,7 @@ app-code. Значит миграция фронта не требуется, т
   data, пользователей попросим перезайти» → не удалял DTO преждевременно.
 
 **Docs обновлены:**
-- `docs/auth-flow.md` — удалён раздел `POST /auth/refresh-body —
+- `docs/auth/auth-flow.md` — удалён раздел `POST /auth/refresh-body —
   DEPRECATED`.
 - `docs/architecture/architecture.md` — удалён подпункт про refresh-body legacy
   (заменён на однострочное упоминание что endpoint удалён в M13 G4).
@@ -300,7 +300,7 @@ M13 G6 `verifyIndexes()` — страховка: после `ensureIndex` чит
 - `@MockitoBean PushService` необходим — иначе VAPID public-key с
   test stub'ом парсится и падает при создании `webPushService` bean'а.
 
-**Runbook `docs/runbooks/mongo-indexes-verify.md`:** 4 раздела —
+**Runbook `docs/operations/runbooks/mongo-indexes-verify.md`:** 4 раздела —
 automatic startup check, manual `db.getIndexes()`, fix рецепты
 (рестарт / manual `createIndex` / `collMod TTL`), performance
 `explain().winningPlan` (IXSCAN vs COLLSCAN). TTL-rotation рецепт
@@ -707,7 +707,7 @@ end-to-end IT (`ActuatorSpanFilterIT.healthEndpoint_doesNotProduceAnyExportedSpa
 такого misleading TODO нет — auto-config через shared-observability
 работает прозрачно.
 
-**Documentation:** `docs/observability.md` — новый раздел «Sampling policy
+**Documentation:** `docs/operations/monitoring/observability.md` — новый раздел «Sampling policy
 (M13 G10)» с таблицей endpoints/decisions, объяснением выбора
 SpanExportingPredicate vs Sampler, описанием child-span strategy,
 property override для disable.
@@ -894,7 +894,7 @@ broken deploy.
 - DB connectivity smoke (psql / mongosh) — это деплоймент-time, не
   validation-time. Разумно отдать smoke-prod.sh после deploy.
 
-**Documentation:** `docs/prod-deploy-checklist.md` новый раздел 1.0
+**Documentation:** `docs/operations/deploy/prod-deploy-checklist.md` новый раздел 1.0
 «Environment secrets (M13 G13)» перед всеми pre-deploy checks. Чек-лист
 для first-deploy + rotation. Mongo RS / Internal issuer / Alert webhook
 secrets выделены отдельно для upgrade-сценария со старым `.env.prod`.
@@ -1302,7 +1302,7 @@ manual smoke полная:
 Полный chain покрыт unit/IT — single-thread coverage. Live smoke на
 VPS one-batch'ом в G23.
 
-**Doc rewrite:** `docs/alerts.md` существовал с M04 G9 (8 alerts,
+**Doc rewrite:** `docs/operations/monitoring/alerts.md` существовал с M04 G9 (8 alerts,
 short stub). Полная переработка под Symptom/Meaning/Runbook standard
 × 15 + cross-ref таблица + E2E test inventory + silencing examples
 + история изменений M04 → M13.
@@ -1352,7 +1352,7 @@ fail (ловит DNS hijack / accidental :80 probing).
 blackbox-exporter:9115`. Без relabel'а instance label был бы
 `blackbox-exporter:9115`, а target в metric'е — undefined.
 
-**docs/prod-deploy-checklist.md §1.5b** — новая секция для **first
+**docs/operations/deploy/prod-deploy-checklist.md §1.5b** — новая секция для **first
 deploy** на чистый VPS. 2-phase: HTTP-only phase для ACME challenge →
 certbot certonly → restore HTTPS config → full stack up. Subsequent
 deploys проходят без этой секции (cert уже выпущен, auto-renew работает).

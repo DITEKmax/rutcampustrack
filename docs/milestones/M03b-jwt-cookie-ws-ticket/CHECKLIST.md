@@ -41,7 +41,7 @@ same-origin + `SameSite=Strict`). Группа 5 переформатирова�
 - [x] Unit/IT: `AuthIntegrationTest` расширить — cookie присутствует,
   `rct_refresh=...; HttpOnly; Secure; SameSite=Strict; Path=/api/auth;
   Max-Age=N`. Refresh через cookie works. Logout clear. Deprecation header.
-- [x] `docs/auth-flow.md` scaffold с cookie flow diagram
+- [x] `docs/auth/auth-flow.md` scaffold с cookie flow diagram
 
 ## Группа 3 — Auth-service: ws-ticket endpoint
 
@@ -183,7 +183,7 @@ CSRF для v0.0.0 (DECISIONS 2026-04-20, подтверждение OWNER-ANSWE
 
 ## Группа 12 — Документация + artifacts
 
-- [x] `docs/auth-flow.md` — полный lifecycle cookie+ticket+logout +
+- [x] `docs/auth/auth-flow.md` — полный lifecycle cookie+ticket+logout +
   диаграммы + endpoints + rate-limits + security properties.
 - [x] `docs/architecture/architecture.md` → раздел «Auth flow (cookie + ws-ticket +
   logout lifecycle)» после «Internal JWT и rate-limiting».

@@ -99,5 +99,5 @@ Permissions-Policy — все в `default.conf` server 443 block. **НЕ
 
 ---
 
-_Для более глубокого контекста инфраструктуры см. `docs/ci-cd.md` и
-`docs/infra/container-trust.md`._
+_Для более глубокого контекста инфраструктуры см. `docs/operations/deploy/ci-cd.md` и
+`docs/operations/deploy/container-trust.md`._

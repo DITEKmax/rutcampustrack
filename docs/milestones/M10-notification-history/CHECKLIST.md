@@ -12,7 +12,7 @@
       `NOTIFICATION_HISTORY_TTL_DAYS` env (D3, D4)
 - [x] `docker-compose.prod.yml` — аналогично + placeholder
       `CHANGE_ME_BEFORE_DEPLOY` в `.env.prod`
-- [x] `docs/runbooks/secret-rotation.md` — новая секция «MongoDB —
+- [x] `docs/operations/runbooks/secret-rotation.md` — новая секция «MongoDB —
       notification» + запись в таблицу
 - [x] `docs/future-ideas.md` — v0.1 «Notification retention collMod
       auto-reconciler»

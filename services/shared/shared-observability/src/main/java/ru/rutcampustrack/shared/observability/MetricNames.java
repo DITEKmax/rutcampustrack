@@ -6,7 +6,7 @@ package ru.rutcampustrack.shared.observability;
  *
  * <p>QA4 — список фиксирован, чтобы Grafana dashboards и Prometheus
  * alert-rules ссылались на стабильные имена. Добавление новой метрики
- * требует обновления этого класса + dashboards + docs/alerts.md.
+ * требует обновления этого класса + dashboards + docs/operations/monitoring/alerts.md.
  */
 public final class MetricNames {
 

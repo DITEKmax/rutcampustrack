@@ -54,7 +54,7 @@
   - `softDeleteMigrationPreservesData` — migrate V{N-1} → INSERT → migrate V{N} → assert row status
 - `MigrationTestUtils.runMigrationsUpTo(version)` helper в
   `shared-test-containers` (заготовлено в M01)
-- NEW-159 runbook `docs/runbooks/migration-testing.md`
+- NEW-159 runbook `docs/operations/runbooks/migration-testing.md`
 
 ### Golden tests + property-based + Clock-injection (P2-8/4)
 - `src/test/resources/golden/week-parity.json` — 20+ cases для
@@ -148,7 +148,7 @@
 - **Trivy action sha-digest pin** — текущий `@master`, заменить на sha
 - **Digest-pin для base images** — nginx / postgres / mongo / redis /
   rabbitmq в `docker-compose.prod.yml` → `image@sha256:...`
-- NEW-165 `docs/runbooks/image-signing-verification.md`
+- NEW-165 `docs/operations/runbooks/image-signing-verification.md`
 
 ### Contract-тесты RabbitMQ events (14 P1-5)
 - M02 закрыл только `LessonStartedContractIT`. Audit: **все 14+ events**
@@ -227,13 +227,13 @@
   - Trivy action digest pin
 
 ### Docs
-- `docs/runbooks/migration-testing.md` (NEW-159)
+- `docs/operations/runbooks/migration-testing.md` (NEW-159)
 - `docs/golden-tests.md` (NEW-160)
 - `docs/e2e-testing.md` (NEW-161)
 - `docs/testing.md` — расширение (NEW-162, NEW-164)
 - `docs/load-testing.md` (NEW-163)
 - `docs/performance-baseline.md`
-- `docs/runbooks/image-signing-verification.md` (NEW-165)
+- `docs/operations/runbooks/image-signing-verification.md` (NEW-165)
 
 ## Acceptance criteria
 
@@ -289,12 +289,12 @@
 - `tests/load/` — k6 nagрузочные
 - `scripts/smoke-prod.sh` — post-deploy smoke
 - `services/shared/shared-test-containers/` (iteration 2)
-- `docs/runbooks/migration-testing.md` (NEW-159)
+- `docs/operations/runbooks/migration-testing.md` (NEW-159)
 - `docs/golden-tests.md` (NEW-160)
 - `docs/e2e-testing.md` (NEW-161)
 - `docs/load-testing.md` (NEW-163)
 - `docs/performance-baseline.md`
-- `docs/runbooks/image-signing-verification.md` (NEW-165)
+- `docs/operations/runbooks/image-signing-verification.md` (NEW-165)
 - `docs/testing.md` — расширения NEW-162/164
 - `.github/workflows/ci.yml` — split jobs + coverage gate
 - `.github/workflows/security.yml` — SBOM + cosign + Trivy sha-pin
@@ -392,13 +392,13 @@ _Никаких «why», «motivation», «background» — это уже в 99-
 security contracts + event schema + Stomp IT + Playwright fixtures).
 
 **Новых docs (NEW-*):**
-- NEW-159 `docs/runbooks/migration-testing.md`
+- NEW-159 `docs/operations/runbooks/migration-testing.md`
 - NEW-160 `docs/golden-tests.md`
 - NEW-161 `docs/e2e-testing.md`
 - NEW-162 `docs/testing.md` (расширен frontend + security)
 - NEW-163 `docs/load-testing.md`
 - NEW-164 `docs/testing.md` security-contract section
-- NEW-165 `docs/runbooks/image-signing-verification.md`
+- NEW-165 `docs/operations/runbooks/image-signing-verification.md`
 
 **Baseline coverage (locally 2026-04-23):**
 

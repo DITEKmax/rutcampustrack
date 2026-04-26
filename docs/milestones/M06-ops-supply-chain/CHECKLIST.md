@@ -14,7 +14,7 @@
 - [x] `api-gateway/Dockerfile` — HEALTHCHECK wget /actuator/health
 - [x] `notification-bot/Dockerfile` — HEALTHCHECK curl /health (bot/__main__.py:38 реальный endpoint)
 - [x] `docker-compose.prod.yml` — уже имеет `depends_on: service_healthy` matrix (M04), нет изменений
-- [x] `docs/dockerfile-conventions.md` — NEW-150 runbook
+- [x] `docs/operations/deploy/dockerfile-conventions.md` — NEW-150 runbook
 - [x] Smoke: `docker buildx build --check` × 7 Dockerfile, `Check complete, no warnings found` × 7
 - [x] Commit: `29bfbdc feat(ops): HEALTHCHECK в 7 Dockerfile (M06 Группа 1, P2-9/1, NEW-150)`
 
@@ -32,7 +32,7 @@
 - [x] `docker buildx imagetools inspect` → cadvisor v0.49.1 `sha256:3cde6faf...`
 - [x] `docker buildx imagetools inspect` → promtail 3.2.1 `sha256:bf617e9d...`
 - [x] `docker-compose.prod.yml` — `cadvisor:v0.49.1@sha256:...` + `promtail:3.2.1@sha256:...`
-- [x] `docs/infra/container-trust.md` — NEW-102 policy doc
+- [x] `docs/operations/deploy/container-trust.md` — NEW-102 policy doc
 - [x] Smoke: `docker compose config --quiet` exit=0
 - [x] Commit: `30a1046 feat(ops): digest-пин cadvisor + promtail (M06 Группа 3, QD4, NEW-102)`
 
@@ -42,7 +42,7 @@
 - [x] `docker-compose.prod.yml` — `prom/prometheus:v2.55.1`
 - [x] `docker-compose.prod.yml` — `grafana/grafana:11.3.1`
 - [x] `docker-compose.prod.yml` — `prom/node-exporter:v1.8.2`
-- [x] `docs/runbooks/loki-major-upgrade.md` — NEW-151 (expand-contract schema procedure)
+- [x] `docs/operations/runbooks/loki-major-upgrade.md` — NEW-151 (expand-contract schema procedure)
 - [x] Smoke: `compose config --quiet` exit=0; нет `:latest` в prod compose кроме infra tag'ов (postgres:16, mongo:7, и т.д.)
 - [x] Commit: `7ca263d feat(ops): semver-pin observability images (M06 Группа 4, P2-9/2, NEW-151)`
 
@@ -51,7 +51,7 @@
 - [x] `renovate.json` в корне — `extends: config:recommended`, auto-merge patch/pin/digest, manual minor/major, groupings (Spring Boot, Angular, React, TanStack), schedule after 22:00 MSK, loki major manual rule, cadvisor/promtail digest auto-merge
 - [x] `.github/dependabot.yml` — gradle, npm × 3 (pwa/web-panel/mini-app), pip (bot), docker, github-actions (security-only)
 - [x] `renovate-config-validator` — `Config validated successfully`
-- [x] `docs/ci-cd.md` — NEW-105 (полный CI/CD flow: ci.yml + deploy.yml + security.yml + Renovate + Dependabot + rollback procedure)
+- [x] `docs/operations/deploy/ci-cd.md` — NEW-105 (полный CI/CD flow: ci.yml + deploy.yml + security.yml + Renovate + Dependabot + rollback procedure)
 - [x] Commit: `bab4eb7 feat(ops): Renovate + Dependabot + ci-cd.md (M06 Группа 5, QD6, NEW-105)`
 
 ## Группа 6 — Trivy + Gitleaks + SECURITY.md (QD5, NEW-103) — ~3ч ✅
@@ -69,7 +69,7 @@
 - [x] `.github/workflows/deploy.yml` — `on: workflow_run: [CI]: types: [completed]: branches: [main]` + `if: workflow_run.conclusion == 'success'` + `workflow_dispatch` fallback (emergency)
 - [x] `DEPLOY_SHA` env (D3) — правильный SHA из `workflow_run.head_sha`, fallback `github.sha` для workflow_dispatch
 - [x] Все 11 build-push tags + IMAGE_TAG в SSH используют `${{ env.DEPLOY_SHA }}`
-- [x] `docs/ci-cd.md` — раздел branch protection (уже был в G5)
+- [x] `docs/operations/deploy/ci-cd.md` — раздел branch protection (уже был в G5)
 - [x] Smoke: `yaml-lint ci.yml deploy.yml` → `YAML Lint successful`
 - [x] Commit: `7c74b3a feat(ci): workflow_run gate + DEPLOY_SHA (M06 Группа 7, C0-8, 13 P0-2/11)`
 

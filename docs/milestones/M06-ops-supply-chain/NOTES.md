@@ -120,7 +120,7 @@ status quo.
   40+ минут без cache (gradle + transitive deps), сбросил. Вместо
   этого использовал `docker buildx build --check` для 7 Dockerfile'ов —
   все synтактически валидны (`Check complete, no warnings found`).
-- `docs/dockerfile-conventions.md` (NEW-150) содержит полную
+- `docs/operations/deploy/dockerfile-conventions.md` (NEW-150) содержит полную
   таблицу start-period + endpoint per service.
 
 ---

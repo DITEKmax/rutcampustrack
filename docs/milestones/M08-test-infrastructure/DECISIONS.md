@@ -102,7 +102,7 @@ cosign verify \
   это стандарт для open-source supply-chain.
 
 **Trade-off:** verify-команда сложнее (identity-regex vs `cosign.pub`
-файл), но в runbook `docs/runbooks/image-signing-verification.md`
+файл), но в runbook `docs/operations/runbooks/image-signing-verification.md`
 это одна команда, копируемая как есть.
 
 ---
@@ -133,7 +133,7 @@ cosign verify \
 **Trade-off:** «грязное» state между тестами локально, если тест
 забывает cleanup. Минимизируется через `@Sql(scripts="/cleanup.sql")`
 или `mongo.drop()` в `@BeforeEach`. Документируем в
-`docs/runbooks/dev-setup.md` (создадим в Группе 2).
+`docs/operations/runbooks/dev-setup.md` (создадим в Группе 2).
 
 ---
 

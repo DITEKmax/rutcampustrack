@@ -289,7 +289,7 @@ are only allowed on a replica set member or mongos`.
 - `notification-web`: `MongoTransactionManager` зарегистрирован
   proactively (future-proof consumer-path'ы).
 
-**Runbook:** `docs/runbooks/mongo-indexes-verify.md` — проверка
+**Runbook:** `docs/operations/runbooks/mongo-indexes-verify.md` — проверка
 индексов + TTL после deploy (M13 G6 fail-fast).
 
 **Rollback (если Bitnami image не подойдёт):** сохранить mongo:7 image
@@ -455,7 +455,7 @@ db.notification_history.createIndex(
 | `MONGO_NOTIFICATION_USER` (default `rct_notification_user`) | readWrite + dbAdmin на `notification_db` | Bitnami `MONGODB_EXTRA_*` env (M13 G7) |
 
 Compromise одного credential'а не даёт доступа к данным другого
-сервиса. Rotation runbook — `docs/runbooks/secret-rotation.md`.
+сервиса. Rotation runbook — `docs/operations/runbooks/secret-rotation.md`.
 
 ---
 

@@ -23,7 +23,7 @@
 - [x] Создано 6 новых `application-dev.yml` с DEBUG для `ru.rutcampustrack` + `management.tracing.sampling.probability: 1.0` (для Группы 5).
 - [x] CI-check `verifyNoDebugInProd` Gradle task в root `build.gradle.kts` — паттерн `ru\.rutcampustrack[^:]*:\s*DEBUG`, привязан к `check`. Игнорирует `application-dev.yml` и комментарии (отрезает `#`).
 - [x] Sanity-test: подменил INFO→DEBUG → BUILD FAILED с правильным сообщением. Восстановил → BUILD SUCCESSFUL.
-- [x] Документация секции «Logging defaults» — отложено в Группу 12 (общий `docs/observability.md` runbook).
+- [x] Документация секции «Logging defaults» — отложено в Группу 12 (общий `docs/operations/monitoring/observability.md` runbook).
 
 ## Группа 3 — JSON-логи во всех сервисах (QA7 + NEW-68) ✅
 
@@ -32,7 +32,7 @@
 - [x] Добавлена зависимость `implementation(project(":services:shared:shared-logback"))` в build.gradle.kts тех же 5 сервисов (тащит logstash-logback-encoder транзитивно).
 - [x] CI-check `verifyLogbackJsonInAllServices` Gradle task — проверяет наличие `logback-spring.xml` + include для всех 6 ожидаемых путей. Привязан к `check`. Sanity-test: rename файла → BUILD FAILED, восстановление → BUILD SUCCESSFUL.
 - [x] Smoke verified: notification-app + auth-service test logs выдают корректный JSON с полями `ts/v/level/logger/thread/msg/service`. Pipeline работает end-to-end.
-- [x] `docs/logging-conventions.md` — отложено в Группу 12 (общая документация runbook'ом).
+- [x] `docs/operations/monitoring/logging-conventions.md` — отложено в Группу 12 (общая документация runbook'ом).
 
 ## Группа 4 — Health endpoints + custom indicators (QA6 + NEW-67 + KI-4) ✅
 
@@ -114,7 +114,7 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 - [x] `notification-bot` — `alert_fired.py` handler: парсит admin IDs из env ADMIN_TELEGRAM_IDS (comma-separated), форматирует сообщение с HTML escape + severity emoji (🔴/🟡/🔵) + status emoji (🔔/✅), отправляет каждому админу через send_queue (rate-limit safe). Зарегистрирован в EventDispatcher registry.
 - [x] docker-compose env: ALERT_WEBHOOK_SECRET в notification-web (prod + dev), ADMIN_TELEGRAM_IDS в notification-bot (оба).
 - [x] Smoke: `AlertControllerTest` 7 тестов (happy path, auth variants, malformed body) ✅. `test_alert_fired.py` 7 тестов (format/parse/handler) ✅. Полный bot suite 153/153.
-- [ ] `docs/alerts.md` — каталог alerts + runbook → Группа 12 (общая documentation pass).
+- [ ] `docs/operations/monitoring/alerts.md` — каталог alerts + runbook → Группа 12 (общая documentation pass).
 - [ ] E2E: kill auth → alert в Telegram — Группа 11 audit (требует docker-compose).
 
 ## Группа 10 — Retention + Grafana dashboard (QA5 + NEW-66) ✅
@@ -144,10 +144,10 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 
 ## Группа 12 — Documentation + закрытие milestone ✅
 
-- [x] `docs/observability.md` runbook (~210 строк) — стек, связь signals через trace_id, типичные PromQL/LogQL/Tempo запросы, troubleshooting, deferred items.
-- [x] `docs/alerts.md` каталог — 8 алертов с runbook-действиями, silencing, quiet hours.
+- [x] `docs/operations/monitoring/observability.md` runbook (~210 строк) — стек, связь signals через trace_id, типичные PromQL/LogQL/Tempo запросы, troubleshooting, deferred items.
+- [x] `docs/operations/monitoring/alerts.md` каталог — 8 алертов с runbook-действиями, silencing, quiet hours.
 - [x] `docs/architecture/architecture.md` — добавлен раздел «Observability stack (M04)» в секцию «Протоколы и коммуникации».
-- [x] `docs/logging-conventions.md` — новый (~160 строк): уровни, JSON формат Java/Python, PII masking, trace_id correlation chain.
+- [x] `docs/operations/monitoring/logging-conventions.md` — новый (~160 строк): уровни, JSON формат Java/Python, PII masking, trace_id correlation chain.
 - [x] `CHANGELOG.md [Unreleased]` — большая секция M04 (tag `v0.0.0-alpha.5`).
 - [x] `CLAUDE.md` — M04 статус ✅ + дата 2026-04-20.
 - [x] `docs/milestones/README.md` — M04 ✅ + дата.

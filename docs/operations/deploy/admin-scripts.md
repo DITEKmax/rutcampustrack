@@ -225,7 +225,7 @@ next refresh (30с cache).
 активные сессии (access + refresh) инвалидируются, пользователи должны
 перелогиниться.
 
-См. полную процедуру в `docs/runbooks/secret-rotation.md` раздел
+См. полную процедуру в `docs/operations/runbooks/secret-rotation.md` раздел
 «INTERNAL_ISSUER_SECRET» как аналог. Для JWT signing key:
 
 1. Остановить auth-service: `docker compose stop auth-service`.

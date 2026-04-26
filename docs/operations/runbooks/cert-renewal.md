@@ -250,8 +250,8 @@ Trade-off: до 5 мин between cert renewal и nginx pickup. Acceptable
 
 ## Связанные документы
 
-- `docs/prod-deploy-checklist.md` — full VPS deploy steps
-- `docs/alerts.md` — `SslCertExpiresSoon`, `SslCertExpiresUrgently`,
+- `docs/operations/deploy/prod-deploy-checklist.md` — full VPS deploy steps
+- `docs/operations/monitoring/alerts.md` — `SslCertExpiresSoon`, `SslCertExpiresUrgently`,
   `SslProbeFailed` (M13 G20)
 - `infra/blackbox/blackbox.yml` — blackbox-exporter probe config
 - `nginx/scripts/entrypoint.sh` — nginx fail-fast + reload loop

@@ -1043,7 +1043,7 @@ Event `user.logged-out` через shared-outbox отложен в M04 (structur
   ставит X-Login header внутренне. Composite `(ip, login)` теперь
   реально работает.
 
-Полный runbook: `docs/auth-flow.md`.
+Полный runbook: `docs/auth/auth-flow.md`.
 
 ### Observability stack (M04)
 
@@ -1066,12 +1066,12 @@ Spring `SessionConnected/DisconnectEvent`), `outbox.lag.seconds`
 notification-bot → Telegram админы. Тихий час 22-08 MSK применяется
 только к `warning`; `critical` fire'ит всегда. 8 правил в 4 группах
 (service-health, outbox-eventing, infra, business-anomaly) —
-полный каталог в `docs/alerts.md`.
+полный каталог в `docs/operations/monitoring/alerts.md`.
 
 **Retention:** Prometheus 14d, Loki 336h (14d, compactor enabled),
 Tempo 14d.
 
-**Документация:** `docs/observability.md` (runbook) + `docs/alerts.md`
+**Документация:** `docs/operations/monitoring/observability.md` (runbook) + `docs/operations/monitoring/alerts.md`
 (каталог).
 
 ### Notification History (M10)

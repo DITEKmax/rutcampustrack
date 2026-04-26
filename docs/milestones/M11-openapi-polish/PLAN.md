@@ -182,7 +182,7 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
 - Dev/local env — open (без basic-auth, Spring profile-based toggle)
 - Prod `.env.prod.example` — добавить `SWAGGER_HTPASSWD=...` (пароль
   генерится при deploy через `htpasswd -c`)
-- NEW-125 — `docs/runbooks/swagger-prod-access.md`: как получить
+- NEW-125 — `docs/operations/runbooks/swagger-prod-access.md`: как получить
   доступ к prod swagger (password rotation процедура)
 
 **Исключено (другие milestones / backlog):**
@@ -280,7 +280,7 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
 - `docs/api/api-error-conventions.md` — расширение: «Global error responses»
   + «@Schema policy» + единый ErrorResponse (NEW-122, NEW-124)
 - `docs/api/openapi-conformance.md` (NEW-123) — runbook
-- `docs/runbooks/swagger-prod-access.md` (NEW-125)
+- `docs/operations/runbooks/swagger-prod-access.md` (NEW-125)
 - `docs/api-spec/` (NEW directory) — committed OpenAPI snapshots
 - `CLAUDE.md` — структура shared-* модулей
 
@@ -321,7 +321,7 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
       nginx (unnecessary)
 - [x] `docs/api/api-error-conventions.md` расширен (NEW-122)
 - [x] `docs/api/openapi-conformance.md` (NEW-123) +
-      `docs/runbooks/swagger-prod-access.md` (NEW-125)
+      `docs/operations/runbooks/swagger-prod-access.md` (NEW-125)
 - [x] `docs/openapi/*.json` committed (унифицировано с M07 baseline)
 - [x] Post-mortem секция ниже, tag `v0.0.0-alpha.12` (локальный)
 
@@ -437,7 +437,7 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
 - `docs/api-spec/{academic,schedule,attendance,notification}.yaml`
 - `docs/api/api-error-conventions.md` — расширение
 - `docs/api/openapi-conformance.md` (NEW-123)
-- `docs/runbooks/swagger-prod-access.md` (NEW-125)
+- `docs/operations/runbooks/swagger-prod-access.md` (NEW-125)
 - `.env.prod.example` — новая переменная `SWAGGER_HTPASSWD`
 
 ---

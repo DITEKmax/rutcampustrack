@@ -367,7 +367,7 @@
 - QD3 (contract events) → **(a)** schema-validation тесты для всех 14+ events. NEW-100 (retrofit), NEW-101 (CI drift-guard).
 - QD4 (digest pin) → **Гибрид** — digest для cadvisor/promtail, tag+Renovate для остального. NEW-102 (container-trust policy).
 - QD5 (supply-chain) → **(a)** Trivy + Gitleaks + Dependabot. NEW-103 (SECURITY.md), NEW-104 (disclosure policy).
-- QD6 (Renovate) → **(a)** auto-merge patch, manual minor/major. NEW-105 (docs/ci-cd.md).
+- QD6 (Renovate) → **(a)** auto-merge patch, manual minor/major. NEW-105 (docs/operations/deploy/ci-cd.md).
 - QD7 (release process) → **(b)** manual CHANGELOG + git-теги. NEW-106 (v0.1+ triggered migration to semantic-release), NEW-107 (retroactive [v0.0.0] entries).
 
 **Пачка P1-C (Frontend reuse) — ЗАКРЫТА:**
@@ -456,7 +456,7 @@
 
 **Группа 4 (attendance-service P0) — ЗАКРЫТА:**
 - Q15a (04 P0-4, `X-Group-Id` IDOR) → **(b) AUTO через C0-1 + contract-тест**. NEW-31: test-suite `SecurityIdorIT` для всех backend-сервисов. NEW-32: политика 404 vs 403.
-- Q15b (04 P0-6, `cleanupOrphans` mass-delete) → **(a) TO-FIX** — удалить `@PostConstruct` cleanup. Auto-resolves 04-Q5. NEW-33: `docs/admin-scripts.md` для разовых задач.
+- Q15b (04 P0-6, `cleanupOrphans` mass-delete) → **(a) TO-FIX** — удалить `@PostConstruct` cleanup. Auto-resolves 04-Q5. NEW-33: `docs/operations/deploy/admin-scripts.md` для разовых задач.
 
 **Текущая группа:** **Группа 5 — notification-service P0 (4 вопроса)**:
 - 05 P0-2 (нет GlobalExceptionHandler — связано с C1-11).

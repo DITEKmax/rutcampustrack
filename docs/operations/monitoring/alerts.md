@@ -163,7 +163,7 @@ overgrowth или недооценённый budget. Все 26 контейне�
 2. Heap dump для Java сервисов:
    `docker exec <name> jcmd 1 GC.heap_dump /tmp/heap.hprof`.
 3. Если transient (request burst) — wait. Sustainable — bump
-   `mem_limit` в `docker-compose.prod.yml` + update `docs/resource-limits.md`.
+   `mem_limit` в `docker-compose.prod.yml` + update `docs/operations/deploy/resource-limits.md`.
 4. См. также `JvmHeapPressure` для Java-specific heap saturation.
 
 ---
@@ -181,7 +181,7 @@ overgrowth или недооценённый budget. Все 26 контейне�
 
 #### Runbook
 1. Найди сервис в `docker-compose.prod.yml` — должен быть `mem_limit:`.
-2. Если новый — добавь limit + update `docs/resource-limits.md` table.
+2. Если новый — добавь limit + update `docs/operations/deploy/resource-limits.md` table.
 
 ---
 
@@ -352,7 +352,7 @@ clock skew между сервисами).
 3. Logs certbot: `docker logs rct-certbot --tail 100 | grep -E "renew|error"`.
 4. Если ACME challenge fail — проверь nginx `/.well-known/acme-challenge/`
    доступен на :80 (HTTP), firewall не блочит.
-5. См. `docs/runbooks/cert-renewal.md` для full troubleshooting.
+5. См. `docs/operations/runbooks/cert-renewal.md` для full troubleshooting.
 
 ---
 

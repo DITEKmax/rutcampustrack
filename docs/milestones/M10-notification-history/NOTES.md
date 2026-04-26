@@ -96,7 +96,7 @@ RabbitListener'ом (consumer может стартануть раньше index
 **Default (предлагаю):** вариант (a) — выполняем PLAN как написано,
 PoLP выигрывает. Env vars `MONGO_NOTIFICATION_USER/PASSWORD` с default
 на `rct_notification_user`/`rct_dev_pass` для local dev, rotation в
-.env.prod уже требуется M09 runbook'ом `docs/runbooks/secret-rotation.md`.
+.env.prod уже требуется M09 runbook'ом `docs/operations/runbooks/secret-rotation.md`.
 
 ### S3 — notification-web.SPRING_DATA_MONGODB_URI указывает на attendance_db
 `docker-compose.yml:161`:

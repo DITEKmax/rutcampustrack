@@ -157,7 +157,7 @@ auto-renew работает (см. `runbooks/cert-renewal.md`).
       < /dev/null 2>&1 | grep "Verify return code"` → `0 (ok)`.
 - [ ] Verify auto-renew loop: `docker logs rct-certbot --tail 5` →
       `Cert not yet due for renewal` либо empty (success). Полный
-      runbook: `docs/runbooks/cert-renewal.md`.
+      runbook: `docs/operations/runbooks/cert-renewal.md`.
 
 ### 1.6. Communication
 - [ ] Release window уточнён — не пересекается с парами

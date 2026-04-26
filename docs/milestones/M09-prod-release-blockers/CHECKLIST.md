@@ -106,17 +106,17 @@
 
 ## Группа 7 — Prod-deploy checklist + runbooks (NEW-154/155/157, ~1д) ✅ закрыто
 
-- [x] **G7.1** `docs/prod-deploy-checklist.md` — pre/during/post-deploy чеклист
+- [x] **G7.1** `docs/operations/deploy/prod-deploy-checklist.md` — pre/during/post-deploy чеклист
       + section 5 copy-paste для release PR. Ссылки на все runbook'и
-- [x] **G7.2** `docs/runbooks/secret-rotation.md` (NEW-155) — inventory 15+
+- [x] **G7.2** `docs/operations/runbooks/secret-rotation.md` (NEW-155) — inventory 15+
       секретов + per-secret procedures (Postgres/Mongo/Redis/Rabbit/
       INTERNAL_ISSUER/GRPC/BOT/VAPID/GHCR/Grafana) + quarterly/annually
       schedule + rotation log на VPS
-- [x] **G7.3** `docs/runbooks/bot-webhook-migration.md` (NEW-154) — ASCII
+- [x] **G7.3** `docs/operations/runbooks/bot-webhook-migration.md` (NEW-154) — ASCII
       chain Prom→AM→notification-web→Rabbit→bot→Telegram, Alertmanager
       payload v4 contract, 2 migration scenario (endpoint upgrade /
       event schema change), rollback plan per-link
-- [x] **G7.4** `docs/resource-limits.md` (NEW-157) — 4GB VPS budget по
+- [x] **G7.4** `docs/operations/deploy/resource-limits.md` (NEW-157) — 4GB VPS budget по
       categories: Java (2304M), Python (256M), DB/MQ (1216M), obs (864M),
       nginx (224M), JVM opts standard block, Prom alert rule, validation
       procedure + remediation steps
@@ -139,7 +139,7 @@
 
 ## Группа 8 — Docs + cleanup (~0.5д) ✅ закрыто
 
-- [x] **G8.1** `docs/admin-scripts.md` (NEW-33) — 6 templates: orphan cleanup через mongosh (с prep `/tmp/lesson_ids.txt` из PG), backfill `cancelled_by/at` из schedule_outbox, purge stuck outbox, invalidate refresh-tokens, recompute Redis RBAC cache, emergency JWT key rotate
+- [x] **G8.1** `docs/operations/deploy/admin-scripts.md` (NEW-33) — 6 templates: orphan cleanup через mongosh (с prep `/tmp/lesson_ids.txt` из PG), backfill `cancelled_by/at` из schedule_outbox, purge stuck outbox, invalidate refresh-tokens, recompute Redis RBAC cache, emergency JWT key rotate
 - [x] **G8.2** `docs/future-ideas.md` — раздел «Auth API contract-first refactor (v0.1)» с обоснованием отложения 01 P0-1 + раздел «Auth-service OpenAPI (P2-2/2, v0.1)»
 - [x] **G8.3** `CLAUDE.md` Contract-first уточнено: `api-gateway` как единственное постоянное исключение, `auth-service` — временный нарушитель (M12 планирование в v0.0.0, фактическая реализация v0.1)
 - [x] **G8.4** `docs/milestones/README.md` — статус M09 → ✅ 2026-04-24

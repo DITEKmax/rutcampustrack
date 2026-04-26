@@ -33,8 +33,8 @@
       — ContainerTestBase уже имел с M01; добавлено в 8 inline-контейнеров
       (4 Abstract базы + 2 api-gateway IT + RateLimitIT/CompositeLoginKeyResolverIT).
       ShedLockSmokeIT — exception (@Container extension, см. NOTES.md).
-- [x] Добавить `~/.testcontainers.properties` пример в `docs/runbooks/`
-      (dev-setup) — `docs/runbooks/dev-setup.md`
+- [x] Добавить `~/.testcontainers.properties` пример в `docs/operations/runbooks/`
+      (dev-setup) — `docs/operations/runbooks/dev-setup.md`
 - [x] Audit 36+ `@MockitoBean` мест: таблица «класс / поле / заменить
       на real? / причина» в NOTES.md — 41 мест классифицированы в NOTES.md
 - [~] Заменить `@MockitoBean` на real containers где feasible (priority:
@@ -64,7 +64,7 @@
 - [x] `FlywayMigrationIT` в attendance-service (адаптация под Mongo
       миграции — другой механизм, скорее smoke) — добавлен test
       `mongoConfigInitIndexes_createsAllExpectedIndexes` в MongoIndexIT
-- [x] `docs/runbooks/migration-testing.md` (NEW-159)
+- [x] `docs/operations/runbooks/migration-testing.md` (NEW-159)
 
 ## Группа 4 — Golden tests + Clock-injection (P2-8/4)
 
@@ -279,7 +279,7 @@ _Closed commit `2c17327` — 2026-04-23._
 - [x] `docker-compose.prod.yml` — rabbitmq digest-pin — `rabbitmq:3.13-alpine@sha256:d7af1c...`
 - [x] **Bonus**: digest-pin для мониторинг-images (node-exporter, prometheus,
       alertmanager, tempo, grafana, loki) + certbot/certbot (было implicit `:latest`).
-- [x] `docs/runbooks/image-signing-verification.md` (NEW-165) — TL;DR +
+- [x] `docs/operations/runbooks/image-signing-verification.md` (NEW-165) — TL;DR +
       полный verify-скрипт (11 images) + SBOM verify-attestation + troubleshooting
       (`no matching signatures` / cert mismatch / Rekor outage) + emergency
       override flow + rotation.

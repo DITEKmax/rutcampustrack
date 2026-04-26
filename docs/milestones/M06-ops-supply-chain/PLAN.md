@@ -49,10 +49,10 @@ Supply-chain guard, reproducible deployments, dependency freshness, HEALTHCHECK
 - `renovate.json` — новый (корень репо)
 - `.pre-commit-config.yaml` — новый (gitleaks hook)
 - `SECURITY.md` — новый, disclosure policy
-- `docs/dockerfile-conventions.md` — NEW-150
-- `docs/infra/container-trust.md` — NEW-102
-- `docs/runbooks/loki-major-upgrade.md` — NEW-151
-- `docs/ci-cd.md` — NEW-105
+- `docs/operations/deploy/dockerfile-conventions.md` — NEW-150
+- `docs/operations/deploy/container-trust.md` — NEW-102
+- `docs/operations/runbooks/loki-major-upgrade.md` — NEW-151
+- `docs/operations/deploy/ci-cd.md` — NEW-105
 - **M05 defer'ы:**
   - `services/academic-service/academic-app/src/main/java/.../config/CacheConfig.java` — `BasicPolymorphicTypeValidator` whitelist
   - `services/academic-service/academic-app/src/main/java/.../grpc/AcademicGrpcServiceImpl.java` — rate-limit на `isHeadman`
@@ -163,10 +163,10 @@ Supply-chain guard, reproducible deployments, dependency freshness, HEALTHCHECK
 
 ## Artifacts
 
-- `docs/dockerfile-conventions.md` — NEW-150
-- `docs/infra/container-trust.md` — NEW-102
-- `docs/runbooks/loki-major-upgrade.md` — NEW-151
-- `docs/ci-cd.md` — NEW-105
+- `docs/operations/deploy/dockerfile-conventions.md` — NEW-150
+- `docs/operations/deploy/container-trust.md` — NEW-102
+- `docs/operations/runbooks/loki-major-upgrade.md` — NEW-151
+- `docs/operations/deploy/ci-cd.md` — NEW-105
 - `SECURITY.md` (root) — NEW-103
 - `renovate.json` (root)
 - `.github/dependabot.yml`

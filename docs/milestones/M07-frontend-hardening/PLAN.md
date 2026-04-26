@@ -159,7 +159,7 @@ frontend-stack.
 ### Infra (`infra/nginx/`, `nginx/`)
 - `nginx/nginx.conf` — `client_max_body_size 2m` (global), excuse
   location 25m, avatar 5m
-- `docs/nginx-config.md` (NEW-152) — review checklist
+- `docs/operations/deploy/nginx-config.md` (NEW-152) — review checklist
 
 ### CI / docs
 - `.github/pull_request_template.md` (NEW-74) — landing-review checkbox
@@ -168,7 +168,7 @@ frontend-stack.
 - `docs/a11y-checklist.md` (NEW) — WCAG 2.1 AA baseline
 - `docs/contributing.md` (NEW-108) — когда обновлять лендинг/CLAUDE.md/
   docs
-- `docs/nginx-config.md` (NEW-152)
+- `docs/operations/deploy/nginx-config.md` (NEW-152)
 
 ## Acceptance criteria
 
@@ -221,7 +221,7 @@ frontend-stack.
 - `docs/frontend-architecture.md` — NotificationCenter + error handling
 - `docs/a11y-checklist.md` — WCAG 2.1 AA baseline
 - `docs/contributing.md` (NEW-108) — ревизия лендинга/docs
-- `docs/nginx-config.md` (NEW-152)
+- `docs/operations/deploy/nginx-config.md` (NEW-152)
 - `frontends/landing/dist/assets/vendor/` — self-hosted CDN
 - `frontends/landing/dist/assets/og/ruttrack-og-1200x630.png`
 - `frontends/{pwa,web-panel,mini-app}/src/api/generated/` — openapi-fetch

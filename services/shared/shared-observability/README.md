@@ -5,7 +5,7 @@ M04 D1 — общие утилиты наблюдаемости для всех 
 ## Что внутри
 
 - **`MdcKeys`** — константы MDC-полей (`traceId`, `userId`, `eventType`, `internalJwtFallback`). Используются в `shared/logback-base.xml` и в коде сервисов через `MDC.put(...)`.
-- **`MetricNames`** — единые имена метрик. Конвенция `<domain>.<entity>.<verb>`. Изменение списка требует обновления Grafana dashboards и `docs/alerts.md`.
+- **`MetricNames`** — единые имена метрик. Конвенция `<domain>.<entity>.<verb>`. Изменение списка требует обновления Grafana dashboards и `docs/operations/monitoring/alerts.md`.
 - **`BusinessMetrics`** — fluent helper над `MeterRegistry`. Сервис создаёт singleton-bean.
 - **`GrpcClientHealthIndicator`** — health-check для downstream gRPC через `ManagedChannel.getState()`.
 - **`PublicKeyHealthIndicator`** — readiness gate для `internal-JWT` public key (KI-4 из M03b).

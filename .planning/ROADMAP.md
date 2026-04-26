@@ -331,7 +331,7 @@ Plans:
 **Status**: Complete — все 7 пунктов BUG-006 закрыты, backend build зелёный (91 tasks), frontend 346/346 tests зелёные. Миграции V8/V9/V10 + gap-closure V11 применены. UAT live-smoke отложен до следующей сессии. См. `docs/phase-reports/phase-58-report.md`.
 **Goal**: Закрыть все 7 пунктов BUG-006 — серверный поиск пользователей, человеческие сообщения об ошибках при создании, обязательный Telegram ID для студентов, отображение init password в таблице, единое поле «Название группы» (миграция V8), автопромоция курсов (новый scheduled job + V9), валидация семестров (V10 EXCLUDE constraint).
 **Depends on**: Phase 57; bug-fix session 2026-04-13/14 (Фазы A и B уже закоммичены, нужны их артефакты — initialPassword в UserResponse, avatar_id миграция).
-**Source**: `.planning/bug-reports/BUG-006-admin/report.md` (с секцией «Ответы автора»), seed-документы в `.planning/milestones/v9.0-phases/58-admin-bug-006-fixes/`.
+**Source**: `docs/bug-tracker/v1-post-v9.0/BUG-006-admin/report.md` (с секцией «Ответы автора»), seed-документы в `.planning/milestones/v9.0-phases/58-admin-bug-006-fixes/`.
 **Success Criteria** (детально см. 58-RESEARCH.md AC-1..AC-10):
   1. Поиск пользователей возвращает только релевантных по login/ФИО/telegramId (case-insensitive)
   2. Backend возвращает 409 + RFC7807 ProblemDetail с `field`-указателем при unique-нарушениях
@@ -347,7 +347,7 @@ Plans:
 ### Phase 59: Excuse Tickets Backend
 **Goal**: Реализовать полностью отсутствующий backend для тикетов о пропуске занятий: REST API в attendance-service, MongoDB persistence, RabbitMQ event publishing (бот уже слушает `excuse.requested`), каскад на attendance статус при approve, gRPC LessonsByIds в schedule-service, обновлённые student/headman UI с настоящими вызовами вместо graceful-degradation.
 **Depends on**: ничего из текущих фаз (Mongo + RabbitMQ + gRPC уже подняты v4.0/v5.0).
-**Source**: `.planning/bug-reports/BUG-008-student+pwa/excuses-backend-spec.md` (с правками автора), seed-документы в `.planning/milestones/v9.0-phases/59-excuses-backend/`.
+**Source**: `docs/bug-tracker/v1-post-v9.0/BUG-008-student+pwa/excuses-backend-spec.md` (с правками автора), seed-документы в `.planning/milestones/v9.0-phases/59-excuses-backend/`.
 **Success Criteria** (детально см. 59-RESEARCH.md AC-1..AC-12):
   1. STUDENT создаёт тикет с указанием причины (ExcuseType) и lessonIds; статус pending; event `excuse.requested` опубликован
   2. Один lessonId — только в одном активном тикете

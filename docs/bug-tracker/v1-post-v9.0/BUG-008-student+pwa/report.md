@@ -2,7 +2,7 @@
 
 **Найден:** 2026-13-04
 **Severity:** blocker / cosmetic
-**Status:** open
+**Status:** fixed
 **Component:** pwa / web-panel 
 **Role affected:**  STUDENT / HEADMAN 
 **Phase reference:** фронтенд + PWA

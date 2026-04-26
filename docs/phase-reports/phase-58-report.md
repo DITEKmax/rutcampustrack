@@ -3,7 +3,7 @@
 **Завершена:** 2026-04-14 (UAT отложен — см. Known limitations)
 **Milestone:** v9.0 Frontend Unification
 **Requirements закрыты:** BUG-006-1, BUG-006-2, BUG-006-3, BUG-006-4, BUG-006-5, BUG-006-6, BUG-006-7 (все 7 пунктов жалобы администратора)
-**Источник:** `.planning/bug-reports/BUG-006-admin/report.md`
+**Источник:** `docs/bug-tracker/v1-post-v9.0/BUG-006-admin/report.md`
 
 ## Цель
 
@@ -131,7 +131,7 @@ Production:
 Reports & plans:
 - 8 SUMMARY файлов в `.planning/phases/58-admin-bug-006-fixes/` (plans 01-08)
 - `gap-closure-build-regressions-SUMMARY.md` (plan 10)
-- `.planning/bug-reports/BUG-006-admin/report.md` — Resolution section
+- `docs/bug-tracker/v1-post-v9.0/BUG-006-admin/report.md` — Resolution section
 - `docs/phase-reports/phase-58-report.md` — этот файл
 
 ## Верификация
@@ -143,7 +143,7 @@ Reports & plans:
 
 ## Связанные документы
 
-- Исходная жалоба: `.planning/bug-reports/BUG-006-admin/report.md`
+- Исходная жалоба: `docs/bug-tracker/v1-post-v9.0/BUG-006-admin/report.md`
 - Планы фазы: `.planning/phases/58-admin-bug-006-fixes/` (9 планов + 1 gap-closure + верификация)
 - Research: `.planning/phases/58-admin-bug-006-fixes/58-RESEARCH.md`
 - Acceptance Criteria: `.planning/phases/58-admin-bug-006-fixes/58-VERIFICATION.md`

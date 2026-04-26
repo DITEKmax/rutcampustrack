@@ -2,7 +2,7 @@
 
 **Найден:** 2026-04-13
 **Severity:** minor
-**Status:** open
+**Status:** fixed
 **Component:** web-panel
 **Role affected:** all (only affects unit tests, not runtime)
 **Phase reference:** v9.0 (ФИО-split follow-up)

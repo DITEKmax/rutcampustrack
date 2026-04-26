@@ -2,7 +2,7 @@
 
 **Найден:** 2026-04-13
 **Severity:** cosmetic
-**Status:** open
+**Status:** fixed
 **Component:** web-panel
 **Role affected:** all / anonymous
 **Phase reference:** фронтенд фазы

@@ -3,7 +3,7 @@
 **Завершена:** 2026-04-14 (UAT отложен — см. Known limitations)
 **Milestone:** v9.0 Frontend Unification (расширение — уважительные пропуски)
 **Requirements закрыты:** AC-1..AC-8, AC-11, AC-12 (AC-9, AC-10 — manual UAT)
-**Источник:** `.planning/bug-reports/BUG-008-student+pwa/excuses-backend-spec.md`
+**Источник:** `docs/bug-tracker/v1-post-v9.0/BUG-008-student+pwa/excuses-backend-spec.md`
 **Контекст фазы:** `.planning/phases/59-excuses-backend/59-CONTEXT.md` (D-01..D-29)
 
 ## Цель

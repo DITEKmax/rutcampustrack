@@ -2,7 +2,7 @@
 
 **Найден:** 2026-04-13
 **Severity:**  major 
-**Status:** open
+**Status:** fixed
 **Component:** backend:<service> / infra
 **Role affected:** -
 **Phase reference:** 

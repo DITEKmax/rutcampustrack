@@ -188,6 +188,11 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_KEY_DIR: /keys
       TMA_BOT_TOKEN: ${TMA_BOT_TOKEN}
+      # M14 G9 (CSO HIGH-06) — INTERNAL_ISSUER_SECRET для подписи internal JWT.
+      # auth-service — issuer этих token'ов (M03a). api-gateway / notification-web
+      # верифицируют ими же. RequiredSecretsValidator (M14 G4 v2) fail-fast при
+      # отсутствии. Должен совпадать с api-gateway / notification-web env value.
+      INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
       # M09 G7 (NEW-157) — heap = 0.75 × mem_limit. См. docs/resource-limits.md.
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     volumes:
@@ -203,9 +208,12 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    # M09 G7 (NEW-157).
-    mem_limit: 256m
-    mem_reservation: 192m
+    # M09 G7 (NEW-157). M15 hotfix: 256m → 384m. На prod boot exit 137 (OOM):
+    # JVM heap 75% от 256m = 192m, плюс non-heap (metaspace, native, OTel
+    # instrumentation, RabbitMQ NIO buffers, Hikari pool overhead, Spring
+    # Boot reflective bytecode) → > 256m. 384m даёт безопасный margin.
+    mem_limit: 384m
+    mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9090/actuator/health || exit 1"]
@@ -387,9 +395,11 @@ services:
         condition: service_healthy
       auth-service:          # <-- FIX: ждём пока auth-service сгенерит /keys/public.key
         condition: service_healthy
-    # M09 G7 (NEW-157).
-    mem_limit: 256m
-    mem_reservation: 192m
+    # M09 G7 (NEW-157). M15 hotfix: 256m → 384m. Идентичная OOM проблема как у
+    # auth-service: heap 75% от 256m = 192m + non-heap (metaspace, OTel, STOMP
+    # WebSocket buffers, MongoDB driver, RabbitMQ NIO, Caffeine cache) > 256m.
+    mem_limit: 384m
+    mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9094/actuator/health/liveness || exit 1"]
@@ -481,9 +491,12 @@ services:
         condition: service_healthy
       notification-web:
         condition: service_healthy
-    # M09 G7 (NEW-157).
-    mem_limit: 256m
-    mem_reservation: 192m
+    # M09 G7 (NEW-157). M15 hotfix: 256m → 384m. Spring Cloud Gateway boot
+    # peak: Reactor Netty + Redis + RSA pub key fetch + OTel SDK + Spring
+    # Security + WebFlux. После warmup ~150m steady-state, но cold start
+    # пробивает 256m mem_limit → exit 137 → restart loop.
+    mem_limit: 384m
+    mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]

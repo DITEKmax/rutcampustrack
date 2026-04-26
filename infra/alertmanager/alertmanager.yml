@@ -13,11 +13,18 @@ global:
 # Тихий час — fixed 22:00-08:00 MSK. D3=(a).
 # `time_intervals` — v0.27+ alertmanager формат.
 # MSK = UTC+3: 22:00 MSK = 19:00 UTC, 08:00 MSK = 05:00 UTC.
+# M15 hotfix: split интервал через полночь UTC на два диапазона.
+# Alertmanager v0.27 reject'ит `start_time >= end_time` в одной записи
+# (configuration error: "start time cannot be equal or greater than end time"),
+# поэтому 19:00 → 23:59 + 00:00 → 05:00 — два sub-interval'а покрывают
+# те же 10 часов quiet window'а.
 time_intervals:
   - name: quiet-hours-msk
     time_intervals:
       - times:
           - start_time: '19:00'
+            end_time: '23:59'
+          - start_time: '00:00'
             end_time: '05:00'
         location: 'UTC'
 

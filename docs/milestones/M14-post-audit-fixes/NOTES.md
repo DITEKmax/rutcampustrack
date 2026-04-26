@@ -427,3 +427,63 @@ guard → не пересоздаётся.
 В чистом checkout `tests/e2e/node_modules/` отсутствовал. `npm install`
 добавил `package-lock.json` (был отсутствует в репо!). Lock-file
 зафиксирован для CI reproducibility — это improvement, не G7 work.
+
+### Group 8 — G26 code-review P1 ✅ (commit `c09b002`)
+
+**Footprint:** 1 functional commit, 7 files, 36 insertions / 40 deletions.
+Time: ~30 минут (vs hand-off 30 мин — точное попадание).
+
+**Главное решение — env override pattern для production-safe defaults.**
+
+Burst capacity 60 (production safe) против 600 (CI workaround) —
+классический tension. Variants и почему выбран env override:
+
+| Подход | Pro | Con |
+|---|---|---|
+| Hard-code 60 + workers=1 в CI | simple | теряем parallelism, +3-5× wall time |
+| Hard-code 600 везде | simple | brute-force защита 10× ослаблена в prod |
+| `${VAR:60}` + e2e env override | prod safe + e2e parallel | +1 environment var |
+| Profile-specific YAML | classic Spring | требует profile activation, не работает per-route |
+
+Выбран env override — single point of truth (production application.yml
+60), e2e compose явно opt-in в 600 через env var. `.env.prod` не
+выставляет ничего → default 60 in production.
+
+**Production rollback path:** если Grafana покажет 429 spikes на
+/auth/login (после deploy) — добавить `AUTH_LOGIN_BURST_CAPACITY=120`
+в `.env.prod` без code change. Не нужно делать новый release для
+quick mitigation.
+
+**Workers оставил workers=2:**
+
+Было искушение снизить CI workers до 1 как back-up safety net. НЕ
+сделал потому что:
+1. e2e compose выставляет 600 burst через env override → параллельные
+   smoke не блокированы.
+2. Снижение workers до 1 удвоит wall time CI (~5 → ~10 мин).
+3. Если burst 600 не хватит даже параллельно — это другая проблема
+   (нужно искать root cause flaky, не маскировать через retries/workers).
+
+**Diagnostic test removal — два урока:**
+
+1. **Debug tests не должны заходить в main suite.** Если нужен log
+   статус code'а из CI — либо отдельный `@diag` tag с CI exclude,
+   либо просто `failOnStatusCode: false` + `console.log` внутри
+   real test (один раз, не как separate test). M13 G25.20 добавил
+   diagnostic чтобы дебагать flaky CI — но он остался **навсегда**,
+   шумит и ничего не verify'ит.
+
+2. **Если test passing проверяет invariant — другие tests тоже его
+   проверяют.** Diagnostic POST 200/401 — invariant "auth работает".
+   Если invariant сломан, `student login → dashboard visible` упадёт
+   первым (более полное coverage). Diagnostic дублировал с меньшим
+   coverage.
+
+**TEST_USERS.headman → student migration:**
+
+Простая DRY cleanup. Один urok про commit history: `headman-mark.spec.ts`
+скипнут (G7), но я всё равно обновил callers (1 строка через
+`Edit replace_all=true`). Skipped specs не должны накапливать "dead
+references" — когда-то их раскомментируют (или пересоздадут), и
+устаревшие fixtures дадут confusing failures. Лучше держать skipped
+spec'и semantically valid даже если они не run'ятся.

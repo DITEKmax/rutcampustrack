@@ -1,30 +1,26 @@
-# Промпт для следующей сессии — M14 G8: G26 code-review P1 (burstCapacity + diagnostic + DRY)
+# Промпт для следующей сессии — M14 G9: UAT + tag `v0.0.0-alpha.16` (финальная группа M14)
 
 Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Opus сам откроет
 нужные файлы и продолжит.
 
 ---
 
-**M14 G7 закрыт (commit `f24f22f`). 7 false-pass spec'ов починены, 1 spec
-помечен `test.describe.skip` с переносом в v0.1 backlog (headman bulk-mark
-UI не реализован, backend готов). 3 testid'а добавлены в web-panel
-templates. Path A для категории E применён. Polный e2e run отложен
-на G9. M14 пока НЕ push'нут — 15 локальных коммитов на `dev`.**
+**M14 G8 закрыт (commit `c09b002`). 3 finding'а из G26 code-review P1
+закрыты в одном commit'е (~30 мин). Production-safe burstCapacity=60
+default + e2e env override 600. Diagnostic test removed. TEST_USERS.headman
+дубликат удалён + 4 callers обновлены. M14 пока НЕ push'нут — 19
+локальных коммитов на `dev`.**
 
 ## Контекст M14 (читай это первым)
 
 M14 = «Post-Audit Fixes» — закрытие блокеров first VPS deploy v0.0.0
-из четырёх аудитов:
-- `docs/milestones/M13-pre-deploy-hardening/G27-cso-comprehensive-audit.md` — 17 findings
-- `docs/milestones/M13-pre-deploy-hardening/G26-test-audit-findings.md` — 11 (4 P1)
-- `docs/milestones/M13-pre-deploy-hardening/G26-code-review-after-g25.md` — 15 (3 P1)
-- `docs/milestones/M13-pre-deploy-hardening/G27-tech-debt-audit.md` — 23 (deferred)
+из четырёх аудитов. **G9 — финальная группа M14: UAT + tag.**
 
 Полный план: `docs/milestones/M14-post-audit-fixes/PLAN.md`.
 Чеклист: `docs/milestones/M14-post-audit-fixes/CHECKLIST.md`.
 Заметки: `docs/milestones/M14-post-audit-fixes/NOTES.md`.
 
-## Что уже сделано (G1-G7, 2026-04-26)
+## Что уже сделано (G1-G8, 2026-04-26)
 
 | Коммит | Что |
 |--------|-----|
@@ -36,15 +32,10 @@ M14 = «Post-Audit Fixes» — закрытие блокеров first VPS deplo
 | `bf915ec` + `44e2d7c` | **G4 v2**: RequiredSecretsValidator EnvironmentPostProcessor (CSO HIGH-06) |
 | `607af81` + `56c802f` | **G5**: aiohttp 3.10.11→3.13.5 + aiogram 3.15.0→3.23.0 (CSO HIGH-07) |
 | `7fbd908` + `18175fc` | **G6**: SHA-pin 16 actions × 3 workflows + permissions least-privilege (CSO HIGH-03/04 + MED-09) |
-| `f24f22f` | **G7**: G26 false-pass spec fixes + headman-mark.spec.ts skip + future-ideas v0.1 entry |
-| `<tbd>` | G7 docs followup |
-
-**G7 главное открытие:** ~50% false-pass spec'ов из G26 audit'а написаны
-**forward** — UI никогда не был реализован (`headman-mark.spec.ts`,
-`red-zone-badge`). Backend для bulk-mark готов, но web-panel UI требует
-~6-10 ч feature work с UX review. Перенесено в `docs/future-ideas.md`
-§ «v0.1 — Headman bulk-mark UI». Path A (удалить 2 теста) применён для
-категории E (seed `student` имеет `is_headman=true` → тесты invalid).
+| `f24f22f` + `4b79340` | **G7**: G26 false-pass spec fixes + headman-mark.spec.ts skip + 3 testid additions |
+| `11e6a13` | **G7 corrective**: headman-mark by-design out of scope (PWA owns flow), удалён v0.1 backlog |
+| `c09b002` | **G8**: burstCapacity prod default + diagnostic removal + DRY users (G26 F01-F03) |
+| `<tbd>` | G8 docs followup |
 
 ## Что делать в этой сессии
 
@@ -52,76 +43,102 @@ M14 = «Post-Audit Fixes» — закрытие блокеров first VPS deplo
 
 ```bash
 cd C:/Users/maksd/IntelliJIDEA/rutcampustrack
-git log --oneline -17
+git log --oneline -22
 git status --short
 ```
 
 **Ожидаем:**
-- HEAD = `<G7 docs commit>` или `f24f22f`
-- Working tree clean (или максимум `?? .gstack/`, `?? tests/e2e/fixtures/test-excuse.pdf` — последний gitignored либо генерится в beforeAll)
-- 15-16 локальных коммитов M14 ещё не на origin
+- HEAD = `<G8 docs commit>` или `c09b002`
+- Working tree clean (или максимум `?? .gstack/`, `?? tests/e2e/test-results/`, `?? tests/e2e/fixtures/test-excuse.pdf`)
+- 19-20 локальных коммитов M14 ещё не на origin
 
-### Шаг 1 — выполнить Группу 8 (G26 code-review P1)
+### Шаг 1 — выполнить Группу 9 (UAT + tag) — финальная M14
 
-⚠️ **Короткая группа** — ~30 минут. 3 sub-task'а.
+⚠️ **Длинная группа** — ~30-60 мин (зависит от скорости local builds).
 
-Из `CHECKLIST.md` (G8):
+Из `CHECKLIST.md` (G9):
 
-> ## Группа 8 — G26 code-review P1 (30 мин)
+> ## Группа 9 — UAT + tag (30 мин)
 >
-> - [ ] `services/api-gateway/src/main/resources/application.yml:122` — вернуть `burstCapacity: 60` на `auth-login` (rollback CI workaround `600`)
-> - [ ] Если CI требует override — задать в `docker-compose.e2e.yml` через env (`AUTH_LOGIN_BURST_CAPACITY=600`) и Spring `${AUTH_LOGIN_BURST_CAPACITY:60}` в YAML, либо добавить `PLAYWRIGHT_WORKERS=1` в `playwright.config.ts` для CI profile
-> - [ ] `tests/e2e/specs/auth.spec.ts:19-38` — удалить тест `diagnostic: direct POST /api/auth/login` с `console.log` (либо переместить в отдельный `@diag` файл, отключённый в CI grep)
-> - [ ] `tests/e2e/fixtures/users.ts:50-55` — удалить запись `headman` из `TEST_USERS`; все callers `TEST_USERS.headman` → `TEST_USERS.student` (`grep -rn "TEST_USERS.headman" tests/e2e/` сначала)
-> - [ ] Запустить `npx playwright test --grep @smoke` локально → должно проходить с `burstCapacity=60`
-> - [ ] Commit: `fix(gateway,e2e): burstCapacity prod default + diagnostic test removal + DRY users fixture (M14 G8, G26 F01-F03)`
+> - [ ] Полный local pipeline: `./gradlew build` → ожидаем зелёный
+> - [ ] Local docker-compose smoke: `docker compose -f docker-compose.prod.yml --env-file .env.prod up -d` → все 26 контейнеров healthy
+> - [ ] Local Playwright `@smoke` → зелёный
+> - [ ] Local pytest `services/notification-bot/tests` → зелёный
+> - [ ] Local web-panel + pwa unit tests → зелёные (`npm run test` в каждом)
+> - [ ] `scripts/preflight-deploy.sh` → зелёный
+> - [ ] Push `dev` → ожидать green CI
+> - [ ] Tag `v0.0.0-alpha.16` с message со списком CRIT/HIGH fixes (CRIT-01, CRIT-02, HIGH-03, HIGH-04, HIGH-05, HIGH-06, HIGH-07 + G26 P1)
+> - [ ] `git push origin v0.0.0-alpha.16`
+> - [ ] Обновить `CLAUDE.md` § «Текущий статус» — добавить `M14: завершён 2026-04-26`
+> - [ ] Обновить `docs/milestones/README.md` — добавить строку M14 в таблицу
+> - [ ] Финальный commit: `docs: M14 finalised, alpha.16 tagged (post-audit fixes)`
 
-**Контекст из G26 code-review (`G26-code-review-after-g25.md`):**
+**Pre-flight перед началом G9:**
 
-- **F01:** `auth-login` rate-limit поднят до 600 для CI (workaround
-  flaky tests). Production default должен быть 60. Если CI красное —
-  правильное решение `PLAYWRIGHT_WORKERS=1` (sequential), не bumping
-  rate limit.
-- **F02:** diagnostic test с `console.log` остался от debug session.
-  Шумит в CI logs, не testит invariant — лишь печатает status code.
-- **F03:** `TEST_USERS.headman` дублирует `TEST_USERS.student`
-  (`student` УЖЕ has `is_headman=true`). DRY нарушен; забыть update
-  одной записи легко. Особое внимание — после G7 `student-excuse.spec.ts`
-  использует `TEST_USERS.student` для headman flow (правильно). Проверь
-  что callers `TEST_USERS.headman` → `TEST_USERS.student` без semantic
-  изменений.
+1. **Set JAVA_HOME** (Windows): `$env:JAVA_HOME = "C:\Users\maksd\.jdks\ms-21.0.9"` (через PowerShell tool)
+2. **Verify .env.prod существует**: для local docker compose с prod profile
+3. **Free port 5432, 8080, 9094** etc — проверить нет ли висящих контейнеров (`docker compose ps`)
 
-**Pre-flight перед началом G8:**
-1. `cat services/api-gateway/src/main/resources/application.yml | grep -A 5 auth-login` — увидеть текущий burstCapacity (должно быть 600 как CI workaround)
-2. `grep -n "TEST_USERS.headman" tests/e2e/` — какие spec'и использовали headman fixture
-3. Read `tests/e2e/specs/auth.spec.ts:19-38` — diagnostic test полностью
+### Шаг 2 — UAT priority order (если время ограничено)
 
-### Шаг 2 — Verify
+Если 30-60 мин не хватает, минимальный set для tag'а:
 
-```bash
-# Проверить что burstCapacity=60 не ломает smoke tests локально.
-docker compose ps  # backend ready?
-npx playwright test --grep @smoke --project=chromium
+1. **Critical (must)**: `./gradlew build` (~5-7 мин) + `pytest notification-bot` (~30 сек)
+2. **Important**: `npm test` для PWA + web-panel (~2-3 мин каждый)
+3. **Nice-to-have, можно отложить**: full docker compose smoke + Playwright @smoke
+   (требует ~15-30 мин setup + run, можно делать на CI вместо local)
+
+Если local docker compose smoke недоступен (port collision, .env.prod
+missing) — **полагайся на CI** после push'а. Tag создавай только
+после green CI.
+
+### Шаг 3 — burstCapacity risk verification
+
+После G8 production default `burstCapacity=60`. Если Playwright @smoke
+падает с 429 на /auth/login → **НЕ возвращать 600 в production**.
+Альтернативы:
+- Снизить `workers: 1` в playwright.config.ts CI ветке
+- Verify что docker-compose.e2e.yml действительно подхватывает
+  `AUTH_LOGIN_BURST_CAPACITY: "600"` (debug через `docker compose
+  exec api-gateway env | grep AUTH_LOGIN`)
+
+### Шаг 4 — tag message format
+
+Tag annotated с big message:
+
+```
+v0.0.0-alpha.16 — Post-audit fixes (M14)
+
+Closes findings from 4 audits (2026-04-26):
+- CSO comprehensive: CRIT-01, CRIT-02, HIGH-03, HIGH-04, HIGH-05, HIGH-06, HIGH-07
+- CSO MED-09 (gitleaks SHA-pin)
+- G26 test-audit P1 (false-pass spec fixes)
+- G26 code-review P1 (burstCapacity prod default + diagnostic + DRY)
+
+Functional changes:
+- Legacy headers strict by default (4 services + gateway)
+- SHA-pin 17 GitHub Actions across 3 workflows
+- PKCS#8 + idempotent JWT key generation в deploy.yml
+- RequiredSecretsValidator (EnvironmentPostProcessor fail-fast)
+- aiohttp 3.10.11→3.13.5 + aiogram 3.15.0→3.23.0
+- gateway burstCapacity: production default 60 (e2e override 600)
+
+E2E test cleanup:
+- 5 false-pass spec fixes (testid + routes)
+- 1 spec skip permanent (headman bulk-mark — by design out of scope для web-panel, PWA owns flow)
+- diagnostic test removed
+- TEST_USERS.headman дубликат удалён
+
+Total: 19+ commits, 8 functional groups (G1-G8) + UAT+tag (G9).
 ```
 
-Если smoke падают — НЕ возвращать burstCapacity=600. Лучше добавить
-`PLAYWRIGHT_WORKERS=1` либо `--workers=1` в smoke run.
+### Шаг 5 — финальный docs commit
 
-### Шаг 3 — commit + переход к G9
-
-После — docs followup (CHECKLIST + NOTES + rotate hand-off на G9).
-
-### G9 (финальная группа M14)
-
-G9 = «UAT + tag `v0.0.0-alpha.16`» — ~30 мин:
-- Полный gradle build + smoke + pytest + frontend unit
-- preflight-deploy.sh
-- Push origin/dev + ожидание green CI
-- Tag `v0.0.0-alpha.16` со списком CRIT/HIGH fixes
-- Update `CLAUDE.md` § «Текущий статус» + `docs/milestones/README.md`
-- Финальный docs commit
-
-Если у пользователя есть час — G8+G9 в одной сессии.
+После tag push'а:
+- `CLAUDE.md` § «Текущий статус» → новая строка M14
+- `docs/milestones/README.md` → таблица milestone'ов с M14 row
+- Удалить `docs/milestones/NEXT-SESSION.md` или поставить плашку
+  «M14 закрыт, следующее — M15 после first VPS deploy + observability»
 
 ## Полный список M14 групп (для context)
 
@@ -131,20 +148,23 @@ G9 = «UAT + tag `v0.0.0-alpha.16`» — ~30 мин:
 4. ✅ **G4 v2** — RequiredSecretsValidator (CSO HIGH-06) — `bf915ec`
 5. ✅ **G5** — aiohttp + aiogram bump (CSO HIGH-07) — `607af81`
 6. ✅ **G6** — SHA-pin actions deploy/coverage/security (CSO HIGH-03/04 + MED-09) — `7fbd908`
-7. ✅ **G7** — G26 false-pass tests + headman-mark skip (M14 G7) — `f24f22f`
-8. **G8** — G26 code-review P1 (burstCapacity 600→60 + diagnostic + DRY) — **СЛЕДУЮЩАЯ**
-9. **G9** — UAT + tag `v0.0.0-alpha.16`
+7. ✅ **G7** — G26 false-pass tests + corrective bulk-mark out-of-scope — `f24f22f` + `11e6a13`
+8. ✅ **G8** — G26 code-review P1 (burstCapacity 60 + diagnostic + DRY) — `c09b002`
+9. **G9** — UAT + tag `v0.0.0-alpha.16` — **СЛЕДУЮЩАЯ (финальная)**
 
 ## Local state на момент hand-off (2026-04-26 evening)
 
 ```
-Working tree: clean (только ?? .gstack/ — gitignored)
-Branch: dev (15-16 коммитов впереди origin/dev)
+Working tree: clean (только ?? .gstack/, возможно ?? tests/e2e/test-results/)
+Branch: dev (19-20 коммитов впереди origin/dev)
 
 Локальные коммиты M14 (НЕ push'нуты):
-  <G7 docs>     docs(M14): G7 done — false-pass tests + v0.1 backlog
+  <G8 docs>     docs(M14): G8 done — burstCapacity prod default + DRY
+  c09b002       fix(gateway,e2e): burstCapacity prod default + diagnostic test removal + DRY users fixture (M14 G8, G26 F01-F03)
+  11e6a13       fix(e2e,docs): headman-mark.spec.ts skip — by-design out of scope для web-panel (M14 G7 corrective)
+  4b79340       docs(M14): G7 done — false-pass tests + headman bulk-mark v0.1 backlog + rotate hand-off на G8
   f24f22f       fix(e2e): G26 false-pass tests — testid + routes + skip forward-written + path A для seed mismatch (M14 G7)
-  18175fc       docs(M14): G6 done — SHA-pin 16 actions + per-job permissions
+  18175fc       docs(M14): G6 done — SHA-pin 16 actions + permissions least-privilege + rotate hand-off на G7
   7fbd908       fix(ci): SHA-pin third-party + first-party actions в deploy/coverage/security (M14 G6, CSO HIGH-03/04 + MED-09)
   56c802f       docs(M14): G5 done — aiohttp + aiogram bump
   607af81       chore(deps): aiohttp 3.10.11→3.13.5 + aiogram 3.15.0→3.23.0 (M14 G5, CSO HIGH-07)
@@ -160,28 +180,25 @@ Branch: dev (15-16 коммитов впереди origin/dev)
   455029f       docs(M14): план + триаж 4 пост-M13 аудитов
 ```
 
-Push на origin/dev пока НЕ делать — пользователь решает когда (G9 default).
-
 ## Pending decisions для new conversation
 
-1. **`burstCapacity` 600→60 — risk smoke flaky.** Если smoke падают
-   при 60 — НЕ возвращать 600 (это CI workaround). Альтернативы:
-   - `PLAYWRIGHT_WORKERS=1` в `playwright.config.ts` для CI
-   - per-env override через `${AUTH_LOGIN_BURST_CAPACITY:60}` + CI env
-   - retry + delay в `loginAs` fixture
-2. **`auth.spec.ts:19-38` diagnostic** — удалить или перенести в
-   `@diag` tag с CI exclude? Чеклист говорит "удалить либо
-   переместить". Default — удалить (нет invariant verification).
-3. **`TEST_USERS.headman` callers** — после G7 уже минимизировано,
-   но проверь grep чтобы не было silent semantic regression.
-4. **Push на origin/dev.** По дефолту НЕ пушим до G9.
+1. **Local docker compose smoke** — если port collision / .env.prod
+   missing → положись на CI после push, не блокируй tag.
+2. **`burstCapacity=60` risk** — если Playwright @smoke падает с 429
+   на /auth/login → **НЕ rollback на 600 в production**, debug через
+   снижение workers либо verify e2e env override.
+3. **Push timing** — push после `<G8 docs commit>`, ожидание green CI,
+   затем tag. Не tag'ать до green CI.
 
 ## История milestone'ов (архив)
 
 - M01-M08 ✅ (`v0.0.0-alpha.1..alpha.9`)
 - M09-M12 ✅ 2026-04-24 (`alpha.10..alpha.13`)
 - M13 Pre-Deploy Hardening ✅ 2026-04-25 (`v0.0.0-alpha.15`)
-- **→ M14 Post-Audit Fixes** (текущий) — G1-G7 ✅, G8-G9 pending. Tag `v0.0.0-alpha.16` после G9.
+- **→ M14 Post-Audit Fixes** (текущий) — G1-G8 ✅, G9 pending. Tag `v0.0.0-alpha.16` после G9.
+
+После закрытия M14 — first VPS deploy v0.0.0. Затем M15 «Post-Deploy
+Cleanup» при необходимости (Pre-v0.1 sweep из `docs/future-ideas.md`).
 
 Roadmap: `docs/milestones/README.md`.
 Aудиторские отчёты: `docs/milestones/M13-pre-deploy-hardening/G2{6,7}-*.md`.

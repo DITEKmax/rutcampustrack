@@ -205,14 +205,51 @@ Conservative выбор vs latest 3.27 (8 minor versions vs 12).
 - Polish red-zone-badge stat — feature не запланирована, без явного
   user request в v0.1+ не делать.
 
-## Группа 8 — G26 code-review P1 (30 мин)
+## Группа 8 — G26 code-review P1 ✅ (commit `c09b002`)
 
-- [ ] `services/api-gateway/src/main/resources/application.yml:122` — вернуть `burstCapacity: 60` на `auth-login` (rollback CI workaround `600`)
-- [ ] Если CI требует override — задать в `docker-compose.e2e.yml` через env (`AUTH_LOGIN_BURST_CAPACITY=600`) и Spring `${AUTH_LOGIN_BURST_CAPACITY:60}` в YAML, либо добавить `PLAYWRIGHT_WORKERS=1` в `playwright.config.ts` для CI profile
-- [ ] `tests/e2e/specs/auth.spec.ts:19-38` — удалить тест `diagnostic: direct POST /api/auth/login` с `console.log` (либо переместить в отдельный `@diag` файл, отключённый в CI grep)
-- [ ] `tests/e2e/fixtures/users.ts:50-55` — удалить запись `headman` из `TEST_USERS`; все callers `TEST_USERS.headman` → `TEST_USERS.student` (`grep -rn "TEST_USERS.headman" tests/e2e/` сначала)
-- [ ] Запустить `npx playwright test --grep @smoke` локально → должно проходить с `burstCapacity=60`
-- [ ] Commit: `fix(gateway,e2e): burstCapacity prod default + diagnostic test removal + DRY users fixture (M14 G8, G26 F01-F03)`
+**3 finding'а закрыты в одном commit'е (~30 мин):**
+
+### F01 — auth-login burstCapacity: production default 60
+
+- [x] `services/api-gateway/src/main/resources/application.yml:122`:
+  `burstCapacity: 600` → `${AUTH_LOGIN_BURST_CAPACITY:60}` (env override)
+- [x] `docker-compose.e2e.yml`: добавил `AUTH_LOGIN_BURST_CAPACITY: "600"`
+  в gateway env — override активен только в e2e compose, prod default 60
+- [x] **Workers оставил workers=2 для CI** — e2e compose всё ещё имеет
+  600 burst (через override), параллельные smoke не блокированы.
+  Mitigation если flaky: снизить до workers=1 в G9.
+
+**Production guarantee:** brute-force защита 5/мин/IP per CSO threat
+model восстановлена (60 / requestedTokens=12 = 5 запросов залпом).
+Workaround на 600 ослаблял защиту в 10× на каждый prod deploy с M13 G25.22.
+
+### F02 — diagnostic test removed
+
+- [x] `tests/e2e/specs/auth.spec.ts` — удалён `diagnostic: direct POST
+  /api/auth/login` (был в lines 19-38). console.log шумел в CI логах,
+  expect 200/401 неявно покрыты `student login → dashboard visible`.
+- [x] Бонус: -12 токенов из auth-login burst в каждом parallel run.
+
+### F03 — TEST_USERS.headman дубликат удалён (DRY)
+
+- [x] `tests/e2e/fixtures/users.ts`: запись `headman` (1-в-1 копия
+  `student`) удалена.
+- [x] 4 caller'а обновлены: role-headman (1), headman-mark (2 — skipped
+  но обновлено для consistency), student-excuse (1 — комментарий).
+- [x] `grep -rn "TEST_USERS.headman" tests/e2e/` — только упоминания
+  в комментариях.
+
+### Verification
+
+- [x] `npx playwright test --list` — 10 hits для auth.spec.ts (было 12,
+  -2 за удаление diagnostic × 2 проекта). Все 9 spec'ов парсятся.
+- [x] YAML safe_load для `application.yml` + `docker-compose.e2e.yml` → OK
+- [ ] **Полный smoke run отложен на G9** — требует docker compose up.
+  Risk: `burstCapacity=60` для prod может не хватить при наплыве. Если
+  Grafana покажет 429 spikes на /auth/login — добавить
+  `AUTH_LOGIN_BURST_CAPACITY=120` в `.env.prod` (override без code change).
+
+- [x] Commit: `fix(gateway,e2e): burstCapacity prod default + diagnostic test removal + DRY users fixture (M14 G8, G26 F01-F03)` — `c09b002`
 
 ## Группа 9 — UAT + tag (30 мин)
 

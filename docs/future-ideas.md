@@ -689,6 +689,67 @@ M14 закрыл только блокеры first deploy. Эти пункты �
 **Когда делать:** week 1-2 после first deploy v0.0.0 GA, либо отдельный
 M15 «Post-Deploy Cleanup» если накопится критическая масса.
 
+### Frontend — Web-panel
+
+#### v0.1: Headman bulk-mark UI в web-panel
+
+**Текущее состояние (v0.0.0):**
+Backend полностью готов:
+- `MarkingApi.batchMark()` endpoint в attendance-service
+- `MarkBatchRequest` / `MarkBatchResponse` / `MarkBatchItem` DTO
+- ScheduleGrpcClient + retention/idempotency contracts покрыты тестами
+
+UI bulk-mark в web-panel **не реализован**:
+- `headman-dashboard.component.ts` — только stat-cards (memberCount,
+  pendingExcuses), нет lesson-card listings
+- `headman-schedule.component.ts` — slot-dialog для CRUD занятий, но
+  нет BottomSheet с «Отметить всех» для активных пар
+- group-attendance-count stat не выводится на dashboard
+- grep по всему `frontends/` (web-panel + pwa): 0 hits для
+  `bulk-mark`/`markAll`/«Отметить всех» в UI коде
+
+**Primary path для bulk-mark в v0.0.0** — Telegram bot
+(`services/notification-bot/bot/handlers/headman_actions.py`),
+УЖЕ реализован, покрыт pytest, доступен через `/start` → меню старосты.
+
+**Тест в backlog:** `tests/e2e/specs/headman-mark.spec.ts` —
+помечен `test.describe.skip` в M14 G7. Восстановить после реализации UI.
+
+**Что нужно для v0.1:**
+
+1. **UX review** с пользователем: где список активных пар (на
+   `/headman/schedule` или отдельно `/headman/lessons`)? BottomSheet vs
+   Material Dialog для action-sheet? Live-update счётчика через STOMP
+   subscribe (если headman сидит на dashboard) или polling?
+
+2. **Lesson-card listings** — компонент `<app-headman-lesson-card>`,
+   статусы (planned/active/closed/cancelled), CTA «Отметить всех» только
+   для active.
+
+3. **Bulk-mark sheet** — список студентов группы с чекбоксами +
+   default-state «все present», submit → `attendance.markBatch()` (через
+   StudentApiService + gRPC).
+
+4. **Group-attendance-count stat** — новый `<app-stat-card>` на
+   `headman-dashboard` показывает «X / Y студентов отмечено сегодня»
+   с live-update через STOMP `lesson.marked` events.
+
+5. **WebSocket integration** — subscribe на `/topic/headman/{groupId}/marks`,
+   при events update счётчиков (M07 STOMP unified service).
+
+6. **Tests** — unit (Karma) + integration (TestBed) + восстановление
+   `headman-mark.spec.ts` Playwright e2e.
+
+**Оценка:** 6-10 ч feature work (включая UX iteration с пользователем).
+Не блокирует v0.0.0 deploy — bot path для bulk-mark уже работает.
+
+**Когда делать:** после v0.0.0 GA когда (a) есть real headman users
+которые попросили web UI вместо/вместе с bot, либо (b) выявлены
+сценарии где bot UX недостаточен (например, когда нужно отметить большую
+группу с per-student override → удобнее на широком экране).
+
+---
+
 ### Безопасность
 
 #### MED-08: Реальный audit log вместо `@AdminAction` aspect-заглушки (CSO + tech-debt F02)

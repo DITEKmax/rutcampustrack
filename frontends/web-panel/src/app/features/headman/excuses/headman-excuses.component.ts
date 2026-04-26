@@ -105,7 +105,7 @@ import {
             </div>
           } @else {
             @for (ticket of pendingTickets(); track ticket.id) {
-              <article class="excuse-card">
+              <article class="excuse-card" data-testid="excuse-card">
                 <header class="excuse-card__head">
                   <div>
                     <strong class="excuse-card__student">{{ ticket.studentName }}</strong>

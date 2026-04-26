@@ -24,17 +24,14 @@ test.describe('Role: STUDENT', () => {
     }
   });
 
-  test('cannot access /headman/* without is_headman=true', async ({ page }) => {
-    await page.goto('/headman/dashboard');
-    // Role-guard redirect — STUDENT без is_headman не видит headman-панель
-    await expect(page).toHaveURL(/\/student\//, { timeout: 5_000 });
-  });
-
-  test('cannot access /admin/* or /teacher/*', async ({ page }) => {
-    await page.goto('/admin/users');
-    await expect(page).toHaveURL(/\/student\//, { timeout: 5_000 });
-
-    await page.goto('/teacher/stats');
-    await expect(page).toHaveURL(/\/student\//, { timeout: 5_000 });
-  });
+  // M14 G7 (G26 категория E, path A): тесты `cannot access /headman/*`
+  // и `cannot access /admin/* or /teacher/*` удалены — seed-юзер
+  // `student` имеет `is_headman=true` (academic-service V2 seed) и
+  // landing page для него — `/headman/dashboard`. Отдельного
+  // non-headman student'а в seed нет. RBAC уже покрыт backend-уровневыми
+  // SecurityIdorIT (academic/schedule/attendance/notification) + WebPanel
+  // route guards тестируются отдельно в Karma unit-тестах роутов.
+  // E2E дублирование избыточно. Восстановить с path B (Flyway seed
+  // `student_plain` с is_headman=false) если реальный traffic покажет
+  // gap между unit + IT coverage.
 });

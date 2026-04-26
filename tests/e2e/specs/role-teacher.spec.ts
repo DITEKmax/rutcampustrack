@@ -15,7 +15,9 @@ test.describe('Role: TEACHER', () => {
   });
 
   test('can access teacher-only paths', async ({ page }) => {
-    const paths = ['/teacher/schedule', '/teacher/stats'];
+    // M14 G7 (G26 категория B): `/teacher/schedule` route не существует —
+    // в TEACHER_ROUTES только dashboard/journal/stats. Заменено на /journal.
+    const paths = ['/teacher/journal', '/teacher/stats'];
     for (const path of paths) {
       await page.goto(path);
       await expect(page).toHaveURL(new RegExp(path));
@@ -28,11 +30,9 @@ test.describe('Role: TEACHER', () => {
     await expect(page).toHaveURL(/\/teacher\//, { timeout: 5_000 });
   });
 
-  test('journal shows red-zone indicator for struggling students', async ({ page }) => {
-    await page.goto('/teacher/stats');
-    // Если в seed есть red-zone студенты — статистика должна показать badge
-    const redZoneBadge = page.locator('[data-testid="red-zone-badge"]');
-    // Не обязательно visible (может быть no red-zone в seed'е), но не крашит
-    await expect(page.locator('body')).toBeVisible();
-  });
+  // M14 G7 (G26 категория A): тест `journal shows red-zone indicator`
+  // удалён. Текущий `teacher/stats/stats-page.component.html` рендерит
+  // `app-overall-stat-card` + `app-subject-chart` — индикатора красной
+  // зоны нет. Восстановить когда фича будет реализована (планируется в
+  // v0.1 после job-stories ревью teacher dashboard UX).
 });

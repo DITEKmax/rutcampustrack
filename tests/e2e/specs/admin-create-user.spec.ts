@@ -52,7 +52,8 @@ test.describe('Admin creates user', () => {
     expect(passwordValue).toBeTruthy();
     expect(passwordValue!.length).toBeGreaterThanOrEqual(8);
 
-    await page.getByRole('button', { name: /закрыть|ок/i }).click();
+    // M14 G7: реальная кнопка close — «Готово» (mat-dialog-close).
+    await page.getByRole('button', { name: /готово|закрыть|ок/i }).click();
 
     // Новый user появился в списке
     await expect(page.getByText(unique)).toBeVisible();

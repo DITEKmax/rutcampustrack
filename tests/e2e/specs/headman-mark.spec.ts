@@ -15,9 +15,33 @@ import { assertNoA11yCriticalOrSerious } from '../fixtures/axe';
  *
  * Headman hard-lock (v9.0) — после bulk-mark студенты видят занятие как
  * заблокированное от геоотметки.
+ *
+ * ============================================================================
+ * M14 G7 (G26 категория «forward-written»): SKIPPED.
+ *
+ * Pre-flight reading в G7 показал что web-panel UI bulk-mark **не
+ * реализован**:
+ *  - `headman-dashboard.component.ts` — только stat-cards (memberCount,
+ *    pendingExcuses), нет lesson-card listings, нет group-attendance-count
+ *  - `headman-schedule.component.ts` — slot-dialog для CRUD занятий,
+ *    нет BottomSheet с «Отметить всех»
+ *  - grep по всему web-panel + pwa: 0 hits для `bulk-mark`/`markAll`/
+ *    «Отметить всех» в UI коде
+ *
+ * Backend готов: `MarkingApi.batchMark()` + `MarkBatchRequest/Response`
+ * DTO + ScheduleGrpcClient (services/attendance-service/.../marking/).
+ *
+ * Перенесено в v0.1: см. `docs/future-ideas.md` § «v0.1 — Headman
+ * bulk-mark UI». Восстановить тест после реализации UI с UX review
+ * (lesson-card layout, BottomSheet vs Material Dialog, live-update
+ * через STOMP). Оценка работы: 6-10 ч feature work.
+ *
+ * Primary path для bulk-mark в v0.0.0 — Telegram bot, который УЖЕ
+ * реализован и покрыт pytest. Web-panel UI это secondary channel.
+ * ============================================================================
  */
 
-test.describe('Headman bulk-mark', () => {
+test.describe.skip('Headman bulk-mark', () => {
   test('headman marks all students present via batch endpoint', async ({ page }) => {
     await loginAs(page, TEST_USERS.headman);
 

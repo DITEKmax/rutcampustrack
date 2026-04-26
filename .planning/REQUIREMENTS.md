@@ -73,8 +73,8 @@ Requirements for v9.0 Frontend Unification milestone. Each maps to roadmap phase
 ### Documentation
 
 - [ ] **DOCS-v9-01**: `CLAUDE.md` updated — project status reflects v9.0 in progress, phase table current, URL layout section added
-- [ ] **DOCS-v9-02**: `docs/url-layout.md` updated — new path routing table (/, /login, /admin, /teacher, /student, /headman, /app, /presentation)
-- [ ] **DOCS-v9-03**: `docs/job-stories.md` extended with JS-STUDENT-WEB-01..10 and JS-HEADMAN-WEB-01..08 stories for web cabinets (currently job stories describe only PWA/Mini App/Telegram flows for students)
+- [ ] **DOCS-v9-02**: `docs/product/url-layout.md` updated — new path routing table (/, /login, /admin, /teacher, /student, /headman, /app, /presentation)
+- [ ] **DOCS-v9-03**: `docs/product/job-stories.md` extended with JS-STUDENT-WEB-01..10 and JS-HEADMAN-WEB-01..08 stories for web cabinets (currently job stories describe only PWA/Mini App/Telegram flows for students)
 - [ ] **DOCS-v9-04**: `.planning/PROJECT.md` updated — v9.0 moves to Shipped Milestones section after completion
 
 ---
@@ -89,7 +89,7 @@ Deferred to future releases. Tracked but not in v9.0 roadmap.
 
 ### PWA for TEACHER and ADMIN
 
-- **PWA-TCH-01..NN**: Teacher mobile client (journal read-only, stats on the go) — `docs/design-decisions.md §3` fixes this as target architecture but defers to future
+- **PWA-TCH-01..NN**: Teacher mobile client (journal read-only, stats on the go) — `docs/product/design-decisions.md §3` fixes this as target architecture but defers to future
 - **PWA-ADM-01..NN**: Admin mobile client (user/group/semester management on mobile)
 
 ### Other deferred

@@ -160,7 +160,7 @@ After STUDENT lands on `/teacher/dashboard`, `roleGuard(['TEACHER'])` blocks acc
 
 ### 1. Design Gap: PWA Built Only for STUDENT Role
 
-**Problem:** `docs/design-decisions.md §3` explicitly states:
+**Problem:** `docs/product/design-decisions.md §3` explicitly states:
 > "PWA — аудитория: **все роли** (студенты, старосты, преподаватели). Админы остаются на desktop веб-панели"
 
 **Reality:** `frontends/pwa/src/` implemented only for STUDENT. No UI for TEACHER, HEADMAN.

@@ -36,7 +36,7 @@ Claude Code автоматически прочитает `CLAUDE.md` и буд�
 ```
 
 **Зачем**: Начинает новый этап разработки. GSD спросит что делать — отвечай:
-> "Фаза 1 — Auth Service + API Gateway. Детали в docs/phases-plan.md раздел Фаза 1"
+> "Фаза 1 — Auth Service + API Gateway. Детали в docs/meta/phases-plan.md раздел Фаза 1"
 
 GSD создаст файл с роадмапом в `.planning/`.
 
@@ -142,7 +142,7 @@ Claude Code понимает обычный текст. Не нужны спец
 
 **Ещё лучше** (со ссылкой на документацию):
 ```
-Реализуй Auth Service согласно docs/phases-plan.md раздел "Фаза 1 → Auth Service". Начни с JwtService.
+Реализуй Auth Service согласно docs/meta/phases-plan.md раздел "Фаза 1 → Auth Service". Начни с JwtService.
 ```
 
 ---

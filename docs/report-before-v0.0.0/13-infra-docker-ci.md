@@ -465,7 +465,7 @@ curl -sS --fail https://ruttrack.site/api/auth/publicKey | grep -q 'BEGIN PUBLIC
 | Роли и порты из CLAUDE.md                                           |   ✅   | gateway 8080, auth 9090, academic 9091, schedule 9092, attendance 9093, notification 9094 — соответствуют |
 | PostgreSQL × 2 + MongoDB + Redis + RabbitMQ                         |   ✅   | Все запускаются |
 | JWT keys — монтируются через `jwt-keys` named volume                |   ✅   | В compose есть, в deploy.yml инициализируется через alpine+openssl |
-| URL Layout (см. CLAUDE.md раздел «URL Layout v9.0»)                 |   ⚠    | `/`, `/login`, `/admin/`, `/teacher/`, `/student/`, `/headman/`, `/app/`, `/presentation/`, `/mini-app/`, `/api/*` — все маршруты есть в default.conf; но `/mini-app/` отсутствует в документации `docs/url-layout.md` (или наоборот) — проверить синхронизацию |
+| URL Layout (см. CLAUDE.md раздел «URL Layout v9.0»)                 |   ⚠    | `/`, `/login`, `/admin/`, `/teacher/`, `/student/`, `/headman/`, `/app/`, `/presentation/`, `/mini-app/`, `/api/*` — все маршруты есть в default.conf; но `/mini-app/` отсутствует в документации `docs/product/url-layout.md` (или наоборот) — проверить синхронизацию |
 
 ## Зависимости между проблемами
 

@@ -109,7 +109,7 @@ git add frontends/*/src/api/generated/  # или docs/openapi/*.json если ba
 5. **/gsd-verify-phase** → `VERIFICATION.md`.
 6. **/gsd-complete-milestone** → tag + archive.
 
-Подробнее — в `docs/info-for-gsd.md` и `.claude/agents/gsd-*.md`.
+Подробнее — в `docs/meta/info-for-gsd.md` и `.claude/agents/gsd-*.md`.
 
 ---
 

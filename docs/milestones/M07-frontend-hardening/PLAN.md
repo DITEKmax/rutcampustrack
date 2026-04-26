@@ -96,7 +96,7 @@ frontend-stack.
 ### PR-template + labels (QE1)
 - `.github/pull_request_template.md` — `landing-review` / `docs-review`
   checkboxes
-- `landing-review` label — авто-ссылка на `docs/contributing.md`
+- `landing-review` label — авто-ссылка на `docs/meta/contributing.md`
 
 ### M06 defer'ы (frontend-related)
 - nginx `client_max_body_size` per-location (P2-9/3, 13 P2-3) — в M07
@@ -165,8 +165,8 @@ frontend-stack.
 - `.github/pull_request_template.md` (NEW-74) — landing-review checkbox
 - `docs/frontend-architecture.md` (NEW) — NotificationCenter, error
   handling, form validation policy
-- `docs/a11y-checklist.md` (NEW) — WCAG 2.1 AA baseline
-- `docs/contributing.md` (NEW-108) — когда обновлять лендинг/CLAUDE.md/
+- `docs/product/a11y-checklist.md` (NEW) — WCAG 2.1 AA baseline
+- `docs/meta/contributing.md` (NEW-108) — когда обновлять лендинг/CLAUDE.md/
   docs
 - `docs/operations/deploy/nginx-config.md` (NEW-152)
 
@@ -219,8 +219,8 @@ frontend-stack.
 ## Artifacts
 
 - `docs/frontend-architecture.md` — NotificationCenter + error handling
-- `docs/a11y-checklist.md` — WCAG 2.1 AA baseline
-- `docs/contributing.md` (NEW-108) — ревизия лендинга/docs
+- `docs/product/a11y-checklist.md` — WCAG 2.1 AA baseline
+- `docs/meta/contributing.md` (NEW-108) — ревизия лендинга/docs
 - `docs/operations/deploy/nginx-config.md` (NEW-152)
 - `frontends/landing/dist/assets/vendor/` — self-hosted CDN
 - `frontends/landing/dist/assets/og/ruttrack-og-1200x630.png`
@@ -297,7 +297,7 @@ _Никаких «why», «motivation», «background» — это уже в 99-
   Создание = outside M07 scope. StatsPage PWA остался с N параллельными
   TanStack queries (не waterfall, уже OK).
 - **@axe-core/cli run** — нужен dev server. Отложено в M08 Playwright
-  e2e pipeline. Pass 1 baseline закрыт через `docs/a11y-checklist.md`
+  e2e pipeline. Pass 1 baseline закрыт через `docs/product/a11y-checklist.md`
   — semantic HTML + aria-labels + prefers-reduced-motion verified
   manually.
 - **ESLint a11y plugins**: у PWA и web-panel НЕТ ESLint config

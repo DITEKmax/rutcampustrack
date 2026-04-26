@@ -314,11 +314,11 @@ Plans:
   2. The landing describes all four roles — ADMIN, TEACHER, STUDENT, and HEADMAN — each with their key capabilities listed; HEADMAN is no longer absent from the role overview
   3. The landing is fully responsive across 360-1440px viewports and dark mode (`prefers-color-scheme: dark`) renders correctly
   4. `CLAUDE.md` project status reflects v9.0 phases 49-57 and the current URL layout; all stale "В РАБОТЕ" references for older milestones are corrected
-  5. `docs/url-layout.md` contains the complete v9.0 path routing table: `/` → redirect to `/login`, `/login`, `/app/`, `/presentation/`, `/admin/*`, `/teacher/*`, `/student/*`, `/headman/*`
+  5. `docs/product/url-layout.md` contains the complete v9.0 path routing table: `/` → redirect to `/login`, `/login`, `/app/`, `/presentation/`, `/admin/*`, `/teacher/*`, `/student/*`, `/headman/*`
 **Notes**:
-  - GSAP skills available: `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger` per docs/skills-inventory.md
+  - GSAP skills available: `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger` per docs/meta/skills-inventory.md
   - Landing is static HTML — edit `frontends/landing/dist/index.html` (and source if present); revalidate dark mode after GSAP section addition
-  - `docs/job-stories.md` additions: JS-STUDENT-WEB-01..10 and JS-HEADMAN-WEB-01..08 for web cabinet stories (documented gap from CONCERNS.md)
+  - `docs/product/job-stories.md` additions: JS-STUDENT-WEB-01..10 and JS-HEADMAN-WEB-01..08 for web cabinet stories (documented gap from CONCERNS.md)
   - `.planning/PROJECT.md` v9.0 section: draft the Shipped Milestones entry now so it is ready for the milestone close command
 **Plans**: 3 plans (Wave 1: 57-01 landing, 57-02 docs — parallel; Wave 2: 57-03 UAT + report)
 Plans:

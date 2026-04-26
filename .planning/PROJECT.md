@@ -17,7 +17,7 @@ Full-stack attendance tracking system: 5 backend microservices + 4 frontend clie
 - **Block A — Infra & routing fixes:** nginx root `/` → `/login` (not PWA), landing to `/presentation/`, PWA to `/app/`, dead `https://t.me/` links removed, web-panel `baseHref` migration `/admin/` → `/`, unified `/login` for all roles
 - **Block B — Student web cabinet:** `/student/{dashboard, schedule, checkin, homework, stats, notifications, excuses, late-checkin, profile}`, PWA install prompt (non-intrusive, no forced redirect)
 - **Block C — Headman web cabinet:** `/headman/{dashboard, group, subjects, journal, excuses, late-checkin, stats}`, closes WPAN-13 blocker
-- **Block D — Headman PWA mode:** HEADMAN role branch in React PWA (closes `docs/design-decisions.md §3` promise)
+- **Block D — Headman PWA mode:** HEADMAN role branch in React PWA (closes `docs/product/design-decisions.md §3` promise)
 - **Block E — Landing presentation mode + docs:** landing → `/presentation/` with GSAP "how the system works" animation, docs sync
 
 **Key context:**
@@ -240,7 +240,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 ## Milestones
 
 ### v9.0: Frontend Unification — Single Login & Role-Based Web Clients — ✅ SHIPPED 2026-04-27
-Post-v8.0 production revealed that root `/` serves PWA to all roles, `/admin/` login is broken for non-ADMIN users (infinite redirect loop), landing has dead Telegram links, and web cabinets for STUDENT/HEADMAN don't exist despite being fixed in `docs/design-decisions.md §3` and `docs/job-stories.md`. v9.0 unifies all web clients under a single `/login` with role-based routing, delivers full student and headman web cabinets, extends PWA to HEADMAN, and moves landing to `/presentation/`. See `.planning/milestones/v9.0-BRIEF.md` for full context.
+Post-v8.0 production revealed that root `/` serves PWA to all roles, `/admin/` login is broken for non-ADMIN users (infinite redirect loop), landing has dead Telegram links, and web cabinets for STUDENT/HEADMAN don't exist despite being fixed in `docs/product/design-decisions.md §3` and `docs/product/job-stories.md`. v9.0 unifies all web clients under a single `/login` with role-based routing, delivers full student and headman web cabinets, extends PWA to HEADMAN, and moves landing to `/presentation/`. See `.planning/milestones/v9.0-BRIEF.md` for full context.
 
 ### v8.0: CI/CD, Deployment & Documentation — ✅ SHIPPED 2026-04-08
 Production-ready deployment pipeline. Actuator health endpoints, multi-stage Dockerfiles (11 images), docker-compose.prod.yml (17 services), nginx SSL with certbot, GitHub Actions CI + GHCR deploy, unified Swagger UI, complete README. 8 phases, 11 plans, 26 requirements. See `.planning/milestones/v8.0-ROADMAP.md`.

@@ -18,7 +18,7 @@ Playwright end-to-end тесты для RutCampusTrack.
 
 axe-core integration: **каждый spec** запускает
 `assertNoA11yCriticalOrSerious(page)` → **zero CRITICAL+SERIOUS**
-violations (WCAG 2.1 AA). MODERATE/MINOR → `docs/a11y-checklist.md`
+violations (WCAG 2.1 AA). MODERATE/MINOR → `docs/product/a11y-checklist.md`
 следующий pass.
 
 ## Быстрый старт
@@ -296,6 +296,6 @@ prod-like, но cold build тратит ~10 мин.
 
 - M08 PLAN.md Группа 5 — `docs/milestones/M08-test-infrastructure/PLAN.md`
 - M08 DECISIONS D1 (mini-app skip) — `docs/milestones/M08-test-infrastructure/DECISIONS.md`
-- M07 G10 a11y baseline — `docs/a11y-checklist.md`
+- M07 G10 a11y baseline — `docs/product/a11y-checklist.md`
 - M13 G18 STOMP heartbeat — `docs/architecture/websocket-flow.md`
 - Playwright docs — https://playwright.dev/

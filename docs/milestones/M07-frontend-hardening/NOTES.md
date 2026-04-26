@@ -18,7 +18,7 @@
    `docs/future-ideas.md` → "Mini-app unification: copy+adapt from PWA
    after M12".
 3. **axe-core baseline** (G10): **(a) CRITICAL + SERIOUS = 0**.
-   MODERATE/MINOR трекаем в `docs/a11y-checklist.md` как "a11y pass 2"
+   MODERATE/MINOR трекаем в `docs/product/a11y-checklist.md` как "a11y pass 2"
    (v0.1), не блокируем M07.
 4. **Sparklines placeholder text** (G9): **(e) "Графики посещаемости
    появятся в следующем релизе"** + skeleton UI + info-badge.

@@ -39,7 +39,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 ## Группа 2 — Landing meta + a11y (QE3, QE4, P2-7B/3) — ~3ч
 
 - [x] Создать `dist/assets/og/ruttrack-og.svg` (SVG source-of-truth,
-      brand-tokens из `docs/Rutcampustrack brandbook.md` §2) + скрипт
+      brand-tokens из `docs/product/Rutcampustrack brandbook.md` §2) + скрипт
       `scripts/generate-og.mjs` (resvg-js, self-hosted woff2 → PNG) +
       `package.json` с devDep `@resvg/resvg-js@^2.6.2`.
 - [x] Сгенерировать `dist/assets/og/ruttrack-og-1200x630.png` (162KB)
@@ -297,7 +297,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       chain, config file, rules tuning).
 - [~] `@angular-eslint/template-accessibility` rules в web-panel —
       **отложено в M08**. Аналогично: ESLint config нет в web-panel.
-- [x] `docs/a11y-checklist.md` — WCAG 2.1 AA baseline создан.
+- [x] `docs/product/a11y-checklist.md` — WCAG 2.1 AA baseline создан.
       Pass 1 (M07 G10 baseline, **выполнено**) + Pass 2 (v0.1 items:
       axe-core run, ESLint a11y plugins, Lighthouse score ≥ 95, skip-
       links, color contrast, SMIL replace, touch targets, screen reader
@@ -319,7 +319,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       `docs-review`.
 - [~] GitHub labels `landing-review`, `docs-review` manual UI —
       создадутся при первом использовании в PR (owner setup).
-- [x] `docs/contributing.md` (NEW-108) — branches, commits,
+- [x] `docs/meta/contributing.md` (NEW-108) — branches, commits,
       PR-labels, когда ревизовать лендинг/docs, Flyway rules,
       OpenAPI drift recovery.
 - [x] Commit `8aa7a22`: `feat(ops): nginx per-location + PR-template (M07 Группа 11, P2-9/3)`

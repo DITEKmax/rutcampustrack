@@ -77,7 +77,7 @@ frontends/pwa/
             └── stats/{StatsPage, SubjectStatsCard}
 ```
 
-Расхождения с `docs/design-decisions.md` и CLAUDE.md минимальные — PWA заявлена в v6.0, `/app/` путь поднят в v9.0 (`docs/url-layout.md`). Но:
+Расхождения с `docs/product/design-decisions.md` и CLAUDE.md минимальные — PWA заявлена в v6.0, `/app/` путь поднят в v9.0 (`docs/product/url-layout.md`). Но:
 
 - В `components/ui/` shadcn-компоненты импортируются как `@/components/ui/*`, а в `shared/components/` лежат кастомные — это два разных алиаса с пересекающейся семантикой. Разведение хрупкое.
 - `src/lib/utils.ts` и `src/shared/lib/utils.ts` — дубликат (оба экспортируют `cn`). См. P3-1.
@@ -544,7 +544,7 @@ frontends/pwa/
 - **Lowercase enum в БД, UPPER_CASE в Java:** на фронте лессон-статусы приходят в `UPPER_CASE` (`'PLANNED'|'ACTIVE'|'CLOSED'|'CANCELLED'`), attendance-статусы в lowercase (`'present'|'absent'|...`). ⚠ **Несогласованность**. Фронт это принимает, но напрягает.
 - **Soft delete:** не касается.
 - **TIMESTAMPTZ UTC:** LocalDate в формате `YYYY-MM-DD` (schedule), ISO 8601 с TZ для `receivedAt` notification-центра. ✅.
-- **Design decisions (docs/design-decisions.md):** PWA использует Phosphor иконки, Motion, shadcn, токены CSS. ✅.
+- **Design decisions (docs/product/design-decisions.md):** PWA использует Phosphor иконки, Motion, shadcn, токены CSS. ✅.
 
 Единственное жёсткое замечание — дублирование типов. При v0.0.0 можно ввести OpenAPI-generator (уже обсуждалось в 01-auth-service P0-1).
 

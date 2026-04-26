@@ -2375,7 +2375,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
     `☐ Этот PR меняет пользовательское поведение? Если да — поставить
     label \`landing-review\` и создать follow-up issue.`
   - Labels `landing-review` и `docs-review` в репо.
-  - В `docs/contributing.md` (если нет — создать) — раздел «Когда
+  - В `docs/meta/contributing.md` (если нет — создать) — раздел «Когда
     обновлять лендинг»: smoke-критерии («видит ли студент новое
     поведение? новая кнопка? изменился flow?»).
   - Разовая ретрофит-правка лендинга: excuse-тикеты (старый flow) →
@@ -2386,7 +2386,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   **Estimate:** ~4 часа (PR-template + labels + docs + разовая
   переработка excuse-секции лендинга).
   **NEW:**
-  - **NEW-108:** `docs/contributing.md` с разделом «Когда обновлять
+  - **NEW-108:** `docs/meta/contributing.md` с разделом «Когда обновлять
     лендинг / CLAUDE.md / docs».
 
 - **QE2 — ShedLock в academic/attendance?**
@@ -2585,7 +2585,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   - **Estimate:** ~3 часа (proto + backend генератор + миграция
     consumers + тесты).
   - **NEW-117:** формат `display_name_short` — «Иванов И.И.» или
-    «И. Иванов»? Зафиксировать в `docs/design-decisions.md` как
+    «И. Иванов»? Зафиксировать в `docs/product/design-decisions.md` как
     конвенцию.
 
 - **P2-11/4 — `HeadmanCheckRequest(user_id, group_id)`:** **(a)**
@@ -5408,7 +5408,7 @@ auto устраняет any[]).
     - NEW-174 (a11y-checklist.md).
   - **Estimate:** ~1 день (audit × 2 frontends + ESLint/Angular lint
     + fixes).
-  - **NEW-174:** `docs/a11y-checklist.md` — whitelist elements,
+  - **NEW-174:** `docs/product/a11y-checklist.md` — whitelist elements,
     banned patterns (`div` with `onClick`, `role="button"` without
     `tabindex` + keyboard-handlers), ESLint rules references.
 

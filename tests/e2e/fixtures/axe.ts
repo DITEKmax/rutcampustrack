@@ -7,7 +7,7 @@ import AxeBuilder from '@axe-core/playwright';
  *
  * Threshold: **zero CRITICAL + SERIOUS** violations (NEW-27 / QC2 /
  * NEW-110 baseline установлена в M07). MODERATE/MINOR не блокируют
- * CI — фиксируются в `docs/a11y-checklist.md` для следующего pass'а.
+ * CI — фиксируются в `docs/product/a11y-checklist.md` для следующего pass'а.
  *
  * Scope per call site: page.locator('main') — избегаем axe-scan
  * на Angular router-outlet'ы, которые ведут себя странно (false

@@ -306,7 +306,7 @@
     отсутствует, `SubjectStatsCollector` параллельно через
     TanStack, не sequential waterfall.
   - **a11y baseline + checklist** (P2-7B, commit `2be3eab`) — WCAG 2.1
-    AA pass 1 зафиксирован в `docs/a11y-checklist.md`. Global
+    AA pass 1 зафиксирован в `docs/product/a11y-checklist.md`. Global
     landmarks (`<main>` в AppShell + ShellComponent), 66+131
     aria-labels, `prefers-reduced-motion` в landing/PWA/Drawer/
     Sheet/CheckInButton, semantic HTML в admin-dashboard +
@@ -317,7 +317,7 @@
     NEW-152, commit `65640f4`) — global `client_max_body_size 2m` +
     25m on `/api/attendance/excuses/with-file`. `docs/operations/deploy/nginx-config.md`
     runbook. `.github/pull_request_template.md` +
-    `docs/contributing.md`.
+    `docs/meta/contributing.md`.
   - **G12 audit hot-patches** (commit `82cf482`) —
     HIGH-1 CSP fix (3 inline scripts вынесены в `assets/js/*.js`,
     `script-src 'self' 'unsafe-hashes' sha256=...` → `script-src

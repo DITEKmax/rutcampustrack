@@ -38,7 +38,7 @@ Permissions-Policy — все в `default.conf` server 443 block. **НЕ
 ### CSP
 
 `default-src 'self'` — strict. Self-host всех CDN ресурсов landing'а
-сделан в M07 G1. Новые external URL'ы требуют review (см. `docs/contributing.md`).
+сделан в M07 G1. Новые external URL'ы требуют review (см. `docs/meta/contributing.md`).
 
 ## Upstream routing
 

@@ -59,7 +59,7 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 | `/presentation/` | Landing (static HTML) | INFRA-v9-02 — описание проекта |
 | `/api/*` | API Gateway (proxy pass) | backend REST + STOMP WebSocket |
 
-Полная таблица: `docs/url-layout.md`.
+Полная таблица: `docs/product/url-layout.md`.
 
 ## Архитектура (кратко)
 
@@ -228,20 +228,20 @@ docker compose ps
 
 ## Детальная документация
 
-- **План всех фаз**: `docs/phases-plan.md` ← ЧИТАТЬ ПЕРЕД НАЧАЛОМ КАЖДОЙ ФАЗЫ
+- **План всех фаз**: `docs/meta/phases-plan.md` ← ЧИТАТЬ ПЕРЕД НАЧАЛОМ КАЖДОЙ ФАЗЫ
 - Архитектура: `docs/architecture/architecture.md`
-- Job Stories: `docs/job-stories.md`
+- Job Stories: `docs/product/job-stories.md`
 - Схема БД: `docs/architecture/database-schema.md`
-- Дизайн-решения: `docs/design-decisions.md` — иконки, анимации, PWA, брендинг
-- Реестр skills: `docs/skills-inventory.md` — все установленные Claude Code skills
+- Дизайн-решения: `docs/product/design-decisions.md` — иконки, анимации, PWA, брендинг
+- Реестр skills: `docs/meta/skills-inventory.md` — все установленные Claude Code skills
 - Отчёт Фазы 0: `docs/phase-0-report.md`
 
 ## Инструкция для Claude Code
 
 При начале работы над новой фазой:
-1. Прочитай `docs/phases-plan.md` — там детальное описание что реализовать
-2. Прочитай `docs/job-stories.md` — бизнес-требования
+1. Прочитай `docs/meta/phases-plan.md` — там детальное описание что реализовать
+2. Прочитай `docs/product/job-stories.md` — бизнес-требования
 3. Прочитай `docs/architecture/database-schema.md` — структура БД
-4. При работе с фронтендом — прочитай `docs/design-decisions.md` для соблюдения единого стиля
+4. При работе с фронтендом — прочитай `docs/product/design-decisions.md` для соблюдения единого стиля
 5. Создавай код в соответствии с правилами из раздела "Правила кодирования" выше
 6. После завершения фазы — обнови `docs/phase-{N}-report.md` и статус в этом файле

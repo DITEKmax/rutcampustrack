@@ -22,8 +22,8 @@
 ### Documentation (DOCS-v9-01..04)
 
 - `CLAUDE.md`: статус-блок синхронизирован (v1.0-v8.0 ЗАВЕРШЕНА, v9.0 В РАБОТЕ фазы 49-57); добавлен раздел `### URL Layout (v9.0)` с 9-строчной таблицей production nginx-маршрутов
-- `docs/url-layout.md`: добавлен раздел `## Production Path Routing (v9.0)` с 10-строчной таблицей маршрутов, маппингом роль→dashboard, списком deprecated путей (`/landing/`, root-PWA)
-- `docs/job-stories.md`: добавлены 18 новых историй — JS-STUDENT-WEB-01..10 (10 историй web-кабинета студента, фазы 51-53) и JS-HEADMAN-WEB-01..08 (8 историй web-кабинета старосты, фазы 54-55), каждая с traceability-ссылкой `(STU-WEB-NN)` / `(HEAD-WEB-NN)` на родительский requirement
+- `docs/product/url-layout.md`: добавлен раздел `## Production Path Routing (v9.0)` с 10-строчной таблицей маршрутов, маппингом роль→dashboard, списком deprecated путей (`/landing/`, root-PWA)
+- `docs/product/job-stories.md`: добавлены 18 новых историй — JS-STUDENT-WEB-01..10 (10 историй web-кабинета студента, фазы 51-53) и JS-HEADMAN-WEB-01..08 (8 историй web-кабинета старосты, фазы 54-55), каждая с traceability-ссылкой `(STU-WEB-NN)` / `(HEAD-WEB-NN)` на родительский requirement
 - `.planning/PROJECT.md`: добавлен статус `v9.0 ship-ready after Phase 57`, `### Recently Validated (v9.0)` расширен записями для фаз 50-57 (STU-WEB, HEAD-WEB, PWA-HEAD, LAND-v9, DOCS-v9)
 
 ## Ключевые решения
@@ -38,8 +38,8 @@
 
 - `frontends/landing/dist/index.html` — HTML секции `#architecture-flow`, CSS `.arch-*` блок, GSAP таймлайн внутри существующего `mm.add` блока; обновлена карточка `data-role="headman"`
 - `CLAUDE.md` — статус-блок + раздел URL Layout
-- `docs/url-layout.md` — раздел Production Path Routing (append-only)
-- `docs/job-stories.md` — 18 новых web-cabinet историй (append-only)
+- `docs/product/url-layout.md` — раздел Production Path Routing (append-only)
+- `docs/product/job-stories.md` — 18 новых web-cabinet историй (append-only)
 - `.planning/PROJECT.md` — ship-ready mark + Recently Validated расширен
 - `docs/phase-57-report.md` — этот файл
 

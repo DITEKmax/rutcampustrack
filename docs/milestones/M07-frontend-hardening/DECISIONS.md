@@ -41,7 +41,7 @@ OWNER-ANSWERS QC1-7 (строки 1809-2053), QE3/4 (2430-2510), P2-7A/1..8
    from PWA after M12".
 
 3. **axe-core baseline (G10):** `CRITICAL + SERIOUS = 0`.
-   MODERATE/MINOR tracked в `docs/a11y-checklist.md` как "a11y pass 2"
+   MODERATE/MINOR tracked в `docs/product/a11y-checklist.md` как "a11y pass 2"
    для v0.1. Альтернативы: +MODERATE — раздувает M07 до 12-14д,
    толкает M08/M09; +MINOR — false-positive heavy (Material Design
    часто неправ по axe AAA).

@@ -206,7 +206,7 @@ cd /opt/rutcampustrack
 docker compose -f docker-compose.prod.yml ps
 ```
 
-Ожидаем все 26 контейнеров (см. `docs/url-layout.md` для inventory)
+Ожидаем все 26 контейнеров (см. `docs/product/url-layout.md` для inventory)
 со статусом `(healthy)`. Если какой-то `unhealthy` — Claude помогает
 парсить logs.
 
@@ -369,7 +369,7 @@ set либо BOT_TOKEN неверный.
 - `docs/operations/runbooks/backup-restore.md` — backup + GPG
 - `docs/operations/runbooks/mongo-indexes-verify.md` — TTL + compound indexes
 - `docs/operations/monitoring/alerts.md` — каталог 18 alert'ов
-- `docs/url-layout.md` — production URL routing (web-panel + PWA + API)
+- `docs/product/url-layout.md` — production URL routing (web-panel + PWA + API)
 - `docs/architecture/architecture.md` — сервисы, ports, dependencies
 
 ## Финальная team checklist для оператора (TL;DR)

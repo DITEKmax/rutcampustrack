@@ -338,8 +338,8 @@ frontends/landing/
 | HATEOAS/RFC 7807 | неприменимо | нет REST |
 | Flyway migrations | неприменимо | нет БД |
 | Package isolation | неприменимо | один файл |
-| REST пути | ⚠ | `/presentation/` зарегистрирован в `docs/url-layout.md` — OK, но в `frontends/landing/dist/index.html:16` `og:url` захардкожен — придётся сверять при переезде |
-| Общая дизайн-система (docs/design-decisions.md) | ✅ | токены `--bg-*`, `--text-*`, `--accent-*` скопированы из `frontends/shared/styles/tokens.css` (коммент в строке 49 это подтверждает); но расхождение с tokens.css не отслеживается автоматически — см. 15-cross-cutting |
+| REST пути | ⚠ | `/presentation/` зарегистрирован в `docs/product/url-layout.md` — OK, но в `frontends/landing/dist/index.html:16` `og:url` захардкожен — придётся сверять при переезде |
+| Общая дизайн-система (docs/product/design-decisions.md) | ✅ | токены `--bg-*`, `--text-*`, `--accent-*` скопированы из `frontends/shared/styles/tokens.css` (коммент в строке 49 это подтверждает); но расхождение с tokens.css не отслеживается автоматически — см. 15-cross-cutting |
 
 ---
 

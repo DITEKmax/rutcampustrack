@@ -98,7 +98,7 @@
 
 - `.env.prod.example` — комментарий о strict-mode invariant.
 - `docs/archive/future-ideas.md` — секция «Pre-v0.1 (post-M14)» с 8 MED + 2 TENT из CSO + P2 cleanup из G26.
-- `docs/archive/deferred-ideas.md` — секция «v0.1+ tech debt» с 23 пунктами из G27 tech-debt audit.
+- `docs/archive/future-ideas.md` — секция «v0.1+ tech debt» с 23 пунктами из G27 tech-debt audit.
 - `CHANGELOG.md` — entry `[v0.0.0-alpha.16]` с CRIT/HIGH fixes.
 
 ---
@@ -107,4 +107,4 @@ _Не входит в M14 (отложено):_
 
 - **G27-cso MED-08, MED-09, MED-10, MED-11, MED-12, MED-13, MED-14, MED-15, TENT-16, TENT-17** → `docs/archive/future-ideas.md` (pre-v0.1, post-deploy week 1-2).
 - **G26 P2/P3 cleanup** (12 находок) → один cleanup PR после first deploy.
-- **G27 tech-debt P1-P3** (23 находки) → `docs/archive/deferred-ideas.md` для v0.1+. F04/F05 — gate'нуты на real-user signal (Grafana latency / horizontal scale решение).
+- **G27 tech-debt P1-P3** (23 находки) → `docs/archive/future-ideas.md` для v0.1+. F04/F05 — gate'нуты на real-user signal (Grafana latency / horizontal scale решение).

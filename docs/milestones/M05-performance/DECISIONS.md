@@ -124,7 +124,7 @@ index с теми же колонками в другом порядке — н�
 
 - ArchUnit rule NEW-143 (preventive, защита от будущего N+1);
 - один reference projection-interface (whitelist в правиле);
-- запись в `docs/architecture.md` о convention «FK as Long» v0.0.0.
+- запись в `docs/architecture/architecture.md` о convention «FK as Long» v0.0.0.
 
 **Почему:** OWNER-ANSWERS P2-10/2 (3714-3749) мотивирован ссылками на:
 

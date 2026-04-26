@@ -118,7 +118,7 @@ rutcampustrack/
 - **Как чинить:**
   - `.proto`: заменить `string` на `google.protobuf.Timestamp` для всех временных точек (activeAt, starts_at, occurred_at).
   - В event-schemas — требовать `format: "date-time"` (ISO-8601 c offset): `"2026-04-17T14:30:00+03:00"`. Строгий pattern: `^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?([+-]\\d{2}:\\d{2}|Z)$`.
-  - Документировать в `docs/architecture.md`: «все временные метки — UTC ISO-8601 с offset, DB — TIMESTAMPTZ».
+  - Документировать в `docs/architecture/architecture.md`: «все временные метки — UTC ISO-8601 с offset, DB — TIMESTAMPTZ».
 - **Зависимости:** все сервисы (гoogle.protobuf.Timestamp требует регенерации stub'ов + миграций парсинга).
 
 ### P1-2: Все JSON-схемы без `additionalProperties: false`
@@ -320,7 +320,7 @@ rutcampustrack/
 
 1. ✅ **`initial_password` в gRPC-контракте**: когда удалим (как часть фикса P0-2 academic)? Нужен ли коммуникационный канал альтернативный — `setup_token`?
    → **ACCEPTED BY OWNER (2026-04-18)**: поле остаётся, альтернативный канал не нужен. См. `OWNER-ANSWERS.md` 08-Q1.
-2. **Тайм-зоны**: все даты/время в UTC или в `Europe/Moscow`? Предлагаю явно зафиксировать в docs/architecture.md и адаптировать все сервисы.
+2. **Тайм-зоны**: все даты/время в UTC или в `Europe/Moscow`? Предлагаю явно зафиксировать в docs/architecture/architecture.md и адаптировать все сервисы.
 3. **proto3 Timestamp vs string**: готовы ли мигрировать? Это breaking change для stub'ов.
 4. **Enum vs string в .proto**: та же миграция.
 5. **`additionalProperties: false`**: планировалось ли? Если отклоняется — обоснование (forward-compat?) — нужно явно.

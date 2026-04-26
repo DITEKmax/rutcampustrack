@@ -155,7 +155,7 @@ criterion «mutating request без X-CSRF-Token → 403» удалён, same-or
 - `frontends/pwa/src/lib/auth/useAuth.ts` — breaking rewrite.
 - `frontends/web-panel/src/app/core/auth/clear-all-client-state.service.ts`.
 - `docs/auth-flow.md` — cookie+ticket lifecycle с диаграммой.
-- `docs/architecture.md` раздел «Auth flow (cookie + ws-ticket)».
+- `docs/architecture/architecture.md` раздел «Auth flow (cookie + ws-ticket)».
 - `CHANGELOG.md [Unreleased]` — Breaking changes section.
 - Tag `v0.0.0-alpha.4` на финальном коммите.
 

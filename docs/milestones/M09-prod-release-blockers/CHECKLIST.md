@@ -27,7 +27,7 @@
 - [x] Contract-тест `OtpRequestedContractTest.java` — publisher → JSON Schema validation (3 теста: valid/missing-code/non-6digit); добавлен `EventSchemaValidator` (auth-scope) — `70bd2db`
 - [~] Python contract-тест **пропущен** — `jsonschema` не в bot deps, overhead добавления не оправдан: `tests/test_otp_requested.py` (4 теста) покрывает consumer payload поведение; Java publisher-side уже валидирует envelope через networknt
 - [x] **G2.6** — `AuthOtpFlowIT` зелёный — `@Disabled` снят; root cause: `@ConditionalOnBean(ConnectionFactory.class)` на user `@Configuration` оценивался до autoconfig и давал false, поэтому наш JSON `RabbitTemplate` не создавался, а default-autoconfig с `SimpleMessageConverter` ломал JSON-контракт. Fix: убран `@ConditionalOnBean`, listener регистрируется `@Bean`'ом в `RabbitConfig`, `application-test.yml` больше не исключает `RabbitAutoConfiguration`. Все 84 auth-теста (test+integrationTest) зелёные.
-- [x] **G2.7** — `docs/architecture.md` раздел 3.2 обновлён: endpoint `/auth/otp/request` → 204, добавлена секция «OTP flow (M09 G2 · 08 P0-2, event-driven)» с ASCII-диаграммой; раздел 3.5 bot обновлён — consumer `otp.requested`/`otp.verified`
+- [x] **G2.7** — `docs/architecture/architecture.md` раздел 3.2 обновлён: endpoint `/auth/otp/request` → 204, добавлена секция «OTP flow (M09 G2 · 08 P0-2, event-driven)» с ASCII-диаграммой; раздел 3.5 bot обновлён — consumer `otp.requested`/`otp.verified`
 - [ ] **G2 финальный коммит** — `feat(auth): AuthOtpFlowIT + architecture.md OTP flow (M09 G2.6+G2.7)` — закрывает группу
 
 **Стабильное покрытие на 2026-04-23 (без G2.6):**
@@ -68,7 +68,7 @@
 - [~] **G5.4** `lesson.deleted` **оставлен** (см. DECISIONS D5): это **отдельный use-case** (physical DELETE row'ов из `regenerateFromDate` / `SubjectDeletedCascadeService`), не синоним cancelled. Удаление сломало бы attendance orphan-cleanup
 - [x] **G5.5** Consumers backward-compatible: attendance + notification-bot + notification-service уже работают с новой schema'й (используют только `lesson_id`/`group_id`/`subject_id`/`date`/`cancel_reason` — старое required-множество)
 - [x] **G5.6** `LessonCancelledContractIT` расширен: validation + field-by-field assertions на полный snapshot (start_time, end_time, lesson_number, cancelled_by, cancelled_at); проверка что entity в БД тоже обновлён
-- [x] **G5.6** `docs/architecture.md` — новый раздел «Lesson lifecycle (NEW-118, M09 G5)» с ASCII-диаграммой и matrix `lesson.cancelled` vs `lesson.deleted`
+- [x] **G5.6** `docs/architecture/architecture.md` — новый раздел «Lesson lifecycle (NEW-118, M09 G5)» с ASCII-диаграммой и matrix `lesson.cancelled` vs `lesson.deleted`
 - [x] **Прогон**: 35 тестов (9 unit + 26 IT) зелёные
 - [~] NEW-119 «удалить → отменить с причиной» в web-panel — это про `deleteOneOffLesson` (one-off, не regular). Регулярная отмена уже через `cancelLesson(reason)`. Отложено в G9 cleanup
 - [ ] **G5.7** Коммит `feat(schedule): lesson.cancelled full snapshot + Lesson.cancelled_by/at (M09 G5, 02 P2-11/5)`

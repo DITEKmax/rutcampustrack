@@ -129,7 +129,7 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
    - Frontend unit-тесты парсинга `ErrorResponse` — проверить поля
 
 8. **Обновить docs:**
-   - `docs/shared-modules-usage.md` — новая структура (api + starter)
+   - `docs/architecture/shared-modules-usage.md` — новая структура (api + starter)
    - `docs/api-error-conventions.md` — единый `ErrorResponse` формат
    - `CLAUDE.md` — shared-web → shared-web-api + shared-web-starter
 
@@ -276,7 +276,7 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
 - `.github/workflows/ci.yml` — новый step `openapi-conformance`
 
 ### Docs
-- `docs/shared-modules-usage.md` — обновить (Группа 0)
+- `docs/architecture/shared-modules-usage.md` — обновить (Группа 0)
 - `docs/api-error-conventions.md` — расширение: «Global error responses»
   + «@Schema policy» + единый ErrorResponse (NEW-122, NEW-124)
 - `docs/openapi-conformance.md` (NEW-123) — runbook

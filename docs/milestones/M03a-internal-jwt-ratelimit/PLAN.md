@@ -128,7 +128,7 @@ lifecycle — зависит от M03a (Internal JWT — prerequisite для coo
 
 - `docs/internal-jwt-spec.md` (NEW-3) — формат токена, claims, TTL, ротация ключей, dual-mode flag, миграционный путь.
 - `docs/api-rate-limits.md` (NEW-11) — таблица лимитов, 429 поведение, Retry-After header, рекомендации клиенту.
-- `docs/architecture.md` — раздел «Internal JWT и rate-limiting» после «Reliable eventing».
+- `docs/architecture/architecture.md` — раздел «Internal JWT и rate-limiting» после «Reliable eventing».
 - `CLAUDE.md` — статус M03a + обновление раздела архитектуры.
 - `CHANGELOG.md [Unreleased]` — Added/Changed M03a.
 
@@ -159,7 +159,7 @@ lifecycle — зависит от M03a (Internal JWT — prerequisite для coo
 - 4 миграции downstream: `UserContextFilter` → `InternalJwtFilter` + dual-mode.
 - `docs/internal-jwt-spec.md` (NEW-3).
 - `docs/api-rate-limits.md` (NEW-11).
-- `docs/architecture.md` — новый раздел.
+- `docs/architecture/architecture.md` — новый раздел.
 - `CHANGELOG.md [Unreleased]` — Added/Changed.
 
 ---

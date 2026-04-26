@@ -4,7 +4,7 @@
 
 Attendance Service — самый «мясистый» из бизнес-сервисов RutCampusTrack: 5 доменов (`checkin`, `report`, `marking`, `excuse`, `latecheckin`), 2 коллекции MongoDB (`attendances`, `excuse_tickets`, `late_checkin_requests`), 2 gRPC-клиента (Schedule, Academic), 1 RabbitMQ-консьюмер (8 типов событий) + 3 паблишера (attendance, excuse, late-checkin). Контракт-first соблюдён: `attendance-api-contract` — чистый `java-library` без Lombok, Request = `record`, Response = `class extends RepresentationModel`, маппинги в интерфейсах. RFC 7807 Problem Details через `GlobalExceptionHandler`, централизованная обработка exception-ов, единый `RequestContext` + AOP-аспект `RoleCheckAspect`. Основной хэппи-пас (геоотметка, ручная отметка старостой, отчёты, excuse-тикеты, late-checkin) покрыт тестами с MongoDB Testcontainers + RabbitMQ Testcontainers.
 
-Однако обнаружено множество проблем безопасности, архитектурных долгов и дыр покрытия. **Главные P0**: (1) `UserContextFilter` слепо доверяет HTTP-заголовкам `X-User-*` без проверки, что запрос реально пришёл от Gateway — прямой доступ к сервису на `:9093` позволяет выдать себя за любого; (2) `@PostConstruct` в `GeofenceService`/`SemesterCacheService` вызывает gRPC в конструкторе Spring — если academic недоступен, сервис стартует с пустым кэшем и первый check-in-запрос лезет с N+1 gRPC на горячем пути; (3) RabbitMQ-консьюмер **без DLQ-обработки ошибок**: при падении `processLessonClosed` (из-за schedule-недоступности) сообщение уйдёт в DLQ, привет «залипшие» attendance-записи; (4) `CheckinService.checkin` сохраняет ВСЕ coordinate-payload-поля (lat/lng/accuracy) **в воздухе** — они принимаются валидатором, но в `AttendanceDocument` НЕТ поля `checkin_location`, которое описано в `docs/database-schema.md`. Локация студента теряется — ни шифрования, ни трассировки, ни защиты от spoofing.
+Однако обнаружено множество проблем безопасности, архитектурных долгов и дыр покрытия. **Главные P0**: (1) `UserContextFilter` слепо доверяет HTTP-заголовкам `X-User-*` без проверки, что запрос реально пришёл от Gateway — прямой доступ к сервису на `:9093` позволяет выдать себя за любого; (2) `@PostConstruct` в `GeofenceService`/`SemesterCacheService` вызывает gRPC в конструкторе Spring — если academic недоступен, сервис стартует с пустым кэшем и первый check-in-запрос лезет с N+1 gRPC на горячем пути; (3) RabbitMQ-консьюмер **без DLQ-обработки ошибок**: при падении `processLessonClosed` (из-за schedule-недоступности) сообщение уйдёт в DLQ, привет «залипшие» attendance-записи; (4) `CheckinService.checkin` сохраняет ВСЕ coordinate-payload-поля (lat/lng/accuracy) **в воздухе** — они принимаются валидатором, но в `AttendanceDocument` НЕТ поля `checkin_location`, которое описано в `docs/architecture/database-schema.md`. Локация студента теряется — ни шифрования, ни трассировки, ни защиты от spoofing.
 
 Изоляция `report/` ↔ `checkin/` формально прошла ArchUnit-тест (`ReportDomainIsolationTest`). Однако `marking/`, `latecheckin/`, `event/`, `config/` импортируют `checkin.AttendanceDocument` и `AttendanceRepository` напрямую — это ослабляет замысел «домены общаются через порт». При этом `AttendanceReadPort` и `AttendanceWritePort` в `shared/port/` — удачное решение. Тестов ~25 классов, ~110+ тестовых методов, Mongo Testcontainers работает, но `Clock` не абстрагирован, поэтому невозможно детерминированно тестировать окно геоотметки (всегда Instant.now), а TZ `Europe/Moscow` жёстко зашита в `CheckinService`.
 
@@ -117,11 +117,11 @@ Attendance Service — самый «мясистый» из бизнес-сер�
 - **Зависимости:** кросс-сервисная проблема, фиксить одновременно в auth-service/academic/schedule/attendance.
 
 ### P0-2: ✅ ACCEPTED (переклассифицировано в DOC-FIX) — `AttendanceDocument` **не хранит** координаты геоотметки
-**Статус:** by design (см. `OWNER-ANSWERS.md` 04-Q2 + Meta M1, 2026-04-18). Координаты студента НЕ сохраняются осознанно — только проверка «в радиусе кампуса». Anti-spoof расследование через лог координат не предусмотрено. Исходная P0 переклассифицируется как **DOC-FIX**: правка `docs/database-schema.md` (убрать описание `checkin_location` или явно пометить «не используется»). Ниже — оригинальное описание.
+**Статус:** by design (см. `OWNER-ANSWERS.md` 04-Q2 + Meta M1, 2026-04-18). Координаты студента НЕ сохраняются осознанно — только проверка «в радиусе кампуса». Anti-spoof расследование через лог координат не предусмотрено. Исходная P0 переклассифицируется как **DOC-FIX**: правка `docs/architecture/database-schema.md` (убрать описание `checkin_location` или явно пометить «не используется»). Ниже — оригинальное описание.
 
 
 
-- **Где:** `checkin/AttendanceDocument.java:30-73`, `checkin/CheckinService.java:79-149`, `docs/database-schema.md:296-302`
+- **Где:** `checkin/AttendanceDocument.java:30-73`, `checkin/CheckinService.java:79-149`, `docs/architecture/database-schema.md:296-302`
 - **Что:** схема в проектной документации описывает вложенный объект:
   ```
   checkin_location: { lat, lng, accuracy_m, distance_from_campus_m }
@@ -582,8 +582,8 @@ record MarkAttendanceCommand(
 1. ✅ **Доверие заголовкам**: планируется ли внедрить shared-secret между gateway и downstream, mTLS, или оставить только network-level-isolation? От ответа зависит приоритет P0-1.
    → **AUTO-RESOLVED через 02-Q2 (2026-04-18)**: выбран **Internal JWT (Уровень 2 Zero Trust)** — RSA-подписанный короткий JWT от Gateway, валидация публичным ключом в downstream. См. `OWNER-ANSWERS.md` 02-Q2.
 
-2. ✅ **Локация студента**: нужно ли вернуться к сохранению координат в `AttendanceDocument.checkin_location` (как описано в `docs/database-schema.md`)? Если нет — обновить документацию. Если да — нужна policy по GDPR/персональным данным (сколько хранить, кто видит).
-   → **ACCEPTED BY OWNER (2026-04-18)**: координаты НЕ сохраняем, только проверка. Запланирована правка `docs/database-schema.md`. См. `OWNER-ANSWERS.md` 04-Q2.
+2. ✅ **Локация студента**: нужно ли вернуться к сохранению координат в `AttendanceDocument.checkin_location` (как описано в `docs/architecture/database-schema.md`)? Если нет — обновить документацию. Если да — нужна policy по GDPR/персональным данным (сколько хранить, кто видит).
+   → **ACCEPTED BY OWNER (2026-04-18)**: координаты НЕ сохраняем, только проверка. Запланирована правка `docs/architecture/database-schema.md`. См. `OWNER-ANSWERS.md` 04-Q2.
 
 3. **MongoDB deployment**: какая топология в production — standalone или replica set? От этого зависит возможность `@Transactional` (P1-3, P1-4).
 

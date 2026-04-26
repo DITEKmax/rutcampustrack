@@ -41,7 +41,7 @@ class RepositoryNPlusOneGuardTest {
                     .that().areAnnotatedWith(Entity.class)
                     .should(notHaveJpaRelationFields())
                     .because("v0.0.0 convention: FK как Long, без "
-                            + "@ManyToOne/@OneToMany. См. docs/architecture.md (NEW-143).");
+                            + "@ManyToOne/@OneToMany. См. docs/architecture/architecture.md (NEW-143).");
 
     @ArchTest
     static final ArchRule repositoriesReturningCollectionsMustGuardNPlusOne =
@@ -61,7 +61,7 @@ class RepositoryNPlusOneGuardTest {
                         events.add(SimpleConditionEvent.violated(clazz,
                                 "Поле " + field.getFullName()
                                         + " помечено JPA relation. Project-wide convention — "
-                                        + "FK как Long. См. NEW-143 + docs/architecture.md."));
+                                        + "FK как Long. См. NEW-143 + docs/architecture/architecture.md."));
                     }
                 }
             }

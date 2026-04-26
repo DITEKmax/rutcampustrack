@@ -39,7 +39,7 @@
 5. **05 P3-4** — `VapidPublicKeyResponse` в контракте: POJO с ручными геттерами вместо Lombok (правильно, Lombok в контракте запрещён), но `publicKey` не `final`. Закрыть как намеренное для Jackson.
 6. **06 P3-1** — `bot/__init__.py` пустой. Добавить `__version__`.
 7. **07 мёртвый код** — `OpenApiConfig.gatewayOpenAPI()` задаёт только title/description; `application.yml:124-125 gateway.auth-service-url` не читается нигде (см. 07 P2-8). Либо использовать, либо удалить.
-8. **08 мёртвый код** — нет `attendance.proto` и `auth.proto` (и не нужен — всё через REST). Документировать в `docs/architecture.md`.
+8. **08 мёртвый код** — нет `attendance.proto` и `auth.proto` (и не нужен — всё через REST). Документировать в `docs/architecture/architecture.md`.
 9. **09 P3-2** — `src/features/profile/ProfilePlaceholder.tsx` не импортируется. Удалить.
 10. **09 P3-3** — `src/App.tsx` — мёртвый файл с комментарием «not used». Удалить + почистить `tsconfig.app.json`.
 11. **09 P3-10** — `useNetworkStatus.getServerSnapshot` возвращает `true`. Dead-code для PWA-only (нет SSR).

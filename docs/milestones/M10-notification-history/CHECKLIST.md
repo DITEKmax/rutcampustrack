@@ -152,12 +152,12 @@
 
 ## Группа 8 — Docs + CLAUDE.md + cleanup
 
-- [x] `docs/architecture.md` — раздел «Notification History» в M-stack
+- [x] `docs/architecture/architecture.md` — раздел «Notification History» в M-stack
       блоке (после Observability): schema, consumer flow с DLQ, REST
       surface, Caffeine cache + STOMP invalidation, frontend hybrid
       strategy. 3.6 Notification Web role обновлён на stateful.
       Commit `c23614f`.
-- [x] `docs/database-schema.md` — раздел "MongoDB: notification_db
+- [x] `docs/architecture/database-schema.md` — раздел "MongoDB: notification_db
       (Notification Web — M10)" с notification_history shape, 3 индекса,
       Mongo user separation (PoLP D2). NotificationType enum в общий
       список. Commit `c23614f`.

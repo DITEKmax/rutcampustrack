@@ -214,7 +214,7 @@ proxy/firewall закрывает TCP idle-connection.
 
 - `docs/auth-flow.md` — JWT cookie flow, ws-ticket endpoint
 - `docs/security-headers.md` — CSP с `connect-src 'self' wss:`
-- `docs/architecture.md` — общая схема сервисов
+- `architecture.md` — общая схема сервисов
 - `nginx/conf.d/default.conf` — production nginx config
 
 ## История изменений

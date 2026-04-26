@@ -111,7 +111,7 @@
       показывает `auth-api-contract/` + `auth-app/`
 - [x] `CLAUDE.md` — v0.0.0 Milestones table: M11 ✅ 2026-04-24, M12
       ✅ 2026-04-24 (раньше M10 был отмечен, M11/M12 — новые)
-- [x] `docs/architecture.md` — `### 3.2 Auth Service` дополнен строкой
+- [x] `docs/architecture/architecture.md` — `### 3.2 Auth Service` дополнен строкой
       про Gradle-модули (M12) — auth-api-contract + auth-app split
 - [x] `docs/future-ideas.md` — удалены разделы «Auth API contract-first
       refactor (v0.1)» + «Auth-service OpenAPI (P2-2/2, v0.1)»

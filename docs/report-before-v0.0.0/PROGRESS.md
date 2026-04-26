@@ -398,7 +398,7 @@
 - QA7 (JSON-логи) → **(b)** unified структурированные логи. NEW-68 (shared logback), NEW-69 (рефакторинг logs), NEW-70 (bot promtail).
 
 **Группа 8 (оставшиеся P0) — ЗАКРЫТА:**
-- Q19a (08 P0-2, схема `otp.requested`) → **(b) TO-FIX** — JSON Schema + `event_version: 1` + contract-тест. NEW-47: retrofit версионирования в остальные 14+ events (v0.1). NEW-48: `docs/event-schemas.md` с versioning policy.
+- Q19a (08 P0-2, схема `otp.requested`) → **(b) TO-FIX** — JSON Schema + `event_version: 1` + contract-тест. NEW-47: retrofit версионирования в остальные 14+ events (v0.1). NEW-48: `docs/architecture/event-schemas.md` с versioning policy.
 - Q19b (09 P0-3, ролевые guards PWA) → **(b) TO-FIX** — `useAuth()` + `RoleGuard`. PWA scope = STUDENT + headman. Admin/teacher → `docs/future-ideas.md` (новый раздел добавлен). NEW-50: audit Angular guards в web-panel.
 - Q19c (10 P0-3, CSP web-panel) → **(a) TO-FIX** — строгая CSP + HSTS + остальные headers в nginx. NEW-54: report-uri (v0.1). NEW-55: аналогичный CSP для PWA vhost. NEW-56: CI-check на headers.
 - Q19d (12 P0-2, «Открыть в Telegram») → **(a) TO-FIX** — `https://t.me/<bot_username>`. NEW-51: документировать username.
@@ -479,7 +479,7 @@
 
 **Группа 2 (academic-service P0) — ЗАКРЫТА:**
 - Q13a (02 P0-3, `NumberFormatException`) → **(a) AUTO-RESOLVED через C0-1**. Закрывает также 03 P0-3, 04 P0-3.
-- Q13b (02 P0-4, race в `activateSemester`) → **(c) ACCEPTED** — single-admin invariant. Требует javadoc + запись в `docs/architecture.md`.
+- Q13b (02 P0-4, race в `activateSemester`) → **(c) ACCEPTED** — single-admin invariant. Требует javadoc + запись в `docs/architecture/architecture.md`.
 - Q13c (02 P0-5, пустой `${GRPC_SECRET:}`) → **(a) TO-FIX** — убрать default, fail-fast. Закрывает также 06 P0-2. Требует правку CI workflow (env `GRPC_SECRET: test-secret`). NEW-24: audit всех `${VAR:}` паттернов. NEW-25: CI smoke-тест «compose без .env.prod должен падать».
 - Q13d (02 P0-7, ДЗ в память + N+1) → **(a) TO-FIX** — Pageable + `@EntityGraph`. Breaking change для фронтов (`Homework[]` → `PagedModel`). NEW-26: audit всех `findAll()` без Pageable. NEW-27: связка с C1-2.
 

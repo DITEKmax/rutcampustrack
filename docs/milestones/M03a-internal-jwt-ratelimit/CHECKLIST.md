@@ -158,7 +158,7 @@
 
 - [x] `docs/internal-jwt-spec.md` (NEW-3) — формат, claims, TTL, ключи, token-exchange flow, dual/strict mode, downstream-валидация, security properties, roadmap
 - [x] `docs/api-rate-limits.md` (NEW-11) — семантика token-bucket, таблица лимитов, 429 Problem Details, Retry-After, fail-open, LoginRateLimiter composite key, клиентские рекомендации (retry-with-backoff + X-Login header)
-- [x] `docs/architecture.md` → раздел «Internal JWT и rate-limiting» после «Reliable eventing (M02)» — token exchange pipeline, ключевые инварианты, rate-limit таблица
+- [x] `docs/architecture/architecture.md` → раздел «Internal JWT и rate-limiting» после «Reliable eventing (M02)» — token exchange pipeline, ключевые инварианты, rate-limit таблица
 - [x] `CHANGELOG.md [Unreleased]` → M03a секция (Added) с детализацией shared-security, token-exchange, Gateway issuer, downstream миграция, rate-limiting, LoginRateLimiter, strict-mode toggle, contract-тесты, документация, 3 critical fixes
 - [x] `CLAUDE.md` — таблица milestones: M03 строка разделена на M03a ✅ 2026-04-20 + M03b; shared-security добавлен в структуру репозитория
 - [x] `docs/milestones/README.md` → M03a ✅ 2026-04-20

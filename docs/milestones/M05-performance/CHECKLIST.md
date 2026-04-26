@@ -71,7 +71,7 @@ pattern + docs._
       `entitiesMustNotUseJpaRelations` упал с понятным сообщением
       («Поле Lesson.scheduleItemRelation помечено JPA relation...»).
       Edit откачен, build зелёный.
-- [x] `docs/architecture.md` §11 — раздел «JPA convention: FK как Long,
+- [x] `docs/architecture/architecture.md` §11 — раздел «JPA convention: FK как Long,
       без entity relations (NEW-143)» с обоснованием +
       образцом паттерна `collect itemIds → findByIdIn` +
       подробным action-plan «когда relation всё-таки нужна».
@@ -311,7 +311,7 @@ D11. Deadline уже везде (19 callsite'ов), параллелизация
 - [x] `docs/data-retention-policy.md` (создан в G7).
 - [x] `docs/api-error-conventions.md` (создан в G4, sibling runbook).
 - [x] `docs/future-ideas.md` (создан в G5, sibling runbook).
-- [x] `docs/architecture.md` §11.1 — блок «Performance & Ops runbooks»
+- [x] `docs/architecture/architecture.md` §11.1 — блок «Performance & Ops runbooks»
       с 6 ссылками (обновлено в G9 hot-patches, commit `ba0b233`).
 - [x] `CHANGELOG.md [Unreleased]` — секции Added для M05 Групп 3-9
       (commit `<G10>`).

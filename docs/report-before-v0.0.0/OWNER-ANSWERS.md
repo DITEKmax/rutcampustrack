@@ -60,7 +60,7 @@ _(отвечено: 6 / 10)_
   Auth подключён к `academic_db`, academic владеет миграциями `users`.
   Решение принято осознанно при проектировании: один разработчик, тесная
   связь auth+users, performance важнее изоляции, JOIN'ы возможны.
-  Документировать как «осознанный shared-DB tradeoff» в `docs/architecture.md`
+  Документировать как «осознанный shared-DB tradeoff» в `docs/architecture/architecture.md`
   (NEW-1 уже это покрывает).
   **Вариант (b) — auth-owned schema** перенесён в `docs/future-ideas.md`
   (раздел «Архитектура») для v0.1+ когда понадобится auth-only функционал
@@ -119,7 +119,7 @@ _(отвечено: 6 / 10)_
     выбран вариант (a) — не делаем ничего, accept tradeoff.
 
   **NEW (от этого решения):** Появляется обязанность задокументировать
-  «accepted tradeoff» в `docs/architecture.md` или `docs/security-model.md`
+  «accepted tradeoff» в `docs/architecture/architecture.md` или `docs/security-model.md`
   как явное архитектурное решение (чтобы будущие разработчики/аудиторы
   не «пере-открывали» эту дискуссию). Добавлю в TODO для 99.
 
@@ -149,7 +149,7 @@ _(отвечено: 6 / 12)_
   - Добавить javadoc в `SemesterService.activateSemester(...)`: «Method
     is NOT thread-safe. Relies on single-admin invariant. If multi-admin
     becomes a requirement, add SELECT FOR UPDATE or SERIALIZABLE isolation.»
-  - Документировать принятый tradeoff в `docs/architecture.md` (раздел
+  - Документировать принятый tradeoff в `docs/architecture/architecture.md` (раздел
     «Принятые архитектурные tradeoffs», создаётся через NEW-1).
   **Последствия (каскад):**
   - 02 P0-4 → «✅ ACCEPTED — single-admin invariant».
@@ -640,7 +640,7 @@ _(отвечено: 4 / 10)_
   проверка «в радиусе кампуса → да/нет». Anti-spoof расследование через
   лог координат не предусмотрено. По M1 юридических требований нет.
   **Действия:**
-  - Обновить `docs/database-schema.md` — убрать поле `checkin_location`
+  - Обновить `docs/architecture/database-schema.md` — убрать поле `checkin_location`
     из описания `AttendanceDocument` (или явно пометить «не используется,
     зарезервировано для будущего»).
   - 04 P1 (или соответствующий пункт о расхождении кода и доки) —
@@ -730,7 +730,7 @@ _(отвечено: 4 / 12)_
     + `flyway.baseline-version: 0` + существующая таблица уже в БД.
   **Последствия (каскад):**
   - 05 P0-3 → 🔧 TO-FIX через перенос миграций.
-  - Документировать в `docs/architecture.md` → раздел «Принятые
+  - Документировать в `docs/architecture/architecture.md` → раздел «Принятые
     shared-DB паттерны»: auth↔academic_db, notification↔attendance_db.
   - `feedback_flyway_no_edit.md` (memory) — применимо: миграция уже
     применена в проде, нельзя просто переместить файл. Нужен runbook:
@@ -743,7 +743,7 @@ _(отвечено: 4 / 12)_
   **Estimate:** ~1 человеко-день (перенос миграции + baseline + runbook
   + smoke-тест в dev).
   **NEW:**
-  - **NEW-36:** добавить в `docs/architecture.md` раздел «Shared-DB
+  - **NEW-36:** добавить в `docs/architecture/architecture.md` раздел «Shared-DB
     паттерны» со списком: auth→academic_db (users), notification→attendance_db
     (push_subscriptions). Чтобы новый разработчик понимал ownership.
   - **NEW-37:** runbook переноса миграции в `docs/runbooks/flyway-migration-move.md`
@@ -1051,7 +1051,7 @@ _(отвечено: 2 / 10)_
     ```
   - Contract-тест publisher (auth-service) ↔ consumer (notification-bot):
     проверка что сериализованное событие соответствует схеме.
-  - В `docs/event-schemas.md` — раздел «Versioning policy»: правила
+  - В `docs/architecture/event-schemas.md` — раздел «Versioning policy»: правила
     эволюции (backward-compat → минорная версия, breaking → мажорная
     + параллельное потребление обеих версий на время миграции).
   **Закрывает:** 08 P0-2.
@@ -1069,7 +1069,7 @@ _(отвечено: 2 / 10)_
   **NEW:**
   - **NEW-47:** задача на v0.1 «retrofit `event_version` во все
     существующие 14+ events». В `docs/future-ideas.md` → раздел «События».
-  - **NEW-48:** `docs/event-schemas.md` с versioning policy. Если такого
+  - **NEW-48:** `docs/architecture/event-schemas.md` с versioning policy. Если такого
     файла нет — создать. Если есть — добавить раздел.
 
 - **Q1.** `initial_password` в gRPC-контракте — когда удалим? Нужен ли
@@ -1223,7 +1223,7 @@ _(отвечено: 2 / 8)_
     бота корректен на лендинге».
   **Estimate:** ~30 минут (узнать username + правка + smoke).
   **NEW:**
-  - **NEW-51:** `<bot_username>` — добавить в `docs/architecture.md`
+  - **NEW-51:** `<bot_username>` — добавить в `docs/architecture/architecture.md`
     (или в `.env.prod.example`) как документированный секрет/config.
 
 - **Q5.** Добавить страницу публичной политики конфиденциальности /
@@ -1676,7 +1676,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   **Действия:**
   - В отчёте 02 пометка P1 «homework_submissions без soft-delete» →
     переклассифицировать как «UI-state, accept hard-delete».
-  - В `docs/database-schema.md` — явное пояснение к таблице
+  - В `docs/architecture/database-schema.md` — явное пояснение к таблице
     `homework_submissions`: «личный трекер студента, hard-delete
     allowed, не используется для академической отчётности».
   - В API: endpoint `DELETE /homework/submissions/{id}` → убедиться
@@ -1781,7 +1781,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
     показать «логин занят, такой пользователь был архивирован
     [дата]. Хотите восстановить?». Операция `unarchive` (status →
     active).
-  - Документировать в `docs/architecture.md`: «login / telegram_id
+  - Документировать в `docs/architecture/architecture.md`: «login / telegram_id
     immutable identity, unique across all statuses, unarchive вместо
     создания нового».
   **Последствия (каскад):**
@@ -2621,7 +2621,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
     - Consumers (attendance, notification): переключаются на
       `lesson.cancelled` handler.
   - **Estimate:** ~1 день (migration + service + event + consumers + tests).
-  - **NEW-118:** `docs/architecture.md` — раздел «Lesson lifecycle»
+  - **NEW-118:** `docs/architecture/architecture.md` — раздел «Lesson lifecycle»
     с диаграммой status-transitions (planned → in_progress → closed,
     planned/in_progress → cancelled).
   - **NEW-119:** UI в admin/teacher (web-panel) — замена кнопки
@@ -2632,7 +2632,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   события при группе 30+ студентов начинает быть заметным, экономия
   микросекунд не оправдана. Если нагрузка вырастет — вариант (c)
   кэш group_members с TTL — простой миграционный путь.
-  - **Действия:** документировать выбор в `docs/architecture.md`
+  - **Действия:** документировать выбор в `docs/architecture/architecture.md`
     (раздел «Event payload philosophy»): «в событиях несём минимум,
     дополнительные детали consumer запрашивает через gRPC; cache
     добавляем когда измерим hotspot».
@@ -2652,7 +2652,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   - **Estimate:** ~1 день (common schema + миграция всех 14+ schemas +
     test что validator-loader работает).
   - **NEW-120:** `event-schemas/_common.json` + раздел в
-    `docs/event-schemas.md` (NEW-48) объясняющий shared definitions.
+    `docs/architecture/event-schemas.md` (NEW-48) объясняющий shared definitions.
 
 - **P2-11/8 — Отсутствие `excuse.decision` event:** **(a)+(c)** —
   добавить `excuse.decision.json` + мигрировать excuse flow на
@@ -2875,7 +2875,7 @@ QC2 type-gen (`openapi-typescript` + `openapi-fetch`). Зафиксирован�
       от целенаправленной атаки. Для pet-проекта достаточно.
   - **Estimate:** ~2 часа (deploy-скрипт + nginx volume + .env.prod.example
     + smoke из браузера).
-  - **NEW-125:** задокументировать в `docs/architecture.md` или новом
+  - **NEW-125:** задокументировать в `docs/architecture/architecture.md` или новом
     `docs/admin-access.md` — что защищено basic-auth (swagger, grafana,
     prometheus?), какие credentials, где меняются. Чтобы при смене пароля
     один источник правды.
@@ -2965,7 +2965,7 @@ QC2 type-gen (`openapi-typescript` + `openapi-fetch`). Зафиксирован�
   - **NEW-127:** AsyncAPI generator — решение manual vs автоматическая
     генерация из `event-schemas/`. Manual для v0.0.0 (14 events — не
     так много). Триггер пересмотра: >30 events или частый drift.
-  - **NEW-128:** `docs/architecture.md` раздел «Event documentation» —
+  - **NEW-128:** `docs/architecture/architecture.md` раздел «Event documentation» —
     где документируются события (AsyncAPI), версионирование, добавление
     новых channels.
   - **NEW-129:** AsyncAPI spec для STOMP — нужно описать payload не
@@ -5121,7 +5121,7 @@ JSON log-format.
     Caffeine unread-count + frontend migration × 2 клиента + tests +
     docs). Это самая крупная работа P2-6.
   - **NEW-166:** `notification_history` Mongo schema + миграция
-    V1__init.js с индексами. Документация в `docs/database-schema.md`
+    V1__init.js с индексами. Документация в `docs/architecture/database-schema.md`
     (новый раздел для Mongo notification_db).
   - **NEW-167:** OpenAPI spec для notification REST endpoints +
     unread-count contract. Связка с QC2 (openapi-typescript) →
@@ -5949,7 +5949,7 @@ operational nits.
       Альтернатива — secondary DLQ (parking lot queue) для messages
       старше 7д. Alertmanager alert (P2-9/5) на `queue_messages
       > 1000`.
-    - 03 P2-14: в `docs/database-schema.md` раздел «Migration
+    - 03 P2-14: в `docs/architecture/database-schema.md` раздел «Migration
       history» — historical note про V8/V9 reset-marker iterations.
       Один абзац — «история незакрытой формулы parity, решена в
       03 P0-5 через WeekParityResolver».
@@ -6155,7 +6155,7 @@ operational nits.
       нечётной неделе не показывается на чётной».
     - Golden-table (P2-8/4) `week-parity.json` +cases на
       ODD-only/EVEN-only визуализацию.
-    - `docs/architecture.md` — раздел «Schedule week-parity semantics».
+    - `docs/architecture/architecture.md` — раздел «Schedule week-parity semantics».
   - **Каскад:** 03 P2-2 → 🔧 TO-FIX. P2-8/4 (golden tests) —
     regression guard. 03 P0-5 (WeekParityResolver) — AUTO чтение.
   - **Estimate:** ~30 мин.
@@ -6372,7 +6372,7 @@ P2-вопросов**, включить их в scope v0.0.0. Причина —
 ### Новые задачи, порождённые ответом
 
 - **NEW-1:** Добавить раздел «Принятые архитектурные tradeoffs» в
-  `docs/architecture.md` (или новый `docs/security-model.md`). Список:
+  `docs/architecture/architecture.md` (или новый `docs/security-model.md`). Список:
   plaintext-`initial_password` цепочка. Цель — чтобы будущие аудиты
   не пере-открывали дискуссию.
 - **NEW-2:** Файл `docs/future-ideas.md` создан. Зафиксировать в

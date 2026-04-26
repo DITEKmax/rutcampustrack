@@ -40,7 +40,7 @@
 
 Что остаётся после milestone в репо (новые файлы, новые ADR, новые runbook'и).
 
-- `docs/architecture.md` — раздел «X»
+- `docs/architecture/architecture.md` — раздел «X»
 - `docs/runbooks/X.md` — новый
 - ...
 

@@ -370,7 +370,7 @@ set либо BOT_TOKEN неверный.
 - `docs/runbooks/mongo-indexes-verify.md` — TTL + compound indexes
 - `docs/alerts.md` — каталог 18 alert'ов
 - `docs/url-layout.md` — production URL routing (web-panel + PWA + API)
-- `docs/architecture.md` — сервисы, ports, dependencies
+- `docs/architecture/architecture.md` — сервисы, ports, dependencies
 
 ## Финальная team checklist для оператора (TL;DR)
 

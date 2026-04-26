@@ -165,7 +165,7 @@
 | 04 | P1-1 (MarkingService обходит AttendanceWritePort) | ✅ TO-FIX | архитектурный fix — изоляция checkin/report port usage (см. CLAUDE.md attendance package rules) + test (NEW-31 regression) |
 | 04 | P1-2 (LateCheckinService импортирует checkin.AttendanceRepository) | ✅ TO-FIX | тот же архитектурный fix — shared/port разделение (CLAUDE.md) + ArchUnit NEW-109 rule |
 | 04 | P1-3 (ExcuseService.updateStatus без tx boundary) | ✅ TO-FIX | C0-3 outbox гарантирует атомарность commit+event |
-| 04 | P1-4 (MongoDB transactions требуют replica set) | ✅ TO-FIX | QA6 + deploy: Mongo RS single-node (документируется в docs/architecture.md или runbook) — закрыто через P2-8/2 Testcontainers Mongo with RS |
+| 04 | P1-4 (MongoDB transactions требуют replica set) | ✅ TO-FIX | QA6 + deploy: Mongo RS single-node (документируется в docs/architecture/architecture.md или runbook) — закрыто через P2-8/2 Testcontainers Mongo with RS |
 | 04 | P1-5 (@PostConstruct initIndexes + ensureIndex дублирование) | ✅ AUTO-RESOLVED | 04-Q-P0-6 (cleanup удалён) + P2-6/3 AUTO |
 | 04 | P1-6 (LessonEventService без @Transactional) | ✅ TO-FIX | C0-3 outbox |
 | 04 | P1-7 (EventConsumer extractLong NPE) | ✅ AUTO-RESOLVED | P2-1/5 (a+b) DomainEvent strong-typed |
@@ -275,7 +275,7 @@
 | 08 | P1-2 (JSON-схемы без additionalProperties:false) | ✅ TO-FIX | QD3 (a) schema validation + NEW-120 _common.json strict |
 | 08 | P1-3 (enum-значения hardcoded string в .proto) | ✅ AUTO-RESOLVED | P2-11 / NEW-100 retrofit proto enums |
 | 08 | P1-4 (first_week_type — string в контракте) | ✅ AUTO-RESOLVED | P2-1/3 (a) firstWeekType String→WeekType + NEW-120 common defs |
-| 08 | P1-5 (нет контракта версионирования) | ✅ TO-FIX | QA3/NEW-47/48 event_version policy + docs/event-schemas.md |
+| 08 | P1-5 (нет контракта версионирования) | ✅ TO-FIX | QA3/NEW-47/48 event_version policy + docs/architecture/event-schemas.md |
 | 08 | P1-6 (excuse.requested с опциональными lessons) | ✅ AUTO-RESOLVED | P2-11/6 (b) accept roundtrip + P2-11/8 excuse.decision events |
 | 08 | P1-7 (otp.verified канал без защиты от injection) | ✅ TO-FIX | P2-4/8 (c) + NEW-100 + схема otp.verified в event-schemas |
 | 08 | P2-1 (proto3 без optional group_id) | ✅ AUTO-RESOLVED | P2-11/1 (a) proto3 optional group_id |

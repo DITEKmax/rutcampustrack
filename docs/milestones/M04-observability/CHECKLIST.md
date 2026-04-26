@@ -146,7 +146,7 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 
 - [x] `docs/observability.md` runbook (~210 строк) — стек, связь signals через trace_id, типичные PromQL/LogQL/Tempo запросы, troubleshooting, deferred items.
 - [x] `docs/alerts.md` каталог — 8 алертов с runbook-действиями, silencing, quiet hours.
-- [x] `docs/architecture.md` — добавлен раздел «Observability stack (M04)» в секцию «Протоколы и коммуникации».
+- [x] `docs/architecture/architecture.md` — добавлен раздел «Observability stack (M04)» в секцию «Протоколы и коммуникации».
 - [x] `docs/logging-conventions.md` — новый (~160 строк): уровни, JSON формат Java/Python, PII masking, trace_id correlation chain.
 - [x] `CHANGELOG.md [Unreleased]` — большая секция M04 (tag `v0.0.0-alpha.5`).
 - [x] `CLAUDE.md` — M04 статус ✅ + дата 2026-04-20.

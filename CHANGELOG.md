@@ -159,7 +159,7 @@
     end_time/lesson_number/cancelled_by/cancelled_at) — downstream
     consumer'ам больше не нужен second-look gRPC в schedule.
     `LessonService.cancelLesson` + `massCancelLessons` заполняют
-    audit-tuple; `restoreLesson` очищает. `docs/architecture.md`
+    audit-tuple; `restoreLesson` очищает. `docs/architecture/architecture.md`
     раздел «Lesson lifecycle».
   - **G6 headman role check** (06 P1-1, NEW-121) — helper
     `_verify_headman` в `bot/handlers/excuse.py`, импортируется из
@@ -529,7 +529,7 @@
     (schedule-service) — reference-pattern для Spring Data interface
     projection. Native JOIN lessons + schedule_items в одном SELECT,
     вместо 2-step `findById(lessonId)` + `findById(scheduleItemId)`.
-  - **`docs/architecture.md` §11** — новый раздел «JPA convention: FK
+  - **`docs/architecture/architecture.md` §11** — новый раздел «JPA convention: FK
     как Long, без entity relations (NEW-143)» с обоснованием (прозрачный
     SQL, нет lazy surprises, cross-service FK через gRPC), образцом
     паттерна `collect itemIds → findByIdIn` из
@@ -624,7 +624,7 @@
     Подробности в `docs/milestones/M04-observability/NOTES.md`.
   - **Документация** — `docs/observability.md` runbook,
     `docs/alerts.md` каталог, раздел Observability в
-    `docs/architecture.md`, `docs/logging-conventions.md`.
+    `docs/architecture/architecture.md`, `docs/logging-conventions.md`.
 
 - **M03b Secure Boundaries Part B** — JWT HttpOnly cookie + WS-ticket
   handshake + logout lifecycle + hot-patches из M03a (tag
@@ -780,7 +780,7 @@
       token-exchange flow, dual/strict mode, downstream-валидация.
     - `docs/api-rate-limits.md` (NEW-11) — таблица лимитов, 429 поведение,
       fail-open, клиентские рекомендации retry-with-backoff и `X-Login`.
-    - `docs/architecture.md` — раздел «Internal JWT и rate-limiting» после
+    - `docs/architecture/architecture.md` — раздел «Internal JWT и rate-limiting» после
       «Reliable eventing».
   - **3 критичных фикса context startup** (обнаружены первым @SpringBootTest
     Gateway): `@Primary` на `ipKeyResolver` (RequestRateLimiterGatewayFilterFactory
@@ -807,8 +807,8 @@
     `outbox.failed.total` (counter, tag `event_type`).
   - `event-schemas/_common.json` с `$defs` (eventId, occurredAt, traceId,
     eventVersion, lessonNumber). 19 существующих schemas отрефакторены на `$ref`.
-  - `docs/event-schemas.md` — versioning policy + bump процедура + $ref guide.
-  - Раздел «Reliable eventing» в `docs/architecture.md` с диаграммой outbox flow.
+  - `docs/architecture/event-schemas.md` — versioning policy + bump процедура + $ref guide.
+  - Раздел «Reliable eventing» в `docs/architecture/architecture.md` с диаграммой outbox flow.
   - 5 contract-тестов per event-type через 3 сервиса (lesson.started/closed/
     cancelled, group.updated, attendance.marked). Используют
     networknt json-schema-validator 1.5.4 против реального payload из outbox.
@@ -835,8 +835,8 @@
     (Postgres/Mongo/Redis/RabbitMQ, `reuse=true`), `GrpcInProcessFixture`,
     `WireMockFixture`, `MigrationTestUtils`.
 - `gradle/libs.versions.toml` — Version Catalog с версиями shared-модулей.
-- `docs/shared-modules-usage.md` — quick-start для подключения shared-модулей.
-- Раздел «Shared modules» в `docs/architecture.md`.
+- `docs/architecture/shared-modules-usage.md` — quick-start для подключения shared-модулей.
+- Раздел «Shared modules» в `docs/architecture/architecture.md`.
 - `notification-service` — первый сервис-потребитель shared foundations
   (acceptance-тесты `NotificationErrorHandlingIT` + `NotificationLoggingIT`).
 

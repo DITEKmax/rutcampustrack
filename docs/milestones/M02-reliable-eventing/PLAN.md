@@ -156,9 +156,9 @@
 - `event-schemas/_common.json` — master схема.
 - `services/shared/shared-events/src/testFixtures/` — `EventSchemaValidator` +
   contract-test base.
-- `docs/event-schemas.md` — versioning policy + shared $defs (NEW-48,
+- `docs/architecture/event-schemas.md` — versioning policy + shared $defs (NEW-48,
   упомянутый в OWNER-ANSWERS).
-- `docs/architecture.md` — новый раздел «Reliable eventing» с диаграммой
+- `docs/architecture/architecture.md` — новый раздел «Reliable eventing» с диаграммой
   outbox flow.
 - Flyway миграции в 3 сервисах (shedlock + outbox tables).
 

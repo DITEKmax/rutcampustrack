@@ -76,7 +76,7 @@ services/auth-service/
 - **Зависимости:** admin-страница в web-panel; API academic-service для создания пользователя; bot-инструкция для старосты.
 
 ### P0-3: ✅ ACCEPTED — Сервис подключён к чужой БД `academic_db` без собственной схемы и без Flyway
-**Статус (2026-04-18):** by design — shared-DB между auth и academic осознанное решение при проектировании. Один разработчик, тесная связь, performance важнее изоляции, JOIN'ы возможны. Документировать в `docs/architecture.md` (NEW-1). Вариант auth-owned schema перенесён в `docs/future-ideas.md` для v0.1+ (когда понадобится MFA/lockout/login-аналитика). См. `OWNER-ANSWERS.md` 01-Q-P0-3.
+**Статус (2026-04-18):** by design — shared-DB между auth и academic осознанное решение при проектировании. Один разработчик, тесная связь, performance важнее изоляции, JOIN'ы возможны. Документировать в `docs/architecture/architecture.md` (NEW-1). Вариант auth-owned schema перенесён в `docs/future-ideas.md` для v0.1+ (когда понадобится MFA/lockout/login-аналитика). См. `OWNER-ANSWERS.md` 01-Q-P0-3.
 
 
 - **Где:** `src/main/resources/application.yml:21` (`jdbc:postgresql://postgres-academic:5432/academic_db`); `application.yml:35-36` (`flyway.enabled: false`); в `src/main/resources/db/migration/` пусто.
@@ -230,7 +230,7 @@ services/auth-service/
 
 - **Где:** `service/OtpService.java` — ключи `otp:<id>`, `otp_code:<code>`, `otp_attempts:<id>`, `otp_sent:<id>`, `otp_verify_attempts:<id>`; `service/AuthService.java:76` — `refresh:<id>:<jti>`; `service/LoginRateLimiter.java` — `login_attempts:<login>`, `login_blocked:<login>`.
 - **Что:** Redis общий для всех сервисов (и для notification-bot reminder storage). Потенциальная коллизия ключей.
-- **Как чинить:** единый префикс `auth:` — `auth:otp:<id>`, `auth:refresh:<id>:<jti>` и т.д. Задокументировать в `docs/architecture.md`.
+- **Как чинить:** единый префикс `auth:` — `auth:otp:<id>`, `auth:refresh:<id>:<jti>` и т.д. Задокументировать в `docs/architecture/architecture.md`.
 
 ### P2-5: ✅ AUTO-RESOLVED через P2-1/4 — `generateAccessToken` включает `group_id: null` в JWT для admin/teacher
 **Статус (2026-04-19):** закрыто P2-1/4 (a) — `@JsonInclude(NON_NULL)` на JWT claims DTO; QC2 openapi-typescript → `group_id?: number` (optional). См. `OWNER-ANSWERS.md` P2-1/4.

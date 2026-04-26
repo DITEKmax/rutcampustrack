@@ -351,7 +351,7 @@ M04. Также pre-existing backlog из G1-G8:
 **G12 — Documentation + закрытие.** Finishing pass:
 - `docs/observability.md` runbook (~200-250 строк, новый)
 - `docs/alerts.md` каталог (создать/финализировать, часть в G9)
-- `docs/architecture.md` раздел «Observability stack»
+- `docs/architecture/architecture.md` раздел «Observability stack»
 - `docs/logging-conventions.md`
 - `CHANGELOG.md [Unreleased]` M04 секция
 - `CLAUDE.md` «Текущий статус» → M04 ✅
@@ -496,7 +496,7 @@ JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9" ./gradlew.bat build -x test
 - `docs/observability.md` runbook (~200-250 строк, новый)
 - `docs/alerts.md` каталог + runbook (часть добавлена в G9 rules,
   нужен дополнительный overview doc)
-- `docs/architecture.md` — раздел «Observability stack»
+- `docs/architecture/architecture.md` — раздел «Observability stack»
 - `docs/logging-conventions.md` финализировать
 - `CHANGELOG.md [Unreleased]` M04 секция
 - `CLAUDE.md` «Текущий статус» → M04 ✅ + дата

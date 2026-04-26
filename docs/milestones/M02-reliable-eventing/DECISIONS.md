@@ -5,7 +5,7 @@ OWNER-ANSWERS.md. Каждая запись — 5-10 строк, не больш
 
 Не дублировать сюда:
 - Решения из OWNER-ANSWERS.md (на них ссылаются через Q-ID / P2-N/M).
-- Общие архитектурные принципы (они в `docs/architecture.md` / CLAUDE.md).
+- Общие архитектурные принципы (они в `docs/architecture/architecture.md` / CLAUDE.md).
 - Детали реализации (они в коде + DECISIONS не для how, а для why).
 
 Дублировать сюда:

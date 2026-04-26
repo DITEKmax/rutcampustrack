@@ -165,7 +165,7 @@ handler'ы должны следовать этому.
 **Альтернатива:** вместо receive-polling использовать `SimpleMessageListenerContainer` с `@RabbitListener` или `MessageListener` внутри теста — это настоящий consumer, а не short-lived basic.get polling. Возможно помогает.
 
 ### G2.7 осталось
-- `docs/architecture.md` раздел «OTP flow» (старая диаграмма HTTP body → новая event-driven). Есть ли там существующая OTP-диаграмма — проверить grep "OTP|otp".
+- `docs/architecture/architecture.md` раздел «OTP flow» (старая диаграмма HTTP body → новая event-driven). Есть ли там существующая OTP-диаграмма — проверить grep "OTP|otp".
 - Финальный коммит на группу: `feat(auth): OTP через RabbitMQ event (01 P0-4, 08 P0-2)` — можно сделать отдельным docs(m09) закрывающим.
 
 ### Открытые вопросы (решены в Группе 2)

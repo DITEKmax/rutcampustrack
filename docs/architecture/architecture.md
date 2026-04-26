@@ -811,7 +811,7 @@ rut-uit/
 Четыре `java-library` модуля под `services/shared/` — foundations, на которых
 строятся все 5 Java-сервисов. Подключаются как обычные зависимости, без
 Spring Boot autoconfiguration (правило NEW-34). Подробный quick-start —
-`docs/shared-modules-usage.md`.
+`shared-modules-usage.md`.
 
 - **`shared-web`** — централизованный RFC 9457 `ErrorResponse` + `GlobalExceptionHandler`
   (9 стандартных Spring MVC handlers + catch-all), cross-field validation
@@ -906,7 +906,7 @@ payload из outbox против JSON Schema в `event-schemas/`:
 
 **JSON Schema $defs** — `event-schemas/_common.json` содержит shared-определения
 (`eventId`, `occurredAt`, `traceId`, `eventVersion`, `lessonNumber`). 19 схем
-используют их через `$ref` (versioning policy — `docs/event-schemas.md`).
+используют их через `$ref` (versioning policy — `event-schemas.md`).
 
 ### Internal JWT и rate-limiting (M03a)
 

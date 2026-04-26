@@ -49,7 +49,7 @@
   - Consumer update: attendance-service + notification-web подписываются
     на `lesson.cancelled`
   - 03 P1-9 AUTO-RESOLVED через этот пункт
-  - NEW-118 — `docs/architecture.md` раздел «Lesson lifecycle»
+  - NEW-118 — `docs/architecture/architecture.md` раздел «Lesson lifecycle»
   - NEW-119 — UI в web-panel: «удалить» → «отменить с причиной»
     (интеграция с QC4 ConfirmWithReasonDialog из M07)
 - **02 P2-11/8** — `excuse.approved/rejected` events (унификация
@@ -143,7 +143,7 @@
 - `docs/runbooks/secret-rotation.md` — NEW-155
 - `docs/runbooks/bot-webhook-migration.md` — NEW-154
 - `docs/resource-limits.md` — NEW-157
-- `docs/architecture.md` — раздел «Lesson lifecycle» (NEW-118)
+- `docs/architecture/architecture.md` — раздел «Lesson lifecycle» (NEW-118)
 - `docs/future-ideas.md` — разделы «Auth API contract-first (v0.1)»
   + «P2-2/2 auth OpenAPI (v0.1)»
 
@@ -212,7 +212,7 @@
 - `docs/runbooks/secret-rotation.md` — NEW-155
 - `docs/runbooks/bot-webhook-migration.md` — NEW-154
 - `docs/resource-limits.md` — NEW-157
-- `docs/architecture.md` — «Lesson lifecycle» раздел (NEW-118)
+- `docs/architecture/architecture.md` — «Lesson lifecycle» раздел (NEW-118)
 - `event-schemas/otp-requested.json` — 08 P0-2
 - `event-schemas/late-checkin-{requested,approved,rejected}.json` — NEW-52
 - `event-schemas/lesson.cancelled.json` — P2-11/5

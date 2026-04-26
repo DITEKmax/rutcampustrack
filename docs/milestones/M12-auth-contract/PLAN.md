@@ -154,7 +154,7 @@ InternalWsTicket) **не публикуются в public OpenAPI**, но всё
 
 ### Docs
 - `CLAUDE.md` — Contract-first exception update (убрать auth-service)
-- `docs/architecture.md` — обновить auth-service раздел, mention
+- `docs/architecture/architecture.md` — обновить auth-service раздел, mention
   auth-api-contract
 - `docs/future-ideas.md` — удалить auth-api-contract раздел
   + удалить ошибочный P2-2/3+/4 раздел
@@ -185,7 +185,7 @@ InternalWsTicket) **не публикуются в public OpenAPI**, но всё
 - [ ] Internal endpoints hidden в prod swagger-ui через `@Hidden`
 - [ ] `CLAUDE.md` Contract-first exception обновлён — `auth-service`
       убран, остался только `api-gateway`
-- [ ] `docs/architecture.md` обновлён: auth-service описан с
+- [ ] `docs/architecture/architecture.md` обновлён: auth-service описан с
       contract-модулем
 - [ ] `docs/future-ideas.md` — auth-api-contract раздел удалён
       (перенесён в M12); ошибочный P2-2/3+/4 раздел удалён
@@ -212,7 +212,7 @@ InternalWsTicket) **не публикуются в public OpenAPI**, но всё
   `WsTicketApi.java` + `InternalAuthApi.java`
 - `services/auth-service/auth-api-contract/.../dto/*.java` — 13 DTO
 - `CLAUDE.md` — Contract-first exception обновлён
-- `docs/architecture.md` — auth-service раздел обновлён
+- `docs/architecture/architecture.md` — auth-service раздел обновлён
 - `docs/future-ideas.md` — cleanup (удалены M12-related разделы и
   ошибочный P2-2/3+/4)
 

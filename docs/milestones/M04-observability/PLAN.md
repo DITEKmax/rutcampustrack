@@ -63,7 +63,7 @@ readiness).
 
 - `docs/observability.md` — runbook (новый): tracing flow, dashboards, retention, audit через Loki, типичные LogQL/TraceQL запросы.
 - `docs/alerts.md` — список алертов + порогов + runbook на каждое срабатывание.
-- `docs/architecture.md` — раздел «Observability stack» (схема: app → OTLP → Tempo / Prometheus / Loki → Grafana → Alertmanager → bot).
+- `docs/architecture/architecture.md` — раздел «Observability stack» (схема: app → OTLP → Tempo / Prometheus / Loki → Grafana → Alertmanager → bot).
 - `docs/logging-conventions.md` — whitelist полей MDC, политика masking (уже есть baseline в shared-logback).
 - `CHANGELOG.md [Unreleased]` — секция M04.
 
@@ -93,7 +93,7 @@ readiness).
 - `infra/observability/` — Tempo/Loki/Prometheus/Alertmanager/Grafana configs.
 - `docs/observability.md` — runbook (новый, ~250 строк).
 - `docs/alerts.md` — alert catalog (новый).
-- `docs/architecture.md` — раздел «Observability stack».
+- `docs/architecture/architecture.md` — раздел «Observability stack».
 - `CHANGELOG.md [Unreleased]` — M04 секция.
 - Контейнеры: `tempo`, `alertmanager` (новые), Loki/Prom/Grafana — config-update.
 
@@ -165,7 +165,7 @@ readiness).
   + tempo/loki config обновления.
 - Docs: `docs/observability.md`, `docs/alerts.md`,
   `docs/logging-conventions.md` (3 новых), раздел в
-  `docs/architecture.md`.
+  `docs/architecture/architecture.md`.
 - 8 counter'ов + 3 gauge'а зарегистрированы в Prometheus scrape.
 - 8 alert rules + Alertmanager routing + webhook endpoint.
 

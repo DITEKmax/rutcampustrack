@@ -297,5 +297,5 @@ prod-like, но cold build тратит ~10 мин.
 - M08 PLAN.md Группа 5 — `docs/milestones/M08-test-infrastructure/PLAN.md`
 - M08 DECISIONS D1 (mini-app skip) — `docs/milestones/M08-test-infrastructure/DECISIONS.md`
 - M07 G10 a11y baseline — `docs/a11y-checklist.md`
-- M13 G18 STOMP heartbeat — `docs/websocket-flow.md`
+- M13 G18 STOMP heartbeat — `docs/architecture/websocket-flow.md`
 - Playwright docs — https://playwright.dev/

@@ -360,9 +360,9 @@ docker compose -f docker-compose.prod.yml exec certbot certbot renew
 
 ## Документация
 
-- [Архитектура](docs/architecture.md) -- детальное описание сервисов, gRPC-контрактов, событий
+- [Архитектура](docs/architecture/architecture.md) -- детальное описание сервисов, gRPC-контрактов, событий
 - [Job Stories](docs/job-stories.md) -- бизнес-требования и сценарии использования
-- [Схема БД](docs/database-schema.md) -- структура таблиц и коллекций
+- [Схема БД](docs/architecture/database-schema.md) -- структура таблиц и коллекций
 - [Дизайн-решения](docs/design-decisions.md) -- UI/UX, иконки, анимации, брендинг
 
 ---

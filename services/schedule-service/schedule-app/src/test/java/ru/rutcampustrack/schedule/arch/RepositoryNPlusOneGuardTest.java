@@ -74,7 +74,7 @@ class RepositoryNPlusOneGuardTest {
                                     + "Причина — прозрачный SQL, нет lazy surprises, лёгкое "
                                     + "пересечение gRPC-границ (FK в soседний сервис). "
                                     + "Если необходима relation — см. NEW-143 runbook в "
-                                    + "docs/architecture.md.");
+                                    + "docs/architecture/architecture.md.");
 
     /**
      * Guard для будущего: если в entity появится relation, repository-метод,
@@ -103,7 +103,7 @@ class RepositoryNPlusOneGuardTest {
                                 "Поле " + field.getFullName()
                                         + " помечено JPA relation (@ManyToOne/OneToMany/"
                                         + "OneToOne/ManyToMany). Project-wide convention — "
-                                        + "FK как Long. См. NEW-143 + docs/architecture.md."));
+                                        + "FK как Long. См. NEW-143 + docs/architecture/architecture.md."));
                     }
                 }
             }

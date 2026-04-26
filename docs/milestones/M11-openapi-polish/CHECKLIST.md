@@ -104,7 +104,7 @@
 - [x] `./gradlew test` зелёный
 - [x] Grep проверка: `record ErrorResponse` → ровно 1 hit
 - [x] Grep проверка: `scanBasePackages.*shared\.web` → 0 hits
-- [x] `docs/shared-modules-usage.md` обновлён (новая структура)
+- [x] `docs/architecture/shared-modules-usage.md` обновлён (новая структура)
 - [x] `docs/api-error-conventions.md` обновлён (единый format)
 - [x] `CLAUDE.md` обновлён (структура shared-*)
 - [x] Атомарные коммиты per-0.X (9 коммитов)

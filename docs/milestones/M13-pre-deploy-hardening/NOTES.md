@@ -191,7 +191,7 @@ app-code. Значит миграция фронта не требуется, т
 **Docs обновлены:**
 - `docs/auth-flow.md` — удалён раздел `POST /auth/refresh-body —
   DEPRECATED`.
-- `docs/architecture.md` — удалён подпункт про refresh-body legacy
+- `docs/architecture/architecture.md` — удалён подпункт про refresh-body legacy
   (заменён на однострочное упоминание что endpoint удалён в M13 G4).
 - `docs/openapi/auth.json` — regenerate через OpenApiSnapshotIT
   c `-Popenapi.snapshot.update=true`. Путь `/auth/refresh-body`
@@ -372,7 +372,7 @@ scale-up без entrypoint-rewrite.
    notification consumer) — чтобы save + outbox были atomic.
 6. IT: transaction-rollback behaviour (принудительный exception между
    save и publish → outbox запись не committed).
-7. docs/database-schema.md: Mongo RS requirement.
+7. docs/architecture/database-schema.md: Mongo RS requirement.
 8. .env.prod.example: MONGODB_REPLICA_SET_KEY generation recipe
    (openssl rand -base64 756).
 9. Rollback plan в NOTES: держим mongo:7 images как fallback.
@@ -1235,7 +1235,7 @@ backend'у, явная конфигурация на frontend не нужна.
   reconnect mandatory (`reconnectDelay > 0`).
 - `notification-center.service.spec.ts`: exponential backoff lifecycle.
 
-**Doc создан:** `docs/websocket-flow.md` — single source of truth.
+**Doc создан:** `docs/architecture/websocket-flow.md` — single source of truth.
 Покрывает: архитектура (browser → nginx → gateway → notification-web),
 ticket handshake (4 шага), heartbeat rationale, nginx config rationale,
 reconnect стратегия, test inventory, troubleshooting (4 сценария

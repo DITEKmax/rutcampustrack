@@ -30,7 +30,7 @@
 - [x] `grep -rn "refresh-body" frontends/` — аудит usage _(только generated types + 1 комментарий в mini-app; ни одного runtime-вызова)_
 - [x] Если usage найден — мигрировать frontend на cookie-based `/auth/refresh` _(N/A — frontend уже на cookie flow; regenerate types после G4.3 удалил упоминания)_
 - [x] Удалить `POST /auth/refresh-body` endpoint + DTO + test в auth-app _(удалён: AuthApi.refreshBody, AuthController.refreshBody + REFRESH_BODY_SUNSET, SecurityConfig permitAll, Gateway route Path, JwtAuthenticationFilter PUBLIC_PATHS, AuthIT+TmaIT тесты. RefreshRequest DTO оставлен — ещё нужен для /refresh и /logout (cookie flow wrapper))_
-- [x] Обновить `docs/auth-flow.md` — только cookie flow _(удалён deprecated-блок; + убрано упоминание из docs/architecture.md; regenerate auth.json snapshot + frontend types (web-panel + pwa))_
+- [x] Обновить `docs/auth-flow.md` — только cookie flow _(удалён deprecated-блок; + убрано упоминание из docs/architecture/architecture.md; regenerate auth.json snapshot + frontend types (web-panel + pwa))_
 
 ## Группа 5 — `InvalidParam` deprecated alias migration
 
@@ -61,7 +61,7 @@
 - [x] Добавить `@Transactional` + `MongoTransactionManager` bean в attendance-app + notification-web _(attendance: `MongoConfig.mongoTransactionManager` bean + `@EnableTransactionManagement`; notification-web: same в `NotificationHistoryMongoConfig`)_
 - [x] Обернуть `MongoOutboxStorage.save()` в transaction _(не на уровне самого storage — через `@Transactional` на service-методах: ExcuseService.createExcuse/createExcuseWithFile/updateStatus/applyDecisionFromBot, CheckinService.checkin, MarkingService.markAttendance/markBatch, LateCheckinService.createRequest/applyDecisionFromWeb/applyDecision. Storage-level не нужен — save вызывается внутри domain-tx propagation)_
 - [x] IT: kill publisher между `save` и `publish` → либо оба committed, либо оба rolled back _(новый `OutboxAtomicityIT` с 2 сценариями: `saveAndFail` → rollback обоих, `saveAndCommit` → оба сохранены. 2/2 passing; full attendance-integrationTest + notification-integrationTest зелёные)_
-- [x] Обновить `docs/database-schema.md` — Mongo replica set требование _(новый раздел «Deployment: replica set rs0 (M13 G7)» перед `attendances` коллекцией: требование RS для transactions, Bitnami setup, URI `?replicaSet=rs0`, transactions usage map, rollback plan. Mongo users раздел обновлён: «Создаётся в» → «Bitnami MONGODB_EXTRA_* env (M13 G7)»)_
+- [x] Обновить `docs/architecture/database-schema.md` — Mongo replica set требование _(новый раздел «Deployment: replica set rs0 (M13 G7)» перед `attendances` коллекцией: требование RS для transactions, Bitnami setup, URI `?replicaSet=rs0`, transactions usage map, rollback plan. Mongo users раздел обновлён: «Создаётся в» → «Bitnami MONGODB_EXTRA_* env (M13 G7)»)_
 
 ## Группа 8 — Consumer-side dedup по `event_id` (M02 CRITICAL #2)
 
@@ -169,7 +169,7 @@
 - [x] Обновить `nginx/conf.d/default.conf` — location `/ws`: `proxy_read_timeout 300s`, `proxy_http_version 1.1`, `Upgrade` + `Connection` headers, `proxy_buffering off` _(location `/api/ws/` — http_version 1.1 + Upgrade + Connection + read_timeout 86400s уже были (M03b/M07). Добавлен `proxy_buffering off` (M13 G18) — без этого heartbeat 1-byte фреймы (`\n`) задерживаются nginx-буфером. read_timeout 86400s >> required 300s, оставлен — idle WS поддерживаются heartbeat'ом)_
 - [x] Проверить STOMP heartbeat в `WebSocketConfig.java` notification-web — `setHeartbeatValue(new long[]{10000, 10000})` _(**Surprise**: comment утверждал «Default Spring heartbeat (10s server, 10s client) — no custom tuning needed» — это **неверно**. По умолчанию `enableSimpleBroker` без `setHeartbeatValue` + `setTaskScheduler` даёт **0/0 (off)**. Добавлены оба + dedicated `ThreadPoolTaskScheduler` bean (pool size 1, daemon, prefix `stomp-heartbeat-`). Comment поправлен. Регрессия покрыта `WebSocketConfigTest.stompHeartbeatScheduler_isInitializedDaemonThread`. `StompIntegrationIT` зелёный с новым scheduler bean)_
 - [x] ~~Локальный smoke: PWA notification-center → Chrome DevTools offline 30s → online → STOMP reconnect автоматический~~ **Deferred в G23 VPS dry-run** _(per owner-policy «ничего руками». Frontend reconnect-логика покрыта unit-тестами: `useStompCheckin.test.ts` × 3 (finite reconnectDelay 1-5000ms, ticket re-fetch на reconnect, reconnect mandatory) + `notification-center.service.spec.ts` (exponential backoff config). @stomp/stompjs default heartbeat 10s/10s — симметрично backend'у)_
-- [x] Документировать nginx/STOMP config в `docs/websocket-flow.md` _(новый файл: handshake (POST /api/auth/ws-ticket → SockJS factory с async ticket fetch → TicketHandshakeInterceptor → SubscriptionAuthInterceptor anti-IDOR), heartbeat 10s/10s rationale, nginx config rationale (proxy_buffering off / read_timeout 86400s), reconnect стратегия + tests inventory, troubleshooting (4 сценария))_
+- [x] Документировать nginx/STOMP config в `docs/architecture/websocket-flow.md` _(новый файл: handshake (POST /api/auth/ws-ticket → SockJS factory с async ticket fetch → TicketHandshakeInterceptor → SubscriptionAuthInterceptor anti-IDOR), heartbeat 10s/10s rationale, nginx config rationale (proxy_buffering off / read_timeout 86400s), reconnect стратегия + tests inventory, troubleshooting (4 сценария))_
 
 ## Группа 19 — Alertmanager → Telegram E2E + alerts catalog
 

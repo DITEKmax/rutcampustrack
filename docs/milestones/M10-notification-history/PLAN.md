@@ -158,8 +158,8 @@ unread-count. Закрывает P2-6/4 — главное архитектур�
 - `frontends/*/src/api/generated/` — regenerate после OpenAPI commit
 
 ### Docs
-- `docs/architecture.md` — раздел «Notification History» (NEW)
-- `docs/database-schema.md` — раздел Mongo `notification_db`
+- `docs/architecture/architecture.md` — раздел «Notification History» (NEW)
+- `docs/architecture/database-schema.md` — раздел Mongo `notification_db`
   (NEW-166)
 - `docs/data-retention-policy.md` — обновление: notification_history
   30d TTL (NEW-148 расширение)
@@ -194,8 +194,8 @@ unread-count. Закрывает P2-6/4 — главное архитектур�
       (integration test)
 - [ ] Testcontainers Mongo + Rabbit IT проходит:
       `NotificationHistoryConsumerIT` с полным flow
-- [ ] `docs/architecture.md` раздел «Notification History»
-- [ ] `docs/database-schema.md` обновлён (NEW-166)
+- [ ] `docs/architecture/architecture.md` раздел «Notification History»
+- [ ] `docs/architecture/database-schema.md` обновлён (NEW-166)
 - [ ] `CLAUDE.md` обновлён (NEW-168): notification-web stateful +
       MongoDB
 - [ ] Post-mortem секция в PLAN.md, tag `v0.0.0-alpha.10`
@@ -215,8 +215,8 @@ unread-count. Закрывает P2-6/4 — главное архитектур�
 - `services/notification-service/notification-api-contract/` — новый
   Gradle модуль
 - `infra/mongo-init/notification-db-init.js` — Mongo schema/user
-- `docs/architecture.md` — Notification History section
-- `docs/database-schema.md` — Mongo schema (NEW-166)
+- `docs/architecture/architecture.md` — Notification History section
+- `docs/architecture/database-schema.md` — Mongo schema (NEW-166)
 - `docs/data-retention-policy.md` — 30d TTL раздел
 - Frontend: TanStack Query hooks + Angular services для notifications
 - CLAUDE.md: обновлён service table + URL layout если нужно

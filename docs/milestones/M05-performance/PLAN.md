@@ -153,7 +153,7 @@
 - `docs/caching-strategy.md` (новый)
 - `docs/connection-pool-tuning.md` (новый)
 - `docs/data-retention-policy.md` (новый)
-- `docs/architecture.md` — раздел «Caching» + обновление HikariCP sizing
+- `docs/architecture/architecture.md` — раздел «Caching» + обновление HikariCP sizing
 - `CHANGELOG.md [Unreleased]` — M05 секция
 - Flyway миграции × 3-4 сервиса
 - Grafana dashboard «gRPC latency by method» (NEW-58 дополнение)

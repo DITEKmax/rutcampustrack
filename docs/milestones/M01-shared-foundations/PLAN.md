@@ -128,7 +128,7 @@ notification-service сейчас без GlobalExceptionHandler (05 P0-2 / C1-11
       событие с автозаполнением `trace_id`/`occurred_at`/`event_version`
       из `AbstractEventPublisher` / `AbstractEventConsumer`.
 - [ ] Javadoc на публичных API каждого модуля (короткий — 2-3 строки на класс).
-- [ ] `docs/architecture.md` — раздел «Shared modules» с описанием 4 модулей.
+- [ ] `docs/architecture/architecture.md` — раздел «Shared modules» с описанием 4 модулей.
 - [ ] `CHANGELOG.md` → `[Unreleased]` → запись «Added: shared-web, shared-events, shared-logback, shared-test-containers».
 
 ## Dependencies
@@ -143,8 +143,8 @@ notification-service сейчас без GlobalExceptionHandler (05 P0-2 / C1-11
 - `services/shared/shared-events/` (~150-250 LOC)
 - `services/shared/shared-logback/` (~100 LOC + XML)
 - `services/shared/shared-test-containers/` (~200-300 LOC)
-- `docs/architecture.md` — раздел «Shared modules»
-- `docs/shared-modules-usage.md` — как подключать к сервису (1-страничный гайд)
+- `docs/architecture/architecture.md` — раздел «Shared modules»
+- `docs/architecture/shared-modules-usage.md` — как подключать к сервису (1-страничный гайд)
 - Пример интеграции: notification-service на shared-web
 
 ---

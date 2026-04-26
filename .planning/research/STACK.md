@@ -287,7 +287,7 @@ README is Markdown — no library dependencies. Key structural decision: what to
 ## Testing (how to run each test suite)
 ```
 
-**Do NOT:** Write the README as code (use the Write tool). Do not include implementation details that belong in `docs/architecture.md` — README links to it. Keep Quick Start under 10 commands.
+**Do NOT:** Write the README as code (use the Write tool). Do not include implementation details that belong in `docs/architecture/architecture.md` — README links to it. Keep Quick Start under 10 commands.
 
 ---
 

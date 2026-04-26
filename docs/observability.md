@@ -242,4 +242,4 @@ Alertmanager `time_intervals` использует **UTC**, не MSK. Текущ
   строки 1349-1564 (QA1..QA7).
 - M04 план: `docs/milestones/M04-observability/PLAN.md`.
 - Alert каталог: `docs/alerts.md`.
-- Архитектура: `docs/architecture.md` раздел Observability stack.
+- Архитектура: `docs/architecture/architecture.md` раздел Observability stack.

@@ -147,4 +147,4 @@ ajv validate \
 5. Contract-тест: `*ContractIT` в сервисе, который валидирует реальный payload
    (см. `schedule.events.LessonStartedContractIT` как reference).
 6. Если консьюмер — в другом сервисе, добавить запись event-schemas/ в
-   `docs/architecture.md` → таблица коммуникаций.
+   `architecture.md` → таблица коммуникаций.

@@ -156,7 +156,7 @@ event_type как отдельный столбец для таргетинга.
   `event_id` (UUID уже есть во всех envelope'ах, `event-schemas/_common.json
   #/$defs/eventId`). **Path forward:** M04 Observability — добавить
   idempotent consumers в notification-web + attendance consumers.
-  Задокументировано в `docs/event-schemas.md` что гарантия = at-least-once.
+  Задокументировано в `docs/architecture/event-schemas.md` что гарантия = at-least-once.
 - **HIGH #4 bind-параметр partial-index.** JPQL `WHERE e.status = :status`
   с bind — PG planner может не свернуть на partial-index predicate
   `WHERE status = 'pending'`. 582 тестов зелёные — объёмы малые,

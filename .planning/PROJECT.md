@@ -239,7 +239,7 @@ Solo developer (Persik), lead developer and sysadmin. IntelliJ IDEA on Windows, 
 
 ## Milestones
 
-### v9.0: Frontend Unification — Single Login & Role-Based Web Clients — 🛠 IN PROGRESS
+### v9.0: Frontend Unification — Single Login & Role-Based Web Clients — ✅ SHIPPED 2026-04-27
 Post-v8.0 production revealed that root `/` serves PWA to all roles, `/admin/` login is broken for non-ADMIN users (infinite redirect loop), landing has dead Telegram links, and web cabinets for STUDENT/HEADMAN don't exist despite being fixed in `docs/design-decisions.md §3` and `docs/job-stories.md`. v9.0 unifies all web clients under a single `/login` with role-based routing, delivers full student and headman web cabinets, extends PWA to HEADMAN, and moves landing to `/presentation/`. See `.planning/milestones/v9.0-BRIEF.md` for full context.
 
 ### v8.0: CI/CD, Deployment & Documentation — ✅ SHIPPED 2026-04-08

@@ -6,42 +6,31 @@ import { assertNoA11yCriticalOrSerious } from '../fixtures/axe';
 /**
  * M08 Группа 5 (P2-8/5) — headman bulk-mark flow.
  *
- * Scenario:
- *  1. headman логинится.
- *  2. открывает /headman/schedule, выбирает активную пару.
- *  3. в HeadmanLessonSheet (M07 UX) кликает «Отметить всех» → bulk-mark (M05 G4 batch).
- *  4. проверяет WebSocket (STOMP) notification — headman видит live-update
- *     счётчика группы после ответа backend'а.
- *
- * Headman hard-lock (v9.0) — после bulk-mark студенты видят занятие как
- * заблокированное от геоотметки.
- *
  * ============================================================================
- * M14 G7 (G26 категория «forward-written»): SKIPPED.
+ * SKIPPED by design — bulk-mark в web-panel НЕ ПЛАНИРУЕТСЯ.
  *
- * Pre-flight reading в G7 показал что web-panel UI bulk-mark **не
- * реализован**:
- *  - `headman-dashboard.component.ts` — только stat-cards (memberCount,
- *    pendingExcuses), нет lesson-card listings, нет group-attendance-count
- *  - `headman-schedule.component.ts` — slot-dialog для CRUD занятий,
- *    нет BottomSheet с «Отметить всех»
- *  - grep по всему web-panel + pwa: 0 hits для `bulk-mark`/`markAll`/
- *    «Отметить всех» в UI коде
+ * Архитектурное решение (M14 G7, owner): web-panel не получает
+ * bulk-mark UI. Староста делает массовую отметку через PWA
+ * (`frontends/pwa/src/features/schedule/HeadmanLessonSheet.tsx` —
+ * `useHeadmanMarkBatch`), которая уже реализована и работает в
+ * production. Web-panel остаётся desktop-инструментом для журналов и
+ * ручных action'ов, mass-mark — мобильный flow.
  *
- * Backend готов: `MarkingApi.batchMark()` + `MarkBatchRequest/Response`
- * DTO + ScheduleGrpcClient (services/attendance-service/.../marking/).
+ * Web-panel UI отсутствует by design:
+ *  - нет lesson-card listings в `headman-dashboard.component.ts`
+ *  - нет BottomSheet «Отметить всех» в `headman-schedule.component.ts`
+ *  - нет group-attendance-count stat
  *
- * Перенесено в v0.1: см. `docs/future-ideas.md` § «v0.1 — Headman
- * bulk-mark UI». Восстановить тест после реализации UI с UX review
- * (lesson-card layout, BottomSheet vs Material Dialog, live-update
- * через STOMP). Оценка работы: 6-10 ч feature work.
+ * Этот spec из M08 G5 написан под web-panel UX, который никогда не будет
+ * реализован. Не удаляем (audit trail), но `test.describe.skip`
+ * permanent — не «временный TODO».
  *
- * Primary path для bulk-mark в v0.0.0 — Telegram bot, который УЖЕ
- * реализован и покрыт pytest. Web-panel UI это secondary channel.
+ * Аналогичный e2e flow для PWA — см. `frontends/pwa/src/features/schedule/`
+ * unit + integration тесты + manual UAT через Telegram-клиент.
  * ============================================================================
  */
 
-test.describe.skip('Headman bulk-mark', () => {
+test.describe.skip('Headman bulk-mark (web-panel — by-design out of scope)', () => {
   test('headman marks all students present via batch endpoint', async ({ page }) => {
     await loginAs(page, TEST_USERS.headman);
 

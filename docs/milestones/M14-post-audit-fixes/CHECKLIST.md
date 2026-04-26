@@ -131,13 +131,16 @@ Conservative выбор vs latest 3.27 (8 minor versions vs 12).
 
 **Pre-flight surprises:**
 
-1. **Большая часть spec'ов написана forward** — `headman-mark.spec.ts`
-   тестирует UI которого нет в web-panel (нет lesson-card listings,
+1. **`headman-mark.spec.ts` — by-design out of scope для web-panel.**
+   Spec тестирует UI которого нет в web-panel (нет lesson-card listings,
    нет BottomSheet «Отметить всех», нет group-attendance-count stat).
-   Backend готов (`MarkingApi.batchMark` + DTO), но UI — ~6-10 ч feature
-   work с UX review. **Перенесено в v0.1** (`docs/future-ideas.md` §
-   «v0.1 — Headman bulk-mark UI»). Primary path для bulk-mark в
-   v0.0.0 — Telegram bot (готов).
+   Backend готов (`MarkingApi.batchMark` + DTO) и **используется PWA**
+   (`frontends/pwa/src/features/schedule/HeadmanLessonSheet.tsx` →
+   `useHeadmanMarkBatch`). Owner decision: web-panel НЕ получает
+   bulk-mark UI — староста делает массовую отметку через PWA
+   (мобильный flow). Web-panel остаётся desktop-инструментом для
+   журналов и ручных action'ов. Spec помечен `test.describe.skip`
+   permanent (не «временный TODO»).
 
 2. **Категория E решение — path A** (удалить 2 теста). Reasoning:
    seed `student` имеет `is_headman=true`, тесты `cannot access /headman/*`
@@ -169,19 +172,14 @@ Conservative выбор vs latest 3.27 (8 minor versions vs 12).
   fixed, MatSelect alignment, headman approve scoped через
   excuse-card → button «Одобрить»
 - [x] `tests/e2e/specs/headman-mark.spec.ts` — `test.describe.skip`
-  с большим explanatory блоком + перенос в v0.1 backlog
+  permanent с rationale «web-panel не получает bulk-mark UI by design»
+  (PWA владеет flow через `HeadmanLessonSheet.tsx`)
 
 ### Template testid additions (где semantic невозможен)
 
 - [x] `frontends/web-panel/src/app/features/student/excuses/excuse-form-dialog/excuse-form-dialog.component.html` — `data-testid="lesson-picker-item"`
 - [x] `frontends/web-panel/src/app/features/headman/excuses/headman-excuses.component.ts` — `data-testid="excuse-card"`
 - [x] `frontends/web-panel/src/app/features/admin/users/user-dialog/user-dialog.component.html` — `data-testid="initial-password-display"`
-
-### Documentation
-
-- [x] `docs/future-ideas.md` § «v0.1 — Headman bulk-mark UI» — backend
-  inventory + UX checklist + оценка (6-10 ч feature work) + когда делать
-  (после real headman user signal)
 
 ### Verification
 
@@ -196,11 +194,16 @@ Conservative выбор vs latest 3.27 (8 minor versions vs 12).
   web-panel rebuild (~15-30 мин setup). Будет в финальной UAT.
 
 - [x] Commit: `fix(e2e): G26 false-pass tests — testid + routes + skip forward-written + path A для seed mismatch (M14 G7)` — `f24f22f`
+- [x] Corrective patch: `fix(e2e): headman-mark.spec.ts skip — by-design out of scope для web-panel (M14 G7 follow-up)` — после discovery что bulk-mark **уже работает в PWA**, не нужен v0.1 backlog для web-panel.
 
-### Out of scope G7 (намеренно deferred)
+### Out of scope G7 (by-design, не deferred)
 
-- Реализация headman bulk-mark UI (~6-10 ч) — v0.1 после UX review
-- Polish red-zone-badge stat — v0.1 после teacher dashboard UX review
+- Headman bulk-mark UI в **web-panel** — by-design не делается. PWA
+  (`frontends/pwa/src/features/schedule/HeadmanLessonSheet.tsx`)
+  владеет этим flow, web-panel остаётся desktop tool для журналов и
+  ручных action'ов.
+- Polish red-zone-badge stat — feature не запланирована, без явного
+  user request в v0.1+ не делать.
 
 ## Группа 8 — G26 code-review P1 (30 мин)
 

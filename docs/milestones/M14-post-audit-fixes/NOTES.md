@@ -331,27 +331,29 @@ v4.3.2).
 **Footprint:** 1 functional commit, 10 files, 301 insertions / 44 deletions.
 Time: ~75 минут (vs hand-off 1-1.5 ч — точное попадание).
 
-**Главное открытие — большая часть spec'ов написана forward.**
+**Главное открытие — спеки написаны под web-panel UI, который не нужен.**
 
-Spec'и из M08 G5 (`P2-8/5`) — то есть 16 milestone'ов назад — содержат
-тесты для UI который **никогда не был реализован**. Pre-flight reading
-(routes + templates + grep по `bulk-mark`/«Отметить всех») показал:
+Spec'и из M08 G5 (`P2-8/5`) — 16 milestone'ов назад — содержат
+тесты для функциональности, которая **есть в PWA, но не в web-panel**.
+Pre-flight reading (routes + templates + grep по
+`bulk-mark`/«Отметить всех») показал:
 
-| Spec | UI status | Backend status |
-|---|---|---|
-| `headman-mark.spec.ts` | ❌ Не реализован (нет lesson cards, нет BottomSheet) | ✅ `MarkingApi.batchMark` готов |
-| `red-zone-badge` в teacher/stats | ❌ Не реализован (только overall + subject charts) | ✅ stats endpoint считает |
-| `student-excuse + 10MB PDF` | ✅ Реализован (excuse-form-dialog) | ⚠️ File-upload endpoint надо verify в G9 |
-| `admin-create-user` | ✅ Реализован (user-dialog) | ✅ POST /academic/users возвращает initialPassword |
+| Spec | web-panel UI | PWA UI | Backend |
+|---|---|---|---|
+| `headman-mark.spec.ts` | ❌ нет | ✅ `HeadmanLessonSheet.tsx` через `useHeadmanMarkBatch` | ✅ `MarkingApi.batchMark` |
+| `red-zone-badge` в teacher/stats | ❌ нет | n/a | ✅ stats endpoint считает |
+| `student-excuse + 10MB PDF` | ✅ excuse-form-dialog | ✅ pwa excuses | ⚠️ verify в G9 |
+| `admin-create-user` | ✅ user-dialog | n/a | ✅ POST /academic/users |
 
 **Вывод:** false-pass тесты возникают двумя способами:
 1. **Locator drift** — UI был, потом изменился, locator устарел (категория A).
-2. **Forward-written** — UI никогда не был реализован, тест писали под план
-   (категория «forward»). Это HEADMAN-MARK pattern.
+2. **Wrong-client** — функция реализована в другом клиенте (PWA), spec
+   написан под несуществующий web-panel flow. Это HEADMAN-MARK pattern.
 
-Forward-written тесты опаснее — false-pass перманентный, не временный.
-Решение: skip с явным TODO + перенос в backlog с inventory backend
-готовности.
+Wrong-client тесты решаются через `test.describe.skip` permanent с
+rationale "by design out of scope для этого клиента". Не TODO,
+не v0.1 promise — это архитектурное решение разделения flow между
+desktop (web-panel) и mobile (PWA) клиентами.
 
 **Path A vs Path B решение для категории E:**
 
@@ -372,19 +374,40 @@ Forward-written тесты опаснее — false-pass перманентны�
 3. ~10 мин — read user-dialog.html + excuse-form-dialog.html +
    headman-excuses.component.ts inline templates → понимание реального
    UX (Material dialogs, mat-select, role="tab", `<article class>`)
-4. ~10 мин — grep по `bulk-mark`/«Отметить всех» по всему frontends/
-   → confirmation что headman bulk-mark UI **не существует**
-5. ~30 мин — actual fixes (5 spec edits + 3 template testid + future-ideas)
+4. ~10 мин — grep по `bulk-mark`/«Отметить всех» по `frontends/web-panel/`
+   → confirmation что в **web-panel** bulk-mark UI отсутствует
+5. ~30 мин — actual fixes (5 spec edits + 3 template testid)
 6. ~10 мин — npm install + playwright list verification + commit
+7. ~15 мин — **corrective patch после owner discovery**: я изначально
+   предположил, что bulk-mark UI просто не реализован, и оформил v0.1
+   backlog. Owner pushback "а мне такой функционал не нужен" привёл
+   к проверке через `grep -rln "batchMark|markBatch"` по всему
+   `frontends/` — нашёл `frontends/pwa/src/features/schedule/HeadmanLessonSheet.tsx`,
+   который **уже использует** `useHeadmanMarkBatch`. То есть функция
+   работает в PWA, web-panel её получать не должен (by design split).
+   Удалил v0.1 entry в `future-ideas.md`, переписал skip rationale в
+   spec на permanent "out of scope for web-panel".
 
-**Урок про forward-written tests:**
+**Урок про wrong-client tests + cross-client architectural search:**
 
-Когда пишешь тест ДО UI implementation — добавь `test.fixme()` (а не
-`test.skip()` или ничего). `fixme()` ясно сигнализирует "тест сломан by
-design". `skip()` создаёт впечатление intentional pause, false-pass —
-вообще ничего. M14 backed `test.describe.skip` с большим explanatory
-блоком — best of both worlds, но в будущем для forward-tests
-**предпочтительно `fixme`** + tracking в issue.
+1. **Не ограничивайся одним клиентом при grep.** Если spec написан
+   для `frontends/web-panel/`, проверь также `frontends/pwa/` и
+   `frontends/mini-app/` — функция может быть в другом клиенте. Я
+   изначально grep'нул только web-panel + pwa, но не сделал
+   semantic-grep по batch endpoint usage (`batchMark`/`markBatch`) —
+   это пропустило key fact что PWA уже использует backend.
+
+2. **Discovery flow:** при отсутствии UI в spec'овом target клиенте,
+   следующий шаг — grep по **API method usage** (`batchMark`/
+   `useHeadmanMarkBatch`/`/marking/batch`) по ВСЕМ клиентам. Если
+   находит в другом клиенте — это wrong-client test, skip permanent
+   с "by design" rationale. Если не находит нигде — backend dead code,
+   спроси owner про планы.
+
+3. **`test.describe.skip` permanent с rationale `by-design out of scope`**
+   лучше чем `test.fixme()` + v0.1 promise. Promise = накопление
+   ложного backlog'а. By-design rationale = понятное архитектурное
+   решение которое не требует tracking issue.
 
 **Generated 10MB PDF в spec'е (для file upload teста):**
 

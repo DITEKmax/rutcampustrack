@@ -50,6 +50,45 @@ test cleanup PR.
 - **G1 IT runtime:** 5m33s (4× SecurityIdorIT + 3× *StrictModeIT параллельно через single-task gradle invocation, `--no-daemon`).
 - **G1 commit footprint:** 5 application.yml + 1 .env.prod.example + 1 test fixup = 7 files / 34 insertions / 10 deletions.
 - **G2 commit footprint:** 1 file (`deploy.yml`) / 1 insertion / 1 deletion. Минимальный возможный diff.
+- **G3 commit footprint:** 1 file (`deploy.yml`) / 27 insertions / 3 deletions (большая часть — комментарии-документация почему именно такой pipeline).
+- **G3 dry-run runtime:** ~6s на pipeline (alpine pull + apk add openssl + 3072-bit RSA + pkcs8 + rsa pubout); JDK standalone parse ~1s. Полный verification cycle <30s.
+
+**G3 surprise #1 — OpenSSL 3.x уже выдаёт PKCS#8 by default:** baseline
+dry-run на `alpine:latest` (OpenSSL 3.5.6) показал что bare `openssl genrsa`
+УЖЕ выдаёт `-----BEGIN PRIVATE KEY-----` (PKCS#8). На `alpine:3.13`
+(OpenSSL 1.1.1q) — `BEGIN RSA PRIVATE KEY` (PKCS#1). Поведение
+изменилось в OpenSSL 3.0: PKCS#1 теперь требует explicit `-traditional`.
+Поэтому CSO HIGH-05 finding концептуально правильный, но **на современном
+deploy не воспроизводится** — implicit зависит от alpine major version.
+Fix всё равно нужен: explicit `pkcs8 -topk8` снимает implicit dependency
+на OpenSSL major version (если кто-то запинит alpine на старую версию,
+deploy всё равно сработает).
+
+**G3 surprise #2 — race-edge в старой idempotency guard:** старая форма
+`([ -f X ] || gen X) && ([ -f Y ] || gen Y)` имела edge case: если
+private.key существует, а public.key нет (interrupted deploy), то
+public.key регенерится **из существующего private.key** — пара
+mismatch'нется только если private изменился между запусками, что не
+наш случай. Но на edge: если оба файла существуют, но один corrupt —
+старая логика их **не** регенерит. Новая форма `if [ ! -f private.key ]
+then gen-all` атомарна: либо все 4 файла генерятся одним блоком, либо
+никаких. Чище семантически.
+
+**G3 dry-run обходные пути на Windows/Git Bash:** Git Bash MSYS path
+conversion ломает absolute Linux paths в `docker run`/`docker cp`
+(`/keys/x` → `C:/Program Files/Git/keys/x`). Workaround: prefix
+`MSYS_NO_PATHCONV=1` для bash-инкарнации, либо PowerShell tool
+для нативных Windows paths в `docker cp` host-side. Записано в
+`docs/deferred-ideas.md` как кандидат на dev-handbook entry.
+
+**G3 standalone Java verification — приём для будущих GSD audits:**
+вместо тяжёлого `docker compose up auth-service`, сделан минимальный
+clone `JwtService.loadPrivateKey/loadPublicKey` (40 строк), который
+парсит ключ через `PKCS8EncodedKeySpec`/`X509EncodedKeySpec` ровно
+теми же `KeyFactory.getInstance("RSA")` API что production code. Если
+clone парсит — production code тоже парсит (та же JDK 21, те же specs).
+Negative test (PKCS#1) — `InvalidKeySpecException` подтверждает что
+clone семантически корректный.
 
 **G2 surprise — версия appleboy/ssh-action:** hand-off зафиксировал
 target `v1.2.0`, pre-flight `curl /releases/latest` показал `v1.2.5`

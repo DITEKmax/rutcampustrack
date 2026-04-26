@@ -27,16 +27,18 @@
 - [x] Verify: `grep` ровно 1 вхождение в SHA-формате; `pyyaml safe_load` парсит без ошибок (actionlint не установлен)
 - [x] Commit: `fix(ci): SHA-pin appleboy/ssh-action against supply chain (M14 G2, CSO CRIT-02)` — `a93859b`
 
-## Группа 3 — CSO HIGH-05: PKCS#8 fix в deploy.yml + first-deploy detection (30 мин)
+## Группа 3 — CSO HIGH-05: PKCS#8 + idempotent JWT key gen ✅ (commit `7e69067`)
 
-- [ ] Прочитать `services/auth-service/Dockerfile:69-79` (M13 G25.15 reference flow) — скопировать correct openssl pipeline
-- [ ] `.github/workflows/deploy.yml` — найти block с `openssl genrsa` и заменить на pipeline `genrsa -> pkcs8 -topk8 -nocrypt -> rsa -pubout` (см. PLAN.md HIGH-05 fix variant B)
-- [ ] Добавить first-deploy detection: `if [ ! -f /opt/rutcampustrack/.deployed-sha ]; then ... fi` block, который удаляет volume и pre-fills уникальные keys
-- [ ] kid через `openssl rand -hex 4 > /keys/kid.txt` (вместо `head -c 4 | od | tr` pipeline)
-- [ ] chmod / chown matching Dockerfile (`chown -R 100:101 /keys && chmod 600 /keys/private.key /keys/kid.txt && chmod 644 /keys/public.key`)
-- [ ] Local dry-run на чистом docker volume: `docker volume rm rutcampustrack_jwt-keys 2>/dev/null; docker volume create rutcampustrack_jwt-keys; <inline-script-from-deploy.yml>`; затем `head -1 /keys/private.key` через temp container — должно быть `-----BEGIN PRIVATE KEY-----` (PKCS#8), НЕ `BEGIN RSA PRIVATE KEY` (PKCS#1)
-- [ ] Поднять auth-service против этого volume локально, проверить отсутствие exception в логах при `JwtService.init()`
-- [ ] Commit: `fix(ci): PKCS#8 + first-deploy regen в deploy.yml (M14 G3, CSO HIGH-05)`
+- [x] Reference: `services/auth-service/Dockerfile:69-79` (M13 G25.15) — 3-step pipeline (genrsa → pkcs8 -topk8 -nocrypt → rsa -pubout)
+- [x] `.github/workflows/deploy.yml:329-360` — explicit PKCS#8 conversion + atomic idempotency через `if [ ! -f /keys/private.key ]; then ... fi`
+- [x] **Решено: first-deploy detection через filesystem (`[ ! -f ]`), НЕ через `.deployed-sha` marker.** Filesystem check проще + надёжнее (Linux atomic file existence) и matches JwtService.init() pattern. Маркер `.deployed-sha` уже пишется отдельно (deploy.yml:366) для observability — не дублируем.
+- [x] kid через `head -c 4 /dev/urandom | od -A n -t x1 | tr -d ' \n' > /keys/kid.txt` (тот же pipeline что Dockerfile, не `openssl rand -hex 4`)
+- [x] chmod / chown matching Dockerfile: `chown -R 100:101 /keys && chmod 600 /keys/private.key /keys/kid.txt && chmod 644 /keys/public.key`
+- [x] Local dry-run на чистом docker volume: `head -1 /keys/private.key` = `-----BEGIN PRIVATE KEY-----` (PKCS#8) ✅
+- [x] **Бонус-verification**: md5sum ключей → второй запуск pipeline даёт ИДЕНТИЧНЫЕ hash → atomic idempotent ✅
+- [x] **Бонус-verification**: JDK 21 standalone clone JwtService.loadPrivateKey/loadPublicKey парсит keys без exception ✅
+- [x] **Бонус-negative test**: тот же clone на PKCS#1 ключе из alpine:3.13 (OpenSSL 1.x) → `InvalidKeySpecException "Unable to decode key"` ✅
+- [x] Commit: `fix(ci): PKCS#8 + idempotent JWT key gen в deploy.yml (M14 G3, CSO HIGH-05)` — `7e69067`
 
 ## Группа 4 — CSO HIGH-06: fail-fast secrets во всех services (20 мин)
 

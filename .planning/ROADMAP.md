@@ -10,7 +10,7 @@
 - ✅ **v6.0 PWA + Web Push** — Phases 27-32 (shipped 2026-04-06)
 - ✅ **v7.0 Frontends — Mini App, Web Panel, Landing** — Phases 33-40 (shipped 2026-04-07)
 - ✅ **v8.0 CI/CD, Deployment & Documentation** — Phases 41-48 (shipped 2026-04-08)
-- 🚧 **v9.0 Frontend Unification — Single Login & Role-Based Web Clients** — Phases 49-57 (in progress)
+- ✅ **v9.0 Frontend Unification — Single Login & Role-Based Web Clients** — Phases 49-61 (shipped 2026-04-27)
 
 ## Phases
 
@@ -126,7 +126,7 @@ Full details: `.planning/milestones/v8.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v9.0 Frontend Unification — Single Login & Role-Based Web Clients
+### ✅ v9.0 Frontend Unification — Single Login & Role-Based Web Clients (SHIPPED 2026-04-27)
 
 **Milestone Goal:** Fix critical post-v8.0 production frontend bugs and deliver full web cabinets for STUDENT and HEADMAN roles, unified under a single `/login` entry point. Extend React PWA to HEADMAN. Move landing to `/presentation/`.
 
@@ -406,7 +406,7 @@ Plans:
 **Goal:** Доделать фичу «Домашние задания»: (1) привязать ДЗ к конкретной паре через natural key (group_id, lesson_date, lesson_number) с бэкенд-валидациями (дата ≥ today, пара существует в расписании, subject совпадает, только автор правит/удаляет, только HEADMAN создаёт); (2) `/headman/homework` — недельный список пар с inline-формой (не MatDialog) для CRUD; (3) переписать `/student/homework` с тремя режимами (День = завтра / Неделя вертикальный список / Месяц матрица) + фильтр «только невыполненные»; (4) расширить payload событий homework.published/homework.updated + включить push при update в notification-bot.
 **Requirements**: [HW-LINK, HW-VAL-DATE, HW-VAL-LESSON, HW-AUTHOR, HW-ROLE, HW-EVENT, HW-UI-HEADMAN, HW-UI-STUDENT, HW-TEST]
 **Depends on:** Phase 60
-**Source**: `.planning/phases/61-headman-homework-management-ui-homeworkapi-controller-homewo/61-CONTEXT.md` (D-01..D-15) + `61-RESEARCH.md` (2026-04-15, HIGH confidence)
+**Source**: `.planning/milestones/v9.0-phases/61-headman-homework-management/61-CONTEXT.md` (D-01..D-15) + `61-RESEARCH.md` (2026-04-15, HIGH confidence)
 **Success Criteria** (what must be TRUE):
   1. Таблица `homeworks` имеет NOT NULL колонки `lesson_date DATE`, `lesson_number INT`; индекс `idx_homeworks_group_date` создан; колонка `lesson_id` удалена (Flyway V13)
   2. POST `/api/academic/homeworks` с валидной датой и номером пары, которая существует в расписании группы + совпадающим subjectId → 201; без пары → 400; несовпадающий subject → 400
@@ -455,3 +455,7 @@ Plans:
 | 55. Headman Web Cabinet — Attendance Management + Stats | v9.0 | 5/5 | Complete   | 2026-04-09 |
 | 56. PWA Headman Mode | v9.0 | 6/6 | Complete    | 2026-04-13 |
 | 57. Landing Presentation Mode + Documentation | v9.0 | 3/3 | Complete   | 2026-04-13 |
+| 58. Admin BUG-006 Fixes | v9.0 | 11/11 | Complete | 2026-04-14 |
+| 59. Excuses Backend | v9.0 | 9/9 | Complete | 2026-04-14 |
+| 60. Headman Schedule Management | v9.0 | 8/8 | Complete | 2026-04-15 |
+| 61. Headman Homework Management UI | v9.0 | 7/7 | Complete | 2026-04-27 |

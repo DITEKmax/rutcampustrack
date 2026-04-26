@@ -2,40 +2,40 @@
 gsd_state_version: 1.0
 milestone: v9.0
 milestone_name: Frontend Unification — Single Login & Role-Based Web Clients
-status: executing
-stopped_at: Completed 61-06-PLAN.md
+status: shipped
+shipped_at: 2026-04-27
 last_updated: "2026-04-27"
 last_activity: 2026-04-27
 progress:
   total_phases: 13
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 41
-  completed_plans: 40
-  percent: 97
+  completed_plans: 41
+  percent: 100
 notes:
   - "v0.0.0 pre-release hardening (M01-M16) проходит параллельно вне GSD-workflow — см. CLAUDE.md и docs/milestones/"
-  - "Phase 61 единственная в .planning/phases/ — все остальные v9.0 phases архивированы в milestones/v9.0-phases/"
+  - ".planning/phases/ пуст — все v9.0 phases (49-61) архивированы в milestones/v9.0-phases/"
+  - "Phase 61 закрыта 2026-04-27; plan-7 SUMMARY/VERIFICATION не создавались (фаза признана завершённой по факту)"
 ---
 
 # Project State
 
 ## Current Milestone
 
-v9.0 Frontend Unification — Single Login & Role-Based Web Clients
+v9.0 Frontend Unification — SHIPPED 2026-04-27 (все фазы 49-61 закрыты)
+
+Следующий milestone: TBD. Запустить через `/gsd-new-milestone v10.0`.
 
 ## Current Position
 
-Phase: 61 — headman-homework-management (active in `.planning/phases/`)
-Plans: 6/7 complete (61-07-PLAN.md выполнен, нет SUMMARY → требует verification или завершения)
-Status: PAUSED — основное внимание переключилось на v0.0.0 pre-release hardening (M01-M16)
-Last GSD activity: 2026-04-15 (Phase 61 plan 6 completed)
+Активной фазы нет. v9.0 закрыта. Текущий рабочий контекст — v0.0.0 pre-release hardening (M01-M16) в `docs/milestones/`, не в GSD.
 
 ## Project Reference
 
 See: `.planning/PROJECT.md` (updated 2026-04-08)
 
 **Core value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
-**Current focus:** v0.0.0 pre-release hardening (см. `CLAUDE.md` + `docs/milestones/`); Phase 61 paused.
+**Current focus:** v0.0.0 pre-release hardening (см. `CLAUDE.md` + `docs/milestones/`).
 
 ## Roadmap Summary
 
@@ -53,7 +53,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-08)
 | 58 | Admin BUG-006 fixes (search/groups/semester/telegram/conflict-handler) | BUG-006 | Complete |
 | 59 | Excuses Backend (excuse.requested publisher + headman approval) | NOTIF deferred | Complete |
 | 60 | Headman Schedule Management (templates + one-off lessons) | HEAD-SCH-01..09 | Complete |
-| 61 | Headman Homework Management UI + HomeworkApi | HEAD-HW-01..07 | Plans 6/7 (PAUSED) |
+| 61 | Headman Homework Management UI + HomeworkApi | HEAD-HW-01..07 | Complete |
 
 ## Completed Milestones
 
@@ -101,12 +101,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-08)
 - Phase 61 added: Headman Homework Management — UI старосты для создания/редактирования ДЗ группы (бэкенд готов)
 - v9.0 фактически расширилась за пределы изначальных 9 фаз (49-57): после shipping добавлены 58-61 как extensions
 
-### Phase 61 Resume Notes
+### Phase 61 Closure Note
 
-При возврате к Phase 61:
-1. Проверить статус plan 7: `.planning/phases/61-headman-homework-management-ui-homeworkapi-controller-homewo/61-07-PLAN.md`
-2. Если выполнен — создать 61-07-SUMMARY.md и `/gsd-verifier 61`
-3. После verification — переместить в `milestones/v9.0-phases/` через `/gsd-cleanup`
+Phase 61 закрыта 2026-04-27. Plan-7 выполнен по факту, но `61-07-SUMMARY.md` и `61-VERIFICATION.md` не создавались (фаза признана завершённой пользователем без формального verification — см. также v9.0 shipped status).
+Архив: `.planning/milestones/v9.0-phases/61-headman-homework-management/`.
 
 ### Decisions
 
@@ -136,16 +134,15 @@ See PROJECT.md Key Decisions table for full history.
 
 ### Blockers / Open Items
 
-- **Phase 61 unfinished**: plan 7 без SUMMARY. При возврате — verify + ship.
-- **v0.0.0 release**: alpha.16 deployed to VPS (M15), М16 cleanup backlog planned.
+- **v0.0.0 release**: alpha.16 deployed to VPS (M15), M16 cleanup backlog planned.
+- **Phase 61 closure**: 61-07 SUMMARY + VERIFICATION не создавались — известный gap в archive, признано acceptable пользователем.
 
 ## Session Continuity
 
-Last GSD session: 2026-04-15T14:26:56.913Z (Phase 61 plan 6)
-Stopped at: Completed 61-06-PLAN.md
-Last commit (any): `f9944ab` (planning normalization, 2026-04-27)
-Next action when resuming v9.0: проверить статус 61-07 → SUMMARY → `/gsd-verifier 61`
-Next action when starting new milestone: `/gsd-new-milestone v10.0` (после finalize Phase 61)
+Last GSD session: 2026-04-15T14:26:56.913Z (Phase 61 plan 6 completed)
+v9.0 shipped: 2026-04-27 (Phase 61 archived)
+Last commit (any): see `git log --oneline -5`
+Next action when starting new milestone: `/gsd-new-milestone v10.0`
 
 ## Directory Layout (после normalization 2026-04-27)
 
@@ -158,8 +155,7 @@ Next action when starting new milestone: `/gsd-new-milestone v10.0` (после 
 ├── MILESTONES.md               ← shipped milestones registry
 ├── RETROSPECTIVE.md
 ├── config.json
-├── phases/
-│   └── 61-headman-homework-management-ui-homeworkapi-controller-homewo/   ← active phase
+├── phases/                     ← empty (no active phase; populated by /gsd-plan-phase)
 ├── milestones/
 │   ├── v{1-9}.0-ROADMAP.md     ← snapshots
 │   ├── v{1-9}.0-REQUIREMENTS.md

@@ -1,5 +1,37 @@
 # Milestones
 
+## v9.0 Frontend Unification — Single Login & Role-Based Web Clients (Shipped: 2026-04-27)
+
+**Phases completed:** 13 phases (49-61), 41 plans
+**Timeline:** 2026-04-08 → 2026-04-27
+
+**Key accomplishments:**
+
+1. Nginx routing + landing dead link fix (Phase 49) — `/` → `/login` redirect, dead Telegram links cleaned
+2. baseHref migration to unified `/login` (Phase 50) — Angular web-panel single-app for all roles, lazy feature routes per role (admin/teacher/student/headman)
+3. Student web cabinet (Phases 51-53) — schedule + check-in + homework + stats + notifications + profile + excuses + late check-in + PWA install banner
+4. Headman web cabinet (Phases 54-55) — group management + subjects (WPAN-13 backend fix to @RequireRole) + attendance management + stats
+5. PWA Headman mode (Phase 56) — `features/headman/` directory in React PWA, segmented control + journal + stats
+6. Landing presentation mode + project documentation (Phase 57) — GSAP "how it works" animation, role descriptions, URL layout doc
+7. Admin BUG-006 fixes (Phase 58) — search, group rename/archive/promotion, semester validation, telegram-required for students, conflict-handler init password
+8. Excuses backend (Phase 59) — excuse.requested publisher + headman approval flow
+9. Headman schedule management (Phase 60) — template CRUD + one-off lessons, native SQL для PG enum, AFTER_COMMIT events, attendance cascade
+10. Headman homework management UI (Phase 61) — `/headman/homework` weekly list, three student view modes (Day/Week/Month), homework events extended with lesson_date+lesson_number, push on update
+
+**Archives:**
+
+- `.planning/milestones/v9.0-ROADMAP.md`
+- `.planning/milestones/v9.0-REQUIREMENTS.md`
+- `.planning/milestones/v9.0-BRIEF.md`
+- `.planning/milestones/v9.0-SUMMARY.md`
+- `.planning/milestones/v9.0-phases/` (49-61, 13 directories)
+
+**Known gap:**
+
+- Phase 61 plan 7 SUMMARY/VERIFICATION not created (closed by user without formal verification)
+
+---
+
 ## v8.0 CI/CD, Deployment & Documentation (Shipped: 2026-04-08)
 
 **Phases completed:** 8 phases, 11 plans

@@ -65,6 +65,8 @@ grpc:
 
 rutcampustrack:
   security:
+    # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
+    required-env-vars: POSTGRES_ACADEMIC_PASSWORD,REDIS_PASSWORD,RABBITMQ_PASSWORD,GRPC_SECRET
     internal-jwt:
       # M03a: pull RSA public key from auth-service /auth/public-key.
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}

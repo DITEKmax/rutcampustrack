@@ -18,6 +18,14 @@ dependencies {
     // M04 QA7 — shared-logback (JSON-вывод + masking через logback-base.xml)
     implementation(project(":services:shared:shared-logback"))
 
+    // M14 G4 v2 — shared-web для RequiredSecretsValidator (EnvironmentPostProcessor).
+    // SharedWebAutoConfiguration condition'ит на ConditionalOnWebApplication(SERVLET)
+    // и в WebFlux gateway не активируется — но EnvironmentPostProcessor работает
+    // независимо (registered через META-INF/spring.factories). Транзитивно
+    // приходят shared-web-api DTO + spring-security-core (~200KB) — overhead
+    // оправдан, гарантирует CSO HIGH-06 mitigation в gateway.
+    implementation(project(":services:shared:shared-web"))
+
     // M04 QA2 — distributed tracing OTel + OTLP exporter → grafana/tempo
     implementation("io.micrometer:micrometer-tracing-bridge-otel")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")

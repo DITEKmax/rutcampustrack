@@ -325,6 +325,8 @@ gateway:
 
 rutcampustrack:
   security:
+    # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
+    required-env-vars: REDIS_PASSWORD,INTERNAL_ISSUER_SECRET
     internal-issuer-client:
       # M03a token-exchange — must match auth-service INTERNAL_ISSUER_SECRET
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}

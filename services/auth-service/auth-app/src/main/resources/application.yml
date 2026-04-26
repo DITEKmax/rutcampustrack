@@ -58,6 +58,13 @@ jwt:
 
 rutcampustrack:
   security:
+    # M14 G4 v2 (CSO HIGH-06): fail-fast на missing critical secrets через
+    # RequiredSecretsValidator (shared-web EnvironmentPostProcessor). YAML
+    # fallback'и оставлены для convenience local dev (./gradlew bootRun).
+    # При active profile=test/local validator skip'ается. На prod (default
+    # profile) deploy без --env-file → IllegalStateException на старте.
+    # См. shared-web/RequiredSecretsValidator.java.
+    required-env-vars: REDIS_PASSWORD,SPRING_RABBITMQ_PASSWORD,POSTGRES_ACADEMIC_PASSWORD,INTERNAL_ISSUER_SECRET,TMA_BOT_TOKEN
     internal-issuer:
       # M03a: token exchange endpoint shared secret (api-gateway ↔ auth-service).
       # Required ≥32 bytes; fail-fast on empty. Rotate simultaneously on both services.

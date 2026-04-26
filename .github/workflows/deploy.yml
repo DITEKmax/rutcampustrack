@@ -327,12 +327,36 @@ jobs:
             git pull --ff-only
             [ -f /opt/rutcampustrack/nginx/dhparam.pem ] || openssl dhparam -out /opt/rutcampustrack/nginx/dhparam.pem 2048
             docker volume create rutcampustrack_jwt-keys >/dev/null 2>&1 || true
+            # M14 G3 — JWT key generation на VPS, first-deploy pattern.
+            # Idempotent через `[ -f ]` filesystem guard: ключи генерятся только
+            # если их нет (первый deploy на чистом volume), на повторных deploy —
+            # skip. Это предотвращает invalidate всех issued JWT при каждом
+            # deploy. Если требуется rotation — операторе нужно вручную rm
+            # ключи в volume (см. docs/runbooks/secret-rotation.md).
+            #
+            # CSO HIGH-05 fix: explicit PKCS#8 conversion. JwtService.loadPrivateKey
+            # использует PKCS8EncodedKeySpec (auth/.../JwtService.java:21) — ждёт
+            # `-----BEGIN PRIVATE KEY-----`. Поведение `openssl genrsa` зависит от
+            # OpenSSL major version: 1.x → PKCS#1 (BEGIN RSA PRIVATE KEY → boot
+            # exception), 3.x → PKCS#8. Alpine `latest` сейчас на 3.x но это
+            # implicit dependency — explicit pipeline `pkcs8 -topk8 -nocrypt`
+            # гарантирует PKCS#8 независимо от alpine/openssl версии.
+            # Identical pipeline в auth-service/Dockerfile:69-79 (M13 G25.15).
+            #
+            # kid.txt: JwtService.init() сам сгенерит UUID если файла нет
+            # (JwtService.java:88-91), но pre-generate его here для consistency
+            # с auth-service Dockerfile build-time generation.
             docker run --rm -v rutcampustrack_jwt-keys:/keys alpine sh -c \
               "apk add --no-cache openssl >/dev/null 2>&1 && \
-               ([ -f /keys/private.key ] || openssl genrsa -out /keys/private.key 3072) && \
-               ([ -f /keys/public.key ] || openssl rsa -in /keys/private.key -pubout -out /keys/public.key) && \
+               if [ ! -f /keys/private.key ]; then \
+                 openssl genrsa -out /tmp/private.key.pkcs1 3072 2>/dev/null && \
+                 openssl pkcs8 -topk8 -nocrypt -in /tmp/private.key.pkcs1 -out /keys/private.key && \
+                 openssl rsa -in /keys/private.key -pubout -out /keys/public.key 2>/dev/null && \
+                 rm /tmp/private.key.pkcs1 && \
+                 head -c 4 /dev/urandom | od -A n -t x1 | tr -d ' \n' > /keys/kid.txt; \
+               fi && \
                chown -R 100:101 /keys && \
-               chmod 640 /keys/private.key && \
+               chmod 600 /keys/private.key /keys/kid.txt && \
                chmod 644 /keys/public.key"
             # IMAGE_TAG=${{ env.DEPLOY_SHA }} pins commit-specific images (M06 QD1, 13 P1-1).
             # compose reads ${IMAGE_TAG:-latest} per service block. `latest` tag still

@@ -303,7 +303,7 @@ jobs:
           for img in "${IMAGES[@]}"; do
             echo "--- Verifying ghcr.io/ditekmax/rutcampustrack/${img}:${{ env.DEPLOY_SHA }} ---"
             cosign verify \
-              --certificate-identity-regexp="^https://github.com/ditekmax/rutcampustrack/.github/workflows/deploy\.yml@.*" \
+              --certificate-identity-regexp="(?i)^https://github.com/ditekmax/rutcampustrack/.github/workflows/deploy\.yml@.*" \
               --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
               "ghcr.io/ditekmax/rutcampustrack/${img}:${{ env.DEPLOY_SHA }}"
           done

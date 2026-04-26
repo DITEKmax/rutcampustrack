@@ -1,223 +1,293 @@
-# Промпт для следующей сессии — M13 G25.14: проверить CI после SHA1PRNG fix, продолжить fix-cycle если красный
+# Промпт для следующей сессии — M14 G3: PKCS#8 + first-deploy detection в deploy.yml (CSO HIGH-05)
 
-Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Opus сам
-откроет нужные файлы и продолжит.
+Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Opus сам откроет
+нужные файлы и продолжит.
 
 ---
 
-**M13 G25.14 запушен (`cd0e1d2` на origin/dev). CI запустился сразу
-после push. На момент написания hand-off результат ещё неизвестен —
-проверить в новой сессии. Если зелёный → tag `v0.0.0-alpha.15`. Если
-красный → fix-cycle продолжается.**
+**M14 G2 закрыт (commit `a93859b` + docs followup в той же сессии).
+Сегодня (2026-04-26) после G1 утром сделана G2 — SHA-pin
+`appleboy/ssh-action@0ff4204d... # v1.2.5`. Работа над M14 продолжается
+с G3. M14 пока НЕ push'нут на origin/dev — пять локальных коммитов
+(`455029f`, `dc40929`, `5a1b175`, `a93859b`, plus docs followup G2)
+лежат на ветке `dev`, upstream не получил.**
 
-## Текущая позиция (на конец сессии 2026-04-25 evening)
+## Контекст M14 (читай это первым)
 
-**14 коммитов G25 push'нуты. Последняя сессия добавила 3 fix'а:**
+M14 = «Post-Audit Fixes» — закрытие блокеров first VPS deploy v0.0.0
+из четырёх аудитов:
+- `docs/milestones/M13-pre-deploy-hardening/G27-cso-comprehensive-audit.md` — 17 findings (2 CRIT + 5 HIGH + 8 MED + 2 TENT)
+- `docs/milestones/M13-pre-deploy-hardening/G26-test-audit-findings.md` — 11 (4 P1)
+- `docs/milestones/M13-pre-deploy-hardening/G26-code-review-after-g25.md` — 15 (3 P1)
+- `docs/milestones/M13-pre-deploy-hardening/G27-tech-debt-audit.md` — 23 (отложено в `docs/deferred-ideas.md`)
 
-| Коммит | Группа | Что сделано | CI status |
-|--------|--------|-------------|-----------|
-| `5f4378c` | G25.12 | `infra/mongo/init-mongo.js` mount в обоих compose, удалены `MONGODB_EXTRA_USERNAMES/PASSWORDS/DATABASES` | ✅ MONGO FIX РАБОТАЕТ (CI #134 attendance-service `Up 2 minutes (healthy)`) |
-| `ef21c6c` | G25.13 | `SecureRandom.getInstance("NativePRNGNonBlocking")` в `JwtService` | ❌ не помогло (auth-service всё ещё hang на RSA gen) |
-| `cd0e1d2` | G25.14 | Прямое чтение 32-байт seed из `/dev/urandom` + `SHA1PRNG` | 🟡 ожидает CI результата |
+**Триаж принцип:** только (a) ломает first deploy, (b) runtime guard от
+operator mistake, (c) trivial cost / non-trivial impact, (d) CI gate
+compromised без fix → попадает в M14. Остальное — `docs/future-ideas.md`
+(pre-v0.1) или `docs/deferred-ideas.md` (v0.1+).
 
-## Что делать в этой сессии (по порядку)
+Полный план: `docs/milestones/M14-post-audit-fixes/PLAN.md`.
+Чеклист: `docs/milestones/M14-post-audit-fixes/CHECKLIST.md`.
+Заметки: `docs/milestones/M14-post-audit-fixes/NOTES.md`.
 
-### Шаг 1 — пользователь скинет лог CI или скажет "всё хорошо"
+## Что уже сделано (G1-G2, 2026-04-26)
 
-Жду ответ от пользователя в первом сообщении сессии. Два сценария:
+| Коммит | Что | Verification |
+|--------|-----|--------------|
+| `455029f` | M14 setup (PLAN/CHECKLIST/NOTES + 4 audit reports + future/deferred-ideas) | docs only |
+| `dc40929` | **G1: legacy headers strict by default (CSO CRIT-01)** — 5 application.yml flips + .env.prod.example invariant block + notification SecurityIdorIT inline-property | 4× SecurityIdorIT + 3× *UserContextFilterStrictModeIT BUILD SUCCESSFUL (5m33s) |
+| `5a1b175` | G1 docs followup: CHECKLIST tick + NOTES surprise (application-test.yml asymmetry) | docs only |
+| `a93859b` | **G2: SHA-pin appleboy/ssh-action (CSO CRIT-02)** — `appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5` в deploy.yml:313 | grep ровно 1 вхождение, pyyaml safe_load OK |
+| `<tbd>` | G2 docs followup (CHECKLIST tick + NOTES surprise о версии) — закоммичен в той же сессии что G2 functional | docs only |
 
-**Сценарий A: пользователь говорит "всё зелёное" / "passed"**
+**G2 surprise (зафиксировано в NOTES):** hand-off зафиксировал target
+`v1.2.0`, pre-flight `curl /releases/latest` показал `v1.2.5` — между
+M14 PLAN'ом и его выполнением maintainer выпустил три patch-релиза.
+Использована актуальная `v1.2.5` чтобы Renovate не bump'нул сразу
+после merge'а. Tag оказался lightweight (ref → commit напрямую), без
+дополнительного шага дереференса через `/git/tags/`. `gh` CLI отсутствовал
+в bash PATH — использован `curl https://api.github.com/...`.
 
-Tag и финал G25:
+## Что делать в этой сессии
+
+### Шаг 0 — verify state
+
 ```bash
-git fetch origin
-git checkout dev
-git pull origin dev
-git tag -a v0.0.0-alpha.15 -m "M13 G25 ✅ — CI green: ruff + watchdog + e2e compose + Docker shared modules + git fallback + Mongo init-script + SHA1PRNG urandom seed"
-git push origin v0.0.0-alpha.15
+cd C:/Users/maksd/IntelliJIDEA/rutcampustrack
+git log --oneline -7
+git status --short
 ```
 
-Затем переход к **Шагу 3 оригинального плана**: Live VPS dry-run по
-`docs/prod-deploy-checklist.md` (owner-driven). Findings → M13 NOTES.md
-G23 секция.
+**Ожидаем:**
+- HEAD = `<docs followup G2>` или `a93859b` (если followup ещё не отдельным коммитом)
+- Working tree clean (или максимум `?? .gstack/`)
+- 5 локальных коммитов M14 ещё не на origin
 
-**Сценарий B: auth-service всё ещё hang на RSA**
+Если состояние другое — проверь не было ли push'а вручную и не работает
+ли кто-то ещё параллельно.
 
-Это означает что даже **прямое чтение `/dev/urandom`** не работает на
-GitHub Actions Azure runner. Гипотезы:
-1. `/dev/urandom` не существует в alpine container (маловероятно — это
-   стандарт Linux). Проверить через `docker exec rct-auth-service ls -la /dev/urandom`.
-2. `Files.exists(urandom)` возвращает true, но `Files.newInputStream`
-   блокируется. Тоже маловероятно.
-3. **SHA1PRNG.setSeed() сам по себе НЕ заменяет дефолтный seed —
-   он его augment'ит.** Если SHA1PRNG instantiation упирается в
-   `/dev/random` для initial seed → hang остаётся. Тогда нужен
-   **последний резервный план**: pre-generate keys в Dockerfile через
-   `openssl genrsa` (build-time, не runtime). Security regression только
-   для CI/e2e, prod compose использует named volume `jwt-keys` который
-   на чистом VPS pre-fills через docker volume init.
+### Шаг 1 — выполнить Группу 3 (PKCS#8 + first-deploy detection)
 
-**Резервный план G25.15** (если нужен):
-```dockerfile
-# В services/auth-service/Dockerfile перед USER app:
-RUN apk add --no-cache openssl && \
-    mkdir -p /keys && \
-    openssl genrsa -out /keys/private.key 3072 && \
-    openssl rsa -in /keys/private.key -pubout -out /keys/public.key && \
-    head -c 8 /dev/urandom | xxd -p > /keys/kid.txt && \
-    chown -R app:app /keys && \
-    chmod 600 /keys/private.key && \
-    apk del openssl
+⚠️ **Это самая сложная и рискованная группа в M14** — требует local
+dry-run против пустого docker volume. Если до конца сессии меньше
+~45 минут — лучше **не начинать G3** и подождать отдельного сеанса.
+
+Из `CHECKLIST.md`:
+
+> ## Группа 3 — CSO HIGH-05: PKCS#8 fix в deploy.yml + first-deploy detection (30 мин)
+>
+> - [ ] Прочитать `services/auth-service/Dockerfile:69-79` (M13 G25.15 reference flow) — скопировать correct openssl pipeline
+> - [ ] `.github/workflows/deploy.yml` — найти block с `openssl genrsa` и заменить на pipeline `genrsa -> pkcs8 -topk8 -nocrypt -> rsa -pubout` (см. PLAN.md HIGH-05 fix variant B)
+> - [ ] Добавить first-deploy detection: `if [ ! -f /opt/rutcampustrack/.deployed-sha ]; then ... fi` block, который удаляет volume и pre-fills уникальные keys
+> - [ ] kid через `openssl rand -hex 4 > /keys/kid.txt` (вместо `head -c 4 | od | tr` pipeline)
+> - [ ] chmod / chown matching Dockerfile (`chown -R 100:101 /keys && chmod 600 /keys/private.key /keys/kid.txt && chmod 644 /keys/public.key`)
+> - [ ] Local dry-run на чистом docker volume (см. шаг ниже)
+> - [ ] Поднять auth-service против этого volume локально, проверить отсутствие exception в логах при `JwtService.init()`
+> - [ ] Commit: `fix(ci): PKCS#8 + first-deploy regen в deploy.yml (M14 G3, CSO HIGH-05)`
+
+**Контекст из CSO audit (`G27-cso-comprehensive-audit.md` § HIGH-05):**
+
+`.github/workflows/deploy.yml` (block после `appleboy/ssh-action`)
+содержит inline bash для регенерации JWT keys на VPS, который генерирует
+ключ в **PKCS#1** формате (`openssl genrsa -out /keys/private.key 3072`)
+без последующего конвертации в PKCS#8. `JwtService` ожидает
+`-----BEGIN PRIVATE KEY-----` (PKCS#8), а получит `-----BEGIN RSA PRIVATE KEY-----`
+(PKCS#1) → exception на boot → first deploy упадёт.
+
+Reference correct flow в `services/auth-service/Dockerfile:69-79` (был
+исправлен в M13 G25.15) — три-шаговый pipeline:
+```
+openssl genrsa -out /tmp/private-pkcs1.pem 3072
+openssl pkcs8 -topk8 -nocrypt -in /tmp/private-pkcs1.pem -out /keys/private.key
+openssl rsa -in /keys/private.key -pubout -out /keys/public.key
+rm /tmp/private-pkcs1.pem
 ```
 
-`openssl` использует системный `/dev/urandom` напрямую, не страдая от JDK
-provider quirks. Build-time generation в layered image: эта layer
-кешируется, но JwtService.init() при старте увидит существующие keys и
-пойдёт по `Files.exists()` ветке без regeneration. Для **e2e** это
-acceptable: ключи одинаковые во всех контейнерах одного билда, для
-**prod** named volume переопределяет (RUN копирует в image, named volume
-mount override'ит на пустой volume — но при первом запуске Docker
-скопирует image content в empty volume, поэтому prod **тоже получит
-pre-generated keys**, что нормально для VPS first-deploy).
+**First-deploy detection** нужен потому что named volume
+`rutcampustrack_jwt-keys` сохраняется между deploys — повторная
+регенерация на каждом deploy перезатрёт ключи и invalidate'ит все
+issued JWT (юзеры разлогинятся при каждом deploy). Решение — генерация
+**только если** `.deployed-sha` маркер отсутствует:
 
-Альтернатива: явно отключить prod-shared keys через env-флаг в e2e —
-например `JWT_SKIP_KEYGEN=true` или вынести генерацию в init-container.
-Но это большее изменение.
-
-### Шаг 2 — после CI зелёный → tag → продолжить оригинальный план
-
-После `v0.0.0-alpha.15` ✅:
-- **Шаг 3 (оригинальный)**: Live VPS dry-run по `docs/prod-deploy-checklist.md`.
-- **Шаг 4 (оригинальный)**: Tag `v0.0.0` GA + bump version в root
-  `build.gradle.kts` + `frontends/*/package.json` на `0.0.0`. Push tag.
-
-## Контекст недавно решённых блокеров (G25.12-14)
-
-### G25.12 — Mongo `UserNotFound: rct_user@admin` (CI #133 attendance fail)
-
-**Проблема**: Bitnami `MONGODB_EXTRA_USERNAMES` в digest `sha256:16a57fa`
-создаёт users в `test` DB вместо `admin`. Spring подключается с
-`?authSource=admin` → `AuthenticationFailed`. Prod на VPS работал
-только потому что mongo-data volume содержал users из старого
-init-mongo.js (commit `d6c0f14`/`6c1493f`), на чистом эфемерном CI
-volume пусто.
-
-**Fix**: восстановлен `infra/mongo/init-mongo.js` (one-to-one с pre-G7
-версией), mount в **обоих** `docker-compose.e2e.yml` и
-`docker-compose.prod.yml` через `/docker-entrypoint-initdb.d/init-mongo.js:ro`.
-Удалены `MONGODB_EXTRA_USERNAMES/PASSWORDS/DATABASES`. Idempotent
-(Bitnami пропускает initdb scripts при non-empty data dir).
-
-**Подтверждено в CI #134**: attendance-service `Up 2 minutes (healthy)`,
-mongo-attendance `Up 3 minutes (healthy)`. Mongo блокер closed.
-
-### G25.13 — RSA hang (попытка #1, неудачная)
-
-**Гипотеза**: KeyPairGenerator.initialize(3072) с default-SecureRandom
-блокируется на `/dev/random`, флаг `-Djava.security.egd=file:/dev/./urandom`
-игнорируется некоторыми provider'ами.
-
-**Попытка**: явный `SecureRandom.getInstance("NativePRNGNonBlocking")`.
-
-**Результат**: НЕ ПОМОГ. CI #134 auth-service лог обрывается на той же
-строке `"Generating new RSA 3072-bit key pair in: /keys"` (3+ минуты
-hang, healthcheck timeout, dependency chain валится).
-
-**Вывод**: на alpine musl JDK 21 ВСЕ native-PRNG provider'ы под капотом
-читают `/dev/random` при init/reseed, не реагируя на JVM flag.
-
-### G25.14 — RSA hang (попытка #2)
-
-**Подход**: bypass JDK provider abstraction полностью. Прочитать 32 байта
-seed напрямую из `/dev/urandom` (Linux gurantee: NEVER blocks) и
-seedить SHA1PRNG (software-only после seed). Windows fallback на
-default SecureRandom (там Crypto API non-blocking).
-
-```java
-private static SecureRandom nonBlockingSecureRandom() {
-    Path urandom = Paths.get("/dev/urandom");
-    if (Files.exists(urandom)) {
-        try {
-            byte[] seed = new byte[32];
-            try (var is = Files.newInputStream(urandom)) {
-                int read = is.read(seed);
-                if (read != seed.length) {
-                    throw new IOException("Short read from /dev/urandom: " + read);
-                }
-            }
-            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-            random.setSeed(seed);
-            return random;
-        } catch (IOException | NoSuchAlgorithmException e) {
-            log.warn("Failed to seed SHA1PRNG from /dev/urandom, falling back to default SecureRandom", e);
-        }
-    }
-    return new SecureRandom();
-}
+```bash
+if [ ! -f /opt/rutcampustrack/.deployed-sha ]; then
+  echo "First deploy detected — regenerating JWT keys"
+  docker volume rm rutcampustrack_jwt-keys 2>/dev/null || true
+  docker volume create rutcampustrack_jwt-keys >/dev/null
+  docker run --rm -v rutcampustrack_jwt-keys:/keys alpine/openssl:latest sh -c '
+    set -e
+    apk add --no-cache openssl >/dev/null 2>&1 || true
+    openssl genrsa -out /tmp/pk1.pem 3072
+    openssl pkcs8 -topk8 -nocrypt -in /tmp/pk1.pem -out /keys/private.key
+    openssl rsa -in /keys/private.key -pubout -out /keys/public.key
+    openssl rand -hex 4 > /keys/kid.txt
+    chown -R 100:101 /keys
+    chmod 600 /keys/private.key /keys/kid.txt
+    chmod 644 /keys/public.key
+    rm /tmp/pk1.pem
+  '
+  echo "${IMAGE_TAG}" > /opt/rutcampustrack/.deployed-sha
+fi
 ```
 
-Файл: `services/auth-service/auth-app/src/main/java/ru/rutcampustrack/auth/service/JwtService.java:185-205`.
+(Точную форму смотреть в `PLAN.md` HIGH-05 fix variant B — там может
+быть детали shell escape'инга для GitHub Actions YAML.)
 
-**Ожидаю**: ~1-2 секунды между `"Generating new RSA 3072-bit"` и
-`"RSA key pair ready (kid=...)"`. Healthcheck green в течение 60s
-start_period.
+⚠️ **alpine/openssl image vs alpine + apk add**: проверь что image
+`alpine/openssl` существует и доступен на ghcr/dockerhub. Если нет —
+`alpine:latest` + `apk add openssl` будет работать, но добавит
+~15-20s к first deploy. Renovate должен успеть auto-bump.
 
-**Риск**: SHA1PRNG.setSeed() **augment'ит** seed, не заменяет — если
-SHA1PRNG instantiation само упирается в `/dev/random` для initial seed,
-hang остаётся. Тогда → G25.15 резервный план (см. выше).
+### Шаг 2 — Local dry-run (mandatory)
 
-## Local state на момент hand-off
+Это **обязательно** перед commit'ом — manual проверка что openssl
+pipeline даёт PKCS#8:
+
+```bash
+# clean test volume
+docker volume rm test-jwt-keys 2>/dev/null || true
+docker volume create test-jwt-keys
+
+# inline проверочный скрипт (тот же pipeline что войдёт в deploy.yml)
+docker run --rm -v test-jwt-keys:/keys alpine:latest sh -c '
+  apk add --no-cache openssl >/dev/null 2>&1
+  openssl genrsa -out /tmp/pk1.pem 3072
+  openssl pkcs8 -topk8 -nocrypt -in /tmp/pk1.pem -out /keys/private.key
+  openssl rsa -in /keys/private.key -pubout -out /keys/public.key
+  openssl rand -hex 4 > /keys/kid.txt
+  rm /tmp/pk1.pem
+'
+
+# verification
+docker run --rm -v test-jwt-keys:/keys alpine:latest head -1 /keys/private.key
+# должно быть: -----BEGIN PRIVATE KEY-----
+# НЕ: -----BEGIN RSA PRIVATE KEY-----
+
+docker run --rm -v test-jwt-keys:/keys alpine:latest cat /keys/kid.txt
+# должно быть: <8 hex символов>
+
+docker volume rm test-jwt-keys
+```
+
+Если `-----BEGIN RSA PRIVATE KEY-----` — pipeline сломан, не коммить
+до fix'а.
+
+### Шаг 3 — auth-service local boot test
+
+После того как pipeline даёт правильный PKCS#8, надо проверить что
+JwtService действительно стартует против этого volume:
+
+```bash
+docker volume rm rutcampustrack_jwt-keys 2>/dev/null
+docker volume create rutcampustrack_jwt-keys
+# повторить openssl pipeline в этот volume
+
+# поднять auth-service в isolation (нужен redis минимум)
+docker compose up -d redis-auth
+docker compose up auth-service
+# в логах ожидаем: "RSA key pair loaded from /keys" (или эквивалент)
+# НЕ должно быть: "Failed to parse private key" / "InvalidKeySpecException"
+```
+
+Если падает — diagnose, fix, repeat. Не коммить полу-рабочий вариант.
+
+### Шаг 4 — commit
+
+Commit message:
+```
+fix(ci): PKCS#8 + first-deploy regen в deploy.yml (M14 G3, CSO HIGH-05)
+
+CSO comprehensive audit (G27) обнаружил HIGH-05: deploy.yml inline
+bash блок генерировал JWT private key в PKCS#1 формате (`openssl genrsa`
+без последующего pkcs8 -topk8), а JwtService ожидает PKCS#8 → first
+deploy упал бы с InvalidKeySpecException.
+
+Fix:
+1. Three-step pipeline matching auth-service Dockerfile:69-79 (M13 G25.15
+   reference): genrsa → pkcs8 -topk8 -nocrypt → rsa -pubout
+2. First-deploy detection через .deployed-sha marker — keys генерируются
+   ТОЛЬКО при первом deploy, чтобы повторные deploy не invalidate'или
+   все issued JWT
+3. kid через `openssl rand -hex 4` (вместо хрупкого `head -c 4 /dev/urandom | od | tr`)
+4. chmod / chown matching auth-app uid/gid (100:101)
+
+Local dry-run: openssl pipeline → /keys/private.key начинается с
+"-----BEGIN PRIVATE KEY-----" (PKCS#8). Auth-service против этого
+volume стартует без exception в JwtService.init().
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+```
+
+После commit'а — обнови CHECKLIST.md (G3 [x] + commit hash + dry-run
+results) одним followup-commit'ом. Затем **не двигайся к G4 без явного
+go от пользователя**.
+
+### Если G3 завершён и есть оставшееся время — спроси про G4
+
+G4 = «CSO HIGH-06: fail-fast secrets во всех services» (~20 мин).
+Менее рискованная чем G3, но требует UAT (запуск compose без env-file
+чтобы убедиться что fail-fast действительно срабатывает). Может занять
+больше 20 мин если что-то flaky на Spring Boot side.
+
+## Полный список M14 групп (для context)
+
+Из `CHECKLIST.md`:
+
+1. ✅ **G1** — legacy headers strict default (CSO CRIT-01) — done `dc40929`
+2. ✅ **G2** — SHA-pin appleboy/ssh-action (CSO CRIT-02) — done `a93859b`
+3. **G3** — PKCS#8 + first-deploy detection в deploy.yml (CSO HIGH-05) — **СЛЕДУЮЩАЯ**, самая сложная
+4. **G4** — fail-fast secrets во всех services (CSO HIGH-06)
+5. **G5** — aiohttp 3.10.11 → 3.13.3+ bump (CSO HIGH-07)
+6. **G6** — SHA-pin remaining actions в deploy/coverage/security (CSO HIGH-03/04 + MED-09)
+7. **G7** — G26 test-audit P1 (false-pass Playwright tests) — самая длинная (~1-1.5ч)
+8. **G8** — G26 code-review P1 (burstCapacity 600→60 + diagnostic test + DRY)
+9. **G9** — UAT + tag `v0.0.0-alpha.16`
+
+Каждая группа = отдельный commit (или пара: functional + docs
+followup). Порядок: G1→G9 sequentially. **НЕ запускать в параллель** —
+нет независимости между группами.
+
+## Local state на момент hand-off (2026-04-26 evening)
 
 ```
-Working tree: clean
-Branch: dev (synced with origin)
-Last commit: cd0e1d2 fix(auth): seed SHA1PRNG из /dev/urandom напрямую (M13 G25.14)
+Working tree: clean (только ?? .gstack/ — security report, gitignored)
+Branch: dev (5 коммитов впереди origin/dev)
+Last commit: <docs followup G2 — обновится в реальности>
+
+Локальные коммиты M14 (НЕ push'нуты):
+  <docs followup G2>  docs(M14): G2 done — SHA-pin appleboy/ssh-action
+  a93859b             fix(ci): SHA-pin appleboy/ssh-action against supply chain (M14 G2, CSO CRIT-02)
+  5a1b175             docs(M14): отметить G1 done + зафиксировать application-test.yml asymmetry
+  dc40929             fix(security): legacy headers strict by default (M14 G1, CSO CRIT-01)
+  455039f             docs(M14): план + триаж 4 пост-M13 аудитов (M14 setup)
 ```
 
-Никаких uncommitted изменений. CI ожидает результата на `cd0e1d2`.
-
-## Что было раньше (G25.1..G25.11) — кратко
-
-| G25.x | Commit | Fix |
-|-------|--------|-----|
-| G25.1 | `981f2b1` | ruff format compliance (9 .py файлов) |
-| G25.2 | `b373b3e` | watchdog mock signature `idempotency_guard=None` |
-| G25.3 | `be71ed1` | docker-compose.e2e.yml + self-signed TLS + CI integration |
-| G25.4 | `346c147` | CHANGELOG + e2e-testing.md docs |
-| G25.5 | `549e9dc` | `COPY services/shared` в 6 backend Dockerfiles |
-| G25.6 | `ed40d36` | `gitOutput()` try/catch IOException |
-| G25.7 | `7d794db` | `MONGODB_REPLICA_SET_KEY` в base64-алфавите |
-| G25.8 | `de7d3d9` | Dump docker logs для exited контейнеров в CI |
-| G25.9 | `6d31674` | `RUN mkdir -p /keys && chown app:app /keys` в auth Dockerfile |
-| G25.10+11 | `0e7d91f` | Mongo digest pin + JAVA_TOOL_OPTIONS java.security.egd urandom |
-| G25.12 | `5f4378c` | init-mongo.js (Mongo блокер ✅) |
-| G25.13 | `ef21c6c` | NativePRNGNonBlocking (НЕ помог) |
-| G25.14 | `cd0e1d2` | SHA1PRNG + /dev/urandom direct seed (ожидает CI) |
-
-## История milestone'ов (архив)
-
-M01-M08 ✅ (`v0.0.0-alpha.1..alpha.9`).
-M09-M12 ✅ 2026-04-24 (`alpha.10..alpha.13`).
-M13 Pre-Deploy Hardening ✅ 2026-04-25 (`v0.0.0-alpha.14`).
-**→ Группа 25** (CI hot-fixes + e2e infra) → ожидает `v0.0.0-alpha.15`.
-
-Debt report (источник scope M13) — `docs/report-before-v0.0.0/v0.0.0-debt.md`.
-Dependency graph и полный roadmap — `docs/milestones/README.md`.
+Push на origin/dev пока НЕ делать — пользователь решает когда (либо после
+G9 + tag, либо если хочет промежуточный CI run для верификации). Если
+пользователь скажет push — push без force, обычный `git push origin dev`.
 
 ## Pending decisions для new conversation
 
-1. **CI #135 (cd0e1d2) зелёный?** Пользователь скинет лог или скажет
-   результат в первом сообщении. Tag `v0.0.0-alpha.15` если зелёный.
+1. **Image для openssl pipeline.** `alpine/openssl` если существует —
+   читабельнее. Если нет — `alpine:latest` + `apk add openssl`
+   (проверенный pattern, +15-20s к first deploy).
+2. **Push на origin/dev.** По дефолту НЕ пушим. Жди явного указания
+   пользователя.
+3. **Скорость прохода.** Если пользователь говорит «go g3», после
+   успешного closure G3 спроси «G4 продолжать или пауза?» — G3 уже
+   завершён, и психологически логично сделать перерыв перед другой
+   группой.
+4. **Local dry-run требует Docker Desktop running.** Если пользователь
+   говорит что Docker не запущен — попроси его поднять Docker Desktop
+   ДО начала G3 (либо отложить G3 на сеанс когда Docker доступен).
 
-2. **Если G25.14 не помог** — переход к G25.15 (pre-generate keys в
-   Dockerfile через openssl). См. секцию "Резервный план G25.15" выше.
-   Это последний реалистичный fix перед признанием что нужна smoke-suite
-   с auth-service отключенным или дисабленным RSA generation.
+## История milestone'ов (архив)
 
-3. **После tag → live VPS dry-run**. Owner-driven, не Claude. Опираться
-   на `docs/prod-deploy-checklist.md`. Основные новые риски на VPS:
-   - init-mongo.js теперь mount'ится — на существующем mongo-data volume
-     init script пропустится (Bitnami idempotency), users остаются как
-     были. На чистом VPS — script отработает и создаст users.
-   - JwtService теперь читает `/dev/urandom` — на любом Linux VPS это
-     работает out-of-the-box.
+- M01-M08 ✅ (`v0.0.0-alpha.1..alpha.9`)
+- M09-M12 ✅ 2026-04-24 (`alpha.10..alpha.13`)
+- M13 Pre-Deploy Hardening ✅ 2026-04-25 (`v0.0.0-alpha.15` после G25 hot-fix marathon)
+- **→ M14 Post-Audit Fixes** (текущий) — G1 ✅, G2 ✅, G3-G9 pending. Tag `v0.0.0-alpha.16` после G9.
+
+Roadmap: `docs/milestones/README.md`.
+Aудиторские отчёты-источники: `docs/milestones/M13-pre-deploy-hardening/G2{6,7}-*.md`.
+Trail отложенного: `docs/future-ideas.md` § Pre-v0.1 + `docs/deferred-ideas.md` § v0.1+ tech debt.

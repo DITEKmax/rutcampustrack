@@ -49,3 +49,13 @@ test cleanup PR.
 
 - **G1 IT runtime:** 5m33s (4× SecurityIdorIT + 3× *StrictModeIT параллельно через single-task gradle invocation, `--no-daemon`).
 - **G1 commit footprint:** 5 application.yml + 1 .env.prod.example + 1 test fixup = 7 files / 34 insertions / 10 deletions.
+- **G2 commit footprint:** 1 file (`deploy.yml`) / 1 insertion / 1 deletion. Минимальный возможный diff.
+
+**G2 surprise — версия appleboy/ssh-action:** hand-off зафиксировал
+target `v1.2.0`, pre-flight `curl /releases/latest` показал `v1.2.5`
+(maintainer выпустил три patch-релиза за время подготовки M14 PLAN'а).
+Использована актуальная `v1.2.5` чтобы Renovate не bump'нул немедленно
+после merge'а. Tag `v1.2.5` оказался lightweight (ref direct → commit
+SHA `0ff4204d59e8e51228ff73bce53f80d53301dee2`), без extra dereference
+шага через `/git/tags/`. `gh` CLI отсутствовал в bash PATH — использован
+`curl https://api.github.com/...` напрямую.

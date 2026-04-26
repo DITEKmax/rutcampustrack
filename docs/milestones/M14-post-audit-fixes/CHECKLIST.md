@@ -19,12 +19,13 @@
 - [x] **Решение по notification-app:** добавлен inline-property в `SecurityIdorIT` (`@SpringBootTest properties`) с `legacy-headers-enabled=true` — у остальных 3 сервисов `application-test.yml` уже выставлял это (M03a artifact), у notification — не было.
 - [x] Commit: `fix(security): legacy headers strict by default (M14 G1, CSO CRIT-01)` — `dc40929`
 
-## Группа 2 — CSO CRIT-02: SHA-pin appleboy/ssh-action (15 мин)
+## Группа 2 — CSO CRIT-02: SHA-pin appleboy/ssh-action ✅ (commit `a93859b`)
 
-- [ ] `gh api repos/appleboy/ssh-action/git/refs/tags/v1.2.0 --jq '.object.sha'` → запомнить SHA
-- [ ] `.github/workflows/deploy.yml:313` — заменить `appleboy/ssh-action@v1` на `appleboy/ssh-action@<sha> # v1.2.0`
-- [ ] Verify: workflow syntax valid (`gh workflow view deploy.yml` либо локальный `actionlint`)
-- [ ] Commit: `fix(ci): SHA-pin appleboy/ssh-action against supply chain (M14 G2, CSO CRIT-02)`
+- [x] Pre-flight `curl .../releases/latest` → `v1.2.5` (актуальнее чем `v1.2.0` из hand-off)
+- [x] `curl .../git/refs/tags/v1.2.5` → SHA `0ff4204d59e8e51228ff73bce53f80d53301dee2` (type=commit, lightweight tag)
+- [x] `.github/workflows/deploy.yml:313` — `appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5`
+- [x] Verify: `grep` ровно 1 вхождение в SHA-формате; `pyyaml safe_load` парсит без ошибок (actionlint не установлен)
+- [x] Commit: `fix(ci): SHA-pin appleboy/ssh-action against supply chain (M14 G2, CSO CRIT-02)` — `a93859b`
 
 ## Группа 3 — CSO HIGH-05: PKCS#8 fix в deploy.yml + first-deploy detection (30 мин)
 

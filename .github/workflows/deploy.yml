@@ -310,7 +310,7 @@ jobs:
           echo "✓ All 11 images verified via Fulcio/Rekor"
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           IMAGE_TAG: ${{ env.DEPLOY_SHA }}

@@ -350,6 +350,15 @@ services:
       SPRING_RABBITMQ_PORT: "5672"
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      # M14 G9 (CSO HIGH-06): notification-service application.yml использует
+      # ${RABBITMQ_PASSWORD} (не SPRING_RABBITMQ_PASSWORD) →
+      # RequiredSecretsValidator ищет env var ровно с этим именем. Без
+      # дублирования validator fail-fast'нет на boot.
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      # M14 G9 (CSO HIGH-06): INTERNAL_ISSUER_SECRET для WS-ticket consume
+      # (notification.ws-ticket.internal-issuer-secret в application.yml).
+      # Должен совпадать с api-gateway / auth-service INTERNAL_ISSUER_SECRET.
+      INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
       JWT_PUBLIC_KEY_PATH: /keys/public.key
       NOTIFICATION_WS_ALLOWED_ORIGINS: ${NOTIFICATION_WS_ALLOWED_ORIGINS:-https://ruttrack.site}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}

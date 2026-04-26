@@ -62,7 +62,7 @@ _(отвечено: 6 / 10)_
   связь auth+users, performance важнее изоляции, JOIN'ы возможны.
   Документировать как «осознанный shared-DB tradeoff» в `docs/architecture/architecture.md`
   (NEW-1 уже это покрывает).
-  **Вариант (b) — auth-owned schema** перенесён в `docs/future-ideas.md`
+  **Вариант (b) — auth-owned schema** перенесён в `docs/archive/future-ideas.md`
   (раздел «Архитектура») для v0.1+ когда понадобится auth-only функционал
   (MFA, login-аналитика, lockout policies).
   Closes 01 P0-3.
@@ -86,7 +86,7 @@ _(отвечено: 6 / 10)_
   plaintext в БД и в Telegram. Юридического риска нет (M1). Технические
   риски (XSS / supply-chain / Telegram-оператор / повторное использование
   пароля) явно приняты.
-  Идея magic-link перенесена в `docs/future-ideas.md` (раздел «Безопасность
+  Идея magic-link перенесена в `docs/archive/future-ideas.md` (раздел «Безопасность
   → Magic-link для первого входа») для возможной реализации в v0.1+.
 
 - **Q1.** initial_password — это временная мера или фича?
@@ -94,7 +94,7 @@ _(отвечено: 6 / 10)_
   plaintext в БД и в Telegram. Юридического риска нет (M1). Технические
   риски (XSS / supply-chain / Telegram-оператор / повторное использование
   пароля) явно приняты.
-  Идея magic-link перенесена в `docs/future-ideas.md` (раздел «Безопасность
+  Идея magic-link перенесена в `docs/archive/future-ideas.md` (раздел «Безопасность
   → Magic-link для первого входа») для возможной реализации в v0.1+.
   **Последствия (каскад):**
   - Кластер C0-2 в 15-cross-cutting → **РАСПУСКАЕТСЯ**, перемещается в
@@ -154,7 +154,7 @@ _(отвечено: 6 / 12)_
   **Последствия (каскад):**
   - 02 P0-4 → «✅ ACCEPTED — single-admin invariant».
   - Если в будущем появится вторая роль admin (co-admin, помощник) —
-    эта проблема снова становится P0. Зафиксировать в `docs/future-ideas.md`
+    эта проблема снова становится P0. Зафиксировать в `docs/archive/future-ideas.md`
     как «триггер пересмотра».
 
 - **Q-P0-5.** Пустой `${GRPC_SECRET:}` default?
@@ -1068,7 +1068,7 @@ _(отвечено: 2 / 10)_
   consumer-side schema-validation).
   **NEW:**
   - **NEW-47:** задача на v0.1 «retrofit `event_version` во все
-    существующие 14+ events». В `docs/future-ideas.md` → раздел «События».
+    существующие 14+ events». В `docs/archive/future-ideas.md` → раздел «События».
   - **NEW-48:** `docs/architecture/event-schemas.md` с versioning policy. Если такого
     файла нет — создать. Если есть — добавить раздел.
 
@@ -1091,7 +1091,7 @@ _(отвечено: 2 / 10)_
   работают в web-panel (Angular). `RoleGuard` пропускает только STUDENT.
   Если роль другая — `<Navigate to="/forbidden" />` или редирект на
   `https://ruttrack.site/login` (web-panel).
-  **Admin/teacher в PWA** — перенесено в `docs/future-ideas.md` (раздел
+  **Admin/teacher в PWA** — перенесено в `docs/archive/future-ideas.md` (раздел
   «Frontend → PWA для admin/teacher ролей») как идея v0.1+.
   **Мотивация:**
   - После C0-7 (HttpOnly cookie) подделка JWT невозможна, но клиентские
@@ -1120,7 +1120,7 @@ _(отвечено: 2 / 10)_
     от фронта. Guards не замена, а дополнение.
   **Estimate:** ~0.5 дня (hook + guard + тесты + миграция роутера).
   **NEW:**
-  - **NEW-49:** в `docs/future-ideas.md` добавлен раздел «PWA для
+  - **NEW-49:** в `docs/archive/future-ideas.md` добавлен раздел «PWA для
     admin/teacher ролей». Триггер пересмотра — запрос от реальных
     пользователей.
   - **NEW-50:** аналогичный audit для web-panel (Angular) — проверить,
@@ -1337,7 +1337,7 @@ _(отвечено: 1 / 13 — авто)_
   **Ответ (auto-resolved через 01-Q1):** ни то, ни другое. Выбран вариант
   **(a) accept tradeoff** — оставляем plaintext-цепочку как есть. Кластер
   C0-2 распускается, его 4-5 P0/P2 переходят в «Принято как есть».
-  Magic-link сохранён в `docs/future-ideas.md` для v0.1+.
+  Magic-link сохранён в `docs/archive/future-ideas.md` для v0.1+.
 
 ---
 
@@ -1494,7 +1494,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   **Estimate:** ~1 час (config + smoke-тест retention срабатывает).
   **NEW:**
   - **NEW-66:** триггер пересмотра retention — когда VPS расширится
-    или появится compliance-требование. Записать в `docs/future-ideas.md`.
+    или появится compliance-требование. Записать в `docs/archive/future-ideas.md`.
 
 - **QA6 — Health-check endpoint'ы без meaningful статуса?**
   **Ответ:** **(a)** `management.endpoint.health.show-details: always`
@@ -1712,7 +1712,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
     «Пара уже началась».
   **Estimate:** ~3 часа (guard + exception + frontend UX + тесты).
   **NEW:**
-  - **NEW-76:** в `docs/future-ideas.md` добавить раздел «Lesson
+  - **NEW-76:** в `docs/archive/future-ideas.md` добавить раздел «Lesson
     temporal history» — когда понадобится поддержка переноса in-progress
     пары, внедрять temporal table.
   - **NEW-77:** admin-override endpoint как отдельная задача, если
@@ -2348,7 +2348,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   - **NEW-106:** в будущем (v0.1+) оценить миграцию на semantic-release
     — если commits начнут следовать conventional-format естественно
     (иногда при autocomplete'е AI-ассистенты такой формат предлагают).
-    Триггер в `docs/future-ideas.md` под «DevEx».
+    Триггер в `docs/archive/future-ideas.md` под «DevEx».
   - **NEW-107:** retroactive `[v0.0.0]` entries — подготовить при
     выкатке релиза, используя `git log main` + материал этого
     аудита (все TO-FIX кластеры/P0 из OWNER-ANSWERS.md, которые
@@ -2500,7 +2500,7 @@ health-checks. Ответы зафиксированы 2026-04-18.
   в 3 проверялках).
   **NEW:**
   - **NEW-111:** JSON-LD structured data (Organization, WebSite) —
-    v0.1+ SEO-bonus. В `docs/future-ideas.md`.
+    v0.1+ SEO-bonus. В `docs/archive/future-ideas.md`.
   - **NEW-112:** при смене дизайна лендинга — обновить og-картинку.
     Включить в NEW-108 контрибьютинг-гайд.
 
@@ -6375,7 +6375,7 @@ P2-вопросов**, включить их в scope v0.0.0. Причина —
   `docs/architecture/architecture.md` (или новый `docs/security-model.md`). Список:
   plaintext-`initial_password` цепочка. Цель — чтобы будущие аудиты
   не пере-открывали дискуссию.
-- **NEW-2:** Файл `docs/future-ideas.md` создан. Зафиксировать в
+- **NEW-2:** Файл `docs/archive/future-ideas.md` создан. Зафиксировать в
   `CLAUDE.md` существование этого файла.
 
 ---

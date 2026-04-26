@@ -1,6 +1,6 @@
 # Milestones v0.0.0
 
-Реализация плана из `docs/report-before-v0.0.0/99-executive-summary.md`
+Реализация плана из `docs/archive/report-before-v0.0.0/99-executive-summary.md`
 тематическими milestones. Lightweight workflow без GSD-orchestrator'а.
 
 ## Workflow
@@ -16,7 +16,7 @@
   вопросы к владельцу, TODO для других milestones.
 
 **Никакого RESEARCH.md / VERIFICATION.md.** Research уже сделан аудитом
-(`docs/report-before-v0.0.0/`). Verification — acceptance criteria в
+(`docs/archive/report-before-v0.0.0/`). Verification — acceptance criteria в
 PLAN.md + ручной UAT golden path + optional `bug-hunter`/`code-reviewer`
 subagent на diff в конце milestone'а.
 

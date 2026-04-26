@@ -156,7 +156,7 @@ InternalWsTicket) **не публикуются в public OpenAPI**, но всё
 - `CLAUDE.md` — Contract-first exception update (убрать auth-service)
 - `docs/architecture/architecture.md` — обновить auth-service раздел, mention
   auth-api-contract
-- `docs/future-ideas.md` — удалить auth-api-contract раздел
+- `docs/archive/future-ideas.md` — удалить auth-api-contract раздел
   + удалить ошибочный P2-2/3+/4 раздел
 
 ## Acceptance criteria
@@ -187,7 +187,7 @@ InternalWsTicket) **не публикуются в public OpenAPI**, но всё
       убран, остался только `api-gateway`
 - [ ] `docs/architecture/architecture.md` обновлён: auth-service описан с
       contract-модулем
-- [ ] `docs/future-ideas.md` — auth-api-contract раздел удалён
+- [ ] `docs/archive/future-ideas.md` — auth-api-contract раздел удалён
       (перенесён в M12); ошибочный P2-2/3+/4 раздел удалён
 - [ ] Post-mortem секция в PLAN.md, tag `v0.0.0-alpha.12` или
       `v0.0.0-rc.2`
@@ -213,7 +213,7 @@ InternalWsTicket) **не публикуются в public OpenAPI**, но всё
 - `services/auth-service/auth-api-contract/.../dto/*.java` — 13 DTO
 - `CLAUDE.md` — Contract-first exception обновлён
 - `docs/architecture/architecture.md` — auth-service раздел обновлён
-- `docs/future-ideas.md` — cleanup (удалены M12-related разделы и
+- `docs/archive/future-ideas.md` — cleanup (удалены M12-related разделы и
   ошибочный P2-2/3+/4)
 
 ---

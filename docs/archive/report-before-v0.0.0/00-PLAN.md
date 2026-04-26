@@ -37,7 +37,7 @@
 ## Структура отчёта
 
 ```
-docs/report-before-v0.0.0/
+docs/archive/report-before-v0.0.0/
 ├── 00-PLAN.md                    ← этот файл
 ├── PROGRESS.md                   ← живой трекер
 ├── 01-auth-service.md

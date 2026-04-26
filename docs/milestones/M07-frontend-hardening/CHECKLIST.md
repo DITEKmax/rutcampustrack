@@ -71,7 +71,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 - [x] `frontends/web-panel` install (same versions)
 - [~] ~~`frontends/mini-app` install~~ — **skipped by owner (2026-04-21):**
       mini-app будет мигрирован copy+adapt из PWA после M12, см.
-      `docs/future-ideas.md` → "Mini-app unification"
+      `docs/archive/future-ideas.md` → "Mini-app unification"
 - [x] npm script `generate:types` + `generate:types:offline` в PWA +
       web-panel — fetch `/api-docs` (не `/v3/api-docs`!) каждого из 4
       REST-сервисов (auth/academic/schedule/attendance; gateway = proxy).
@@ -261,7 +261,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
 - [~] ~~`/attendance/stats/aggregate` batch endpoint~~ — **не существует**
       в backend (M05 G5 сделал single-pass для одного студента, не
       group-aggregate). Создание — outside M07 scope. См. NOTES.md
-      «G9 discovery» и `docs/future-ideas.md` → NEW-94.
+      «G9 discovery» и `docs/archive/future-ideas.md` → NEW-94.
 - [~] ~~PWA StatsPage refactor — 1 запрос вместо N×2~~ — `SubjectStatsCollector`
       уже делает N **параллельных** queries через TanStack (не
       sequential). Реального waterfall нет. Batch-endpoint отложен
@@ -271,7 +271,7 @@ landing) → G3 (openapi-ts generation) → остальные могут пар
       посещаемости появятся в следующем релизе» (D1 решение 4).
       `StatCardComponent.sparkData` готов вернуться к real data без
       refactor.
-- [x] `docs/future-ideas.md` NEW-94 обновлён — описано состояние после
+- [x] `docs/archive/future-ideas.md` NEW-94 обновлён — описано состояние после
       G9 (skeleton UI), архитектурный выбор Prometheus-based endpoint.
 - [x] Commit `82eb2ad`: `feat(web-panel): sparklines placeholder (M07 Группа 9, QC6/7)`
 

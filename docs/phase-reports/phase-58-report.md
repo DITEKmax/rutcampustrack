@@ -132,7 +132,7 @@ Reports & plans:
 - 8 SUMMARY файлов в `.planning/phases/58-admin-bug-006-fixes/` (plans 01-08)
 - `gap-closure-build-regressions-SUMMARY.md` (plan 10)
 - `.planning/bug-reports/BUG-006-admin/report.md` — Resolution section
-- `docs/phase-58-report.md` — этот файл
+- `docs/phase-reports/phase-58-report.md` — этот файл
 
 ## Верификация
 

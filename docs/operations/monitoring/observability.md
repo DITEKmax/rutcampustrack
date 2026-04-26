@@ -238,7 +238,7 @@ Alertmanager `time_intervals` использует **UTC**, не MSK. Текущ
 
 ## Ссылки
 
-- Исходные требования: `docs/report-before-v0.0.0/OWNER-ANSWERS.md`
+- Исходные требования: `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md`
   строки 1349-1564 (QA1..QA7).
 - M04 план: `docs/milestones/M04-observability/PLAN.md`.
 - Alert каталог: `docs/operations/monitoring/alerts.md`.

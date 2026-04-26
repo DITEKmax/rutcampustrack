@@ -13,7 +13,7 @@
 Поле `users.initial_password` хранится в БД в открытом виде, отдаётся через
 REST `/academic/users`, через gRPC `GetUserByTelegramId`, и Telegram-бот
 пересылает пароль студенту в `/start`. По решению владельца (см.
-`docs/report-before-v0.0.0/OWNER-ANSWERS.md` M1 + 01-Q1) это by design:
+`docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md` M1 + 01-Q1) это by design:
 проект вне юрисдикции РФ, 152-ФЗ не применяется, технический риск принят.
 
 **Идея на будущее:**

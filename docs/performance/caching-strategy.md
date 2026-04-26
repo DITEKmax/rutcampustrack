@@ -172,7 +172,7 @@ Caffeine/EhCache/JCache. RedisCache — no native binding.
 - Application metrics: DB query counter через Hibernate statistics
   (не attribute к конкретному cache, но показывает нагрузку на БД).
 
-**Future work** (`docs/future-ideas.md` NEW-144-follow-up):
+**Future work** (`docs/archive/future-ideas.md` NEW-144-follow-up):
 
 1. `@Aspect` вокруг `@Cacheable`-методов — считать hit/miss через
    proxy вместо wrapping `CacheManager`.

@@ -441,7 +441,7 @@ db.notification_history.createIndex(
 
 **TTL caveat:** Mongo TTL изменяется только через `collMod` после
 создания индекса. Изменение env var НЕ перезаписывает существующий
-индекс на работающем volume (отложено в `docs/future-ideas.md` —
+индекс на работающем volume (отложено в `docs/archive/future-ideas.md` —
 «Notification retention collMod auto-reconciler», v0.1).
 
 ### Mongo user — separation of concerns (M10 D2)

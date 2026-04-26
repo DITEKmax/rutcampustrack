@@ -81,7 +81,7 @@ endpoints. Composite снимает нагрузку когда семестро
 ## 2026-04-20 — D3: отложить `(group_id, lesson_id)` на Mongo `attendances`
 
 **Выбрано:** **не добавлять** индекс в M05. Зафиксировать в
-`docs/future-ideas.md` (NEW-146) пункт «add when demand».
+`docs/archive/future-ideas.md` (NEW-146) пункт «add when demand».
 
 **Почему:** OWNER-ANSWERS 3693-3694 предлагает `db.attendances.createIndex({
 group_id: 1, lesson_id: 1 })`, но grep по hot queries
@@ -299,7 +299,7 @@ OWNER-ANSWERS 3826-3829 = 100; типичный batch = 25-30 студентов
 
 **Выбрано:** в M05 Группе 4 сделать только **attendance `/marks/batch`**
 и закрыть его полностью (backend + integration tests + PWA frontend +
-docs). **Отложить** в backlog (`docs/future-ideas.md`):
+docs). **Отложить** в backlog (`docs/archive/future-ideas.md`):
 
 - `POST /academic/homeworks/batch` (partial-success для admin-импорта) —
   не влияет на headman UX, admin-импорт редкий.
@@ -379,7 +379,7 @@ Single-pass accumulators дают **real O(N) вместо O(3-4N)** —
 | LessonService.getLessonsForGroup | SQL Pageable в Repository | ⬜ M05 |
 | `AttendanceStatsService` / `ExcuseAnalyticsService` | Не существуют в коде — PLAN.md выдумка | ✅ no-op |
 | `LessonService.findOneOffLessons` | Не существует — 03 P2-5 = другой hotspot | ✅ no-op |
-| `docs/future-ideas.md` (NEW-146) | Mongo aggregation + `lesson_alive` denormalization | ⬜ M05 |
+| `docs/archive/future-ideas.md` (NEW-146) | Mongo aggregation + `lesson_alive` denormalization | ⬜ M05 |
 | Integration-тест correctness | Sanity-тесты что accumulator даёт те же числа | ⬜ M05 |
 
 **Альтернативы отклонены:**

@@ -17,7 +17,7 @@
 3. **Contract-тесты events** — JSON Schema validation payload'ов (14+ events)
    плюс `event-schemas/_common.json` с shared `$defs`.
 
-**Закрывает (сверка с `docs/report-before-v0.0.0/99-executive-summary.md` и
+**Закрывает (сверка с `docs/archive/report-before-v0.0.0/99-executive-summary.md` и
 `OWNER-ANSWERS.md`):**
 
 - **Q-P0-4** (ShedLock на `@Scheduled`) — schedule-service + NEW-28 аудит

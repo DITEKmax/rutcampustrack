@@ -16,14 +16,14 @@
 
 **Главные файлы для чтения первым делом (в этом порядке):**
 
-1. `docs/report-before-v0.0.0/PROGRESS.md` — handoff-сводка со всеми
+1. `docs/archive/report-before-v0.0.0/PROGRESS.md` — handoff-сводка со всеми
    восемью сессиями и финальный итог. **Читай весь файл.**
-2. `docs/report-before-v0.0.0/OWNER-ANSWERS.md` — **все принятые
+2. `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md` — **все принятые
    решения, meta-решения M1/M2, NEW-задачи 1-178, audit trail**. Это
    твоя память. ~6500 строк. Читать весь файл обязательно.
-3. `docs/future-ideas.md` — отложенные идеи (magic-link, PWA
+3. `docs/archive/future-ideas.md` — отложенные идеи (magic-link, PWA
    admin/teacher, JSON-LD landing, magic-byte MIME check и др.)
-4. `docs/report-before-v0.0.0/00-PLAN.md` — оригинальный план аудита.
+4. `docs/archive/report-before-v0.0.0/00-PLAN.md` — оригинальный план аудита.
 
 ═══════════════════════════════════════════════════════════
 ТЕКУЩИЙ СТАТУС (2026-04-19, конец восьмой сессии)
@@ -77,7 +77,7 @@
 ```
 
 Таблицу сохранить как
-`docs/report-before-v0.0.0/COVERAGE-AUDIT.md`. Если все покрыты —
+`docs/archive/report-before-v0.0.0/COVERAGE-AUDIT.md`. Если все покрыты —
 сообщить владельцу «Все 306+ пунктов закрыты, готов к разметке».
 
 Если есть непокрытые — собрать их в пачку вопросов (6-8 штук) и

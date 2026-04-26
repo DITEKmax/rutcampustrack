@@ -72,7 +72,7 @@ export class AdminDashboardComponent implements OnInit {
    * дней» показывали псевдо-данные (buildSpark + detrministic wobble),
    * которые юзер не мог отличить от реальных. Убрали до появления
    * time-series endpoint'а (candidate v0.1 → NEW-94 "real sparklines"
-   * в `docs/future-ideas.md`). Stat-cards остаются с числами без
+   * в `docs/archive/future-ideas.md`). Stat-cards остаются с числами без
    * графиков; вместо chart-card — info-badge "Графики появятся в
    * следующем релизе".
    */

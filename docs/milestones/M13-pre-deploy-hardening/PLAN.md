@@ -10,7 +10,7 @@
 
 Закрытие всех блокеров перед первым VPS deploy v0.0.0 GA. Источники:
 
-- `docs/report-before-v0.0.0/v0.0.0-debt.md` — полный debt report M01-M12
+- `docs/archive/report-before-v0.0.0/v0.0.0-debt.md` — полный debt report M01-M12
 - Обсуждение в сессии 2026-04-24 (кандидаты #1-25 + #16 InvalidParam)
 
 Критерий включения: либо **блокирует** первый deploy, либо **дешевле

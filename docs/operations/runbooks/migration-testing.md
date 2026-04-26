@@ -175,4 +175,4 @@ A: Flyway Community не поддерживает `undo`-миграции. Rollb
 - M08 PLAN.md Группа 3 — `docs/milestones/M08-test-infrastructure/PLAN.md`
 - M08 DECISIONS D5 — `docs/milestones/M08-test-infrastructure/DECISIONS.md`
 - M01 `MigrationTestUtils` — shared-test-containers testFixtures
-- OWNER-ANSWERS P2-8/3 — `docs/report-before-v0.0.0/OWNER-ANSWERS.md`
+- OWNER-ANSWERS P2-8/3 — `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md`

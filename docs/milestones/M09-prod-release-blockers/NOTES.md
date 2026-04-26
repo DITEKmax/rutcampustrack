@@ -40,7 +40,7 @@
 
 - **01 P0-1 `auth-api-contract`** — структурный refactor (вынести
   `AuthController` + все DTO в отдельный Gradle-модуль). Не блокер
-  прода. Документируется в `docs/future-ideas.md`.
+  прода. Документируется в `docs/archive/future-ideas.md`.
 - **NEW-54 CSP-Report endpoint** — `report-uri` в CSP web-panel
   (owner явно указал «v0.1»).
 - **Magic-link для первого входа** (01-Q1 accepted tradeoff).

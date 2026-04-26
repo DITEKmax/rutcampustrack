@@ -182,7 +182,7 @@ in-memory pagination OOM-risk в LessonService._
       а Mongo `$group` в ReportService блокируется
       `filterExistingLessons` cross-service invariant'ом. Варианты
       решения (denormalization, materialized view) — в
-      `docs/future-ideas.md` NEW-146.
+      `docs/archive/future-ideas.md` NEW-146.
 - [x] `LessonService.getLessonsForGroup` — переписан на SQL
       `LIMIT/OFFSET` через Spring Data `Pageable` с native `countQuery`.
       Новый метод `LessonRepository.pageByScheduleItemIdInAndDateBetweenAndStatusIn`.
@@ -193,7 +193,7 @@ in-memory pagination OOM-risk в LessonService._
       отдельный scope (NEW-94).
 - [x] Existing tests (attendance report + schedule lesson) зелёные —
       подтверждают correctness accumulator рефактора и SQL pagination.
-- [x] `docs/future-ideas.md` NEW-146: Mongo aggregation
+- [x] `docs/archive/future-ideas.md` NEW-146: Mongo aggregation
       pipeline blocker + 3 варианта решения + audit-checklist
       для `.collect(toList())` агрегаций в PR-review.
 
@@ -310,7 +310,7 @@ D11. Deadline уже везде (19 callsite'ов), параллелизация
 - [x] `docs/performance/connection-pool-tuning.md` (создан в G6).
 - [x] `docs/security/data-retention-policy.md` (создан в G7).
 - [x] `docs/api/api-error-conventions.md` (создан в G4, sibling runbook).
-- [x] `docs/future-ideas.md` (создан в G5, sibling runbook).
+- [x] `docs/archive/future-ideas.md` (создан в G5, sibling runbook).
 - [x] `docs/architecture/architecture.md` §11.1 — блок «Performance & Ops runbooks»
       с 6 ссылками (обновлено в G9 hot-patches, commit `ba0b233`).
 - [x] `CHANGELOG.md [Unreleased]` — секции Added для M05 Групп 3-9

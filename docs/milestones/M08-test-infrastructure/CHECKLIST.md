@@ -40,7 +40,7 @@
 - [~] Заменить `@MockitoBean` на real containers где feasible (priority:
       БД-операции, Rabbit publishers) — **defer v0.1**. 37 из 41 мокают
       gRPC clients — full переработка через in-process gRPC требует
-      1-2д. Запись в `docs/future-ideas.md`.
+      1-2д. Запись в `docs/archive/future-ideas.md`.
 - [~] `InProcessGrpcChannelFactory` — новый bean в shared-test-containers
       — уже существует с M01 (`GrpcInProcessFixture`), консумеры появятся
       в v0.1 вместе с @MockitoBean refactor'ом.

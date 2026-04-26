@@ -229,7 +229,7 @@ Gateway не strip'ает `Authorization` header на этом endpoint.
 
 ## См. также
 
-- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` → `02-Q-frontend-security`
+- `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md` → `02-Q-frontend-security`
 - `docs/milestones/M03b-jwt-cookie-ws-ticket/DECISIONS.md` (2026-04-20)
 - `docs/milestones/M03b-jwt-cookie-ws-ticket/NOTES.md` — surprises + hand-off
 - `docs/api/internal-jwt-spec.md` — Internal JWT spec (M03a)

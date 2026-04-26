@@ -76,7 +76,7 @@ C0-10 (cert-name LE) ─────► C0-8 (CI→deploy gate) ─────�
 - **Разблокирует:** C0-4 (rate-limit можно ставить на Gateway, зная что downstream не обходится); C0-2 (убираем gRPC/REST leaks `initial_password`, зная что канал между сервисами защищён).
 
 ### C0-2: ✅ DISSOLVED — `initial_password` plaintext-цепочка
-**Статус (2026-04-18):** кластер РАСПУЩЕН по решению владельца. Все 4 P0 + 1 P2 переходят в «Принято как есть» (см. `OWNER-ANSWERS.md` 01-Q1, 02-Q1, 06-Q2, 08-Q1, 10-Q7 + Meta M1). Идея magic-link сохранена в `docs/future-ideas.md` для v0.1+. Зависимости от C0-2 в dependency graph и порядке исполнения должны быть пересчитаны (см. audit-trail в OWNER-ANSWERS.md). Ниже — оригинальное описание для исторической ссылки.
+**Статус (2026-04-18):** кластер РАСПУЩЕН по решению владельца. Все 4 P0 + 1 P2 переходят в «Принято как есть» (см. `OWNER-ANSWERS.md` 01-Q1, 02-Q1, 06-Q2, 08-Q1, 10-Q7 + Meta M1). Идея magic-link сохранена в `docs/archive/future-ideas.md` для v0.1+. Зависимости от C0-2 в dependency graph и порядке исполнения должны быть пересчитаны (см. audit-trail в OWNER-ANSWERS.md). Ниже — оригинальное описание для исторической ссылки.
 
 - **Затронутые отчёты:** 01 P0-2 (БД + entity), 02 P0-1 (REST + gRPC), 06 P0-3 (Telegram), 08 P0-1 (proto-контракт), 10 P2-13 (admin-таблица показывает).
 - **Суть.** Пароль нового пользователя живёт в колонке `users.initial_password VARCHAR(128)`, возвращается в JSON ответе `GET /academic/users`, передаётся по gRPC `GetUserByTelegramId` в `UserByTelegramIdResponse.initial_password` (proto/academic.proto:155), попадает в Telegram-чат бота в `<code>pass123</code>` без self-destruct, и виден админам в таблице web-panel. Любая компрометация в одном из пяти мест = утечка паролей.

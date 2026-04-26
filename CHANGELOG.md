@@ -113,7 +113,7 @@
   - **CLAUDE.md очищен:** раздел «Contract-first → Исключения»
     убрал блок «auth-service — временный нарушитель»; единственное
     исключение теперь — `api-gateway` (прокси, собственного REST
-    API не публикует). `docs/future-ideas.md` разделы
+    API не публикует). `docs/archive/future-ideas.md` разделы
     «Auth API contract-first refactor (v0.1)» + «Auth-service
     OpenAPI (P2-2/2, v0.1)» удалены (перенесено и закрыто в M12).
 
@@ -182,7 +182,7 @@
     `docs/milestones/README.md` статус M09 ✅.
   - **G9 Audit + hot-patches** — параллельный прогон `security-auditor`
     + `bug-hunter` на diff 17 коммитов M09. Итог: 0 BLOCK, 2 HIGH
-    (deferred в v0.1 backlog — см. `docs/future-ideas.md`), 8 MEDIUM.
+    (deferred в v0.1 backlog — см. `docs/archive/future-ideas.md`), 8 MEDIUM.
     Hot-patches в G9: (a) `otp_requested.py` malformed-event log
     только keys, не values — предотвращает OTP-код в Loki 14d
     retention (BH-M3); (b) `ContainerMemoryHigh` Prom rule — guard
@@ -475,7 +475,7 @@
     через Spring Data `Pageable` + native `countQuery` в
     `LessonRepository.pageByScheduleItemIdInAndDateBetweenAndStatusIn`.
     Устраняет OOM-risk на 2000+ lessons/semester.
-  - **`docs/future-ideas.md`** (NEW-146) — 3 варианта решения для
+  - **`docs/archive/future-ideas.md`** (NEW-146) — 3 варианта решения для
     Mongo `$group` в `ReportService` (блокируется
     `filterExistingLessons` cross-service invariant'ом; денормализация
     `lesson_alive` как M06/M07 scope).

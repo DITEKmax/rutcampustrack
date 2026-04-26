@@ -182,5 +182,5 @@ pytest -m security_contract
 ## Источники
 
 - M08 PLAN.md — `docs/milestones/M08-test-infrastructure/PLAN.md`
-- OWNER-ANSWERS P2-8/1..8 — `docs/report-before-v0.0.0/OWNER-ANSWERS.md`
-- 14-tests-audit.md — `docs/report-before-v0.0.0/14-tests-audit.md`
+- OWNER-ANSWERS P2-8/1..8 — `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md`
+- 14-tests-audit.md — `docs/archive/report-before-v0.0.0/14-tests-audit.md`

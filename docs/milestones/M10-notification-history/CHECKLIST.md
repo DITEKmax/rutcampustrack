@@ -14,7 +14,7 @@
       `CHANGE_ME_BEFORE_DEPLOY` в `.env.prod`
 - [x] `docs/operations/runbooks/secret-rotation.md` — новая секция «MongoDB —
       notification» + запись в таблицу
-- [x] `docs/future-ideas.md` — v0.1 «Notification retention collMod
+- [x] `docs/archive/future-ideas.md` — v0.1 «Notification retention collMod
       auto-reconciler»
 - [x] Smoke: `docker compose down -v && up -d` (G9.2 2026-04-24) —
       все сервисы healthy, init-mongo создал обоих PoLP user'ов

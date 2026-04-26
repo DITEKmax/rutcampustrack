@@ -8,7 +8,7 @@
 
 ## Scope
 
-Закрывает P2-10 из `docs/report-before-v0.0.0/99-executive-summary.md`
+Закрывает P2-10 из `docs/archive/report-before-v0.0.0/99-executive-summary.md`
 (OWNER-ANSWERS.md строки 3673-4028). 8 подпунктов:
 
 - **P2-10/1** — Composite indexes на hot queries (~3ч)
@@ -137,7 +137,7 @@
       Попытка `MetricsCacheManagerDecorator` сломала namespace-specific
       TTL в `RedisCacheManager`. Обоснование и альтернатива
       (`@Aspect`-подход) зафиксированы в `docs/performance/caching-strategy.md`
-      §«Observability» и `docs/future-ideas.md`. Integration-тест
+      §«Observability» и `docs/archive/future-ideas.md`. Integration-тест
       `RbacCacheIT` проверяет presence key'ев + TTL вместо counter'ов.
 - [ ] `./gradlew build` зелёный (включая integration tests + ArchUnit + CI-lint).
 

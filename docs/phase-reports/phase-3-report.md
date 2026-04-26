@@ -198,4 +198,4 @@ proto/
 
 ## Следующая фаза
 
-**Фаза 4: Attendance Service** ✅ — MongoDB, гео-отметка, ручная отметка, автоматический absent, отчёты и статистика посещаемости. Отчёт: `docs/phase-4-report.md`
+**Фаза 4: Attendance Service** ✅ — MongoDB, гео-отметка, ручная отметка, автоматический absent, отчёты и статистика посещаемости. Отчёт: `docs/phase-reports/phase-4-report.md`

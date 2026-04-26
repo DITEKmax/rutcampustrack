@@ -90,4 +90,4 @@ caution tale для будущего refactor'а.
 
 - `docs/testing/load-testing.md` (NEW-163) — как запускать
 - `tests/load/README.md` — quick reference для скриптов
-- `docs/future-ideas.md` — Full load suite v0.1
+- `docs/archive/future-ideas.md` — Full load suite v0.1

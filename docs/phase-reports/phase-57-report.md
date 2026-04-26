@@ -41,7 +41,7 @@
 - `docs/product/url-layout.md` — раздел Production Path Routing (append-only)
 - `docs/product/job-stories.md` — 18 новых web-cabinet историй (append-only)
 - `.planning/PROJECT.md` — ship-ready mark + Recently Validated расширен
-- `docs/phase-57-report.md` — этот файл
+- `docs/phase-reports/phase-57-report.md` — этот файл
 
 ## Верификация
 

@@ -67,7 +67,7 @@ services/auth-service/
 - **Зависимости:** правка затронет web-panel/pwa/mini-app — им надо переключиться на общий контракт (возможно, через генерацию TS-типов из OpenAPI).
 
 ### P0-2: ✅ ACCEPTED — В БД хранится пароль в открытом виде (`initial_password`)
-**Статус:** by design (см. `OWNER-ANSWERS.md` 01-Q1 + Meta M1, 2026-04-18). Plaintext остаётся в БД и в Telegram-чатах. Идея magic-link отложена в `docs/future-ideas.md`. Ниже — оригинальное описание для исторической ссылки.
+**Статус:** by design (см. `OWNER-ANSWERS.md` 01-Q1 + Meta M1, 2026-04-18). Plaintext остаётся в БД и в Telegram-чатах. Идея magic-link отложена в `docs/archive/future-ideas.md`. Ниже — оригинальное описание для исторической ссылки.
 
 - **Где:** `src/test/resources/db/migration/V1__baseline.sql:37`; `entity/User.java:74-75`; `repository/UserRepository.java:18` (обнуление при смене).
 - **Что:** при создании учётки админ, очевидно, заполняет `initial_password` plain-паролем и показывает юзеру. Колонка есть в схеме продакшена. Даже при корректном обнулении после смены пароля — между созданием и первым логином юзер и админ видят пароль, он лежит в бекапах БД, в логах Flyway seed, в репликах.
@@ -76,7 +76,7 @@ services/auth-service/
 - **Зависимости:** admin-страница в web-panel; API academic-service для создания пользователя; bot-инструкция для старосты.
 
 ### P0-3: ✅ ACCEPTED — Сервис подключён к чужой БД `academic_db` без собственной схемы и без Flyway
-**Статус (2026-04-18):** by design — shared-DB между auth и academic осознанное решение при проектировании. Один разработчик, тесная связь, performance важнее изоляции, JOIN'ы возможны. Документировать в `docs/architecture/architecture.md` (NEW-1). Вариант auth-owned schema перенесён в `docs/future-ideas.md` для v0.1+ (когда понадобится MFA/lockout/login-аналитика). См. `OWNER-ANSWERS.md` 01-Q-P0-3.
+**Статус (2026-04-18):** by design — shared-DB между auth и academic осознанное решение при проектировании. Один разработчик, тесная связь, performance важнее изоляции, JOIN'ы возможны. Документировать в `docs/architecture/architecture.md` (NEW-1). Вариант auth-owned schema перенесён в `docs/archive/future-ideas.md` для v0.1+ (когда понадобится MFA/lockout/login-аналитика). См. `OWNER-ANSWERS.md` 01-Q-P0-3.
 
 
 - **Где:** `src/main/resources/application.yml:21` (`jdbc:postgresql://postgres-academic:5432/academic_db`); `application.yml:35-36` (`flyway.enabled: false`); в `src/main/resources/db/migration/` пусто.
@@ -169,7 +169,7 @@ services/auth-service/
 - **Зависимости:** mini-app (флоу логина).
 
 ### P1-7: ✅ ACCEPTED — `changePassword` не требует MFA/OTP подтверждения и не проверяет историю паролей
-**Статус (2026-04-19):** ACCEPTED by owner (связано с 01-Q1 + M1 tradeoff). MFA и history policy — отдельная фича v0.1+ (в `docs/future-ideas.md` раздел «Безопасность»). См. `OWNER-ANSWERS.md` 01-Q1 audit trail.
+**Статус (2026-04-19):** ACCEPTED by owner (связано с 01-Q1 + M1 tradeoff). MFA и history policy — отдельная фича v0.1+ (в `docs/archive/future-ideas.md` раздел «Безопасность»). См. `OWNER-ANSWERS.md` 01-Q1 audit trail.
 
 - **Где:** `service/AuthService.java:127-143`; `controller/AuthController.java:118-124`.
 - **Что:** любой с валидным access-токеном может сменить пароль, зная текущий. Нет (а) second factor confirmation, (б) проверки, что новый пароль ≠ последним N, (в) cooldown'а между сменами.
@@ -428,7 +428,7 @@ services/auth-service/
 ## Вопросы к владельцу проекта
 
 1. ✅ **initial_password**: это временная мера или намеренная функция «распечатка первого пароля для студента»? Если да — предлагаю переход на одноразовый setup-токен (см. P0-2).
-   → **ACCEPTED BY OWNER (2026-04-18)**: by design, plaintext остаётся в БД и в Telegram. См. `OWNER-ANSWERS.md` 01-Q1 и Meta-решение M1. Идея magic-link сохранена в `docs/future-ideas.md` для v0.1+.
+   → **ACCEPTED BY OWNER (2026-04-18)**: by design, plaintext остаётся в БД и в Telegram. См. `OWNER-ANSWERS.md` 01-Q1 и Meta-решение M1. Идея magic-link сохранена в `docs/archive/future-ideas.md` для v0.1+.
 2. **auth и academic БД**: почему они объединены? Историческое решение или сознательное? Если сознательное — нужно документировать как "shared database with auth as reader", а владельцем миграций сделать academic (или наоборот).
 3. **`/auth/refresh-body` vs `/auth/refresh`**: есть ли реальный случай, когда одна используется, а другая нет? Или это legacy?
 4. **`password_reset_tokens`**: план реализовать восстановление пароля, или таблицу можно удалить?

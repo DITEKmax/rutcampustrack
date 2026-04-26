@@ -16,8 +16,8 @@ RutCampusTrack — микросервисная система учёта пос
 - **v8.0**: ЗАВЕРШЕНА (CI/CD, Deployment & Documentation) — фазы 41-48
 - **v9.0**: ЗАВЕРШЕНА (Frontend Unification — Single Login & Role-Based Web Clients) — фазы 49-61 (включая 58 BUG-006 Admin Fixes, 59 Excuse Tickets Backend, 60 Headman Schedule Management, 61 Headman Homework Management UI)
 - **v0.0.0**: ЗАВЕРШЕНА (Pre-release hardening по аудиту) — 13 milestones в `docs/milestones/`, готова к first VPS deploy
-- Полный план v0.0.0: `docs/report-before-v0.0.0/99-executive-summary.md`
-- Исходный аудит: `docs/report-before-v0.0.0/` (16 отчётов, OWNER-ANSWERS.md, COVERAGE-AUDIT.md)
+- Полный план v0.0.0: `docs/archive/report-before-v0.0.0/99-executive-summary.md`
+- Исходный аудит: `docs/archive/report-before-v0.0.0/` (16 отчётов, OWNER-ANSWERS.md, COVERAGE-AUDIT.md)
 - Полный план v1.0-v9.0: `.planning/ROADMAP.md`, отчёты: `docs/phase-{N}-report.md`
 
 ### v0.0.0 Milestones
@@ -234,7 +234,7 @@ docker compose ps
 - Схема БД: `docs/architecture/database-schema.md`
 - Дизайн-решения: `docs/product/design-decisions.md` — иконки, анимации, PWA, брендинг
 - Реестр skills: `docs/meta/skills-inventory.md` — все установленные Claude Code skills
-- Отчёт Фазы 0: `docs/phase-0-report.md`
+- Отчёт Фазы 0: `docs/phase-reports/phase-0-report.md`
 
 ## Инструкция для Claude Code
 

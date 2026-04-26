@@ -15,7 +15,7 @@
    planned path: после M12 закрытия + стабилизация PWA в проде →
    mini-app мигрируется **copy+adapt** из PWA. G3 scope = только
    PWA + web-panel (2 frontend'а). Запись про план — в
-   `docs/future-ideas.md` → "Mini-app unification: copy+adapt from PWA
+   `docs/archive/future-ideas.md` → "Mini-app unification: copy+adapt from PWA
    after M12".
 3. **axe-core baseline** (G10): **(a) CRITICAL + SERIOUS = 0**.
    MODERATE/MINOR трекаем в `docs/product/a11y-checklist.md` как "a11y pass 2"
@@ -88,7 +88,7 @@ queries** через TanStack — не sequential. Реального waterfall 
 StatsPage **нет** (был только в schedule/LessonCard subject-lookup,
 закрыт G6/6 через `useSubjectMap`).
 
-**Отложено в `docs/future-ideas.md` → NEW-94** (Real sparklines
+**Отложено в `docs/archive/future-ideas.md` → NEW-94** (Real sparklines
 backend) — этот же endpoint (`GET /api/admin/dashboard/metrics`
 или `GET /api/stats/group-aggregate`) закроет оба кейса.
 

@@ -17,7 +17,7 @@ refactor** (вынесение `AuthController` + DTO + OpenAPI-аннотаци
 - (b) Отложить в v0.1 — scope M09 фокусируется на security/tests блокерах.
 - (c) Сделать в M07 (Frontend Hardening) — не по теме M07.
 
-**Решение:** (b). Документируется в `docs/future-ideas.md`. После v0.0.0
+**Решение:** (b). Документируется в `docs/archive/future-ideas.md`. После v0.0.0
 можно сделать независимо, auth-service — единственный нарушитель (4 других
 сервиса уже contract-first), изменение чисто внутреннее.
 
@@ -195,7 +195,7 @@ role check (06 P1-1) и audit asymmetric flows (NEW-121).
   `and on (name) container_spec_memory_limit_bytes > 0`. Validated
   `promtool check rules`.
 
-**Что отложено в v0.1** (см. `docs/future-ideas.md` → «OTP hardening
+**Что отложено в v0.1** (см. `docs/archive/future-ideas.md` → «OTP hardening
 bundle»):
 - **SA-H1** (verifyOtpByCode attempts counter) — архитектурное
   решение: need IP-resolve в сервисе или stricter Gateway RL.
@@ -221,6 +221,6 @@ bundle»):
 
 **Последствия:**
 - `CHANGELOG.md` G9 bullet упоминает 0 BLOCK + 2 HIGH deferred.
-- `docs/future-ideas.md` новый раздел «OTP hardening bundle (v0.1)»
+- `docs/archive/future-ideas.md` новый раздел «OTP hardening bundle (v0.1)»
   с детальным fix plan'ом.
 - v0.0.0 GA checkpoint должен включать OTP hardening bundle в scope.

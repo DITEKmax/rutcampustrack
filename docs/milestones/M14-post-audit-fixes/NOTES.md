@@ -10,8 +10,8 @@
 - Стартовая позиция: M13 ✅, тег `v0.0.0-alpha.15`. Четыре аудита (G26 code review,
   G26 test audit, G27 CSO comprehensive, G27 tech debt) дали ~70 findings. Триаж
   показал что только **9 групп** действительно блокируют first VPS deploy либо
-  имеют trivial fix — остальное в `docs/future-ideas.md` (pre-v0.1) либо в
-  `docs/deferred-ideas.md` (v0.1+).
+  имеют trivial fix — остальное в `docs/archive/future-ideas.md` (pre-v0.1) либо в
+  `docs/archive/deferred-ideas.md` (v0.1+).
 - Принципы триажа:
   1. **Блокирует deploy функционально** (HIGH-05 PKCS#1 → first deploy упадёт) — must.
   2. **Runtime guard против operator mistake** (HIGH-06 fail-fast secrets) — must.
@@ -42,7 +42,7 @@ Internal JWT). Notification-app аналогичного override НЕ имел 
 добавить inline через `@SpringBootTest properties` в SecurityIdorIT.
 Долгосрочное решение — мигрировать все IDOR/security IT на `InternalJwtTestFactory`
 из shared-security testFixtures (тогда test-profile override становится
-ненужным). Записано в `docs/deferred-ideas.md` как кандидат на v0.1
+ненужным). Записано в `docs/archive/deferred-ideas.md` как кандидат на v0.1
 test cleanup PR.
 
 ### Измерения
@@ -79,7 +79,7 @@ conversion ломает absolute Linux paths в `docker run`/`docker cp`
 (`/keys/x` → `C:/Program Files/Git/keys/x`). Workaround: prefix
 `MSYS_NO_PATHCONV=1` для bash-инкарнации, либо PowerShell tool
 для нативных Windows paths в `docker cp` host-side. Записано в
-`docs/deferred-ideas.md` как кандидат на dev-handbook entry.
+`docs/archive/deferred-ideas.md` как кандидат на dev-handbook entry.
 
 **G3 standalone Java verification — приём для будущих GSD audits:**
 вместо тяжёлого `docker compose up auth-service`, сделан минимальный
@@ -136,7 +136,7 @@ fail-fast). Для **YAML** + **`@ConfigurationProperties`** поведение
 открыто с 2017+.
 
 **Решение для M14:** **defer всю G4** в pre-v0.1. Спецификация в
-`docs/future-ideas.md` § «CSO HIGH-06: fail-fast secrets через
+`docs/archive/future-ideas.md` § «CSO HIGH-06: fail-fast secrets через
 ApplicationContextInitializer» с двумя вариантами impl (Java initializer
 vs bash entrypoint). Полный revert YAML changes через `git checkout`.
 

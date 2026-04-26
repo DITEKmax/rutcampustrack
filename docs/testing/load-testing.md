@@ -13,7 +13,7 @@ endpoint'ов ПОСЛЕ M05 оптимизаций. Release-engineer прого
 `docker compose up`. CI-integration **не делается** — OWNER-ANSWERS
 P2-8/7 разрешает minimal для v0.0.0, VPS/staging stable только
 после M09. Nightly CI job через Gatling/JMeter → v0.1 (см.
-`docs/future-ideas.md`).
+`docs/archive/future-ideas.md`).
 
 ## Install
 
@@ -165,7 +165,7 @@ running (2m00.0s), 00/10 VUs, 1200 complete and 0 interrupted iterations
 
 ## Связанные документы
 
-- `docs/future-ideas.md` — Full load suite (Gatling/JMeter) → v0.1
+- `docs/archive/future-ideas.md` — Full load suite (Gatling/JMeter) → v0.1
 - `docs/performance/performance-baseline.md` — baseline numbers
 - `docs/performance/connection-pool-tuning.md` (NEW-147) — HikariCP config
   (M05 G6)

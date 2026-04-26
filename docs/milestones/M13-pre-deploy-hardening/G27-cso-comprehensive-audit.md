@@ -612,7 +612,7 @@ git pull --ff-only
 
 ## MED-15 — Initial pre-v0.0.0 audit отметил .env.prod в рабочей копии разработчика (7/10)
 
-**Файл:** `docs/report-before-v0.0.0/13-infra-docker-ci.md`
+**Файл:** `docs/archive/report-before-v0.0.0/13-infra-docker-ci.md`
 
 Audit doc явно говорит: «.env.prod лежит в рабочей копии с **реальными** секретами продакшена (Telegram токены, GHCR PAT, Grafana/DB пароли).»
 

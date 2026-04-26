@@ -201,6 +201,6 @@
 
 - `.planning/milestones/v1.0-ROADMAP.md`
 - `.planning/milestones/v1.0-REQUIREMENTS.md`
-- `docs/phase-1-report.md`
+- `docs/phase-reports/phase-1-report.md`
 
 ---

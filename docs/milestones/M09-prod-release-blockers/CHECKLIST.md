@@ -140,7 +140,7 @@
 ## Группа 8 — Docs + cleanup (~0.5д) ✅ закрыто
 
 - [x] **G8.1** `docs/operations/deploy/admin-scripts.md` (NEW-33) — 6 templates: orphan cleanup через mongosh (с prep `/tmp/lesson_ids.txt` из PG), backfill `cancelled_by/at` из schedule_outbox, purge stuck outbox, invalidate refresh-tokens, recompute Redis RBAC cache, emergency JWT key rotate
-- [x] **G8.2** `docs/future-ideas.md` — раздел «Auth API contract-first refactor (v0.1)» с обоснованием отложения 01 P0-1 + раздел «Auth-service OpenAPI (P2-2/2, v0.1)»
+- [x] **G8.2** `docs/archive/future-ideas.md` — раздел «Auth API contract-first refactor (v0.1)» с обоснованием отложения 01 P0-1 + раздел «Auth-service OpenAPI (P2-2/2, v0.1)»
 - [x] **G8.3** `CLAUDE.md` Contract-first уточнено: `api-gateway` как единственное постоянное исключение, `auth-service` — временный нарушитель (M12 планирование в v0.0.0, фактическая реализация v0.1)
 - [x] **G8.4** `docs/milestones/README.md` — статус M09 → ✅ 2026-04-24
 - [x] **G8.5** `CLAUDE.md` v0.0.0 Milestones table — M09 ✅ с полным scope (OTP event + MessageDigest + cleanupOrphans + landing + latecheckin + bot callbacks + lesson.cancelled V13 + excuse/late_checkin headman check + runbooks + mem_limits + JVM opts + Prom alert) + дата
@@ -153,7 +153,7 @@
 - [x] `security-auditor` агент на diff M09 — 0 BLOCK, 1 HIGH (SA-H1 `verifyOtpByCode` без attempts counter), 5 MEDIUM (SA-M1/M3/M4/M5 и LOW) — итог deferred в v0.1, см. DECISIONS D7
 - [x] `bug-hunter` агент — 0 BLOCK, 1 HIGH (BH-H1 bot event_id дедуп отсутствует), 5 MEDIUM (BH-M2..M6) — итог deferred в v0.1
 - [x] Hot-patches (2 коммита): `2bba0e1` BH-M3 OTP-в-log fix, `89afd44` BH-M4 PromQL +Inf guard
-- [x] Оставшиеся HIGH + MEDIUM задокументированы в `docs/future-ideas.md` → «OTP hardening bundle (v0.1)»; решение — в DECISIONS D7
+- [x] Оставшиеся HIGH + MEDIUM задокументированы в `docs/archive/future-ideas.md` → «OTP hardening bundle (v0.1)»; решение — в DECISIONS D7
 - [x] `PLAN.md` → Post-mortem секция (reality vs estimate 30h vs 56-64h, lessons learned по Spring `@ConditionalOnBean`, `catch (AmqpException)`, parallel agents efficiency)
 - [x] `docs/milestones/README.md` → M09 ✅ 2026-04-24 (уже в G8)
 - [x] `CLAUDE.md` → M09 статус ✅ (уже в G8)

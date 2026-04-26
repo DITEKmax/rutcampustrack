@@ -43,13 +43,13 @@
 - `services/*/src/main/resources/application.yml`
 - `services/*/src/main/resources/db/migration/V1__baseline.sql`
 - Enum-ы в `*-api-contract/src/.../enums/`
-- `docs/phase-0-report.md`
+- `docs/phase-reports/phase-0-report.md`
 
 ---
 
 ## Фаза 1: Auth Service + API Gateway ✅
 
-**Завершена:** 2026-03-30 | **Отчёт:** `docs/phase-1-report.md`
+**Завершена:** 2026-03-30 | **Отчёт:** `docs/phase-reports/phase-1-report.md`
 
 ### Цель
 
@@ -175,7 +175,7 @@ services/api-gateway/src/main/java/ru/rutcampustrack/gateway/
 
 ## Фаза 2: Academic Service ✅
 
-**Завершена:** 2026-03-31 | **Отчёт:** `docs/phase-2-report.md`
+**Завершена:** 2026-03-31 | **Отчёт:** `docs/phase-reports/phase-2-report.md`
 
 ### Цель
 
@@ -268,7 +268,7 @@ services/api-gateway/src/main/java/ru/rutcampustrack/gateway/
 
 ## Фаза 4: Attendance Service ✅
 
-**Завершена:** 2026-04-04 | **Отчёт:** `docs/phase-4-report.md`
+**Завершена:** 2026-04-04 | **Отчёт:** `docs/phase-reports/phase-4-report.md`
 
 ### Цель
 
@@ -322,7 +322,7 @@ services/api-gateway/src/main/java/ru/rutcampustrack/gateway/
 
 ## Фаза 5: Web Push Backend ✅
 
-**Завершена:** 2026-04-05 | **Отчёт:** `docs/phase-5-report.md` | **Milestone:** v6.0 Phase 27
+**Завершена:** 2026-04-05 | **Отчёт:** `docs/phase-reports/phase-5-report.md` | **Milestone:** v6.0 Phase 27
 
 ### Цель
 
@@ -420,7 +420,7 @@ Push-уведомления в реальном времени: в Telegram че
 
 ## Фаза 7: PWA Mobile Client «RutTrack» ✅
 
-**Завершена:** 2026-04-06 | **Отчёт:** `docs/phase-7-report.md` | **Milestone:** v6.0 Phases 28-32
+**Завершена:** 2026-04-06 | **Отчёт:** `docs/phase-reports/phase-7-report.md` | **Milestone:** v6.0 Phases 28-32
 
 ### Цель
 

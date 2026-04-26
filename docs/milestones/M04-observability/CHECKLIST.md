@@ -124,7 +124,7 @@ D5(a) — полная migration на shared-events.DomainEvent (см. DECISIONS
 - [x] Tempo retention 14d уже настроен в G5 (336h в `infra/tempo/tempo.yml`).
 - [x] `infra/grafana/provisioning/dashboards/business-kpis.json` — 8 панелей: checkin rate by status, login/OTP rate by role/outcome, students_in_red_zone stat, active_ws_sessions stat, outbox_lag_seconds by job, JVM heap %, RabbitMQ queue depth, KI-2 fallback rate. UID `business-kpis-m04`, автообновление 30s, окно now-6h. JSON валиден.
 - [x] DiskUsageHigh alert > 80% уже в G9 rules (`service-health.yml` infra group).
-- [ ] `docs/future-ideas.md` NEW-66 → Группа 12 docs pass.
+- [ ] `docs/archive/future-ideas.md` NEW-66 → Группа 12 docs pass.
 
 ## Группа 11 — Audit (bug-hunter + security-auditor + code-reviewer) ✅
 

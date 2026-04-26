@@ -43,7 +43,7 @@ frontend-stack.
 
 ### openapi-typescript type-gen (QC2)
 - `openapi-typescript` + `openapi-fetch` в **PWA + web-panel** (mini-app
-  опущен — copy+adapt из PWA после M12, см. `docs/future-ideas.md`
+  опущен — copy+adapt из PWA после M12, см. `docs/archive/future-ideas.md`
   "Mini-app unification")
 - Генерировать `.types.ts` из `/v3/api-docs` всех 5 backend-сервисов
 - npm scripts `generate:types` в каждом frontend
@@ -145,7 +145,7 @@ frontend-stack.
 
 ### Frontend — mini-app (`frontends/mini-app/`)
 - **Out of scope M07.** Mini-app мигрируется copy+adapt из PWA после
-  закрытия M12 + стабилизации PWA в проде. См. `docs/future-ideas.md`
+  закрытия M12 + стабилизации PWA в проде. См. `docs/archive/future-ideas.md`
   → "Mini-app unification: copy+adapt from PWA after M12".
 
 ### Frontend — landing (`frontends/landing/`)

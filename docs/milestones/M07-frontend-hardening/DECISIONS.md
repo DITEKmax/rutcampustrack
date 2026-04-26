@@ -37,7 +37,7 @@ OWNER-ANSWERS QC1-7 (строки 1809-2053), QE3/4 (2430-2510), P2-7A/1..8
    произойдёт copy+adapt из PWA **после M12** + стабилизации PWA.
    Альтернативы: полная migration — дублирование работы; generate-only
    — не value, формально закрывает ticket но не удаляет interface-копии.
-   Записано в `docs/future-ideas.md` → "Mini-app unification: copy+adapt
+   Записано в `docs/archive/future-ideas.md` → "Mini-app unification: copy+adapt
    from PWA after M12".
 
 3. **axe-core baseline (G10):** `CRITICAL + SERIOUS = 0`.

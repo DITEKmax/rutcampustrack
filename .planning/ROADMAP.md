@@ -324,11 +324,11 @@ Plans:
 Plans:
 - [x] 57-01-PLAN.md — Landing: GSAP #architecture-flow section + HEADMAN role card update (LAND-v9-02, LAND-v9-05)
 - [x] 57-02-PLAN.md — Docs sync: CLAUDE.md + url-layout.md + job-stories.md + PROJECT.md (DOCS-v9-01..04)
-- [x] 57-03-PLAN.md — Responsive/dark/reduced-motion UAT + docs/phase-57-report.md (LAND-v9-04, LAND-v9-02, DOCS-v9-01)
+- [x] 57-03-PLAN.md — Responsive/dark/reduced-motion UAT + docs/phase-reports/phase-57-report.md (LAND-v9-04, LAND-v9-02, DOCS-v9-01)
 **UI hint**: yes
 
 ### Phase 58: Admin Functionality — BUG-006 Fixes ✅ **COMPLETED 2026-04-14**
-**Status**: Complete — все 7 пунктов BUG-006 закрыты, backend build зелёный (91 tasks), frontend 346/346 tests зелёные. Миграции V8/V9/V10 + gap-closure V11 применены. UAT live-smoke отложен до следующей сессии. См. `docs/phase-58-report.md`.
+**Status**: Complete — все 7 пунктов BUG-006 закрыты, backend build зелёный (91 tasks), frontend 346/346 tests зелёные. Миграции V8/V9/V10 + gap-closure V11 применены. UAT live-smoke отложен до следующей сессии. См. `docs/phase-reports/phase-58-report.md`.
 **Goal**: Закрыть все 7 пунктов BUG-006 — серверный поиск пользователей, человеческие сообщения об ошибках при создании, обязательный Telegram ID для студентов, отображение init password в таблице, единое поле «Название группы» (миграция V8), автопромоция курсов (новый scheduled job + V9), валидация семестров (V10 EXCLUDE constraint).
 **Depends on**: Phase 57; bug-fix session 2026-04-13/14 (Фазы A и B уже закоммичены, нужны их артефакты — initialPassword в UserResponse, avatar_id миграция).
 **Source**: `.planning/bug-reports/BUG-006-admin/report.md` (с секцией «Ответы автора»), seed-документы в `.planning/milestones/v9.0-phases/58-admin-bug-006-fixes/`.

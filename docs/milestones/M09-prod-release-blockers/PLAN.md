@@ -17,7 +17,7 @@
 **Исключено (уже покрыто):**
 - `10 P0-3` CSP nginx web-panel + NEW-55 PWA vhost — **M07** scope.
 - `01 P0-1` создание `auth-api-contract` — **отложен в v0.1 backlog**
-  (переносится в `docs/future-ideas.md` как Группа 6 M09).
+  (переносится в `docs/archive/future-ideas.md` как Группа 6 M09).
 - `nginx/postgres/mongo/redis/rabbitmq digest-pin` — **M08** Группа 11.
 
 **Включено:**
@@ -93,7 +93,7 @@
   gateway/bot 256M, auth 256M)
 
 ### Future-ideas backfill
-- **01 P0-1** `auth-api-contract` refactor раздел — в `docs/future-ideas.md`
+- **01 P0-1** `auth-api-contract` refactor раздел — в `docs/archive/future-ideas.md`
 - **P2-2/2** auth-service OpenAPI — связан с 01 P0-1, тоже v0.1
 
 ## Модули / изменения
@@ -144,7 +144,7 @@
 - `docs/operations/runbooks/bot-webhook-migration.md` — NEW-154
 - `docs/operations/deploy/resource-limits.md` — NEW-157
 - `docs/architecture/architecture.md` — раздел «Lesson lifecycle» (NEW-118)
-- `docs/future-ideas.md` — разделы «Auth API contract-first (v0.1)»
+- `docs/archive/future-ideas.md` — разделы «Auth API contract-first (v0.1)»
   + «P2-2/2 auth OpenAPI (v0.1)»
 
 ### Infra
@@ -191,7 +191,7 @@
       Prometheus alert rule.
 - [ ] `docker-compose.prod.yml` имеет `mem_limit` per-service +
       `restart: unless-stopped`; JVM opts `-XX:MaxRAMPercentage=75.0`.
-- [ ] `docs/future-ideas.md` содержит разделы про auth-api-contract +
+- [ ] `docs/archive/future-ideas.md` содержит разделы про auth-api-contract +
       P2-2/2.
 - [ ] Post-mortem секция в PLAN.md, tag `v0.0.0` или `v0.0.0-rc.1`.
 
@@ -220,7 +220,7 @@
 - `services/notification-bot/tests/integration/conftest.py` — NEW-53
 - `.env.prod.example` обновление — NEW-51, SWAGGER_HTPASSWD
 - `docker-compose.prod.yml` — mem_limit + JVM opts per-service
-- `docs/future-ideas.md` — «Auth API contract-first (v0.1)» +
+- `docs/archive/future-ideas.md` — «Auth API contract-first (v0.1)» +
   «P2-2/2 auth OpenAPI (v0.1)» разделы
 
 ---

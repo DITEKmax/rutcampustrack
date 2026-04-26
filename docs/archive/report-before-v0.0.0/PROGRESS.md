@@ -399,7 +399,7 @@
 
 **Группа 8 (оставшиеся P0) — ЗАКРЫТА:**
 - Q19a (08 P0-2, схема `otp.requested`) → **(b) TO-FIX** — JSON Schema + `event_version: 1` + contract-тест. NEW-47: retrofit версионирования в остальные 14+ events (v0.1). NEW-48: `docs/architecture/event-schemas.md` с versioning policy.
-- Q19b (09 P0-3, ролевые guards PWA) → **(b) TO-FIX** — `useAuth()` + `RoleGuard`. PWA scope = STUDENT + headman. Admin/teacher → `docs/future-ideas.md` (новый раздел добавлен). NEW-50: audit Angular guards в web-panel.
+- Q19b (09 P0-3, ролевые guards PWA) → **(b) TO-FIX** — `useAuth()` + `RoleGuard`. PWA scope = STUDENT + headman. Admin/teacher → `docs/archive/future-ideas.md` (новый раздел добавлен). NEW-50: audit Angular guards в web-panel.
 - Q19c (10 P0-3, CSP web-panel) → **(a) TO-FIX** — строгая CSP + HSTS + остальные headers в nginx. NEW-54: report-uri (v0.1). NEW-55: аналогичный CSP для PWA vhost. NEW-56: CI-check на headers.
 - Q19d (12 P0-2, «Открыть в Telegram») → **(a) TO-FIX** — `https://t.me/<bot_username>`. NEW-51: документировать username.
 - Q19e (14 P0-1, `latecheckin/` без тестов) → **(b) TO-FIX** — unit + IT + contract-тест `late_checkin.approved`. NEW-52: event-schemas для всех late-checkin events.

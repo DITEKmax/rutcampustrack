@@ -192,5 +192,5 @@ void setupClock() {
 ## Источники
 
 - M08 PLAN.md Группа 4 — `docs/milestones/M08-test-infrastructure/PLAN.md`
-- OWNER-ANSWERS P2-8/4 — `docs/report-before-v0.0.0/OWNER-ANSWERS.md`
+- OWNER-ANSWERS P2-8/4 — `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md`
 - Memory `project_week_parity_convention.md` — convention reference

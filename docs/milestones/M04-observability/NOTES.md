@@ -275,7 +275,7 @@ grep -rln "import logging\|logger =" services/notification-bot/ | head
 **Проверка:** `docker compose -f docker-compose.yml up notification-bot`
 → `docker logs rct-notification-bot` → первая строка валидный JSON.
 
-**Spec из аудита:** `docs/report-before-v0.0.0/06-notification-bot.md` +
+**Spec из аудита:** `docs/archive/report-before-v0.0.0/06-notification-bot.md` +
 `OWNER-ANSWERS.md` строки 1389-1395 (QA2 — Python instrumentation) +
 1530-1564 (QA7 — structlog).
 
@@ -333,7 +333,7 @@ grep -rln "import logging\|logger =" services/notification-bot/ | head
   панелей по метрикам G8 (checkin/login rate, red zone, active ws,
   outbox lag, heap, RabbitMQ queue)
 - Disk alert > 80% (cadvisor)
-- `docs/future-ideas.md` запись
+- `docs/archive/future-ideas.md` запись
 
 **G11 — Audit.** bug-hunter + security-auditor + code-reviewer на diff
 M04. Также pre-existing backlog из G1-G8:
@@ -378,8 +378,8 @@ JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9" ./gradlew.bat build -x test
 ### Контекст Группы 9 (следующая)
 
 **Spec из аудита:**
-- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` QA4 (строки 1445-1510)
-- `docs/report-before-v0.0.0/99-executive-summary.md` P1-A блок
+- `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md` QA4 (строки 1445-1510)
+- `docs/archive/report-before-v0.0.0/99-executive-summary.md` P1-A блок
 
 **Ключевые решения уже закрыты (см. DECISIONS.md):**
 - D2=(a) — `POST /internal/alert` в notification-service → RabbitMQ
@@ -501,7 +501,7 @@ JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9" ./gradlew.bat build -x test
 - `CHANGELOG.md [Unreleased]` M04 секция
 - `CLAUDE.md` «Текущий статус» → M04 ✅ + дата
 - `docs/milestones/README.md` → ✅ + дата
-- `docs/future-ideas.md` NEW-66 retention review
+- `docs/archive/future-ideas.md` NEW-66 retention review
 - PLAN.md Post-mortem секция
 - `git tag v0.0.0-alpha.5` локально (без push)
 - Hand-off для M05/M06/M07
@@ -532,6 +532,6 @@ JAVA_HOME="C:/Users/maksd/.jdks/ms-21.0.9" ./gradlew.bat build -x test
 - `docs/milestones/M04-observability/CHECKLIST.md` — 12 групп, статус каждой.
 - `docs/milestones/M04-observability/NOTES.md` — этот файл, surprises + hand-off.
 - `docs/milestones/M04-observability/DECISIONS.md` — D1..D5 закрыты.
-- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` — строки 1349-1564 (QA1..QA7).
-- `docs/report-before-v0.0.0/99-executive-summary.md` — пачка P1-A.
+- `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md` — строки 1349-1564 (QA1..QA7).
+- `docs/archive/report-before-v0.0.0/99-executive-summary.md` — пачка P1-A.
 - `git log --oneline -15` — последние 8 коммитов M04 + до этого M03b.

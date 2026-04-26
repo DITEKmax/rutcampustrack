@@ -41,7 +41,7 @@ consumer в notification-bot форматирует и шлёт в Telegram.
 для всех «низких» алертов через `mute_time_intervals` в alertmanager.yml.
 
 **Обоснование:** для ~10 алертов M04 гибкость per-alert не оправдана.
-Триггер пересмотра в `docs/future-ideas.md` — если pet-проект вырастет
+Триггер пересмотра в `docs/archive/future-ideas.md` — если pet-проект вырастет
 в production с дежурствами.
 
 **Применение:** Группа 9 CHECKLIST — секция `mute_time_intervals` в
@@ -175,7 +175,7 @@ TZ — Москва (UTC+3, по большинству пользователе
 | **(c) Только `critical` шлёт ночью, всё остальное — по утрам в digest** | Минимум шума | Требует новой digest-логики (сложнее реализация) |
 
 **Рекомендация:** **(a)** для v0.0.0-alpha.5 + триггер пересмотра в
-`docs/future-ideas.md` если pet-проект вырастет в production. Для текущих
+`docs/archive/future-ideas.md` если pet-проект вырастет в production. Для текущих
 ~10 alerts (M04 scope) дополнительная гибкость не оправдана.
 
 **Нужно решение перед стартом Группы 9.**

@@ -2,7 +2,7 @@
 
 ## Сводка
 
-Лендинг — единый статический артефакт `frontends/landing/dist/index.html` (~1647 строк, 67 KB) + `favicon.svg` + nginx-конфиг. Никакого build pipeline: inline-CSS, inline-JS, внешние CDN для шрифтов, иконок и GSAP. Контракт страницы закреплён в `docs/phase-57-report.md` — static HTML остаётся «единственным артефактом» ради простоты доставки. Это разумный выбор для маркетинговой страницы, но он обнажает несколько проблем, которые на backend-стороне закрыты CSP/security-заголовками.
+Лендинг — единый статический артефакт `frontends/landing/dist/index.html` (~1647 строк, 67 KB) + `favicon.svg` + nginx-конфиг. Никакого build pipeline: inline-CSS, inline-JS, внешние CDN для шрифтов, иконок и GSAP. Контракт страницы закреплён в `docs/phase-reports/phase-57-report.md` — static HTML остаётся «единственным артефактом» ради простоты доставки. Это разумный выбор для маркетинговой страницы, но он обнажает несколько проблем, которые на backend-стороне закрыты CSP/security-заголовками.
 
 **Главная проблема.** Корневой reverse-proxy nginx (`nginx/conf.d/default.conf:40`) ставит CSP со строгим `default-src 'self'` и whitelisted только inline-стили/хешированный inline-скрипт. Но сам лендинг тянет всё с `api.fontshare.com`, `fonts.googleapis.com`, `fonts.gstatic.com`, `unpkg.com` и `cdn.jsdelivr.net`. В продакшене все эти ресурсы заблокируются браузером — страница останется без шрифтов, иконок и анимаций GSAP. Визуальный «эффект стантры» умрёт, JS `window.addEventListener('load', …)` упадёт на `typeof gsap === 'undefined'`-ветке, но hero-заголовок и `[data-count]` счётчики навсегда останутся скрыты / в начальном состоянии (`opacity:0`, `transform: translateY(110%)`). Это блокер релиза.
 

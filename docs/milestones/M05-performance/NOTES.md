@@ -15,9 +15,9 @@
 
 ## Source of truth для M05
 
-- `docs/report-before-v0.0.0/OWNER-ANSWERS.md` строки 3673-4028 (P2-10/1..8).
-- `docs/report-before-v0.0.0/99-executive-summary.md` строка 117 (P2-10 summary).
-- `docs/report-before-v0.0.0/COVERAGE-AUDIT.md` — пункты 02 P2-3..7, 03 P2-2/4/5/6/7/8/9, 04 P2-1/2/9, 05 P2-7, 09 P2-11, 10 P2-14.
+- `docs/archive/report-before-v0.0.0/OWNER-ANSWERS.md` строки 3673-4028 (P2-10/1..8).
+- `docs/archive/report-before-v0.0.0/99-executive-summary.md` строка 117 (P2-10 summary).
+- `docs/archive/report-before-v0.0.0/COVERAGE-AUDIT.md` — пункты 02 P2-3..7, 03 P2-2/4/5/6/7/8/9, 04 P2-1/2/9, 05 P2-7, 09 P2-11, 10 P2-14.
 
 ## Открытые развилки для D1..DN
 
@@ -270,7 +270,7 @@ handling pre-configured vs dynamic cache creation при wrapping.
 работают, что и есть главная ценность OWNER-ANSWERS motivation). В
 CHECKLIST остаётся галочка как вычеркнутая с reference на этот раздел.
 
-**Future idea:** зафиксировать в `docs/future-ideas.md` вариант:
+**Future idea:** зафиксировать в `docs/archive/future-ideas.md` вариант:
 
 - Подход через `@Aspect` над `CacheAspectSupport` без wrapping
   `CacheManager`/`Cache`. Minimally invasive — не ломает Redis TTL

@@ -264,10 +264,10 @@ Schedule template CRUD, lesson auto-generation, status transitions, RabbitMQ eve
 5 phases, 12 plans, 37 requirements, 50 tests. Full CRUD + gRPC + Redis caching + RabbitMQ events. See `.planning/MILESTONES.md`.
 
 ### v1.0: Auth Service + API Gateway — ✅ SHIPPED 2026-03-30
-4 phases, 4 plans, 26 tests. Full auth flow: login → JWT → Gateway validation → header injection → downstream routing. See `docs/phase-1-report.md`.
+4 phases, 4 plans, 26 tests. Full auth flow: login → JWT → Gateway validation → header injection → downstream routing. See `docs/phase-reports/phase-1-report.md`.
 
 ### Previous: Phase 0 (completed)
-Scaffold, contracts, infrastructure. See `docs/phase-0-report.md`.
+Scaffold, contracts, infrastructure. See `docs/phase-reports/phase-0-report.md`.
 
 ## Key Decisions
 

@@ -34,4 +34,18 @@ _(пока нет; добавлю если возникнут при выпол�
 
 ### Технические долги, открываемые в M14
 
-_(заполняется по мере работы)_
+**G1 surprise — `application-test.yml` асимметрия между сервисами:**
+academic/schedule/attendance имеют `application-test.yml` с явным
+`legacy-headers-enabled: true` (artifact M03a — когда defaults флипались
+впервые, тесты получили локальный override, чтобы не переписывать на
+Internal JWT). Notification-app аналогичного override НЕ имел — пришлось
+добавить inline через `@SpringBootTest properties` в SecurityIdorIT.
+Долгосрочное решение — мигрировать все IDOR/security IT на `InternalJwtTestFactory`
+из shared-security testFixtures (тогда test-profile override становится
+ненужным). Записано в `docs/deferred-ideas.md` как кандидат на v0.1
+test cleanup PR.
+
+### Измерения
+
+- **G1 IT runtime:** 5m33s (4× SecurityIdorIT + 3× *StrictModeIT параллельно через single-task gradle invocation, `--no-daemon`).
+- **G1 commit footprint:** 5 application.yml + 1 .env.prod.example + 1 test fixup = 7 files / 34 insertions / 10 deletions.

@@ -6,17 +6,18 @@
 Порядок: сначала backend security defaults (минимальные изменения,
 максимальный impact), потом supply chain, потом тесты, потом финал.
 
-## Группа 1 — CSO CRIT-01: legacy headers strict default (15 мин)
+## Группа 1 — CSO CRIT-01: legacy headers strict default ✅ (commit `dc40929`)
 
-- [ ] `services/academic-service/academic-app/src/main/resources/application.yml` — `legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:false}`
-- [ ] `services/schedule-service/schedule-app/src/main/resources/application.yml` — same
-- [ ] `services/attendance-service/attendance-app/src/main/resources/application.yml` — same
-- [ ] `services/notification-service/notification-app/src/main/resources/application.yml` — same
-- [ ] `services/api-gateway/src/main/resources/application.yml` — `strip-legacy-headers: ${GATEWAY_STRIP_LEGACY_HEADERS:true}`
-- [ ] `.env.prod.example` — добавить комментарий о strict-mode invariant
-- [ ] Запустить `SecurityIdorIT` во всех 4 сервисах: `./gradlew :services:academic-service:academic-app:integrationTest --tests SecurityIdorIT` (× 4)
-- [ ] Manual UAT: `docker compose up -d`, из любого peer container `curl -H "X-User-Role: ADMIN" http://academic-service:9091/api/academic/users` → ожидаем 401
-- [ ] Commit: `fix(security): legacy headers strict by default (M14 G1, CSO CRIT-01)`
+- [x] `services/academic-service/academic-app/src/main/resources/application.yml` — `legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:false}`
+- [x] `services/schedule-service/schedule-app/src/main/resources/application.yml` — same
+- [x] `services/attendance-service/attendance-app/src/main/resources/application.yml` — same
+- [x] `services/notification-service/notification-app/src/main/resources/application.yml` — same
+- [x] `services/api-gateway/src/main/resources/application.yml` — `strip-legacy-headers: ${GATEWAY_STRIP_LEGACY_HEADERS:true}`
+- [x] `.env.prod.example` — добавить комментарий о strict-mode invariant
+- [x] Запустить `SecurityIdorIT` во всех 4 сервисах + `*UserContextFilterStrictModeIT` × 3 — BUILD SUCCESSFUL (5m33s)
+- [x] ~~Manual UAT через docker-compose~~ — заменено на `*StrictModeIT` тесты, которые напрямую покрывают exploit scenario CRIT-01 (X-User-Role=ADMIN → ждём 401, получаем 401). academic/schedule/attendance × 3 тест-метода каждый. Notification IDOR тоже зелёный с legacy-mode override.
+- [x] **Решение по notification-app:** добавлен inline-property в `SecurityIdorIT` (`@SpringBootTest properties`) с `legacy-headers-enabled=true` — у остальных 3 сервисов `application-test.yml` уже выставлял это (M03a artifact), у notification — не было.
+- [x] Commit: `fix(security): legacy headers strict by default (M14 G1, CSO CRIT-01)` — `dc40929`
 
 ## Группа 2 — CSO CRIT-02: SHA-pin appleboy/ssh-action (15 мин)
 

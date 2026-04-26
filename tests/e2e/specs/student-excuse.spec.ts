@@ -90,9 +90,9 @@ test.describe('Student excuse + file upload', () => {
 
     await assertNoA11yCriticalOrSerious(page);
 
-    // Headman в отдельном browser context'е approves.
-    // Note: TEST_USERS.headman == TEST_USERS.student (один и тот же seed
-    // user is_headman=true). Используем .student для clarity.
+    // Headman в отдельном browser context'е approves. Seed user `student`
+    // имеет is_headman=true, поэтому используем его (M14 G8 убрал
+    // TEST_USERS.headman дубликат).
     const headmanContext = await browser.newContext();
     const headmanPage = await headmanContext.newPage();
     try {

@@ -15,7 +15,9 @@ import { assertNoA11yCriticalOrSerious } from '../fixtures/axe';
 
 test.describe('Role: HEADMAN', () => {
   test.beforeEach(async ({ page }) => {
-    await loginAs(page, TEST_USERS.headman);
+    // M14 G8 (G26 F03): seed user `student` имеет is_headman=true и
+    // landing page /headman/dashboard. TEST_USERS.headman дубликат удалён.
+    await loginAs(page, TEST_USERS.student);
   });
 
   test('can access headman-only paths', async ({ page }) => {

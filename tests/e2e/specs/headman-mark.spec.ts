@@ -32,7 +32,7 @@ import { assertNoA11yCriticalOrSerious } from '../fixtures/axe';
 
 test.describe.skip('Headman bulk-mark (web-panel — by-design out of scope)', () => {
   test('headman marks all students present via batch endpoint', async ({ page }) => {
-    await loginAs(page, TEST_USERS.headman);
+    await loginAs(page, TEST_USERS.student);
 
     // Перейти на schedule (уже должен быть landing page по user.expectedLandingPath)
     await page.goto('/headman/schedule');
@@ -57,7 +57,7 @@ test.describe.skip('Headman bulk-mark (web-panel — by-design out of scope)', (
   });
 
   test('headman can review marks and see WebSocket live-update', async ({ page }) => {
-    await loginAs(page, TEST_USERS.headman);
+    await loginAs(page, TEST_USERS.student);
     await page.goto('/headman/dashboard');
 
     // Дашборд показывает live count — после bulk-mark из предыдущего теста

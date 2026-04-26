@@ -296,6 +296,11 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC"
+      # M14 G8 (G26 F01): override production burstCapacity (60) для
+      # параллельных Playwright smoke (~32 запросов от одного IP runner'а).
+      # Production application.yml использует 60 default — этот override
+      # активен только в e2e compose. См. comment в gateway YAML.
+      AUTH_LOGIN_BURST_CAPACITY: "600"
     expose:
       - "8080"
     networks:

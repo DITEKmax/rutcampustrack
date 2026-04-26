@@ -31,6 +31,11 @@ export interface TestUser {
 //
 // Seed-юзер `student` имеет is_headman=true → попадает на /headman/dashboard.
 // Отдельного non-headman student'а в seed нет.
+//
+// M14 G8 (G26 F03): отдельная запись `headman` удалена — она дублировала
+// `student` 1-в-1 (один и тот же seed user). Все headman-flow тесты
+// используют `TEST_USERS.student` напрямую — это явнее, что староста
+// и студент это один и тот же seed account.
 export const TEST_USERS: Record<string, TestUser> = {
   student: {
     login: 'student',
@@ -50,12 +55,5 @@ export const TEST_USERS: Record<string, TestUser> = {
     password: 'password',
     role: 'ADMIN',
     expectedLandingPath: '/admin/dashboard',
-  },
-  headman: {
-    login: 'student',
-    password: 'password',
-    role: 'STUDENT',
-    isHeadman: true,
-    expectedLandingPath: '/headman/dashboard',
   },
 };

@@ -113,13 +113,19 @@ spring:
             - StripPrefix=1
             - name: RequestRateLimiter
               args:
-                # M13 G25.22 — burstCapacity 600 / requestedTokens 12 = 50 запросов
-                # залпом перед ban. Раньше было 60/12=5, что не хватало для
-                # параллельных smoke-тестов с retry (8 specs × 2 workers × 2 retries
-                # = до 32 запросов от одного IP CI runner'а). Replenish=1/sec
-                # сохраняет steady-state ≈ 5 req/min/IP против distributed brute.
+                # M14 G8 (G26 F01): production default — burstCapacity=60.
+                # Формула: 60 / requestedTokens=12 = 5 запросов залпом, что
+                # точно совпадает с brute-force window 5/мин/IP per CSO threat
+                # model. M13 G25.22 поднял до 600 как CI workaround для
+                # параллельных smoke (8 specs × 2 workers × 2 retries = до
+                # 32 запросов). Workaround нельзя оставлять в production —
+                # ослабляет brute-force защиту в 10×.
+                #
+                # Override для e2e: docker-compose.e2e.yml выставляет
+                # AUTH_LOGIN_BURST_CAPACITY=600 (env var). Production остаётся
+                # на 60 без явного override.
                 redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 600
+                redis-rate-limiter.burstCapacity: ${AUTH_LOGIN_BURST_CAPACITY:60}
                 redis-rate-limiter.requestedTokens: 12
                 key-resolver: "#{@ipKeyResolver}"
 

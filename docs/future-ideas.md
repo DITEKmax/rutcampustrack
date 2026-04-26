@@ -860,3 +860,70 @@ Re-evaluate через 3 месяца после v0.0.0 GA.
 horizontal scale потребует надёжных integration tests.
 
 ---
+
+### CSO HIGH-06: fail-fast secrets через ApplicationContextInitializer (M14 G4 deferred)
+
+**Контекст:** M14 G4 пытался закрыть CSO HIGH-06 заменой
+`${SECRET:dev_default}` → fail-fast в 6 application.yml, но **обнаружилось
+фундаментальное ограничение Spring Boot 3.x**:
+
+1. `${VAR:?error}` syntax — это **bash**, не Spring. Spring трактует
+   `?error` как часть default value, fail-fast НЕ срабатывает.
+2. `${VAR}` без default — Spring Boot **не fail-fast** на unresolved
+   placeholder в YAML/`@ConfigurationProperties`. Property остаётся как
+   literal string `"${VAR}"` (длина 25 символов в случае
+   `${INTERNAL_ISSUER_SECRET}`). Подтверждено в [spring-boot#10463](https://github.com/spring-projects/spring-boot/issues/10463),
+   [#18816](https://github.com/spring-projects/spring-boot/issues/18816),
+   [feature request](https://lightrun.com/answers/spring-projects-spring-boot-configurationproperties-should-have-an-option-to-fail-fast-for-unresolvable-properties).
+3. **Ad hoc validation** через `@PostConstruct validate()` (как в
+   `InternalIssuerProperties.java:39-57`) работает но требует custom Java
+   класса для каждого secret — multiplied across 5+ services = много кода.
+
+**Идея на v0.1:** добавить shared `RequiredSecretsValidator` —
+`ApplicationContextInitializer` в `shared-web`, который **до** создания
+beans проверяет наличие всех env vars из statically declared list
+(`REDIS_PASSWORD`, `RABBITMQ_PASSWORD`, `INTERNAL_ISSUER_SECRET`,
+`GRPC_SECRET`, `ALERT_WEBHOOK_SECRET`, `SPRING_DATA_MONGODB_URI`,
+`POSTGRES_*_PASSWORD`). Если любой missing → fail с exit code 1 + явная
+ошибка в первой строке логов («REDIS_PASSWORD is required but not set»).
+
+Альтернатива (проще): bash-обёртка entrypoint в каждом Dockerfile
+(`/app/entrypoint.sh`), которая проверяет env vars `[ -z "$REDIS_PASSWORD" ] && exit 1`
+перед `exec java -jar`. Менее идиоматично для Spring, но работает
+независимо от Spring внутренностей.
+
+**Что закрывает:** CSO HIGH-06 — operator forgot env-file → service
+silent boot на dev credentials → JWT signed predictable key, downstream
+accept'ит. С fail-fast — immediate hard signal, fix перед commit
+рабочий конфиг.
+
+**Что НЕ закрывает (mitigated другими способами):**
+- `INTERNAL_ISSUER_SECRET` уже валидируется на runtime через
+  `InternalIssuerProperties.validate()` (length ≥32 bytes) — operator
+  получит ошибку при старте если placeholder не resolved (literal
+  `"${INTERNAL_ISSUER_SECRET}"` = 25 bytes, fail validation).
+- `GRPC_SECRET` empty fallback — gRPC client/server stantap'ится с empty
+  secret, но downstream gRPC server validation (via `GrpcSecretFailFast`
+  test contract M08) выявит mismatch при первом call.
+- `SPRING_DATA_MONGODB_URI` — Mongo connection fail при first DB op.
+- `*_PASSWORD` — DB connection fail при first query.
+
+То есть HIGH-06 worst-case scenario — **краткое окно между deploy и
+first auth/db op**, где сервис "healthy" но broken. На VPS с
+healthcheck это проявится как `unhealthy` контейнер в течение
+первых 30-60 секунд → operator увидит. Не silent compromise.
+
+**Оценка работы:**
+- Variant A (Java initializer): ~2-3ч (1 файл shared-web + unit test +
+  integration test для каждого сервиса).
+- Variant B (bash entrypoint): ~1ч (6 Dockerfile changes + script
+  template). Менее тестируемо, но всё-таки fail-fast.
+
+**Когда делать:** week 1-2 после first deploy, либо при подготовке к
+horizontal scale. Не блокирует v0.0.0 first deploy: М14 G1 (legacy
+headers strict) + G2/G3 (supply chain) + М13 G15 (.env.prod validator
++ preflight script) дают defence-in-depth — operator forgetting
+env-file ловится preflight ДО deploy на VPS, а не silent prod
+compromise.
+
+---

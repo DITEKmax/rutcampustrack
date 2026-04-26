@@ -90,6 +90,72 @@ clone парсит — production code тоже парсит (та же JDK 21, 
 Negative test (PKCS#1) — `InvalidKeySpecException` подтверждает что
 clone семантически корректный.
 
+### Group 4 — DEFERRED post-mortem (~1ч инвестировано, всё откатано)
+
+**Цель:** заменить `${SECRET:dev_default}` → fail-fast в 6 application.yml,
+чтобы deploy без `--env-file` упал с явной ошибкой вместо silent boot
+на dev secrets.
+
+**План:** простой YAML edit в 6 файлах + UAT через docker run без env.
+
+**Что прошло как ожидалось:**
+- Inventory dev fallback'ов через grep дал 21 точку (POSTGRES_*, REDIS,
+  RABBITMQ, INTERNAL_ISSUER, GRPC, ALERT_WEBHOOK, MONGODB_URI).
+- Все 6 YAML edits применились чисто, gradle test для всех 6 сервисов
+  прошли BUILD SUCCESSFUL (testcontainers @DynamicPropertySource override
+  работает корректно).
+- Rebuild auth image (~6 мин) + UAT setup без проблем.
+
+**Где прокололся:**
+
+1. **Использовал `${VAR:?msg}` syntax** — это **bash variable substitution**,
+   НЕ Spring Boot. Spring трактует `?msg` как часть default value
+   (literal string `"?msg"` is the default). НИЧЕГО не fail-fast.
+
+2. **Тогда переключился на `${VAR}` без default** (на основе web-search,
+   утверждавшего что Spring fail-fast). Сделал regex-replace через Python
+   во всех 6 файлах, rebuild, повторный UAT. **ТОЖЕ не сработал**:
+   placeholder остаётся literal `"${VAR}"` string в значении property,
+   Spring не throws.
+
+3. **Доказательство в логах**: `IllegalStateException:
+   rutcampustrack.security.internal-issuer.secret must be at least 32
+   bytes (got 25)` — 25 символов = ровно длина literal
+   `"${INTERNAL_ISSUER_SECRET}"`. То есть Spring resolved placeholder в
+   literal string и отдал в `InternalIssuerProperties.validate()`,
+   который **поймал through length check**. Если бы length check там
+   не было (как у других secrets), Spring продолжил бы boot с broken
+   value.
+
+**Почему web-search ввёл в заблуждение:** результаты ссылались на
+`@Value` annotations + `.properties` files (где Spring дей действительно
+fail-fast). Для **YAML** + **`@ConfigurationProperties`** поведение
+другое — placeholder остаётся literal. Это zaregistrated issue
+[spring-boot#10463](https://github.com/spring-projects/spring-boot/issues/10463) и
+[#18816](https://github.com/spring-projects/spring-boot/issues/18816),
+открыто с 2017+.
+
+**Решение для M14:** **defer всю G4** в pre-v0.1. Спецификация в
+`docs/future-ideas.md` § «CSO HIGH-06: fail-fast secrets через
+ApplicationContextInitializer» с двумя вариантами impl (Java initializer
+vs bash entrypoint). Полный revert YAML changes через `git checkout`.
+
+**Mitigation в v0.0.0 (без G4):**
+- M13 G15 preflight script + .env.prod validator ловит missing env
+  vars **ДО** SSH deploy → primary защита от operator forgetting env-file.
+- `InternalIssuerProperties.validate()` runtime check на critical secret.
+- `GrpcSecretFailFast` test contract (M08).
+- Healthcheck unhealthy в течение 30-60 сек → second signal.
+
+**Урок для будущих сессий:** при работе с syntax-критичными изменениями
+(`${VAR:?...}` vs `${VAR}`) — первый шаг это **доказательный UAT**, не
+gradle test. Gradle tests passed — но они не testят production
+boot path с missing env. Только реальный `docker run` без env
+показал что fix не работает.
+
+**Footprint G4:** 0 commit'ов functional changes (всё revert'нуто).
+1 commit docs (CHECKLIST + NOTES + future-ideas + NEXT-SESSION).
+
 **G2 surprise — версия appleboy/ssh-action:** hand-off зафиксировал
 target `v1.2.0`, pre-flight `curl /releases/latest` показал `v1.2.5`
 (maintainer выпустил три patch-релиза за время подготовки M14 PLAN'а).

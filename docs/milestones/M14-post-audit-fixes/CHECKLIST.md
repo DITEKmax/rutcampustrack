@@ -40,18 +40,47 @@
 - [x] **Бонус-negative test**: тот же clone на PKCS#1 ключе из alpine:3.13 (OpenSSL 1.x) → `InvalidKeySpecException "Unable to decode key"` ✅
 - [x] Commit: `fix(ci): PKCS#8 + idempotent JWT key gen в deploy.yml (M14 G3, CSO HIGH-05)` — `7e69067`
 
-## Группа 4 — CSO HIGH-06: fail-fast secrets во всех services (20 мин)
+## Группа 4 — CSO HIGH-06: fail-fast secrets ⛔ DEFERRED → pre-v0.1
 
-- [ ] `services/auth-service/auth-app/src/main/resources/application.yml` — заменить `${INTERNAL_ISSUER_SECRET:dev-...}` на `${INTERNAL_ISSUER_SECRET:?INTERNAL_ISSUER_SECRET must be set in environment}`
-- [ ] `services/auth-service/auth-app/src/main/resources/application.yml` — то же для `REDIS_PASSWORD`, `SPRING_RABBITMQ_PASSWORD`, `POSTGRES_AUTH_PASSWORD`
-- [ ] `services/academic-service/academic-app/src/main/resources/application.yml` — fail-fast: `POSTGRES_ACADEMIC_PASSWORD`, `REDIS_PASSWORD`, `SPRING_RABBITMQ_PASSWORD`, `GRPC_SECRET`
-- [ ] `services/schedule-service/schedule-app/src/main/resources/application.yml` — fail-fast: `POSTGRES_SCHEDULE_PASSWORD`, `SPRING_RABBITMQ_PASSWORD`, `GRPC_SECRET`
-- [ ] `services/attendance-service/attendance-app/src/main/resources/application.yml` — fail-fast: `MONGO_PASSWORD`, `SPRING_RABBITMQ_PASSWORD`, `GRPC_SECRET`
-- [ ] `services/notification-service/notification-app/src/main/resources/application.yml` — fail-fast: `MONGO_PASSWORD`, `SPRING_RABBITMQ_PASSWORD`, `ALERT_WEBHOOK_SECRET`
-- [ ] `services/api-gateway/src/main/resources/application.yml` — fail-fast где есть dev fallback'и
-- [ ] Local UAT: `docker compose up -d` БЕЗ `--env-file` → ожидаем что auth-service exit'нется с явной ошибкой `INTERNAL_ISSUER_SECRET must be set`. Затем с `--env-file .env.prod.example` (заполнен test values) → стартует.
-- [ ] Запустить `./gradlew :services:auth-service:auth-app:test` — проверить, что test-profile не падает (Spring test использует `application-test.yml` или explicit env)
-- [ ] Commit: `fix(security): fail-fast на critical secrets во всех services (M14 G4, CSO HIGH-06)`
+**Статус:** попытка implementation провалилась 2026-04-26 — Spring Boot 3.x
+**не имеет** native fail-fast на unresolved YAML placeholders. Все
+изменения **откатаны**, finding перенесён в `docs/future-ideas.md` § Pre-v0.1
+с детальной post-mortem.
+
+**Что выяснилось при попытке (~1ч инвестиций):**
+1. `${VAR:?error}` syntax — это **bash**, не Spring. Spring трактует
+   `?error` как часть default value, не fail-fast. Source: my mistake assumption.
+2. `${VAR}` без default — Spring Boot **тоже не fail-fast** на unresolved
+   placeholder в YAML (issues [#10463](https://github.com/spring-projects/spring-boot/issues/10463),
+   [#18816](https://github.com/spring-projects/spring-boot/issues/18816)).
+   Property остаётся как literal `"${VAR}"` string.
+3. **Доказательство:** UAT с `docker run rct-auth-uat:m14g4` БЕЗ env vars
+   (после rebuild с `${INTERNAL_ISSUER_SECRET}` вместо fallback) выдал
+   `IllegalStateException: secret must be at least 32 bytes (got 25)` —
+   25 символов = literal `"${INTERNAL_ISSUER_SECRET}"`.
+
+**Mitigation in v0.0.0 (defence-in-depth, без G4):**
+- `InternalIssuerProperties.validate()` (`@PostConstruct`, length ≥32) ловит
+  unresolved INTERNAL_ISSUER_SECRET на старте.
+- `GrpcSecretFailFast` test contract (M08) ловит mismatched gRPC secrets
+  на первом call.
+- DB / Mongo / Redis password mismatch → connection fail при first op
+  → `unhealthy` контейнер в течение 30-60 сек → operator signal.
+- **M13 G15 preflight + .env.prod validator** ловит missing env vars
+  ДО deploy на VPS (это primary защита).
+
+**Когда вернуться:** v0.1 либо post-first-deploy. Variant A
+(`ApplicationContextInitializer` в shared-web) ~2-3ч, variant B
+(bash entrypoint в Dockerfile) ~1ч. Решение в `docs/future-ideas.md`
+§ Pre-v0.1 → "CSO HIGH-06: fail-fast secrets через ApplicationContextInitializer".
+
+- [x] Inventory: 21 dev fallback secret'ов в 6 application.yml — задокументировано
+- [x] Попытка `${VAR:?msg}` — все 6 файлов, 21 замена → не сработало (bash syntax)
+- [x] Откат на `${VAR}` без default → тоже не сработало (Spring не fail-fast)
+- [x] UAT через rebuild auth image + `docker run` без env vars → подтверждение что fail-fast не срабатывает (literal `"${VAR}"` остался)
+- [x] **Полный revert** application.yml changes (`git checkout`)
+- [x] Документация finding в `docs/future-ideas.md` § Pre-v0.1
+- [x] Defer commit (docs only — все изменения вошли в commit вместе с пометкой G4 deferred)
 
 ## Группа 5 — CSO HIGH-07: aiohttp bump (5 мин)
 

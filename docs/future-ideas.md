@@ -677,3 +677,186 @@ build context` + сравнение с Dockerfile COPY paths).
 (M11+ либо v0.1).
 
 ---
+
+## Pre-v0.1 (post-M14, после first VPS deploy)
+
+Источник: четыре аудита 2026-04-26 (`docs/milestones/M13-pre-deploy-hardening/G27-cso-comprehensive-audit.md`,
+`G27-tech-debt-audit.md`, `G26-code-review-after-g25.md`, `G26-test-audit-findings.md`).
+M14 закрыл только блокеры first deploy. Эти пункты — следующий sweep, когда
+сервис заработает в проде и появятся real-user signal'ы (Grafana, инциденты,
+обратная связь).
+
+**Когда делать:** week 1-2 после first deploy v0.0.0 GA, либо отдельный
+M15 «Post-Deploy Cleanup» если накопится критическая масса.
+
+### Безопасность
+
+#### MED-08: Реальный audit log вместо `@AdminAction` aspect-заглушки (CSO + tech-debt F02)
+
+**Текущее состояние:** `@AdminAction` annotation существует, но не используется
+ни в одном controller/service. `AdminActionAspect.around()` пишет
+`log.debug("@AdminAction pointcut hit: ...")` и `proceed()`. Обещано в M04
+(Observability), но не реализовано.
+
+**Идея:** написать реальный handler — запись в `audit_log` таблицу (PG)
++ JSON channel в Loki, include `user_id` + before/after diff +
+`correlation_id`. Loki retention 90+ days. Помечать `@AdminAction("user.archive")`
+все ADMIN-методы (academic ~15 endpoints).
+
+**Что закроет:** insider threat detection, forensics при инциденте,
+compliance (если когда-то понадобится).
+
+**Когда делать:** не нужно пока нет реальных users + ADMIN actions с impact.
+
+---
+
+#### MED-11: mTLS Alertmanager → notification-web (вместо Bearer over cleartext в private_net)
+
+**Текущее состояние:** Alertmanager шлёт POST `http://notification-web:9094/internal/alert`
+с `Authorization: Bearer`. Bearer защищён (timing-safe `MessageDigest.isEqual`),
+но transport — plaintext HTTP. Combined с CRIT-01 (флипнут в M14) impact
+снизился, но в comment'е alertmanager.yml уже зафиксировано «M06 заменит на mTLS».
+
+**Идея:** Linkerd sidecar с auto-mTLS, либо custom certs + nginx proxy с
+client-cert auth. Pre-step: cap_drop NET_RAW в node-exporter/cadvisor
+(блокирует sniffing capability у потенциального compromised peer).
+
+**Когда делать:** при подготовке к horizontal scaling либо после first incident.
+
+---
+
+#### MED-12: cadvisor — убрать `privileged: true`
+
+**Текущее состояние:** `privileged: true` + mounts `/:/rootfs:ro` + `/var/lib/docker:ro`.
+Любой compromise cadvisor = root host access. Image SHA-pinned (M06 D2),
+без known unpatched RCEs в v0.49.1.
+
+**Идея:** заменить на `cap_add: [SYS_PTRACE]` (cadvisor docs allow). Drop
+`/var/lib/docker` mount если не нужен (audit metric coverage без него).
+
+**Когда делать:** часть «container hardening sweep» в pre-v0.1.
+
+---
+
+#### MED-14: Cosign-verify config files (`infra/`, `nginx/`, `scripts/`)
+
+**Текущее состояние:** `deploy.yml` SSH step делает `git pull --ff-only`
+на VPS — притягивает infra configs БЕЗ cosign signature check (только
+images verified). Если attacker compromise main branch (через CI cascade),
+malicious nginx config может proxy_pass на attacker upstream.
+
+**Идея (3 варианта):**
+1. Commit `infra/`, `nginx/`, `scripts/` в специальный `config` image, cosign-sign и verify.
+2. Sign git commits + `git verify-commit HEAD` перед apply.
+3. CODEOWNERS на `infra/`, `nginx/`, `scripts/` + required reviews.
+
+**Когда делать:** вместе с general hardening sweep, когда добавим second maintainer.
+
+---
+
+#### MED-13: Caffeine cache для last-known-good public key в `PublicKeyProvider`
+
+**Текущее состояние:** G25.22 fix добавил synchronous lazy retry если
+`init()` failed (auth-service не ready при старте downstream). Между
+container start и first authenticated request — окно ~1-30 сек где
+downstream бросает 500. Не security exploit, availability concern.
+
+**Идея:** добавить Caffeine cache с TTL 24h на last-known-good public key.
+Fail-CLOSED семантика остаётся (key=null → IllegalStateException), но
+после первого успеха downstream tolerate auth-service downtime.
+
+**Когда делать:** если в Grafana увидим notable количество 500 от
+downstream после rolling restart.
+
+---
+
+#### MED-15: pre-commit hook «`.env.prod` must NOT exist in working copy»
+
+**Текущее состояние:** `.env.prod` gitignored ✅, но если разработчик
+случайно zip'нет working copy / share / ноут украдут — leak. Audit doc
+зафиксировал что `.env.prod` лежал в working copy с реальными секретами
+prod (BOT_TOKEN, GHCR_TOKEN, DB passwords и т.д.).
+
+**Идея:** pre-commit hook + dev workflow:
+1. `.env.prod` ТОЛЬКО на VPS, не на dev машинах.
+2. `scp` или 1Password CLI / `pass` / Bitwarden для retrieval когда нужно.
+3. Pre-commit hook: `[ ! -f .env.prod ] || exit 1` (с явным error message).
+4. Ротация всех secrets из `.env.prod` после first deploy если они хоть
+   раз были на dev машине.
+
+**Когда делать:** часть pre-v0.1 hardening.
+
+---
+
+#### TENT-16: Удалить dev CORS origins из base `application.yml` Gateway
+
+**Текущее состояние:** `services/api-gateway/src/main/resources/application.yml:23-30`
+содержит 6 hardcoded `http://localhost:*` origins + `${CORS_ALLOWED_ORIGIN:...}`.
+`application-prod.yml:8` overrides, но Spring profile-specific properties
+для list types ведут себя неочевидно (replace vs merge).
+
+**Идея:** удалить dev origins из base, оставить только в `application-dev.yml`.
+Базовый default = production-only.
+
+**Когда делать:** zero-cost cleanup, можно сделать в любом следующем PR
+trogающем gateway config.
+
+---
+
+### Поддерживаемость / supply chain
+
+#### MED-09: SHA-pin gitleaks/gitleaks-action (если не сделано в M14)
+
+**Заметка:** включено в M14 G6, но если пропустили — здесь.
+
+---
+
+#### MED-10: Миграция с `bitnamilegacy/mongodb:7.0` → `mongo:7-jammy` + custom init script
+
+**Текущее состояние:** В August 2025 Bitnami убрали versioned tags из
+bitnami/. `bitnamilegacy/` — официальный frozen fallback **без security
+updates**. Acceptable risk зафиксирован (single-node RS, internal network only),
+но combined с CRIT-01 (флипнут в M14) — argument «нельзя атаковать извне»
+slightly weaker.
+
+**Идея:** переехать на upstream `mongo:7-jammy` + custom entrypoint c
+`rs.initiate()` init-script, либо `percona/percona-server-mongodb:7`.
+Re-evaluate через 3 месяца после v0.0.0 GA.
+
+**Когда делать:** при первом CVE на bitnamilegacy либо через 3 месяца
+после deploy (whichever first).
+
+---
+
+### Code review P2/P3 (G26)
+
+12 находок log-noise / комментарии / закомментированный YAML — собрать
+в один **cleanup PR** после first deploy:
+
+- F04-F07, F11, F15: понизить `log.info` → `log.debug` в `JwtService` (RSA parsed bytes, kid resolved, caching public key) + сократить Javadoc `nonBlockingSecureRandom()` (убрать G25.13/G25.14 history) + сократить inline-комментарии M13 G25.NN.
+- F08: удалить закомментированный YAML блок `# default-filters: # - DedupeResponseHeader=...` (комментарий-объяснение оставить).
+- F09: заменить `NEW-XXX` placeholder на реальный issue номер, либо `TODO(backlog)` без псевдо-номера.
+- F10: упростить `kid.txt` генерацию в Dockerfile — `openssl rand -hex 4` вместо `head -c 4 | od | tr` pipeline.
+- F12: убрать упоминание `CSRF token generator` из comment в `AuthApplication.main()` (auth-service stateless, нет CSRF).
+- F13: добавить issue number к `test.skip` для headman color-contrast теста + сократить runtime skip message.
+- F14: ruff reformatting в `test_callback_excuse.py`/`test_callback_late_checkin.py` — оставить как есть, P3 cosmetic.
+
+**Когда делать:** один cleanup PR после first deploy (~1ч), low risk.
+
+---
+
+### E2E / unit test cleanup (G26 P2)
+
+- **Cat. C:** `auth-token-lifecycle.spec.ts:122` — заменить `waitForTimeout(5_000)` + `reload` на `setOffline(false) → networkidle`.
+- **Cat. D:** `auth.spec.ts:101-106` `test.skip(true, ...)` headman color-contrast — убрать или завести GitHub issue с условным skip.
+- **Cat. F:** `login.component.spec.ts:121` — переименовать test description на `setAccessToken` (assertion корректна, но название вводит в заблуждение).
+- **Cat. G:** `NotificationHistoryConsumerIT` — заменить `Thread.sleep(1500)` на Awaitility `await().during(1, SECONDS).atMost(3, SECONDS)`.
+- **Cat. H:** `StompIntegrationIT` — заменить `Thread.sleep(300)` перед subscribe на `CountDownLatch`/`BlockingQueue.poll`.
+- **Cat. I:** `test_idempotency_guard.py` — заменить `@pytest.fixture` на `@pytest_asyncio.fixture` для async coroutine (5 мин fix, можно сделать сразу при первом сбое).
+- **Cat. J:** `AuthOtpFlowIT` — вынести Rabbit-aware базовый класс `AbstractAuthEventIntegrationTest extends AbstractIntegrationTest`.
+- **Cat. K:** `RestApiIT` — убрать `@TestMethodOrder` + перенести seed/teardown в `@BeforeEach`/`@AfterEach`.
+
+**Когда делать:** один тестовый cleanup PR (~2ч), когда подготовка к
+horizontal scale потребует надёжных integration tests.
+
+---

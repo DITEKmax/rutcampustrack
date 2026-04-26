@@ -84,24 +84,48 @@ Conservative выбор vs latest 3.27 (8 minor versions vs 12).
 - [x] Smoke check inside container: `python -c "import aiohttp, aiogram; print(versions)"` → `aiohttp=3.13.5 aiogram=3.23.0` ✅
 - [x] Commit: `chore(deps): aiohttp 3.10.11→3.13.5 + aiogram 3.15.0→3.23.0 (M14 G5, CSO HIGH-07)` — `607af81`
 
-## Группа 6 — CSO HIGH-03/04: SHA-pin remaining actions (45 мин)
+## Группа 6 — CSO HIGH-03/04: SHA-pin remaining actions ✅ (commit `7fbd908`)
 
-- [ ] Собрать SHAs одним `gh api` batch'ем для:
-  - `actions/checkout@v4`
-  - `docker/setup-buildx-action@v3`
-  - `docker/login-action@v3`
-  - `docker/build-push-action@v7`
-  - `madrapps/jacoco-report@v1.7.1`
-  - `davelosert/vitest-coverage-report-action@v2`
-  - `MishaKav/pytest-coverage-comment@v1.1.52`
-  - `marocchino/sticky-pull-request-comment@v2`
-  - `gitleaks/gitleaks-action@v2`
-- [ ] `.github/workflows/deploy.yml` — заменить все 4 first-party actions на SHA-pinned
-- [ ] `.github/workflows/coverage.yml` — заменить 4 third-party actions на SHA-pinned
-- [ ] `.github/workflows/coverage.yml` — перенести `permissions: { pull-requests: write, checks: write }` из top-level в per-job (только jobs которые комментируют PR)
-- [ ] `.github/workflows/security.yml` — SHA-pin gitleaks-action (MED-09 заодно, ~5 мин трудозатрат)
-- [ ] Verify: `grep -rE "uses: [^@]+@v\d+(\.\d+)?$" .github/workflows/deploy.yml .github/workflows/coverage.yml` → пусто
-- [ ] Commit: `fix(ci): SHA-pin third-party + first-party actions в deploy/coverage/security (M14 G6, CSO HIGH-03/04 + MED-09)`
+**Pre-flight surprises:**
+1. `gh` CLI отсутствует в bash PATH (известно с G2). Использован `curl`
+   на REST API `git/refs/tags/{tag}` + Python (через `py`) для join SHA→tag.
+2. `marocchino/sticky-pull-request-comment` НЕ имеет floating `v2` ref —
+   только конкретные `v2.x.y`. Запpinили на latest `v2.9.4`.
+3. **Annotated tags** требуют доп. resolve через `git/tags/{sha}`: gradle/actions
+   v6 (50e97c2c), gitleaks v2 (ff981064), codeql-action v3 (ce64ddcb).
+   Lightweight tags — sha напрямую.
+
+**Pin'нутые actions с конкретными версиями:**
+
+| Action | Tag | SHA |
+|---|---|---|
+| actions/checkout | v4.3.1 | 34e114876b0b11c390a56381ad16ebd13914f8d5 |
+| actions/setup-java | v4.8.0 | c1e323688fd81a25caa38c78aa6df2d33d3e20d9 |
+| actions/setup-node | v4.4.0 | 49933ea5288caeca8642d1e84afbd3f7d6820020 |
+| actions/setup-python | v5.6.0 | a26af69be951a213d495a4c3e4e4022e16d87065 |
+| actions/upload-artifact | v4.6.2 | ea165f8d65b6e75b540449e92b4886f43607fa02 |
+| actions/download-artifact | v4.3.0 | d3f86a106a0bac45b974a628896c90dbdf5c8093 |
+| docker/setup-buildx-action | v3.12.0 | 8d2750c68a42422c14e847fe6c8ac0403b4cbd6f |
+| docker/login-action | v3.7.0 | c94ce9fb468520275223c153574b00df6fe4bcc9 |
+| docker/build-push-action | v7.1.0 | bcafcacb16a39f128d818304e6c9c0c18556b85f |
+| gradle/actions/setup-gradle | v6.1.0 | 50e97c2cd7a37755bbfafc9c5b7cafaece252f6e |
+| madrapps/jacoco-report | v1.7.1 | 7c362aca34caf958e7b1c03464bd8781db9f8da7 |
+| davelosert/vitest-coverage-report-action | v2 | 3c50566c523e04813df28de8f7c48dd97d663f1c |
+| MishaKav/pytest-coverage-comment | v1.1.52 | fa1c641d7e3fa1d98ed95d5f658ccd638b774628 |
+| marocchino/sticky-pull-request-comment | v2.9.4 | 773744901bac0e8cbb5a0dc842800d45e9b2b405 |
+| gitleaks/gitleaks-action | v2 | ff98106e4c7b2bc287b24eaf42907196329070c7 |
+| github/codeql-action/upload-sarif | v3 | ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a |
+
+- [x] Собрать SHAs через `curl + py` (gh CLI отсутствует) для 16 actions
+- [x] `.github/workflows/deploy.yml` — заменить все first-party actions на SHA-pinned (16 occurrences: 2× checkout, 1× buildx, 3× login, 11× build-push)
+- [x] `.github/workflows/coverage.yml` — заменить 14 actions на SHA-pinned (4× checkout, 1× setup-java, 1× setup-node, 2× setup-python, 3× upload-artifact, 1× download-artifact, 1× setup-gradle, 1× jacoco-report, 1× vitest-coverage, 1× MishaKav, 1× marocchino)
+- [x] `.github/workflows/coverage.yml` — top-level `pull-requests: write` + `checks: write` сужены до `contents: read`. Per-job permissions добавлены в java-coverage (full PR+checks), frontend/python-coverage (PR only), diff-cover (PR only)
+- [x] `.github/workflows/security.yml` — SHA-pin 3× checkout, codeql-action upload-sarif (annotated tag resolved), gitleaks-action (MED-09), docker/login-action
+- [x] Verify: `grep -rE "uses: [^@]+@v[0-9]" .github/workflows/{deploy,coverage,security}.yml` → пусто
+- [x] YAML safe_load для всех 3 файлов → OK
+- [x] Commit: `fix(ci): SHA-pin third-party + first-party actions в deploy/coverage/security (M14 G6, CSO HIGH-03/04 + MED-09)` — `7fbd908`
+
+**Out of scope G6 (намеренно):** `ci.yml` + `openapi-drift.yml` оставлены с floating tags — hand-off purposefully ограничил список workflow'ов до deploy/coverage/security. Pin для них либо в отдельной группе после M14, либо через Renovate `digest:pin` sweep.
 
 ## Группа 7 — G26 test-audit P1 (1-1.5 ч)
 

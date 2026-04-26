@@ -264,3 +264,64 @@ constraint discovery съел 15 мин, build+test+docs ещё 10).
 constraints** через PyPI JSON API. Pinning `aiohttp` отдельно от
 `aiogram` создаёт hidden coupling — peer deps в Python обычно строгие,
 не как в JS (где npm может resolve через duplicate installs).
+
+### Group 6 — SHA-pin remaining actions ✅ (commit `7fbd908`)
+
+**Footprint:** 1 functional commit, 3 workflow files, 58 insertions /
+42 deletions. Time: ~40 минут (vs hand-off 45 мин — точное попадание).
+
+**Pre-flight surprises:**
+
+1. **`marocchino/sticky-pull-request-comment` без floating `v2`.**
+   Maintainer выпускает только конкретные `v2.x.y` теги, без catch-all
+   `v2`. Pin'ю на latest stable `v2.9.4` (commit
+   `773744901bac0e8cbb5a0dc842800d45e9b2b405`). Renovate digest:pin
+   sweeps продолжат update'ить — не critical.
+
+2. **Annotated tags vs lightweight tags.** GitHub REST API возвращает
+   `type: tag` для annotated tags — нужен extra round-trip через
+   `/git/tags/{sha}` чтобы получить commit SHA. У нас 3 такие в G6:
+   - `gradle/actions@v6` → annotated tag `39fdf500...` →
+     commit `50e97c2cd7a37755bbfafc9c5b7cafaece252f6e` (v6.1.0)
+   - `gitleaks/gitleaks-action@v2` → annotated tag `dcedce43...` →
+     commit `ff98106e4c7b2bc287b24eaf42907196329070c7`
+   - `github/codeql-action@v3` → annotated tag `865f5f5c...` →
+     commit `ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a`
+
+3. **`gh` CLI до сих пор не доступен** (с G2). Workaround — curl + py
+   join (Git Bash не имеет `python`, только `py`). `/tmp` не маппится в
+   Git Bash MSYS, использовал cwd-relative temp files с `rm` cleanup.
+
+**Permissions least-privilege переезд (отдельный smaller win):**
+до — top-level `pull-requests: write` + `checks: write` для всего
+coverage workflow. После — top-level `contents: read`, per-job
+расширенные permissions только там, где они реально нужны:
+- java-coverage: `pull-requests: write` + `checks: write` (madrapps
+  пишет PR comment + check run)
+- frontend-coverage: только `pull-requests: write` (vitest action
+  делает только PR comment)
+- python-coverage: только `pull-requests: write` (MishaKav PR comment)
+- diff-cover: только `pull-requests: write` (marocchino sticky comment)
+
+GITHUB_TOKEN compromise в одном job больше не открывает write-доступ ко
+всему workflow run.
+
+**Out-of-scope намеренно:** `ci.yml` + `openapi-drift.yml` оставлены
+с floating tags. Hand-off purposefully ограничил список (deploy,
+coverage, security) — это уже high-risk surface (push to GHCR, SSH к
+VPS, gitleaks с GITHUB_TOKEN). CI workflow тоже надо pin'ить (`ci.yml`
+имеет 26 occurrences floating tag), но это separate sweep — ~30 минут
+доп. работы. Кандидат на M14 G8.5 либо отдельный hardening sprint.
+
+**Verify command для будущих audit'ов:**
+```bash
+grep -rE "uses: [^@]+@v[0-9]" .github/workflows/{deploy,coverage,security}.yml
+# → пусто означает 100% SHA-pin coverage в этих 3 файлах
+```
+
+**Урок про Renovate comments:** комментарий `# v4.3.1` после SHA — это
+**не косметика**, а Renovate/Dependabot протокол. Бот резолвит SHA →
+tag через эту строку и автоматически создаёт version bump PR. Без
+комментария digest-only update запросы летят в тёмную (бот видит SHA,
+не знает к какому release он принадлежит, не может предложить bump на
+v4.3.2).

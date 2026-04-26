@@ -877,3 +877,113 @@ horizontal scale потребует надёжных integration tests.
 для полного post-mortem.
 
 ---
+
+## M16 Cleanup Backlog (после M15 first VPS deploy)
+
+Накопленные cleanup задачи во время M15 first VPS deploy
+(2026-04-26, `v0.0.0-alpha.16`). Не блокируют production traffic —
+сайт работает, контейнеры healthy. Делать одним PR в M16
+(post-deploy stabilization), оптимально через ~1-2 недели стабильной
+работы prod (sanity check) и до начала новой feature work.
+
+### Tracking cleanup
+
+- **Untrack `.claude/` и `.agents/` из git.** 195+25 файлов уже в
+  `.gitignore` (строки 90-91), но закоммичены commit'ом `d163f38`
+  (misnamed "remove from tracking" — фактически добавил их).
+  Шумит PR diffs, мешает поиску по коду, теряет актуальность
+  относительно skills updates через `claude` CLI. Команда:
+  `git rm -r --cached .claude .agents && git commit -m "..."`. Файлы
+  локально остаются, продолжают работать.
+
+- **Phantom submodule fix.** `.claude/skills/context7-auto-research`
+  зарегистрирован как gitlink (mode 160000) но `.gitmodules` нет —
+  каждый CI checkout даёт warning
+  `fatal: No url found for submodule path '.claude/skills/...'`.
+  Решится автоматически после untrack `.claude/` (выше).
+
+### Security suppressions (introduced в M15)
+
+- **CVE bumps в `.trivyignore`:**
+  - `valibot` ≥1.2.0 для CVE-2025-66020 (ReDoS в EMOJI_REGEX) —
+    transitive через `@telegram-apps/sdk-react`. Требует npm overrides
+    под @telegram-apps либо bump к release где SDK сам обновит valibot.
+  - `protobuf` ≥6.33.5 для CVE-2025-4565 + CVE-2026-0994 (DoS via
+    unbounded recursion) — transitive через `grpcio-tools`. Требует
+    bump grpcio + grpcio-tools.
+
+- **DS-0002 fix в `.trivyignore.yaml`** — мигрировать 4 frontend
+  Dockerfile (landing/mini-app/pwa/web-panel) на
+  `nginxinc/nginx-unprivileged:1.27-alpine`, синхронно поменять
+  `expose 80→8080`, main `nginx/conf.d/default.conf` proxy_pass
+  `:80→:8080`. **Проверить что MSK→FIN tunnel не сломается** (он бьёт
+  на main rct-nginx:443, не на frontend контейнеры — должен быть OK).
+
+### Workflow modernization
+
+- **Node.js 20 → 24 в actions.** `actions/checkout@v4.3.1`,
+  `github/codeql-action/upload-sarif@v3` и др. — Node 20 deprecated
+  с июня 2026, force-upgrade в сентябре 2026.
+
+- **CodeQL Action v3 → v4.** Deprecation в декабре 2026, есть время.
+
+- **Gradle cache cleanup fix.** `setup-gradle` action использует
+  `cleanupTime` API убранный в Gradle 9.x → конфликт версий → warning
+  `Could not get unknown property 'cleanupTime'`. Wait for upstream
+  fix или pin gradle/actions к старой версии.
+
+- **SBOM job retry wrapper.** `anchore/sbom-action` иногда падает
+  с HTTP 502 при скачивании syft с `github.com/anchore/syft/releases`
+  (M15 deploy упал из-за этого один раз на attendance-service).
+  Фикс: обернуть SBOM step в `nick-fields/retry@v3` (max_attempts: 3,
+  retry_on: error). Альтернатива — pre-install syft через
+  `actions/cache` чтобы не трогать GitHub Releases на каждом run.
+
+### .gitignore additions
+
+- `ci-*.json`, `jobs*.json`, `deploy-jobs.json` — мои curl GitHub API
+  дампы захламляют корень при дебаге CI.
+- `*.log`, `e2e-logs.zip` — локальные build/test artifacts.
+
+### Frontend / CSP cleanup
+
+- **Angular `inlineCritical: false` для web-panel.** Текущий M15
+  hotfix CSP whitelist'ит `'unsafe-hashes'`
+  `sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc=` для inline
+  `onload="this.media='all'"` атрибута (Angular `@angular/build:application`
+  с `inlineCritical: true` генерит lazy-CSS pattern). Хеш привязан
+  к точной строке onload — если Angular изменит pattern (например при
+  upgrade с 19 на 20+), CSP сломается снова → fallback на browser
+  default fonts (Times New Roman). Долгосрочный фикс: в
+  `frontends/web-panel/angular.json` под `configurations.production`
+  добавить `"optimization": {"styles": {"inlineCritical": false}}`.
+  Тогда CSS подгружается обычным `<link rel="stylesheet">` без
+  onload, CSP остаётся чистым `script-src 'self'`. Trade-off:
+  чуть медленнее First Contentful Paint (~50-100ms на slow 3G).
+  Также проверить PWA на ту же проблему.
+
+- **Bot routing для alerts.** Alerts с alertmanager → notification-web
+  `/internal/alert` → notification-bot форвардит в Telegram через
+  `BOT_TOKEN` вместо `BOT_ALERT_TOKEN`. M15 наблюдение: alert
+  "SslProbeFailed" пришёл в `@ruttrack_bot` (бизнес-логика бот),
+  не в отдельный alert-бот. Должны быть **разные** клиенты Telegram
+  Bot API в notification-bot — для business notifications
+  (отметки, староста подтверждает) и для alerts. Проверить
+  `services/notification-bot/bot/handlers/` (или config) — какой
+  токен использует alert handler. Студенты не получают alerts
+  (есть `ADMIN_TELEGRAM_IDS` фильтр), но admin'ы получают их в
+  неправильный канал, что путает business flow.
+
+### Hotfixes уже закоммичены локально (waiting for push)
+
+- `c3ff148` — M15 hotfixes: `INTERNAL_ISSUER_SECRET` для auth-service
+  (M14 G9 regression), mem_limit 256m → 384m для 3 Java сервисов
+  (auth/notification-web/api-gateway — все падали с OOM exit 137 на
+  cold start), alertmanager time_intervals split через UTC midnight.
+- `8d7c168` — CSP `unsafe-hashes` + sha256 для Angular inline onload.
+
+Push'нуть в M16 либо когда увидим что VPS стабильно работает несколько
+часов под реальной нагрузкой и можно безопасно сделать redeploy
+(downtime ~2-3 мин на restart всех контейнеров).
+
+---

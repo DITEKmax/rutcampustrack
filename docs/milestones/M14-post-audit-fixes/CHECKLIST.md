@@ -40,47 +40,34 @@
 - [x] **Бонус-negative test**: тот же clone на PKCS#1 ключе из alpine:3.13 (OpenSSL 1.x) → `InvalidKeySpecException "Unable to decode key"` ✅
 - [x] Commit: `fix(ci): PKCS#8 + idempotent JWT key gen в deploy.yml (M14 G3, CSO HIGH-05)` — `7e69067`
 
-## Группа 4 — CSO HIGH-06: fail-fast secrets ⛔ DEFERRED → pre-v0.1
+## Группа 4 — CSO HIGH-06: fail-fast secrets ✅ v2 (commit `bf915ec`)
 
-**Статус:** попытка implementation провалилась 2026-04-26 — Spring Boot 3.x
-**не имеет** native fail-fast на unresolved YAML placeholders. Все
-изменения **откатаны**, finding перенесён в `docs/future-ideas.md` § Pre-v0.1
-с детальной post-mortem.
+**История:** v1 attempt (~1ч) провалился — Spring Boot 3.x не fail-fast
+на unresolved YAML placeholders ни через `${VAR:?msg}` (bash syntax), ни
+через `${VAR}` без default (issues spring-boot#10463 / #18816, placeholder
+остаётся literal `"${VAR}"` string). v1 откатан полностью.
 
-**Что выяснилось при попытке (~1ч инвестиций):**
-1. `${VAR:?error}` syntax — это **bash**, не Spring. Spring трактует
-   `?error` как часть default value, не fail-fast. Source: my mistake assumption.
-2. `${VAR}` без default — Spring Boot **тоже не fail-fast** на unresolved
-   placeholder в YAML (issues [#10463](https://github.com/spring-projects/spring-boot/issues/10463),
-   [#18816](https://github.com/spring-projects/spring-boot/issues/18816)).
-   Property остаётся как literal `"${VAR}"` string.
-3. **Доказательство:** UAT с `docker run rct-auth-uat:m14g4` БЕЗ env vars
-   (после rebuild с `${INTERNAL_ISSUER_SECRET}` вместо fallback) выдал
-   `IllegalStateException: secret must be at least 32 bytes (got 25)` —
-   25 символов = literal `"${INTERNAL_ISSUER_SECRET}"`.
+**v2 solution:** новый `RequiredSecretsValidator` через
+`EnvironmentPostProcessor` в `shared-web/autoconfigure/`, регистрируется
+через `META-INF/spring.factories`. Срабатывает на самом раннем
+`ApplicationEnvironmentPreparedEvent` — ДО bean creation, ДО Tomcat init,
+ДО Spring banner. Profile-aware skip (`test`/`local` → no-op). Per-service
+opt-in через `rutcampustrack.security.required-env-vars` CSV property.
 
-**Mitigation in v0.0.0 (defence-in-depth, без G4):**
-- `InternalIssuerProperties.validate()` (`@PostConstruct`, length ≥32) ловит
-  unresolved INTERNAL_ISSUER_SECRET на старте.
-- `GrpcSecretFailFast` test contract (M08) ловит mismatched gRPC secrets
-  на первом call.
-- DB / Mongo / Redis password mismatch → connection fail при first op
-  → `unhealthy` контейнер в течение 30-60 сек → operator signal.
-- **M13 G15 preflight + .env.prod validator** ловит missing env vars
-  ДО deploy на VPS (это primary защита).
-
-**Когда вернуться:** v0.1 либо post-first-deploy. Variant A
-(`ApplicationContextInitializer` в shared-web) ~2-3ч, variant B
-(bash entrypoint в Dockerfile) ~1ч. Решение в `docs/future-ideas.md`
-§ Pre-v0.1 → "CSO HIGH-06: fail-fast secrets через ApplicationContextInitializer".
-
-- [x] Inventory: 21 dev fallback secret'ов в 6 application.yml — задокументировано
-- [x] Попытка `${VAR:?msg}` — все 6 файлов, 21 замена → не сработало (bash syntax)
-- [x] Откат на `${VAR}` без default → тоже не сработало (Spring не fail-fast)
-- [x] UAT через rebuild auth image + `docker run` без env vars → подтверждение что fail-fast не срабатывает (literal `"${VAR}"` остался)
-- [x] **Полный revert** application.yml changes (`git checkout`)
-- [x] Документация finding в `docs/future-ideas.md` § Pre-v0.1
-- [x] Defer commit (docs only — все изменения вошли в commit вместе с пометкой G4 deferred)
+- [x] Inventory: 21 dev fallback secret'ов в 6 application.yml
+- [x] v1 attempt: `${VAR:?msg}` (bash) → не сработало → откат
+- [x] v1 attempt: `${VAR}` (Spring без default) → тоже не сработало → откат
+- [x] **v2 design:** EnvironmentPostProcessor вместо placeholder syntax трюков. Profile-aware. Per-service opt-in.
+- [x] `services/shared/shared-web/src/main/java/.../autoconfigure/RequiredSecretsValidator.java` — 95 строк, slf4j + Spring API
+- [x] `services/shared/shared-web/src/main/resources/META-INF/spring.factories` — registration
+- [x] `services/shared/shared-web/src/test/java/.../RequiredSecretsValidatorTest.java` — 9 unit tests (missing/blank/all-present/test-skip/local-skip/no-opt-in/blank-opt-in/multiple-missing/CSV-whitespace) — BUILD SUCCESSFUL
+- [x] api-gateway: `implementation(":services:shared:shared-web")` (новая dependency, ~200KB transitive overhead за spring-security-core; SharedWebAutoConfiguration сам не активируется в WebFlux, но EnvironmentPostProcessor работает независимо)
+- [x] Per-service `rutcampustrack.security.required-env-vars` в 6 application.yml (gateway:2, auth:5, academic:4, schedule:3, attendance:4, notification:4 secrets)
+- [x] Полный gradle test 7 modules (shared-web + 5 backend + gateway) — BUILD SUCCESSFUL за 4m51s, 81 actionable tasks
+- [x] **UAT positive 1**: `docker run` БЕЗ env vars → IllegalStateException на самом старте (EnvironmentPostProcessorApplicationListener), ДО Spring banner, с явным actionable сообщением
+- [x] **UAT positive 2**: `docker run` с 3 из 5 env vars → IllegalStateException указывает точно те 2 missing (per-variable accuracy)
+- [x] **UAT positive 3**: `docker run` со всеми 5 env vars → validator passes, fail дальше на JwtService.init (orthogonal — отсутствие mount /keys)
+- [x] Commit: `fix(security): RequiredSecretsValidator — fail-fast на missing critical secrets (M14 G4 v2, CSO HIGH-06)` — `bf915ec`
 
 ## Группа 5 — CSO HIGH-07: aiohttp bump (5 мин)
 

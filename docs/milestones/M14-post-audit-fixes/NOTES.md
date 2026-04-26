@@ -153,8 +153,87 @@ gradle test. Gradle tests passed — но они не testят production
 boot path с missing env. Только реальный `docker run` без env
 показал что fix не работает.
 
-**Footprint G4:** 0 commit'ов functional changes (всё revert'нуто).
+**Footprint G4 v1:** 0 commit'ов functional changes (всё revert'нуто).
 1 commit docs (CHECKLIST + NOTES + future-ideas + NEXT-SESSION).
+
+### Group 4 v2 — SUCCESS (через час после v1, 2026-04-26)
+
+**Trigger от пользователя:** "давай сделаем правильнее ... зачем плодить
+legacy и потом фиксить то что лучше ща зафиксить. а то потом будет прод
+и тд нехорошо". Хороший pushback — defer'ить было прагматично, но
+закрыть G4 properly **сейчас** ещё лучше для prod safety.
+
+**v2 design:**
+- `RequiredSecretsValidator implements EnvironmentPostProcessor` в
+  `shared-web/autoconfigure/`. 95 строк, slf4j + Spring API.
+- Регистрация через `META-INF/spring.factories` (не AutoConfiguration —
+  EnvPostProcessor работает раньше, ДО bean creation).
+- Profile-aware skip: `test`/`local` → no-op (existing tests + local dev
+  не страдают).
+- Per-service opt-in через `rutcampustrack.security.required-env-vars`
+  CSV property — каждый сервис сам указывает свои critical secrets.
+
+**Почему EnvironmentPostProcessor а не ApplicationContextInitializer:**
+EnvPostProcessor вызывается **раньше** (`ApplicationEnvironmentPreparedEvent`),
+ДО Spring banner и ДО создания любых beans. Failure → container exit
+immediately, без затрат CPU на Tomcat init / RSA key generation /
+Lettuce client setup. ContextInitializer — ещё на milisecondы позже,
+после Environment fully ready. Для validation env vars — EnvPostProcessor
+правильнее.
+
+**Test profile bypass через `getActiveProfiles()`** — не через
+DynamicPropertySource (тот в EnvPostProcessor ещё не виден). Все
+существующие IT в проекте используют `@ActiveProfiles("test")` (verified
+grep 10+ файлов), поэтому unconditional bypass без false-positives.
+
+**api-gateway dependency surprise:** gateway не имеет `shared-web`
+(servlet-only), но мне нужен EnvPostProcessor там. Решение: добавил
+`implementation(":services:shared:shared-web")`. SharedWebAutoConfiguration
+сам остаётся inactive (ConditionalOnWebApplication SERVLET — false для
+WebFlux), но `META-INF/spring.factories` registration работает
+**независимо** от auto-config conditions. Транзитивно приходит
+`spring-security-core` (~200KB) — приемлемо.
+
+**UAT — самое важное:**
+
+```bash
+docker run --rm rct-auth-uat:m14g4v2 2>&1 | head -5
+# 13:36:31.189 [main] ERROR org.springframework.boot.SpringApplication -- Application run failed
+# java.lang.IllegalStateException: M14 G4 (CSO HIGH-06): required environment variables are not set:
+# [REDIS_PASSWORD, SPRING_RABBITMQ_PASSWORD, POSTGRES_ACADEMIC_PASSWORD, INTERNAL_ISSUER_SECRET, TMA_BOT_TOKEN].
+# These secrets must be provided via `--env-file .env.prod` or explicit `-e VAR=value`.
+# If running tests, ensure @ActiveProfiles("test") is set on the test class.
+```
+
+**До Spring banner — 0 ASCII art, 0 logger init, 0 bean creation.**
+Падает на `EnvironmentPostProcessorApplicationListener.onApplicationEnvironmentPreparedEvent`
+→ container exit. Это **именно** то поведение, которое нужно operator'у:
+hard signal forgot env-file, immediate, actionable.
+
+**Verification matrix:**
+| Test | Expected | Actual |
+|------|----------|--------|
+| 0 of 5 vars | IllegalStateException, list 5 | ✅ |
+| 3 of 5 vars (missing 2) | IllegalStateException, list ровно 2 | ✅ |
+| All 5 vars | validator passes, fail дальше на JwtService.init (orthogonal) | ✅ |
+| `@ActiveProfiles("test")` | validator skip → existing IT не сломан | ✅ (4m51s gradle test 7 modules SUCCESSFUL) |
+| `application-test.yml` без override secrets | OK через test profile skip | ✅ |
+
+**Footprint G4 v2:**
+- 1 commit functional: `bf915ec` (10 files / 270 insertions, +1 deletion)
+  - 1 new Java class (95 строк)
+  - 1 new test file (9 tests, ~120 строк)
+  - 1 META-INF/spring.factories update
+  - 1 build.gradle.kts (api-gateway dependency)
+  - 6 application.yml (per-service required-env-vars property)
+- 1 docs commit (CHECKLIST status update + NOTES post-mortem v1+v2 +
+  future-ideas pre-v0.1 entry удалить + NEXT-SESSION rotate на G5)
+
+**Урок:** **defer-vs-fix decision** должен делать **пользователь**, не
+агент. Я выбрал defer как pragmatic, но user push к "сделать правильно
+сейчас" дал намного лучший результат — G4 закрыта в той же сессии,
+~2-3 часа vs theoretical pre-v0.1 work, и prod safety guarantee
+получена сразу.
 
 **G2 surprise — версия appleboy/ssh-action:** hand-off зафиксировал
 target `v1.2.0`, pre-flight `curl /releases/latest` показал `v1.2.5`

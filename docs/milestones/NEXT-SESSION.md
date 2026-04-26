@@ -5,10 +5,12 @@
 
 ---
 
-**M14 G3 закрыт (commit `7e69067`). G4 (fail-fast secrets) DEFERRED в
-pre-v0.1 — Spring Boot 3.x не имеет native fail-fast на unresolved
-YAML placeholders. M14 пока НЕ push'нут на origin/dev — 8 локальных
-коммитов на `dev`, upstream не получил.**
+**M14 G4 закрыт ПРАВИЛЬНО (commit `bf915ec` — RequiredSecretsValidator
+v2 через EnvironmentPostProcessor). G4 v1 attempt с YAML placeholder
+trick'ами не работал (Spring Boot ограничение), но v2 через
+proper Java solution сработал — после pushback от пользователя
+"давай сделаем правильнее, зачем плодить legacy". M14 пока НЕ push'нут
+на origin/dev — 9 локальных коммитов на `dev`, upstream не получил.**
 
 ## Контекст M14 (читай это первым)
 
@@ -37,21 +39,30 @@ compromised без fix → попадает в M14. Остальное — `docs
 | `5a1b175` | G1 docs followup | docs only |
 | `a93859b` | **G2: SHA-pin appleboy/ssh-action (CSO CRIT-02)** — `0ff4204... # v1.2.5` | grep + pyyaml validate |
 | `dc602a0` | G2 docs followup | docs only |
-| `7e69067` | **G3: PKCS#8 + idempotent JWT key gen (CSO HIGH-05)** в deploy.yml:329-360 | dry-run head -1 = "BEGIN PRIVATE KEY" + JDK standalone clone parsing OK + PKCS#1 negative test fails as expected |
+| `7e69067` | **G3: PKCS#8 + idempotent JWT key gen (CSO HIGH-05)** | dry-run + JDK standalone clone parsing OK |
 | `d20616d` | G3 docs followup | docs only |
-| `<tbd>` | **G4 DEFERRED**: fail-fast secrets — Spring Boot 3.x не fail-fast на unresolved YAML placeholders (issues spring-boot#10463/#18816). Перенесено в pre-v0.1. Все YAML revert'нуты через git checkout. | docs only — full post-mortem в NOTES.md + future-ideas.md |
+| `d2daff7` | G4 v1 deferred docs (Spring Boot ограничение) | docs only — superseded by v2 |
+| `bf915ec` | **G4 v2: RequiredSecretsValidator (CSO HIGH-06)** — EnvironmentPostProcessor в shared-web + 9 unit tests + per-service opt-in в 6 application.yml | UAT: docker run без env → IllegalStateException на самом старте, ДО Spring banner; gradle test 7 modules SUCCESSFUL за 4m51s |
+| `<tbd>` | G4 v2 docs followup | docs only |
 
-**G4 critical finding:** `${VAR:?msg}` это **bash syntax**, не Spring.
-`${VAR}` без default Spring **тоже не fail-fast** — оставляет literal
-`"${VAR}"` string. UAT через rebuild auth image + docker run без env
-доказал это: `IllegalStateException: secret must be at least 32 bytes
-(got 25)` — 25 = длина `"${INTERNAL_ISSUER_SECRET}"`. Mitigation в
-v0.0.0: M13 G15 preflight script (primary) + per-property
-`@PostConstruct validate()` где есть (secondary) + healthcheck unhealthy
-30-60s (tertiary). G4 правильное решение — `ApplicationContextInitializer`
-в `shared-web` либо bash entrypoint в Dockerfile, ~2-3ч работы. Detail
-в `docs/future-ideas.md` § "CSO HIGH-06: fail-fast secrets через
-ApplicationContextInitializer".
+**G4 v2 — что было сделано:**
+1. `services/shared/shared-web/src/main/java/.../RequiredSecretsValidator.java`
+   — `EnvironmentPostProcessor` с profile-aware skip и per-service opt-in
+   через `rutcampustrack.security.required-env-vars` CSV property.
+2. `META-INF/spring.factories` — registration.
+3. `RequiredSecretsValidatorTest.java` — 9 unit tests.
+4. `api-gateway/build.gradle.kts` — добавлена `implementation(":services:shared:shared-web")`
+   (gateway не имел shared-web т.к. WebFlux; SharedWebAutoConfiguration
+   остаётся inactive condition'ально, но EnvPostProcessor работает
+   независимо через spring.factories).
+5. 6 application.yml — добавлен `rutcampustrack.security.required-env-vars`
+   (gateway: 2 secrets, auth: 5, academic: 4, schedule: 3, attendance: 4,
+   notification: 4).
+
+**Главный урок из G4:** defer-vs-fix decision должен делать пользователь.
+Я выбрал defer как pragmatic, но user push к "правильно сейчас" дал
+лучший результат — G4 закрыта в той же сессии (~2-3ч), prod safety
+guarantee получена сразу, без legacy debt в pre-v0.1 backlog.
 
 ## Что делать в этой сессии
 
@@ -59,14 +70,14 @@ ApplicationContextInitializer".
 
 ```bash
 cd C:/Users/maksd/IntelliJIDEA/rutcampustrack
-git log --oneline -10
+git log --oneline -12
 git status --short
 ```
 
 **Ожидаем:**
-- HEAD = `<G4 docs commit>` или `d20616d` (если G4 docs не отдельным коммитом)
+- HEAD = `<G4 v2 docs commit>` или `bf915ec` (если docs followup ещё не отдельным коммитом)
 - Working tree clean (или максимум `?? .gstack/`)
-- 8 локальных коммитов M14 ещё не на origin
+- 9-10 локальных коммитов M14 ещё не на origin
 
 ### Шаг 1 — выполнить Группу 5 (aiohttp bump)
 
@@ -75,7 +86,7 @@ git status --short
 > ## Группа 5 — CSO HIGH-07: aiohttp bump (5 мин)
 >
 > - [ ] `services/notification-bot/requirements.txt` — `aiohttp>=3.13.3,<3.14` (было `3.10.11`)
-> - [ ] Локальная проверка совместимости: `cd services/notification-bot && python -m venv .venv-test && .venv-test/Scripts/pip install -r requirements.txt` — должно установиться без conflict с `aiogram`
+> - [ ] Локальная проверка совместимости: `cd services/notification-bot && python -m venv .venv-test && .venv-test/Scripts/pip install -r requirements.txt`
 > - [ ] `pytest services/notification-bot/tests` — все зелёные после bump
 > - [ ] Rebuild bot image: `docker build -t rct-notification-bot services/notification-bot/`
 > - [ ] Commit: `chore(deps): aiohttp 3.10.11→3.13.3+ (M14 G5, CSO HIGH-07, 3 CVE)`
@@ -83,20 +94,14 @@ git status --short
 **Контекст из CSO audit (`G27-cso-comprehensive-audit.md` § HIGH-07):**
 
 `services/notification-bot/requirements.txt` пинует `aiohttp==3.10.11`,
-которая имеет 3 CVE:
-- CVE-2024-XX (request smuggling)
-- CVE-2024-YY (DoS через large headers)
-- CVE-2024-ZZ (TLS bypass в client)
-
-Fixed в `aiohttp>=3.13.3`. `aiogram` (Telegram bot framework) использует
-aiohttp как peer dependency — нужно проверить compatibility constraint.
+которая имеет 3 CVE (request smuggling / DoS / TLS bypass). Fixed в
+`aiohttp>=3.13.3`. `aiogram` 3.x использует aiohttp как peer dependency
+(требует ≥3.9), v3.13.3 совместима.
 
 **Pre-flight:**
 ```bash
 cd services/notification-bot && cat requirements.txt | grep -E "aiogram|aiohttp"
 ```
-
-Aiogram 3.x официально поддерживает aiohttp ≥3.9. v3.13.3 should work.
 
 ### Шаг 2 — verification
 
@@ -104,31 +109,13 @@ Aiogram 3.x официально поддерживает aiohttp ≥3.9. v3.13.
 1. `pip install -r requirements.txt` локально — без conflict.
 2. `pytest services/notification-bot/tests/` — все green (108 тестов).
 3. Rebuild bot image — Dockerfile build OK.
-4. Smoke test inside container: `python -c "import aiohttp; print(aiohttp.__version__)"` → 3.13.x.
+4. Smoke test внутри контейнера: `python -c "import aiohttp; print(aiohttp.__version__)"` → 3.13.x.
 
 Если pytest fails из-за aiohttp API changes — diagnose, либо patch
 test, либо downgrade target до latest version, что pass'ит. Обычно
 aiohttp 3.x stable, breaking changes минимальны.
 
 ### Шаг 3 — commit + переход к G6
-
-Commit message:
-```
-chore(deps): aiohttp 3.10.11→3.13.3+ в notification-bot (M14 G5, CSO HIGH-07)
-
-CSO comprehensive audit (G27) обнаружил HIGH-07: aiohttp 3.10.11 имеет
-3 CVE (request smuggling / DoS / TLS bypass). Fixed в 3.13.3+.
-
-Bump constraint: aiohttp>=3.13.3,<3.14 (compatible с aiogram 3.x).
-
-Verification:
-- pip install -r requirements.txt без conflict ✅
-- pytest services/notification-bot/tests ~108 тестов green ✅
-- docker build rct-notification-bot успешный ✅
-- python -c "import aiohttp; print(aiohttp.__version__)" → 3.13.x ✅
-
-Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
-```
 
 После — docs followup (CHECKLIST + NOTES update). Затем **не двигайся
 к G6 без явного go от пользователя**.
@@ -145,7 +132,7 @@ G6 = «SHA-pin remaining actions в deploy/coverage/security» (~45 мин).
 1. ✅ **G1** — legacy headers strict default (CSO CRIT-01) — done `dc40929`
 2. ✅ **G2** — SHA-pin appleboy/ssh-action (CSO CRIT-02) — done `a93859b`
 3. ✅ **G3** — PKCS#8 + idempotent JWT key gen (CSO HIGH-05) — done `7e69067`
-4. ⛔ **G4 DEFERRED** — fail-fast secrets (CSO HIGH-06) → pre-v0.1 (Spring Boot ограничение)
+4. ✅ **G4 v2** — RequiredSecretsValidator (CSO HIGH-06) — done `bf915ec`
 5. **G5** — aiohttp 3.10.11 → 3.13.3+ bump (CSO HIGH-07) — **СЛЕДУЮЩАЯ**
 6. **G6** — SHA-pin remaining actions в deploy/coverage/security (CSO HIGH-03/04 + MED-09)
 7. **G7** — G26 test-audit P1 (false-pass Playwright tests) — самая длинная (~1-1.5ч)
@@ -155,32 +142,31 @@ G6 = «SHA-pin remaining actions в deploy/coverage/security» (~45 мин).
 ## Local state на момент hand-off (2026-04-26 evening)
 
 ```
-Working tree: clean (только ?? .gstack/ — security report, gitignored)
-Branch: dev (8 коммитов впереди origin/dev)
-Last commit: <G4 docs commit — обновится в реальности>
+Working tree: clean (только ?? .gstack/ — gitignored)
+Branch: dev (9-10 коммитов впереди origin/dev)
+Last commit: <G4 v2 docs followup>
 
 Локальные коммиты M14 (НЕ push'нуты):
-  <G4 docs>   docs(M14): G4 deferred — Spring Boot не fail-fast на unresolved YAML placeholders
-  d20616d     docs(M14): отметить G3 done + rotate hand-off на G4
-  7e69067     fix(ci): PKCS#8 + idempotent JWT key gen в deploy.yml (M14 G3, CSO HIGH-05)
-  dc602a0     docs(M14): отметить G2 done + rotate hand-off на G3
-  a93859b     fix(ci): SHA-pin appleboy/ssh-action against supply chain (M14 G2, CSO CRIT-02)
-  5a1b175     docs(M14): отметить G1 done + зафиксировать application-test.yml asymmetry
-  dc40929     fix(security): legacy headers strict by default (M14 G1, CSO CRIT-01)
-  455029f     docs(M14): план + триаж 4 пост-M13 аудитов (M14 setup)
+  <G4 v2 docs>  docs(M14): G4 v2 done — RequiredSecretsValidator + rotate hand-off на G5
+  bf915ec       fix(security): RequiredSecretsValidator — fail-fast на missing critical secrets (M14 G4 v2, CSO HIGH-06)
+  d2daff7       docs(M14): G4 deferred → pre-v0.1 (Spring Boot не fail-fast на unresolved YAML placeholders) [SUPERSEDED by G4 v2]
+  d20616d       docs(M14): отметить G3 done + rotate hand-off на G4
+  7e69067       fix(ci): PKCS#8 + idempotent JWT key gen в deploy.yml (M14 G3, CSO HIGH-05)
+  dc602a0       docs(M14): отметить G2 done + rotate hand-off на G3
+  a93859b       fix(ci): SHA-pin appleboy/ssh-action against supply chain (M14 G2, CSO CRIT-02)
+  5a1b175       docs(M14): отметить G1 done + зафиксировать application-test.yml asymmetry
+  dc40929       fix(security): legacy headers strict by default (M14 G1, CSO CRIT-01)
+  455029f       docs(M14): план + триаж 4 пост-M13 аудитов (M14 setup)
 ```
 
-Push на origin/dev пока НЕ делать — пользователь решает когда (либо после
-G9 + tag, либо если хочет промежуточный CI run для верификации).
+Push на origin/dev пока НЕ делать — пользователь решает когда.
 
 ## Pending decisions для new conversation
 
 1. **Aiohttp version constraint.** В hand-off `>=3.13.3,<3.14`. Проверь
-   через `pip index versions aiohttp` если можно — иначе ставь так и
-   возложи на pip resolver.
+   через `pip index versions aiohttp` если можно — иначе ставь так.
 2. **Test failures после bump.** Если pytest падает — приоритет: patch
-   test (если API change в aiohttp), не downgrade aiohttp ниже 3.13.3
-   (CVE patches там).
+   test (если API change в aiohttp), не downgrade aiohttp ниже 3.13.3.
 3. **Push на origin/dev.** По дефолту НЕ пушим.
 
 ## История milestone'ов (архив)
@@ -188,11 +174,9 @@ G9 + tag, либо если хочет промежуточный CI run для 
 - M01-M08 ✅ (`v0.0.0-alpha.1..alpha.9`)
 - M09-M12 ✅ 2026-04-24 (`alpha.10..alpha.13`)
 - M13 Pre-Deploy Hardening ✅ 2026-04-25 (`v0.0.0-alpha.15`)
-- **→ M14 Post-Audit Fixes** (текущий) — G1 ✅, G2 ✅, G3 ✅, G4 ⛔ deferred,
+- **→ M14 Post-Audit Fixes** (текущий) — G1 ✅, G2 ✅, G3 ✅, G4 v2 ✅,
   G5-G9 pending. Tag `v0.0.0-alpha.16` после G9.
 
 Roadmap: `docs/milestones/README.md`.
 Aудиторские отчёты-источники: `docs/milestones/M13-pre-deploy-hardening/G2{6,7}-*.md`.
-Trail отложенного: `docs/future-ideas.md` § Pre-v0.1 (включая G4
-"CSO HIGH-06: fail-fast secrets через ApplicationContextInitializer") +
-`docs/deferred-ideas.md` § v0.1+ tech debt.
+Trail отложенного: `docs/future-ideas.md` § Pre-v0.1 + `docs/deferred-ideas.md` § v0.1+ tech debt.

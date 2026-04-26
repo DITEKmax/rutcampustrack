@@ -127,7 +127,7 @@
 - [x] `AuthService#login(request, ipAddress)` прокидывает IP в все вызовы LoginRateLimiter
 - [x] Unit-тесты `LoginRateLimiterTest` — 11: composite key; разные IP НЕ аккумулируются; 5/10/20 thresholds; IP-jack victim НЕ блокируется
 - [x] Integration `LoginRateLimiterIT` — 3: 5 попыток с IP-A → 6-й 429; IP-A лочит login → IP-B логинится успешно; successful login clear'ит только свою корзину
-- [ ] Документация в `docs/api-rate-limits.md` — различие Gateway global-RL vs auth-service LoginRateLimiter _(отложено в Группу 15 документации)_
+- [ ] Документация в `docs/api/api-rate-limits.md` — различие Gateway global-RL vs auth-service LoginRateLimiter _(отложено в Группу 15 документации)_
 
 ## Группа 12 — Rate-limit тесты (14 P1-2)
 
@@ -156,8 +156,8 @@
 
 ## Группа 15 — Документация + artifacts
 
-- [x] `docs/internal-jwt-spec.md` (NEW-3) — формат, claims, TTL, ключи, token-exchange flow, dual/strict mode, downstream-валидация, security properties, roadmap
-- [x] `docs/api-rate-limits.md` (NEW-11) — семантика token-bucket, таблица лимитов, 429 Problem Details, Retry-After, fail-open, LoginRateLimiter composite key, клиентские рекомендации (retry-with-backoff + X-Login header)
+- [x] `docs/api/internal-jwt-spec.md` (NEW-3) — формат, claims, TTL, ключи, token-exchange flow, dual/strict mode, downstream-валидация, security properties, roadmap
+- [x] `docs/api/api-rate-limits.md` (NEW-11) — семантика token-bucket, таблица лимитов, 429 Problem Details, Retry-After, fail-open, LoginRateLimiter composite key, клиентские рекомендации (retry-with-backoff + X-Login header)
 - [x] `docs/architecture/architecture.md` → раздел «Internal JWT и rate-limiting» после «Reliable eventing (M02)» — token exchange pipeline, ключевые инварианты, rate-limit таблица
 - [x] `CHANGELOG.md [Unreleased]` → M03a секция (Added) с детализацией shared-security, token-exchange, Gateway issuer, downstream миграция, rate-limiting, LoginRateLimiter, strict-mode toggle, contract-тесты, документация, 3 critical fixes
 - [x] `CLAUDE.md` — таблица milestones: M03 строка разделена на M03a ✅ 2026-04-20 + M03b; shared-security добавлен в структуру репозитория

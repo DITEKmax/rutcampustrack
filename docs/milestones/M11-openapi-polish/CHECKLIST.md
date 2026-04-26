@@ -105,7 +105,7 @@
 - [x] Grep проверка: `record ErrorResponse` → ровно 1 hit
 - [x] Grep проверка: `scanBasePackages.*shared\.web` → 0 hits
 - [x] `docs/architecture/shared-modules-usage.md` обновлён (новая структура)
-- [x] `docs/api-error-conventions.md` обновлён (единый format)
+- [x] `docs/api/api-error-conventions.md` обновлён (единый format)
 - [x] `CLAUDE.md` обновлён (структура shared-*)
 - [x] Атомарные коммиты per-0.X (9 коммитов)
 
@@ -121,7 +121,7 @@
       содержит все 7 responses
 - [x] Customizer подключён автоматически через
       `SharedWebAutoConfiguration` (Группа 0 обеспечивает)
-- [x] `docs/api-error-conventions.md` — раздел «Global error responses»
+- [x] `docs/api/api-error-conventions.md` — раздел «Global error responses»
       (NEW-122)
 
 ## Группа 2 — @Schema на DTO (P2-2/4) ✅
@@ -136,7 +136,7 @@
 - [x] notification-service: аналогично (после M10 merge)
 - [x] Spot-check generated TS types (после re-generation в M07):
       JSDoc присутствует для выбранных 5 DTO
-- [x] `docs/api-error-conventions.md` — раздел «@Schema policy»
+- [x] `docs/api/api-error-conventions.md` — раздел «@Schema policy»
       (NEW-124)
 
 ## Группа 3 — Conformance CI (P2-2/3) ✅
@@ -157,7 +157,7 @@
       уже запускает `*OpenApiSnapshotIT` (строгий byte-level diff)
 - [x] ~~Tool: `openapi-diff` (Azure) или `oasdiff`~~ — заменено на
       встроенный JSON diff в IT (no external Go tool, no docker pull)
-- [x] `docs/openapi-conformance.md` (NEW-123) — runbook создан
+- [x] `docs/api/openapi-conformance.md` (NEW-123) — runbook создан
 
 ## Группа 4 — /swagger-ui prod protection (P2-2/6) ✅
 

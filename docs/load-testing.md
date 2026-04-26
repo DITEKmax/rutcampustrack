@@ -169,5 +169,5 @@ running (2m00.0s), 00/10 VUs, 1200 complete and 0 interrupted iterations
 - `docs/performance-baseline.md` — baseline numbers
 - `docs/connection-pool-tuning.md` (NEW-147) — HikariCP config
   (M05 G6)
-- `docs/api-error-conventions.md` (NEW-145) — 200/207 vs partial
+- `docs/api/api-error-conventions.md` (NEW-145) — 200/207 vs partial
   success semantics (M05 G4)

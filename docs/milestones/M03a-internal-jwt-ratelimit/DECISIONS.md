@@ -97,7 +97,7 @@ Downstream-фильтр проще: `request.getHeader("X-Internal-Token")` вм
 **Последствия:** `InternalJwtValidator` читает из `X-Internal-Token`.
 `InternalJwtIssuerFilter` в Gateway кладёт туда. `shared-logback` masking
 добавляет правило для `X-Internal-Token` (наряду с `Authorization` из M01).
-Документация в `docs/internal-jwt-spec.md` — header name как контракт.
+Документация в `docs/api/internal-jwt-spec.md` — header name как контракт.
 
 ---
 

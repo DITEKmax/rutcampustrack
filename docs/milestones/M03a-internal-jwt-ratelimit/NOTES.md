@@ -145,7 +145,7 @@ filter, прокидывающий поле в attribute/header → overkill д�
 (PWA/web-panel) дублирует `{login}` из body в header при POST /auth/login.
 При отсутствии header resolver fallback'ится на только-IP ключ — защита
 от брута сохраняется (IP-RL 5/min + composite RL становится дубликатом).
-Документируется в `docs/api-rate-limits.md` (Группа 15) как контракт для
+Документируется в `docs/api/api-rate-limits.md` (Группа 15) как контракт для
 клиентов. Фронтенд-миграция — отдельный small commit в M07 либо hotfix.
 
 **RFC 7807 через ResponseDecorator:** `RequestRateLimiterGatewayFilterFactory`

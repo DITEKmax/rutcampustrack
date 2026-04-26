@@ -110,7 +110,7 @@ requestedTokens = 60 / X
 **Retry-After:** остаётся hardcoded `60` в
 `RateLimitProblemDetailsFilter:73`. Не уточняем per-route — это upper
 bound, клиент может ждать меньше (реально `60/X` сек). Описано в
-`docs/api-rate-limits.md`.
+`docs/api/api-rate-limits.md`.
 
 **Проверка:** локально `./gradlew :services:api-gateway:integrationTest
 --tests RateLimitIT` → 2/2 passing. Assertion-ы
@@ -140,7 +140,7 @@ semantics в одном yml.
 **Не тронул:** schedule-app `max-page-size: 200` (из v3.0 phase
 11 RESEARCH — week-range query ~640 lessons/semester; 200 покрывает
 большинство практических запросов). Отдельно задокументирован override
-в `docs/api-pagination.md` как legitimate per-service exception.
+в `docs/api/api-pagination.md` как legitimate per-service exception.
 
 **Удалил:** `max-page-size: 100` из `notification-app/application.yml`
 (дубль с shared-web default после M13 G3). `default-page-size: 20` в

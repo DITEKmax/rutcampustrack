@@ -151,7 +151,7 @@ journal bulk-read отложены в backlog._
 - [x] Validation: `@Valid @Size` на List + `@NotNull` на каждом поле `MarkBatchItem`. Spring кидает MethodArgumentNotValidException → existing GlobalExceptionHandler → RFC 7807 ErrorResponse с fieldErrors[].
 - [x] Frontend PWA: headman `handleBulkMark` → `POST /marks/batch` вместо `for (...) await PUT`. Один toast (success/error), invalidation TanStack Query ключей.
 - [~] **Deferred (D8):** Frontend web-panel `HeadmanWeeklyJournal` — использует `forkJoin` для bulk-read (не bulk-mark, HTTP/2 multiplexing даёт параллелизм on-wire). ROI < 2×, отложено.
-- [x] `docs/api-error-conventions.md` — раздел «Batch endpoint conventions» (NEW-145): pseudo-atomic rationale, schema, client error handling.
+- [x] `docs/api/api-error-conventions.md` — раздел «Batch endpoint conventions» (NEW-145): pseudo-atomic rationale, schema, client error handling.
 - [x] Unit-тест `MarkingServiceTest.markBatch_*`: 5 сценариев — happy path (3 students 1 lesson = 1 gRPC + 1 groupMembers + 3 upsert), not-headman rejected, student-not-in-group rejected, CANCELLED rejected, wrong-group lesson rejected. Все зелёные.
 
 ## Группа 5 — Single-pass accumulators + SQL pagination (P2-10/5, D9)
@@ -309,7 +309,7 @@ D11. Deadline уже везде (19 callsite'ов), параллелизация
 - [x] `docs/caching-strategy.md` (создан в G3).
 - [x] `docs/connection-pool-tuning.md` (создан в G6).
 - [x] `docs/data-retention-policy.md` (создан в G7).
-- [x] `docs/api-error-conventions.md` (создан в G4, sibling runbook).
+- [x] `docs/api/api-error-conventions.md` (создан в G4, sibling runbook).
 - [x] `docs/future-ideas.md` (создан в G5, sibling runbook).
 - [x] `docs/architecture/architecture.md` §11.1 — блок «Performance & Ops runbooks»
       с 6 ссылками (обновлено в G9 hot-patches, commit `ba0b233`).

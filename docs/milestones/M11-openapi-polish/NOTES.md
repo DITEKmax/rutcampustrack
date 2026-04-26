@@ -316,4 +316,4 @@ PLAN ожидал 5-10 ошибочных `@ApiResponse("200")` на
 | G3.2 fix | `<pending>` | HomeworkController markComplete 200→204, AuthController changePassword 200→204 + @ApiResponse update |
 | G3.3 snapshot infra | `<pending>` | OpenApiSnapshotIT per service, docs/api-spec/*.yaml |
 | G3.4 CI oasdiff | `<pending>` | .github/workflows/ci.yml new step |
-| G3.5 docs | `<pending>` | docs/openapi-conformance.md runbook NEW-123 |
+| G3.5 docs | `<pending>` | docs/api/openapi-conformance.md runbook NEW-123 |

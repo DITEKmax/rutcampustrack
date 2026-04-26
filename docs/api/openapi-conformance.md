@@ -128,4 +128,4 @@ Frontend drift fail (`.github/workflows/openapi-drift.yml`) —
 - **M07 frontend types generation** — `.github/workflows/openapi-drift.yml`
 - **M11 G0/G1/G2** — `docs/milestones/M11-openapi-polish/`
 - **M11 G3** — этот runbook + 4 `OpenApiSnapshotIT` files
-- **api-error-conventions** — `docs/api-error-conventions.md`
+- **api-error-conventions** — `api-error-conventions.md`

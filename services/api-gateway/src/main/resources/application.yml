@@ -57,7 +57,7 @@ spring:
         # При первом запросе bucket полон (60 tok), даёт burst = X запросов залпом.
         # Далее каждые 60/X секунд восполняется 1 слот.
         # UX: после всплеска из X запросов → 60/X сек ожидания до следующего запроса.
-        # См. docs/api-rate-limits.md и docs/milestones/M13-pre-deploy-hardening/NOTES.md.
+        # См. docs/api/api-rate-limits.md и docs/milestones/M13-pre-deploy-hardening/NOTES.md.
 
         # /api/auth/otp/request — 1 req/min per IP (жёсткий SMS-cost guard)
         - id: auth-otp-request

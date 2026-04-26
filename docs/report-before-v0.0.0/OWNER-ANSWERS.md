@@ -253,7 +253,7 @@ _(отвечено: 6 / 12)_
   библиотека для downstream + миграция UserContextFilter + e2e-тест
   bypass-сценария).
   **NEW (порождённые задачи):**
-  - **NEW-3:** spec файл `docs/internal-jwt-spec.md` — формат токена,
+  - **NEW-3:** spec файл `docs/api/internal-jwt-spec.md` — формат токена,
     claims, TTL, ключи. Чтобы будущий разработчик не пере-открывал
     дискуссию.
   - **NEW-4:** при выкатывании фикса нужен «двойной режим» на короткий
@@ -334,7 +334,7 @@ _(отвечено: 6 / 12)_
   - **NEW-10:** мониторинг лимитов в Grafana — счётчик «отказы из-за
     rate-limit» по route'ам. Помогает увидеть legitimate traffic spikes
     и tune лимиты постфактум.
-  - **NEW-11:** документировать лимиты в `docs/api-rate-limits.md` — чтобы
+  - **NEW-11:** документировать лимиты в `docs/api/api-rate-limits.md` — чтобы
     клиентский код знал про 429 ответы и backoff'ил.
 
 - **Q-frontend-security (sub-Q к фронт-кластеру).** JWT cookie + WS-ticket +
@@ -597,7 +597,7 @@ _(отвечено: 4 / 10)_
     к чужим ресурсам. Шаблон теста общий, варьируется endpoint-таблицей.
   - **NEW-32:** при 403 vs 404 — выбрать единую политику. Рекомендую
     404 (не раскрывать существование записи), задокументировать в
-    `docs/api-error-conventions.md`.
+    `docs/api/api-error-conventions.md`.
 
 - **Q-P0-6.** `cleanupOrphans` mass-delete на старте?
   **Ответ (2026-04-18):** **(a)** Убрать `cleanupOrphans` совсем.
@@ -3110,7 +3110,7 @@ QC2 type-gen (`openapi-typescript` + `openapi-fetch`). Зафиксирован�
     - NEW-123 (openapi-runtime-conformance) — тесты проходят.
     - P2-2/1 (OpenApiCustomizer) — все эти коды в OpenAPI spec.
   - **Estimate:** ~4 часа (9 handler'ов + тесты + config tweaks × 4 сервиса).
-  - **NEW-132:** `docs/api-error-conventions.md` — таблица «HTTP status ×
+  - **NEW-132:** `docs/api/api-error-conventions.md` — таблица «HTTP status ×
     exception × title × когда возникает». Отсылка в OpenAPI (NEW-85
     snapshot) и frontend-architecture (NEW-86). Связано с NEW-32
     (404 vs 403 policy).
@@ -3405,7 +3405,7 @@ file-upload MIME, date-boundaries, enum-deserialization strategy.
   - **Estimate:** ~4 часа (3 annotations + validators + тесты +
     application в 2-3 DTO).
   - **NEW-138:** новый пакет `shared-web/validation/` с common
-    cross-field annotations. Документировать в `docs/api-error-conventions.md`
+    cross-field annotations. Документировать в `docs/api/api-error-conventions.md`
     (NEW-132) — когда использовать какую аннотацию.
 
 - **P2-4/2 — Format-patterns (login, OTP-code, telegram_id):** **(a)**
@@ -3443,7 +3443,7 @@ file-upload MIME, date-boundaries, enum-deserialization strategy.
     - NEW-132 (api-error-conventions.md) — таблица «поле → формат».
     - QC2 — TS-типы с minLength/maxLength/pattern.
   - **Estimate:** ~2 часа (audit × 5 модулей + правки).
-  - **NEW-139:** audit checklist в `docs/api-error-conventions.md`:
+  - **NEW-139:** audit checklist в `docs/api/api-error-conventions.md`:
     таблица «DTO-поле → тип → constraint → rationale». Обновляется при
     добавлении новых полей (как часть NEW-108 contributing.md).
 
@@ -3639,7 +3639,7 @@ file-upload MIME, date-boundaries, enum-deserialization strategy.
   - **Estimate:** ~4 часа (audit enum-полей × 5 contracts + @NotNull +
     Jackson config в shared-web + integration-тесты).
   - **NEW-141:** audit checklist «enum-поля в contract-DTO → все
-    `@NotNull`» в `docs/api-error-conventions.md` (NEW-132). Часть
+    `@NotNull`» в `docs/api/api-error-conventions.md` (NEW-132). Часть
     NEW-108 contributing.md как PR-check.
 
 **Итого P2-4 (8 вопросов):** все совпали с рекомендациями.
@@ -3848,7 +3848,7 @@ connection pool defaults (HikariCP=10), cleanup push-подписок,
   - **Estimate:** ~1 день (2 endpoint'а + partial-success schema +
     frontend refactor × 2 клиента).
   - **NEW-145:** раздел «Batch endpoint conventions» в
-    `docs/api-error-conventions.md` (NEW-132): HTTP status для
+    `docs/api/api-error-conventions.md` (NEW-132): HTTP status для
     атомарных vs partial-success, schema `MarkResult`, как клиент
     обрабатывает 207 Multi-Status.
 

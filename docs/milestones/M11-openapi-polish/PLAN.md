@@ -130,7 +130,7 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
 
 8. **Обновить docs:**
    - `docs/architecture/shared-modules-usage.md` — новая структура (api + starter)
-   - `docs/api-error-conventions.md` — единый `ErrorResponse` формат
+   - `docs/api/api-error-conventions.md` — единый `ErrorResponse` формат
    - `CLAUDE.md` — shared-web → shared-web-api + shared-web-starter
 
 ### SharedOpenApiCustomizer наполнение (P2-2/1)
@@ -162,7 +162,7 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
   лучших примеров)
 - Generated TypeScript types (QC2 M07) автоматически станут точнее —
   descriptions/examples попадут в JSDoc
-- NEW-124 — ADR «@Schema policy» в `docs/api-error-conventions.md`
+- NEW-124 — ADR «@Schema policy» в `docs/api/api-error-conventions.md`
 
 ### OpenAPI ↔ runtime conformance (P2-2/3)
 - Audit `@ApiResponse(responseCode = "200")` vs actual controller
@@ -174,7 +174,7 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
   `atlassian/swagger-request-validator` или
   `openapi-diff` против `/v3/api-docs` runtime dump
 - Smoke: `./gradlew openapi-dump` → compare с committed spec
-- NEW-123 — `docs/openapi-conformance.md` runbook
+- NEW-123 — `docs/api/openapi-conformance.md` runbook
 
 ### /swagger-ui protection в prod (P2-2/6)
 - nginx basic-auth location block для `/swagger-ui/**` + `/v3/api-docs`
@@ -277,9 +277,9 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
 
 ### Docs
 - `docs/architecture/shared-modules-usage.md` — обновить (Группа 0)
-- `docs/api-error-conventions.md` — расширение: «Global error responses»
+- `docs/api/api-error-conventions.md` — расширение: «Global error responses»
   + «@Schema policy» + единый ErrorResponse (NEW-122, NEW-124)
-- `docs/openapi-conformance.md` (NEW-123) — runbook
+- `docs/api/openapi-conformance.md` (NEW-123) — runbook
 - `docs/runbooks/swagger-prod-access.md` (NEW-125)
 - `docs/api-spec/` (NEW directory) — committed OpenAPI snapshots
 - `CLAUDE.md` — структура shared-* модулей
@@ -319,8 +319,8 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
       (G4, smoke-verified локально)
 - [x] ~~Dev local profile без basic-auth~~ — dev compose не содержит
       nginx (unnecessary)
-- [x] `docs/api-error-conventions.md` расширен (NEW-122)
-- [x] `docs/openapi-conformance.md` (NEW-123) +
+- [x] `docs/api/api-error-conventions.md` расширен (NEW-122)
+- [x] `docs/api/openapi-conformance.md` (NEW-123) +
       `docs/runbooks/swagger-prod-access.md` (NEW-125)
 - [x] `docs/openapi/*.json` committed (унифицировано с M07 baseline)
 - [x] Post-mortem секция ниже, tag `v0.0.0-alpha.12` (локальный)
@@ -435,8 +435,8 @@ starter-like (scanBasePackages в notification-app). 3 сервиса
 - `infra/nginx/nginx.conf` — swagger basic-auth block
 - `infra/nginx/htpasswd/swagger.template`
 - `docs/api-spec/{academic,schedule,attendance,notification}.yaml`
-- `docs/api-error-conventions.md` — расширение
-- `docs/openapi-conformance.md` (NEW-123)
+- `docs/api/api-error-conventions.md` — расширение
+- `docs/api/openapi-conformance.md` (NEW-123)
 - `docs/runbooks/swagger-prod-access.md` (NEW-125)
 - `.env.prod.example` — новая переменная `SWAGGER_HTPASSWD`
 

@@ -39,12 +39,12 @@ lifecycle — зависит от M03a (Internal JWT — prerequisite для coo
 - **14 P1-1** — contract-тест Gateway↔downstream на Internal JWT bypass.
 - **14 P1-2** — тесты rate-limit через Testcontainers Redis + WebTestClient.
 - **13 P1-3** — nginx RL ❌ ОТКЛОНЁН (выбран Gateway).
-- **NEW-3** `docs/internal-jwt-spec.md` — формат токена, claims, TTL, ключи.
+- **NEW-3** `docs/api/internal-jwt-spec.md` — формат токена, claims, TTL, ключи.
 - **NEW-4** двойной режим: Gateway шлёт И `X-User-*`, И `Authorization: Internal`, сервисы принимают оба, потом strict.
 - **NEW-5** smoke-тест в `deploy.yml`: порты 9091-9094 недоступны снаружи VPS.
 - **NEW-9** fail-open стратегия при Redis недоступности.
 - **NEW-10** Grafana счётчик rate-limit отказов (передаётся в M04).
-- **NEW-11** `docs/api-rate-limits.md` — документация лимитов для клиентов.
+- **NEW-11** `docs/api/api-rate-limits.md` — документация лимитов для клиентов.
 
 **Не входит в M03a (отложено в M03b):**
 - JWT HttpOnly cookie для refresh (C0-7 Часть А).
@@ -126,8 +126,8 @@ lifecycle — зависит от M03a (Internal JWT — prerequisite для coo
 
 ### 8. ArchUnit / documentation
 
-- `docs/internal-jwt-spec.md` (NEW-3) — формат токена, claims, TTL, ротация ключей, dual-mode flag, миграционный путь.
-- `docs/api-rate-limits.md` (NEW-11) — таблица лимитов, 429 поведение, Retry-After header, рекомендации клиенту.
+- `docs/api/internal-jwt-spec.md` (NEW-3) — формат токена, claims, TTL, ротация ключей, dual-mode flag, миграционный путь.
+- `docs/api/api-rate-limits.md` (NEW-11) — таблица лимитов, 429 поведение, Retry-After header, рекомендации клиенту.
 - `docs/architecture/architecture.md` — раздел «Internal JWT и rate-limiting» после «Reliable eventing».
 - `CLAUDE.md` — статус M03a + обновление раздела архитектуры.
 - `CHANGELOG.md [Unreleased]` — Added/Changed M03a.
@@ -144,7 +144,7 @@ lifecycle — зависит от M03a (Internal JWT — prerequisite для coo
 - [ ] **`LoginRateLimiter` композитный ключ.** Unit-тест: попытки с разных IP на один login не аккумулируются в одной корзине.
 - [ ] **RFC 7807 для 429.** Gateway возвращает `application/problem+json` с `type/title/status=429/detail`.
 - [ ] **`./gradlew build` зелёный** для shared-security + 4 downstream + Gateway.
-- [ ] **`docs/internal-jwt-spec.md` + `docs/api-rate-limits.md`** написаны (NEW-3, NEW-11).
+- [ ] **`docs/api/internal-jwt-spec.md` + `docs/api/api-rate-limits.md`** написаны (NEW-3, NEW-11).
 
 ## Dependencies
 
@@ -157,8 +157,8 @@ lifecycle — зависит от M03a (Internal JWT — prerequisite для coo
 - `services/shared/shared-security/` — новый модуль (validator + filter + autoconfig).
 - `services/api-gateway/.../security/InternalJwtIssuerFilter.java`, `IpKeyResolver.java`, etc.
 - 4 миграции downstream: `UserContextFilter` → `InternalJwtFilter` + dual-mode.
-- `docs/internal-jwt-spec.md` (NEW-3).
-- `docs/api-rate-limits.md` (NEW-11).
+- `docs/api/internal-jwt-spec.md` (NEW-3).
+- `docs/api/api-rate-limits.md` (NEW-11).
 - `docs/architecture/architecture.md` — новый раздел.
 - `CHANGELOG.md [Unreleased]` — Added/Changed.
 
@@ -285,7 +285,7 @@ hot-patch после alpha.3 либо в следующих milestones:
 - [x] `LoginRateLimiter` композитный ключ. 11 unit + 3 IT тестов.
 - [x] RFC 7807 для 429. `RateLimitProblemDetailsFilter`.
 - [x] `./gradlew build` зелёный.
-- [x] `docs/internal-jwt-spec.md` + `docs/api-rate-limits.md` written.
+- [x] `docs/api/internal-jwt-spec.md` + `docs/api/api-rate-limits.md` written.
 
 ### Metrics финала
 

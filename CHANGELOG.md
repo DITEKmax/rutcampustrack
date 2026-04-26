@@ -491,7 +491,7 @@
     в `attendance-api-contract`.
   - **PWA `useHeadmanMarkBatch`** — TanStack mutation,
     `handleBulkMark` переключён с for-loop `await` на один batch call.
-  - **`docs/api-error-conventions.md`** (NEW-145) — RFC 7807 error
+  - **`docs/api/api-error-conventions.md`** (NEW-145) — RFC 7807 error
     schema, pseudo-atomic vs partial-success patterns.
 
 - **M05 Performance — Группа 3 (Redis cache дополнения, D6, NEW-144)** —
@@ -776,9 +776,9 @@
     `FailOpenIT` (Redis connection refused → 10 запросов проходят),
     `CompositeLoginKeyResolverIT`. 5 тестов.
   - **Документация:**
-    - `docs/internal-jwt-spec.md` (NEW-3) — формат, claims, ключи,
+    - `docs/api/internal-jwt-spec.md` (NEW-3) — формат, claims, ключи,
       token-exchange flow, dual/strict mode, downstream-валидация.
-    - `docs/api-rate-limits.md` (NEW-11) — таблица лимитов, 429 поведение,
+    - `docs/api/api-rate-limits.md` (NEW-11) — таблица лимитов, 429 поведение,
       fail-open, клиентские рекомендации retry-with-backoff и `X-Login`.
     - `docs/architecture/architecture.md` — раздел «Internal JWT и rate-limiting» после
       «Reliable eventing».

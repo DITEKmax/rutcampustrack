@@ -17,13 +17,13 @@
 
 - [x] Переделать `application.yml` rate-limit на 6 auth роутов: `replenishRate=1`, `burstCapacity=5`, `requestedTokens=12` → ровно 5 req/min _(финальная формула: `burstCapacity=60, requestedTokens=60/X`; owner-формула в NOTES была неточной — `burstCapacity=5 < requestedTokens=12` давало 429 на первом запросе. См. `api-rate-limits.md` «Формула для цели X req/min»)_
 - [x] Обновить `RateLimitIT` — тест на 5 req → 6-й 429 с правильным timing _(после фикса config'а тест прошёл без изменения assertion'ов; добавлен comment-clarification про M13 G2)_
-- [x] Обновить `docs/api-rate-limits.md` — семантика _(заменена таблица burst/replenish на X req/min + requestedTokens; добавлен блок «Формула для цели X req/min» и уточнение про Retry-After как hardcoded upper bound)_
+- [x] Обновить `docs/api/api-rate-limits.md` — семантика _(заменена таблица burst/replenish на X req/min + requestedTokens; добавлен блок «Формула для цели X req/min» и уточнение про Retry-After как hardcoded upper bound)_
 
 ## Группа 3 — Pagination global cap (security)
 
 - [x] Добавить `spring.data.web.pageable.max-page-size=100` в `shared-web` default config _(`PageableDefaultsPostProcessor` + `META-INF/spring.factories`; `EnvironmentPostProcessor` ставит дефолт с lowest priority, per-service override возможен)_
 - [x] IT на 3 endpoint'а (academic/schedule/attendance) — `?size=1000000` → truncated до 100 _(3 × `PaginationCapIT`, все зелёные; schedule проверяет cap=200 из local override, остальные — 100 из shared default)_
-- [x] Документация в `docs/api-pagination.md` — max-page-size = 100 _(новый файл: semantics, per-service cap table, client rules, HATEOAS links, monitoring roadmap)_
+- [x] Документация в `docs/api/api-pagination.md` — max-page-size = 100 _(новый файл: semantics, per-service cap table, client rules, HATEOAS links, monitoring roadmap)_
 
 ## Группа 4 — `/auth/refresh-body` removal (sunset guard)
 

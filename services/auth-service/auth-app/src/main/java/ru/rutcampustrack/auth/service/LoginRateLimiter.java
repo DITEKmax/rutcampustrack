@@ -24,7 +24,7 @@ import java.util.List;
  * Теперь счётчик ведётся per {@code (ip, login)}: атакующий с одного IP лочит только
  * СВОЮ попытку брута, пользователь с другого IP спокойно логинится. Distributed brute
  * через множество IP останавливается ещё раньше — Gateway-level rate-limit (5 req/min
- * per IP) на {@code POST /api/auth/login} (см. {@code docs/api-rate-limits.md}).</p>
+ * per IP) на {@code POST /api/auth/login} (см. {@code docs/api/api-rate-limits.md}).</p>
  *
  * <p>Redis keys auto-expire (TTL = block window), unblock автоматический.</p>
  */

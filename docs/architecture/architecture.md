@@ -940,7 +940,7 @@ Client → Gateway → auth-service.POST /internal/issue-internal-jwt
   `X-User-*` — downstream принимает любой (переходный период).
 - Strict-mode (M03a финальный commit, v0.0.0-alpha.3): Gateway strip'ает
   `X-User-*`, downstream отвергает запросы без Internal JWT.
-- Полная спецификация: `docs/internal-jwt-spec.md`.
+- Полная спецификация: `docs/api/internal-jwt-spec.md`.
 
 **Rate-limiting** через Spring Cloud Gateway `RedisRateLimiter`:
 
@@ -961,7 +961,7 @@ Client → Gateway → auth-service.POST /internal/issue-internal-jwt
 → 5min/30min/2h block. Атакующий с одного IP больше не может DoS-
 лочить чужой аккаунт.
 
-Полная таблица лимитов и клиентские рекомендации: `docs/api-rate-limits.md`.
+Полная таблица лимитов и клиентские рекомендации: `docs/api/api-rate-limits.md`.
 
 ### Auth flow (cookie + ws-ticket + logout lifecycle) (M03b)
 

@@ -332,10 +332,11 @@ rutcampustrack:
       cache-ttl-seconds: 240     # Gateway cache < auth-service TTL (300) with safety margin
       cache-max-size: 10000
       timeout-millis: 3000
-      # M03a Группа 14: strict-mode toggle. false (dev default) — Gateway прокидывает
-      # и X-Internal-Token, и legacy X-User-* (dual-mode). true (prod после UAT) —
-      # удаляет X-User-* перед proxy, downstream работает только через Internal JWT.
-      strip-legacy-headers: ${GATEWAY_STRIP_LEGACY_HEADERS:false}
+      # M14 G1 (CSO CRIT-01): strict by default — Gateway удаляет X-User-* перед proxy,
+      # downstream работает только через Internal JWT. Парная настройка с
+      # rutcampustrack.security.internal-jwt.legacy-headers-enabled=false в downstream.
+      # Для local dev можно явно отключить через env-override.
+      strip-legacy-headers: ${GATEWAY_STRIP_LEGACY_HEADERS:true}
 
 management:
   endpoints:

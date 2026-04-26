@@ -52,7 +52,8 @@ rutcampustrack:
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
       public-key-refresh-minutes: 60
       clock-skew-seconds: 30
-      legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:true}
+      # M14 G1 (CSO CRIT-01): strict by default — см. academic-app/application.yml.
+      legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:false}
 
 # M04 QA1: INFO-default для secure-by-default. DEBUG включается через
 # application-dev.yml (SPRING_PROFILES_ACTIVE=dev) или env-override.

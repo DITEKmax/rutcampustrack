@@ -40,7 +40,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = {
         "vapid.public-key=BKR2jT5k1Iu93_V8AHx3cpqE",
         "vapid.private-key=test-priv",
-        "notification.history.ttl-days=30"
+        "notification.history.ttl-days=30",
+        // M14 G1: prod default флипнут на false (CSO CRIT-01); legacy IDOR test
+        // продолжает имитировать X-User-* gateway-injection.
+        "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true"
 })
 @AutoConfigureMockMvc
 class SecurityIdorIT extends ContainerTestBase {

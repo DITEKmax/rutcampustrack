@@ -70,8 +70,10 @@ rutcampustrack:
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
       public-key-refresh-minutes: 60
       clock-skew-seconds: 30
-      # Dual-mode: accept legacy X-User-* headers until strict toggle (end of M03a).
-      legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:true}
+      # M14 G1 (CSO CRIT-01): strict by default — downstream принимает ТОЛЬКО Internal JWT.
+      # legacy X-User-* отключены, чтобы compromised peer container на private_net не мог
+      # форджить admin claims. Для local dev можно явно включить через env-override.
+      legacy-headers-enabled: ${RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED:false}
 
 cache:
   ttl:

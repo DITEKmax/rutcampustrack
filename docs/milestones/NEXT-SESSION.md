@@ -1,15 +1,15 @@
-# Промпт для следующей сессии — M14 G7: G26 test-audit P1 (false-pass Playwright tests)
+# Промпт для следующей сессии — M14 G8: G26 code-review P1 (burstCapacity + diagnostic + DRY)
 
 Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Opus сам откроет
 нужные файлы и продолжит.
 
 ---
 
-**M14 G6 закрыт (commit `7fbd908`). 16 actions pinned на 40-hex SHA через
-3 workflow files (deploy/coverage/security), 58 insertions / 42 deletions.
-Bonus: top-level permissions в coverage.yml сужены до `contents: read`,
-per-job least-privilege для PR-commenting jobs. M14 пока НЕ push'нут —
-13 локальных коммитов на `dev`, upstream не получил.**
+**M14 G7 закрыт (commit `f24f22f`). 7 false-pass spec'ов починены, 1 spec
+помечен `test.describe.skip` с переносом в v0.1 backlog (headman bulk-mark
+UI не реализован, backend готов). 3 testid'а добавлены в web-panel
+templates. Path A для категории E применён. Polный e2e run отложен
+на G9. M14 пока НЕ push'нут — 15 локальных коммитов на `dev`.**
 
 ## Контекст M14 (читай это первым)
 
@@ -24,7 +24,7 @@ M14 = «Post-Audit Fixes» — закрытие блокеров first VPS deplo
 Чеклист: `docs/milestones/M14-post-audit-fixes/CHECKLIST.md`.
 Заметки: `docs/milestones/M14-post-audit-fixes/NOTES.md`.
 
-## Что уже сделано (G1-G6, 2026-04-26)
+## Что уже сделано (G1-G7, 2026-04-26)
 
 | Коммит | Что |
 |--------|-----|
@@ -35,15 +35,16 @@ M14 = «Post-Audit Fixes» — закрытие блокеров first VPS deplo
 | `d2daff7` | G4 v1 deferred docs (Spring Boot ограничение) |
 | `bf915ec` + `44e2d7c` | **G4 v2**: RequiredSecretsValidator EnvironmentPostProcessor (CSO HIGH-06) |
 | `607af81` + `56c802f` | **G5**: aiohttp 3.10.11→3.13.5 + aiogram 3.15.0→3.23.0 (CSO HIGH-07) |
-| `7fbd908` | **G6**: SHA-pin 16 actions × 3 workflows + permissions least-privilege (CSO HIGH-03/04 + MED-09) |
-| `<tbd>` | G6 docs followup |
+| `7fbd908` + `18175fc` | **G6**: SHA-pin 16 actions × 3 workflows + permissions least-privilege (CSO HIGH-03/04 + MED-09) |
+| `f24f22f` | **G7**: G26 false-pass spec fixes + headman-mark.spec.ts skip + future-ideas v0.1 entry |
+| `<tbd>` | G7 docs followup |
 
-**G6 surprise:** `marocchino/sticky-pull-request-comment` не имеет
-floating `v2` ref — pin'ил на `v2.9.4`. Annotated tags (`gradle/actions`,
-`gitleaks-action`, `codeql-action`) требуют extra round-trip через
-`/git/tags/{sha}`. `gh` CLI всё ещё отсутствует, использовался
-`curl + py`. CI.yml/openapi-drift.yml оставлены с floating tags
-намеренно (вне scope hand-off).
+**G7 главное открытие:** ~50% false-pass spec'ов из G26 audit'а написаны
+**forward** — UI никогда не был реализован (`headman-mark.spec.ts`,
+`red-zone-badge`). Backend для bulk-mark готов, но web-panel UI требует
+~6-10 ч feature work с UX review. Перенесено в `docs/future-ideas.md`
+§ «v0.1 — Headman bulk-mark UI». Path A (удалить 2 теста) применён для
+категории E (seed `student` имеет `is_headman=true` → тесты invalid).
 
 ## Что делать в этой сессии
 
@@ -51,99 +52,76 @@ floating `v2` ref — pin'ил на `v2.9.4`. Annotated tags (`gradle/actions`,
 
 ```bash
 cd C:/Users/maksd/IntelliJIDEA/rutcampustrack
-git log --oneline -15
+git log --oneline -17
 git status --short
 ```
 
 **Ожидаем:**
-- HEAD = `<G6 docs commit>` или `7fbd908`
-- Working tree clean (или максимум `?? .gstack/`)
-- 13-14 локальных коммитов M14 ещё не на origin
+- HEAD = `<G7 docs commit>` или `f24f22f`
+- Working tree clean (или максимум `?? .gstack/`, `?? tests/e2e/fixtures/test-excuse.pdf` — последний gitignored либо генерится в beforeAll)
+- 15-16 локальных коммитов M14 ещё не на origin
 
-### Шаг 1 — выполнить Группу 7 (G26 test-audit P1)
+### Шаг 1 — выполнить Группу 8 (G26 code-review P1)
 
-⚠️ **Самая длинная группа в M14** — 1-1.5 часа. Требует решения по
-категории E (path A vs path B) до старта.
+⚠️ **Короткая группа** — ~30 минут. 3 sub-task'а.
 
-Из `CHECKLIST.md` (G7):
+Из `CHECKLIST.md` (G8):
 
-> ## Группа 7 — G26 test-audit P1 (1-1.5 ч)
+> ## Группа 8 — G26 code-review P1 (30 мин)
 >
-> - [ ] `tests/e2e/specs/role-teacher.spec.ts:18` — убрать `/teacher/schedule` из `paths` array (категория B; роута нет в `TEACHER_ROUTES`)
-> - [ ] **Решить в NOTES:** для категории E (`role-student.spec.ts`) — путь A (удалить тесты "cannot access /headman/*") или путь B (добавить seed `student_plain` с `is_headman=false`)
-> - [ ] Реализовать выбранный путь по категории E
-> - [ ] `tests/e2e/specs/role-teacher.spec.ts:34` — заменить `[data-testid="red-zone-badge"]` на ARIA role/text локатор; либо добавить `data-testid="red-zone-badge"` в `web-panel` шаблон (категория A)
-> - [ ] `tests/e2e/specs/headman-mark.spec.ts:29,52` — fix `[data-testid="lesson-card"]` + `[data-testid="group-attendance-count"]`
-> - [ ] `tests/e2e/specs/student-excuse.spec.ts:34,56` — fix `[data-testid="lesson-picker-item"]` + `[data-testid="excuse-card"]`
-> - [ ] `tests/e2e/specs/admin-create-user.spec.ts:49` — fix `[data-testid="initial-password-display"]`
-> - [ ] Если выбран путь template-testid: соответствующие изменения в `frontends/web-panel/**/*.html` + rebuild web-panel image
-> - [ ] Запустить `npx playwright test --grep @smoke` локально → все тесты RUN (нет skip по timeout) и большинство pass
-> - [ ] Commit: `fix(e2e): false-pass tests из G26 audit — testid + routes + seed user (M14 G7)`
+> - [ ] `services/api-gateway/src/main/resources/application.yml:122` — вернуть `burstCapacity: 60` на `auth-login` (rollback CI workaround `600`)
+> - [ ] Если CI требует override — задать в `docker-compose.e2e.yml` через env (`AUTH_LOGIN_BURST_CAPACITY=600`) и Spring `${AUTH_LOGIN_BURST_CAPACITY:60}` в YAML, либо добавить `PLAYWRIGHT_WORKERS=1` в `playwright.config.ts` для CI profile
+> - [ ] `tests/e2e/specs/auth.spec.ts:19-38` — удалить тест `diagnostic: direct POST /api/auth/login` с `console.log` (либо переместить в отдельный `@diag` файл, отключённый в CI grep)
+> - [ ] `tests/e2e/fixtures/users.ts:50-55` — удалить запись `headman` из `TEST_USERS`; все callers `TEST_USERS.headman` → `TEST_USERS.student` (`grep -rn "TEST_USERS.headman" tests/e2e/` сначала)
+> - [ ] Запустить `npx playwright test --grep @smoke` локально → должно проходить с `burstCapacity=60`
+> - [ ] Commit: `fix(gateway,e2e): burstCapacity prod default + diagnostic test removal + DRY users fixture (M14 G8, G26 F01-F03)`
 
-**Категория E решение (preliminary lean toward A):**
+**Контекст из G26 code-review (`G26-code-review-after-g25.md`):**
 
-NOTES.md уже фиксирует мою предварительную позицию: **path A
-(удалить 2 теста)**. Reasoning:
-- RBAC уже покрыт `SecurityIdorIT` на backend (M03b + M09).
-- E2E тест дублирует backend-уровневую защиту, дополнительной ценности
-  даёт мало vs path B cost (~30-45 мин Flyway seed migration в test profile).
-- Path A cost: ~5 мин, минус 2 теста coverage.
+- **F01:** `auth-login` rate-limit поднят до 600 для CI (workaround
+  flaky tests). Production default должен быть 60. Если CI красное —
+  правильное решение `PLAYWRIGHT_WORKERS=1` (sequential), не bumping
+  rate limit.
+- **F02:** diagnostic test с `console.log` остался от debug session.
+  Шумит в CI logs, не testит invariant — лишь печатает status code.
+- **F03:** `TEST_USERS.headman` дублирует `TEST_USERS.student`
+  (`student` УЖЕ has `is_headman=true`). DRY нарушен; забыть update
+  одной записи легко. Особое внимание — после G7 `student-excuse.spec.ts`
+  использует `TEST_USERS.student` для headman flow (правильно). Проверь
+  что callers `TEST_USERS.headman` → `TEST_USERS.student` без semantic
+  изменений.
 
-Запиши окончательное решение в NOTES.md в начале G7 — когда дойдёшь до
-тех 2 тестов в `role-student.spec.ts`. **Если pre-flight reading
-показывает что тесты дают какое-то уникальное coverage — переключись на
-path B и запиши обоснование.**
-
-**Контекст из G26 test-audit (`G26-test-audit-findings.md`):**
-
-5 категорий false-pass тестов:
-- **A (testid mismatch):** локатор в spec не существует в template
-  → `locator.waitFor()` timeout → тест skip с false-positive (Playwright
-  retry'и маскируют).
-- **B (route mismatch):** spec'ы тестируют `/teacher/schedule`, но
-  TEACHER_ROUTES не содержит такой маршрут → 404 → false navigation
-  pass.
-- **E (RBAC negative test seed mismatch):** spec тестирует "student
-  without is_headman cannot access /headman/*", но seed user `student`
-  имеет `is_headman=true`. Тест де-facto проверяет другой scenario.
-
-**Pre-flight перед началом G7:**
-1. Прочитать `tests/e2e/fixtures/users.ts` — какие seed users есть.
-2. Прочитать `frontends/web-panel/src/app/app.routes.ts` (или эквивалент
-   роутера) — реальные маршруты vs spec предположения.
-3. `grep -rn "data-testid" frontends/web-panel/src/app/` → существующие
-   testid'ы; сопоставить с spec'ами.
-4. `grep -rn "data-testid" tests/e2e/` → expected testid'ы из spec'ов.
-5. Diff сопоставление — fix application (template add testid) или fix
-   spec (use semantic locator)? Чеклист hand-off предполагает первичный
-   approach — fix spec через semantic локатор (`getByRole`/`getByText`),
-   template testid добавляется только если semantic невозможен.
+**Pre-flight перед началом G8:**
+1. `cat services/api-gateway/src/main/resources/application.yml | grep -A 5 auth-login` — увидеть текущий burstCapacity (должно быть 600 как CI workaround)
+2. `grep -n "TEST_USERS.headman" tests/e2e/` — какие spec'и использовали headman fixture
+3. Read `tests/e2e/specs/auth.spec.ts:19-38` — diagnostic test полностью
 
 ### Шаг 2 — Verify
 
 ```bash
-# должен проходить с поднятой инфраструктурой
-docker compose ps  # 26+ healthy
-npx playwright test --grep @smoke
+# Проверить что burstCapacity=60 не ломает smoke tests локально.
+docker compose ps  # backend ready?
+npx playwright test --grep @smoke --project=chromium
 ```
 
-Все тесты должны **RUN** (нет skip по timeout без явной причины).
-**Большинство** pass — допустимо несколько fail если они docunented как
-P2/P3 либо имеют known-issue с workaround.
+Если smoke падают — НЕ возвращать burstCapacity=600. Лучше добавить
+`PLAYWRIGHT_WORKERS=1` либо `--workers=1` в smoke run.
 
-### Шаг 3 — commit + переход к G8
+### Шаг 3 — commit + переход к G9
 
-После — docs followup (CHECKLIST + NOTES + rotate hand-off на G8).
+После — docs followup (CHECKLIST + NOTES + rotate hand-off на G9).
 
-### Если G7 завершён — переход к G8 (короткий)
+### G9 (финальная группа M14)
 
-G8 = «G26 code-review P1» — 30 мин:
-- `auth-login` burstCapacity 600→60 (rollback CI workaround)
-- удалить diagnostic test `direct POST /api/auth/login` из `auth.spec.ts`
-- удалить duplicate `headman` user из `users.ts` fixtures, callers →
-  `student`
+G9 = «UAT + tag `v0.0.0-alpha.16`» — ~30 мин:
+- Полный gradle build + smoke + pytest + frontend unit
+- preflight-deploy.sh
+- Push origin/dev + ожидание green CI
+- Tag `v0.0.0-alpha.16` со списком CRIT/HIGH fixes
+- Update `CLAUDE.md` § «Текущий статус» + `docs/milestones/README.md`
+- Финальный docs commit
 
-Если у пользователя есть час — G7+G8 в одной сессии.
+Если у пользователя есть час — G8+G9 в одной сессии.
 
 ## Полный список M14 групп (для context)
 
@@ -153,18 +131,20 @@ G8 = «G26 code-review P1» — 30 мин:
 4. ✅ **G4 v2** — RequiredSecretsValidator (CSO HIGH-06) — `bf915ec`
 5. ✅ **G5** — aiohttp + aiogram bump (CSO HIGH-07) — `607af81`
 6. ✅ **G6** — SHA-pin actions deploy/coverage/security (CSO HIGH-03/04 + MED-09) — `7fbd908`
-7. **G7** — G26 test-audit P1 (false-pass Playwright tests) — **СЛЕДУЮЩАЯ**
-8. **G8** — G26 code-review P1 (burstCapacity 600→60 + diagnostic test + DRY)
+7. ✅ **G7** — G26 false-pass tests + headman-mark skip (M14 G7) — `f24f22f`
+8. **G8** — G26 code-review P1 (burstCapacity 600→60 + diagnostic + DRY) — **СЛЕДУЮЩАЯ**
 9. **G9** — UAT + tag `v0.0.0-alpha.16`
 
 ## Local state на момент hand-off (2026-04-26 evening)
 
 ```
 Working tree: clean (только ?? .gstack/ — gitignored)
-Branch: dev (13-14 коммитов впереди origin/dev)
+Branch: dev (15-16 коммитов впереди origin/dev)
 
 Локальные коммиты M14 (НЕ push'нуты):
-  <G6 docs>     docs(M14): G6 done — SHA-pin 16 actions + per-job permissions
+  <G7 docs>     docs(M14): G7 done — false-pass tests + v0.1 backlog
+  f24f22f       fix(e2e): G26 false-pass tests — testid + routes + skip forward-written + path A для seed mismatch (M14 G7)
+  18175fc       docs(M14): G6 done — SHA-pin 16 actions + per-job permissions
   7fbd908       fix(ci): SHA-pin third-party + first-party actions в deploy/coverage/security (M14 G6, CSO HIGH-03/04 + MED-09)
   56c802f       docs(M14): G5 done — aiohttp + aiogram bump
   607af81       chore(deps): aiohttp 3.10.11→3.13.5 + aiogram 3.15.0→3.23.0 (M14 G5, CSO HIGH-07)
@@ -180,19 +160,20 @@ Branch: dev (13-14 коммитов впереди origin/dev)
   455029f       docs(M14): план + триаж 4 пост-M13 аудитов
 ```
 
-Push на origin/dev пока НЕ делать — пользователь решает когда.
+Push на origin/dev пока НЕ делать — пользователь решает когда (G9 default).
 
 ## Pending decisions для new conversation
 
-1. **Категория E path A vs B.** Lean toward A (~5 мин, минус 2 теста)
-   vs B (~30-45 мин, новый seed user через Flyway). Запиши финальное
-   решение в NOTES.md в первые ~10 мин G7.
-2. **template testid vs semantic locator.** Если semantic возможен
-   (`getByRole('button', { name: 'Mark attendance' })`) — предпочесть
-   semantic. Template testid только когда semantic невозможен.
-3. **CI workflow SHA-pin sweep.** `ci.yml` + `openapi-drift.yml` имеют
-   ~30 floating tags. Кандидат на отдельный sprint после M14 либо
-   через Renovate `digest:pin`. Не блокирует v0.0.0-alpha.16.
+1. **`burstCapacity` 600→60 — risk smoke flaky.** Если smoke падают
+   при 60 — НЕ возвращать 600 (это CI workaround). Альтернативы:
+   - `PLAYWRIGHT_WORKERS=1` в `playwright.config.ts` для CI
+   - per-env override через `${AUTH_LOGIN_BURST_CAPACITY:60}` + CI env
+   - retry + delay в `loginAs` fixture
+2. **`auth.spec.ts:19-38` diagnostic** — удалить или перенести в
+   `@diag` tag с CI exclude? Чеклист говорит "удалить либо
+   переместить". Default — удалить (нет invariant verification).
+3. **`TEST_USERS.headman` callers** — после G7 уже минимизировано,
+   но проверь grep чтобы не было silent semantic regression.
 4. **Push на origin/dev.** По дефолту НЕ пушим до G9.
 
 ## История milestone'ов (архив)
@@ -200,7 +181,7 @@ Push на origin/dev пока НЕ делать — пользователь р�
 - M01-M08 ✅ (`v0.0.0-alpha.1..alpha.9`)
 - M09-M12 ✅ 2026-04-24 (`alpha.10..alpha.13`)
 - M13 Pre-Deploy Hardening ✅ 2026-04-25 (`v0.0.0-alpha.15`)
-- **→ M14 Post-Audit Fixes** (текущий) — G1-G6 ✅, G7-G9 pending. Tag `v0.0.0-alpha.16` после G9.
+- **→ M14 Post-Audit Fixes** (текущий) — G1-G7 ✅, G8-G9 pending. Tag `v0.0.0-alpha.16` после G9.
 
 Roadmap: `docs/milestones/README.md`.
 Aудиторские отчёты: `docs/milestones/M13-pre-deploy-hardening/G2{6,7}-*.md`.

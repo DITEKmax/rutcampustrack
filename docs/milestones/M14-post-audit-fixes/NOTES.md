@@ -325,3 +325,82 @@ tag через эту строку и автоматически создаёт 
 комментария digest-only update запросы летят в тёмную (бот видит SHA,
 не знает к какому release он принадлежит, не может предложить bump на
 v4.3.2).
+
+### Group 7 — G26 test-audit P1 ✅ (commit `f24f22f`)
+
+**Footprint:** 1 functional commit, 10 files, 301 insertions / 44 deletions.
+Time: ~75 минут (vs hand-off 1-1.5 ч — точное попадание).
+
+**Главное открытие — большая часть spec'ов написана forward.**
+
+Spec'и из M08 G5 (`P2-8/5`) — то есть 16 milestone'ов назад — содержат
+тесты для UI который **никогда не был реализован**. Pre-flight reading
+(routes + templates + grep по `bulk-mark`/«Отметить всех») показал:
+
+| Spec | UI status | Backend status |
+|---|---|---|
+| `headman-mark.spec.ts` | ❌ Не реализован (нет lesson cards, нет BottomSheet) | ✅ `MarkingApi.batchMark` готов |
+| `red-zone-badge` в teacher/stats | ❌ Не реализован (только overall + subject charts) | ✅ stats endpoint считает |
+| `student-excuse + 10MB PDF` | ✅ Реализован (excuse-form-dialog) | ⚠️ File-upload endpoint надо verify в G9 |
+| `admin-create-user` | ✅ Реализован (user-dialog) | ✅ POST /academic/users возвращает initialPassword |
+
+**Вывод:** false-pass тесты возникают двумя способами:
+1. **Locator drift** — UI был, потом изменился, locator устарел (категория A).
+2. **Forward-written** — UI никогда не был реализован, тест писали под план
+   (категория «forward»). Это HEADMAN-MARK pattern.
+
+Forward-written тесты опаснее — false-pass перманентный, не временный.
+Решение: skip с явным TODO + перенос в backlog с inventory backend
+готовности.
+
+**Path A vs Path B решение для категории E:**
+
+Финальное: **path A** (удалить 2 теста). Reasoning записан в spec
+(role-student.spec.ts) и в commit message:
+- RBAC уже покрыт backend SecurityIdorIT × 4 сервисов
+- WebPanel route guards тестируются Karma unit'ами
+- E2E дублирует backend + unit покрытие
+- Path B (~30-45 мин для Flyway seed `student_plain`) overhead не
+  оправдан без real signal о gap
+
+**Pre-flight discovery в G7 — что заняло время:**
+
+1. ~15 мин — read 5 spec'ов + сопоставление с TEACHER/STUDENT/HEADMAN
+   routes
+2. ~10 мин — grep по 15 testid'ам в web-panel templates → 0 hits для
+   spec'овых ожидаемых
+3. ~10 мин — read user-dialog.html + excuse-form-dialog.html +
+   headman-excuses.component.ts inline templates → понимание реального
+   UX (Material dialogs, mat-select, role="tab", `<article class>`)
+4. ~10 мин — grep по `bulk-mark`/«Отметить всех» по всему frontends/
+   → confirmation что headman bulk-mark UI **не существует**
+5. ~30 мин — actual fixes (5 spec edits + 3 template testid + future-ideas)
+6. ~10 мин — npm install + playwright list verification + commit
+
+**Урок про forward-written tests:**
+
+Когда пишешь тест ДО UI implementation — добавь `test.fixme()` (а не
+`test.skip()` или ничего). `fixme()` ясно сигнализирует "тест сломан by
+design". `skip()` создаёт впечатление intentional pause, false-pass —
+вообще ничего. M14 backed `test.describe.skip` с большим explanatory
+блоком — best of both worlds, но в будущем для forward-tests
+**предпочтительно `fixme`** + tracking в issue.
+
+**Generated 10MB PDF в spec'е (для file upload teста):**
+
+Раньше spec ссылался на `fixtures/test-excuse.pdf` которого не было →
+`setInputFiles` падал → тест **false-pass через ENOENT** (proxy для
+test failure that should have been file-not-found error).
+
+Решение: `beforeAll` генерирует валидный 10MB PDF с минимальной
+PDF-1.4 структурой (header + xref + trailer + EOF) + 10MB padding из
+ASCII spaces между. Файл не commit'ится (gitignored — добавлю в
+.gitignore при следующем sweep). Поведение idempotent: `existsSync`
+guard → не пересоздаётся.
+
+**Также в G7 — npm install для verification:**
+
+Чеклист требовал `npx playwright test --list` для verify spec parsing.
+В чистом checkout `tests/e2e/node_modules/` отсутствовал. `npm install`
+добавил `package-lock.json` (был отсутствует в репо!). Lock-file
+зафиксирован для CI reproducibility — это improvement, не G7 work.

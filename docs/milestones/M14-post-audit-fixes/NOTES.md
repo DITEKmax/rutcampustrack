@@ -243,3 +243,24 @@ target `v1.2.0`, pre-flight `curl /releases/latest` показал `v1.2.5`
 SHA `0ff4204d59e8e51228ff73bce53f80d53301dee2`), без extra dereference
 шага через `/git/tags/`. `gh` CLI отсутствовал в bash PATH — использован
 `curl https://api.github.com/...` напрямую.
+
+**G5 surprise — aiogram coupling с aiohttp:** изначально PLAN.md
+предполагал bump только aiohttp, но `aiogram 3.15.0` пинует
+`aiohttp<3.11` (peer dependency). Это значит для aiohttp 3.13.x
+**нужен одновременный bump aiogram**. Pre-flight через PyPI:
+```bash
+for v in 3.16-3.27; do dep=$(curl pypi.org/pypi/aiogram/$v/json | jq aiohttp); done
+```
+Минимальная aiogram, разрешающая `aiohttp<3.14` — **3.23.0**. Conservative
+выбор vs latest 3.27 (8 minor versions vs 12) — меньше API breakage в
+bot logic. Pytest 205 tests прошли, aiogram 3.23 → 3.15 API совместим
+для нашего usecase (Bot, Dispatcher, Router, FSM).
+
+**G5 footprint:** 1 functional commit (`607af81`, requirements.txt
++7/-2). 1 docs followup. Total ~25 минут (vs PLAN'овские 5 мин — pre-flight
+constraint discovery съел 15 мин, build+test+docs ещё 10).
+
+**Урок:** для dep bump в Python всегда **pre-flight check transitive
+constraints** через PyPI JSON API. Pinning `aiohttp` отдельно от
+`aiogram` создаёт hidden coupling — peer deps в Python обычно строгие,
+не как в JS (где npm может resolve через duplicate installs).

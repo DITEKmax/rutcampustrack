@@ -69,13 +69,20 @@ opt-in через `rutcampustrack.security.required-env-vars` CSV property.
 - [x] **UAT positive 3**: `docker run` со всеми 5 env vars → validator passes, fail дальше на JwtService.init (orthogonal — отсутствие mount /keys)
 - [x] Commit: `fix(security): RequiredSecretsValidator — fail-fast на missing critical secrets (M14 G4 v2, CSO HIGH-06)` — `bf915ec`
 
-## Группа 5 — CSO HIGH-07: aiohttp bump (5 мин)
+## Группа 5 — CSO HIGH-07: aiohttp bump ✅ (commit `607af81`)
 
-- [ ] `services/notification-bot/requirements.txt` — `aiohttp>=3.13.3,<3.14` (было `3.10.11`)
-- [ ] Локальная проверка совместимости: `cd services/notification-bot && python -m venv .venv-test && .venv-test/Scripts/pip install -r requirements.txt` (Windows-вариант) — должно установиться без conflict с `aiogram`
-- [ ] `pytest services/notification-bot/tests` — все зелёные после bump
-- [ ] Rebuild bot image: `docker build -t rct-notification-bot services/notification-bot/`
-- [ ] Commit: `chore(deps): aiohttp 3.10.11→3.13.3+ (M14 G5, CSO HIGH-07, 3 CVE)`
+**Surprise при pre-flight:** aiogram 3.15.0 пинует `aiohttp<3.11`,
+поэтому одновременно нужен bump aiogram. Проверка PyPI показала, что
+**aiogram 3.23.0** — минимальная версия, разрешающая `aiohttp<3.14`.
+Conservative выбор vs latest 3.27 (8 minor versions vs 12).
+
+- [x] Pre-flight: `curl pypi.org/pypi/aiohttp/json` → latest 3.13.5; `aiogram 3.15.0` requires `aiohttp<3.11`; `aiogram 3.23.0+` requires `aiohttp<3.14` ✅
+- [x] `requirements.txt` — bump aiogram 3.15.0→3.23.0 + aiohttp 3.10.11→3.13.5
+- [x] Локальная проверка: `pip install -r requirements.txt` в чистом venv → no conflicts ✅
+- [x] `pytest services/notification-bot/tests/` → 205 passed in 29.29s, coverage 77.19% (порог 50%) ✅
+- [x] Rebuild bot image: `docker build` → SUCCESS, 22s ✅
+- [x] Smoke check inside container: `python -c "import aiohttp, aiogram; print(versions)"` → `aiohttp=3.13.5 aiogram=3.23.0` ✅
+- [x] Commit: `chore(deps): aiohttp 3.10.11→3.13.5 + aiogram 3.15.0→3.23.0 (M14 G5, CSO HIGH-07)` — `607af81`
 
 ## Группа 6 — CSO HIGH-03/04: SHA-pin remaining actions (45 мин)
 

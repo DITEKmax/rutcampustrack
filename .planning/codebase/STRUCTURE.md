@@ -9,9 +9,10 @@ rutcampustrack/
 ├── .planning/
 │   ├── codebase/                    # GSD codebase analysis docs (this directory)
 │   │   └── *.md
-│   ├── ROADMAP.md                   # v1-v9 releases, phase breakdown
-│   ├── PROJECT.md                   # detailed project spec
-│   └── v9.0-BRIEF.md               # current phase status
+│   ├── milestones/                  # archived milestone artifacts (ROADMAP/REQUIREMENTS/BRIEF/phases per version)
+│   │   └── v{X}.0-*.md
+│   ├── ROADMAP.md                   # active roadmap, phase breakdown
+│   └── PROJECT.md                   # detailed project spec
 ├── .github/
 │   └── workflows/                   # CI/CD pipelines
 ├── build.gradle.kts                 # Root Gradle build config

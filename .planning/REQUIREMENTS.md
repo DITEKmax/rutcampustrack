@@ -3,7 +3,7 @@
 **Defined:** 2026-04-08
 **Core Value:** Full-stack attendance tracking: 5 backend microservices + React PWA + Telegram Mini App + Angular Web Panel + Landing page
 **Milestone Goal:** Fix critical post-v8.0 production frontend bugs and deliver full web cabinets for STUDENT and HEADMAN roles, unified under a single `/login` entry point.
-**Brief:** See `.planning/v9.0-BRIEF.md` for full context, problem analysis, architecture decisions, and constraints.
+**Brief:** See `.planning/milestones/v9.0-BRIEF.md` for full context, problem analysis, architecture decisions, and constraints.
 
 ---
 

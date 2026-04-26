@@ -1,5 +1,6 @@
 ---
-phase: 01.4
+phase: 04
+phase_legacy_id: 01.4
 slug: seed-data-integration-testing
 status: draft
 nyquist_compliant: true
@@ -7,7 +8,7 @@ wave_0_complete: true
 created: 2026-03-30
 ---
 
-# Phase 01.4 — Validation Strategy
+# Phase 4 (legacy 01.4) — Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
 

@@ -1,5 +1,6 @@
 ---
-phase: 01.4-seed-data-integration-testing
+phase: 04-seed-data-integration-testing
+phase_legacy_id: 01.4-seed-data-integration-testing
 plan: 01
 status: complete
 started: 2026-03-30
@@ -8,7 +9,7 @@ tasks_completed: 4
 tasks_total: 4
 ---
 
-# Plan 01.4-01 Summary
+# Plan 04-01 (legacy 01.4-01) Summary
 
 ## Objective
 Set up Testcontainers integration test infrastructure for auth-service and write comprehensive integration tests verifying all auth endpoints work end-to-end against real PostgreSQL and Redis, using seed data from Flyway V2 migration. Additionally, create a Gateway E2E verification script.

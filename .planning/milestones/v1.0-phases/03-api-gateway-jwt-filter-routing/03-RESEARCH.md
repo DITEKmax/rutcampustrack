@@ -1,4 +1,4 @@
-# Phase 1.3: API Gateway JWT Filter + Routing — Research
+# Phase 3 (legacy 1.3): API Gateway JWT Filter + Routing — Research
 
 **Researched:** 2026-03-29
 **Domain:** Spring Cloud Gateway 4.x (reactive) + JJWT 0.12.6 + WebClient (public key fetch)

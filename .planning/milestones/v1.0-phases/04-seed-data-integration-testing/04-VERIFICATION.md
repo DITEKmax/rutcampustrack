@@ -1,12 +1,13 @@
 ---
-phase: 01.4-seed-data-integration-testing
+phase: 04-seed-data-integration-testing
+phase_legacy_id: 01.4-seed-data-integration-testing
 verified: 2026-03-30T00:00:00Z
 status: passed
 score: 7/7 must-haves verified
 re_verification: false
 ---
 
-# Phase 1.4: Seed Data + Integration Testing — Verification Report
+# Phase 4 (legacy 1.4): Seed Data + Integration Testing — Verification Report
 
 **Phase Goal:** Test data and end-to-end verification of auth flow through Gateway.
 **Verified:** 2026-03-30

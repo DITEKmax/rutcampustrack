@@ -1,12 +1,13 @@
 ---
-phase: 01.3-api-gateway-jwt-filter-routing
+phase: 03-api-gateway-jwt-filter-routing
+phase_legacy_id: 01.3-api-gateway-jwt-filter-routing
 verified: 2026-03-30T00:00:00Z
 status: passed
 score: 7/7 must-haves verified
 re_verification: false
 ---
 
-# Phase 1.3: API Gateway JWT Filter + Routing Verification Report
+# Phase 3 (legacy 1.3): API Gateway JWT Filter + Routing Verification Report
 
 **Phase Goal:** Gateway validates JWT tokens and routes requests to downstream services with user context headers.
 **Verified:** 2026-03-30

@@ -1,4 +1,4 @@
-# Phase 1.1: Auth Service Core (JWT + Login) - Research
+# Phase 1 (legacy 1.1): Auth Service Core (JWT + Login) - Research
 
 **Researched:** 2026-03-28
 **Domain:** Spring Security 6 + JWT (RSA) + Redis + JPA (read-only)

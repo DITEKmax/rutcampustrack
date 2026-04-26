@@ -1,5 +1,6 @@
 ---
-phase: 01.3-api-gateway-jwt-filter-routing
+phase: 03-api-gateway-jwt-filter-routing
+phase_legacy_id: 01.3-api-gateway-jwt-filter-routing
 plan: 01
 subsystem: api-gateway
 tags: [jwt, gateway, filter, security, webflux, reactive]

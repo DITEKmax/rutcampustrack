@@ -1,5 +1,6 @@
 ---
-phase: 1.3
+phase: 3
+phase_legacy_id: 1.3
 slug: api-gateway-jwt-filter-routing
 status: draft
 nyquist_compliant: true
@@ -8,7 +9,7 @@ created: 2026-03-29
 updated: 2026-03-29
 ---
 
-# Phase 1.3 — Validation Strategy
+# Phase 3 (legacy 1.3) — Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
 

@@ -53,7 +53,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-08)
 
 | Version | Name | Phases | Plans | Shipped |
 |---------|------|--------|-------|---------|
-| v1.0 | Auth Service + API Gateway | 1.1-1.4 | 4 | 2026-03-30 |
+| v1.0 | Auth Service + API Gateway | 1-4 | 4 | 2026-03-30 |
 | v2.0 | Academic Service | 5-9 | 12 | 2026-03-31 |
 | v3.0 | Schedule Service | 10-14 | 10 | 2026-04-04 |
 | v4.0 | Attendance Service MVP | 15-19 | 12 | 2026-04-04 |

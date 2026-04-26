@@ -1,4 +1,4 @@
-# Phase 1.4: Seed Data + Integration Testing — Research
+# Phase 4 (legacy 1.4): Seed Data + Integration Testing — Research
 
 **Researched:** 2026-03-30
 **Domain:** Spring Boot integration testing, Testcontainers, Flyway seed data, end-to-end auth flow

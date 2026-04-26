@@ -1,5 +1,6 @@
 ---
-phase: 1.1-auth-core
+phase: 1-auth-core
+phase_legacy_id: 1.1-auth-core
 verified: 2026-03-29T12:00:00Z
 status: passed
 score: 9/9 must-haves verified

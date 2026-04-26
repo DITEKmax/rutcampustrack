@@ -1,12 +1,13 @@
 ---
-phase: 01.2-auth-service-otp-change-password
+phase: 02-auth-service-otp-change-password
+phase_legacy_id: 01.2-auth-service-otp-change-password
 verified: 2026-03-29T07:30:00Z
 status: passed
 score: 6/6 must-haves verified
 re_verification: false
 ---
 
-# Phase 1.2: Auth Service OTP + Change Password — Verification Report
+# Phase 2 (legacy 1.2): Auth Service OTP + Change Password — Verification Report
 
 **Phase Goal:** OTP-based authentication via Telegram and password change functionality.
 **Verified:** 2026-03-29T07:30:00Z

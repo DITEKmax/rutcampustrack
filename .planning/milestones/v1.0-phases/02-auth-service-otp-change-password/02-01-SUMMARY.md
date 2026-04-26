@@ -1,12 +1,14 @@
 ---
-phase: 01.2-auth-service-otp-change-password
+phase: 02-auth-service-otp-change-password
+phase_legacy_id: 01.2-auth-service-otp-change-password
 plan: 01
 subsystem: auth
 tags: [otp, redis, rate-limiting, jwt, spring-boot, password-change]
 
 # Dependency graph
 requires:
-  - phase: 01.1-auth-service-core-jwt-login
+  - phase: 01-auth-service-core-jwt-login
+    phase_legacy_id: 01.1-auth-service-core-jwt-login
     provides: JWT RSA token generation, AuthService, UserRepository, JwtService, SecurityConfig with /auth/otp/** permitAll
 
 provides:
@@ -135,7 +137,7 @@ None - no external service configuration required beyond what Phase 1.1 establis
 - Ready for Phase 1.3 (API Gateway JWT filter and routing)
 
 ---
-*Phase: 01.2-auth-service-otp-change-password*
+*Phase: 02-auth-service-otp-change-password (legacy 01.2-auth-service-otp-change-password)*
 *Completed: 2026-03-29*
 
 ## Self-Check: PASSED

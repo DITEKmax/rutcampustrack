@@ -1,5 +1,6 @@
 ---
-phase: 1.1-auth-core
+phase: 1-auth-core
+phase_legacy_id: 1.1-auth-core
 plan: 01
 subsystem: auth-service
 tags: [jwt, rsa, spring-security, redis, jpa, postgresql]

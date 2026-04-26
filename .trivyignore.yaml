@@ -1,0 +1,20 @@
+# Trivy misconfiguration suppressions (Trivy v0.70+ structured format).
+# Plain .trivyignore does NOT support misconfig IDs — use this file
+# and pass `trivyignores: .trivyignore.yaml` in security.yml.
+#
+# M15 first VPS deploy temporary suppressions.
+
+misconfigurations:
+  # DS-0002 — frontend nginx containers run as root inside the container.
+  # Containers are bridge-network only (not exposed to host), proxied
+  # through main rct-nginx. Switching to non-root user requires either
+  # nginxinc/nginx-unprivileged base image or port 80→8080 migration with
+  # coordinated changes in main nginx proxy_pass + external SSH/proxy
+  # tunnels (MSK→FIN tunnel for RKN bypass). M16 follow-up — migrate all
+  # 4 frontend containers to nginx-unprivileged 1.27-alpine in a single PR.
+  - id: DS-0002
+    paths:
+      - "frontends/landing/Dockerfile"
+      - "frontends/mini-app/Dockerfile"
+      - "frontends/pwa/Dockerfile"
+      - "frontends/web-panel/Dockerfile"

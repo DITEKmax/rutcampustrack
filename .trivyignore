@@ -1,0 +1,23 @@
+# Trivy CVE suppressions (auto-discovered from repo root).
+# Misconfig suppressions live in .trivyignore.yaml (see Trivy docs:
+# plain .trivyignore supports only vulnerability IDs).
+#
+# Each entry MUST link to a follow-up issue and have an expiry plan.
+# M15 first VPS deploy temporary suppressions.
+
+# valibot 1.0.0 / 1.0.0-beta.14 — ReDoS in EMOJI_REGEX. Transitive via
+# @telegram-apps/sdk-react → @telegram-apps/transformers (pinned to
+# valibot 1.0.0-beta.14). Direct fix requires npm overrides + retest of
+# Telegram Mini App init flow. Not blocking first deploy: input source is
+# Telegram bot WebApp init data (signed by Bot API), no untrusted user
+# regex input. M16 follow-up — bump @telegram-apps/* to release that
+# picks valibot ≥1.2.0.
+CVE-2025-66020
+
+# protobuf 6.31.0 — DoS via unbounded recursion. Transitive: grpcio-tools
+# 1.73 pins protobuf 6.31. Bot consumes only Telegram Bot API payloads
+# (no inbound gRPC from untrusted clients), so unreachable via attacker
+# input. M16 follow-up — bump grpcio + grpcio-tools to release that
+# allows protobuf 6.33.5+.
+CVE-2025-4565
+CVE-2026-0994

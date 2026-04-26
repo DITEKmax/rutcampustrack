@@ -76,6 +76,10 @@ jobs:
           exit-code: '1'
           format: table
           skip-dirs: 'docs,.planning'
+          # M15 — explicit trivyignores for misconfig suppressions
+          # (.trivyignore is auto-discovered for CVEs, .trivyignore.yaml
+          # for misconfig requires explicit input).
+          trivyignores: .trivyignore.yaml
 
   gitleaks:
     name: Gitleaks (secrets)

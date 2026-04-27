@@ -1,12 +1,14 @@
 import {
+  AfterViewChecked,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   OnInit,
   computed,
   inject,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatButtonModule } from '@angular/material/button';
@@ -57,6 +59,17 @@ interface ActiveSemester {
   endDate: string;
 }
 
+interface MonthGroup {
+  /** 'YYYY-MM' — sortable key + match с сегодняшним месяцем. */
+  key: string;
+  /** Display: «Апрель 2026». */
+  label: string;
+  days: DayGroup[];
+  lessonsTotal: number;
+  /** true для текущего месяца — этот <details> по умолчанию open. */
+  isCurrent: boolean;
+}
+
 type Period = 'today' | 'month' | 'semester';
 type Kind = 'all' | 'active' | 'cancelled' | 'oneoff';
 
@@ -64,6 +77,12 @@ const DAY_NAMES = ['Воскресенье', 'Понедельник', 'Втор
 const MONTH_NAMES = [
   'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+];
+
+/** Именительный падеж — для заголовков месячных групп («Апрель 2026»). */
+const MONTH_TITLE_NAMES = [
+  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
 ];
 
 const PERIOD_LABEL: Record<Period, string> = {
@@ -94,7 +113,7 @@ const MONTH_RANGE_DAYS = 30;
   selector: 'app-headman-lessons',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MatButtonModule, MatChipsModule, MatProgressSpinnerModule],
+  imports: [CommonModule, NgTemplateOutlet, MatButtonModule, MatChipsModule, MatProgressSpinnerModule],
   animations: [
     trigger('routeFade', [
       transition(':enter', [
@@ -142,66 +161,112 @@ const MONTH_RANGE_DAYS = 30;
           <h3>Пар нет</h3>
           <p>{{ emptyHint() }}</p>
         </div>
+      } @else if (period() === 'semester') {
+        @for (month of monthGroups(); track month.key) {
+          <details class="month-group" [open]="month.isCurrent">
+            <summary class="month-summary">
+              <span class="month-summary__label">{{ month.label }}</span>
+              <span class="month-summary__count">{{ month.lessonsTotal }} пар</span>
+            </summary>
+            @for (day of month.days; track day.date) {
+              <ng-container *ngTemplateOutlet="dayTpl; context: { $implicit: day }"></ng-container>
+            }
+          </details>
+        }
       } @else {
         @for (day of dayGroups(); track day.date) {
-          <div class="page-card day-card">
-            <h2 class="day-heading">{{ day.label }}</h2>
-            <ul class="lesson-list">
-              @for (lesson of day.lessons; track lesson.id) {
-                <li class="lesson-row" [class.lesson-row--cancelled]="isCancelled(lesson)">
-                  <div class="lesson-row__time">
-                    <span class="lesson-num">№{{ lesson.lessonNumber }}</span>
-                    <span class="lesson-time">{{ shortTime(lesson.startTime) }}–{{ shortTime(lesson.endTime) }}</span>
-                  </div>
-                  <div class="lesson-row__main">
-                    <div class="lesson-subject">
-                      {{ subjectName(lesson.subjectId) }}
-                      @if (subjectTypeLabel(lesson.subjectId); as t) {
-                        <span class="lesson-type">— {{ t }}</span>
-                      }
-                    </div>
-                    <div class="lesson-meta">
-                      @if (lesson.room) { <span>{{ lesson.room }}</span> }
-                      <span class="status status--{{ statusKey(lesson) }}">{{ statusLabel(lesson) }}</span>
-                      @if (lesson.source === 'oneoff') {
-                        @if (lesson.replacement) {
-                          <span class="badge badge--replacement" title="Разовая пара заменяет отменённую">Замена</span>
-                        } @else {
-                          <span class="badge badge--oneoff" title="Разовая пара (вне постоянного расписания)">Разовая</span>
-                        }
-                      }
-                      @if (isCancelled(lesson) && lesson.cancelReason) {
-                        <span class="cancel-reason">— {{ lesson.cancelReason }}</span>
-                      }
-                    </div>
-                  </div>
-                  <div class="lesson-row__actions">
-                    @if (!isCancelled(lesson)) {
-                      <button class="btn-stroke btn-stroke--danger" type="button"
-                              [disabled]="busy() === lesson.id"
-                              [title]="isClosed(lesson) ? 'Отменить уже прошедшую пару (для исторических данных)' : 'Отменить пару'"
-                              (click)="onCancel(lesson)">
-                        <i class="ph ph-x-circle"></i> Отменить
-                      </button>
-                    } @else {
-                      <button class="btn-stroke" type="button"
-                              [disabled]="busy() === lesson.id"
-                              (click)="onRestore(lesson)">
-                        <i class="ph ph-arrow-counter-clockwise"></i> Восстановить
-                      </button>
-                    }
-                  </div>
-                </li>
-              }
-            </ul>
-          </div>
+          <ng-container *ngTemplateOutlet="dayTpl; context: { $implicit: day }"></ng-container>
         }
       }
     </div>
+
+    <ng-template #dayTpl let-day>
+      <div class="page-card day-card" [attr.data-date]="day.date" [class.day-card--today]="day.date === todayIso()">
+        <h2 class="day-heading">{{ day.label }}</h2>
+        <ul class="lesson-list">
+          @for (lesson of day.lessons; track lesson.id) {
+            <li class="lesson-row" [class.lesson-row--cancelled]="isCancelled(lesson)">
+              <div class="lesson-row__time">
+                <span class="lesson-num">№{{ lesson.lessonNumber }}</span>
+                <span class="lesson-time">{{ shortTime(lesson.startTime) }}–{{ shortTime(lesson.endTime) }}</span>
+              </div>
+              <div class="lesson-row__main">
+                <div class="lesson-subject">
+                  {{ subjectName(lesson.subjectId) }}
+                  @if (subjectTypeLabel(lesson.subjectId); as t) {
+                    <span class="lesson-type">— {{ t }}</span>
+                  }
+                </div>
+                <div class="lesson-meta">
+                  @if (lesson.room) { <span>{{ lesson.room }}</span> }
+                  <span class="status status--{{ statusKey(lesson) }}">{{ statusLabel(lesson) }}</span>
+                  @if (lesson.source === 'oneoff') {
+                    @if (lesson.replacement) {
+                      <span class="badge badge--replacement" title="Разовая пара заменяет отменённую">Замена</span>
+                    } @else {
+                      <span class="badge badge--oneoff" title="Разовая пара (вне постоянного расписания)">Разовая</span>
+                    }
+                  }
+                  @if (isCancelled(lesson) && lesson.cancelReason) {
+                    <span class="cancel-reason">— {{ lesson.cancelReason }}</span>
+                  }
+                </div>
+              </div>
+              <div class="lesson-row__actions">
+                @if (!isCancelled(lesson)) {
+                  <button class="btn-stroke btn-stroke--danger" type="button"
+                          [disabled]="busy() === lesson.id"
+                          [title]="isClosed(lesson) ? 'Отменить уже прошедшую пару (для исторических данных)' : 'Отменить пару'"
+                          (click)="onCancel(lesson)">
+                    <i class="ph ph-x-circle"></i> Отменить
+                  </button>
+                } @else {
+                  <button class="btn-stroke" type="button"
+                          [disabled]="busy() === lesson.id"
+                          (click)="onRestore(lesson)">
+                    <i class="ph ph-arrow-counter-clockwise"></i> Восстановить
+                  </button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    </ng-template>
   `,
   styles: [`
     .filter-bar { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
+    .month-group {
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      background: var(--bg-surface);
+      padding: 4px 0;
+      margin-bottom: var(--space-3);
+    }
+    .month-group[open] { padding-bottom: var(--space-3); }
+    .month-summary {
+      list-style: none;
+      cursor: pointer;
+      padding: var(--space-3) var(--space-4);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-3);
+      font-weight: 600;
+      color: var(--text-primary);
+      user-select: none;
+    }
+    .month-summary::-webkit-details-marker { display: none; }
+    .month-summary:hover { background: var(--bg-elevated); border-radius: var(--radius-md); }
+    .month-summary__count {
+      font: 500 0.6875rem/1 var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .month-group .day-card { margin: var(--space-2) var(--space-3) 0; }
     .day-card { padding: 16px; }
+    .day-card--today {
+      border: 1px solid color-mix(in oklab, var(--accent-primary) 40%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-primary) 10%, transparent);
+    }
     .day-heading {
       font-size: 1rem;
       font-weight: 600;
@@ -319,11 +384,14 @@ const MONTH_RANGE_DAYS = 30;
     }
   `],
 })
-export class HeadmanLessonsComponent implements OnInit {
+export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
   private readonly headmanApi = inject(HeadmanApiService);
   private readonly auth = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly host = inject(ElementRef<HTMLElement>);
+  /** Флаг — после следующего ViewChecked нужно проскроллить к сегодняшней дате (Семестр режим). */
+  private pendingTodayScroll = false;
 
   /** Текущий выбранный период. Default = month (компромисс по решению owner'а). */
   readonly period = signal<Period>('month');
@@ -352,6 +420,35 @@ export class HeadmanLessonsComponent implements OnInit {
       return { date, label: this.dayLabel(date), lessons: arr };
     });
   });
+
+  /** Group dayGroups в месяцы (только для period='semester'). Текущий месяц помечается isCurrent=true. */
+  readonly monthGroups = computed<MonthGroup[]>(() => {
+    const days = this.dayGroups();
+    const todayPrefix = this.todayIso().slice(0, 7); // 'YYYY-MM'
+    const map = new Map<string, DayGroup[]>();
+    for (const d of days) {
+      const key = d.date.slice(0, 7);
+      const arr = map.get(key) ?? [];
+      arr.push(d);
+      map.set(key, arr);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([key, days]) => {
+      const [year, month] = key.split('-').map(Number);
+      const lessonsTotal = days.reduce((s, d) => s + d.lessons.length, 0);
+      return {
+        key,
+        label: `${MONTH_TITLE_NAMES[month - 1]} ${year}`,
+        days,
+        lessonsTotal,
+        isCurrent: key === todayPrefix,
+      };
+    });
+  });
+
+  /** Сегодня в ISO YYYY-MM-DD — нужно для подсветки day-card и якоря. */
+  todayIso(): string {
+    return formatDate(new Date());
+  }
 
   /** Динамический заголовок страницы — зависит от period + (для семестра) имени семестра. */
   readonly pageTitle = computed<string>(() => {
@@ -386,10 +483,21 @@ export class HeadmanLessonsComponent implements OnInit {
     this.reload();
   }
 
+  ngAfterViewChecked(): void {
+    if (!this.pendingTodayScroll) return;
+    const el = this.host.nativeElement.querySelector(`.day-card[data-date="${this.todayIso()}"]`);
+    if (el) {
+      this.pendingTodayScroll = false;
+      // smooth + block:start — текущая дата окажется в верхней части viewport.
+      (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   /** Обработчик смены period chip — обновляет signal и перезапускает load. */
   onPeriodChange(value: Period | null): void {
     if (!value || value === this.period()) return;
     this.period.set(value);
+    if (value === 'semester') this.pendingTodayScroll = true;
     this.reload();
   }
 

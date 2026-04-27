@@ -1,385 +1,235 @@
-# Промпт для следующей сессии — M15: First VPS Deploy `v0.0.0-alpha.16`
+# Промпт для следующей сессии — M16 Post-Deploy Hardening (G8 + G9)
 
-Скопируй всё ниже в новый чат с Opus 4.7 (1M context). Это **deploy session**,
-не feature work — Claude помогает оператору пройти deploy checklist шаг
-за шагом, ловит ошибки в выводе команд, объясняет что произошло, помогает
-с rollback при необходимости.
+Скопируй всё ниже в новый чат с Opus 4.7 (1M context).
 
 ---
 
-**Контекст:** M14 «Post-Audit Fixes» закрыт 2026-04-26. Tag
-`v0.0.0-alpha.16` создан и запушен на `origin/dev`. CI зелёный
-(`a4b4cea` + `d46b1d6`). Готов к first VPS deploy v0.0.0.
+## Контекст (что было сделано)
 
-**Это первый deploy на чистый VPS** — не routine release. Включает
-SSL bootstrap, secret generation, JWT keypair generation, Flyway
-initial migration, healthcheck verification на всех 26 контейнерах.
+**Milestone M16 — Post-Deploy Hardening.** 9 групп, 7 закрыты на
+2026-04-27, осталось 2 (G8 + G9). Папка milestone'а:
+`docs/milestones/M16-post-deploy-hardening/` с PLAN.md, CHECKLIST.md,
+NOTES.md, DECISIONS.md.
 
-Главный документ: `docs/operations/deploy/prod-deploy-checklist.md` (372 строки, секции
-1.0-6). Этот промпт — **wrapper** который добавляет M14-specific
-context + Claude assistance protocol.
+**M15 First VPS Deploy** закрыт `v0.0.0-alpha.16` 2026-04-27. Retrospective
+short в `docs/milestones/M15-first-vps-deploy/` (PLAN+NOTES, без
+CHECKLIST/DECISIONS). 4 hotfix-коммита: `b8cf106` `c7b2b93` `c3ff148`
+`8d7c168`.
 
-## Pre-flight перед началом сессии
+### Закрытые группы M16 (8 коммитов на main)
 
-### 0.1 — verify clean state
+```
+7a280a01 refactor(academic): headman rate-limit moved to Redis, raised to 300/min (M16 G7)
+5c3b7e93 feat(audit): @AdminAction real handler via SPI + 5 user actions (M16 G6)
+b0e351ee fix(nginx,scripts): runtime DNS for upstream + verify-deploy false-positives (M16 G5)
+221daf6b fix(loki): wait-for-ready before promtail push to fix startup race (M16 G4)
+ce5c404d feat(auth): /otp/verify-by-code brute-force counter + alert (M16 G3)
+f9cbca52 fix(bot): propagate handler exceptions for DLQ routing + 7d retention (M16 G2)
+fe652149 fix(otel): use HTTP/protobuf port 4318 for Java services (M16 G1)
+a13fc2db docs(milestones): add M15 retrospective + M16 post-deploy hardening plan
+```
+
+| # | Группа | Статус | Главное |
+|---|--------|--------|---------|
+| G1 | OTel exporter port (4317→4318) | ✅ | Java HTTP /v1/traces, Python gRPC остаётся 4317 (mixed-mode, D2) |
+| G2 | Bot dispatcher idempotency + DLQ retention | ✅ | Idempotency уже была M13 G8; реальный fix — убран swallow в dispatch + DLQ TTL 7d (D5) |
+| G3 | OTP brute-force counter | ✅ | `verifyOtpByCode` 20 mismatch/5min/IP → 429, alert OtpBruteForceSuspect (D6) |
+| G4 | Loki InstancesCount | ✅ | startup race; `min_ready_duration: 15s` + healthcheck-gated promtail (D7) |
+| G5 | nginx DNS race + verify-deploy fixes | ✅ | `resolver 127.0.0.11` + 8 переменных-upstream'ов (D8); 4 false-positive в verify-deploy (D9) |
+| G6 | @AdminAction real audit log | ✅ | V19+V20 миграции, SPI shared-web, JdbcAuditLogStorage, 5 actions в UserController (D10) |
+| G7 | Headman RL Redis 300/min | ✅ | Was 120, bumped 300; Redis primary + InMemory fallback (D11 fail-open vs G3 fail-closed; D12 dual-impl) |
+| **G8** | **mTLS Alertmanager → notification-web** | **⏳ TODO** | Decision pending |
+| **G9** | **cadvisor de-privileged** | **⏳ TODO** | privileged:true → cap_add SYS_PTRACE |
+
+### Verify на VPS (отложено для всех 7 групп)
+
+Все verify-шаги отложены до redeploy `v0.0.0-alpha.17` (или как назовём
+после M16). Список того что проверить **на VPS**:
+1. **G1**: `docker logs rct-auth-service --since 1h | grep -c "Connection reset"` → 0
+2. **G2**: handler-bug → message в DLQ → DLQBacklog alert (>10/5min)
+3. **G3**: 21-я подряд `/auth/otp/verify-by-code` с одного IP → 429
+4. **G4**: `docker logs rct-loki --since 24h | grep -c "InstancesCount"` → 0-1/день
+5. **G5**: `docker compose restart grafana && sleep 5 && curl /grafana/` → 200/302 без manual nginx restart
+6. **G6**: `SELECT * FROM audit_log WHERE action='user.archive'` → видны записи admin actions
+7. **G7**: bulk-mark группы 30 студентов <30 сек проходит без RESOURCE_EXHAUSTED; `redis-cli KEYS "rl:headman:*"` показывает entries
+
+---
+
+## Что осталось — G8 + G9
+
+### G8 — mTLS Alertmanager → notification-web (~1-2д)
+
+**Source:** `future-ideas.md` MED-11. Текущий flow:
+```
+Alertmanager → POST http://notification-web:9094/internal/alert
+              (Bearer auth, plaintext HTTP в private_net)
+```
+
+**Threat:** compromised контейнер в `private_net` (cadvisor /
+node-exporter / blackbox-exporter — все имеют `cap_add: NET_RAW` для
+sniffing) → может перехватывать Bearer token из трафика → подделывать
+alerts.
+
+**3 кандидата (зафиксированы в DECISIONS § D4):**
+
+1. **Linkerd auto-mTLS sidecar** — каждый контейнер получает client cert,
+   шифрование автоматически. Тяжело: extra container per service,
+   helm chart, learning curve. **Vetoed:** нет other Linkerd usage,
+   adding sidecar = большая зависимость.
+
+2. **Custom certs + nginx mTLS proxy** между Alertmanager и
+   notification-web. Контроль, но manual cert rotation. Internal CA +
+   client cert для Alertmanager + server cert для notification-web.
+
+3. **Минимальный путь:** только `cap_drop: NET_RAW` для cadvisor +
+   node-exporter + blackbox-exporter, оставив plaintext. Sniffing
+   capability убрана у потенциального compromised peer, MitM
+   проблема остаётся theoretical.
+
+**Рекомендация:** начни с **варианта 3** (10 минут, реально снижает
+risk surface) + добавь его в G9 (cadvisor de-priv). Для **полного
+mTLS** (вариант 2) нужен:
+- internal CA (генерация скриптом)
+- mount certs в Alertmanager + notification-web
+- `tls_config` в alertmanager.yml webhook
+- Промежуточный nginx или native mTLS поддержка в Spring Boot
+  notification-web (через `server.ssl.client-auth=need`)
+- `secret-rotation.md` обновить с rotation flow CA
+
+Это **~1-2 дня работы** при первом подходе. Можно разделить на
+**G8a — cap_drop NET_RAW (5 минут)** в один коммит и **G8b — full
+mTLS (1-2д)** в отдельный.
+
+**Файлы которые трогать:**
+- `docker-compose.prod.yml` — cadvisor/node-exporter/blackbox-exporter `cap_drop: [NET_RAW]`
+- `infra/alertmanager/alertmanager.yml` — `tls_config` если G8b
+- (новый) `infra/internal-ca/` — gen scripts если G8b
+- `services/notification-service/notification-app/src/main/resources/application.yml` — server.ssl если G8b
+- `docs/operations/runbooks/secret-rotation.md` — раздел про CA rotation если G8b
+
+### G9 — cadvisor de-privileged (~0.5д)
+
+**Source:** `future-ideas.md` MED-12. Текущий `docker-compose.prod.yml`:
+
+```yaml
+cadvisor:
+  image: ...
+  privileged: true
+  volumes:
+    - /:/rootfs:ro
+    - /var/lib/docker:/var/lib/docker:ro
+    ...
+```
+
+`privileged: true` = root host access если cadvisor скомпрометирован.
+
+**Fix per cadvisor docs:**
+1. Заменить `privileged: true` на `cap_add: [SYS_PTRACE]`
+2. Audit метрик: какие `container_*` метрики продолжают работать?
+3. Возможно убрать mount `/var/lib/docker:ro` если container metadata
+   не нужна (только image labels — mostly cosmetic)
+
+**G8a + G9 связаны** — в обоих случаях редактируется
+`docker-compose.prod.yml` для cadvisor секции. Логично сделать в
+**одном PR**: `security: drop privileged + NET_RAW from infra
+containers (M16 G8a + G9)`.
+
+**Файлы:**
+- `docker-compose.prod.yml` — cadvisor + node-exporter + blackbox-exporter sections
+- `docs/operations/monitoring/observability.md` — обновить если что-то по метрикам сломалось
+
+**Verify на VPS:**
+- container_* метрики по-прежнему в Prometheus (`up{job="cadvisor"}` = 1)
+- Grafana dashboard `rct-containers` рендерится
+- `ContainerMemoryHigh` alert срабатывает на artificial stress test
+
+---
+
+## Pre-flight для следующей сессии
 
 ```bash
 cd C:/Users/maksd/IntelliJIDEA/rutcampustrack
-git log --oneline -3
-git status --short
-git tag -l "v0.0.0-alpha.16"
+git status --short  # должно быть clean
+git log --oneline -3  # последний = 7a280a01 (M16 G7)
+git branch --show-current  # main
 ```
 
-Ожидаем:
-- HEAD = `d46b1d6` (M14 finalised commit)
-- Working tree clean (только `?? .gstack/`)
-- `v0.0.0-alpha.16` tag есть
+Прочитай для контекста:
+- `docs/milestones/M16-post-deploy-hardening/PLAN.md` — scope
+- `docs/milestones/M16-post-deploy-hardening/CHECKLIST.md` — что сделано (G1-G7), что осталось (G8-G9)
+- `docs/milestones/M16-post-deploy-hardening/DECISIONS.md` — D1-D12 архитектурные решения
+- `docs/milestones/M16-post-deploy-hardening/NOTES.md` — surprises и lessons
+- `docs/archive/future-ideas.md` § "Pre-v0.1" — MED-11 (mTLS) и MED-12 (cadvisor)
 
-### 0.2 — verify VPS access
+## Что я (Claude в новой сессии) должен сделать
 
-Это **operator action** — Claude не имеет SSH доступа к VPS. Оператор
-должен подтвердить:
-- [ ] SSH key загружен (`~/.ssh/id_rsa` либо аналог), `ssh ditekmax@<vps-ip>` работает
-- [ ] sudo доступ на VPS
-- [ ] DNS `ruttrack.site` указывает на VPS IP (`dig ruttrack.site +short`)
-- [ ] Порты 80/443 открыты в firewall VPS
+### 1. Подтвердить состояние репо
 
-Если что-то не готово — **остановись здесь** и попроси оператора
-подготовить инфраструктуру.
+Прочитай `git log -10`, убедись что 8 M16 коммитов на месте, рабочая
+директория чистая.
 
-### 0.3 — what's new in M14 (что Claude должен знать про deploy)
+### 2. Спросить пользователя
 
-M14 ввёл несколько изменений, которые **впервые срабатывают на этом
-deploy** — нет previous-deploy опыта:
+Какой подход к G8:
+- **(a)** только G8a (cap_drop NET_RAW) + G9 — bundle ~30 минут работы, базовая защита, end of M16
+- **(b)** полный G8 (mTLS) + G9 — ~1.5-2 дня работы, complete defense-in-depth
+- **(c)** только G9 — close M16 минимально, отложить G8 в M17 (новый milestone)
 
-1. **G1 — Strict Internal JWT mode (CSO CRIT-01).**
-   `RUTCAMPUSTRACK_SECURITY_LEGACY_HEADERS_ENABLED=false` — default. Если
-   оператор вручную выставит `true` в `.env.prod` (для legacy debug),
-   будет **regression к pre-M14 vulnerability**. Claude должен заметить
-   это и предупредить.
+Моя рекомендация — **(a)** или **(c)**. Полный mTLS большой и не критичный
+для текущего scale. Acceptable defer to M17 если появится дополнительный
+threat signal или horizontal scale.
 
-2. **G3 — JWT keypair generation в deploy.yml (CSO HIGH-05).**
-   Pipeline на VPS `openssl genrsa | pkcs8 -topk8 | rsa -pubout` →
-   PKCS#8 keypair в `rutcampustrack_jwt-keys` volume. **First deploy**:
-   volume пустой → keys генерятся. **Subsequent deploys**: idempotent
-   skip через `[ ! -f /keys/private.key ]` filesystem guard. Если
-   keys генерируются повторно — invalidate всех issued JWT (см.
-   `docs/operations/runbooks/secret-rotation.md`).
+### 3. Применить выбранный подход
 
-3. **G4 v2 — RequiredSecretsValidator fail-fast.**
-   Container exit-1 на boot если **любой** required env var не set
-   (см. application.yml `rutcampustrack.security.required-env-vars`
-   per-service). Symptom: `IllegalStateException: M14 G4 (CSO HIGH-06):
-   required environment variables are not set: [VAR_X, VAR_Y]` в logs
-   ДО Spring banner. Все 22 секрета должны быть set в `.env.prod`.
+Делай атомарные коммиты per-task (как делал G1-G7). Обновляй
+CHECKLIST/DECISIONS/NOTES per-group. После закрытия M16 целиком:
+- Tag `v0.0.0-alpha.17` или `v0.1.0-rc.1` — обсуди с user'ом
+- Update `CLAUDE.md` статус M16 на ✅
+- Подготовь `NEXT-SESSION.md` для M17 если будет
 
-4. **G6 — SHA-pinned actions** в deploy.yml (CSO HIGH-03/04 + MED-09).
-   Если deploy workflow упадёт на step `Build and push *` — это
-   возможный rebase action под compromised SHA (или Renovate digest
-   bump через PR). Не fix через `latest` — investigate.
+## Стиль работы (важно)
 
-5. **G8 — burstCapacity production default 60.**
-   gateway `auth-login` route: `burstCapacity=60` (5 req/min/IP per CSO
-   threat model). Если post-deploy smoke получает 429 на /api/auth/login
-   при первых нескольких запросах — это либо real brute-force (good
-   signal), либо **multiple operators** одновременно тестируют login
-   (false-positive). Wait 12 sec → token replenishes.
+Сессия G1-G7 показала эти паттерны:
+- **Атомарные коммиты** — один commit per group, conventional commits
+- **NOTES.md живой лог** — сюрпризы, отклонения, lessons learned
+- **DECISIONS.md** — каждое нетривиальное решение с trade-off + альтернативами
+- **CHECKLIST.md** галочки `[x]` после реализации
+- **Не спамить тулы** — Edit прошёл успешно несмотря на read-before-edit reminder, продолжай работу
+- **Verify на VPS отложен** — для всех G* мы только compile + unit tests, real verify будет на VPS
+- **Скоуп reduction OK** — G2 переориентирован (idempotency была), G6 v1 без diff, G7 dual-impl. Записывай в DECISIONS.md если меняешь scope vs initial plan.
 
-6. **G9 — notification-web compose env fix.**
-   `RABBITMQ_PASSWORD` + `INTERNAL_ISSUER_SECRET` теперь явно в
-   notification-web env block. Если на CI/prod notification-web упадёт
-   с "required environment variables not set" → проверить что
-   `.env.prod` содержит эти переменные с непустыми значениями.
-
-## Deploy timeline (T-30min → T+1h)
-
-Следуй `docs/operations/deploy/prod-deploy-checklist.md` секции 1-3. Я (Claude) помогаю с:
-
-- **парсинг output команд** — если `docker compose ps` показывает
-  unhealthy контейнер, объяснить какой именно health check failed +
-  правильный runbook
-- **обнаружение проблем рано** — пример: после deploy.yml gradle build
-  step есть `BUILD FAILED in 1m 17s` → не запускать `git tag`
-- **rollback decision** — если после deploy 2+ сервисов unhealthy
-  через 15 мин, рекомендовать rollback к previous tag (для first
-  deploy — нет previous tag → emergency `docker compose down` +
-  troubleshoot)
-
-### T-30min: Pre-deploy (секция 1 в checklist'е)
-
-#### 1.0 Environment secrets — **first deploy**
-
-⚠️ **Critical first-time action.**
+## Команды которые могут понадобиться
 
 ```bash
-# Локально на dev машине:
-cd C:/Users/maksd/IntelliJIDEA/rutcampustrack
-cat .env.prod.example   # 28 переменных
+# Компиляция
+$env:JAVA_HOME = "C:\Users\maksd\.jdks\ms-21.0.9"
+.\gradlew.bat :services:notification-service:notification-app:compileJava
 
-# Скопировать на VPS:
-scp .env.prod.example ditekmax@<vps-ip>:/opt/rutcampustrack/.env.prod
-ssh ditekmax@<vps-ip>
-cd /opt/rutcampustrack
-chmod 600 .env.prod
+# Тесты конкретного сервиса
+.\gradlew.bat :services:academic-service:academic-app:test --console=plain
+
+# Validate nginx config
+docker run --rm -v "$(pwd)/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro" -v "$(pwd)/nginx/nginx.conf:/etc/nginx/nginx.conf:ro" nginx:alpine nginx -t
+
+# Validate compose syntax
+docker compose -f docker-compose.prod.yml config --quiet
+
+# Bash syntax
+bash -n scripts/verify-deploy.sh
 ```
 
-Затем на VPS — заполнить все `CHANGE_ME` placeholder'ы. Comments в
-`.env.prod.example` содержат точные команды для каждого секрета:
+## Контекст пользователя
 
-- `openssl rand -base64 24` для passwords
-- `openssl rand -base64 48` для MONGODB_REPLICA_SET_KEY (только
-  base64-алфавит, без `_` или `-` — в .env.prod.example есть warning)
-- VAPID ключи через `npx web-push generate-vapid-keys`
-- `BOT_TOKEN` / `TMA_BOT_TOKEN` / `BOT_ALERT_TOKEN` — из @BotFather
-  на Telegram (3 разных bot'а: main + Mini App + alert receiver)
+- Git user: `maksd`
+- VPS deployed: `https://ruttrack.site` (M15)
+- Working dir: `C:\Users\maksd\IntelliJIDEA\rutcampustrack`
+- Owner предпочтения (память): отчёты на русском, audit-разметка экономно, M16 reduced scope OK
+- Owner ранее уточнил: headman RL **300/min** (не 120 из future-ideas) — этот выбор уже применён в G7
 
-**Claude check after secret fill:**
-```bash
-# На VPS, после заполнения .env.prod
-grep -c "CHANGE_ME" /opt/rutcampustrack/.env.prod
-```
-Должно быть `0`. Если больше 0 — какие-то секреты не заполнены, deploy
-упадёт с RequiredSecretsValidator (M14 G4 v2).
+## Финальный TL;DR для нового Claude
 
-#### 1.0a M14-specific secrets verify
-
-Per M14 G4 v2 inventory (см. application.yml каждого сервиса):
-
-| Service | Required env vars |
-|---------|-------------------|
-| api-gateway | `REDIS_PASSWORD`, `INTERNAL_ISSUER_SECRET` |
-| auth-service | `REDIS_PASSWORD`, `SPRING_RABBITMQ_PASSWORD`, `POSTGRES_ACADEMIC_PASSWORD`, `INTERNAL_ISSUER_SECRET`, `TMA_BOT_TOKEN` |
-| academic-service | `POSTGRES_ACADEMIC_PASSWORD`, `REDIS_PASSWORD`, `RABBITMQ_PASSWORD`, `GRPC_SECRET` |
-| schedule-service | `POSTGRES_SCHEDULE_PASSWORD`, `RABBITMQ_PASSWORD`, `GRPC_SECRET` |
-| attendance-service | `SPRING_DATA_MONGODB_URI`, `REDIS_PASSWORD`, `RABBITMQ_PASSWORD`, `GRPC_SECRET` |
-| notification-web | `SPRING_DATA_MONGODB_URI`, `RABBITMQ_PASSWORD`, `INTERNAL_ISSUER_SECRET`, `ALERT_WEBHOOK_SECRET` |
-
-`SPRING_DATA_MONGODB_URI` — composes из `MONGO_USER`/`MONGO_PASSWORD`
-(attendance) либо `MONGO_NOTIFICATION_USER`/`MONGO_NOTIFICATION_PASSWORD`
-(notification). docker-compose.prod.yml формирует URI inline — оператор
-не задаёт `SPRING_DATA_MONGODB_URI` вручную.
-
-#### 1.5b SSL / DNS bootstrap — **first deploy**
-
-См. `docs/operations/runbooks/cert-renewal.md`. Включает:
-- `nginx/dhparam.pem` генерация (deploy.yml авто-генерит при first deploy)
-- Let's Encrypt через certbot (один раз на чистом VPS)
-- TLS auto-renewal cron
-
-⚠️ **DNS должен быть set до certbot run** иначе ACME challenge
-упадёт.
-
-### T-0: During deploy (секция 2)
-
-Используем GitHub Actions workflow `deploy.yml` (срабатывает на push в
-`main` через `workflow_run` trigger из CI workflow). **`v0.0.0-alpha.16`
-сейчас на `dev`** — нужно сначала **merge dev → main**:
-
-```bash
-# Локально:
-git checkout main
-git pull origin main
-git merge dev --no-ff -m "Merge dev → main для v0.0.0-alpha.16 first VPS deploy"
-git push origin main
-```
-
-После push на main:
-1. CI workflow запустится (build + test + Trivy + gitleaks)
-2. По green CI — `deploy.yml` workflow запустится через workflow_run
-3. Deploy steps: build-push (11 images → GHCR) + sbom-sign (cosign keyless) + deploy (SSH к VPS, pull + compose up)
-
-**Monitoring deploy:**
-```bash
-# Проверить статус через GitHub API (gh CLI отсутствует)
-curl -s "https://api.github.com/repos/DITEKmax/rutcampustrack/actions/runs?branch=main&per_page=4" -o ci.json && py -c "import json; r=json.load(open('ci.json',encoding='utf-8'))['workflow_runs']; [print(f\"{x['name'][:25]:25s} | {x['status']:11s} | {x.get('conclusion') or 'in_progress':12s} | {x['head_sha'][:7]}\") for x in r[:6]]"
-```
-
-Либо открыть https://github.com/DITEKmax/rutcampustrack/actions в браузере.
-
-#### 2.1 Deploy verify on VPS
-
-После успешного deploy workflow:
-
-```bash
-ssh ditekmax@<vps-ip>
-cd /opt/rutcampustrack
-docker compose -f docker-compose.prod.yml ps
-```
-
-Ожидаем все 26 контейнеров (см. `docs/product/url-layout.md` для inventory)
-со статусом `(healthy)`. Если какой-то `unhealthy` — Claude помогает
-парсить logs.
-
-#### 2.4 Post-deploy contract verification (M13 G23)
-
-```bash
-cd /opt/rutcampustrack
-bash scripts/verify-deploy.sh
-```
-
-Скрипт проверяет:
-- /actuator/health на всех 5 backend сервисах
-- /api/auth/login + /api/academic/users smoke
-- STOMP WebSocket connect + ticket consume
-- Telegram bot webhook (если bot deployed)
-
-### T+15min .. T+1h: Post-deploy (секция 3)
-
-#### 3.1 Smoke tests
-
-```bash
-# Из любого места с интернетом (не обязательно VPS):
-curl -fsSL https://ruttrack.site/login -o /dev/null && echo "LOGIN OK"
-curl -fsSL https://ruttrack.site/api/auth/health && echo
-curl -fsSL https://ruttrack.site/api/academic/health && echo
-```
-
-Все 200. Если 502/503 — gateway не routes к downstream → проверить
-nginx logs + `docker compose logs api-gateway`.
-
-#### 3.2 Business metrics (Grafana)
-
-Открыть https://ruttrack.site/grafana (basic-auth из `GRAFANA_PASSWORD`
-в `.env.prod`). Dashboards:
-- "Business KPIs" (M04 + M13 G19) — request rate, error rate, latency p99
-- "Container Resources" (M09 G7) — memory/CPU per container
-- "JVM Heap" — каждый Java сервис
-
-Первые 30 минут после deploy — smoke baseline. Не паникуй если
-attendance.marked counter = 0 (никто пока не отметился). Critical:
-**no 5xx spikes** на gateway.
-
-#### 3.3 Alert silence verify
-
-Открыть https://ruttrack.site/alertmanager (basic-auth). Должны быть
-0 firing alerts если deploy успешный. Если firing — открыть
-`docs/operations/monitoring/alerts.md`, найти runbook для конкретного alert'а.
-
-### T+2 weeks: Performance audit
-
-См. `docs/operations/deploy/prod-deploy-checklist.md` секция 5. Проверки:
-- query latency p99 на academic/schedule/attendance
-- Mongo collection sizes + index usage (`db.notification_history.stats()`)
-- Postgres slow query log (`pg_stat_statements`)
-- Container memory utilization (mem_limit usage)
-
-Если что-то выше threshold — Claude помогает open issue / спланировать
-M16 «Performance Tuning».
-
-## Rollback playbook (секция 4)
-
-⚠️ **First deploy — нет previous tag для rollback.**
-
-Если deploy провалился:
-1. **Не откатывать compose.prod.yml** — он на новой версии image
-2. **Останавливать stack:** `docker compose -f docker-compose.prod.yml down`
-3. **Investigate:** logs всех unhealthy → root cause
-4. **Fix locally:** code change → push → re-deploy
-
-**Что НЕ делать:**
-- НЕ удалять `rutcampustrack_jwt-keys` volume (обнулит JWT issuer keys
-  → все issued tokens invalid после redeploy)
-- НЕ удалять PostgreSQL/MongoDB volumes без backup
-- НЕ force-push на `main` (нарушает `deploy.yml` workflow_run trigger)
-
-## Что Claude НЕ делает в этой сессии
-
-- НЕ запускает SSH команды на VPS (нет credentials, безопасность)
-- НЕ изменяет `.env.prod` — только operator
-- НЕ запускает destructive операции (compose down -v, docker volume rm)
-  без явного operator confirmation
-- НЕ делает merge dev→main без operator command (это release decision)
-
-## Что Claude АКТИВНО делает
-
-- ✅ Parse output команд от operator + объяснение проблем
-- ✅ Cross-reference между чек-листом и runbook'ами
-- ✅ Suggest specific runbook section если symptom matches
-- ✅ Capture deploy session timeline в нового документа
-  `docs/milestones/M15-first-vps-deploy/NOTES.md` для post-mortem
-- ✅ После deploy success — обновить
-  `docs/milestones/M15-first-vps-deploy/CHECKLIST.md` с зелёными
-  галочками и любыми deviations от plan
-- ✅ Если incident — Claude помогает root-cause через logs + предлагает
-  hot-fix PR
-
-## Deliverables после успешного deploy
-
-1. **`docs/milestones/M15-first-vps-deploy/NOTES.md`** — таймлайн
-   deploy сессии: что сделали, где были surprises, что заняло больше
-   времени чем ожидали, какие manual steps нужно автоматизировать в
-   M16+.
-2. **`docs/milestones/M15-first-vps-deploy/CHECKLIST.md`** — копия
-   `docs/operations/deploy/prod-deploy-checklist.md` с галочками + любыми deviations.
-3. **Возможный hot-fix commit** если deploy выявит prod-only bug,
-   который не виден в e2e (rare, но возможно — например DNS issue,
-   SSL chain mismatch, VPS firewall).
-4. **Update `docs/milestones/README.md`** — новая строка M15 в таблице.
-5. **Rotate `docs/milestones/NEXT-SESSION.md`** — на M16 либо
-   "Post-Deploy Cleanup" depending on real-user signal.
-
-## Если что-то идёт не так в deploy
-
-**Symptom: контейнер `rct-X` exit-1 в первые 30 секунд**
-
-Probable causes:
-1. **RequiredSecretsValidator (M14 G4 v2)** — env var missing.
-   Symptom: `java.lang.IllegalStateException: M14 G4 (CSO HIGH-06)`
-   в logs. Fix: добавить missing env var в `.env.prod`, restart compose.
-2. **Bind mount missing** — например `/keys/public.key` не существует.
-   Fix: проверить `rutcampustrack_jwt-keys` volume, если empty —
-   запустить deploy.yml снова (idempotent JWT keygen из M14 G3).
-3. **DB connection** — Postgres/Mongo unhealthy → backend container
-   зацикливается на reconnect.
-
-**Symptom: gateway 502 на /api/***
-
-1. Downstream service unhealthy
-2. nginx → gateway connectivity (network rutcampustrack_private_net)
-3. burstCapacity=60 (M14 G8) — 429 после 5 запросов; норма для smoke
-   с одним worker, но если 502 — это другая проблема
-
-**Symptom: SSL handshake fails**
-
-См. `docs/operations/runbooks/cert-renewal.md` § "First-deploy SSL bootstrap".
-Возможно DNS не propagated либо certbot rate limit.
-
-**Symptom: Telegram bot не отвечает на /start**
-
-См. `docs/operations/runbooks/bot-webhook-migration.md`. Probable: webhook URL не
-set либо BOT_TOKEN неверный.
-
-## История milestone'ов (архив)
-
-- M01-M08 ✅ (`v0.0.0-alpha.1..alpha.9`)
-- M09-M12 ✅ 2026-04-24 (`alpha.10..alpha.13`)
-- M13 Pre-Deploy Hardening ✅ 2026-04-25 (`v0.0.0-alpha.15`)
-- M14 Post-Audit Fixes ✅ 2026-04-26 (`v0.0.0-alpha.16`)
-- **→ M15 First VPS Deploy** (текущий) — operator action, Claude assists
-- → M16 (TBD) Post-Deploy Cleanup при необходимости
-
-## Reference docs
-
-- `docs/operations/deploy/prod-deploy-checklist.md` — **главный чек-лист** (372 строки)
-- `docs/operations/runbooks/secret-rotation.md` — quarterly rotation
-- `docs/operations/runbooks/cert-renewal.md` — TLS bootstrap + renewal
-- `docs/operations/runbooks/bot-webhook-migration.md` — Telegram webhook
-- `docs/operations/runbooks/image-signing-verification.md` — cosign verify
-- `docs/operations/runbooks/migration-testing.md` — Flyway dry-run
-- `docs/operations/runbooks/backup-restore.md` — backup + GPG
-- `docs/operations/runbooks/mongo-indexes-verify.md` — TTL + compound indexes
-- `docs/operations/monitoring/alerts.md` — каталог 18 alert'ов
-- `docs/product/url-layout.md` — production URL routing (web-panel + PWA + API)
-- `docs/architecture/architecture.md` — сервисы, ports, dependencies
-
-## Финальная team checklist для оператора (TL;DR)
-
-Перед началом deploy session:
-
-- [ ] VPS доступен через SSH, sudo work, DNS `ruttrack.site` указывает на VPS
-- [ ] `.env.prod` создан на VPS, все 22 secrets заполнены, `chmod 600`
-- [ ] `git checkout main && git merge dev` готов к выполнению
-- [ ] Внутренний канал коммуникации (если есть пользователи) — уведомлены о deploy
-- [ ] 1-2 часа свободного времени — first deploy не stop-and-go
-
-Поехали 🚀
+1. Прочитай этот файл целиком
+2. Спроси пользователя: G8a+G9 / G8b+G9 / только G9
+3. Делай атомарными коммитами с conventional commit style
+4. После каждого G — обнови CHECKLIST/DECISIONS/NOTES
+5. После закрытия M16 — обсуди tag и обнови CLAUDE.md

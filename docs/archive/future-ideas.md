@@ -1126,6 +1126,45 @@ horizontal scale потребует надёжных integration tests.
   `.gitmodules`) удалён вместе с остальным `.claude/`. CI больше не
   даёт warning `fatal: No url found for submodule path`.
 
+### Auth interceptor: подавить шумный 401 при refresh на /login
+
+**Симптом:** на странице `/login` (не залогинен, нет refresh-cookie)
+Angular auth-interceptor делает фоновый `POST /api/auth/refresh`, gateway
+возвращает `401 Missing refresh cookie`, ошибка попадает в DevTools
+Console:
+
+```
+POST https://ruttrack.site/api/auth/refresh 401 (Unauthorized)
+{
+  "type": "https://api.rutcampustrack.ru/problems/token-refresh-failed",
+  "title": "Не удалось обновить токен",
+  "detail": "Missing refresh cookie",
+  ...
+}
+```
+
+После успешного логина refresh-cookie появляется → 401 пропадает.
+Функционально не ломает ничего: фронт ловит 401, показывает форму
+логина — это и есть ожидаемое поведение. Косметика: лишний шум в
+Console при первой загрузке `/login`.
+
+**Что сделать:** в Angular auth-interceptor (`web-panel/src/app/core/`,
+HTTP интерсептор для refresh logic) при `route.url === '/login'` или
+`document.cookie` без `refresh_token`/`hasRefreshHint`-маркера —
+не делать silent refresh attempt. Альтернативы:
+- Не вызывать refresh если на странице `/login`.
+- Перехватить 401 на `/api/auth/refresh` и **не** ругаться в Console
+  если caller был «попытка восстановить сессию» (можно `console.debug`
+  вместо HttpErrorResponse, который Angular по умолчанию печатает).
+- Добавить `localStorage.hasSession` маркер: outet сессии при login,
+  снять при logout — и refresh attempt'ить только если маркер есть.
+
+**Оценка:** 30-60 минут + smoke test. Низкий приоритет, можно бандлом
+с другими косметическими фиксами frontend'а.
+
+**Контекст:** обнаружено 2026-04-27 после M16 G5 hotfix #2
+(коммит `5acedb95`, фикс белого экрана от nginx proxy_pass + variable).
+
 ### nginx DNS race для всех internal upstream'ов
 
 **Симптом:** после `docker compose up -d` (или `restart` любого

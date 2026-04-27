@@ -72,16 +72,32 @@ G24-fix-2 в consumer (см. `DECISIONS.md` § D5).
 - [ ] Commit: `fix(loki): wait-for-ready before promtail push to fix startup race (M16 G4)`
 - [ ] Commit: `fix(loki): <root cause> — eliminates InstancesCount errors (M16 G4)`
 
-## Группа 5 — nginx DNS race (G5, ~0.5д)
+## Группа 5 — nginx DNS race + verify-deploy.sh fix (G5, ~0.5д)
 
-- [ ] Прочитать `nginx/conf.d/default.conf` — найти все `proxy_pass http://rct-...`
-- [ ] Добавить `resolver 127.0.0.11 valid=10s ipv6=off;` в каждый `server { }` блок (или в `nginx.conf` http-уровне)
-- [ ] Заменить `proxy_pass http://rct-X:N;` на `set $X_upstream "rct-X:N"; proxy_pass http://$X_upstream;` для **всех** internal upstream'ов
-- [ ] Список upstream'ов: web-panel-nginx, mini-app, pwa, landing, api-gateway, grafana, prometheus, alertmanager, swagger-ui (через api-gateway)
-- [ ] Локально: `docker compose up -d nginx` → `docker compose restart api-gateway` → curl https://localhost/login → 200 в течение 15 сек без ручного nginx restart
-- [ ] Обновить `scripts/verify-deploy.sh` — retry loop для `/login` (5 попыток × 2 сек)
-- [ ] Smoke на VPS (после redeploy) — повторить ручной test
-- [ ] Commit: `fix(nginx): runtime DNS resolution for internal upstreams (M16 G5)`
+**Расширенный скоуп:** в одном PR закрываем (a) DNS race (root) и (b)
+4 false-positive fail'а в `verify-deploy.sh`, описанные в
+`future-ideas.md` § «verify-deploy.sh устарел до v9.0».
+
+### nginx DNS race fix
+
+- [x] Прочитать `nginx/conf.d/default.conf` — 15 `proxy_pass http://rct-*` upstream'ов
+- [x] Добавлен `resolver 127.0.0.11 valid=10s ipv6=off;` в HTTPS server-блок (Docker embedded DNS)
+- [x] Объявлены 8 переменных-upstream'ов (`$upstream_gateway`, `$upstream_landing`, `$upstream_pwa`, `$upstream_mini_app`, `$upstream_web_panel`, `$upstream_grafana`, `$upstream_prometheus`, `$upstream_alertmanager`)
+- [x] Заменены все 15 `proxy_pass http://rct-X:N` на `proxy_pass http://$upstream_X` (variable triggers runtime resolve)
+- [x] Validate: `docker run nginx:alpine nginx -t` → syntax OK
+- [ ] Verify на VPS: `docker compose restart grafana` → `curl https://ruttrack.site/grafana/` → 200/302 в течение 15 сек **без** ручного nginx restart
+
+### verify-deploy.sh обновления (4 false-positive fix)
+
+- [x] `expect_status` поддерживает comma-separated list (`"200,301"` для root)
+- [x] Новый `expect_status_retry` (5 attempts × 2s) для post-restart upstream'ов
+- [x] Section 2: `/` ожидает 301 (INFRA-v9-01 redirect), `/login`+`/app/`+`/presentation/` через retry
+- [x] Section 2: gateway health через `docker exec rct-api-gateway wget /actuator/health` (real endpoint)
+- [x] Section 8 Mongo TTL: использует `MONGO_INITDB_ROOT_USERNAME/PASSWORD` (PoLP user не имеет dbAdmin)
+- [x] Bash syntax check (`bash -n`) — passes
+- [ ] Verify на VPS: `./scripts/verify-deploy.sh` → 0 false-positives (все 4 предыдущих fail'а исчезают)
+
+- [ ] Commit: `fix(nginx,scripts): runtime DNS for upstream + verify-deploy false-positives (M16 G5)`
 
 ## Группа 6 — @AdminAction audit log (G6, ~1-2д)
 

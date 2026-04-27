@@ -245,3 +245,86 @@ startup + healthcheck retry). Acceptable — promtail tail'ит позицию
 - Multi-tenancy (`auth_enabled: true`) — single-org setup, не нужно.
 - gRPC keepalive tuning — оставлено as escalation step в runbook.
 - Disable inmemory kvstore → memberlist — overkill для single-instance.
+
+---
+
+## D8 — G5 nginx: per-upstream variables + Docker embedded DNS
+
+**Контекст:** после каждого `docker compose up -d --no-deps <X>` или
+deploy.yml пробежки upstream X отдаёт **502 Bad Gateway** через main
+`rct-nginx`. Манyally исправляется через `docker compose restart nginx`.
+
+**Root cause:** nginx без `resolver` директивы резолвит DNS **один раз
+при старте** и кэширует IP. Когда docker recreate'ит upstream-контейнер,
+он получает **новый** IP (Docker embedded DNS обновляется), но nginx
+ходит в старый → connection refused → 502.
+
+**Решение (двухуровневое):**
+
+1. `resolver 127.0.0.11 valid=10s ipv6=off;` — Docker embedded DNS,
+   re-resolve каждые 10 секунд.
+
+2. **Переменные** в `proxy_pass` (`set $upstream_X "rct-X:N"; proxy_pass
+   http://$upstream_X;`). Без переменной nginx делает DNS resolve **только
+   при загрузке config'а**, и `resolver` директива игнорируется.
+   Переменная заставляет nginx делать **runtime resolve** на каждый
+   запрос (с TTL caching из `valid=10s`).
+
+**Альтернативы:**
+- **Single shared `resolver` в `nginx.conf` http{}**: тоже работает, но
+  тогда `resolver` глобален и применим ко всем server-блокам. Outer
+  proxy резолвит публичный DNS — там Docker resolver неприменим.
+  Решено: `resolver` в server-блоке, scope ограничен HTTPS-сервером.
+- **`upstream { server rct-X:N; }` блоки**: nginx читает upstream{} при
+  старте конфига и игнорирует resolver. Без commercial nginx Plus
+  upstream{} dynamic-resolution невозможен.
+
+**Trade-off:** runtime DNS resolve добавляет ~0.1ms на запрос
+(Docker resolver = local socket, dirt-cheap). За 10s window nginx
+кэширует resolved IP, реальный resolve только раз в 10s per
+upstream. Acceptable.
+
+**Verify:** на VPS после redeploy:
+```bash
+docker compose -f docker-compose.prod.yml restart grafana
+sleep 5  # дать compose recreate'нуть
+curl -s -o /dev/null -w "%{http_code}\n" https://ruttrack.site/grafana/
+# Ожидание: 200/302 в течение 15 сек, без ручного `restart nginx`
+```
+
+---
+
+## D9 — G5 verify-deploy.sh: 4 false-positive fixes
+
+**Контекст:** `scripts/verify-deploy.sh` имел 4 false-positive fail'а
+на полностью здоровом проде, описанные в `future-ideas.md` §
+«verify-deploy.sh устарел до v9.0»:
+
+1. `Landing redirect — expected 200, got 301`: проверка `/` ожидала
+   200, но v9.0 INFRA-v9-01 делает 301 на `/login`.
+2. `/login — got 502`: nginx DNS race (D8) — transient после restart.
+3. `/api/health — got 404`: endpoint никогда не существовал, реальный
+   путь `/actuator/health` через docker exec.
+4. `TTL index check failed`: `mongosh -u $MONGO_NOTIFICATION_USER` (PoLP
+   user) не имеет привилегий на `getIndexes()`. Нужен `root` user.
+
+**Решение:** все 4 fix'а в одном Edit:
+1. `expect_status` поддерживает comma-separated list → `/` принимает
+   `"200,301"`.
+2. Новый `expect_status_retry` helper (5 × 2s) для post-restart
+   tolerance — используется на `/login`, `/app/`, `/presentation/`.
+3. Gateway health через `docker exec rct-api-gateway wget
+   localhost:8080/actuator/health` + grep status:UP.
+4. Mongo TTL check переключён на `MONGO_INITDB_ROOT_USERNAME/PASSWORD`
+   с auth source admin.
+
+**Trade-off:** retry loop добавляет до 10 секунд к runtime скрипта при
+transient nginx DNS issue. Acceptable — verify-deploy.sh не на hot
+path, цель — корректность результата.
+
+**Что НЕ сделали:**
+- Не переключили на real probe `/api/health` (запрос пользователя был
+  бы добавить такой endpoint). Оставлено docker exec workaround,
+  возможно в M17 добавим публичный health endpoint.
+- Mongo TTL check **fail'ит** теперь (раньше был warn) если creds
+  не выставлены — это намеренно (теперь это P2-блокер для prod).

@@ -208,3 +208,61 @@ healthcheck-wait делает startup сцеление длиннее (15-30s в
 сразу), что увеличивает окно потери логов в случае cold deploy. Но
 positions file персистится в volume (`/tmp/positions.yaml`), так что
 docker stdout cursor не сбросится — promtail подберёт где остановился.
+
+### G5 — surprise: scope расширился до verify-deploy.sh
+
+Изначально G5 был только nginx DNS race (~0.5д). При чтении
+`future-ideas.md` обнаружил что 4 false-positive'а в
+`verify-deploy.sh` тоже были связаны:
+- 1/4 случаев (`/login` 502) — это **симптом** того же DNS race, не
+  отдельный bug. Логично fix'ить вместе.
+
+Расширил скоуп до **G5 = nginx DNS race + verify-deploy false-positive
+fixes**. Время выросло до ~1ч (вместо 0.5д), потому что я переиспользовал
+existing infra (`expect_status` + новый `expect_status_retry` helper,
+docker exec для health probe).
+
+### G5 — почему variables в proxy_pass обязательны
+
+Долго думал — может ли просто `resolver` директивы быть достаточно?
+**Нет.** Без переменной nginx делает DNS resolve **только при загрузке
+config'а** (не runtime), и `resolver` директива игнорируется. Это
+известный gotcha из nginx docs:
+> "If the proxy_pass directive contains a variable, the resolver
+> directive is consulted on each request"
+
+Без переменной `resolver` буквально not-on-effect для proxy_pass.
+Это объясняет почему наш текущий config (без переменных) не помогает
+даже если бы был resolver.
+
+### G5 — alternative rejected: shared upstream{} blocks
+
+Рассматривал заменить 8 переменных на 8 `upstream { }` блоков:
+```nginx
+upstream api_gateway { server rct-api-gateway:8080; }
+location /api/ { proxy_pass http://api_gateway; }
+```
+
+**Не подошло**: `upstream{}` блок с `server <hostname>` тоже DNS-resolves
+**только при load config**, а не runtime. Чтобы получить runtime resolve
+в `upstream{}`, нужен **commercial nginx Plus** (`server <host> resolve;`)
+или сторонний модуль (`nginx-upstream-dynamic-servers`).
+
+Variables в `proxy_pass` — это **the only OSS way** для runtime DNS
+без extra modules.
+
+### G5 итог
+
+Изменено 4 файла:
+- `nginx/conf.d/default.conf` — `resolver` + 8 переменных + 15 `proxy_pass` через переменные
+- `scripts/verify-deploy.sh` — comma-list status check + retry helper + section 2 fixes (root 301, gateway via docker exec, retry для /login /app /presentation) + section 8 Mongo TTL через root creds
+- `docs/milestones/M16/CHECKLIST.md` — checkbox progress
+- `docs/milestones/M16/DECISIONS.md` — D8 (DNS race) + D9 (verify-deploy)
+
+Validate:
+- `nginx -t` через docker run nginx:alpine → syntax OK
+- `bash -n scripts/verify-deploy.sh` → syntax OK
+
+Verify на VPS отложен — реальный test возможен только после redeploy
++ ручной `docker compose restart grafana` чтобы проверить что nginx
+re-resolve'ит DNS вместо отдачи 502.

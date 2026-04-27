@@ -41,19 +41,46 @@ warn() { echo -e "${YELLOW}!${NC} $*"; }
 
 OVERALL_FAIL=0
 
-# Helper: HTTP status check
+# Helper: HTTP status check (single value or list of acceptable values)
 expect_status() {
     local url="$1"
-    local expected="$2"
+    local expected="$2"  # comma-separated list, e.g. "200" or "200,301"
     local description="$3"
     local actual
     actual=$(curl -ks -o /dev/null -w "%{http_code}" "$url" || echo "000")
-    if [ "$actual" = "$expected" ]; then
-        ok "$description ($actual)"
-    else
-        err "$description — expected $expected, got $actual ($url)"
-        OVERALL_FAIL=3
-    fi
+    case ",$expected," in
+        *",$actual,"*)
+            ok "$description ($actual)"
+            ;;
+        *)
+            err "$description — expected $expected, got $actual ($url)"
+            OVERALL_FAIL=3
+            ;;
+    esac
+}
+
+# Helper: HTTP status with retry (for upstream services that take a few
+# seconds to become reachable after `docker compose up -d`).
+# M16 G5: nginx DNS race after upstream restart can return 502 transiently.
+expect_status_retry() {
+    local url="$1"
+    local expected="$2"
+    local description="$3"
+    local attempts="${4:-5}"
+    local sleep_s="${5:-2}"
+    local actual=""
+    for i in $(seq 1 "$attempts"); do
+        actual=$(curl -ks -o /dev/null -w "%{http_code}" "$url" || echo "000")
+        case ",$expected," in
+            *",$actual,"*)
+                ok "$description ($actual, after $i attempt(s))"
+                return 0
+                ;;
+        esac
+        sleep "$sleep_s"
+    done
+    err "$description — expected $expected, got $actual after $attempts attempts ($url)"
+    OVERALL_FAIL=3
 }
 
 # -----------------------------------------------------------------------------
@@ -85,10 +112,31 @@ fi
 # -----------------------------------------------------------------------------
 # 2. Public HTTPS reachable
 # -----------------------------------------------------------------------------
+# M16 G5: после v9.0 / тоже для nginx DNS race tolerance:
+#   - "/" редиректит 301 на /login (INFRA-v9-01), не 200
+#   - "/login" + "/app/" + "/presentation/" с retry — после nginx restart
+#     upstream может быть transient 502 пока DNS не re-resolve'нется (10s TTL)
+#   - "/api/health" не существует — есть только actuator, проверяем через docker
 hdr "2. Public HTTPS endpoints"
-expect_status "$BASE_URL/" "200" "Landing redirect"
-expect_status "$BASE_URL/login" "200" "Web-panel /login"
-expect_status "$BASE_URL/api/health" "200" "Gateway /api/health"
+expect_status "$BASE_URL/" "301" "Root → /login redirect"
+expect_status_retry "$BASE_URL/login" "200" "Web-panel /login"
+expect_status_retry "$BASE_URL/app/" "200" "PWA /app/"
+expect_status_retry "$BASE_URL/presentation/" "200" "Landing /presentation/"
+
+# Gateway health через docker exec (actuator endpoint, не публичен)
+if command -v docker >/dev/null 2>&1; then
+    GW_HEALTH=$(docker exec rct-api-gateway wget -qO- \
+        http://localhost:8080/actuator/health 2>/dev/null \
+        | grep -oE '"status":"[A-Z]+"' | head -1)
+    if [ "$GW_HEALTH" = '"status":"UP"' ]; then
+        ok "Gateway actuator/health UP"
+    else
+        err "Gateway actuator/health не UP: $GW_HEALTH"
+        OVERALL_FAIL=1
+    fi
+else
+    warn "docker недоступен — gateway health check skipped"
+fi
 
 # -----------------------------------------------------------------------------
 # 3. Security headers (M07 G4 + M13 G16)
@@ -174,14 +222,28 @@ fi
 # -----------------------------------------------------------------------------
 # 8. Mongo indexes verify (M13 G6)
 # -----------------------------------------------------------------------------
+# M16 G5: notification_db user (PoLP — M10 D2) не имеет dbAdmin,
+# getIndexes() возвращает empty. Используем root credentials через
+# MONGO_INITDB_ROOT_USERNAME/PASSWORD env vars (auth source admin).
 hdr "8. Mongo индексы (M13 G6)"
 if command -v docker >/dev/null 2>&1; then
-    if docker exec rct-mongo-attendance mongosh --quiet --eval \
-        "use notification_db; db.notification_history.getIndexes().filter(i => i.expireAfterSeconds).length" \
-        2>/dev/null | grep -q "1"; then
-        ok "TTL index на notification_history существует"
+    MONGO_ROOT="${MONGO_INITDB_ROOT_USERNAME:-root}"
+    MONGO_PWD="${MONGO_INITDB_ROOT_PASSWORD:-}"
+    if [ -z "$MONGO_PWD" ]; then
+        warn "MONGO_INITDB_ROOT_PASSWORD не выставлен — TTL check skipped"
+        warn "Запусти с экспортом из .env.prod: source .env.prod && scripts/verify-deploy.sh"
     else
-        warn "TTL index check failed — см. runbooks/mongo-indexes-verify.md"
+        TTL_COUNT=$(docker exec rct-mongo-attendance mongosh \
+            -u "$MONGO_ROOT" -p "$MONGO_PWD" --authenticationDatabase admin \
+            --quiet --eval \
+            "db.getSiblingDB('notification_db').notification_history.getIndexes().filter(i => i.expireAfterSeconds).length" \
+            2>/dev/null | tr -d '[:space:]')
+        if [ "$TTL_COUNT" = "1" ]; then
+            ok "TTL index на notification_history существует"
+        else
+            err "TTL index missing (count=$TTL_COUNT) — см. runbooks/mongo-indexes-verify.md"
+            OVERALL_FAIL=2
+        fi
     fi
 else
     warn "docker недоступен — Mongo indexes check skipped"

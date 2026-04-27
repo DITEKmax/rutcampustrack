@@ -89,7 +89,11 @@ public interface AuthApi {
                     + "M16 G3: brute-force защита по IP — 20 mismatch'ей за 5 мин → 429.")
     @ApiResponse(responseCode = "200", description = "OTP verified, JWT pair returned")
     @ApiResponse(responseCode = "401", description = "Invalid or expired OTP code")
-    @ApiResponse(responseCode = "429", description = "Too many verification attempts from this IP")
+    // 429 (brute-force throttle) добавляется автоматически через
+    // GlobalErrorResponsesCustomizer с правильным ErrorResponse schema +
+    // application/problem+json. Контекст brute-force упомянут в @Operation
+    // description выше. Не явно аннотируем @ApiResponse(429), чтобы
+    // springdoc не генерил *(/*) + TokenResponse override (M16 G3 fix).
     @PostMapping("/otp/verify-by-code")
     ResponseEntity<TokenResponse> verifyOtpByCode(@Valid @RequestBody OtpVerifyByCodeRequest request,
                                                   HttpServletRequest httpRequest);

@@ -94,7 +94,7 @@ export interface paths {
         put?: never;
         /**
          * Verify OTP code without telegram ID
-         * @description Verify OTP code by reverse lookup (code → telegramId). Used by web-panel where the user only enters the 6-digit code received in Telegram bot.
+         * @description Verify OTP code by reverse lookup (code → telegramId). Used by web-panel where the user only enters the 6-digit code received in Telegram bot. M16 G3: brute-force защита по IP — 20 mismatch'ей за 5 мин → 429.
          */
         post: operations["verifyOtpByCode"];
         delete?: never;

@@ -348,6 +348,10 @@ export interface components {
             /** Format: date-time */
             blockedAt?: string;
             cancelReason?: string;
+            /** Format: int64 */
+            cancelledBy?: number;
+            /** Format: date-time */
+            cancelledAt?: string;
             /** Format: date-time */
             createdAt?: string;
             _links?: components["schemas"]["Links"];

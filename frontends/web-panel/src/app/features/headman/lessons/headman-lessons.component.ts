@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -23,7 +24,25 @@ import {
 import { addDays, formatDate } from '../../student/schedule/week-utils';
 import type { LessonResponse } from '../../../api/schema';
 
-type Lesson = LessonResponse & { cancelReason?: string };
+type Lesson = LessonResponse & {
+  cancelReason?: string;
+  /** 'template' = из ScheduleItem-шаблона, 'oneoff' = из schedule_one_off_lessons. */
+  source: 'template' | 'oneoff';
+  /** Только для source='oneoff': true если эта разовая пара заняла slot отменённой template-пары. */
+  replacement?: boolean;
+};
+
+/** Сетка времён РУТ МИИТ. См. schedule-slot-dialog.component.ts:188-202. */
+const LESSON_SLOT_TIMES: Record<number, [string, string]> = {
+  1: ['08:30', '09:50'],
+  2: ['10:05', '11:25'],
+  3: ['11:40', '13:00'],
+  4: ['13:45', '15:05'],
+  5: ['15:20', '16:40'],
+  6: ['16:55', '18:15'],
+  7: ['18:30', '19:50'],
+  8: ['20:00', '21:20'],
+};
 
 interface DayGroup {
   date: string;
@@ -144,6 +163,13 @@ const MONTH_RANGE_DAYS = 30;
                     <div class="lesson-meta">
                       @if (lesson.room) { <span>{{ lesson.room }}</span> }
                       <span class="status status--{{ statusKey(lesson) }}">{{ statusLabel(lesson) }}</span>
+                      @if (lesson.source === 'oneoff') {
+                        @if (lesson.replacement) {
+                          <span class="badge badge--replacement" title="Разовая пара заменяет отменённую">Замена</span>
+                        } @else {
+                          <span class="badge badge--oneoff" title="Разовая пара (вне постоянного расписания)">Разовая</span>
+                        }
+                      }
                       @if (isCancelled(lesson) && lesson.cancelReason) {
                         <span class="cancel-reason">— {{ lesson.cancelReason }}</span>
                       }
@@ -247,6 +273,23 @@ const MONTH_RANGE_DAYS = 30;
       border: 1px solid color-mix(in oklab, var(--accent-danger) 30%, transparent);
     }
     .cancel-reason { font-style: italic; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font: 500 0.6875rem/1 var(--font-mono);
+      letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+    }
+    .badge--replacement {
+      background: color-mix(in oklab, var(--accent-warning, #c98a00) 14%, transparent);
+      color: var(--accent-warning, #c98a00);
+      border: 1px solid color-mix(in oklab, var(--accent-warning, #c98a00) 30%, transparent);
+    }
+    .badge--oneoff {
+      background: color-mix(in oklab, var(--accent-secondary) 14%, transparent);
+      color: var(--accent-secondary);
+      border: 1px solid color-mix(in oklab, var(--accent-secondary) 30%, transparent);
+    }
     .btn-stroke {
       padding: 6px 14px;
       border-radius: var(--radius-md);
@@ -442,16 +485,42 @@ export class HeadmanLessonsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     const range = this.computeDateRange();
+    const includeOneOff = this.kind() === 'all' || this.kind() === 'active' || this.kind() === 'oneoff';
+    const includeTemplate = this.kind() !== 'oneoff';
 
-    this.headmanApi.getGroupLessons(groupId, range.from, range.to, this.statusFilter()).subscribe({
-      next: (resp) => {
-        const embedded = resp?._embedded;
-        const list: any[] = embedded ? ((Object.values(embedded)[0] as any[]) ?? []) : [];
-        const normalised = list.map((entry: any) => {
-          const item = entry?.content ?? entry;
-          return item as Lesson;
-        });
-        this.lessons.set(normalised.filter(Boolean));
+    forkJoin({
+      template: this.headmanApi.getGroupLessons(groupId, range.from, range.to, this.statusFilter()),
+      oneoff: includeOneOff
+        ? this.headmanApi.getOneOffLessons(groupId, range.from, range.to)
+        : Promise.resolve(null) as any,
+    }).subscribe({
+      next: ({ template, oneoff }: any) => {
+        const templateLessons: Lesson[] = includeTemplate
+          ? this.extractEmbedded(template).map((entry: any) => {
+              const item = entry?.content ?? entry;
+              return { ...item, source: 'template' as const };
+            }).filter(Boolean)
+          : [];
+
+        const oneOffLessons: Lesson[] = includeOneOff
+          ? this.extractEmbedded(oneoff).map((entry: any) => this.toOneOffLesson(entry?.content ?? entry))
+          : [];
+
+        // Слот-match: one-off на (date, lesson_number) совпадающий с CANCELLED template-парой = «Замена».
+        const cancelledKeys = new Set(
+          templateLessons
+            .filter(l => (l.status ?? '').toString().toUpperCase() === 'CANCELLED')
+            .map(l => `${l.date}#${l.lessonNumber}`)
+        );
+        for (const oo of oneOffLessons) {
+          if (cancelledKeys.has(`${oo.date}#${oo.lessonNumber}`)) {
+            oo.replacement = true;
+          }
+        }
+
+        // Для kind='cancelled' — one-off вообще не добавляем (мы их и не запрашивали).
+        const merged = [...templateLessons, ...oneOffLessons];
+        this.lessons.set(merged);
         this.loading.set(false);
       },
       error: () => {
@@ -459,6 +528,33 @@ export class HeadmanLessonsComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  /** Spring HATEOAS PagedModel/CollectionModel _embedded → array. */
+  private extractEmbedded(resp: any): any[] {
+    if (!resp) return [];
+    const embedded = resp._embedded;
+    if (!embedded) return Array.isArray(resp) ? resp : [];
+    return (Object.values(embedded)[0] as any[]) ?? [];
+  }
+
+  /** Конвертирует OneOffLessonResponse в Lesson-shape с дефолтными временами по сетке. */
+  private toOneOffLesson(o: any): Lesson {
+    const num = Number(o.lessonNumber);
+    const slot = LESSON_SLOT_TIMES[num] ?? ['08:30', '09:50'];
+    return {
+      id: o.id,
+      groupId: o.groupId,
+      subjectId: o.subjectId,
+      date: o.date,
+      status: 'PLANNED' as any,
+      lessonNumber: num,
+      startTime: slot[0],
+      endTime: slot[1],
+      room: o.classroom ?? null,
+      source: 'oneoff',
+      // Остальные поля LessonResponse — не нужны для рендера one-off (HATEOAS links и т.п.).
+    } as unknown as Lesson;
   }
 
   private loadSubjects(): void {

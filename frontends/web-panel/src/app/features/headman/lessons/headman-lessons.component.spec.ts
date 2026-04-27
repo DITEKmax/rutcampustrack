@@ -32,6 +32,12 @@ const SUBJECTS = [{ id: 1, name: 'Алгебра' }, { id: 2, name: 'Физик�
 function makeApi(overrides: Partial<HeadmanApiService> = {}): HeadmanApiService {
   return {
     getGroupLessons: vi.fn(() => of({ _embedded: { lessonResponseList: LESSONS } })),
+    // C6: defensive default — компонент дёргает forkJoin([getGroupLessons, getOneOffLessons])
+    // в любом kind кроме 'cancelled'. Полное покрытие one-off merge — в C10.
+    getOneOffLessons: vi.fn(() => of({ _embedded: { oneOffLessonResponseList: [] } })),
+    // C4: defensive default — листинг семестров вызывается только при period='semester'.
+    // По default'у period='month' → не вызывается, но мок защищает от регрессий.
+    listSemesters: vi.fn(() => of({ _embedded: { semesterResponseList: [] } })),
     listSubjects: vi.fn(() => of({ _embedded: { subjectResponseList: SUBJECTS } })),
     cancelLesson: vi.fn(() => of(null)),
     restoreLesson: vi.fn(() => of(null)),

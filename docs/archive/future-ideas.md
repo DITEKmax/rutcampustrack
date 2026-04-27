@@ -1082,19 +1082,36 @@ horizontal scale потребует надёжных integration tests.
 
 ### Tracking cleanup
 
-- **Untrack `.claude/` и `.agents/` из git.** 195+25 файлов уже в
-  `.gitignore` (строки 90-91), но закоммичены commit'ом `d163f38`
-  (misnamed "remove from tracking" — фактически добавил их).
-  Шумит PR diffs, мешает поиску по коду, теряет актуальность
-  относительно skills updates через `claude` CLI. Команда:
-  `git rm -r --cached .claude .agents && git commit -m "..."`. Файлы
-  локально остаются, продолжают работать.
+- ✅ **Untrack `.claude/` и `.agents/` из git.** Закрыто коммитом
+  `a2a15e38` (2026-04-27): `git rm -r --cached .claude .agents` снёс
+  295 файлов с трекинга, `.gitignore` консолидирован (одна группа
+  с комментарием вместо трёх перекрывающих паттернов). Файлы
+  локально остались, skills/agents продолжают работать.
 
-- **Phantom submodule fix.** `.claude/skills/context7-auto-research`
-  зарегистрирован как gitlink (mode 160000) но `.gitmodules` нет —
-  каждый CI checkout даёт warning
-  `fatal: No url found for submodule path '.claude/skills/...'`.
-  Решится автоматически после untrack `.claude/` (выше).
+- ✅ **Phantom submodule fix.** Закрыто бонусом тем же коммитом
+  `a2a15e38` — `.claude/skills/vibesec` (mode 160000 gitlink без
+  `.gitmodules`) удалён вместе с остальным `.claude/`. CI больше не
+  даёт warning `fatal: No url found for submodule path`.
+
+### Sync local files to VPS
+
+- **Обновить `.env.prod` на VPS.** Файл реструктурирован локально
+  (2026-04-27): длинные пояснительные комментарии вынесены в шапку
+  с notes-блоком, секции отделены пустой строкой → IDE правильно
+  подсвечивает переменные. **Значения секретов не менялись**, только
+  layout. Файл в `.gitignore`, через CI не катится — нужно вручную:
+  ```bash
+  scp .env.prod deploy@<VPS_HOST>:/opt/rutcampustrack/.env.prod
+  # на VPS — docker compose не нужно перезапускать (значения те же),
+  # но если параноишь:
+  ssh deploy@<VPS_HOST> 'cd /opt/rutcampustrack && \
+      ./scripts/validate-env-prod.sh && \
+      docker compose -f docker-compose.prod.yml config --quiet'
+  ```
+  Не блокирует — на VPS лежит старый layout, всё работает. Стоит
+  засинкать вместе с другими M16 cleanup задачами, чтобы при
+  следующем редактировании секрета на проде не пришлось ориентироваться
+  в перемешанных комментариях.
 
 ### Security suppressions (introduced в M15)
 

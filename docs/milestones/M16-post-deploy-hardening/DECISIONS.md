@@ -98,3 +98,48 @@ Aspect вызывает SPI, конкретный сервис предоста�
 
 Решение принимается с учётом текущей архитектуры (нет other Linkerd
 usage → adding sidecar = большая зависимость).
+
+---
+
+## D5 — G2 переориентирован: idempotency уже была, fix exception swallow
+
+**Контекст:** исходный план G2 (взято из `future-ideas.md` § OTP
+hardening / HIGH.2) — добавить idempotency через Redis SET NX в
+EventDispatcher. При работе обнаружено что `BotIdempotencyGuard`
+уже реализован в **M13 G8** (commit `494821fe`):
+- `services/notification-bot/bot/services/idempotency_guard.py` — `try_claim()` через `SET NX EX 3600`
+- `event_consumer.py:97-99` — wraps dispatch
+- 7 unit-тестов покрывают первый/duplicate/independent event_id, missing event_id (fail-closed), Redis error (fail-closed), TTL expire
+
+`future-ideas.md` HIGH.2 текст устарел.
+
+**Реальный остаточный bug:** `dispatcher.dispatch()` имел
+`try/except Exception` swallow handler-exception'ов с комментарием
+«ack safety». Это **противоречило** comment'у в consumer.py о M13
+G24-fix-2 («handler exceptions → DLQ»). На практике:
+- Handler bug → exception caught в dispatcher → ack message → silent loss
+- DLQ flow в consumer.py никогда не активировался для handler-bug'ов
+
+**Решение:** убрать swallow в dispatcher → exception проходит до
+`consumer.process(requeue=False)` → message в DLQ → alert
+`DLQBacklog` (Prometheus) → manual triage по
+`docs/operations/runbooks/dlq-triage.md`.
+
+**Расширение скоупа (B+):** `notification-bot.events.dlq` declare'ился
+без `x-message-ttl` / `x-max-length` — без propagation он бы рос
+безгранично при flood handler bug'ов. Добавлены:
+- `x-message-ttl: 7d` (синхронно с разумным окном для triage)
+- `x-max-length: 10000` (cap)
+- `x-overflow: drop-head` (старые сначала, чтобы новые landed)
+
+**Trade-off:** при handler-bug'е во flood'е (например, fan-out на
+1000 студентов с broken Telegram API token) DLQ может достичь cap
+за минуту. После cap → старые messages дропаются. Acceptable: `DLQBacklog`
+alert (>10 за 5 мин) сработает **до** cap'а, времени на reaction
+достаточно.
+
+**Java-сторона (notification-web.history.dlq) НЕ тронута.** Та же
+проблема для Java consumer'ов отслежена отдельно как N6 в
+`future-ideas.md` § «Notification history bundle». Должна быть
+закрыта тем же паттерном (`arguments` в `@RabbitListener` queue
+declaration), но это отдельный PR — не в скоуп G2.

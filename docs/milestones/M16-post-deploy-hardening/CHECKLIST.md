@@ -19,18 +19,26 @@
 - [ ] Smoke: сделать любой request через gateway → найти trace_id в Grafana Tempo — verify на VPS после redeploy
 - [ ] Commit: `fix(otel): use HTTP/protobuf port 4318 for Java services (M16 G1)`
 
-## Группа 2 — Event dispatcher idempotency (G2, ~1д)
+## Группа 2 — Dispatcher exception propagation + DLQ retention (G2 v2, ~1.5-2ч)
 
-- [ ] Прочитать текущий `event_dispatcher.py` — понять как dispatch вызывает handler'ы
-- [ ] Добавить Redis client (если ещё не инжектируется) в `EventDispatcher.__init__`
-- [ ] Реализовать `_is_already_processed(event_id)` через `redis.set(key, "1", nx=True, px=24h)`
-- [ ] Обернуть вызов handler'а: skip + warn + metric increment если duplicate
-- [ ] Добавить метрику `event_duplicate_total{event_type}` в `observability.py`
-- [ ] Unit-тест: одинаковый `event_id` дважды → handler вызван 1 раз
-- [ ] Unit-тест: разные `event_id` → handler вызван 2 раза
-- [ ] IT (если есть test_event_dispatcher.py — расширить, иначе создать) с реальным Redis Testcontainer
-- [ ] Документация: `docs/architecture/event-schemas.md` — раздел про idempotency
-- [ ] Commit: `fix(bot): event dispatcher idempotency via Redis SET NX (M16 G2)`
+**Изменение скоупа vs исходного плана:** идемпотентность уже была сделана
+в **M13 G8** через `BotIdempotencyGuard.try_claim` (Redis SET NX TTL 1h
++ 7 unit-тестов в `test_idempotency_guard.py`). `future-ideas.md`
+HIGH.2 устарел. Реальная оставшаяся проблема — `dispatcher.dispatch()`
+swallow'ил handler exceptions, делая silent loss event'ов и нивелируя
+G24-fix-2 в consumer (см. `DECISIONS.md` § D5).
+
+- [x] Прочитать `event_dispatcher.py` + `event_consumer.py` + `idempotency_guard.py` — подтверждено что G8 idempotency полностью wired
+- [x] `dispatcher.dispatch()`: убрать `try/except Exception` swallow — exception проходит до consumer'а → DLQ
+- [x] `event_consumer.py`: DLQ декларация добавила `x-message-ttl=7d` + `x-max-length=10000` + `x-overflow=drop-head` (без этого DLQ растёт бесконечно — то же что N6 для Java)
+- [x] `event_consumer.py`: обновлён комментарий чтобы отражать реальный flow (M13 G24-fix-2 + M16 G2 — handler bug → DLQ)
+- [x] `test_event_dispatcher.py`: `test_dispatch_handler_exception_is_caught` перевёрнут → `test_dispatch_handler_exception_propagates` (`pytest.raises`)
+- [x] `test_dispatch_handler_exception_is_logged` — удалён (логирование идёт в consumer'е, не dispatcher'е)
+- [x] Verify alert уже существует — `DLQBacklog` в `infra/prometheus/rules/rabbitmq.yml` ловит >10/5min на любой `*.dlq` (создавать новый не надо)
+- [x] Создан runbook `docs/operations/runbooks/dlq-triage.md`
+- [ ] Локально / CI: прогнать `pytest services/notification-bot/tests/test_event_dispatcher.py` → зелёный
+- [ ] Verify на VPS после redeploy: handler-bug → message в DLQ → alert через 5 мин
+- [ ] Commit: `fix(bot): propagate handler exceptions for DLQ routing + 7d retention (M16 G2)`
 
 ## Группа 3 — OTP brute-force counter (G3, ~1д)
 

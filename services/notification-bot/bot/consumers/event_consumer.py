@@ -46,8 +46,21 @@ async def start_consumer(
         durable=True,
     )
 
-    # Declare DLQ queue and bind
-    dlq_queue = await channel.declare_queue(DLQ_QUEUE_NAME, durable=True)
+    # Declare DLQ queue and bind.
+    # M16 G2 — retention args. Без них DLQ растёт бесконечно (фиксировалось
+    # в future-ideas.md § N6 для notification-web; то же актуально и здесь).
+    # x-message-ttl=7d синхронно с временем reasonable для manual triage.
+    # x-max-length=10000 + drop-head = circuit breaker против flood'а handler bug'ов.
+    # Alert DLQBacklog (infra/prometheus/rules/rabbitmq.yml) ловит >10 сообщений за 5 мин.
+    dlq_queue = await channel.declare_queue(
+        DLQ_QUEUE_NAME,
+        durable=True,
+        arguments={
+            "x-message-ttl": 7 * 24 * 60 * 60 * 1000,  # 7 дней (мс)
+            "x-max-length": 10000,
+            "x-overflow": "drop-head",  # старые сначала, чтобы новые landed
+        },
+    )
     await dlq_queue.bind(dlq_exchange, routing_key=DLQ_ROUTING_KEY)
 
     # Declare main queue with DLQ arguments
@@ -99,10 +112,15 @@ async def start_consumer(
                             continue
                     logger.info("[notification-bot] Received event: %s", event_type)
                     if dispatcher:
-                        # G24-fix-2: handler exceptions пробрасываются,
-                        # message NACK → DLQ. Раньше catch'или Exception
-                        # «acking anyway» — события терялись silently
-                        # при любом handler bug'е, нивелировало G8 dedup.
+                        # M13 G24-fix-2 + M16 G2: handler exceptions
+                        # пробрасываются → message NACK (requeue=False) →
+                        # DLQ → manual triage (см. docs/operations/runbooks/
+                        # dlq-triage.md). До M16 G2 dispatcher.dispatch()
+                        # swallow'ил exceptions локально — комментарий
+                        # обещал DLQ-flow, но фактически любой handler bug
+                        # приводил к silent loss event'а. Сейчас flow
+                        # консистентен: idempotency_guard отсекает дубли,
+                        # handler-bug → DLQ.
                         await dispatcher.dispatch(body)
 
     return connection

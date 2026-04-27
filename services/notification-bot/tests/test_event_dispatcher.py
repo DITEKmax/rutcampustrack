@@ -79,29 +79,22 @@ async def test_dispatch_unknown_event_type_logs_debug(caplog):
 
 
 @pytest.mark.asyncio
-async def test_dispatch_handler_exception_is_caught():
-    """If handler raises, dispatch catches and does NOT re-raise (ack safety)."""
+async def test_dispatch_handler_exception_propagates():
+    """M16 G2: handler exception propagates up to event_consumer for DLQ routing.
+
+    До M16 G2 dispatcher swallow'ил exceptions, что в паре с consumer
+    `requeue=False` приводило к silent loss event'ов при любом handler
+    bug'е. Сейчас exception проходит до event_consumer.message.process()
+    → consumer reject'ит → message в DLQ → triage runbook.
+    """
     failing_handler = AsyncMock(side_effect=RuntimeError("boom"))
     dispatcher = _make_dispatcher(handlers_override={"lesson.started": failing_handler})
 
     event = {"event_type": "lesson.started", "payload": {}}
-    # Must not raise — RabbitMQ ack safety
-    await dispatcher.dispatch(event)
-
-    failing_handler.assert_called_once()
-
-
-@pytest.mark.asyncio
-async def test_dispatch_handler_exception_is_logged(caplog):
-    """Handler exception is logged via logger.exception."""
-    failing_handler = AsyncMock(side_effect=RuntimeError("handler error"))
-    dispatcher = _make_dispatcher(handlers_override={"lesson.started": failing_handler})
-
-    event = {"event_type": "lesson.started", "payload": {}}
-    with caplog.at_level(logging.ERROR, logger="bot.consumers.event_dispatcher"):
+    with pytest.raises(RuntimeError, match="boom"):
         await dispatcher.dispatch(event)
 
-    assert any("lesson.started" in record.message for record in caplog.records)
+    failing_handler.assert_called_once()
 
 
 def test_config_mini_app_url_has_default():

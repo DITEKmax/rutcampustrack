@@ -261,8 +261,19 @@ class EventDispatcher:
     async def dispatch(self, event: dict) -> None:
         """Dispatch an event dict to the appropriate handler.
 
-        Unknown event types are logged at DEBUG and silently ignored.
-        Handler exceptions are caught and logged — never re-raised.
+        Unknown event types are logged at DEBUG and silently ignored
+        (compatibility — нам приходит fanout, у некоторых event_type
+        просто нет handler'а в боте, это не ошибка).
+
+        Handler exceptions **пропускаются вверх** (M16 G2): caller
+        (`event_consumer.py`) делает NACK через `requeue=False` →
+        message уходит в DLQ → triage вручную (см.
+        `docs/operations/runbooks/dlq-triage.md`).
+
+        До M16 G2 handler exceptions swallow'ились здесь, что
+        конфликтовало с G24-fix-2 в consumer'е (комментировал DLQ-flow,
+        но swallow на dispatcher-уровне делал silent loss). Сейчас
+        восстановлена консистентность: silent loss → DLQ + alert.
         """
         event_type = event.get("event_type")
         handler = self._handlers.get(event_type)
@@ -271,7 +282,4 @@ class EventDispatcher:
             logger.debug("Unhandled event type: %s", event_type)
             return
 
-        try:
-            await handler(event)
-        except Exception:
-            logger.exception("Handler failed for event_type=%s", event_type)
+        await handler(event)

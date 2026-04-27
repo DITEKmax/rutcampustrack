@@ -167,6 +167,25 @@ public class UserService {
         return userRepository.findByRole("teacher", Pageable.ofSize(500)).getContent();
     }
 
+    /**
+     * Batch-резолв display-имён по списку ID (для STUDENT/TEACHER аудитных мест).
+     * Cap на size — 100 ids, защита от abuse через query string. Несуществующие
+     * ID молча пропускаются (downstream caller сам решит fallback по отсутствующему).
+     *
+     * @param ids список ID, 1..100 элементов
+     * @return найденные пользователи (порядок не гарантируется — callee должен мапить по id)
+     * @throws BadRequestException если ids пуст или > 100
+     */
+    public List<User> findUsersByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new BadRequestException("ids must not be empty");
+        }
+        if (ids.size() > 100) {
+            throw new BadRequestException("ids size must not exceed 100, got " + ids.size());
+        }
+        return userRepository.findAllById(ids);
+    }
+
     @CacheEvict(value = "users", key = "#id")
     @Transactional
     public User updateUser(Long id, UpdateUserRequest request) {

@@ -4566,6 +4566,109 @@
         }
       }
     },
+    "/academic/users/by-ids" : {
+      "get" : {
+        "tags" : [ "Users" ],
+        "summary" : "Batch-резолв display-имён пользователей по ID",
+        "description" : "Возвращает только {id, fullName} для каждого найденного пользователя. Доступно STUDENT/TEACHER/ADMIN — намеренно не отдаёт PII (login/email/telegramId/role). Используется для подстановки имён в audit-местах (cancelledBy, и т.п.). Cap: max 100 ids на один запрос. Несуществующие ID молча пропускаются.",
+        "operationId" : "getUsersByIds",
+        "parameters" : [ {
+          "name" : "ids",
+          "in" : "query",
+          "description" : "Список ID пользователей через запятую (1..100 элементов)",
+          "required" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Список найденных профилей (порядок не гарантируется)",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelEntityModelUserSummaryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Превышен лимит 100 ids или ids пуст",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelEntityModelUserSummaryResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/academic/thresholds" : {
       "get" : {
         "tags" : [ "Thresholds" ],
@@ -6402,6 +6505,42 @@
                 }
               }
             }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "CollectionModelEntityModelUserSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "userSummaryResponseList" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/EntityModelUserSummaryResponse"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "EntityModelUserSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "ID пользователя"
+          },
+          "fullName" : {
+            "type" : "string",
+            "description" : "Display name: «Иванов Иван Иванович» или «Иванов Иван» если отчества нет"
           },
           "_links" : {
             "$ref" : "#/components/schemas/Links"

@@ -9,6 +9,76 @@
 
 ### Added
 
+- **M16 Post-Deploy Hardening** (9 групп G1-G9, 9 коммитов в `main`,
+  начало 2026-04-27, закрытие 2026-04-27):
+  - **G1 OTel exporter port fix (4317→4318)** (`fe652149`) — Java
+    Spring Boot Micrometer Tracing использует HTTP/protobuf exporter,
+    не gRPC. 6 application.yml + docker-compose.yml + docker-compose.prod.yml
+    переключены на `tempo:4318/v1/traces`. Python notification-bot
+    остаётся на gRPC :4317 (mixed-mode, см. M16 DECISIONS § D2).
+    Eliminates `Connection reset` шум в логах backend.
+  - **G2 Bot dispatcher exception propagation + DLQ retention 7d**
+    (`f9cbca52`) — `dispatcher.dispatch()` swallow'ил handler exceptions
+    с комментарием «ack safety», нивелируя DLQ-flow в consumer'е.
+    Idempotency уже была сделана в M13 G8 — реальный fix свелся к
+    propagation + `x-message-ttl=7d` + `x-max-length=10000` +
+    `x-overflow=drop-head` для `notification-bot.events.dlq`. Создан
+    runbook `docs/operations/runbooks/dlq-triage.md`.
+  - **G3 OTP brute-force counter** (`ce5c404d`) — `verifyOtpByCode`
+    теперь пишет counter `otp_verify_by_code_miss:<ip>` в Redis,
+    pre-check ≥20 mismatch'ей за 5 мин → 429 без проверки кода. Counter
+    инкрементится только при mismatch, **без** reset-on-success
+    (защита от случайного угадывания, см. DECISIONS § D6). Prometheus
+    rule `OtpBruteForceSuspect` добавлен. Defense-in-depth: Gateway
+    RL 5/min/IP — первый layer, counter 20/5min/IP — второй.
+  - **G4 Loki `InstancesCount <= 0` startup race fix** (`221daf6b`) —
+    promtail пушил до того как ingester ACTIVE, ring видел self но
+    gRPC connect fails. Двухуровневый fix: `min_ready_duration: 15s`
+    + healthcheck-gated `depends_on: loki: condition: service_healthy`.
+    Создан `docs/operations/runbooks/loki-troubleshooting.md`.
+  - **G5 nginx DNS race + verify-deploy false-positives** (`b0e351ee`) —
+    `resolver 127.0.0.11 valid=10s ipv6=off` + 8 `set $upstream_*`
+    переменных в proxy_pass = runtime DNS resolve. Без переменной
+    nginx делает resolve только при load конфига, и `resolver`
+    игнорируется (см. DECISIONS § D8). Дополнительно: 4 false-positive
+    fix'а в `verify-deploy.sh` (root 301, post-restart retry, gateway
+    через docker exec, Mongo TTL через root creds).
+  - **G6 @AdminAction real audit log v1** (`5c3b7e93`) — Flyway V19
+    (`audit_log` таблица) + V20 (CONCURRENTLY indexes) + SPI pattern
+    (AuditLogStorage interface в shared-web, JdbcAuditLogStorage в
+    academic-app) + 5 actions в UserController (`user.create`,
+    `user.update`, `user.patch`, `user.archive`, `user.transfer`).
+    Reduced scope: без before/after diff, без auto target_type/target_id
+    (см. DECISIONS § D10). Aspect автомат подхватит новые `@AdminAction`.
+    Создан `docs/operations/runbooks/audit-log.md`.
+  - **G7 Headman rate-limit Redis 300/min** (`7a280a01`) —
+    ConcurrentHashMap+TokenBucket inline в `AcademicGrpcServiceImpl`
+    вынесен в `HeadmanRateLimiter` interface. RedisHeadmanRateLimiter
+    primary (`@ConditionalOnProperty redis-enabled=true`) +
+    InMemoryHeadmanRateLimiter fallback. Лимит **120 → 300/min**
+    (старосты делают bulk-mark группы 30 студентов, упирались в 120).
+    Fail-open при Redis exception + counter
+    `headman_rl_redis_failures_total`. Externalized config
+    `academic.headman-rate-limit.*` с env override.
+  - **G8a NET_RAW drop для 4 infra-контейнеров** (`f435e98f`) — defense-in-depth
+    `cap_drop: [NET_RAW]` для cadvisor, node-exporter, blackbox-exporter,
+    alertmanager. Скомпрометированный peer не может sniff'ать plaintext
+    Bearer token Alertmanager → notification-web в private_net.
+  - **G8b full mTLS** — **deferred** в `future-ideas.md` MED-11b с
+    trigger conditions (multi-host / compliance / first incident),
+    см. DECISIONS § D13.
+  - **G9 cadvisor de-privileged** (`f435e98f`) — `privileged: true` убран,
+    добавлен `devices: [/dev/kmsg:/dev/kmsg]` per upstream `running.md`.
+    Default Docker capabilities + read-only mounts + uid=0 достаточны
+    (cadvisor issue #3051: «without privileged but as root was
+    necessary»). SYS_PTRACE НЕ добавлен — cadvisor читает /proc + /sys,
+    не ptraces (см. DECISIONS § D14). Attack surface снижен с ~37 caps
+    + full root host write до ~14 default caps - NET_RAW + read-only mounts.
+
+  Все verify-шаги M16 отложены до redeploy на VPS (compile + unit tests
+  zelонные локально, real verify через Prometheus / Grafana / curl
+  flows только в проде).
+
 - **M16 cleanup backlog** (планирование) — `docs/M16-cleanup-backlog.md`
   собран из lessons learned первого VPS deploy. Темы: untrack
   `.claude/`/`.agents/` (case 295 файлов случайно committed), phantom

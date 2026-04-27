@@ -1658,4 +1658,287 @@ Push'нуть в M16 либо когда увидим что VPS стабиль�
 часов под реальной нагрузкой и можно безопасно сделать redeploy
 (downtime ~2-3 мин на restart всех контейнеров).
 
+### RabbitMQ DLQ argument drift (notification-bot.events.dlq)
+
+**Симптом (ловили 2026-04-27 ~20:24–20:51 UTC, 30 минут логов
+сразу после M16 redeploy):** `notification-bot` падает каждые 5 секунд
+в crash-loop, не может стартануть consumer:
+
+```
+aiormq.exceptions.ChannelPreconditionFailed:
+PRECONDITION_FAILED - inequivalent arg 'x-message-ttl' for queue
+'notification-bot.events.dlq' in vhost '/':
+received the value '604800000' of type 'signedint' but current is none
+Consumer failed with exception — restarting in 5s
+```
+
+За 30 минут — **330 warning'ов от бота** + ~27 mirror error'ов от Erlang
+RabbitMQ broker. **Прямое последствие:** OTP-коды не доставляются в Telegram
+(consumer бота лежит → `otp.requested` event не обрабатывается).
+
+**Причина:** в M16 G2 добавили DLQ retention 7d (`x-message-ttl=604800000`)
+в `queue.declare` из кода бота. Но очередь `notification-bot.events.dlq`
+**уже существовала** на брокере (создана до M16, без TTL). RabbitMQ
+не позволяет менять аргументы существующей очереди — отсюда
+`PRECONDITION_FAILED` на каждой попытке `declare`. Аналогичная мина
+тикает и для `notification-web.history.dlq` (см. N6 выше — там добавление
+retention запланировано, но та же ловушка их ждёт).
+
+**Workaround (применён вручную на VPS 2026-04-27, разблокировал OTP):**
+
+```bash
+docker exec rct-rabbitmq rabbitmqctl delete_queue notification-bot.events.dlq
+docker compose -f /opt/rutcampustrack/docker-compose.prod.yml restart notification-bot
+# бот пересоздал очередь с правильным TTL, OTP пошли
+```
+
+**Fix (правильный, в M16 follow-up):**
+
+1. **RabbitMQ policy вместо `x-message-ttl` в `queue.declare`.** Policy
+   на уровне vhost можно менять без удаления очереди:
+   ```bash
+   rabbitmqctl set_policy dlq-retention "^.*\.dlq$" \
+     '{"message-ttl":604800000}' --apply-to queues
+   ```
+   В коде бота и notification-web убрать `x-message-ttl` из аргументов
+   очереди. Policy match по pattern `*.dlq` покроет обе очереди разом.
+2. **Idempotent migration script** `scripts/fix-rabbit-queues.sh`:
+   проверяет аргументы существующих очередей, если drift — `delete_queue`
+   и зовёт сервис на пересоздание. Положить в `deploy.yml` как pre-step
+   перед `up -d`.
+3. **Healthcheck бота** в `docker-compose.prod.yml`: если бот рестартует
+   >5 раз за минуту — Prometheus alert. Сейчас бот молча зацикливается
+   и узнаём об этом только когда юзер не получает OTP.
+4. **Документировать в `docs/operations/runbooks/`** новый runbook
+   `rabbitmq-queue-drift.md` — что делать если сервис не может
+   переобъявить очередь после изменения аргументов.
+
+**Severity:** HIGH — баг полностью блокирует логин (OTP не приходит),
+проявился сразу после M16 deploy, ловится только глядя в логи бота
+напрямую (Telegram-юзер видит «код не пришёл» и сдаётся).
+
+**Когда делать:** в ближайший M17 / M16 follow-up бандл. До того —
+**не добавлять новые `x-*` аргументы в существующие RabbitMQ очереди**
+без миграционного шага.
+
+### Tempo DNS resolution flaps (UnknownHostException: tempo)
+
+**Симптом (те же 30 минут логов 2026-04-27):** все 5 Java backend
+сервисов (auth, academic, schedule, attendance, notification-web)
+периодически выбрасывают ERROR от OTel HTTP exporter:
+
+```
+io.opentelemetry.exporter.internal.http.HttpExporter
+Failed to export spans. The request could not be executed.
+Full error message: tempo: Name does not resolve
+java.net.UnknownHostException: tempo
+  at java.net.InetAddress$CachedLookup.get(...)
+  ...
+thread: OkHttp http://tempo:4318/...
+```
+
+За 30 минут — 15 ERROR'ов (auth-service также 1 `Connection reset` —
+TCP до Tempo дошёл, но Tempo закрыл сокет посреди response).
+Распределение: schedule 6, academic 4, auth 3, attendance 2.
+
+**Что важно:** порт 4318 теперь правильный (M16 G1 закрыт). Это
+**другая** проблема — DNS-резолюция / availability самого Tempo.
+
+**Возможные причины:**
+
+1. **Tempo контейнер периодически unhealthy / OOM-killed / restart'ится.**
+   Когда контейнер down, Docker DNS убирает A-запись из internal
+   resolver → JVM ловит `UnknownHostException`. После восстановления
+   Tempo резолв возвращается.
+2. **JVM DNS cache залип на старый IP.** По умолчанию JVM кеширует
+   успешные DNS lookup'ы навечно (`networkaddress.cache.ttl=-1`),
+   а неуспешные — 10 секунд. Если Tempo контейнер рестартанулся и
+   получил новый IP, а до этого lookup был cached negative — JVM
+   будет долбить старое имя.
+3. **`depends_on` без `condition: service_healthy`** — backend-сервисы
+   стартуют раньше Tempo и кешируют negative DNS lookup на 10 сек ×
+   множество retry.
+
+**Fix (план одним PR):**
+
+1. **Проверить Tempo state на VPS:**
+   ```bash
+   cd /opt/rutcampustrack
+   docker compose -f docker-compose.prod.yml ps tempo
+   docker compose -f docker-compose.prod.yml logs tempo --tail 200
+   ```
+   (NB: команды без `-f` в `/root` не работают — нет
+   `docker-compose.yml` в текущем dir. Это уже сейчас ловит на
+   troubleshooting'е, добавить алиас в bashrc / runbook.)
+2. **Healthcheck Tempo + `depends_on` от backend'ов** —
+   аналогично что сделали для Loki в M16 G4 (`min_ready_duration`).
+3. **JVM DNS TTL** — добавить в Java `JAVA_TOOL_OPTIONS`:
+   ```
+   -Dnetworkaddress.cache.ttl=30
+   -Dnetworkaddress.cache.negative.ttl=5
+   ```
+   Чтобы JVM перерезолвила имя каждые 30 сек, а negative cache не
+   залипал больше 5 сек. Применить ко всем 5 Java-сервисам.
+4. **Resource limits Tempo** — проверить `mem_limit` в
+   `docker-compose.prod.yml`, если Tempo OOM-killed периодически
+   (M13 G8 `ContainerMemoryHigh` alert должен ловить — проверить
+   что Tempo попал в watch-list).
+5. **Альтернатива:** перейти с HTTP exporter на gRPC OTLP (порт 4317),
+   у gRPC built-in connection pooling и DNS re-resolution policies.
+   Но требует Spring Boot config changes — серьёзнее чем JVM TTL.
+
+**Severity:** LOW — функционально не ломает ничего (трейсы теряются,
+сервисы работают). Но логи захламлены ERROR'ами (15 за 30 мин =
+~30/час с 5 сервисов), забивают Loki retention и могут спрятать
+реальные ошибки. Периодически мешает alert'ам.
+
+**Связанное:** в той же категории — `Loki InstancesCount <= 0`
+выше; обе проблемы вокруг observability-stack reliability в проде.
+Возможно стоит сделать один PR «observability-stack hardening» —
+healthcheck + depends_on + DNS TTL + resource limits для Loki/Tempo/
+Prometheus/Grafana разом.
+
+---
+
+### Удалить legacy-поле `semesters.first_week_type`
+
+**Текущее состояние (после перехода на ISO-parity алгоритм):**
+Поле `first_week_type` (`week_type` ENUM, добавлено в `V6__add_semester_first_week_type.sql`,
+default `'odd'`) фактически **не используется** в расчёте чётности учебной
+недели. Чётность теперь полностью производная от ISO-номера недели:
+ISO-чёт → `WeekType.ODD` (1-я учебная), ISO-нечёт → `WeekType.EVEN` (2-я),
+маппинг зашит в `LessonGenerationService` (см. `LessonGenerationService.java:25-26, 102-103`).
+
+Поле осталось в схеме, gRPC `SemesterResponse`, и сигнатурах методов
+`LessonGenerationService.regenerate*` для обратной совместимости. См.
+явный комментарий `IsoParityReconciler.java:96`:
+```
+// firstWeekType is ignored by the new algorithm but kept in the regenerate signature.
+```
+и `LessonGenerationService.java:75`:
+```
+@param firstWeekType IGNORED — retained for signature backwards compatibility.
+```
+
+**Идея на будущее:**
+Полностью вычистить мёртвый параметр, чтобы исключить путаницу и
+случайное reliance в новом коде:
+
+1. Новая Flyway-миграция `academic-app` `V{N}__drop_semesters_first_week_type.sql`:
+   - `ALTER TABLE semesters DROP COLUMN first_week_type;`
+   - `DROP TYPE week_type;` (если ENUM больше нигде не используется
+     в academic_db — проверить grep'ом перед drop'ом).
+2. `Semester.java` (entity) — убрать поле + getter/setter.
+3. Proto-контракт `academic.proto` (`SemesterResponse`) — убрать
+   `first_week_type` поле. **Backward compat:** старые клиенты
+   (notification-bot, schedule-service) перестанут получать поле,
+   у них fallback на default из протобуфа = пустая строка/0.
+   Сначала задеплоить consumer'ов которые его игнорируют
+   (`AcademicGrpcClient.parseSemesterFirstWeekType` → удалить вызовы),
+   потом новый academic-service.
+4. `LessonGenerationService` — убрать параметр `firstWeekType` из всех
+   методов (`generate*`, `regenerate*`, `regenerateFromDate*`).
+   Обновить все вызовы в `IsoParityReconciler`,
+   `OneOffLessonService`, `ScheduleItemService` и тестах.
+5. `IsoParityReconciler.parseSemesterFirstWeekType` — удалить.
+6. Тесты `WeekParityGoldenTest`, `WeekParityPropertyTest`,
+   `LessonGenerationServiceTest` — параметризацию по `firstWeekType`
+   убрать (она и так уже не влияет на результат — только распухает
+   матрица тестов).
+7. Frontend (`web-panel` admin SemesterDialog) — поле редактирования
+   first_week_type убрать из формы.
+
+**Что это закроет (когда сделаем):**
+- Source-of-truth path к чётности: один алгоритм, ноль legacy-якорей.
+- ~7 классов чище, ~30-50 строк удалится из тестов.
+- Невозможность случайно передать `WeekType.EVEN` и удивиться, что
+  ничего не поменялось (foot-gun для нового разработчика).
+
+**Оценка работы:**
+~0.5-1 человеко-дня. Не блокирует ничего, чисто косметика.
+
+**Когда делать:**
+v0.1 или позже. Низкий приоритет. До удаления — обновить
+`docs/architecture/database-schema.md` и `project_week_parity_convention.md`
+memory-запись пометкой «`first_week_type` is legacy/ignored, see future-ideas».
+
+---
+
+### BUG: «Староста» при создании пользователя в админке игнорируется
+
+**Симптом (наблюдалось 2026-04-27):**
+Админ через web-panel `/admin/users` создаёт нового студента, отмечает
+чекбокс «староста» — юзер создаётся, но в БД `users.is_headman = false`.
+Форма не показывает ошибку. Чтобы реально проставить старосту, надо
+после создания зайти в «Редактировать» и отметить чекбокс ещё раз
+(там работает корректно через PATCH).
+
+**Корень (две независимые проблемы, нужно править обе):**
+
+1. **Frontend (`user-dialog.component.ts:141-166`)** — в `save()` для
+   режима `create` собирается `CreateUserRequest`, в который кладутся
+   только `lastName/firstName/middleName/role/groupId/employeeNumber/telegramId`.
+   Поле `isHeadman` из формы (определено на строке 85) **молча
+   отбрасывается**. В режиме `edit` (строка 176) поле обрабатывается
+   корректно.
+2. **Backend (`CreateUserRequest.java`)** — DTO **не содержит поля
+   `isHeadman`** вовсе. Это by-design ограничение API: создание
+   пользователя и назначение старосты разнесены на два запроса
+   (POST + PATCH). Frontend форма этого не отражает — даёт
+   admin'у фальшивое ощущение, что одного клика «Создать» достаточно.
+
+**Что починить:**
+
+Вариант A (proper, рекомендуется):
+1. Добавить `Boolean isHeadman` в `CreateUserRequest` (контракт DTO).
+2. В `UserService.create*` (academic-app) — после `save()` юзера, если
+   `request.isHeadman() == TRUE`, прогнать ту же логику что и в
+   PATCH (`assertRoleStudent` + `setHeadman(true)` + rbac evict).
+   Уважать guard «только STUDENT может быть старостой» — иначе 400.
+3. Frontend `save()` create-ветка: `req.isHeadman = raw.isHeadman` если
+   `raw.role === 'STUDENT' && raw.isHeadman`.
+4. Сгенерировать `openapi-typescript`, обновить тесты `UserController`
+   + `user-dialog.component.spec.ts`.
+
+Вариант B (минимум, hot-fix):
+1. Frontend после успешного `createUser(...)` сразу делает
+   `patchUser(result.id, { isHeadman: true })` в одной .subscribe-цепочке,
+   если `raw.isHeadman === true`. UI показывает один спиннер на
+   обе операции; ошибка PATCH откатывает создание (DELETE? — нельзя,
+   audit log не любит soft-delete сразу после create) либо просто
+   оставляет юзера без флага и показывает warn «User created, но
+   старостой назначить не удалось — попробуйте через Edit».
+
+Вариант A чище семантически (atomic create + assign), но требует
+contract-first migration. Вариант B быстрее но не атомарен.
+
+**На проде сейчас (2026-04-27):**
+В group УИТ-311 заведено 21 студент через эту же форму с галочкой
+«староста» на одном из них — но `is_headman=f` у всех. Нужно либо
+дождаться фикса и патчить через UI, либо вручную:
+
+```sql
+-- На VPS, в academic_db
+UPDATE users SET is_headman = true WHERE login = 'student<N>';
+-- + evict кеши rbac/groups, иначе RBAC checks дадут стейл-ответ до 60s
+```
+
+(или быстрее — открыть юзера в admin UI «Edit», поставить галочку,
+сохранить — это пройдёт через корректный PATCH-flow с правильным
+evict'ом, см. `UserService:228-244`).
+
+**Что это закроет:**
+- Главное UX-удивление при первичном заполнении группы.
+- Один лишний кейс в admin-чеклисте «после создания старосты не
+  забудь зайти в Edit и поставить галочку» — больше не нужен.
+
+**Оценка работы:**
+~0.5 дня (вариант A) — DTO change + service update + frontend +
+тесты + openapi regen.
+~1 час (вариант B) — двойной API-вызов в frontend + тест.
+
+**Когда делать:**
+До v0.1, потому что это активный foot-gun: каждый раз когда заводят
+старосту нового набора, наступают на грабли.
+
 ---

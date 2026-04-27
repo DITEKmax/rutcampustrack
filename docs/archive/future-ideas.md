@@ -1189,6 +1189,52 @@ ingester работает в большинстве случаев. Скорее
 **Severity:** MED. Подтверждённой потери данных нет, но это
 канарейка. Не блокирует.
 
+### Telegram bot UX — auto-refresh клавиатуры + welcome message
+
+Накоплено два UX-улучшения для `services/notification-bot/`:
+
+- **Auto-refresh inline keyboard без `/start`.** Сейчас если
+  меняется состав reply-keyboard (например, после auth/login,
+  смена роли, добавление staros'а headman_assistant), пользователь
+  должен **руками** ввести `/start` чтобы получить обновлённую
+  клавиатуру. Это плохой UX — пользователь не знает, что
+  кнопки устарели, и не понимает почему `/excuse` или `/late`
+  не работают (старая клавиатура их вообще не показывает).
+
+  **Fix:** при triggering events (login event, role change,
+  headman promotion/demotion, assistant assignment) бот должен
+  proactively отправлять короткое сообщение типа «обновил
+  меню» с новой клавиатурой через `bot.send_message(chat_id,
+  "...", reply_markup=new_keyboard)`. Триггеры приходят через
+  RabbitMQ events (`auth.login`, `student.role.changed` и т.п.)
+  или в response на действие самого юзера (например, после
+  `/login` показать новое меню сразу).
+
+  **Технические детали:** в Aiogram 3 reply-keyboard заменяется
+  целиком при следующем `send_message` с `reply_markup=...`.
+  Inline keyboard (если используется) — через
+  `edit_message_reply_markup`. Нужно audit'нуть какие именно
+  keyboard'ы есть и какие events их инвалидируют.
+
+  **Severity:** MED UX. Не блокирует, но раздражает каждого
+  нового студента (типичный сценарий — «не вижу кнопку
+  отметки» → support-call → ответ «введи /start»).
+
+- **Изменить welcome message (`/start` handler).** Текущий
+  welcome message не достаточно информативен / не отражает
+  актуальный feature set. **Точный текст обсудим отдельно** —
+  user сказал «мы поговорим что там должно быть».
+
+  Когда обсудим, фиксанем здесь финальный wording + i18n
+  (если нужно русский+английский).
+
+  **Severity:** LOW UX, не блокирует.
+
+  **Где менять:** `services/notification-bot/bot/handlers/start.py`
+  (или аналогичный handler). Связано с проверкой роли user'а
+  (студент / preподаватель / админ — разные welcome'ы) и
+  initial keyboard rendering из задачи выше.
+
 ### `verify-deploy.sh` устарел до v9.0 URL layout
 
 **Симптом:** `./scripts/verify-deploy.sh` показывает 4 false-positive

@@ -29,6 +29,8 @@ import type { LessonResponse } from '../../../api/schema';
 
 type Lesson = LessonResponse & {
   cancelReason?: string;
+  cancelledBy?: number | null;
+  cancelledAt?: string | null;
   /** 'template' = из ScheduleItem-шаблона, 'oneoff' = из schedule_one_off_lessons. */
   source: 'template' | 'oneoff';
   /** Только для source='oneoff': true если эта разовая пара заняла slot отменённой template-пары. */
@@ -223,6 +225,9 @@ const MONTH_RANGE_DAYS = 30;
                     <span class="cancel-reason">— {{ lesson.cancelReason }}</span>
                   }
                 </div>
+                @if (isCancelled(lesson) && cancellerDisplay(lesson); as ad) {
+                  <div class="lesson-audit">{{ ad }}</div>
+                }
               </div>
               <div class="lesson-row__actions">
                 @if (!isCancelled(lesson)) {
@@ -350,6 +355,13 @@ const MONTH_RANGE_DAYS = 30;
       border: 1px solid color-mix(in oklab, var(--accent-danger) 30%, transparent);
     }
     .cancel-reason { font-style: italic; }
+    .lesson-audit {
+      grid-column: 2 / -1;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-style: italic;
+    }
     .badge {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 2px 8px;
@@ -416,6 +428,8 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
   /** Paginator: размер страницы = количество день-карточек. */
   readonly pageSize = signal(50);
   readonly pageSizeOptions = [20, 50, 100, 200];
+  /** Map<userId, fullName> для отображения «отменено таким-то». Заполняется async batch-резолвом. */
+  readonly userNames = signal<Map<number, string>>(new Map());
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -662,6 +676,8 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
         const merged = [...templateLessons, ...oneOffLessons];
         this.lessons.set(merged);
         this.loading.set(false);
+        // Async-резолв имён отменивших — не блокирует рендер; имя подставится при ответе.
+        this.resolveCancellerNames(merged);
       },
       error: () => {
         this.error.set('Не удалось загрузить список пар.');
@@ -705,6 +721,49 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
         this.subjects.set(list);
       },
     });
+  }
+
+  /** Batch-резолв display-имён старост/админов, отменивших пары (только для cancelled lessons). */
+  private resolveCancellerNames(lessons: Lesson[]): void {
+    const known = this.userNames();
+    const ids = new Set<number>();
+    for (const l of lessons) {
+      if (this.isCancelled(l) && l.cancelledBy != null && !known.has(l.cancelledBy)) {
+        ids.add(l.cancelledBy);
+      }
+    }
+    if (ids.size === 0) return;
+    this.headmanApi.getUsersByIds(Array.from(ids)).subscribe({
+      next: (resp: any) => {
+        const items = this.extractEmbedded(resp).map((e: any) => e?.content ?? e);
+        const next = new Map(this.userNames());
+        for (const u of items) {
+          if (u?.id && u?.fullName) next.set(u.id, u.fullName);
+        }
+        this.userNames.set(next);
+      },
+      error: () => {
+        // Тихий degrade — рендер просто не покажет имя, дата отмены остаётся.
+      },
+    });
+  }
+
+  /** Display строка для cancelledAt + (опционально) имя отменившего. Возвращает null если нет cancelledAt. */
+  cancellerDisplay(lesson: Lesson): string | null {
+    if (!lesson.cancelledAt) return null;
+    const dt = new Date(lesson.cancelledAt);
+    if (isNaN(dt.getTime())) return null;
+    const day = dt.getDate();
+    const month = MONTH_NAMES[dt.getMonth()];
+    const hh = String(dt.getHours()).padStart(2, '0');
+    const mm = String(dt.getMinutes()).padStart(2, '0');
+    const dateStr = `${day} ${month} в ${hh}:${mm}`;
+
+    if (lesson.cancelledBy == null) return `Отменена ${dateStr}`;
+    const me = this.auth.currentUser();
+    if (me && lesson.cancelledBy === me.id) return `Отменена ${dateStr} вами`;
+    const name = this.userNames().get(lesson.cancelledBy);
+    return name ? `Отменена ${dateStr} — ${name}` : `Отменена ${dateStr}`;
   }
 
   subjectName(id: number): string {

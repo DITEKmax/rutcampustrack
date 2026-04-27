@@ -453,4 +453,16 @@ export class HeadmanApiService {
     if (status) params = params.set('status', status);
     return this.http.get(`/api/schedule/groups/${groupId}/lessons`, { params });
   }
+
+  /**
+   * Batch-резолв display-имён пользователей по ID (DEV-C2 backend endpoint).
+   * Endpoint: GET /api/academic/users/by-ids?ids=1,2,3
+   * Доступ STUDENT/TEACHER/ADMIN. Cap 100 ids/request на бэкенде.
+   * Используется для подстановки имени отменившего на странице /headman/lessons.
+   */
+  getUsersByIds(ids: number[]): Observable<any> {
+    return this.http.get('/api/academic/users/by-ids', {
+      params: new HttpParams().set('ids', ids.join(',')),
+    });
+  }
 }

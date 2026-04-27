@@ -1798,6 +1798,75 @@ TCP до Tempo дошёл, но Tempo закрыл сокет посреди res
 healthcheck + depends_on + DNS TTL + resource limits для Loki/Tempo/
 Prometheus/Grafana разом.
 
+### `getActiveSemester()` — устранить inline-дублирование (5 мест)
+
+**Текущее состояние:** загрузка активного семестра (того у которого
+`active === true`) дублируется inline в 5 разных компонентах
+web-panel, каждый раз ~15 строк примерно одной и той же логики:
+
+```ts
+this.headmanApi.listSemesters().subscribe({
+  next: (resp) => {
+    const embedded = resp?._embedded;
+    const list = embedded
+      ? ((Object.values(embedded)[0] as any[]) ?? [])
+      : (Array.isArray(resp) ? resp : []);
+    const active = list.find((s: any) => s.active === true);
+    if (!active) { /* handle no active */ return; }
+    this.semesterId.set(active.id);
+    /* ... use active ... */
+  },
+  error: () => { /* ... */ },
+});
+```
+
+Места:
+
+1. `frontends/web-panel/src/app/features/admin/dashboard/admin-dashboard.component.ts`
+2. `frontends/web-panel/src/app/features/headman/schedule/headman-schedule.component.ts:349-371`
+3. `frontends/web-panel/src/app/features/headman/homework/headman-homework.component.ts`
+4. `frontends/web-panel/src/app/features/student/homework/student-homework.component.ts`
+5. **NEW (DEV-C4, ветка `dev`):** `frontends/web-panel/src/app/features/headman/lessons/headman-lessons.component.ts`
+   — добавляется в эту ветку как inline (вариант a, по решению owner'а
+   2026-04-28: «не раздувать scope текущего PR, сделать cleanup
+   отдельным»).
+
+**Что сделать (отдельный cleanup-PR):**
+
+1. **Создать общий service** `frontends/web-panel/src/app/core/academic-api.service.ts`
+   (или вынести в `core/semester.service.ts`) с методом:
+   ```ts
+   getActiveSemester(): Observable<{
+     id: number; name: string; startDate: string; endDate: string
+   } | null> { … }
+   ```
+   Каждый из 4 существующих feature-API-services (`AdminApiService`,
+   `HeadmanApiService`, `StudentApiService`) либо инжектит общий
+   service, либо делегирует в него.
+2. **Заменить inline-блоки** в 5 компонентах на вызов `getActiveSemester()`.
+3. **Обновить unit-тесты** этих 5 компонентов (моки поменять с
+   `listSemesters` на `getActiveSemester`).
+4. **Подумать про кеш** — активный семестр меняется ~2 раза в год.
+   `shareReplay({bufferSize: 1, refCount: false})` с TTL 5 мин на
+   уровне service отлично сократит количество HTTP-запросов
+   (особенно admin-dashboard который дёргает на каждый refresh).
+5. **Опционально на бэкенде:** добавить shortcut
+   `GET /api/academic/semesters/active` который возвращает один
+   объект (или 404 если нет активного). Тогда frontend service
+   станет тривиальной обёрткой без `.find()` и без загрузки 200
+   семестров. Но не блокер — фронт fix работает и без backend
+   изменений.
+
+**Severity:** LOW — функционально работает, это чисто DRY/maintainability.
+
+**Когда делать:** в ближайший cleanup-sprint после M16. Если кто-то
+сядет ещё раз править логику активного семестра (например, поменяется
+backend-API) — этот рефактор станет vital, потому что иначе править
+придётся в 5 местах руками.
+
+**Оценка:** ~1.5-2 часа (новый service + 5 рефакторов компонентов +
+обновление 5 спеков + smoke test 5 экранов вручную в браузере).
+
 ---
 
 ### Удалить legacy-поле `semesters.first_week_type`

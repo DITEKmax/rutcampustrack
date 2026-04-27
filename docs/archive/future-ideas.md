@@ -785,31 +785,64 @@ compliance (если когда-то понадобится).
 
 ---
 
-#### MED-11: mTLS Alertmanager → notification-web (вместо Bearer over cleartext в private_net)
+#### MED-11 (G8a — DONE in M16): defense-in-depth NET_RAW drop
 
-**Текущее состояние:** Alertmanager шлёт POST `http://notification-web:9094/internal/alert`
-с `Authorization: Bearer`. Bearer защищён (timing-safe `MessageDigest.isEqual`),
-но transport — plaintext HTTP. Combined с CRIT-01 (флипнут в M14) impact
-снизился, но в comment'е alertmanager.yml уже зафиксировано «M06 заменит на mTLS».
+**Status:** ✅ закрыт в **M16 G8a** (2026-04-27, commit `f435e98f`).
+`cap_drop: [NET_RAW]` применён к 4 infra-контейнерам: cadvisor,
+node-exporter, blackbox-exporter, alertmanager. Скомпрометированный peer
+больше не может sniff'ать plaintext Bearer token в private_net.
 
-**Идея:** Linkerd sidecar с auto-mTLS, либо custom certs + nginx proxy с
-client-cert auth. Pre-step: cap_drop NET_RAW в node-exporter/cadvisor
-(блокирует sniffing capability у потенциального compromised peer).
+#### MED-11b (G8b — DEFERRED): full mTLS Alertmanager → notification-web
 
-**Когда делать:** при подготовке к horizontal scaling либо после first incident.
+**Текущее состояние (после G8a):** Alertmanager шлёт POST
+`http://notification-web:9094/internal/alert` с `Authorization: Bearer`.
+Bearer timing-safe (`MessageDigest.isEqual`), transport plaintext HTTP.
+**После G8a sniffing capability убрана** — главный realistic vector
+закрыт. Остаётся theoretical MitM scenario «full RCE в одном из 4
+infra-контейнеров без host escape, attacker forge'ит fake alerts».
+
+**Идея (если когда-то понадобится):**
+1. Internal CA — генерация скриптом `infra/internal-ca/gen-ca.sh`, root
+   key хранить в `secrets/ca.key` с restrictive permissions
+2. Server cert для notification-web с SAN `notification-web` +
+   `localhost` + `127.0.0.1`
+3. Client cert для Alertmanager (один)
+4. `infra/alertmanager/alertmanager.yml` — `tls_config: { ca_file:,
+   cert_file:, key_file: }` для webhook
+5. notification-web `application.yml` — `server.ssl.enabled=true` +
+   `server.ssl.client-auth=need` + `server.ssl.trust-store-*`
+6. Healthcheck Alertmanager → notification-web обновить
+   (`curl --cacert ca.pem --cert client.pem --key client.key`)
+7. `docs/operations/runbooks/secret-rotation.md` — раздел про CA
+   rotation (root key 5 лет, leaf certs 1 год)
+
+**Когда делать (trigger conditions):**
+- Multi-host deploy (Kubernetes / Docker Swarm) — sniff из соседнего
+  host'а реален
+- Compliance requirement (PCI-DSS, HIPAA, ISO 27001) требует
+  encryption-in-transit между всеми сервисами
+- First incident с insider-threat smell либо forensic evidence
+  fake-alert origination
+- Появление multi-tenant / second team в проекте
+
+**Estimate:** 1.5-2 дня + ongoing operational overhead (CA rotation
+runbook, expired-cert silent-failure mode требует alert-on-alert).
+Owner-driven scope reduction в M16 (см. `docs/milestones/M16-.../DECISIONS.md`
+§ D13) — определено что для текущего single-VPS / single-tenant /
+digest-pinned setup cost-benefit ratio плохой.
 
 ---
 
-#### MED-12: cadvisor — убрать `privileged: true`
+#### MED-12 (G9 — DONE in M16): cadvisor de-privileged
 
-**Текущее состояние:** `privileged: true` + mounts `/:/rootfs:ro` + `/var/lib/docker:ro`.
-Любой compromise cadvisor = root host access. Image SHA-pinned (M06 D2),
-без known unpatched RCEs в v0.49.1.
-
-**Идея:** заменить на `cap_add: [SYS_PTRACE]` (cadvisor docs allow). Drop
-`/var/lib/docker` mount если не нужен (audit metric coverage без него).
-
-**Когда делать:** часть «container hardening sweep» в pre-v0.1.
+**Status:** ✅ закрыт в **M16 G9** (2026-04-27, commit `f435e98f`).
+`privileged: true` убран. Подход: `devices: [/dev/kmsg:/dev/kmsg]` per
+upstream `running.md` + default Docker capabilities + read-only mounts +
+uid=0. `SYS_PTRACE` НЕ добавлен — cadvisor читает /proc + /sys, не
+ptraces (см. M16 DECISIONS § D14). Attack surface снижается с ~37 caps
++ full root host write access до ~14 default caps - NET_RAW + read-only
+mounts. Mount `/var/lib/docker:ro` оставлен (нужен для container labels
+metric).
 
 ---
 

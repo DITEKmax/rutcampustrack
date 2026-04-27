@@ -84,8 +84,7 @@ nginx/conf.d/*.disabled
 # M13 G25.3 — self-signed e2e certs (generated on demand, never committed).
 tests/e2e/infra/certs/
 
-.claude/worktrees/
-.claude/settings.local.json
-
-.agents/
+# M16 — local-only Claude Code / agents data (skills, settings, worktrees).
+# Never commit; project-local CLAUDE.md is the only intended exception.
 .claude/
+.agents/

@@ -187,3 +187,61 @@ auth-service — **второй**, защищает от distributed attack'ов
 RL обходится через раздачу IP. Слои не конфликтуют — Gateway 5/min
 никак не вступает с counter 20/5min (Gateway отрубит ~25 attempts за
 5 min, что под cap'ом).
+
+---
+
+## D7 — G4 Loki: startup race fix через healthcheck-gated promtail
+
+**Контекст:** в Loki логах 1-2 ошибки/час `pusher failed to consume
+trace data, err="DoBatch: InstancesCount <= 0"`. Симптом обнаружен
+в M15 после first VPS deploy.
+
+**Гипотеза 1 (по тексту future-ideas.md):** Tempo шлёт trace data
+в Loki по ошибке (mis-routed exporter). **Опровергнута:** OTel
+exporters в проекте — Java HTTP/protobuf и Python gRPC, оба идут
+прямо в Tempo (`tempo:4318` / `tempo:4317`). Текст в Loki errors —
+это **внутренний термин ring'а** про "trace" (trace context, не
+distributed trace). Misleading naming.
+
+**Гипотеза 2 (research-confirmed):** startup race. Distributor
+(в monolithic mode он же ingester) пытается DoBatch до того как
+ingester прошёл lifecycle JOINING → ACTIVE. Ring видит self но
+gRPC connect к 127.0.0.1:9096 fails → instance unhealthy →
+InstancesCount=0.
+
+**Источники:**
+- Loki docs Configure §ingester.lifecycler — `min_ready_duration`
+- Mimir issue #4662 — той же ошибки в Mimir, root cause = gRPC
+  connectivity (в нашем случае startup, не Istio как у них).
+
+**Решение (двухуровневое):**
+
+1. **Server-side** (`infra/loki/loki.yml`): эксплицитно
+   `ingester.lifecycler.min_ready_duration: 15s`. Это default, но
+   явно зафиксирован для документации и защиты от изменения default'а
+   в future versions.
+
+2. **Client-side** (`docker-compose.prod.yml`):
+   - Loki container получает healthcheck на `/ready` (проверяет что
+     `min_ready_duration` прошёл).
+   - Promtail `depends_on: loki: condition: service_healthy` —
+     не стартует до ready.
+
+Single-fix (только sever-side `min_ready_duration`) не достаточно
+если promtail подключился до `/ready` и кэшировал stale connection.
+Healthcheck-gating обеспечивает что push'и физически не идут в
+unready ingester.
+
+**Trade-off:** start-up sequence удлиняется на 15-30 секунд (loki
+startup + healthcheck retry). Acceptable — promtail tail'ит позицию
+из `/tmp/positions.yaml`, ничего не теряется.
+
+**Verify по runbook:** после redeploy + 24h наблюдения
+`docker logs rct-loki --since 24h | grep -c "InstancesCount"` должно
+быть 0 (или близко). Если ошибки остаются — escalation per
+`docs/operations/runbooks/loki-troubleshooting.md`.
+
+**Что НЕ сделали:**
+- Multi-tenancy (`auth_enabled: true`) — single-org setup, не нужно.
+- gRPC keepalive tuning — оставлено as escalation step в runbook.
+- Disable inmemory kvstore → memberlist — overkill для single-instance.

@@ -16,6 +16,29 @@ common:
     kvstore:
       store: inmemory
 
+# M16 G4 — diagnose `InstancesCount <= 0` от Loki ingester'а.
+#
+# Симптом: 1-2 ошибки/час в логах в первые секунды после старта Loki:
+#   "pusher failed to consume trace data" err="DoBatch: InstancesCount <= 0"
+#
+# Root cause (по mimir/loki tracker'у): startup race — distributor
+# (в monolithic mode он же ingester) пытается DoBatch до того как
+# ingester прошёл lifecycle JOINING → ACTIVE и поднял gRPC listener.
+# Ring видит self-instance, но gRPC connect к 127.0.0.1:9096 fails →
+# instance помечается unhealthy → InstancesCount=0.
+#
+# `min_ready_duration: 15s` (= default, но эксплицитно для
+# документации) — readiness endpoint /ready вернёт 200 только через
+# 15s после ACTIVE, давая promtail/любым клиентам понять что Loki
+# готов. Promtail respect'ит /ready перед началом push'а.
+#
+# Если ошибка остаётся после redeploy + 24h наблюдения — следующий
+# шаг проверять что promtail НЕ начинает push до того как Loki ready
+# (см. docs/operations/runbooks/loki-troubleshooting.md).
+ingester:
+  lifecycler:
+    min_ready_duration: 15s
+
 query_range:
   results_cache:
     cache:

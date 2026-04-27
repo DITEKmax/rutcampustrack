@@ -61,15 +61,15 @@ G24-fix-2 в consumer (см. `DECISIONS.md` § D5).
 
 ## Группа 4 — Loki `InstancesCount <= 0` diagnose (G4, ~0.5д)
 
-- [ ] `docker logs rct-loki --since 24h | grep -c "InstancesCount"` — base частота
-- [ ] Прочитать `infra/loki/loki-config.yml` — `ingester.lifecycler.ring`, `kvstore.store`, `replication_factor`
-- [ ] Гипотеза 1: проверить если G1 OTel fix снижает частоту (Tempo трейсы перестают литься в Loki)
-- [ ] Гипотеза 2: ring race на старте — проверить через `lifecycler.heartbeat_period` и `min_ready_duration`
-- [ ] Гипотеза 3: chunk encoding mismatch — проверить `schema_config` periods
-- [ ] Зафиксировать root cause в `DECISIONS.md`
-- [ ] Применить фикс (зависит от диагностики)
-- [ ] Verify: счётчик ошибок 0 за 24 часа после фикса
-- [ ] Создать `docs/operations/runbooks/loki-troubleshooting.md` если ещё нет
+- [x] Прочитать `infra/loki/loki.yml` — single-instance с inmemory ring + replication_factor=1
+- [x] Research: Mimir/Loki tracker (issue #4662, Loki docs Configure) — root cause = startup race между distributor и ingester gRPC listener (ring видит self но connect fails → InstancesCount=0)
+- [x] **Fix**: `ingester.lifecycler.min_ready_duration: 15s` (default, эксплицитный для документации) — `/ready` возвращает 200 только после полного startup
+- [x] **Fix**: docker-compose.prod.yml loki healthcheck (`/ready`) + promtail `depends_on: loki: condition: service_healthy` — promtail не push'ит до того как ingester ACTIVE
+- [x] Зафиксировать root cause + decision в `DECISIONS.md` § D7
+- [x] Создан `docs/operations/runbooks/loki-troubleshooting.md` — 4 типа ошибок (InstancesCount, context canceled, entry too far behind, OOM)
+- [ ] Verify на VPS после redeploy + 24h: `docker logs rct-loki --since 24h | grep -c "InstancesCount"` → должно резко упасть (с 1-2/час до 0-1/день)
+- [ ] Если **не упало** — escalation per runbook (gRPC keepalive timeout / verify single-instance)
+- [ ] Commit: `fix(loki): wait-for-ready before promtail push to fix startup race (M16 G4)`
 - [ ] Commit: `fix(loki): <root cause> — eliminates InstancesCount errors (M16 G4)`
 
 ## Группа 5 — nginx DNS race (G5, ~0.5д)

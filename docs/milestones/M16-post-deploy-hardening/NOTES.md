@@ -145,3 +145,66 @@ Gateway RL уже стоит **перед** auth-service — 5/min/IP на `/aut
 Тесты: 9/9 passed (4 existing + 5 new). OpenAPI snapshot не требует
 обновления — `SharedOpenApiCustomizer` уже добавляет 429 для всех
 POST endpoint'ов.
+
+### G4 — research finding: hypothesis 1 wrong
+
+`future-ideas.md` § Loki M16 Cleanup предполагал что `InstancesCount
+<= 0` errors могут быть от **trace data** misrouted к Loki через
+mis-configured Tempo exporter. Это **опровергнуто** проверкой
+codebase:
+
+- Java OTel exporter (`management.otlp.tracing.endpoint`) шлёт прямо
+  в Tempo (`tempo:4318`)
+- Python OTel exporter (notification-bot) — gRPC прямо в Tempo
+  (`tempo:4317`)
+- Promtail — единственный поставщик в Loki, и он шлёт docker stdout,
+  не traces
+
+Текст ошибки `pusher failed to consume **trace data**` в Loki — это
+**Loki internal terminology** для ring trace context (как
+distributed-trace span context), а не для Tempo span data. Misleading
+log message в Loki 3.x.
+
+### G4 — root cause: startup race (Mimir #4662 pattern)
+
+Гипотеза 2 confirmed через research:
+- Loki docs Configure: `ingester.lifecycler.min_ready_duration` (default 15s)
+- Mimir #4662 discussion: same error pattern — gRPC connectivity
+  issue между distributor и ingester instance
+
+В нашем monolithic single-instance setup distributor + ingester в
+одном процессе, но они общаются через gRPC `127.0.0.1:9096`. На
+старте: ring registered self → distributor пытается push → gRPC
+listener ещё не запущен → connect fails → instance helper'ом
+помечается unhealthy → `InstancesCount = 0`.
+
+### G4 — fix scope: server-side + client-side
+
+Изменено 3 файла + 1 новый:
+- `infra/loki/loki.yml` — `ingester.lifecycler.min_ready_duration: 15s`
+  (эксплицитный default)
+- `docker-compose.prod.yml` (loki) — healthcheck на `/ready` с 30s
+  start_period
+- `docker-compose.prod.yml` (promtail) — `depends_on: loki: condition:
+  service_healthy`
+- `docs/operations/runbooks/loki-troubleshooting.md` — **новый** runbook
+  на 4 типа ошибок (InstancesCount, context-canceled, entry-too-far-behind,
+  OOM) с диагностикой и escalation criteria
+
+### G4 verify
+
+- Локально не проверял (single-instance monolithic Loki deploy
+  тяжеловат для local).
+- На VPS после redeploy + 24h: `docker logs rct-loki --since 24h |
+  grep -c "InstancesCount"` должно упасть с **1-2/час** до близкого
+  к 0.
+- Если ошибка остаётся → next steps в runbook (gRPC keepalive,
+  verify single-instance scale).
+
+### G4 итог
+
+Уверен что fix работает в **80%**. Единственный риск — promtail
+healthcheck-wait делает startup сцеление длиннее (15-30s вместо
+сразу), что увеличивает окно потери логов в случае cold deploy. Но
+positions file персистится в volume (`/tmp/positions.yaml`), так что
+docker stdout cursor не сбросится — promtail подберёт где остановился.

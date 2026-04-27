@@ -721,6 +721,15 @@ services:
     # M09 G7 (NEW-157).
     mem_limit: 192m
     mem_reservation: 128m
+    # M16 G4 — healthcheck для гарантии что promtail не начнёт push'и
+    # до того как ingester готов (root cause `InstancesCount <= 0`).
+    # /ready возвращает 200 только после min_ready_duration (15s).
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
 
   promtail:
@@ -737,7 +746,11 @@ services:
     networks:
       - private_net
     depends_on:
-      - loki
+      # M16 G4 — wait for loki readiness (не просто container created).
+      # Раньше promtail мог начать push'и до того как ingester ACTIVE,
+      # триггеря `InstancesCount <= 0` errors.
+      loki:
+        condition: service_healthy
     # M13 G11 — promtail tails docker logs всех containers, batch buffer
     # + positions file. ~50-100m под нагрузкой, 256m даёт большой запас.
     mem_limit: 256m

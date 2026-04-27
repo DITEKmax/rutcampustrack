@@ -1093,6 +1093,102 @@ horizontal scale потребует надёжных integration tests.
   `.gitmodules`) удалён вместе с остальным `.claude/`. CI больше не
   даёт warning `fatal: No url found for submodule path`.
 
+### nginx DNS race для всех internal upstream'ов
+
+**Симптом:** после `docker compose up -d` (или `restart` любого
+upstream-сервиса) main `rct-nginx` отдаёт `502 Bad Gateway` на
+endpoint, который проксируется на этот сервис. В логах:
+
+```
+[error] connect() failed (111: Connection refused) while connecting to upstream,
+upstream: "http://172.18.0.20:3000/grafana/api/live/ws"
+```
+
+Подтверждено для `/login` (web-panel-nginx, ловили вживую
+2026-04-27 → `docker restart nginx` починил) и `/grafana/`
+(в логах за 3 часа — 4 случая connect refused). **Сейчас не
+проявляется** — все IP актуальны после последнего рестарта nginx.
+Но любой будущий `docker compose up -d --no-deps grafana` или
+deploy.yml (который дёргает api-gateway, web-panel-nginx, и др.)
+снова сломает свой upstream до ручного `restart nginx`.
+
+**Причина:** в `nginx/conf.d/default.conf` все `proxy_pass`
+используют hardcoded hostname (`http://rct-grafana:3000`,
+`http://rct-web-panel-nginx:80`, etc.). nginx **резолвит DNS
+один раз при старте** и кеширует IP. Когда compose даёт сервису
+новый IP при restart, nginx ходит в старый.
+
+**Fix (один PR, 5 минут):** добавить в каждый
+`server { ... }` блок (или в `http { }` в `nginx.conf`):
+
+```nginx
+resolver 127.0.0.11 valid=10s ipv6=off;
+```
+
+`127.0.0.11` — встроенный Docker DNS resolver. `valid=10s` —
+re-resolve каждые 10 сек.
+
+И заменить `proxy_pass http://rct-grafana:3000;` на:
+
+```nginx
+set $grafana_upstream "rct-grafana:3000";
+proxy_pass http://$grafana_upstream;
+```
+
+Переменная заставляет nginx делать runtime-resolve вместо
+boot-time-resolve. Без этого `resolver` директива не активируется.
+
+**Severity:** MED. Не ломает прод постоянно, но ломает после
+**каждого** deploy.yml run для тех сервисов, чьи контейнеры
+recreate'нулись. Ловится только смотря в логи / отвалом UI.
+
+**Workaround сейчас:** после каждого deploy сделать
+`docker compose -f docker-compose.prod.yml restart nginx`
+(добавить в `scripts/verify-deploy.sh` или в deploy.yml).
+
+### Loki `pusher failed: InstancesCount <= 0`
+
+**Симптом:** в Loki за 3 часа 2 ERROR'а:
+
+```
+caller=rate_limited_logger.go:27 msg="pusher failed to consume trace data"
+err="DoBatch: InstancesCount <= 0"
+```
+
+И parallel `org_id=fake` ошибки в querier (вероятно triggered
+открытием Grafana dashboard `rct-logs-overview`):
+
+```
+caller=errors.go:26 message="closing iterator" error="context canceled"
+```
+
+**Что значит:** Loki ingester ring пытается распределить chunk
+по instance'ам (мы single-instance, но ring всё равно нужен)
+и видит `InstancesCount=0`. Возможные причины:
+1. Loki **получает запрос на push трейсов** (не логов) от
+   misconfigured exporter — Tempo может отправлять не туда
+   из-за того же 4317/4318 бага. Loki не понимает trace data,
+   но reply не такой грязный как должен быть.
+2. ingester ring инициализирован неправильно (race на старте,
+   slow replication factor когда `replication_factor=1`).
+
+**Risk:** **Логи могут не сохраняться** в худшем случае. Но
+Grafana dashboard'ы показывают логи (M04 verified) — значит
+ingester работает в большинстве случаев. Скорее всего это
+изолированный fail на конкретный chunk.
+
+**Fix:** требует копнуть глубже. Для начала:
+- Проверить `infra/loki/loki-config.yml`:
+  `ingester.lifecycler.ring.replication_factor` и `kvstore.store`.
+- Запустить `docker logs rct-loki --since 24h | grep -c
+  "InstancesCount"` — если >50/час, real problem; если 1-2
+  спорадических — игнорить.
+- Возможно решится после фикса OTel exporter (тогда поток
+  трейсов перестанет течь через Loki по ошибке).
+
+**Severity:** MED. Подтверждённой потери данных нет, но это
+канарейка. Не блокирует.
+
 ### `verify-deploy.sh` устарел до v9.0 URL layout
 
 **Симптом:** `./scripts/verify-deploy.sh` показывает 4 false-positive

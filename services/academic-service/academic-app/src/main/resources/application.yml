@@ -39,6 +39,14 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    # M16 G6 hotfix — Flyway 9.1.2+ берёт session-level pg_advisory_lock
+    # даже при executeInTransaction=false (см. flyway/flyway issues
+    # #3508, #3961). `CREATE INDEX CONCURRENTLY` в V20__audit_log_indexes
+    # вешает migration infinite. Global disable — единственный work-around
+    # для OSS Flyway. Trade-off: нет concurrent-migration защиты, но у нас
+    # single-instance academic-service.
+    postgresql:
+      transactional-lock: false
 
   rabbitmq:
     host: rabbitmq

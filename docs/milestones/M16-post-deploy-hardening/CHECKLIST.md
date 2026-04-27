@@ -17,7 +17,7 @@
 - [x] Поправить комментарий в `scripts/m07-g3-launch-services.sh` (endpoint там фейковый, sampling 0.0)
 - [ ] Локально `docker compose up -d` → проверить логи backend на `Connection reset` (должны исчезнуть) — verify на VPS после redeploy
 - [ ] Smoke: сделать любой request через gateway → найти trace_id в Grafana Tempo — verify на VPS после redeploy
-- [ ] Commit: `fix(otel): use HTTP/protobuf port 4318 for Java services (M16 G1)`
+- [x] Commit: `fix(otel): use HTTP/protobuf port 4318 for Java services (M16 G1)` — `fe652149`
 
 ## Группа 2 — Dispatcher exception propagation + DLQ retention (G2 v2, ~1.5-2ч)
 
@@ -36,9 +36,9 @@ G24-fix-2 в consumer (см. `DECISIONS.md` § D5).
 - [x] `test_dispatch_handler_exception_is_logged` — удалён (логирование идёт в consumer'е, не dispatcher'е)
 - [x] Verify alert уже существует — `DLQBacklog` в `infra/prometheus/rules/rabbitmq.yml` ловит >10/5min на любой `*.dlq` (создавать новый не надо)
 - [x] Создан runbook `docs/operations/runbooks/dlq-triage.md`
-- [ ] Локально / CI: прогнать `pytest services/notification-bot/tests/test_event_dispatcher.py` → зелёный
+- [x] Локально / CI: прогнать `pytest services/notification-bot/tests/test_event_dispatcher.py` → зелёный (15 passed 2026-04-27)
 - [ ] Verify на VPS после redeploy: handler-bug → message в DLQ → alert через 5 мин
-- [ ] Commit: `fix(bot): propagate handler exceptions for DLQ routing + 7d retention (M16 G2)`
+- [x] Commit: `fix(bot): propagate handler exceptions for DLQ routing + 7d retention (M16 G2)` — `f9cbca52`
 
 ## Группа 3 — OTP brute-force counter (G3, ~1д)
 
@@ -57,7 +57,7 @@ G24-fix-2 в consumer (см. `DECISIONS.md` § D5).
 - [x] OpenAPI snapshot `docs/openapi/auth.json` — 429 уже был включён через `SharedOpenApiCustomizer`, новый `@ApiResponse(429)` идемпотентен
 - [x] Прогон тестов: `./gradlew :services:auth-service:auth-app:test --tests OtpServiceTest` → 9/9 passed
 - [ ] Verify на VPS после redeploy: 21-я подряд `verifyOtpByCode` с одного IP → 429
-- [ ] Commit: `feat(auth): /otp/verify-by-code brute-force counter + alert (M16 G3)`
+- [x] Commit: `feat(auth): /otp/verify-by-code brute-force counter + alert (M16 G3)` — `ce5c404d`
 
 ## Группа 4 — Loki `InstancesCount <= 0` diagnose (G4, ~0.5д)
 
@@ -69,8 +69,7 @@ G24-fix-2 в consumer (см. `DECISIONS.md` § D5).
 - [x] Создан `docs/operations/runbooks/loki-troubleshooting.md` — 4 типа ошибок (InstancesCount, context canceled, entry too far behind, OOM)
 - [ ] Verify на VPS после redeploy + 24h: `docker logs rct-loki --since 24h | grep -c "InstancesCount"` → должно резко упасть (с 1-2/час до 0-1/день)
 - [ ] Если **не упало** — escalation per runbook (gRPC keepalive timeout / verify single-instance)
-- [ ] Commit: `fix(loki): wait-for-ready before promtail push to fix startup race (M16 G4)`
-- [ ] Commit: `fix(loki): <root cause> — eliminates InstancesCount errors (M16 G4)`
+- [x] Commit: `fix(loki): wait-for-ready before promtail push to fix startup race (M16 G4)` — `221daf6b` (single combined commit, root cause + fix вместе)
 
 ## Группа 5 — nginx DNS race + verify-deploy.sh fix (G5, ~0.5д)
 
@@ -97,7 +96,7 @@ G24-fix-2 в consumer (см. `DECISIONS.md` § D5).
 - [x] Bash syntax check (`bash -n`) — passes
 - [ ] Verify на VPS: `./scripts/verify-deploy.sh` → 0 false-positives (все 4 предыдущих fail'а исчезают)
 
-- [ ] Commit: `fix(nginx,scripts): runtime DNS for upstream + verify-deploy false-positives (M16 G5)`
+- [x] Commit: `fix(nginx,scripts): runtime DNS for upstream + verify-deploy false-positives (M16 G5)` — `b0e351ee`
 
 ## Группа 6 — @AdminAction audit log v1 (G6, ~1д)
 
@@ -121,7 +120,7 @@ annotation infrastructure). Разметка только UserController (5 acti
 - [x] Compile + tests passing: `:services:shared:shared-web:test` 24/24, `:services:academic-service:academic-app:compileJava` clean
 - [x] Runbook `docs/operations/runbooks/audit-log.md`
 - [ ] Verify на VPS после redeploy: SELECT FROM audit_log WHERE action='user.archive' → видны записи admin actions
-- [ ] Commit: `feat(audit): @AdminAction real handler via SPI + 5 user actions (M16 G6)`
+- [x] Commit: `feat(audit): @AdminAction real handler via SPI + 5 user actions (M16 G6)` — `5c3b7e93`
 
 ### Отложено в M16 follow-up / future-ideas:
 - before/after diff (deep cloning + JSON diff)
@@ -144,7 +143,7 @@ annotation infrastructure). Разметка только UserController (5 acti
 - [x] Compile + tests passing: `:services:academic-service:academic-app:test` 10 new tests + 32 existing unit suite, BUILD SUCCESSFUL
 - [ ] Verify на VPS после redeploy: bulk-mark группы 30 студентов за <30 сек должен пройти без RESOURCE_EXHAUSTED
 - [ ] Verify на VPS: `redis-cli KEYS "rl:headman:*"` показывает entries при активном использовании
-- [ ] Commit: `refactor(academic): headman rate-limit moved to Redis, raised to 300/min (M16 G7)`
+- [x] Commit: `refactor(academic): headman rate-limit moved to Redis, raised to 300/min (M16 G7)` — `7a280a01`
 
 ## Группа 8 — mTLS Alertmanager → notification-web (G8a only, ~30 мин)
 
@@ -187,11 +186,11 @@ privileged but as root was necessary to access all required metrics»).
 
 ## Финал
 
-- [ ] Прогон `scripts/verify-deploy.sh` на VPS
-- [ ] `CHANGELOG.md` — раздел `[Unreleased]` → версия (тег решается на финале)
-- [ ] Обновить `CLAUDE.md` — статус M16 ✅
-- [ ] PR через `gsd-pr-branch` (filter `.planning/`) или прямой push если работаем без feature-branch
-- [ ] Tag (`v0.1.0-rc.1` или `v0.0.0-alpha.17` — решение в финальном NOTES)
+- [ ] Прогон `scripts/verify-deploy.sh` на VPS — отложен до redeploy
+- [x] `CHANGELOG.md` — раздел `[Unreleased]` обновлён (M16 entry, 9 групп) — `2c45e71b`. Версия (tag) решена: оставляем без тега до VPS verify, post-redeploy решим `v0.0.0-alpha.17` либо `v0.1.0-rc.1`
+- [x] Обновить `CLAUDE.md` — статус M16 ✅ — `2c45e71b` (заголовок «Текущий статус» + строка таблицы M16)
+- [ ] PR через `gsd-pr-branch` (filter `.planning/`) или прямой push если работаем без feature-branch — **прямой push в main выбран** (consistent with M15 / M14 workflow, owner approved 2026-04-27)
+- [ ] Tag (`v0.1.0-rc.1` или `v0.0.0-alpha.17`) — **отложен до VPS verify** (redeploy сначала, tag post-factum если verify passes)
 
 ---
 

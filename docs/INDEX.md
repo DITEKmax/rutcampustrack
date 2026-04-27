@@ -13,7 +13,6 @@
 - `CHANGELOG.md` — Keep a Changelog + SemVer.
 - `SECURITY.md` — security policy, как репортить уязвимости (нужен в корне для GitHub Security tab).
 - `.github/pull_request_template.md` — PR template (нужен в `.github/` для GitHub).
-- `NEXT-SESSION.md` — handoff закладка для следующей сессии Claude (planned to remove or move to `.planning/`).
 
 ---
 

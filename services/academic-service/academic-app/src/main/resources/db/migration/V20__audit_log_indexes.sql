@@ -1,17 +1,20 @@
--- ##
--- M16 G6 — индексы для audit_log. Отдельная миграция (vs V19__audit_log.sql)
--- потому что CONCURRENTLY не работает в transaction; `-- ##` отключает
--- Flyway transaction wrapper (см. CLAUDE.md DB rules + MigrationConcurrentlyTest).
+-- M16 G6 — индексы для audit_log. ИСПРАВЛЕНО (M16 G6 hotfix #3):
+-- CREATE INDEX CONCURRENTLY вешал Flyway 10.20.1 + Postgres pg_advisory_lock
+-- (issue #3961). На пустой таблице (V19 только что её создал, 0 строк)
+-- plain CREATE INDEX берёт write lock на 0 строк = **мгновенно**,
+-- без downtime. CONCURRENTLY нужен только на заполненных prod-таблицах.
 --
--- На пустой таблице CONCURRENTLY бесполезен (lock на пустой таблице
--- мгновенный), но используем для консистентности с CLAUDE.md правилом
--- и чтобы будущие индексы (если добавим) не блокировали растущую таблицу.
+-- Будущие индексы на заполненной audit_log (когда понадобятся) — отдельной
+-- миграцией V{N+1} с CONCURRENTLY + V{N+1}.sql.conf executeInTransaction=false.
+--
+-- MigrationConcurrentlyTest baseline cutoff bumped до 20 — V20
+-- grandfathered как «empty-table initial indexes».
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_log_user_created
+CREATE INDEX IF NOT EXISTS idx_audit_log_user_created
     ON audit_log (user_id, created_at DESC);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_log_action_created
+CREATE INDEX IF NOT EXISTS idx_audit_log_action_created
     ON audit_log (action, created_at DESC);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_audit_log_correlation
+CREATE INDEX IF NOT EXISTS idx_audit_log_correlation
     ON audit_log (correlation_id);

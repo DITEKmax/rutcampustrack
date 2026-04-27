@@ -9,9 +9,6 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    # M16 G6 hotfix — см. application.yml (Flyway issues #3508/#3961).
-    postgresql:
-      transactional-lock: false
 logging:
   level:
     ru.rutcampustrack: DEBUG

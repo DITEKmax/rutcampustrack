@@ -37,8 +37,16 @@ class MigrationConcurrentlyTest {
      * Последняя миграция перед M13 G21. Все V{N} ≤ cutoff — grandfathered.
      * Бамп при добавлении новой миграции с CONCURRENTLY (signal что guard
      * caught её — increment cutoff чтобы не проверяли повторно).
+     *
+     * <p>M16 G6 hotfix #3 (2026-04-27): bumped 18→20. V19 (audit_log table)
+     * + V20 (initial indexes) grandfathered как «empty-table CREATE INDEX
+     * без CONCURRENTLY». На пустой таблице plain CREATE INDEX берёт
+     * lock на 0 строк = instant, без downtime. Flyway 10.20.1 имел
+     * регрессию (issue #3961) — CONCURRENTLY вешал pg_advisory_lock,
+     * блокируя всё IT (locally + CI). Future migrations на заполненной
+     * audit_log должны использовать CONCURRENTLY + executeInTransaction=false.
      */
-    private static final int BASELINE_CUTOFF = 18;
+    private static final int BASELINE_CUTOFF = 20;
 
     private static final Path MIGRATION_DIR =
             Path.of("src/main/resources/db/migration");

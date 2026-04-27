@@ -59,6 +59,15 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ env.DEPLOY_SHA }}
+          # M16 hotfix: actions/checkout@v4 с `ref: <SHA>` без fetch-depth=0
+          # отправляет неправильный refspec `+refs/heads/<SHA>*:...` (treats
+          # SHA как branch name). См. actions/checkout issue #1515. Workaround
+          # — fetch-depth: 0 (full history). На workflow_run (auto-trigger
+          # после CI) commit обычно HEAD main и shallow работал, но при
+          # workflow_dispatch (manual emergency deploy через `gh workflow run`
+          # commit_sha=<SHA>`) bag триггерится consistent. Cost: чуть больше
+          # network I/O для fetch full history (~30 sec на repo нашего размера).
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0

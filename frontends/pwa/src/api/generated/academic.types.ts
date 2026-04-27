@@ -484,6 +484,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/academic/users/by-ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Batch-резолв display-имён пользователей по ID
+         * @description Возвращает только {id, fullName} для каждого найденного пользователя. Доступно STUDENT/TEACHER/ADMIN — намеренно не отдаёт PII (login/email/telegramId/role). Используется для подстановки имён в audit-местах (cancelledBy, и т.п.). Cap: max 100 ids на один запрос. Несуществующие ID молча пропускаются.
+         */
+        get: operations["getUsersByIds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/academic/thresholds": {
         parameters: {
             query?: never;
@@ -1217,6 +1237,22 @@ export interface components {
             _embedded?: {
                 userResponseList?: components["schemas"]["EntityModelUserResponse"][];
             };
+            _links?: components["schemas"]["Links"];
+        };
+        CollectionModelEntityModelUserSummaryResponse: {
+            _embedded?: {
+                userSummaryResponseList?: components["schemas"]["EntityModelUserSummaryResponse"][];
+            };
+            _links?: components["schemas"]["Links"];
+        };
+        EntityModelUserSummaryResponse: {
+            /**
+             * Format: int64
+             * @description ID пользователя
+             */
+            id?: number;
+            /** @description Display name: «Иванов Иван Иванович» или «Иванов Иван» если отчества нет */
+            fullName?: string;
             _links?: components["schemas"]["Links"];
         };
         PagedResourcesAssemblerThresholdResponse: {
@@ -5259,6 +5295,92 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelUserResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getUsersByIds: {
+        parameters: {
+            query: {
+                /** @description Список ID пользователей через запятую (1..100 элементов) */
+                ids: number[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Список найденных профилей (порядок не гарантируется) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CollectionModelEntityModelUserSummaryResponse"];
+                };
+            };
+            /** @description Превышен лимит 100 ids или ids пуст */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CollectionModelEntityModelUserSummaryResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Ресурс не найден */

@@ -1235,6 +1235,61 @@ ingester работает в большинстве случаев. Скорее
   (студент / preподаватель / админ — разные welcome'ы) и
   initial keyboard rendering из задачи выше.
 
+### `deploy.yml` workflow_dispatch — short SHA принимается молча
+
+**Симптом:** при manual trigger `deploy.yml` через GitHub Actions UI
+пользователь вводит short SHA (например `ef7176ad`), workflow
+стартует **без ошибки**, но падает на `actions/checkout` step с
+непонятным сообщением:
+
+```
+/usr/bin/git -c protocol.version=2 fetch ... \
+    +refs/heads/ef7176ad*:refs/remotes/origin/ef7176ad* \
+    +refs/tags/ef7176ad*:refs/tags/ef7176ad*
+The process '/usr/bin/git' failed with exit code 1
+```
+
+`actions/checkout` интерпретирует ввод как **branch name pattern**
+(`refs/heads/<input>*`), не как SHA. Поскольку такой ветки нет,
+fetch fails с цикличным retry x3.
+
+**Workaround сейчас:** вводить полный 40-символьный SHA
+(`git rev-parse <short>` — даёт 40 char). Помогает, но требует
+дополнительный шаг и легко забыть.
+
+**Fix (один PR, ~10 строк YAML):**
+
+Добавить validation step в `deploy.yml` перед `actions/checkout`:
+
+```yaml
+- name: Validate commit_sha format
+  if: github.event_name == 'workflow_dispatch'
+  run: |
+    SHA="${{ inputs.commit_sha }}"
+    if ! [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
+      echo "::error::commit_sha must be a full 40-char SHA, got: $SHA (${#SHA} chars)"
+      echo "::error::Run 'git rev-parse <short>' to expand."
+      exit 1
+    fi
+```
+
+Или **resolver** через первичный shallow checkout `main`:
+
+```yaml
+- uses: actions/checkout@v4
+  with: { ref: main, fetch-depth: 1 }
+- id: resolve
+  run: echo "sha=$(git rev-parse ${{ inputs.commit_sha }})" >> $GITHUB_OUTPUT
+- uses: actions/checkout@v4
+  with: { ref: ${{ steps.resolve.outputs.sha }} }
+```
+
+Первый вариант проще и fail-fast (без unnecessary checkout).
+
+**Severity:** LOW. Не блокирует, но делает emergency deploy
+непредсказуемым в стрессовой ситуации (когда нужно срочно
+выкатить hotfix, легко ошибиться).
+
 ### `verify-deploy.sh` устарел до v9.0 URL layout
 
 **Симптом:** `./scripts/verify-deploy.sh` показывает 4 false-positive

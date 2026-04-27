@@ -178,6 +178,12 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      # M16 G6 hotfix #4 — см. docker-compose.prod.yml. Auth-service
+      # должен ждать что academic-service применил Flyway миграции
+      # (users/sessions/headman_assistants tables в academic_db), иначе
+      # Hibernate ddl-auto:validate fail → exit 1.
+      academic-service:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9090/actuator/health || exit 1"]
       interval: 15s

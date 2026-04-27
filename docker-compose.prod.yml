@@ -208,6 +208,18 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      # M16 G6 hotfix #4 — auth-service использует academic_db (общая
+      # PG instance) в read-only режиме (только users / sessions /
+      # headman_assistants), но Hibernate `ddl-auto: validate` требует
+      # чтобы schema УЖЕ была migrate'нута. Academic-service владеет
+      # миграциями (V1-V20), и должен closeflyway ДО того как auth-service
+      # стартует. Иначе race: auth стартует раньше → schema-validate fail
+      # → exit 1 → Playwright e2e падает на Boot stack.
+      # Подтверждено: M16 V19+V20 удлинили flyway до ~25 сек, race
+      # триггерится. M15 deploy случайно проскочил (academic стартовал
+      # быстрее).
+      academic-service:
+        condition: service_healthy
     # M09 G7 (NEW-157). M15 hotfix: 256m → 384m. На prod boot exit 137 (OOM):
     # JVM heap 75% от 256m = 192m, плюс non-heap (metaspace, native, OTel
     # instrumentation, RabbitMQ NIO buffers, Hikari pool overhead, Spring

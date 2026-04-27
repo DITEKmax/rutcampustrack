@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -30,14 +31,29 @@ interface DayGroup {
   lessons: Lesson[];
 }
 
+interface ActiveSemester {
+  id: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+}
+
+type Period = 'today' | 'month' | 'semester';
+
 const DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 const MONTH_NAMES = [
   'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ];
 
-/** Range of dates visible by default — 14 days starting today. */
-const DEFAULT_RANGE_DAYS = 14;
+const PERIOD_LABEL: Record<Period, string> = {
+  today: 'Сегодня',
+  month: 'Месяц',
+  semester: 'Семестр',
+};
+
+/** Месячное окно по умолчанию = today..today+30 дней. */
+const MONTH_RANGE_DAYS = 30;
 
 /**
  * Headman lessons page — `/headman/lessons`.
@@ -58,7 +74,7 @@ const DEFAULT_RANGE_DAYS = 14;
   selector: 'app-headman-lessons',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MatButtonModule, MatProgressSpinnerModule],
+  imports: [CommonModule, MatButtonModule, MatChipsModule, MatProgressSpinnerModule],
   animations: [
     trigger('routeFade', [
       transition(':enter', [
@@ -72,8 +88,19 @@ const DEFAULT_RANGE_DAYS = 14;
       <div class="page-header">
         <div>
           <span class="page-eyebrow">Старостат</span>
-          <h1 class="page-title">Пары на ближайшие 2 недели</h1>
+          <h1 class="page-title">{{ pageTitle() }}</h1>
         </div>
+      </div>
+
+      <div class="filter-bar">
+        <mat-chip-listbox
+          aria-label="Период"
+          [value]="period()"
+          (change)="onPeriodChange($event.value)">
+          <mat-chip-option value="today">Сегодня</mat-chip-option>
+          <mat-chip-option value="month">Месяц</mat-chip-option>
+          <mat-chip-option value="semester">Семестр</mat-chip-option>
+        </mat-chip-listbox>
       </div>
 
       @if (loading()) {
@@ -84,7 +111,7 @@ const DEFAULT_RANGE_DAYS = 14;
         <div class="page-empty">
           <i class="ph-duotone ph-calendar-blank"></i>
           <h3>Пар нет</h3>
-          <p>На ближайшие {{ rangeDays }} дн. в расписании нет ни одной пары.</p>
+          <p>{{ emptyHint() }}</p>
         </div>
       } @else {
         @for (day of dayGroups(); track day.date) {
@@ -137,6 +164,7 @@ const DEFAULT_RANGE_DAYS = 14;
     </div>
   `,
   styles: [`
+    .filter-bar { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
     .day-card { padding: 16px; }
     .day-heading {
       font-size: 1rem;
@@ -244,7 +272,10 @@ export class HeadmanLessonsComponent implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
 
-  readonly rangeDays = DEFAULT_RANGE_DAYS;
+  /** Текущий выбранный период. Default = month (компромисс по решению owner'а). */
+  readonly period = signal<Period>('month');
+  /** Активный семестр — резолвится один раз lazy при первом переключении на 'semester'. */
+  readonly activeSemester = signal<ActiveSemester | null>(null);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -267,6 +298,27 @@ export class HeadmanLessonsComponent implements OnInit {
     });
   });
 
+  /** Динамический заголовок страницы — зависит от period + (для семестра) имени семестра. */
+  readonly pageTitle = computed<string>(() => {
+    switch (this.period()) {
+      case 'today': return 'Пары на сегодня';
+      case 'month': return 'Пары на месяц';
+      case 'semester': {
+        const sem = this.activeSemester();
+        return sem ? `Пары на семестр (${sem.name})` : 'Пары на семестр';
+      }
+    }
+  });
+
+  /** Подсказка для пустого state — отражает выбранный период. */
+  readonly emptyHint = computed<string>(() => {
+    switch (this.period()) {
+      case 'today': return 'Сегодня нет ни одной пары.';
+      case 'month': return 'В ближайший месяц нет ни одной пары.';
+      case 'semester': return 'В выбранном семестре нет ни одной пары.';
+    }
+  });
+
   ngOnInit(): void {
     const user = this.auth.currentUser();
     if (!user?.groupId) {
@@ -274,17 +326,90 @@ export class HeadmanLessonsComponent implements OnInit {
       this.loading.set(false);
       return;
     }
-    this.load(user.groupId);
+    // Предметы загружаем один раз — не зависят от period.
+    this.loadSubjects();
+    this.reload();
   }
 
-  private load(groupId: number): void {
+  /** Обработчик смены period chip — обновляет signal и перезапускает load. */
+  onPeriodChange(value: Period | null): void {
+    if (!value || value === this.period()) return;
+    this.period.set(value);
+    this.reload();
+  }
+
+  /** Re-fetch lessons для текущего period. Для 'semester' lazy-резолвит активный семестр. */
+  private reload(): void {
+    const user = this.auth.currentUser();
+    if (!user?.groupId) return;
+    const groupId = user.groupId;
+
+    if (this.period() === 'semester' && !this.activeSemester()) {
+      this.loading.set(true);
+      this.error.set(null);
+      this.loadActiveSemester(() => this.fetchLessons(groupId));
+      return;
+    }
+    this.fetchLessons(groupId);
+  }
+
+  /**
+   * Inline-загрузка активного семестра. Дублирует логику из 4 других
+   * компонентов (см. docs/archive/future-ideas.md "getActiveSemester() —
+   * устранить inline-дублирование (5 мест)" — будет вынесено в shared
+   * service отдельным cleanup-PR).
+   */
+  private loadActiveSemester(onResolved: () => void): void {
+    this.headmanApi.listSemesters().subscribe({
+      next: (resp: any) => {
+        const embedded = resp?._embedded;
+        const list = embedded
+          ? ((Object.values(embedded)[0] as any[]) ?? [])
+          : (Array.isArray(resp) ? resp : []);
+        const active = list.find((s: any) => s.active === true);
+        if (!active) {
+          this.error.set('Активный семестр не найден. Переключите период.');
+          this.loading.set(false);
+          return;
+        }
+        this.activeSemester.set({
+          id: active.id,
+          name: active.name,
+          startDate: active.startDate,
+          endDate: active.endDate,
+        });
+        onResolved();
+      },
+      error: () => {
+        this.error.set('Не удалось загрузить активный семестр.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  /** Вычисляет [dateFrom, dateTo] для текущего period + activeSemester. */
+  private computeDateRange(): { from: string; to: string } {
+    const today = new Date();
+    switch (this.period()) {
+      case 'today':
+        return { from: formatDate(today), to: formatDate(today) };
+      case 'month':
+        return { from: formatDate(today), to: formatDate(addDays(today, MONTH_RANGE_DAYS - 1)) };
+      case 'semester': {
+        const sem = this.activeSemester();
+        if (sem) return { from: sem.startDate, to: sem.endDate };
+        // Fallback (не должен срабатывать — reload() резолвит семестр перед fetchLessons)
+        return { from: formatDate(today), to: formatDate(addDays(today, MONTH_RANGE_DAYS - 1)) };
+      }
+    }
+  }
+
+  private fetchLessons(groupId: number): void {
     this.loading.set(true);
     this.error.set(null);
-    const today = new Date();
-    const dateFrom = formatDate(today);
-    const dateTo = formatDate(addDays(today, this.rangeDays - 1));
+    const range = this.computeDateRange();
 
-    this.headmanApi.getGroupLessons(groupId, dateFrom, dateTo).subscribe({
+    this.headmanApi.getGroupLessons(groupId, range.from, range.to).subscribe({
       next: (resp) => {
         const embedded = resp?._embedded;
         const list: any[] = embedded ? ((Object.values(embedded)[0] as any[]) ?? []) : [];
@@ -300,8 +425,9 @@ export class HeadmanLessonsComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
 
-    // Загружаем предметы параллельно — не блокируем рендер.
+  private loadSubjects(): void {
     this.headmanApi.listSubjects().subscribe({
       next: (resp) => {
         const embedded = resp?._embedded;

@@ -39,6 +39,7 @@ interface ActiveSemester {
 }
 
 type Period = 'today' | 'month' | 'semester';
+type Kind = 'all' | 'active' | 'cancelled' | 'oneoff';
 
 const DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 const MONTH_NAMES = [
@@ -100,6 +101,15 @@ const MONTH_RANGE_DAYS = 30;
           <mat-chip-option value="today">Сегодня</mat-chip-option>
           <mat-chip-option value="month">Месяц</mat-chip-option>
           <mat-chip-option value="semester">Семестр</mat-chip-option>
+        </mat-chip-listbox>
+        <mat-chip-listbox
+          aria-label="Тип пар"
+          [value]="kind()"
+          (change)="onKindChange($event.value)">
+          <mat-chip-option value="all">Все</mat-chip-option>
+          <mat-chip-option value="active">Активные</mat-chip-option>
+          <mat-chip-option value="cancelled">Отменённые</mat-chip-option>
+          <mat-chip-option value="oneoff">Разовые</mat-chip-option>
         </mat-chip-listbox>
       </div>
 
@@ -274,6 +284,8 @@ export class HeadmanLessonsComponent implements OnInit {
 
   /** Текущий выбранный период. Default = month (компромисс по решению owner'а). */
   readonly period = signal<Period>('month');
+  /** Текущий выбранный тип пар (фильтр по статусу + видимость one-off). Default = all. */
+  readonly kind = signal<Kind>('all');
   /** Активный семестр — резолвится один раз lazy при первом переключении на 'semester'. */
   readonly activeSemester = signal<ActiveSemester | null>(null);
 
@@ -336,6 +348,28 @@ export class HeadmanLessonsComponent implements OnInit {
     if (!value || value === this.period()) return;
     this.period.set(value);
     this.reload();
+  }
+
+  /** Обработчик смены kind chip — обновляет signal и перезапускает load. */
+  onKindChange(value: Kind | null): void {
+    if (!value || value === this.kind()) return;
+    this.kind.set(value);
+    this.reload();
+  }
+
+  /**
+   * Маппинг kind → CSV статусов для бэкенда.
+   * NB: бэкенд по умолчанию возвращает planned+active+closed (исключает cancelled),
+   * поэтому для 'all' и 'cancelled' нам надо явно передать список.
+   * Для 'oneoff' тоже шлём — мы всё равно не покажем template (фильтр в C6).
+   */
+  private statusFilter(): string {
+    switch (this.kind()) {
+      case 'all':       return 'planned,active,closed,cancelled';
+      case 'active':    return 'planned,active,closed';
+      case 'cancelled': return 'cancelled';
+      case 'oneoff':    return 'planned,active,closed,cancelled'; // template скроется в C6
+    }
   }
 
   /** Re-fetch lessons для текущего period. Для 'semester' lazy-резолвит активный семестр. */
@@ -409,7 +443,7 @@ export class HeadmanLessonsComponent implements OnInit {
     this.error.set(null);
     const range = this.computeDateRange();
 
-    this.headmanApi.getGroupLessons(groupId, range.from, range.to).subscribe({
+    this.headmanApi.getGroupLessons(groupId, range.from, range.to, this.statusFilter()).subscribe({
       next: (resp) => {
         const embedded = resp?._embedded;
         const list: any[] = embedded ? ((Object.values(embedded)[0] as any[]) ?? []) : [];

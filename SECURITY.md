@@ -7,11 +7,13 @@ Thanks for helping keep **RutCampusTrack** safe. Этот документ оп�
 
 | Version | Supported |
 |---------|-----------|
-| `v0.0.0-alpha.*` | ✅ (pre-release hardening) |
-| `< v0.0.0-alpha.2` | ❌ (pre-audit, не рекомендуется) |
+| `v0.0.0-alpha.16` | ✅ Latest — first VPS deploy (M15) |
+| `v0.0.0-alpha.13..15` | ✅ Pre-deploy hardening (M13-M14) |
+| `< v0.0.0-alpha.13` | ❌ Pre-audit, не рекомендуется |
 
 Первый стабильный релиз — `v0.0.0`. До его выхода security patches
-выпускаются в рамках каждой `alpha.N`.
+выпускаются в рамках каждой `alpha.N`. Текущий статус: deployed на VPS
+2026-04-27 (M15), M16 cleanup backlog в работе.
 
 ## Reporting a vulnerability
 
@@ -47,8 +49,8 @@ Include:
 ## Out of scope
 
 - Vulnerabilities в third-party dependencies без PoC на **RutCampusTrack**.
-  Renovate (docs/ci-cd.md) auto-bump'ит patch versions, Dependabot
-  отправляет CVE-PR'ы. Отдельно не репортим.
+  Renovate (`docs/operations/deploy/ci-cd.md`) auto-bump'ит patch versions,
+  Dependabot отправляет CVE-PR'ы. Отдельно не репортим.
 - DoS на dev-инфраструктуре (docker-compose локально, Testcontainers).
 - Issues в `docs/**` или `.planning/**` — не production code.
 - Social engineering / phishing — не technical vuln.
@@ -57,16 +59,19 @@ Include:
 
 - **Trivy + Gitleaks** в CI (`.github/workflows/security.yml`) — scan
   на каждый PR и еженедельно.
-- **cadvisor + promtail** digest-pinned (`docs/infra/container-trust.md`).
+- **cadvisor + promtail** digest-pinned (`docs/operations/deploy/container-trust.md`).
 - **Renovate** auto-merge patch versions — минимизация CVE-exposure
   окна.
-- **SBOM / cosign signing** — планируется в M08 (CI hardening).
+- **SBOM / cosign signing** — ✅ shipped (M08 + M14 G2 SHA-pin
+  appleboy/ssh-action). All 13 production images digest-pinned, signed
+  via cosign keyless OIDC, verified в deploy job. См.
+  `docs/operations/runbooks/image-signing-verification.md`.
 
 ## Historic advisories
 
 | Date | Severity | Summary | Fix |
 |------|----------|---------|-----|
-| — | — | Советы не публиковались до `v0.0.0` — pre-release audit замыкается внутри, все findings в `docs/report-before-v0.0.0/`. |
+| — | — | Советы не публикуются до `v0.0.0` GA — pre-release audit замыкается внутри. Все findings в `docs/archive/report-before-v0.0.0/` (16 отчётов) + `docs/milestones/M13-pre-deploy-hardening/G27-cso-comprehensive-audit.md` (CSO audit) + `docs/milestones/M14-post-audit-fixes/` (закрытие блокеров). |
 
 ## Hall of thanks
 
@@ -76,5 +81,7 @@ Include:
 
 _RutCampusTrack — микросервисная система учёта посещаемости РУТ МИИТ.
 Проект вне юрисдикции РФ (meta-decision M1), персональных данных в
-смысле 152-ФЗ не обрабатываем. Security hardening — M01-M09 (M06
-supply-chain, M09 prod release blockers, см. `docs/milestones/`)._
+смысле 152-ФЗ не обрабатываем. Security hardening — M01-M14
+(M06 supply-chain, M08 SBOM+cosign, M09 prod release blockers,
+M13 pre-deploy hardening + IDOR×12, M14 post-audit fixes по 4 аудитам).
+M15 — first VPS deploy 2026-04-27. См. `docs/milestones/`._

@@ -9,7 +9,141 @@
 
 ### Added
 
+- **M16 cleanup backlog** (планирование) — `docs/M16-cleanup-backlog.md`
+  собран из lessons learned первого VPS deploy. Темы: untrack
+  `.claude/`/`.agents/` (case 295 файлов случайно committed), phantom
+  submodule fix, актуализация transitive CVE bumps, Node 20→24 upgrade,
+  расширение `.gitignore`. Pre-v0.1, не блокирует.
+
+- **Documentation reorganization** (2026-04-27, серия коммитов `0f88cad`..`6c582fe`):
+  все 55 файлов из верхнего уровня `docs/` перенесены в 14 категорий
+  (architecture/, api/, auth/, operations/{runbooks,deploy,monitoring}/,
+  security/, testing/, performance/, product/, meta/, modules/,
+  phase-reports/, archive/). Новый `docs/INDEX.md` — точка входа.
+  Все ссылки в активных файлах (CLAUDE.md, M01-M14 milestones,
+  .planning/, code) обновлены через sed. История git сохранена через
+  `git mv`. Архивные snapshots (`v{1-9}.0-ROADMAP.md`) не тронуты.
+
+- **`.planning/` cleanup** (2026-04-27):
+  - 58/59/60 phases архивированы из `phases/` в `milestones/v9.0-phases/`
+    (per `gsd-cleanup` workflow — phases/ должна быть пуста между
+    milestone'ами).
+  - v9.0 anonymous folders `53/`, `54/` получили слаги.
+  - v1.0 phase numbering normalized `1.1-1.4` → `1-4` для сквозной
+    нумерации с v2.0+ (5-9, 10-14, ...). `phase_legacy_id:` сохраняет
+    оригинальный ID в YAML frontmatter.
+  - Phase 61 архивирована (v9.0 fully shipped 2026-04-27, plan-7
+    SUMMARY/VERIFICATION skipped — accepted gap).
+  - `STATE.md` rewritten под фактическое состояние (executing → shipped).
+
+- **Bug tracker relocated** `.planning/bug-reports/` → `docs/bug-tracker/`
+  с versioned pool model. Все 9 v1 багов помечены `fixed` (закрыты в
+  фазах 58-60 + M01-M14). Будущие QA-сессии создают новые pools
+  `v2-context/`, `v3-context/`.
+
+- **`docs/archive/future-ideas.md`** — единый source of truth для всех
+  отложенных идей. Объединён с `deferred-ideas.md` (удалён). Phase 61
+  follow-ups + G27 tech-debt P1-P3 + Anti-backlog добавлены. F02
+  дедуплицирован с MED-08.
+
+### Fixed
+
+- **M15 first VPS deploy hotfixes** (готовится `v0.0.0-alpha.17`,
+  деплой проверен 2026-04-27):
+  - **`b8cf106` security suppress 3 transitive CVEs** (deploy unblock):
+    Trivy report blocking — спецификации зафиксированы как accepted-risk
+    с обоснованием в Trivy ignore file. + 4 frontend Dockerfile DS-0002
+    (`USER` directive missing).
+  - **`c7b2b93` cosign verify identity-regexp case-insensitive** —
+    deploy job падал на verify step, потому что `--certificate-identity-regexp`
+    был case-sensitive а GitHub OIDC issuer возвращает с mixed case.
+  - **`c3ff148` env regression + OOM + alertmanager** — три проблемы
+    в одном коммите: `.env.prod` поле `INTERNAL_ISSUER_SECRET` потеряно
+    при rotate; `notification-web` OOM на старте (mem_limit 512MB не
+    хватало); Alertmanager basic-auth header mismatch.
+  - **`8d7c168` nginx CSP allow inline onload** — Angular лениво
+    подгружает inlineCritical CSS через `<link onload="...">`, что
+    блокировал `default-src 'self'` без `'unsafe-inline'` для onload
+    handler. CSP скорректирован чтобы пропускать конкретный паттерн.
+
+## [v0.0.0-alpha.16] — 2026-04-26
+
+### Added
+
+- **M14 Post-Audit Fixes** (9 групп G1-G9, ~10 коммитов в `dev`,
+  closing блокеры first VPS deploy из 4 аудитов: CSO comprehensive +
+  G26 test audit + G26 code review + G27 tech-debt).
+  - **G1 Legacy headers strict by default** (CSO CRIT-01) —
+    `forwarded-headers-strategy: NATIVE` в Gateway, отбрасывание
+    `X-Forwarded-*` от untrusted source. Тестовый override в
+    `application-test.yml` (legacy mode для совместимости с старыми IT).
+  - **G2 SHA-pin appleboy/ssh-action** (CSO CRIT-02) — supply-chain
+    risk: action ранее был на tag, заменён на SHA-pin.
+  - **G3 PKCS#8 + idempotent JWT key gen** (CSO HIGH-05) — deploy.yml
+    генерирует RSA в формате PKCS#8 (вместо PKCS#1) и проверяет
+    существующий ключ перед перегенерацией (idempotency для re-deploy).
+  - **G4 v2 RequiredSecretsValidator** (CSO HIGH-06) —
+    `EnvironmentPostProcessor` fail-fast на missing critical secrets
+    (DB password, RabbitMQ password, JWT key path, internal issuer
+    secret). JUnit-classpath skip — тесты с `application-test.yml`
+    не имеют secrets, валидация пропускается.
+  - **G5 aiohttp + aiogram bump** (CSO HIGH-07) — `aiohttp 3.10.11→3.13.5`
+    + `aiogram 3.15.0→3.23.0` в notification-bot, закрытие CVE на
+    HTTP/2 stream multiplexing.
+  - **G6 SHA-pin 16 actions × 3 workflows + permissions least-privilege**
+    (CSO HIGH-03/04 + MED-09) — SHA-pin третьесторонних и first-party
+    actions в deploy/coverage/security workflows. Per-job
+    `permissions:` блоки с минимально необходимыми правами (большинство
+    `contents: read`, push job — `id-token: write` для cosign).
+  - **G7 7 false-pass spec fixes** (G26 test audit) — testid
+    добавления в 3 component'ах + skip forward-written specs + path A
+    seed mismatch fix. Headman bulk-mark spec помечен `test.skip` (это
+    ownership PWA, web-panel не реализует — by-design).
+  - **G8 burstCapacity prod default + DRY users + diagnostic test
+    removal** (G26 F01-F03) — `burstCapacity` rate-limit в Gateway
+    раздельный per-env: prod default 60, e2e env override 600.
+    Diagnostic test killed (M13 R1 leftover). `tests/e2e/fixtures/users.ts`
+    дедуплицирован.
+  - **G9 notification-web env regression + G1 IT legacy override** —
+    `RABBITMQ_PASSWORD` + `INTERNAL_ISSUER_SECRET` в
+    docker-compose.prod.yml (CI regression от G4 v2 fail-fast). G1
+    `NotificationErrorHandlingIT` override в legacy mode.
+
+### Tagged
+
+- **`v0.0.0-alpha.16`** — финал M14, готовы к first VPS deploy.
+
+## [v0.0.0-alpha.15] — 2026-04-25
+
+### Added
+
 - **M13 G25 — CI hot-fixes + e2e infrastructure** (re-open после первого
+  push в `origin/dev`, `v0.0.0-alpha.15`).
+  CI прогон commit `3db123b` обнаружил 3 проблемы, которые M13 G24 final
+  verification не поймал — re-open вместо M14 (M13 domain = pre-deploy
+  hardening, CI green = pre-deploy hardening). Tag `v0.0.0-alpha.14`
+  остаётся валидным.
+  - **G25.1 Ruff format hot-fix** — 9 файлов в `services/notification-bot/`
+    (5 prod + 4 test) отформатированы через `ruff format`. Lesson: ruff
+    pre-commit hook отсутствовал, code форматировался IDE auto-format
+    с другим стилем. TODO v0.1: `.pre-commit-config.yaml` hook.
+  - **G25.2 Watchdog mock signature** — детерминированный регресс M13 G8
+    (не flaky timing). `bot/__main__.py:65` добавил `idempotency_guard=`
+    параметр в `start_consumer`, но 4 mock'а в `test_consumer_watchdog.py`
+    остались с старой signature → TypeError → бесконечный watchdog flap
+    → 10s timeout fail. Fix: `idempotency_guard=None` в 4 mock signatures.
+  - **G25.3 docker-compose.e2e.yml** — standalone e2e stack для CI
+    (17 контейнеров: 5 backend + 5 infra + 2 notification + 4 frontend +
+    1 reverse-proxy nginx). Reverse-proxy терминирует HTTPS через
+    self-signed cert (нужно потому что `AuthCookies` выставляет `Secure`
+    flag → на HTTP browser cookie отбрасывает → T1 spec падает).
+    JWT keys auth-service генерирует сам в shared volume. Bitnami Mongo
+    replica set через env-based init. Test secrets — `tests/e2e/.env.ci`
+    (committed, помечены CI-ONLY). Locally: `bash tests/e2e/infra/scripts/generate-test-certs.sh
+    && docker compose -f docker-compose.e2e.yml up -d --build`.
+    Surprise: dev `docker-compose.yml` не содержит backend Java сервисов
+    (запускаются через `gradle bootRun`); G22 commit добавил CI job без
+    локальной проверки этого design'а. (re-open после первого
   push в `origin/dev`, planned tag `v0.0.0-alpha.15`).
   CI прогон commit `3db123b` обнаружил 3 проблемы, которые M13 G24 final
   verification не поймал — re-open вместо M14 (M13 domain = pre-deploy

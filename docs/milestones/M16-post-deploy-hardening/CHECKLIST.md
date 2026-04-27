@@ -146,28 +146,44 @@ annotation infrastructure). Разметка только UserController (5 acti
 - [ ] Verify на VPS: `redis-cli KEYS "rl:headman:*"` показывает entries при активном использовании
 - [ ] Commit: `refactor(academic): headman rate-limit moved to Redis, raised to 300/min (M16 G7)`
 
-## Группа 8 — mTLS Alertmanager → notification-web (G8, ~1-2д)
+## Группа 8 — mTLS Alertmanager → notification-web (G8a only, ~30 мин)
 
-- [ ] **Decision** в `DECISIONS.md` — выбрать путь (Linkerd / nginx mTLS / cap_drop NET_RAW only)
-- [ ] Если nginx-путь: новый `nginx/conf.d/internal.conf` listening на internal port с `ssl_verify_client on`
-- [ ] Сгенерировать internal CA + client cert для Alertmanager + server cert для notification-web (`openssl` или local script)
-- [ ] `docker-compose.prod.yml` — mount certs в Alertmanager и notification-web (или интерим nginx)
-- [ ] `infra/alertmanager/alertmanager.yml` — `tls_config` для webhook
-- [ ] **Defense-in-depth (всегда):** добавить `cap_drop: [NET_RAW]` к cadvisor, node-exporter, blackbox-exporter (блокирует sniffing)
-- [ ] Verify: alert приходит в Telegram через mTLS-канал; без cert curl падает с 403
-- [ ] `docs/operations/runbooks/secret-rotation.md` — добавить раздел про rotation internal CA
-- [ ] Commit: `feat(security): mTLS for Alertmanager → notification-web (M16 G8)`
+**Reduced scope vs initial plan (D13):** owner выбрал **G8a** (cap_drop NET_RAW
+defense-in-depth), G8b (full mTLS с internal CA) отложен в `future-ideas.md`
+с explicit trigger condition (multi-host deploy / compliance). Reasoning —
+текущая single-VPS topology + digest-pinned images дают low surface для
+sniff-vector'а; полный mTLS overkill для текущего scale.
+
+- [x] **Decision D13** зафиксирован: G8a-only, G8b deferred
+- [x] `docker-compose.prod.yml` — `cap_drop: [NET_RAW]` для cadvisor
+- [x] `docker-compose.prod.yml` — `cap_drop: [NET_RAW]` для node-exporter
+- [x] `docker-compose.prod.yml` — `cap_drop: [NET_RAW]` для blackbox-exporter
+- [x] `docker-compose.prod.yml` — `cap_drop: [NET_RAW]` для alertmanager (symmetric defense)
+- [x] Validate compose syntax — 4 cap_drop entries + parsed correctly
+- [x] G8b (full mTLS) перенесён в `future-ideas.md` MED-11 с trigger condition
+- [ ] Verify на VPS после redeploy: контейнеры живые, webhook flow работает (curl alert → Telegram appears)
+- [x] Commit (комбинированный с G9): `security: drop privileged + NET_RAW from infra containers (M16 G8a + G9)`
 
 ## Группа 9 — cadvisor de-privileged (G9, ~0.5д)
 
-- [ ] Audit текущих метрик cadvisor через `curl localhost:8080/metrics | grep ^container_` (на dev) — снимок до
-- [ ] `docker-compose.prod.yml` cadvisor: убрать `privileged: true`
-- [ ] Добавить `cap_add: [SYS_PTRACE]`
-- [ ] Тест с/без mount `/var/lib/docker:ro` — какие метрики пропадают (если только image labels — можно убрать mount, иначе оставить)
-- [ ] Verify: container_* метрики на месте, Grafana dashboard `rct-containers` рендерится
-- [ ] Verify: Prometheus alert `ContainerMemoryHigh` срабатывает на искусственный stress test
-- [ ] `docker-compose.prod.yml` cadvisor: уменьшение surface — read-only filesystem где возможно
-- [ ] Commit: `security(cadvisor): drop privileged in favor of CAP_SYS_PTRACE (M16 G9)`
+**Подход (Decision D14):** убрать `privileged: true`, добавить `devices:
+[/dev/kmsg:/dev/kmsg]` (per upstream docs `running.md`), default Docker
+capabilities + read-only mounts достаточны. `cap_add: [SYS_PTRACE]` НЕ
+требуется — research confirmed (cadvisor issue #3051: «running without
+privileged but as root was necessary to access all required metrics»).
+
+- [x] Research: cadvisor docs `running.md` + issue #3051 (запуск без privileged как root work'ает с default caps)
+- [x] `docker-compose.prod.yml` cadvisor: убрать `privileged: true`
+- [x] Добавить `devices: [/dev/kmsg:/dev/kmsg]` для kernel-log access (OOM events tracking)
+- [x] **НЕ** добавлять `cap_add: [SYS_PTRACE]` — не требуется (default caps + read-only mounts достаточны)
+- [x] Сохранены existing read-only mounts: `/`, `/var/run`, `/sys`, `/var/lib/docker`, `/dev/disk`
+- [x] Decision D14 зафиксирован
+- [x] Validate compose syntax — privileged: true исчез из parsed output
+- [ ] Verify на VPS после redeploy: `up{job="cadvisor"} == 1` в Prometheus
+- [ ] Verify на VPS: `count by (name) (container_memory_usage_bytes)` > 20 (per-container metrics на месте)
+- [ ] Verify на VPS: Grafana dashboard `rct-containers` рендерится
+- [ ] Verify на VPS: `rate(container_oom_events_total[5m])` doesn't break при artificial stress test
+- [x] Commit (комбинированный с G8a): `security: drop privileged + NET_RAW from infra containers (M16 G8a + G9)`
 
 ## Финал
 

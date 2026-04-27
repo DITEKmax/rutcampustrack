@@ -524,6 +524,13 @@ services:
       - "9100"
     networks:
       - private_net
+    # M16 G8a — drop NET_RAW (default Docker capability). Без него
+    # потенциально compromised peer не может sniff'ать plaintext-трафик
+    # в private_net (например, Bearer token Alertmanager → notification-web).
+    # Defense-in-depth: node-exporter не нуждается в raw-sockets для
+    # /proc/net чтения, оно идёт через standard kernel API.
+    cap_drop:
+      - NET_RAW
     # M13 G11 (NEW-154/155/157) — bound aux container memory.
     # node-exporter — резидентный footprint ~15-25m, 128m даёт запас
     # под /proc reading peaks без OOM на 8GB VPS.
@@ -532,8 +539,11 @@ services:
     restart: unless-stopped
 
   cadvisor:
-    # M06 D2: digest-пин обязателен — privileged: true + mounts /:/rootfs + /sys.
-    # Supply-chain compromise = full host access. Bump digest через Renovate (QD6).
+    # M06 D2: digest-пин обязателен — mounts /:/rootfs + /sys = host filesystem read.
+    # Supply-chain compromise по-прежнему высокий impact (read-only host fs),
+    # но M16 G9 убрал `privileged: true` — больше нет full root host access
+    # на write/exec через /proc, /dev manipulation, kernel capabilities.
+    # Bump digest через Renovate (QD6).
     # Version: v0.49.1. Update: `docker buildx imagetools inspect gcr.io/cadvisor/cadvisor:<ver>`
     image: gcr.io/cadvisor/cadvisor:v0.49.1@sha256:3cde6faf0791ebf7b41d6f8ae7145466fed712ea6f252c935294d2608b1af388
     container_name: rct-cadvisor
@@ -543,16 +553,32 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
+    # M16 G9 — `--device=/dev/kmsg` per cadvisor docs (running.md): kernel
+    # log access без `privileged: true`. Без этого OOM-event метрики
+    # (`container_oom_events_total`) теряются.
+    devices:
+      - /dev/kmsg:/dev/kmsg
     expose:
       - "8080"
     networks:
       - private_net
+    # M16 G8a — drop NET_RAW (sniffing capability) для defense-in-depth.
+    # cadvisor читает /proc + /sys для metric collection, raw sockets не
+    # нужны. Если контейнер скомпрометирован — не сможет перехватывать
+    # plaintext-трафик в private_net.
+    cap_drop:
+      - NET_RAW
     # M13 G11 — cadvisor scrape'ает все containers, ~50-150m residual
     # под нагрузкой. 256m с запасом.
     mem_limit: 256m
     mem_reservation: 64m
     restart: unless-stopped
-    privileged: true
+    # M16 G9 — privileged: true УБРАН. Default Docker capabilities + read-only
+    # mounts + /dev/kmsg device = full functionality cadvisor (per upstream
+    # running.md + cadvisor issue #3051: «running without privileged but as root
+    # was necessary to access all required metrics»). Container metrics
+    # `container_*` остаются available, OOM tracking через /dev/kmsg работает.
+    # Verify VPS: `up{job="cadvisor"} == 1` + `count by (name) (container_memory_usage_bytes)` > 0.
 
   # M13 G20 — blackbox-exporter probe'ит публичный URL https://ruttrack.site,
   # экспортирует метрики probe_success, probe_ssl_earliest_cert_expiry,
@@ -570,6 +596,12 @@ services:
       - "9115"
     networks:
       - private_net
+    # M16 G8a — drop NET_RAW. Blackbox-exporter probe'ит публичные URL
+    # (https://ruttrack.site) через HTTP-клиент, raw sockets не нужны.
+    # ICMP-probe модуль НЕ используется (мы probe'им только http_2xx) —
+    # без NET_RAW потеряется только icmp probing capability, что irrelevant.
+    cap_drop:
+      - NET_RAW
     # Lightweight: probe overhead minimal, scrape interval 60s. 64m headroom.
     mem_limit: 64m
     mem_reservation: 16m
@@ -652,6 +684,11 @@ services:
       - "9093"
     networks:
       - private_net
+    # M16 G8a — drop NET_RAW. Alertmanager шлёт webhook'и через HTTP-клиент,
+    # raw-sockets не нужны. Symmetric defense: даже если Alertmanager
+    # скомпрометирован, он не сможет sniff'ать прочий трафик в private_net.
+    cap_drop:
+      - NET_RAW
     # M09 G7 (NEW-157).
     mem_limit: 64m
     mem_reservation: 32m

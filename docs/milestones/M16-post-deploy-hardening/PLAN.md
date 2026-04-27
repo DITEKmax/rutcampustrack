@@ -107,8 +107,8 @@ VPS deploy (M15). Скоп зафиксирован совместно с вла
 - [ ] **G5 verify:** после `docker compose restart grafana` (или другого upstream) `/grafana/` отдаёт 200/302 в течение 15 секунд без ручного `nginx restart`; то же для всех upstream'ов из `default.conf`
 - [ ] **G6 verify:** запись в `audit_log` появляется при каждом ADMIN-action (smoke: archive user → row с `user_id`, `action='user.archive'`, `before/after diff`, `correlation_id`); 15 ADMIN-методов размечены `@AdminAction`
 - [ ] **G7 verify:** староста делает 300 запросов за минуту → 200; 301-й → 429; счётчик в Redis виден через `redis-cli GET rl:headman:<id>:<minute>`; IT зелёный
-- [ ] **G8 verify:** Alertmanager → notification-web использует TLS (curl `--cacert` works, без `--cacert` падает); `cap_drop: NET_RAW` применён к cadvisor + node-exporter
-- [ ] **G9 verify:** cadvisor работает без `privileged: true`; все метрики `container_*` присутствуют в Prometheus (sample query в `NOTES.md`)
+- [ ] **G8 verify (G8a only — D13):** `cap_drop: [NET_RAW]` применён к cadvisor + node-exporter + blackbox-exporter + alertmanager; контейнеры стартуют, webhook-flow работает (alert → Telegram). G8b (full mTLS) **отложен** в `future-ideas.md` MED-11 с trigger condition (multi-host / compliance / first incident).
+- [ ] **G9 verify (D14):** cadvisor работает без `privileged: true` (через `devices: /dev/kmsg` + default caps); `up{job="cadvisor"}` == 1; `count by (name) (container_memory_usage_bytes)` > 20; Grafana dashboard `rct-containers` рендерится; `container_oom_events_total` доступен.
 - [ ] **Финал:** smoke по `scripts/verify-deploy.sh` на VPS — все 26+ контейнеров healthy после redeploy; `CHANGELOG.md` обновлён; tag `v0.1.0-rc.1` (или `v0.0.0-alpha.17` если решим оставаться в alpha)
 
 ## Dependencies

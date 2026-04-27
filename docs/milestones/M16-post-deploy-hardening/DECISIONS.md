@@ -87,17 +87,23 @@ Aspect вызывает SPI, конкретный сервис предоста�
 
 ---
 
-## D4 — TBD: mTLS Alertmanager → notification-web путь
+## D4 — mTLS Alertmanager → notification-web: G8a (cap_drop NET_RAW) only, G8b deferred
 
-Зафиксируется при выполнении G8.
+**Решение принято в M16 G8 implementation (см. также D13).**
 
-Кандидаты:
+Кандидаты были:
 1. Linkerd auto-mTLS sidecar — overhead (extra container per service), но zero-config
 2. Custom certs + nginx proxy — контроль, но manual rotation
-3. Минимальный путь: только `cap_drop: NET_RAW` для cadvisor + node-exporter + blackbox-exporter, оставив plaintext (sniffing capability убрана у потенциального compromised peer, MitM проблема остаётся)
+3. Минимальный путь: только `cap_drop: NET_RAW` для cadvisor + node-exporter + blackbox-exporter + alertmanager, оставив plaintext (sniffing capability убрана у потенциального compromised peer, MitM проблема остаётся theoretical)
 
-Решение принимается с учётом текущей архитектуры (нет other Linkerd
-usage → adding sidecar = большая зависимость).
+**Выбран вариант 3 (G8a).** Полный mTLS (вариант 2) перенесён в
+`future-ideas.md` MED-11 с trigger condition: «при подготовке к
+horizontal scaling либо после first incident, либо при появлении
+compliance requirement». См. D13 для полного reasoning.
+
+Linkerd (вариант 1) отвергнут — нет other Linkerd usage в проекте,
+adding sidecar per service = большая зависимость без proportionate
+benefit для single-host setup.
 
 ---
 
@@ -453,3 +459,130 @@ fallback). Acceptable: ~50 строк, minimal maintenance burden, и
   AcademicGrpcIT.isHeadman_rateLimitExceeded_throwsResourceExhausted
   теперь проходит через RedisHeadmanRateLimiter (тестконтейнеры Redis
   включены в IT setup). VPS verify подтвердит реальное поведение.
+
+---
+
+## D13 — G8 reduced to G8a (cap_drop NET_RAW); G8b (full mTLS) deferred
+
+**Контекст:** initial G8 план обещал full mTLS Alertmanager →
+notification-web с internal CA, client/server certs, tls_config в
+alertmanager.yml, `server.ssl.client-auth=need` в notification-web.
+Estimated 1.5-2 days of work + ongoing operational overhead (CA
+rotation runbook, expired-cert silent-failure mode).
+
+**Owner-driven scope reduction (2026-04-27 conversation):**
+> «берём вариант а тогда и остальное закидываем во future ideas»
+
+**Reasoning от Claude (presented в conversation, accepted by owner):**
+
+Threat model assessment для (b) full mTLS:
+- Attacker должен иметь RCE в одном infra container (cadvisor / node-exporter /
+  blackbox-exporter / alertmanager) **без** escape в host
+- И хотеть именно sniff Bearer token / forge fake alerts (не exfiltration / cryptomining)
+
+Реальная вероятность low:
+- Single VPS, single tenant, single owner
+- Все images digest-pinned (M06 D2) — supply-chain attack contained
+- Public exposure только nginx :443 — infra containers без публичного access
+- Bearer token хранится в `.env.prod` (не в env infra-контейнеров)
+
+(b) защищает от очень узкого scenario «full RCE в Alertmanager-контейнере»,
+который сам не имеет public exposure. Cost-benefit ratio плохой при
+текущем scale.
+
+(a) `cap_drop: [NET_RAW]` даёт ~80% той же защиты за 30 минут:
+- Скомпрометированный peer не может sniff Bearer token из plaintext-трафика
+- Это главный realistic vector для leak'а текущего mechanism
+- Plaintext остаётся, но без sniff capability MitM невозможен «from inside»
+
+**Решение:** реализовать G8a (4 × `cap_drop: [NET_RAW]` в compose —
+cadvisor, node-exporter, blackbox-exporter, alertmanager). G8b отложить
+в `future-ideas.md` MED-11 с trigger condition:
+- Horizontal scaling (multi-host deploy)
+- Compliance requirement (PCI/HIPAA/ISO 27001)
+- First incident с подозрением на insider threat
+
+**Trade-off:**
+- (b) дала бы cryptographic identity verification + encryption-in-transit
+- (a) даёт только защиту от sniff'а, MitM (теоретически) остаётся
+- Acceptable: MitM требует уже compromised peer, который без NET_RAW не
+  может redirect трафик
+
+**Verify-checkpoint:** на VPS после redeploy убедиться что:
+- Все 4 контейнера (cadvisor, node-exporter, blackbox-exporter, alertmanager) живые
+- Webhook flow работает (alert → Telegram через notification-bot)
+- Нет регрессии в metrics (cadvisor, node-exporter scrape continues)
+
+---
+
+## D14 — G9 cadvisor: drop privileged без cap_add; +/dev/kmsg device
+
+**Контекст:** изначальный план G9 предписывал заменить
+`privileged: true` на `cap_add: [SYS_PTRACE]`. По research
+(cadvisor docs `running.md` + cadvisor issue #3051) обнаружено:
+
+1. **cadvisor `running.md` (upstream docs):** «If cAdvisor needs to be
+   run in Docker container without `--privileged` option it is
+   possible to add host devices to container using `--dev` and specify
+   security options using `--security-opt`». **Никаких `cap_add`
+   директив явно не упомянуто.** Пример:
+   ```
+   docker run \
+     --volume=/:/rootfs:ro \
+     ...
+     --device=/dev/kmsg \
+     --security-opt seccomp=default.json \
+     cadvisor:<tag>
+   ```
+
+2. **cadvisor issue #3051 (user report):** «running without privileged
+   but **as root** was necessary to access all required metrics».
+   Permission denied только если non-root.
+
+**Вывод research:** `privileged: true` нужен **не** для специфических
+capabilities (типа SYS_PTRACE / SYS_ADMIN), а для:
+- Default Docker capabilities + uid=0 (root inside container)
+- Read-only mounts to host filesystems
+- `/dev/kmsg` device access (для kernel events / OOM tracking)
+
+`SYS_PTRACE` нужен если cadvisor сам ptraces process'ы — это **не его
+обычный mode** (cadvisor читает /proc + /sys, не ptraces). Adding
+SYS_PTRACE без real need = unnecessary attack surface.
+
+**Решение:**
+1. Убрать `privileged: true`
+2. Добавить `devices: [/dev/kmsg:/dev/kmsg]` (per upstream docs)
+3. Сохранить existing read-only mounts unchanged
+4. **НЕ** добавлять `cap_add` — default Docker caps достаточны
+5. cadvisor продолжит запускаться как root (default user) — это OK
+   per #3051
+
+**Что меняется в attack surface:**
+
+Was (privileged: true):
+- ✗ Full host root access на write/exec
+- ✗ All capabilities (CAP_SYS_ADMIN, CAP_DAC_READ_SEARCH, CAP_NET_ADMIN, …)
+- ✗ Может modify kernel parameters via /proc, manipulate cgroups, etc.
+
+After (no privileged + /dev/kmsg + default caps - NET_RAW):
+- ✓ Read-only host filesystem access (existing mounts, unchanged)
+- ✓ Default Docker capabilities (≈14 capabilities, vs ~37 при privileged)
+- ✓ NET_RAW dropped (G8a) — sniffing capability removed
+- ✓ Cannot modify host state (writes to mounted /:/rootfs:ro fail)
+
+**Trade-off:**
+- Теоретически возможно регрессия в exotic метриках (perf events, cpu
+  scheduler details). Audit на VPS — `count by (name)
+  (container_memory_usage_bytes)` should remain >20 (one per running
+  container). `container_oom_events_total` — критическая метрика для
+  alert'а ContainerMemoryHigh, depends on /dev/kmsg access.
+- Если **что-то сломается** (метрика недоступна) — rollback тривиален:
+  вернуть `privileged: true` + удалить `devices:`. Документировано
+  в comment'е docker-compose.prod.yml.
+
+**Verify (post-deploy):**
+1. `docker logs rct-cadvisor --since 5m | grep -i "permission\|denied\|error"` → пусто
+2. `up{job="cadvisor"}` == 1 (Prometheus target healthy)
+3. `count by (name) (container_memory_usage_bytes)` > 20
+4. Grafana dashboard `rct-containers` рендерится без gaps
+5. Artificial OOM stress test на canary container → `container_oom_events_total` > 0 → ContainerMemoryHigh alert firing

@@ -406,3 +406,83 @@ Reasoning в DECISIONS § D11. Кратко: что хуже если RL bypasse
 - `AcademicGrpcIT.java` — лимит 120→300 в тесте
 
 Tests: 10/10 unit + compile clean. IT отложен до VPS.
+
+### G8 — owner-driven scope reduction: G8a only
+
+При планировании G8 я предложил owner'у три варианта (после рассмотрения
+полного scope):
+
+- **(a)** только G8a (cap_drop NET_RAW для 4 infra containers) + G9 — bundle ~30 минут
+- **(b)** полный G8 (mTLS с internal CA) + G9 — ~1.5-2 дня + ongoing CA rotation overhead
+- **(c)** только G9, G8 → отложить в M17
+
+Owner спросил «что даст вариант b? Или для моего проекта нет смысла?». Дал
+threat-model assessment:
+
+- Полный mTLS защищает от очень узкого scenario «full RCE в одном infra
+  container без host escape, attacker хочет именно sniff/forge alerts»
+- Single VPS, single tenant, digest-pinned images = low surface
+- (a) даёт ~80% той же защиты (NET_RAW = sniffing capability) за 1/30 cost
+- (b) оправдывает себя при multi-host deploy / compliance / first incident
+
+Owner: **«берём вариант а тогда и остальное закидываем во future ideas»**.
+Решение зафиксировано в DECISIONS § D13.
+
+### G8a — почему 4 контейнера, не 3
+
+Initial plan (NEXT-SESSION.md) указывал 3 контейнера: cadvisor + node-exporter
++ blackbox-exporter. По логике symmetric defense я добавил **4-й — alertmanager**:
+
+- Alertmanager — sender side того flow, который мы защищаем
+- Если он скомпрометирован, он не должен иметь capability sniff'ить _other_
+  трафик в private_net (например, RabbitMQ AMQP frames с reminder messages)
+- Cost zero (alertmanager не нуждается в raw-sockets)
+
+Это **defense-in-depth** через симметрию: drop'аем NET_RAW у каждого
+контейнера, который НЕ нуждается в нём. Если бы мы ограничились только
+sniffer-side, sender remained as potential attack pivot.
+
+### G9 — surprise: SYS_PTRACE НЕ нужен
+
+Initial CHECKLIST G9 v1 предписывал заменить `privileged: true` на
+`cap_add: [SYS_PTRACE]` (per NEXT-SESSION.md). По research понял что
+это **incorrect assumption**:
+
+- `cadvisor docs running.md` показывает только `--device=/dev/kmsg` +
+  `--security-opt seccomp=default.json` для де-привилегированного
+  запуска. **Zero `cap_add` директив.**
+- cadvisor issue #3051: «running without privileged but as root was
+  necessary to access all required metrics» — root user + default
+  caps = sufficient.
+- cadvisor читает /proc + /sys, **не ptraces** — SYS_PTRACE was
+  cargo-cult. Adding capability без real need = unnecessary attack
+  surface.
+
+**Lesson learned:** при де-привилегировании контейнера research
+upstream docs до того как добавлять capabilities. Default Docker
+caps минус specific drops часто достаточно. См. DECISIONS § D14.
+
+### G9 — fallback strategy зафиксирован
+
+Если на VPS после redeploy `up{job="cadvisor"}` падает либо метрика
+`container_oom_events_total` теряется — rollback тривиален: вернуть
+`privileged: true` + убрать `devices:` секцию. Это документировано
+в comment'е `docker-compose.prod.yml` (cadvisor block).
+
+Лучше bias на сторону «попробовать де-привилегировать, rollback если
+что» чем оставить privileged: true forever.
+
+### G8a + G9 итог
+
+Изменено 1 файл:
+- `docker-compose.prod.yml` — 4 секции (node-exporter, cadvisor,
+  blackbox-exporter, alertmanager) получили `cap_drop: [NET_RAW]`;
+  cadvisor дополнительно — убран `privileged: true`, добавлен
+  `devices: [/dev/kmsg:/dev/kmsg]`.
+
+Validate:
+- `docker compose config --quiet` (с stub SWAGGER_HTPASSWD) — syntax OK
+- `parsed config | grep cap_drop` — 4 entries
+- `parsed config | grep privileged` — 0 entries (privileged: true исчез)
+
+Verify на VPS отложен до redeploy. Risk-reward в favor of trying.

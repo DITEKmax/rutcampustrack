@@ -1093,6 +1093,198 @@ horizontal scale потребует надёжных integration tests.
   `.gitmodules`) удалён вместе с остальным `.claude/`. CI больше не
   даёт warning `fatal: No url found for submodule path`.
 
+### `verify-deploy.sh` устарел до v9.0 URL layout
+
+**Симптом:** `./scripts/verify-deploy.sh` показывает 4 false-positive
+fail'а на полностью здоровом проде:
+
+1. `Landing redirect — expected 200, got 301 (https://ruttrack.site/)`
+   → у нас `/` правильно делает 301 на `/login` (INFRA-v9-01,
+   `docs/product/url-layout.md`). Скрипт проверяет до v9.0 UX.
+2. `Web-panel /login — expected 200, got 502` →
+   единственный реальный fail когда возникает (DNS race nginx ↔
+   web-panel-nginx после restart). Часто стрелки правильные, но
+   проверка не делает retry.
+3. `Gateway /api/health — expected 200, got 404` → такого endpoint
+   не существует. Реальный — `/actuator/health` через
+   `docker exec rct-api-gateway` или `/api/auth/actuator/health`
+   через ingress (требует auth и вернёт 401 — тоже OK для health).
+4. `TTL index check failed` → скрипт пытается
+   `mongosh -u $MONGO_NOTIFICATION_USER` который не имеет прав на
+   `getIndexes`. Нужен либо `root` user, либо grant `dbAdmin` на
+   `notification_db` для notification user.
+
+**Fix:**
+
+- `[ "$status" = "200" ] || [ "$status" = "301" ]` для root-redirect.
+- Заменить `/api/health` на `docker exec rct-api-gateway wget -qO-
+  http://localhost:8080/actuator/health | jq .status` (assert "UP").
+- Mongo TTL — переключить на `root` user
+  (`MONGO_INITDB_ROOT_USERNAME=root` + `MONGO_ROOT_PASSWORD`) либо
+  расширить privileges notification user'а в init-mongo.js.
+- `/login` 502 — добавить `for i in 1..5; sleep 2; retry`
+  (eventually consistent после nginx restart).
+
+**Severity:** косметика. Прод полностью здоров, скрипт врёт
+из-за устаревших predicate'ов. Сейчас deploy decision принимается
+вручную (cosign verify + manual smoke).
+
+### ✅ VPS local edits drift (РАЗРЕШЕНО 2026-04-27)
+
+**Решено:** working tree на VPS оказался идентичен коммитам
+`c3ff148` + `8d7c168` (что и ожидалось — hotfixes я делал руками
+вьём `nano` параллельно с локальным commit'ом). `git stash` +
+`git pull` (fast-forward 25 commits) + проверка через
+`git show stash@{0}:<file>` vs working tree → **diff пустой**,
+stash дропнут, `docker compose pull && up -d` подхватил конфиги
+в runtime. Все 27 контейнеров `Up`, smoke `/login`/`/app/`/
+`/presentation/` → 200. Lesson learned ниже остаётся релевантным.
+
+**Lesson learned для CONTRIBUTING (`docs/meta/contributing.md`):**
+хотфиксы прямо на проде через `nano /opt/rutcampustrack/<file>` —
+только если backporting в репо в той же сессии (через
+`git format-patch` или копию через `scp`). Иначе следующий
+`git pull` ловит conflict, deploy.yml fail'ит и накапливается drift.
+
+---
+
+### Историческая запись симптома (для context'а)
+
+**Симптом был:** deploy.yml падает на step `git pull` на VPS:
+
+```
+error: Your local changes to the following files would be overwritten by merge:
+    docker-compose.prod.yml
+    infra/alertmanager/alertmanager.yml
+    nginx/conf.d/default.conf
+Aborting
+```
+
+**Причина:** во время M15 hotfixing эти 3 файла редактировались
+**прямо на VPS** (`/opt/rutcampustrack/`) поверх уже-запушенных
+коммитов `c3ff148` (env regression + OOM + alertmanager) и `8d7c168`
+(CSP unsafe-hashes). Изменения не закоммичены и не вернулись в репо.
+
+**Что сделать (срочно, иначе все будущие deploy.yml fail'ят):**
+
+1. На VPS снять патчи:
+   ```bash
+   ssh deploy@<VPS>
+   cd /opt/rutcampustrack
+   git diff docker-compose.prod.yml > /tmp/vps-compose.patch
+   git diff infra/alertmanager/alertmanager.yml > /tmp/vps-alert.patch
+   git diff nginx/conf.d/default.conf > /tmp/vps-nginx.patch
+   ```
+2. Скопировать к себе локально (`scp deploy@<VPS>:/tmp/vps-*.patch ./`).
+3. Применить локально (`git apply vps-*.patch`), посмотреть diff,
+   решить — нужны ли реально или это эксперимент.
+4. **Если нужны** — закоммитить как `fix(M15): VPS-edited hotfixes
+   (post-deploy drift)` + push. Deploy.yml на следующем run
+   подхватит правильно.
+5. **Если не нужны** — на VPS `git checkout -- docker-compose.prod.yml
+   infra/alertmanager/alertmanager.yml nginx/conf.d/default.conf`
+   и retrigger deploy.yml.
+
+**Lesson learned для CONTRIBUTING:** хотфиксы прямо на проде — только
+если backporting в репо в той же сессии (через git format-patch +
+PR). Иначе следующий деплой ломается.
+
+### OTel exporter wrong port (4317 gRPC vs 4318 HTTP)
+
+**Симптом:** все backend-сервисы (auth, academic, schedule, attendance,
+notification, gateway) каждые ~30 сек пишут ERROR в логи:
+
+```
+io.opentelemetry.exporter.internal.http.HttpExporter:
+Failed to export spans ... Connection reset
+thread: OkHttp http://tempo:4317/...
+```
+
+**Причина:** Spring Boot Micrometer OTLP exporter
+(`management.otlp.tracing.endpoint`) шлёт **HTTP/protobuf**, но
+конфигурация указывает на порт **`4317`** (это **gRPC** порт у
+Tempo). Tempo на 4317 видит HTTP/1.1 frame вместо gRPC → закрывает
+сокет → exporter ловит `Connection reset` → retry → loop. **Сами
+spans не доходят** — distributed tracing в Grafana Tempo **не
+работает** в проде, хотя M04 заявлен как ✅.
+
+Затронуто 6 application.yml + 18 строк в docker-compose.prod.yml +
+docker-compose.yml.
+
+**Fix (одним PR):**
+
+1. В каждом `services/*/src/main/resources/application.yml` поменять
+   default endpoint:
+   ```yaml
+   management:
+     otlp:
+       tracing:
+         endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://tempo:4318/v1/traces}
+   ```
+2. В `docker-compose.yml` + `docker-compose.prod.yml` (18 мест)
+   поменять env var: `OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces`.
+3. Tempo `4318` уже expose'нут (`docker-compose.prod.yml:672`), Tempo
+   уже слушает 4318 в `infra/tempo/tempo.yml:15`. Ничего на стороне
+   Tempo менять не нужно.
+4. Verify: после redeploy через `Grafana → Explore → Tempo →
+   Search trace_id` должен появиться recent trace; в логах исчезнет
+   `Connection reset` ERROR.
+
+**Альтернатива (b):** добавить gRPC OTLP exporter dependency
+(`opentelemetry-exporter-otlp` вместо micrometer's HTTP exporter).
+Сложнее, требует Spring Boot config changes + проверка совместимости
+с current Spring Boot 3.4 + Micrometer Tracing wiring.
+
+**Severity:** трейсинг недоступен в проде, но не блокирует
+функциональность. Логи захламлены ERROR'ами на каждом сервисе
+каждые 30 сек → шумит alert'ам и забивает Loki retention.
+M04 contracts заявлен ✅ но фактически broken — **тех.долг M04**.
+
+### Observability access UX
+
+Сейчас `https://ruttrack.site/grafana/`, `/prometheus/`, `/alertmanager/`
+и `/swagger-ui/` защищены **одной общей nginx basic-auth** (login
+`swagger`, env var `SWAGGER_HTPASSWD`). После прохождения nginx —
+Grafana показывает **свой** login (`admin` / `GRAFANA_PASSWORD`).
+Итого пользователь вводит **два пароля подряд** для входа в Grafana.
+Это исторический долг M11 G4 (basic-auth добавили для swagger-ui,
+потом теми же creds накрыли мониторинг в M13 G14).
+
+Что переделать одним PR в M16:
+
+- **Убрать дублирующую авторизацию для `/grafana/`.** Grafana уже имеет
+  свой login + RBAC — nginx basic-auth поверх неё избыточна и путает
+  пользователей. `auth_basic` оставить только для
+  `/prometheus/`, `/alertmanager/`, `/swagger-ui/` (там нет своего
+  встроенного auth и они light-touch reconnaissance vector).
+  Изменение: `nginx/conf.d/default.conf:177-180` — удалить
+  `auth_basic` + `auth_basic_user_file` из `location /grafana/`.
+
+- **Разделить URL'ы и креды по PoLP.** Создать **два** htpasswd
+  credential pair:
+  - `OBS_OPS_HTPASSWD` (login `ops`) → `/prometheus/`, `/alertmanager/`
+    (только on-call / админы инфры).
+  - `OBS_DEV_HTPASSWD` (login `dev`) → `/swagger-ui/` (вся команда
+    разработки).
+
+  Текущая объединённая `SWAGGER_HTPASSWD` запутывает: тот, кто
+  читает API spec, не должен иметь доступ silence'ить алерты.
+
+- **Переименовать `SWAGGER_HTPASSWD` → `OBS_*_HTPASSWD`.** Имя
+  историческое (M11 G4 для swagger-ui), теперь покрывает 4 раздела —
+  путает того, кто читает `.env.prod` впервые. После split (выше) —
+  имена сами станут scoped.
+
+- **Перейти с apr1 на bcrypt** (`htpasswd -nB`). Apr1 deprecated
+  (1990s, MD5-based), bcrypt — современный standard. Бонус: bcrypt
+  hash не содержит `$` так часто → меньше escape-боли в `.env.prod`
+  (apr1 имеет 3 `$`, bcrypt — 1 `$`).
+
+Trade-off: прод users получают изменённые URL/креды → нужно
+координированное anonsement в команду + одновременный update
+docs/operations/runbooks/swagger-prod-access.md (придётся переименовать
+сам runbook — `swagger-prod-access.md` → `obs-prod-access.md`).
+
 ### Sync local files to VPS
 
 - **Обновить `.env.prod` на VPS.** Файл реструктурирован локально

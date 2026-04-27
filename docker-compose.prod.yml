@@ -178,8 +178,8 @@ services:
     container_name: rct-auth-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       SPRING_RABBITMQ_HOST: rabbitmq
@@ -230,8 +230,8 @@ services:
     container_name: rct-academic-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       POSTGRES_ACADEMIC_PASSWORD: ${POSTGRES_ACADEMIC_PASSWORD}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
@@ -269,8 +269,8 @@ services:
     container_name: rct-schedule-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       POSTGRES_SCHEDULE_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
@@ -308,8 +308,8 @@ services:
     container_name: rct-attendance-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       # M13 G7: ?replicaSet=rs0 для MongoTransactionManager multi-doc transactions.
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo-attendance:27017/attendance_db?authSource=admin&replicaSet=rs0
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -352,8 +352,8 @@ services:
     container_name: rct-notification-web
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: "5672"
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
@@ -430,7 +430,9 @@ services:
       AUTH_SERVICE_PORT: "9090"
       API_GATEWAY_URL: http://api-gateway:8080
       MINI_APP_URL: ${MINI_APP_URL}
-      # M04 Группа 7 — distributed tracing OTLP exporter → tempo:4317.
+      # M04 Группа 7 — distributed tracing OTLP gRPC → tempo:4317.
+      # M16 G1: бот использует opentelemetry.exporter.otlp.proto.grpc, остаётся на 4317.
+      # Java-сервисы (Spring Micrometer) шлют HTTP/protobuf на 4318/v1/traces.
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
       # M04 Группа 9 — список Telegram ID админов (comma-separated), куда
       # форвардить alert.fired. "0" = disabled.
@@ -462,8 +464,8 @@ services:
     container_name: rct-api-gateway
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
       AUTH_SERVICE_URL: http://auth-service:9090
       CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN}
       # M03a Group 9: Redis-backed rate-limiter (shared Redis с auth-service)

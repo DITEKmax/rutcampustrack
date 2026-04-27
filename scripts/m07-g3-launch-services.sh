@@ -32,9 +32,11 @@ export GRPC_CLIENT_SCHEDULE_SERVICE_ADDRESS="static://localhost:19092"
 export GRPC_CLIENT_ACADEMIC_SERVICE_ADDRESS="static://localhost:19091"
 export GRPC_CLIENT_ATTENDANCE_SERVICE_ADDRESS="static://localhost:19093"
 
-# OTel: tempo:4317 недоступен (мы не поднимаем observability stack для G3) —
-# отправим в noop на 127.0.0.1:4317, warnings в логах приемлемы.
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://127.0.0.1:4317"
+# OTel: tempo недоступен (мы не поднимаем observability stack для G3) —
+# отправим в noop endpoint, warnings в логах приемлемы. Sampling 0.0
+# отключает tracing полностью независимо от endpoint'а.
+# M16 G1: Spring Micrometer шлёт HTTP/protobuf (port 4318), а не gRPC (4317).
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://127.0.0.1:4318/v1/traces"
 export MANAGEMENT_TRACING_SAMPLING_PROBABILITY=0.0  # disable tracing
 
 # CRITICAL: выключаем Prometheus metrics exporter. Prometheus Exemplars

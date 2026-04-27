@@ -130,7 +130,8 @@ services:
       - tempo-data:/var/tempo
     ports:
       - "3200:3200"  # HTTP — Grafana datasource (если запускаешь grafana локально)
-      - "4317:4317"  # OTLP gRPC — приёмник spans от Spring-сервисов на хосте
+      - "4317:4317"  # OTLP gRPC — приёмник spans (для clients, использующих gRPC exporter)
+      - "4318:4318"  # OTLP HTTP/protobuf — Spring Boot Micrometer default (M16 G1)
     networks:
       - private_net
     restart: unless-stopped
@@ -183,8 +184,8 @@ services:
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER:-rct_notification_user}:${MONGO_NOTIFICATION_PASSWORD:-rct_dev_pass}@mongo-attendance:27017/notification_db?authSource=admin&replicaSet=rs0
       # M10 G1 D4 — retention для notification_history (дней).
       NOTIFICATION_HISTORY_TTL_DAYS: ${NOTIFICATION_HISTORY_TTL_DAYS:-30}
-      # M04 QA2 — distributed tracing OTLP exporter → tempo:4317.
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      # M04 QA2 — distributed tracing OTLP exporter (HTTP/protobuf, M16 G1: 4317→4318).
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
     volumes:
       - jwt-keys:/keys:ro
     expose:
@@ -226,7 +227,9 @@ services:
       AUTH_SERVICE_PORT: "9090"
       API_GATEWAY_URL: http://api-gateway:8080
       MINI_APP_URL: ${MINI_APP_URL:-https://t.me/RutTrackBot/checkin}
-      # M04 Группа 7 — distributed tracing OTLP exporter → tempo:4317.
+      # M04 Группа 7 — distributed tracing OTLP gRPC → tempo:4317.
+      # M16 G1: бот использует opentelemetry.exporter.otlp.proto.grpc, остаётся на 4317.
+      # Java-сервисы (Spring Micrometer) шлют HTTP/protobuf на 4318/v1/traces.
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
       # M04 Группа 9 — admin Telegram IDs (comma-separated) для alert.fired.
       ADMIN_TELEGRAM_IDS: ${ADMIN_TELEGRAM_IDS:-0}

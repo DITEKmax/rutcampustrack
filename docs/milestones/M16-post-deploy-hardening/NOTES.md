@@ -334,3 +334,75 @@ non-servlet servlets).
 
 Tests: 24/24 shared-web (включая 6 AdminActionAspectTest), academic-app
 compileJava clean, MigrationConcurrentlyTest зелёный.
+
+### G7 — surprise: rate limit на gRPC, не REST
+
+Изначально думал что headman RL — это для REST endpoint'ов старосты
+(bulk-mark, excuse approve и т.п.). По факту обнаружил что **rate
+limit стоит на gRPC `isHeadman()` методе** — внутренней RBAC-проверке,
+которую schedule/attendance/notification дёргают для каждого request.
+
+Bulk-mark группы 30 студентов в attendance делает 30 × `isHeadman()`
+gRPC calls (по одному на каждого студента) → 30 calls/sec → за 4
+секунды 120 hit достигнут → 121-й RESOURCE_EXHAUSTED → bulk-mark
+ломается на середине. **Старый лимит 120 был too tight для bulk
+operations** — owner и сообщил.
+
+300/min = 5/sec sustained, 30/sec burst (в начале минуты bucket
+полный). Покрывает bulk-mark группы 60 студентов за 2 секунды.
+
+### G7 — дизайн: Redis primary + InMemory fallback
+
+Initial мысль была заменить ConcurrentHashMap на Redis-only impl.
+Понял что break'у unit-тесты без Testcontainers Redis. Решение:
+
+1. `HeadmanRateLimiter` interface
+2. `RedisHeadmanRateLimiter` — `@ConditionalOnProperty redis-enabled=true` (default)
+3. `InMemoryHeadmanRateLimiter` — `@ConditionalOnProperty redis-enabled=false` fallback
+4. Spring conditional autowiring выбирает один из двух
+
+`InMemoryHeadmanRateLimiter` — буквально existing TokenBucket код
+вынесенный в отдельный bean. Zero behaviour change для tests без
+Redis. См. DECISIONS § D12.
+
+### G7 — Redis fail-open vs G3 OTP fail-closed
+
+Принял разную fail policy для двух RL в одном milestone:
+- **G3 OTP brute-force** — fail-closed (Redis exception → 429)
+- **G7 headman RL** — fail-open (Redis exception → counter + skip)
+
+Reasoning в DECISIONS § D11. Кратко: что хуже если RL bypassed?
+- Headman: bursty admin work, legitimate в природе
+- OTP: password equivalent compromise
+
+### G7 — что НЕ сделали
+
+- IT с Testcontainers Redis для нового limiter — existing
+  `AcademicGrpcIT.isHeadman_rateLimitExceeded_throwsResourceExhausted`
+  теперь проходит через RedisHeadmanRateLimiter (тестконтейнеры Redis
+  включены в IT setup) и должен проверять реальное поведение. Запуск
+  IT отложен до VPS verify.
+- `docs/api/api-rate-limits.md` обновление — это не публичный API
+  (gRPC internal), документировать там излишне.
+- Prometheus alert на `headman_rl_redis_failures_total` — existing
+  `RedisDown` через `redis_up` метрику покрывает root cause.
+
+### G7 итог
+
+Изменено 2 файла + 5 новых:
+
+Новые:
+- `HeadmanRateLimiter.java` — interface
+- `RedisHeadmanRateLimiter.java` — Redis-backed impl (primary)
+- `InMemoryHeadmanRateLimiter.java` — fallback
+- `HeadmanRateLimitProperties.java` — config record
+- `HeadmanRateLimitConfig.java` — `@EnableConfigurationProperties`
+- `RedisHeadmanRateLimiterTest.java` — 6 unit-тестов
+- `InMemoryHeadmanRateLimiterTest.java` — 4 unit-теста
+
+Изменены:
+- `AcademicGrpcServiceImpl.java` — inline ConcurrentHashMap+TokenBucket удалён, инжектируется HeadmanRateLimiter
+- `application.yml` — defaults `academic.headman-rate-limit.*`
+- `AcademicGrpcIT.java` — лимит 120→300 в тесте
+
+Tests: 10/10 unit + compile clean. IT отложен до VPS.

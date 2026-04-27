@@ -385,3 +385,71 @@ ADMIN» мы знаем кто (`user_id`) + когда (`created_at`) + что
 - `RequestContext` out of scope → user_id=NULL, остальное пишется.
 
 Best-effort принцип: audit log **не должен ломать** ADMIN endpoint.
+
+---
+
+## D11 — G7 headman RL: Redis fail-open vs OTP fail-closed
+
+**Контекст:** в M16 уже два rate-limit'а с разной semantics:
+- **G3 OTP brute-force counter** — fail-closed (RuntimeException пробрасывается caller'у при Redis failure через M13 G24-fix-2 inheritance в OTP path)
+- **G7 headman RL** — fail-open (логируем `headman_rl_redis_failures_total`, пропускаем call)
+
+**Почему разная политика?**
+
+Headman RL защищает от **flood** (legitimate user × горизонт scaling).
+Atacker scenario: compromised headman account → bulk operations →
+DoS на academic. Acceptable degradation: при Redis outage limit
+снимается, attacker может сделать 4 × 300 = 1200 calls/min (4 pods).
+Это всё ещё значительно меньше unrate-limited (10K/sec) — Gateway
+RateLimiter перед академиком даст cap. **Trade-off:** при Redis
+outage legitimate users не должны блокироваться от headman actions.
+
+OTP brute-force защищает от **credential discovery**. Atacker scenario:
+brute-force 6-digit OTP space. Acceptable degradation: НЕ снимать
+limit при outage — иначе botnet может попробовать все 10^6 кодов
+за минуту. **Trade-off:** при Redis outage legitimate users не могут
+сделать verify-by-code — они **должны** ждать восстановления Redis.
+Это лучше чем дать attacker'у свободный доступ.
+
+Иначе говоря: **what's worse if RL bypassed?**
+- Headman RL bypass → bursty admin work, но legitimate в природе.
+- OTP RL bypass → password equivalent compromise.
+
+Поэтому fail-closed только в OTP, fail-open в headman.
+
+**Visibility:** counter `headman_rl_redis_failures_total` инкрементится
+при каждом fail-open пути → можно alert'ить если > 1/min sustained
+(индикатор Redis outage). Не добавляю Prometheus rule в этом G7 —
+наш existing `RedisDown` через `redis_up` метрику и так покрывает.
+
+---
+
+## D12 — G7 headman RL: in-memory остаётся как fallback
+
+**Контекст:** при изначальной идее G7 я думал просто заменить
+ConcurrentHashMap на Redis-only impl. По факту оставил **обе**:
+- `RedisHeadmanRateLimiter` — primary (default `redis-enabled: true`)
+- `InMemoryHeadmanRateLimiter` — `@ConditionalOnProperty redis-enabled=false`
+
+**Почему две?**
+1. **Тесты без Testcontainers Redis.** Многие unit-тесты раньше
+   получали `ConcurrentHashMap` бесплатно. Теперь без in-memory
+   fallback они бы падали на missing Redis bean. `redis-enabled=false`
+   в test profile — кратчайший путь.
+2. **Local dev без Redis.** Хотя у нас docker-compose всегда
+   запускает Redis, разработчик может временно его выключить и
+   academic должна продолжать работать.
+3. **Migration safety.** Если RedisHeadmanRateLimiter откажет на
+   проде, env-var override `ACADEMIC_HEADMAN_RL_REDIS_ENABLED=false`
+   снимет dependency без redeploy.
+
+**Trade-off:** дублирование кода (TokenBucket класс существует в
+fallback). Acceptable: ~50 строк, minimal maintenance burden, и
+это explicit migration safety.
+
+**Что НЕ сделали:**
+- IT с Testcontainers Redis для RedisHeadmanRateLimiter — unit-тестов
+  с mock'ами StringRedisTemplate достаточно для логики, а existing
+  AcademicGrpcIT.isHeadman_rateLimitExceeded_throwsResourceExhausted
+  теперь проходит через RedisHeadmanRateLimiter (тестконтейнеры Redis
+  включены в IT setup). VPS verify подтвердит реальное поведение.

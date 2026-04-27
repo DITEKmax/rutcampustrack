@@ -46,6 +46,17 @@ spring:
     username: ${RABBITMQ_USER:rct_user}
     password: ${RABBITMQ_PASSWORD:rct_dev_pass}
 
+# M16 G7 — rate-limit на gRPC isHeadman (RBAC-проверки от schedule/attendance).
+# Поднят с 120 до 300 (M15 staging показал что староста с bulk-mark группы
+# из 30 студентов упирался в 120). Redis-shared (см. RedisHeadmanRateLimiter)
+# чтобы scale-out не давал per-pod multiplication. Фолбэк на in-memory если
+# redis-enabled=false (обычно в тестах без Testcontainers Redis).
+academic:
+  headman-rate-limit:
+    per-minute: ${ACADEMIC_HEADMAN_RL_PER_MINUTE:300}
+    window-seconds: 60
+    redis-enabled: ${ACADEMIC_HEADMAN_RL_REDIS_ENABLED:true}
+
 springdoc:
   api-docs:
     path: /api-docs

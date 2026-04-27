@@ -130,13 +130,20 @@ annotation infrastructure). Разметка только UserController (5 acti
 
 ## Группа 7 — headman rate-limit Redis 300/min (G7, ~0.5д)
 
-- [ ] Найти текущую implementation `headmanBuckets` (`ConcurrentHashMap` token bucket)
-- [ ] Создать `RedisHeadmanRateLimiter` — INCR/EXPIRE pattern
-- [ ] Лимит: **300 req/min** (повышен с 120 — старосты bulk-mark группу из 30 студентов за < 30 сек, прежний лимит триггерился)
-- [ ] При наличии cluster-flag (или просто всегда) — использовать новый limiter; старый ConcurrentHashMap удалить
-- [ ] Unit-тест на boundary 300 vs 301
-- [ ] IT с Testcontainers Redis
-- [ ] Обновить `docs/api/api-rate-limits.md` — лимит 300/min для headman bulk-операций
+- [x] Прочитан текущий `headmanBuckets` ConcurrentHashMap в `AcademicGrpcServiceImpl` (M06 G8b)
+- [x] Создан `HeadmanRateLimiter` interface (`tryConsume(userId)`)
+- [x] `RedisHeadmanRateLimiter` — INCR `rl:headman:{userId}:{minute}` + EXPIRE 65s, primary impl
+- [x] `InMemoryHeadmanRateLimiter` — fallback (тот же ConcurrentHashMap + TokenBucket код вынесен), `@ConditionalOnProperty redis-enabled=false`
+- [x] `HeadmanRateLimitProperties` (perMinute / windowSeconds) + `HeadmanRateLimitConfig` (`@EnableConfigurationProperties`)
+- [x] Externalized в `application.yml` под `academic.headman-rate-limit.*`, default `per-minute: 300` (с env override `ACADEMIC_HEADMAN_RL_PER_MINUTE`)
+- [x] `AcademicGrpcServiceImpl` рефакторен — inline ConcurrentHashMap+TokenBucket удалён, инжектируется `HeadmanRateLimiter`
+- [x] Existing IT обновлён: лимит 120→300 (`AcademicGrpcIT.isHeadman_rateLimitExceeded_throwsResourceExhausted`)
+- [x] 4 unit-теста на InMemoryHeadmanRateLimiter (under/over/independent/300-default)
+- [x] 6 unit-тестов на RedisHeadmanRateLimiter (mock'и StringRedisTemplate — first/subsequent/at-limit/over/fail-open/independent users)
+- [x] Fail-open при Redis exception — counter `headman_rl_redis_failures_total` для visibility
+- [x] Compile + tests passing: `:services:academic-service:academic-app:test` 10 new tests + 32 existing unit suite, BUILD SUCCESSFUL
+- [ ] Verify на VPS после redeploy: bulk-mark группы 30 студентов за <30 сек должен пройти без RESOURCE_EXHAUSTED
+- [ ] Verify на VPS: `redis-cli KEYS "rl:headman:*"` показывает entries при активном использовании
 - [ ] Commit: `refactor(academic): headman rate-limit moved to Redis, raised to 300/min (M16 G7)`
 
 ## Группа 8 — mTLS Alertmanager → notification-web (G8, ~1-2д)

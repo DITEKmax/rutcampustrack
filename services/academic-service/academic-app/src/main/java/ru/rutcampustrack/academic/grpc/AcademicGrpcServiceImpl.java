@@ -14,8 +14,6 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * gRPC service implementation for Academic Service.
@@ -27,40 +25,41 @@ import java.util.concurrent.atomic.AtomicLong;
 public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrpcServiceImplBase {
 
     /**
-     * M06 G8b (M05 security #5): rate-limit на isHeadman по userId.
-     * Unbounded key-space в rbac Redis cache (key = userId:groupId) позволяет
-     * attacker'у flood'ить random pairs → миллионы записей до eviction (TTL 60с).
-     * Per-user bucket: 120 calls / min (hot-path auth = 1-2/req, headman actions
-     * ~10/min даже у active старосты; 120 — запас × 10). При превышении
-     * возвращаем Status.RESOURCE_EXHAUSTED.
+     * M16 G7: rate-limit на isHeadman по userId, теперь через
+     * {@link HeadmanRateLimiter} (инжектированный bean).
      *
-     * Per-user (не per-pair), чтобы attacker не мог обойти, подбирая новые
-     * groupId для того же userId. Мы лимитируем самого user'а, не уникальные
-     * комбинации.
+     * <p>До M16 G7 был in-memory ConcurrentHashMap (M06 G8b). При horizontal
+     * scale-out каждый pod видел свои bucket'ы → headman c N pods мог
+     * делать N × limit calls/min. Сейчас limiter — Redis-backed (default)
+     * либо in-memory fallback для тестов.
+     *
+     * <p>Limit вынесен в {@link HeadmanRateLimitProperties} — owner поднял
+     * до 300/min на M16 (было 120/min, M15 staging show'ал что недостаточно
+     * для bulk-mark группы из 30 студентов).
+     *
+     * <p>Per-user (не per-pair), чтобы attacker не мог обойти, подбирая
+     * новые groupId для того же userId.
      */
-    private static final int HEADMAN_RL_PER_MINUTE = 120;
-    private static final long HEADMAN_RL_WINDOW_NANOS = 60_000_000_000L;
-    /** Cap на размер bucket-мапы. При превышении — clear() (см. TokenBucket logic). */
-    private static final int RL_MAX_BUCKETS = 10_000;
-    private final ConcurrentHashMap<Long, TokenBucket> headmanBuckets = new ConcurrentHashMap<>();
-
     private final AcademicReadService academicReadService;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final TeacherSubjectGroupRepository assignmentRepository;
+    private final HeadmanRateLimiter headmanRateLimiter;
 
     public AcademicGrpcServiceImpl(
             AcademicReadService academicReadService,
             GroupRepository groupRepository,
             UserRepository userRepository,
             SubjectRepository subjectRepository,
-            TeacherSubjectGroupRepository assignmentRepository) {
+            TeacherSubjectGroupRepository assignmentRepository,
+            HeadmanRateLimiter headmanRateLimiter) {
         this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.subjectRepository = subjectRepository;
         this.assignmentRepository = assignmentRepository;
+        this.headmanRateLimiter = headmanRateLimiter;
     }
 
     /**
@@ -153,14 +152,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     @Override
     public void isHeadman(HeadmanCheckRequest request, StreamObserver<HeadmanCheckResponse> responseObserver) {
         long userId = request.getUserId();
-        // Защита от unbounded heap growth (unknown userId flood): при превышении
-        // RL_MAX_BUCKETS очищаем map целиком. Lossy, но это rate-limit, не
-        // functional state — потеря bucket'ов = возврат к full quota.
-        if (headmanBuckets.size() > RL_MAX_BUCKETS) {
-            headmanBuckets.clear();
-        }
-        TokenBucket bucket = headmanBuckets.computeIfAbsent(userId, id -> new TokenBucket());
-        if (!bucket.tryConsume()) {
+        if (!headmanRateLimiter.tryConsume(userId)) {
             responseObserver.onError(Status.RESOURCE_EXHAUSTED
                     .withDescription("isHeadman rate limit exceeded for user " + userId)
                     .asRuntimeException());
@@ -176,35 +168,6 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
-    }
-
-    /**
-     * Sliding-window token bucket. refill = HEADMAN_RL_PER_MINUTE tokens per
-     * HEADMAN_RL_WINDOW_NANOS (60с). Lock-free через CAS (AtomicLong).
-     */
-    private static final class TokenBucket {
-        private final AtomicLong tokens = new AtomicLong(HEADMAN_RL_PER_MINUTE);
-        private final AtomicLong lastRefillNanos = new AtomicLong(System.nanoTime());
-
-        boolean tryConsume() {
-            long now = System.nanoTime();
-            long lastRefill = lastRefillNanos.get();
-            long elapsed = now - lastRefill;
-            if (elapsed >= HEADMAN_RL_WINDOW_NANOS
-                    && lastRefillNanos.compareAndSet(lastRefill, now)) {
-                tokens.set(HEADMAN_RL_PER_MINUTE);
-            }
-
-            while (true) {
-                long current = tokens.get();
-                if (current <= 0) {
-                    return false;
-                }
-                if (tokens.compareAndSet(current, current - 1)) {
-                    return true;
-                }
-            }
-        }
     }
 
     /**

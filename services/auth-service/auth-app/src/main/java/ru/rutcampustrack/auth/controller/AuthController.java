@@ -130,8 +130,9 @@ public class AuthController implements AuthApi {
     }
 
     @Override
-    public ResponseEntity<TokenResponse> verifyOtpByCode(OtpVerifyByCodeRequest request) {
-        return respondWithCookie(otpService.verifyOtpByCode(request));
+    public ResponseEntity<TokenResponse> verifyOtpByCode(OtpVerifyByCodeRequest request,
+                                                         HttpServletRequest httpRequest) {
+        return respondWithCookie(otpService.verifyOtpByCode(request, resolveClientIp(httpRequest)));
     }
 
     @Override

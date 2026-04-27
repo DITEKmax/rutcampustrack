@@ -78,6 +78,10 @@ otp:
   max-attempts: 3
   attempts-window-seconds: 300
   resend-cooldown-seconds: 60
+  # M16 G3 — brute-force защита для /otp/verify-by-code (HIGH SA-H1).
+  # 20 mismatch'ей с одного IP за 5 мин → 429.
+  verify-by-code-misses-per-window: 20
+  verify-by-code-window-seconds: 300
 
 tma:
   bot-token: ${TMA_BOT_TOKEN}

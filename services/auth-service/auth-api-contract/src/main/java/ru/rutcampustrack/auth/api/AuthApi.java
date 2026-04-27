@@ -85,11 +85,14 @@ public interface AuthApi {
 
     @Operation(summary = "Verify OTP code without telegram ID",
             description = "Verify OTP code by reverse lookup (code → telegramId). Used by web-panel "
-                    + "where the user only enters the 6-digit code received in Telegram bot.")
+                    + "where the user only enters the 6-digit code received in Telegram bot. "
+                    + "M16 G3: brute-force защита по IP — 20 mismatch'ей за 5 мин → 429.")
     @ApiResponse(responseCode = "200", description = "OTP verified, JWT pair returned")
     @ApiResponse(responseCode = "401", description = "Invalid or expired OTP code")
+    @ApiResponse(responseCode = "429", description = "Too many verification attempts from this IP")
     @PostMapping("/otp/verify-by-code")
-    ResponseEntity<TokenResponse> verifyOtpByCode(@Valid @RequestBody OtpVerifyByCodeRequest request);
+    ResponseEntity<TokenResponse> verifyOtpByCode(@Valid @RequestBody OtpVerifyByCodeRequest request,
+                                                  HttpServletRequest httpRequest);
 
     @Operation(summary = "Authenticate via Telegram Mini App",
             description = "Validate Telegram initData (HMAC-SHA256) and return JWT token pair. "

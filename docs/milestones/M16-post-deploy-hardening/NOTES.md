@@ -95,3 +95,53 @@ declare'ился без `x-message-ttl` / `x-max-length`.
 Не тронуто (отложено):
 - Java side (`notification-web.history.dlq` без TTL) — это отдельный
   пункт N6 в `future-ideas.md` § «Notification history bundle»
+
+### G3 — observation: outcome metric mismatch
+
+При чтении `verifyOtpByCode` обнаружил что mismatch path использовал
+counter `otp_verify_total{outcome="expired"}`. Это семантически
+неверно — на этом code-path Redis либо уже удалил key (после true
+expiry), либо его никогда не было (атакующий перебирает random
+codes). Оба случая правильнее называть **mismatch**.
+
+Сменил outcome `expired` → `mismatch` в verify-by-code mismatch
+branch. Side-effect: метрика `otp_verify_total{outcome="expired"}` в
+проде станет тише (в основном legit `verifyOtp` по telegramId), а
+`outcome="mismatch"` вырастет на полный объём verify-by-code probes.
+
+Это **change в naming**, и `OtpBruteForceSuspect` alert использует
+именно `mismatch` — alert завязан на новый, корректный outcome.
+
+### G3 — design choice: pre-check + no reset-on-success
+
+См. DECISIONS § D6.
+
+Решающий аргумент: атакующий, случайно угадавший valid code (10 live
+OTP / 10^6 кодов = ~1.7×10^-4 за 21 attempt), при reset-on-success
+получал бы fresh counter и мог бы продолжать перебор. Без reset —
+counter не резетится никогда, ban на 5 минут с IP.
+
+### G3 — verify-by-code путь vs Gateway RateLimiter
+
+Gateway RL уже стоит **перед** auth-service — 5/min/IP на `/auth/otp/*`.
+Это первый layer. Counter в auth-service — второй layer, защищает от:
+1. Distributed attack'ов (botnet раздаёт IP, Gateway RL обходится)
+2. Gateway RL fail-open при Redis outage
+
+Слои не конфликтуют — Gateway 5/min отрубит ~25 attempts за 5 мин,
+что под cap'ом 20.
+
+### G3 итог
+
+Изменено 7 файлов:
+- `services/auth-service/auth-app/src/main/java/.../OtpProperties.java` — 2 новых поля
+- `services/auth-service/auth-app/src/main/java/.../OtpService.java` — pre-check + counter logic
+- `services/auth-service/auth-api-contract/.../AuthApi.java` — added HttpServletRequest param + 429 doc
+- `services/auth-service/auth-app/src/main/java/.../AuthController.java` — pass IP
+- `services/auth-service/auth-app/src/main/resources/application.yml` — defaults
+- `services/auth-service/auth-app/src/test/java/.../OtpServiceTest.java` — 5 новых тестов
+- `infra/prometheus/rules/service-health.yml` — `OtpBruteForceSuspect` rule
+
+Тесты: 9/9 passed (4 existing + 5 new). OpenAPI snapshot не требует
+обновления — `SharedOpenApiCustomizer` уже добавляет 429 для всех
+POST endpoint'ов.

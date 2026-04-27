@@ -173,12 +173,45 @@ public class OtpService {
         return response;
     }
 
-    public TokenResponse verifyOtpByCode(OtpVerifyByCodeRequest request) {
+    /**
+     * M16 G3 — verifyOtpByCode с brute-force защитой по IP (HIGH SA-H1).
+     *
+     * <p>До M16 endpoint только проверял существование {@code otp_code:<code>}
+     * в Redis без счётчика попыток. Атакующий мог перебирать 6-digit
+     * пространство кодов; единственная защита — Gateway RateLimiter
+     * 5 req/min/IP + fail-open при Redis outage. При botnet-атаке
+     * birthday-attack speedup делал brute-force реалистичным за часы.
+     *
+     * <p>Сейчас дополнительный counter {@code otp_verify_by_code_miss:<ip>}
+     * с TTL 5 минут. После 20 mismatch'ей с одного IP — {@code 429
+     * OtpRateLimitException}. Counter инкрементится **только при mismatch**,
+     * чтобы не штрафовать legitimate users (paste с typo → попадание в
+     * existing live code не штрафуется).
+     *
+     * <p>Reset-on-success **не делается**: атакующий мог бы случайно
+     * угадать valid code, обнулить counter и продолжить перебор.
+     */
+    public TokenResponse verifyOtpByCode(OtpVerifyByCodeRequest request, String clientIp) {
         String code = request.code();
+        String missKey = "otp_verify_by_code_miss:" + (clientIp == null ? "unknown" : clientIp);
+
+        // Pre-check: уже исчерпал лимит → сразу 429 без проверки кода.
+        String currentMisses = redisTemplate.opsForValue().get(missKey);
+        if (currentMisses != null
+                && Integer.parseInt(currentMisses) >= otpProperties.verifyByCodeMissesPerWindow()) {
+            businessMetrics.otpVerifyCounter("throttled").increment();
+            throw new OtpRateLimitException("Too many verification attempts");
+        }
 
         String telegramIdStr = redisTemplate.opsForValue().get("otp_code:" + code);
         if (telegramIdStr == null) {
-            businessMetrics.otpVerifyCounter("expired").increment();
+            // Mismatch — инкрементим counter (TTL ставим только на первый INCR).
+            Long newMisses = redisTemplate.opsForValue().increment(missKey);
+            if (newMisses != null && newMisses == 1L) {
+                redisTemplate.expire(missKey,
+                        otpProperties.verifyByCodeWindowSeconds(), TimeUnit.SECONDS);
+            }
+            businessMetrics.otpVerifyCounter("mismatch").increment();
             throw new OtpExpiredException();
         }
 

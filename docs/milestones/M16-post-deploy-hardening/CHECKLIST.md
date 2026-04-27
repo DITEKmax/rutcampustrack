@@ -42,18 +42,22 @@ G24-fix-2 в consumer (см. `DECISIONS.md` § D5).
 
 ## Группа 3 — OTP brute-force counter (G3, ~1д)
 
-- [ ] Прочитать текущий `OtpService.verifyOtpByCode` — понять signature и где вызывается
-- [ ] Добавить параметр `String clientIp` в метод (или resolve через `RequestContextHolder`)
-- [ ] В `AuthController.verifyOtpByCode` извлечь IP из `HttpServletRequest` (учесть `X-Forwarded-For` если он есть)
-- [ ] Реализовать counter в Redis: `INCR otp_verify_by_code_miss:<ip>` + `EXPIRE 300` (5 min)
-- [ ] Если counter > 20 → возврат `ResponseStatusException(429, "Too many verification attempts")`
-- [ ] Reset counter при успехе (`DEL otp_verify_by_code_miss:<ip>`)
-- [ ] Counter Micrometer: `otp_verify_by_code_counter{status=mismatch|success|throttled}`
-- [ ] Unit-тест на throttle (mock Redis)
-- [ ] IT: 21 подряд mismatch → 429 (Testcontainers Redis)
-- [ ] Prometheus rule `OtpBruteForceSuspect`: `rate(otp_verify_by_code_counter{status="mismatch"}[5m]) > 10` в `infra/prometheus/alerts.yml`
-- [ ] Тест alert rule через `promtool test rules` (если есть)
-- [ ] Commit: `feat(auth): OTP verify-by-code brute-force counter + alert (M16 G3)`
+- [x] Прочитать текущий `OtpService.verifyOtpByCode` — signature `(OtpVerifyByCodeRequest)`, вызывается из `AuthController:133`
+- [x] Добавить параметр `String clientIp` в `OtpService.verifyOtpByCode`
+- [x] `AuthApi.verifyOtpByCode` — добавлен `HttpServletRequest httpRequest` (тот же pattern что у `login`)
+- [x] `AuthController.verifyOtpByCode` — pass `resolveClientIp(httpRequest)` в service
+- [x] Реализован counter в Redis: `INCR otp_verify_by_code_miss:<ip>` + `EXPIRE 300` (только при первом INCR)
+- [x] Pre-check: если counter ≥ 20 → `OtpRateLimitException` (429) **без** проверки кода
+- [x] Decision: reset-on-success **НЕ делается** (атакующий мог бы случайно угадать valid code и обнулить counter — см. DECISIONS § D6)
+- [x] Counter уже использует существующий `BusinessMetrics.otpVerifyCounter(outcome)` — добавлены outcome'ы `throttled` и сменён `expired` → `mismatch` на verify-by-code path
+- [x] `OtpProperties` — добавлены поля `verifyByCodeMissesPerWindow=20`, `verifyByCodeWindowSeconds=300`
+- [x] `application.yml` — defaults для новых полей
+- [x] 5 unit-тестов: under-limit mismatch, first-mismatch EXPIRE, at-limit 429, different IPs independent, null IP → unknown
+- [x] Prometheus rule `OtpBruteForceSuspect` в `infra/prometheus/rules/service-health.yml` — `rate(otp_verify_total{outcome="mismatch"}[5m]) > 10` for 2m
+- [x] OpenAPI snapshot `docs/openapi/auth.json` — 429 уже был включён через `SharedOpenApiCustomizer`, новый `@ApiResponse(429)` идемпотентен
+- [x] Прогон тестов: `./gradlew :services:auth-service:auth-app:test --tests OtpServiceTest` → 9/9 passed
+- [ ] Verify на VPS после redeploy: 21-я подряд `verifyOtpByCode` с одного IP → 429
+- [ ] Commit: `feat(auth): /otp/verify-by-code brute-force counter + alert (M16 G3)`
 
 ## Группа 4 — Loki `InstancesCount <= 0` diagnose (G4, ~0.5д)
 

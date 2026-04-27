@@ -160,3 +160,17 @@ groups:
         annotations:
           summary: "KI-2 fallback rate={{ $value }}/s в {{ $labels.job }}"
           description: "Silent fallback на legacy X-User-* headers. В M03a+ все service-calls обязаны нести X-Internal-Token. Проверь источник: `{{ $labels.from }}` → `{{ $labels.to }}`."
+
+      # M16 G3 — brute-force на /otp/verify-by-code. Endpoint защищён
+      # per-IP counter'ом (otp_verify_by_code_miss:<ip>, лимит 20/5min).
+      # При atypical wave mismatch'ей > 10/sec за 5 мин — почти наверняка
+      # botnet или scripted attack. Один legit user редко делает > 1
+      # ошибку (paste typo).
+      - alert: OtpBruteForceSuspect
+        expr: rate(otp_verify_total{outcome="mismatch"}[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "OTP brute-force suspect rate={{ $value | printf \"%.2f\" }}/s в {{ $labels.job }}"
+          description: "Mismatch rate > 10/s на /otp/verify-by-code за 5 мин. Per-IP counter уже throttle'ит после 20 mismatch'ей, но широкий botnet может распределять. Проверь Loki ({service=\"rct-auth-service\"} |= \"verify-by-code\") + Gateway IP-distribution."

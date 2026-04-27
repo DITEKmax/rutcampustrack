@@ -143,3 +143,47 @@ alert (>10 за 5 мин) сработает **до** cap'а, времени н�
 `future-ideas.md` § «Notification history bundle». Должна быть
 закрыта тем же паттерном (`arguments` в `@RabbitListener` queue
 declaration), но это отдельный PR — не в скоуп G2.
+
+---
+
+## D6 — G3 OTP brute-force: pre-check + no reset-on-success
+
+**Контекст:** реализация counter'а для `/otp/verify-by-code` (HIGH SA-H1).
+Три варианта:
+
+1. **Counter ставится перед каждым attempt, reset при success.** Простая
+   логика, но атакующий может угадать valid code (10 live OTP / 10^6
+   space → ~1.7×10^-4 за 21 попытку), reset'нуть counter, продолжить.
+2. **Counter ставится только при mismatch, без reset.** Защита
+   корректная — даже случайное попадание не помогает дальше брутить.
+   Legit users не штрафуются (paste typo с попаданием в чужой live
+   OTP — рано в верификации, code mismatch'ит на проверке кода в
+   отдельном flow).
+3. **Counter увеличивается на каждый attempt.** Самое грубое — legit
+   user с typo съест 1 attempt, что для 20-attempt window нормально.
+
+**Решение:** **вариант 2** — counter инкрементится **только при
+mismatch**, **reset не делается**.
+
+Pre-check (counter ≥ 20 → 429 БЕЗ проверки кода) экономит Redis
+ops при flood'e, и не даёт side-channel «counter check timing» —
+атакующему всё равно неинформативно (кол-во attempts visible).
+
+**Сменил outcome `expired` → `mismatch` в `verifyOtpByCode` mismatch
+branch.** На этом code-path Redis уже удалил key (либо никогда не
+было), это семантически **mismatch**, не «expired». Старый outcome
+`expired` остаётся в `verifyOtp` (по telegramId) — там может быть
+true expiry после legit `requestOtp`. Это change в метриках
+(`otp_verify_total{outcome="expired"}` в проде упадёт, `mismatch`
+вырастет на verify-by-code volume), но более точно семантически.
+
+**Trade-off:** один legit user с 20 typo подряд получит 5-минутный
+ban с этого IP. Acceptable — typo 20× подряд индикатор либо broken
+keyboard, либо probe.
+
+**Defense-in-depth:** существующий Gateway RateLimiter (5 req/min/IP
+на `/auth/otp/*`) — **первый** layer, рубит до auth-service. Counter в
+auth-service — **второй**, защищает от distributed attack'ов где Gateway
+RL обходится через раздачу IP. Слои не конфликтуют — Gateway 5/min
+никак не вступает с counter 20/5min (Gateway отрубит ~25 attempts за
+5 min, что под cap'ом).

@@ -99,25 +99,34 @@ G24-fix-2 в consumer (см. `DECISIONS.md` § D5).
 
 - [ ] Commit: `fix(nginx,scripts): runtime DNS for upstream + verify-deploy false-positives (M16 G5)`
 
-## Группа 6 — @AdminAction audit log (G6, ~1-2д)
+## Группа 6 — @AdminAction audit log v1 (G6, ~1д)
 
-- [ ] Создать Flyway миграцию `V{N}__audit_log.sql` в academic-service: таблица `audit_log` с `id BIGSERIAL`, `user_id BIGINT`, `action VARCHAR`, `target_type VARCHAR`, `target_id BIGINT NULL`, `before JSONB NULL`, `after JSONB NULL`, `correlation_id UUID`, `created_at TIMESTAMPTZ`
-- [ ] Индексы: `(user_id, created_at DESC)`, `(action, created_at DESC)`, `correlation_id`
-- [ ] Создать SPI `AuditLogStorage` в `shared-web/audit/`
-- [ ] Реализовать `JdbcAuditLogStorage` в academic-app (использует academic-app DataSource)
-- [ ] Переписать `AdminActionAspect.around()` — резолв current user (из `SecurityContextHolder` через `UserContext`), correlation_id из MDC, before/after diff (где доступен — позже расширим)
-- [ ] Unit-тест на aspect (mock storage)
-- [ ] IT с Testcontainers PG — `archive user` → row в audit_log
-- [ ] Разметить `@AdminAction("user.archive")` в `UserController.archiveUser`
-- [ ] То же для `user.create`, `user.update`, `user.restore`, `user.role.change`
-- [ ] То же для `group.create`, `group.archive`, `group.restore`
-- [ ] То же для `semester.create`, `semester.archive`
-- [ ] То же для `subject.create`, `subject.archive`
-- [ ] То же для `threshold.update.global`, `threshold.update.group`
-- [ ] То же для `assignment.create`, `assignment.delete`
-- [ ] Smoke на dev — выполнить каждый размеченный action, убедиться что row появляется
-- [ ] Создать `docs/operations/runbooks/audit-log.md`
-- [ ] Commit: `feat(audit): real audit log via @AdminAction aspect (M16 G6)`
+**Reduced scope vs initial plan:** v1 без before/after diff и без
+target_type/target_id (требует deep cloning + JSON diff lib + param
+annotation infrastructure). Разметка только UserController (5 actions)
+— остальные 5 контроллеров отложены в follow-up. Aspect автоматом
+подхватит новые `@AdminAction` помеченные методы без code changes.
+
+- [x] Flyway V19 — таблица `audit_log` (BIGSERIAL PK, user_id, action, target_type, target_id, correlation_id, extras JSONB, succeeded, error_message, created_at)
+- [x] Flyway V20 — индексы `CREATE INDEX CONCURRENTLY` (отдельная миграция с `-- ##`, согласно CLAUDE.md)
+- [x] `MigrationConcurrentlyTest` зелёный — V19 (без index) + V20 (CONCURRENTLY) проходят guard
+- [x] SPI `AuditLogStorage` interface в `services/shared/shared-web/.../audit/`
+- [x] SPI `AuditLogContextProvider` interface (current userId + correlationId, ANONYMOUS fallback)
+- [x] Value object `AuditLogEntry` record + Builder
+- [x] `AdminActionAspect` переписан: real handler через ObjectProvider'ы (graceful degradation если storage/context отсутствуют)
+- [x] `JdbcAuditLogStorage` (academic-app) — INSERT через JdbcTemplate, JSONB extras сериализация
+- [x] `AcademicAuditLogContextProvider` (academic-app) — `RequestContext.userId` + MDC `traceId`
+- [x] 6 unit-тестов AdminActionAspectTest (extended) — proxy/storage write/exception path/storage failure swallow/no-annotation/exception propagation
+- [x] Разметка `@AdminAction` в UserController: `user.create`, `user.update`, `user.patch`, `user.archive`, `user.transfer`
+- [x] Compile + tests passing: `:services:shared:shared-web:test` 24/24, `:services:academic-service:academic-app:compileJava` clean
+- [x] Runbook `docs/operations/runbooks/audit-log.md`
+- [ ] Verify на VPS после redeploy: SELECT FROM audit_log WHERE action='user.archive' → видны записи admin actions
+- [ ] Commit: `feat(audit): @AdminAction real handler via SPI + 5 user actions (M16 G6)`
+
+### Отложено в M16 follow-up / future-ideas:
+- before/after diff (deep cloning + JSON diff)
+- `@AuditTarget` param annotation для target_type/target_id
+- Разметка GroupController / SemesterController / SubjectController / ThresholdController / AssignmentController
 
 ## Группа 7 — headman rate-limit Redis 300/min (G7, ~0.5д)
 

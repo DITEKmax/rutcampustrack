@@ -20,6 +20,7 @@ import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.security.RequireRole;
+import ru.rutcampustrack.shared.web.audit.AdminAction;
 
 import java.util.List;
 
@@ -45,6 +46,7 @@ public class UserController implements UserApi {
 
     @Override
     @RequireRole({ADMIN})
+    @AdminAction("user.create")
     public ResponseEntity<EntityModel<UserCreatedResponse>> createUser(CreateUserRequest request) {
         return ResponseEntity.status(201).body(userService.createUser(request));
     }
@@ -74,6 +76,7 @@ public class UserController implements UserApi {
 
     @Override
     @RequireRole({ADMIN})
+    @AdminAction("user.update")
     public ResponseEntity<EntityModel<UserResponse>> updateUser(Long id, UpdateUserRequest request) {
         User user = userService.updateUser(id, request);
         return ResponseEntity.ok(userAssembler.toModel(user));
@@ -81,6 +84,7 @@ public class UserController implements UserApi {
 
     @Override
     @RequireRole({ADMIN})
+    @AdminAction("user.patch")
     public ResponseEntity<EntityModel<UserResponse>> patchUser(Long id, PatchUserRequest request) {
         User user = userService.patchUser(id, request);
         return ResponseEntity.ok(userAssembler.toModel(user));
@@ -88,6 +92,7 @@ public class UserController implements UserApi {
 
     @Override
     @RequireRole({ADMIN})
+    @AdminAction("user.archive")
     public ResponseEntity<Void> archiveUser(Long id) {
         userService.archiveUser(id);
         return ResponseEntity.noContent().build();
@@ -95,6 +100,7 @@ public class UserController implements UserApi {
 
     @Override
     @RequireRole({ADMIN})
+    @AdminAction("user.transfer")
     public ResponseEntity<EntityModel<UserResponse>> transferStudent(Long id, TransferStudentRequest request) {
         User user = userService.transferStudent(id, request);
         return ResponseEntity.ok(userAssembler.toModel(user));

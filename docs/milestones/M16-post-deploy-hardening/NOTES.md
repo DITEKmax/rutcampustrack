@@ -266,3 +266,71 @@ Validate:
 Verify на VPS отложен — реальный test возможен только после redeploy
 + ручной `docker compose restart grafana` чтобы проверить что nginx
 re-resolve'ит DNS вместо отдачи 502.
+
+### G6 — scope reduction (initial 1-2д → ~1д actual)
+
+Initial план (DECISIONS § D3) обещал before/after diff + разметку 15+
+ADMIN endpoints. По исследованию сложности diff (deep cloning JPA
+proxies + JSON diff library + PII masking) сократил до v1:
+- Real handler через SPI ✅
+- 5 endpoints в UserController ✅
+- Без diff ❌ (отложено в future-ideas)
+- Без auto target_type/target_id ❌ (требует @AuditTarget annotation)
+- Без разметки 4 других контроллеров ❌ (incremental, aspect автомат)
+
+Это **минимально полезное audit log** — закрывает insider threat
+detection для user-management (most sensitive ADMIN domain) + всё
+infrastructure (SPI, aspect, storage, indexes) готова к расширению.
+
+См. DECISIONS § D10 для подробного scope reasoning.
+
+### G6 — surprise: V19 + V20 split для CONCURRENTLY
+
+Сначала пытался сделать одну V19 миграцию с CREATE TABLE + CREATE
+INDEX в одном файле. Migration guard `MigrationConcurrentlyTest` ругался:
+все CREATE INDEX в **новых** миграциях (после baseline cutoff 18)
+обязаны использовать CONCURRENTLY (CLAUDE.md правило).
+
+Но CONCURRENTLY **не работает в transaction**, а Flyway оборачивает
+каждый файл в transaction. Разделил на 2 миграции:
+- V19__audit_log.sql — CREATE TABLE (transactional, plain)
+- V20__audit_log_indexes.sql — `-- ##` + 3 CREATE INDEX CONCURRENTLY
+
+Это standard pattern в проекте (см. CLAUDE.md DB rules).
+
+### G6 — surprise: aspect перешёл на ObjectProvider
+
+Initial implementation использовала прямые `@Autowired
+AuditLogStorage`. Проблема: shared-web используется и api-gateway
+(WebFlux, без БД) — вынудит api-gateway предоставлять stub. Перешёл
+на `ObjectProvider<AuditLogStorage>` — graceful degradation: если bean
+отсутствует, aspect логирует warn и продолжает. Standard Spring
+pattern для optional dependencies.
+
+`@ConditionalOnWebApplication(SERVLET)` уже отсекает api-gateway от
+shared-web auto-config — но defense-in-depth через ObjectProvider
+покрывает edge cases (тесты без full Spring context, future
+non-servlet servlets).
+
+### G6 итог
+
+Изменено 8 файлов + 4 новых:
+
+Новые:
+- `services/shared/shared-web/.../audit/AuditLogEntry.java` — value object
+- `services/shared/shared-web/.../audit/AuditLogStorage.java` — SPI
+- `services/shared/shared-web/.../audit/AuditLogContextProvider.java` — SPI
+- `services/academic-service/.../audit/JdbcAuditLogStorage.java` — JDBC impl
+- `services/academic-service/.../audit/AcademicAuditLogContextProvider.java` — context impl
+- `services/academic-service/.../db/migration/V19__audit_log.sql` — table
+- `services/academic-service/.../db/migration/V20__audit_log_indexes.sql` — indexes
+- `docs/operations/runbooks/audit-log.md` — runbook
+
+Изменены:
+- `services/shared/shared-web/.../audit/AdminActionAspect.java` — real handler
+- `services/shared/shared-web/.../audit/AdminActionAspectTest.java` — 6 тестов (расширены)
+- `services/academic-service/.../user/UserController.java` — 5 `@AdminAction` annotations
+- M16 PLAN/CHECKLIST/DECISIONS/NOTES
+
+Tests: 24/24 shared-web (включая 6 AdminActionAspectTest), academic-app
+compileJava clean, MigrationConcurrentlyTest зелёный.

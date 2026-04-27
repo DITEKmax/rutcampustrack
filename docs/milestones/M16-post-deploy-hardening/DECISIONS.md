@@ -328,3 +328,60 @@ path, цель — корректность результата.
   возможно в M17 добавим публичный health endpoint.
 - Mongo TTL check **fail'ит** теперь (раньше был warn) если creds
   не выставлены — это намеренно (теперь это P2-блокер для prod).
+
+---
+
+## D10 — G6 audit log v1: minimum viable scope
+
+**Контекст:** initial G6 план обещал before/after diff + разметку
+~15 ADMIN endpoints. По факту реализованы:
+- Real audit handler через SPI (storage + context provider)
+- 5 endpoints в UserController
+- **БЕЗ** before/after diff
+- **БЕЗ** target_type/target_id auto-extraction
+- **БЕЗ** разметки 4 других контроллеров (Group / Semester / Subject /
+  Threshold / Assignment)
+
+**Почему сужен:**
+
+1. **Before/after diff** требует:
+   - Deep cloning entity до изменения (entity потенциально lazy-loaded
+     JPA proxy, проблемы с serialization).
+   - JSON diff library (например `zjsonpatch`) — новая зависимость,
+     security review surface.
+   - Решение что включать в diff (passwords/PII должны быть masked).
+
+   Минимум 1-2 дня работы только на это. Отложено до появления
+   реальной нужды (compliance / forensic incident).
+
+2. **target_type/target_id** требует `@AuditTarget` param annotation
+   которая extract'ит значения из `@PathVariable Long id` + класс из
+   контекста (метода / endpoint). Это не trivially expressible через
+   AOP — нужен extra reflection. Тоже отложено.
+
+3. **Разметка остальных контроллеров** — incremental work, можно
+   делать постепенно. Aspect автоматом подхватит новые `@AdminAction`
+   методы. Сейчас покрытие user-management actions достаточно для
+   first deploy (это самая чувствительная часть — кто пользователей
+   архивирует / создаёт / role меняет).
+
+**Что НЕ потеряли:**
+- Insider threat detection: видим WHO + WHEN + WHAT для user actions
+  (5 endpoints). Атрибуция доступна.
+- Forensic correlation: correlation_id связывает audit row с
+  distributed trace в Tempo.
+- Failed-attempt tracking: `succeeded=false` + `error_message` ловит
+  attempts, которые упали на validation/RoleCheck.
+
+**Trade-off:** при инциденте «admin изменил роль user'а X с STUDENT на
+ADMIN» мы знаем кто (`user_id`) + когда (`created_at`) + что
+(`action='user.update'` + `target_id` через path). Но **не** знаем что
+именно поменяли (нет diff). Acceptable для baseline; future incident
+с этим smell triggers будут реализацию diff.
+
+**Graceful degradation:**
+- `AuditLogStorage` bean missing → log.warn, ADMIN endpoint работает.
+- Storage exception → log.warn, ADMIN endpoint работает.
+- `RequestContext` out of scope → user_id=NULL, остальное пишется.
+
+Best-effort принцип: audit log **не должен ломать** ADMIN endpoint.

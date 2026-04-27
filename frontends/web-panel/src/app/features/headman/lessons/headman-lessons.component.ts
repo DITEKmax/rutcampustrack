@@ -13,6 +13,7 @@ import { forkJoin } from 'rxjs';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -113,7 +114,7 @@ const MONTH_RANGE_DAYS = 30;
   selector: 'app-headman-lessons',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, NgTemplateOutlet, MatButtonModule, MatChipsModule, MatProgressSpinnerModule],
+  imports: [CommonModule, NgTemplateOutlet, MatButtonModule, MatChipsModule, MatPaginatorModule, MatProgressSpinnerModule],
   animations: [
     trigger('routeFade', [
       transition(':enter', [
@@ -174,9 +175,20 @@ const MONTH_RANGE_DAYS = 30;
           </details>
         }
       } @else {
-        @for (day of dayGroups(); track day.date) {
+        @for (day of pagedDayGroups(); track day.date) {
           <ng-container *ngTemplateOutlet="dayTpl; context: { $implicit: day }"></ng-container>
         }
+      }
+
+      @if (!loading() && !error() && dayGroups().length > 0) {
+        <mat-paginator
+          [length]="dayGroups().length"
+          [pageSize]="pageSize()"
+          [pageIndex]="pageIndex()"
+          [pageSizeOptions]="pageSizeOptions"
+          (page)="onPage($event)"
+          aria-label="Постранично по дням">
+        </mat-paginator>
       }
     </div>
 
@@ -399,6 +411,11 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
   readonly kind = signal<Kind>('all');
   /** Активный семестр — резолвится один раз lazy при первом переключении на 'semester'. */
   readonly activeSemester = signal<ActiveSemester | null>(null);
+  /** Paginator: индекс страницы (zero-based). */
+  readonly pageIndex = signal(0);
+  /** Paginator: размер страницы = количество день-карточек. */
+  readonly pageSize = signal(50);
+  readonly pageSizeOptions = [20, 50, 100, 200];
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -421,9 +438,16 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
     });
   });
 
+  /** Slice dayGroups по текущему пэйджу. Используется для today/month рендера. */
+  readonly pagedDayGroups = computed<DayGroup[]>(() => {
+    const all = this.dayGroups();
+    const start = this.pageIndex() * this.pageSize();
+    return all.slice(start, start + this.pageSize());
+  });
+
   /** Group dayGroups в месяцы (только для period='semester'). Текущий месяц помечается isCurrent=true. */
   readonly monthGroups = computed<MonthGroup[]>(() => {
-    const days = this.dayGroups();
+    const days = this.pagedDayGroups();
     const todayPrefix = this.todayIso().slice(0, 7); // 'YYYY-MM'
     const map = new Map<string, DayGroup[]>();
     for (const d of days) {
@@ -497,6 +521,7 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
   onPeriodChange(value: Period | null): void {
     if (!value || value === this.period()) return;
     this.period.set(value);
+    this.pageIndex.set(0); // сброс пагинатора при любой смене фильтра
     if (value === 'semester') this.pendingTodayScroll = true;
     this.reload();
   }
@@ -505,7 +530,14 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
   onKindChange(value: Kind | null): void {
     if (!value || value === this.kind()) return;
     this.kind.set(value);
+    this.pageIndex.set(0);
     this.reload();
+  }
+
+  /** Обработчик mat-paginator: pageIndex + pageSize, без re-fetch (всё в памяти). */
+  onPage(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
   }
 
   /**

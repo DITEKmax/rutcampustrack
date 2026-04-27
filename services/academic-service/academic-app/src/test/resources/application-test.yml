@@ -27,6 +27,16 @@ management:
     rabbit:
       enabled: false
 
+# M16 G7 hotfix — IT context отключает RedisAutoConfiguration через
+# `spring.autoconfigure.exclude` в AbstractAcademicIntegrationTest, поэтому
+# StringRedisTemplate bean отсутствует. RedisHeadmanRateLimiter имеет
+# `matchIfMissing=true` — без этого override он будет пытаться создаться
+# и ломать Spring context при init. Используем InMemoryHeadmanRateLimiter
+# fallback в IT.
+academic:
+  headman-rate-limit:
+    redis-enabled: false
+
 rutcampustrack:
   security:
     internal-jwt:

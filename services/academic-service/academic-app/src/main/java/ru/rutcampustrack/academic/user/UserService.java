@@ -155,7 +155,16 @@ public class UserService {
                 .where(UserSpecifications.matchesSearch(search))
                 .and(UserSpecifications.matchesRole(roleFilter))
                 .and(UserSpecifications.matchesStatus(statusFilter));
-        return userRepository.findAll(spec, pageable);
+        // Default sort by surname when caller did not specify one. JPA Specification
+        // can't apply COLLATE, so this is ASCII-order — Ё ends up at the end. Acceptable
+        // for the admin-only screen; group/journal lists use ICU via native ORDER BY.
+        Pageable effective = pageable.getSort().isSorted()
+                ? pageable
+                : org.springframework.data.domain.PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageable.getPageSize(),
+                        org.springframework.data.domain.Sort.by("lastName", "firstName", "middleName"));
+        return userRepository.findAll(spec, effective);
     }
 
     /** Backward-compatible overload for internal callers (e.g. gRPC service). */

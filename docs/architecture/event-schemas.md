@@ -42,6 +42,7 @@ JSON Schema для событий RabbitMQ. Все схемы живут в `eve
 | Event | Schema | Триггер |
 |-------|--------|---------|
 | `lesson.started` | `lesson.started.json` | Пара перешла в ACTIVE (cron) |
+| `lesson.reminder` | `lesson.reminder.json` | Idempotent broadcast при пересечении середины active-пары (LessonReminderJob, NOTIF unification). Bot/PWA/web фильтруют по «студент уже отметился» локально. |
 | `lesson.closed` | `lesson.closed.json` | Пара перешла в CLOSED (end_time + 5min) |
 | `lesson.cancelled` | `lesson.cancelled.json` | Староста/admin отменил пару |
 | `lesson.deleted` | `lesson.deleted.json` | Admin удалил пару из расписания |
@@ -63,7 +64,7 @@ JSON Schema для событий RabbitMQ. Все схемы живут в `eve
 
 | Event | Schema | Триггер |
 |-------|--------|---------|
-| `attendance.marked` | `attendance.marked.json` | Студент отметился (geo/headman/auto) |
+| `attendance.marked` | `attendance.marked.json` | Студент отметился (geo/headman/auto). Payload расширен `lesson_number`, `lesson_date`, `subject_id`, `subject_name` (NOTIF unification): bot/PWA/web показывают студенту «Староста проставил статус …» при `marked_by="headman"`. |
 | `excuse.requested` | `excuse.requested.json` | Студент создал excuse-тикет |
 | `excuse.decided` | `excuse.decided.json` | Староста одобрил/отклонил тикет |
 | `late_checkin.requested` | `late_checkin.requested.json` | Запрос позднего checkin'а |

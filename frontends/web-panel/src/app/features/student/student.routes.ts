@@ -54,6 +54,14 @@ export const STUDENT_ROUTES: Routes = [
     data: { title: 'Уведомления', eyebrow: 'Студент' },
   },
   {
+    path: 'notifications/settings',
+    loadComponent: () =>
+      import('./notifications/notification-settings.component').then(
+        m => m.NotificationSettingsComponent,
+      ),
+    data: { title: 'Настройки уведомлений', eyebrow: 'Студент' },
+  },
+  {
     path: 'profile',
     loadComponent: () =>
       import('./profile/student-profile.component').then(

@@ -2,17 +2,24 @@
   <header class="page-header">
     <p class="page-header__eyebrow">Студент</p>
     <h1 class="page-header__title">Уведомления</h1>
+    <a class="page-header__action" routerLink="/student/notifications/settings" aria-label="Настройки уведомлений">
+      <i class="ph-gear-six ph-bold"></i>
+      <span>Настройки</span>
+    </a>
   </header>
 
-  @if (items().length === 0) {
+  @if (loading() && sortedItems().length === 0) {
+    <div class="page-empty">
+      <i class="ph-spinner-gap ph-duotone"></i>
+      <p>Загружаем уведомления…</p>
+    </div>
+  } @else if (sortedItems().length === 0) {
     <div class="page-empty">
       <i class="ph-bell-slash ph-duotone"></i>
       <h2>Уведомлений нет</h2>
       <p>Здесь будут появляться уведомления о занятиях, заданиях и посещаемости.</p>
     </div>
-  }
-
-  @if (items().length > 0) {
+  } @else {
     @if (allRead()) {
       <div class="all-read-pill">
         <i class="ph-check-circle ph-fill"></i>
@@ -24,5 +31,14 @@
         <app-notification-item [item]="item"></app-notification-item>
       }
     </div>
+    @if (hasMore()) {
+      <button
+        type="button"
+        class="load-more"
+        (click)="loadMore()"
+        [disabled]="loading()">
+        {{ loading() ? 'Загрузка…' : 'Загрузить ещё' }}
+      </button>
+    }
   }
 </div>

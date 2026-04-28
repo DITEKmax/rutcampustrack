@@ -38,11 +38,78 @@ export class NotificationHistoryService {
   }
 
   loadFirstPage(unreadOnly = false): void {
+    this._items.set([]);
+    this._pageNumber.set(-1);
+    this._hasMore.set(true);
+    this._loading.set(true);
     this.api.list(0, 20, unreadOnly).subscribe({
-      next: (page) => this._firstPage.set(page),
-      error: () => {
-        // noop
+      next: (page) => {
+        this._firstPage.set(page);
+        this._items.set([...page.items]);
+        this._pageNumber.set(page.pageNumber);
+        this._hasMore.set(page.pageNumber + 1 < page.totalPages);
+        this._loading.set(false);
       },
+      error: () => {
+        this._loading.set(false);
+      },
+    });
+  }
+
+  /** Дозагрузить следующую страницу (для infinite-scroll). Idempotent. */
+  loadMore(unreadOnly = false): void {
+    if (this._loading() || !this._hasMore()) return;
+    const next = this._pageNumber() + 1;
+    this._loading.set(true);
+    this.api.list(next, 20, unreadOnly).subscribe({
+      next: (page) => {
+        this._items.update((curr) => [...curr, ...page.items]);
+        this._pageNumber.set(page.pageNumber);
+        this._hasMore.set(page.pageNumber + 1 < page.totalPages);
+        this._loading.set(false);
+      },
+      error: () => this._loading.set(false),
+    });
+  }
+
+  /** Совокупный аккумулятор всех загруженных страниц для UI. */
+  private readonly _items = signal<NotificationHistoryPage['items']>([]);
+  readonly items = this._items.asReadonly();
+
+  private readonly _pageNumber = signal<number>(-1);
+  private readonly _hasMore = signal<boolean>(true);
+  readonly hasMore = this._hasMore.asReadonly();
+
+  private readonly _loading = signal<boolean>(false);
+  readonly loading = this._loading.asReadonly();
+
+  /** Пометить запись прочитанной локально (после клика) + best-effort серверу. */
+  markItemRead(id: string): void {
+    this._items.update((arr) =>
+      arr.map((it) =>
+        it.id === id && it.readAt === null
+          ? { ...it, readAt: new Date().toISOString() }
+          : it,
+      ),
+    );
+    this.api.markRead(id).subscribe({ error: () => {} });
+  }
+
+  /** Live-вставка из STOMP: новая запись из сервера ещё не подгружена,
+   *  но уже видна в feed'е. Refresh first page чтобы id из бекенда. */
+  refreshList(unreadOnly = false): void {
+    if (this._items().length === 0) return; // ещё не загружали — пропустим
+    this.api.list(0, 20, unreadOnly).subscribe({
+      next: (page) => {
+        // merge: новые записи идут перед уже-загруженными (server отдаёт desc),
+        // дубли по id отбрасываем.
+        this._items.update((curr) => {
+          const seen = new Set(curr.map((c) => c.id));
+          const fresh = page.items.filter((p) => !seen.has(p.id));
+          return [...fresh, ...curr];
+        });
+      },
+      error: () => {},
     });
   }
 
@@ -55,6 +122,14 @@ export class NotificationHistoryService {
       this.api.markAllRead().subscribe({
         next: () => {
           this._serverUnreadCount.set(0);
+          // Локально тоже помечаем — иначе после refresh badge всплывёт снова.
+          this._items.update((arr) =>
+            arr.map((it) =>
+              it.readAt === null
+                ? { ...it, readAt: new Date().toISOString() }
+                : it,
+            ),
+          );
           resolve();
         },
         error: () => resolve(),

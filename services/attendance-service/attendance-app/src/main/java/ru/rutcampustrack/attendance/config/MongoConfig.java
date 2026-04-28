@@ -101,6 +101,15 @@ public class MongoConfig {
                 .on("status", Sort.Direction.ASC)
                 .on("created_at", Sort.Direction.ASC)
                 .named("lcr_group_status_created"));
+        lcrOps.ensureIndex(new Index()
+                .on("group_id", Sort.Direction.ASC)
+                .on("updated_at", Sort.Direction.DESC)
+                .named("lcr_group_updated"));
+        lcrOps.ensureIndex(new Index()
+                .on("group_id", Sort.Direction.ASC)
+                .on("status", Sort.Direction.ASC)
+                .on("updated_at", Sort.Direction.DESC)
+                .named("lcr_group_status_updated"));
 
         // M13 G8 — consumer-side dedup. Compound unique
         // (consumer_id, event_id) делает MongoIdempotencyStore.tryClaim

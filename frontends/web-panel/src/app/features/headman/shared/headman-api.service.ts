@@ -68,10 +68,38 @@ export class HeadmanApiService {
   }
 
   /**
-   * Fetch pending late-checkin requests for the headman's own group.
-   * Endpoint: GET /api/attendance/late-checkin/pending
-   * Server derives group from the JWT; only PENDING rows are returned.
-   * 403/404 → empty list (graceful degradation).
+   * Fetch late-checkin requests for the headman's group.
+   * Endpoint: GET /api/attendance/late-checkin/group/{groupId}?size=100
+   * Includes pending and decided rows updated during the backend retention window.
+   * 403/404 -> empty list (graceful degradation).
+   */
+  getGroupLateCheckins(groupId: number): Observable<LateCheckinRequestView[]> {
+    return this.http
+      .get<any>(`/api/attendance/late-checkin/group/${groupId}`, {
+        params: new HttpParams().set('size', '100'),
+      })
+      .pipe(
+        map(resp => {
+          if (Array.isArray(resp)) return resp as LateCheckinRequestView[];
+          const embedded = resp?._embedded;
+          if (!embedded) return [];
+          return (
+            (embedded['lateCheckinRequestResponseList'] as LateCheckinRequestView[]) ??
+            (Object.values(embedded)[0] as LateCheckinRequestView[]) ??
+            []
+          );
+        }),
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 403 || err.status === 404) {
+            return of([] as LateCheckinRequestView[]);
+          }
+          return throwError(() => err);
+        }),
+      );
+  }
+
+  /**
+   * Fetch pending late-checkin requests for dashboard counters.
    */
   getPendingLateCheckins(): Observable<LateCheckinRequestView[]> {
     return this.http
@@ -102,8 +130,8 @@ export class HeadmanApiService {
    * Body: { approved: boolean }.
    * Idempotent on the backend — repeated decisions on an already-decided request are no-ops.
    */
-  decideLateCheckin(requestId: string, approved: boolean): Observable<void> {
-    return this.http.post<void>(
+  decideLateCheckin(requestId: string, approved: boolean): Observable<LateCheckinRequestView> {
+    return this.http.post<LateCheckinRequestView>(
       `/api/attendance/late-checkin/${requestId}/decision`,
       { approved },
     );

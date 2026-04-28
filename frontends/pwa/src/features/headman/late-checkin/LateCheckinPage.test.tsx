@@ -85,6 +85,17 @@ describe('LateCheckinPage', () => {
     expect(screen.getByRole('button', { name: /Отклонить/ })).toBeInTheDocument()
   })
 
+  it('renders a decided request without approve/reject buttons', () => {
+    mockUseList.mockReturnValue({
+      data: [sample({ status: 'approved', decisionBy: 7, decisionAt: '2026-04-16T10:10:00Z' })],
+      isLoading: false,
+    })
+    wrap(<LateCheckinPage />)
+    expect(screen.getByText('Сидоров С.С.')).toBeInTheDocument()
+    expect(screen.getByText('Одобрено')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Подтвердить/ })).not.toBeInTheDocument()
+  })
+
   it('renders skeletons while loading', () => {
     mockUseList.mockReturnValue({ data: undefined, isLoading: true })
     const { container } = wrap(<LateCheckinPage />)

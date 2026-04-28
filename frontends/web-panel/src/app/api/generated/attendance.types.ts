@@ -268,6 +268,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/attendance/late-checkin/group/{groupId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Group late-checkin requests
+         * @description Headman sees PENDING/APPROVED/REJECTED late-checkin requests for their group updated during the last 30 days.
+         */
+        get: operations["listGroupRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/attendance/health-check": {
         parameters: {
             query?: never;
@@ -766,6 +786,13 @@ export interface components {
             totalPages?: number;
             /** Format: int64 */
             number?: number;
+        };
+        PagedModelEntityModelLateCheckinRequestResponse: {
+            _embedded?: {
+                lateCheckinRequestResponseList?: components["schemas"]["EntityModelLateCheckinRequestResponse"][];
+            };
+            _links?: components["schemas"]["Links"];
+            page?: components["schemas"]["PageMetadata"];
         };
         PagedModelEntityModelExcuseTicketResponse: {
             _embedded?: {
@@ -1991,6 +2018,94 @@ export interface operations {
                 };
             };
             /** @description Только староста группы */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listGroupRequests: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+                status?: "PENDING" | "APPROVED" | "REJECTED";
+            };
+            header?: never;
+            path: {
+                groupId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Group request list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PagedModelEntityModelLateCheckinRequestResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Only the headman of the same group can view requests */
             403: {
                 headers: {
                     [name: string]: unknown;

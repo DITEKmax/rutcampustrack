@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -94,6 +95,25 @@ class LateCheckinControllerIT extends AbstractAttendanceIntegrationTest {
                 .build());
     }
 
+    private LateCheckinRequest seedRequest(
+            Long studentId,
+            Long groupId,
+            LateCheckinRequestStatus status,
+            Instant updatedAt
+    ) {
+        return repository.save(LateCheckinRequest.builder()
+                .studentId(studentId)
+                .groupId(groupId)
+                .lessonId(LESSON_ID)
+                .studentName("Student " + studentId)
+                .status(status)
+                .decisionBy(status == LateCheckinRequestStatus.PENDING ? null : HEADMAN_ID)
+                .decisionAt(status == LateCheckinRequestStatus.PENDING ? null : updatedAt)
+                .createdAt(updatedAt.minusSeconds(60))
+                .updatedAt(updatedAt)
+                .build());
+    }
+
     // ==================================================== POST /{lessonId}
 
     @Test
@@ -149,6 +169,53 @@ class LateCheckinControllerIT extends AbstractAttendanceIntegrationTest {
                         .header("X-User-Role", "STUDENT")
                         .header("X-Group-Id", GROUP_ID.toString())
                         .header("X-Is-Headman", "false"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void listGroupRequests_asHeadman_returnsRecentPendingAndDecidedRequests() throws Exception {
+        Instant now = Instant.now();
+        seedRequest(STUDENT_ID, GROUP_ID, LateCheckinRequestStatus.PENDING, now.minusSeconds(3600));
+        seedRequest(OTHER_STUDENT_ID, GROUP_ID, LateCheckinRequestStatus.APPROVED, now.minusSeconds(1800));
+        seedRequest(300L, GROUP_ID, LateCheckinRequestStatus.REJECTED, now.minusSeconds(31L * 24 * 3600));
+        seedRequest(400L, 99L, LateCheckinRequestStatus.APPROVED, now.minusSeconds(60));
+
+        mockMvc.perform(get("/attendance/late-checkin/group/{groupId}", GROUP_ID)
+                        .param("size", "20")
+                        .header("X-User-Id", HEADMAN_ID.toString())
+                        .header("X-User-Role", "STUDENT")
+                        .header("X-Group-Id", GROUP_ID.toString())
+                        .header("X-Is-Headman", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.lateCheckinRequestResponseList.length()").value(2))
+                .andExpect(jsonPath("$._embedded.lateCheckinRequestResponseList[*].status",
+                        containsInAnyOrder("pending", "approved")));
+    }
+
+    @Test
+    void listGroupRequests_withStatusFilter_returnsOnlyThatStatus() throws Exception {
+        Instant now = Instant.now();
+        seedRequest(STUDENT_ID, GROUP_ID, LateCheckinRequestStatus.PENDING, now.minusSeconds(3600));
+        seedRequest(OTHER_STUDENT_ID, GROUP_ID, LateCheckinRequestStatus.APPROVED, now.minusSeconds(1800));
+
+        mockMvc.perform(get("/attendance/late-checkin/group/{groupId}", GROUP_ID)
+                        .param("status", "approved")
+                        .header("X-User-Id", HEADMAN_ID.toString())
+                        .header("X-User-Role", "STUDENT")
+                        .header("X-Group-Id", GROUP_ID.toString())
+                        .header("X-Is-Headman", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.lateCheckinRequestResponseList.length()").value(1))
+                .andExpect(jsonPath("$._embedded.lateCheckinRequestResponseList[0].status").value("approved"));
+    }
+
+    @Test
+    void listGroupRequests_forForeignGroup_returns403() throws Exception {
+        mockMvc.perform(get("/attendance/late-checkin/group/{groupId}", 99L)
+                        .header("X-User-Id", HEADMAN_ID.toString())
+                        .header("X-User-Role", "STUDENT")
+                        .header("X-Group-Id", GROUP_ID.toString())
+                        .header("X-Is-Headman", "true"))
                 .andExpect(status().isForbidden());
     }
 

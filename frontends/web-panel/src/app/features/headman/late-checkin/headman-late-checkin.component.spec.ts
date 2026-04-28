@@ -38,7 +38,7 @@ function stubStomp(): Partial<HeadmanStompService> {
 
 describe('HeadmanLateCheckinComponent', () => {
   it('shows empty state when backend returns no pending requests', async () => {
-    const mockApi = { getPendingLateCheckins: () => of<LateCheckinRequestView[]>([]) };
+    const mockApi = { getGroupLateCheckins: () => of<LateCheckinRequestView[]>([]) };
     await render(HeadmanLateCheckinComponent, {
       providers: commonProviders(mockApi),
     });
@@ -47,7 +47,7 @@ describe('HeadmanLateCheckinComponent', () => {
 
   it('shows empty state on 404 graceful degradation', async () => {
     const mockApi = {
-      getPendingLateCheckins: () => of<LateCheckinRequestView[]>([]),
+      getGroupLateCheckins: () => of<LateCheckinRequestView[]>([]),
     };
     await render(HeadmanLateCheckinComponent, {
       providers: commonProviders(mockApi),
@@ -68,7 +68,7 @@ describe('HeadmanLateCheckinComponent', () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    const mockApi = { getPendingLateCheckins: () => of([sample]) };
+    const mockApi = { getGroupLateCheckins: () => of([sample]) };
     await render(HeadmanLateCheckinComponent, {
       providers: commonProviders(mockApi),
     });
@@ -77,9 +77,31 @@ describe('HeadmanLateCheckinComponent', () => {
     expect(screen.getByText(/Отклонить/)).toBeTruthy();
   });
 
+  it('renders decided requests without decision buttons', async () => {
+    const sample: LateCheckinRequestView = {
+      id: 'req-2',
+      studentId: 8,
+      groupId: 1,
+      lessonId: 124,
+      studentName: 'Петров П.П.',
+      status: 'approved',
+      decisionBy: 42,
+      decisionAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const mockApi = { getGroupLateCheckins: () => of([sample]) };
+    await render(HeadmanLateCheckinComponent, {
+      providers: commonProviders(mockApi),
+    });
+    expect(screen.getByText('Петров П.П.')).toBeTruthy();
+    expect(screen.getByText('Одобрено')).toBeTruthy();
+    expect(screen.queryByText(/Подтвердить/)).toBeNull();
+  });
+
   it('shows load error when API fails with non-403/404 status', async () => {
     const mockApi = {
-      getPendingLateCheckins: () => throwError(() => ({ status: 500 })),
+      getGroupLateCheckins: () => throwError(() => ({ status: 500 })),
     };
     await render(HeadmanLateCheckinComponent, {
       providers: commonProviders(mockApi),

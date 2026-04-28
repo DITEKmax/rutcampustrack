@@ -247,16 +247,21 @@ export function useDecideExcuse() {
 }
 
 /**
- * Late-checkin requests for the headman's own group.
- * GET /api/attendance/late-checkin/pending (from Phase 61 — web channel).
+ * Late-checkin requests for the headman's group.
+ * With groupId: GET /api/attendance/late-checkin/group/{groupId}?size=100
+ * Without groupId: fallback to GET /api/attendance/late-checkin/pending.
  * 403/404 → empty list (graceful degradation).
  */
-export function usePendingLateCheckinRequests() {
+export function usePendingLateCheckinRequests(groupId?: number) {
   return useQuery<LateCheckinRequest[]>({
-    queryKey: ['pendingLateCheckinRequests'],
+    queryKey: ['pendingLateCheckinRequests', groupId ?? 'own'],
     queryFn: async () => {
       try {
-        const { data } = await apiClient.get('/attendance/late-checkin/pending')
+        const { data } = groupId
+          ? await apiClient.get(`/attendance/late-checkin/group/${groupId}`, {
+              params: { size: 100 },
+            })
+          : await apiClient.get('/attendance/late-checkin/pending')
         if (Array.isArray(data)) return data as LateCheckinRequest[]
         const embedded = data?._embedded
         if (!embedded) return []
@@ -273,6 +278,7 @@ export function usePendingLateCheckinRequests() {
     },
     retry: false,
     staleTime: 30 * 1000,
+    enabled: groupId !== 0,
   })
 }
 

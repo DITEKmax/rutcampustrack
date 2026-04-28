@@ -22,7 +22,7 @@ export function LateCheckinPage() {
   const { user } = useAuth()
   const groupId = user?.groupId ?? 0
 
-  const listQuery = usePendingLateCheckinRequests()
+  const listQuery = usePendingLateCheckinRequests(groupId)
   const decide = useDecideLateCheckin()
 
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -74,7 +74,7 @@ export function LateCheckinPage() {
       {requests.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>
-            На рассмотрении · {requests.length}
+            Заявки · {requests.length}
           </h2>
           <div className="flex flex-col gap-3">
             {requests.map(req => (
@@ -201,32 +201,68 @@ function RequestCard({
           {timeLabel}
         </span>
       </header>
-      <div className="mt-3 flex gap-2">
-        <button
-          type="button"
-          disabled={busy}
-          onClick={onApprove}
-          className="flex-1 inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm font-semibold"
-          style={{
-            background: 'var(--accent-primary)',
-            color: 'var(--accent-primary-contrast)',
-          }}
-        >
-          <Check size={16} weight="bold" /> Подтвердить
-        </button>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={onReject}
-          className="flex-1 inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm"
-          style={{
-            border: '1px solid var(--border-default)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          <X size={16} weight="bold" /> Отклонить
-        </button>
-      </div>
+      {request.status === 'pending' ? (
+        <div className="mt-3 flex gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onApprove}
+            className="flex-1 inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm font-semibold"
+            style={{
+              background: 'var(--accent-primary)',
+              color: 'var(--accent-primary-contrast)',
+            }}
+          >
+            <Check size={16} weight="bold" /> Подтвердить
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onReject}
+            className="flex-1 inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm"
+            style={{
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            <X size={16} weight="bold" /> Отклонить
+          </button>
+        </div>
+      ) : (
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span
+            className="text-xs font-medium px-2 py-1 rounded"
+            style={{
+              background: 'var(--bg-secondary)',
+              color: request.status === 'approved' ? 'var(--color-success)' : 'var(--color-error)',
+            }}
+          >
+            {statusLabel(request.status)}
+          </span>
+          <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+            {formatDate(request.decisionAt ?? request.updatedAt)}
+          </span>
+        </div>
+      )}
     </article>
   )
+}
+
+function statusLabel(status: LateCheckinRequest['status']) {
+  if (status === 'approved') return 'Одобрено'
+  if (status === 'rejected') return 'Отклонено'
+  return 'На рассмотрении'
+}
+
+function formatDate(value: string | null | undefined) {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (!Number.isFinite(date.getTime())) return '—'
+  return date.toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }

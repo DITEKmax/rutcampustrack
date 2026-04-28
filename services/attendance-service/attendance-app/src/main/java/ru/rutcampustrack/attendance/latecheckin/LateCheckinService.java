@@ -1,5 +1,9 @@
 package ru.rutcampustrack.attendance.latecheckin;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -21,6 +25,7 @@ import ru.rutcampustrack.shared.observability.BusinessMetrics;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,6 +49,7 @@ public class LateCheckinService {
 
     private static final String LESSON_STATUS_ACTIVE = "active";
     private static final String LESSON_STATUS_CLOSED = "closed";
+    private static final int HEADMAN_HISTORY_DAYS = 30;
 
     private final LateCheckinRepository repository;
     private final RequestContext requestContext;
@@ -155,6 +161,50 @@ public class LateCheckinService {
         }
         return repository.findByGroupIdAndStatusOrderByCreatedAtAsc(
                 groupId, LateCheckinRequestStatus.PENDING);
+    }
+
+    /**
+     * Headman history view: pending and decided requests updated during the last
+     * 30 days. This keeps approved/rejected cards visible after a decision, the
+     * same way the excuse-ticket page behaves.
+     */
+    public Page<LateCheckinRequest> listGroupRequestsForHeadman(
+            Long groupId,
+            Pageable pageable,
+            LateCheckinRequestStatus status
+    ) {
+        if (!requestContext.isHeadman()) {
+            throw new AccessDeniedException("РЎРїРёСЃРѕРє Р·Р°РїСЂРѕСЃРѕРІ РґРѕСЃС‚СѓРїРµРЅ С‚РѕР»СЊРєРѕ СЃС‚Р°СЂРѕСЃС‚Рµ РіСЂСѓРїРїС‹");
+        }
+        if (groupId == null || requestContext.getGroupId() == null) {
+            throw new AccessDeniedException("РЎС‚Р°СЂРѕСЃС‚Р° РЅРµ РїСЂРёРІСЏР·Р°РЅ Рє РіСЂСѓРїРїРµ");
+        }
+        if (!Objects.equals(groupId, requestContext.getGroupId())) {
+            throw new AccessDeniedException("РќРµР»СЊР·СЏ РїСЂРѕСЃРјР°С‚СЂРёРІР°С‚СЊ Р·Р°РїСЂРѕСЃС‹ С‡СѓР¶РѕР№ РіСЂСѓРїРїС‹");
+        }
+
+        Pageable effectivePageable = withDefaultSort(pageable);
+        Instant cutoff = clock.instant().minus(HEADMAN_HISTORY_DAYS, ChronoUnit.DAYS);
+        if (status != null) {
+            return repository.findByGroupIdAndStatusAndUpdatedAtGreaterThanEqual(
+                    groupId, status, cutoff, effectivePageable);
+        }
+        return repository.findByGroupIdAndUpdatedAtGreaterThanEqual(
+                groupId, cutoff, effectivePageable);
+    }
+
+    private Pageable withDefaultSort(Pageable pageable) {
+        if (pageable == null) {
+            return PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "updatedAt"));
+        }
+        if (pageable.getSort().isSorted()) {
+            return pageable;
+        }
+        return PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "updatedAt")
+        );
     }
 
     /**

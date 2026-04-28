@@ -7,16 +7,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.attendance.contract.dto.latecheckin.LateCheckinDecisionRequest;
 import ru.rutcampustrack.attendance.contract.dto.latecheckin.LateCheckinRequestResponse;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 /**
@@ -62,6 +66,21 @@ public interface LateCheckinApi {
     })
     @GetMapping("/pending")
     ResponseEntity<CollectionModel<EntityModel<LateCheckinRequestResponse>>> listPending();
+
+    @Operation(
+            summary = "Group late-checkin requests",
+            description = "Headman sees PENDING/APPROVED/REJECTED late-checkin requests for their group updated during the last 30 days."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Group request list"),
+            @ApiResponse(responseCode = "403", description = "Only the headman of the same group can view requests",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/group/{groupId}")
+    ResponseEntity<PagedModel<EntityModel<LateCheckinRequestResponse>>> listGroupRequests(
+            @PathVariable Long groupId,
+            Pageable pageable,
+            @RequestParam(required = false) LateCheckinRequestStatus status);
 
     @Operation(
             summary = "Решение старосты по запросу (веб-канал)",

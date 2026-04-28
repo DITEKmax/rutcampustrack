@@ -8,6 +8,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -28,6 +31,7 @@ import ru.rutcampustrack.shared.observability.BusinessMetrics;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -221,6 +225,49 @@ class LateCheckinServiceTest {
         assertThatThrownBy(() -> service.listPendingForHeadman())
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("не привязан");
+    }
+
+    @Test
+    void listGroupRequestsForHeadman_returnsRecentGroupRequests() {
+        when(requestContext.isHeadman()).thenReturn(true);
+        when(requestContext.getGroupId()).thenReturn(GROUP_ID);
+        LateCheckinRequest request = newPending(REQUEST_ID);
+        when(repository.findByGroupIdAndUpdatedAtGreaterThanEqual(
+                eq(GROUP_ID), eq(NOW.minus(30, ChronoUnit.DAYS)), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(request)));
+
+        Page<LateCheckinRequest> result = service.listGroupRequestsForHeadman(
+                GROUP_ID, Pageable.ofSize(50), null);
+
+        assertThat(result.getContent()).containsExactly(request);
+    }
+
+    @Test
+    void listGroupRequestsForHeadman_filtersByStatusWhenProvided() {
+        when(requestContext.isHeadman()).thenReturn(true);
+        when(requestContext.getGroupId()).thenReturn(GROUP_ID);
+        LateCheckinRequest request = newPending(REQUEST_ID);
+        request.setStatus(LateCheckinRequestStatus.APPROVED);
+        when(repository.findByGroupIdAndStatusAndUpdatedAtGreaterThanEqual(
+                eq(GROUP_ID),
+                eq(LateCheckinRequestStatus.APPROVED),
+                eq(NOW.minus(30, ChronoUnit.DAYS)),
+                any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(request)));
+
+        Page<LateCheckinRequest> result = service.listGroupRequestsForHeadman(
+                GROUP_ID, Pageable.ofSize(50), LateCheckinRequestStatus.APPROVED);
+
+        assertThat(result.getContent()).containsExactly(request);
+    }
+
+    @Test
+    void listGroupRequestsForHeadman_differentGroup_throwsAccessDenied() {
+        when(requestContext.isHeadman()).thenReturn(true);
+        when(requestContext.getGroupId()).thenReturn(GROUP_ID);
+
+        assertThatThrownBy(() -> service.listGroupRequestsForHeadman(OTHER_GROUP_ID, Pageable.ofSize(50), null))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     // ============================================================== applyDecisionFromWeb

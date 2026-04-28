@@ -93,7 +93,7 @@ import type { LateCheckinRequestView } from './late-checkin.types';
       } @else {
         <section class="page-card">
           <div class="page-card__header">
-            <h2>На рассмотрении</h2>
+            <h2>Заявки</h2>
             <span class="page-card__badge">{{ requests().length }}</span>
           </div>
 
@@ -108,7 +108,8 @@ import type { LateCheckinRequestView } from './late-checkin.types';
                   {{ req.createdAt | date: 'dd.MM.yyyy HH:mm' }}
                 </span>
               </header>
-              <div class="lcr-card__actions">
+              @if (req.status === 'pending') {
+                <div class="lcr-card__actions">
                 <button
                   type="button"
                   class="btn-brand"
@@ -125,7 +126,21 @@ import type { LateCheckinRequestView } from './late-checkin.types';
                 >
                   <i class="ph ph-x"></i> Отклонить
                 </button>
-              </div>
+                </div>
+              } @else {
+                <div class="lcr-card__actions">
+                  <span
+                    class="lcr-card__status"
+                    [class.lcr-card__status--approved]="req.status === 'approved'"
+                    [class.lcr-card__status--rejected]="req.status === 'rejected'"
+                  >
+                    {{ statusLabel(req.status) }}
+                  </span>
+                  <span class="lcr-card__meta">
+                    {{ (req.decisionAt ?? req.updatedAt) | date: 'dd.MM.yyyy HH:mm' }}
+                  </span>
+                </div>
+              }
             </article>
           }
         </section>
@@ -168,6 +183,29 @@ import type { LateCheckinRequestView } from './late-checkin.types';
         display: flex;
         gap: var(--space-2);
         margin-top: var(--space-3);
+      }
+      .lcr-card__status {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: var(--radius-full);
+        border: 1px solid color-mix(in oklab, var(--text-muted) 26%, transparent);
+        background: color-mix(in oklab, var(--text-muted) 14%, transparent);
+        color: var(--text-secondary);
+        font: 500 0.6875rem/1 var(--font-mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .lcr-card__status--approved {
+        color: var(--accent-primary);
+        background: color-mix(in oklab, var(--accent-primary) 14%, transparent);
+        border-color: color-mix(in oklab, var(--accent-primary) 30%, transparent);
+      }
+      .lcr-card__status--rejected {
+        color: var(--accent-danger);
+        background: color-mix(in oklab, var(--accent-danger) 14%, transparent);
+        border-color: color-mix(in oklab, var(--accent-danger) 30%, transparent);
       }
     `,
   ],
@@ -232,7 +270,7 @@ export class HeadmanLateCheckinComponent implements OnInit, OnDestroy {
         if (envelope.type !== 'late_checkin.decided') return;
         const requestId = envelope.payload?.['request_id'];
         if (typeof requestId !== 'string') return;
-        this.requests.set(this.requests().filter(r => r.id !== requestId));
+        this.fetch(groupId);
       });
   }
 
@@ -244,13 +282,17 @@ export class HeadmanLateCheckinComponent implements OnInit, OnDestroy {
   private fetch(groupId: number | null): void {
     this.loading.set(true);
     this.loadError.set(null);
-    this.api.getPendingLateCheckins().subscribe({
+    if (groupId == null) {
+      this.requests.set([]);
+      this.loading.set(false);
+      return;
+    }
+    this.api.getGroupLateCheckins(groupId).subscribe({
       next: list => {
-        const pending = list.filter(r => r.status === 'pending');
-        this.requests.set(pending);
+        this.requests.set(list);
         this.loading.set(false);
-        if (groupId != null && pending.length > 0) {
-          this.enrichFromSchedule(groupId, pending);
+        if (list.length > 0) {
+          this.enrichFromSchedule(groupId, list);
         }
       },
       error: (err: HttpErrorResponse) => {
@@ -272,9 +314,9 @@ export class HeadmanLateCheckinComponent implements OnInit, OnDestroy {
   private enrichFromSchedule(groupId: number, list: LateCheckinRequestView[]): void {
     const today = new Date();
     const from = new Date(today);
-    from.setDate(from.getDate() - 7);
+    from.setDate(from.getDate() - 30);
     const to = new Date(today);
-    to.setDate(to.getDate() + 7);
+    to.setDate(to.getDate() + 14);
     const dateFrom = from.toISOString().slice(0, 10);
     const dateTo = to.toISOString().slice(0, 10);
 
@@ -351,8 +393,10 @@ export class HeadmanLateCheckinComponent implements OnInit, OnDestroy {
     if (this.busyId() === requestId) return;
     this.busyId.set(requestId);
     this.api.decideLateCheckin(requestId, approved).subscribe({
-      next: () => {
-        this.requests.set(this.requests().filter(r => r.id !== requestId));
+      next: updated => {
+        this.requests.update(curr =>
+          curr.map(r => (r.id === requestId ? { ...r, ...updated } : r)),
+        );
         this.busyId.set(null);
         this.snack.open(
           approved ? 'Запрос подтверждён' : 'Запрос отклонён',
@@ -380,6 +424,12 @@ export class HeadmanLateCheckinComponent implements OnInit, OnDestroy {
     const head = parts.join(' ').trim();
     const date = req.lessonDate ? this.formatRuDate(req.lessonDate) : '';
     return date ? `${head}, ${date}` : head || `Пара #${req.lessonId}`;
+  }
+
+  statusLabel(status: LateCheckinRequestView['status']): string {
+    if (status === 'approved') return 'Одобрено';
+    if (status === 'rejected') return 'Отклонено';
+    return 'На рассмотрении';
   }
 
   private formatRuDate(iso: string): string {

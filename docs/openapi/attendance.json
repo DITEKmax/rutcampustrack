@@ -1488,6 +1488,120 @@
         }
       }
     },
+    "/attendance/late-checkin/group/{groupId}" : {
+      "get" : {
+        "tags" : [ "Late Check-in" ],
+        "summary" : "Group late-checkin requests",
+        "description" : "Headman sees PENDING/APPROVED/REJECTED late-checkin requests for their group updated during the last 30 days.",
+        "operationId" : "listGroupRequests",
+        "parameters" : [ {
+          "name" : "groupId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "pageable",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Group request list",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedModelEntityModelLateCheckinRequestResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Only the headman of the same group can view requests",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/health-check" : {
       "get" : {
         "tags" : [ "health-check-controller" ],
@@ -2742,6 +2856,28 @@
           "number" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "PagedModelEntityModelLateCheckinRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "lateCheckinRequestResponseList" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/EntityModelLateCheckinRequestResponse"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "page" : {
+            "$ref" : "#/components/schemas/PageMetadata"
           }
         }
       },

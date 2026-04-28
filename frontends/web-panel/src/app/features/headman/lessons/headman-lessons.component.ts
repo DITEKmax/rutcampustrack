@@ -58,8 +58,8 @@ interface DayGroup {
 interface ActiveSemester {
   id: number;
   name: string;
-  startDate: string;
-  endDate: string;
+  dateFrom: string;
+  dateTo: string;
 }
 
 interface MonthGroup {
@@ -603,11 +603,18 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
           this.loading.set(false);
           return;
         }
+        const dateFrom = active.dateFrom ?? active.startDate;
+        const dateTo = active.dateTo ?? active.endDate;
+        if (!dateFrom || !dateTo) {
+          this.error.set('У активного семестра не заполнены даты. Переключите период.');
+          this.loading.set(false);
+          return;
+        }
         this.activeSemester.set({
           id: active.id,
           name: active.name,
-          startDate: active.startDate,
-          endDate: active.endDate,
+          dateFrom,
+          dateTo,
         });
         onResolved();
       },
@@ -628,7 +635,7 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
         return { from: formatDate(today), to: formatDate(addDays(today, MONTH_RANGE_DAYS - 1)) };
       case 'semester': {
         const sem = this.activeSemester();
-        if (sem) return { from: sem.startDate, to: sem.endDate };
+        if (sem) return { from: sem.dateFrom, to: sem.dateTo };
         // Fallback (не должен срабатывать — reload() резолвит семестр перед fetchLessons)
         return { from: formatDate(today), to: formatDate(addDays(today, MONTH_RANGE_DAYS - 1)) };
       }

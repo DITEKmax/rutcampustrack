@@ -173,18 +173,34 @@ describe('HeadmanLessonsComponent — period chip (DEV-C4)', () => {
   });
 
   it('switching to "semester" calls listSemesters, then refetch with semester range', () => {
-    const SEMESTER = { id: 7, name: 'Весенний 2025/2026', startDate: '2026-02-09', endDate: '2026-06-14', active: true };
+    const SEMESTER = { id: 7, name: 'Весенний 2025/2026', dateFrom: '2026-02-09', dateTo: '2026-06-14', active: true };
     const { component, api } = setup({
       listSemesters: vi.fn(() => of({ _embedded: { semesterResponseList: [SEMESTER] } })),
     });
     (api.getGroupLessons as any).mockClear();
     component.onPeriodChange('semester');
     expect(api.listSemesters).toHaveBeenCalled();
-    expect(component.activeSemester()?.startDate).toBe('2026-02-09');
+    expect(component.activeSemester()?.dateFrom).toBe('2026-02-09');
     const [, from, to] = (api.getGroupLessons as any).mock.calls[0];
     expect(from).toBe('2026-02-09');
     expect(to).toBe('2026-06-14');
+    expect(api.getOneOffLessons).toHaveBeenCalledWith(5, '2026-02-09', '2026-06-14');
     expect(component.pageTitle()).toBe('Пары на семестр (Весенний 2025/2026)');
+  });
+
+  it('switching to "semester" does not fetch lessons when semester dates are missing', () => {
+    const SEMESTER = { id: 7, name: 'Весенний 2025/2026', active: true };
+    const { component, api } = setup({
+      listSemesters: vi.fn(() => of({ _embedded: { semesterResponseList: [SEMESTER] } })),
+    });
+    (api.getGroupLessons as any).mockClear();
+    (api.getOneOffLessons as any).mockClear();
+
+    component.onPeriodChange('semester');
+
+    expect(component.error()).toContain('даты');
+    expect(api.getGroupLessons).not.toHaveBeenCalled();
+    expect(api.getOneOffLessons).not.toHaveBeenCalled();
   });
 
   it('switching to "semester" without active semester sets error', () => {

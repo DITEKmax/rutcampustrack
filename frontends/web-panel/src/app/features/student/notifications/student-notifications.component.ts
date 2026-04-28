@@ -66,9 +66,52 @@ export class StudentNotificationsComponent implements OnInit {
 function toItem(record: NotificationHistoryItem): NotificationItem {
   return {
     id: record.id,
-    type: record.type,
-    payload: record.payload,
+    type: normalizeHistoryType(record.type),
+    payload: normalizeHistoryPayload(record),
     receivedAt: new Date(record.sentAt),
     read: record.readAt !== null,
   };
+}
+
+const HISTORY_TYPE_TO_EVENT_TYPE: Record<string, string> = {
+  EXCUSE_REQUESTED: 'excuse.requested',
+  EXCUSE_APPROVED: 'excuse.decided',
+  EXCUSE_REJECTED: 'excuse.decided',
+  LATE_CHECKIN_REQUESTED: 'late_checkin.requested',
+  LATE_CHECKIN_APPROVED: 'late_checkin.decided',
+  LATE_CHECKIN_REJECTED: 'late_checkin.decided',
+  LESSON_STARTED: 'lesson.started',
+  LESSON_CLOSED: 'lesson.closed',
+  LESSON_CANCELLED: 'lesson.cancelled',
+  LESSON_REMINDER: 'lesson.reminder',
+  ATTENDANCE_MARKED_BY_HEADMAN: 'attendance.marked',
+};
+
+function normalizeHistoryType(type: string): string {
+  return HISTORY_TYPE_TO_EVENT_TYPE[type] ?? type;
+}
+
+function normalizeHistoryPayload(record: NotificationHistoryItem): Record<string, unknown> {
+  const payload = { ...(record.payload ?? {}) };
+  if (
+    (record.type === 'EXCUSE_APPROVED' ||
+      record.type === 'LATE_CHECKIN_APPROVED') &&
+    typeof payload['status'] !== 'string'
+  ) {
+    payload['status'] = 'approved';
+  }
+  if (
+    (record.type === 'EXCUSE_REJECTED' ||
+      record.type === 'LATE_CHECKIN_REJECTED') &&
+    typeof payload['status'] !== 'string'
+  ) {
+    payload['status'] = 'rejected';
+  }
+  if (
+    record.type === 'ATTENDANCE_MARKED_BY_HEADMAN' &&
+    typeof payload['marked_by'] !== 'string'
+  ) {
+    payload['marked_by'] = 'headman';
+  }
+  return payload;
 }

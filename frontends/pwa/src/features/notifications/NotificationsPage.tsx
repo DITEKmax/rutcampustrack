@@ -50,11 +50,50 @@ function notificationRoute(type: string): string | null {
   }
 }
 
+const HISTORY_TYPE_TO_EVENT_TYPE: Record<string, string> = {
+  EXCUSE_REQUESTED: 'excuse.requested',
+  EXCUSE_APPROVED: 'excuse.decided',
+  EXCUSE_REJECTED: 'excuse.decided',
+  LATE_CHECKIN_REQUESTED: 'late_checkin.requested',
+  LATE_CHECKIN_APPROVED: 'late_checkin.decided',
+  LATE_CHECKIN_REJECTED: 'late_checkin.decided',
+  LESSON_STARTED: 'lesson.started',
+  LESSON_CLOSED: 'lesson.closed',
+  LESSON_CANCELLED: 'lesson.cancelled',
+  LESSON_REMINDER: 'lesson.reminder',
+  ATTENDANCE_MARKED_BY_HEADMAN: 'attendance.marked',
+}
+
+function normalizeHistoryPayload(item: HistoryItem): Record<string, unknown> {
+  const payload = { ...(item.payload ?? {}) }
+  if (
+    (item.type === 'EXCUSE_APPROVED' ||
+      item.type === 'LATE_CHECKIN_APPROVED') &&
+    typeof payload.status !== 'string'
+  ) {
+    payload.status = 'approved'
+  }
+  if (
+    (item.type === 'EXCUSE_REJECTED' ||
+      item.type === 'LATE_CHECKIN_REJECTED') &&
+    typeof payload.status !== 'string'
+  ) {
+    payload.status = 'rejected'
+  }
+  if (
+    item.type === 'ATTENDANCE_MARKED_BY_HEADMAN' &&
+    typeof payload.marked_by !== 'string'
+  ) {
+    payload.marked_by = 'headman'
+  }
+  return payload
+}
+
 function toRecord(item: HistoryItem): NotificationRecord {
   return {
     id: item.id,
-    type: item.type,
-    payload: item.payload ?? {},
+    type: HISTORY_TYPE_TO_EVENT_TYPE[item.type] ?? item.type,
+    payload: normalizeHistoryPayload(item),
     receivedAt: item.sentAt,
     read: item.readAt !== null,
     archived: false,

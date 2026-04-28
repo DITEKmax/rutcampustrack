@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { render, screen, act, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { NotificationsPage } from '../NotificationsPage'
+import type { HistoryItem, HistoryPage } from '../notificationsApi'
 
 type NotificationItem = {
   id: string
@@ -13,84 +15,136 @@ type NotificationItem = {
   archived: boolean
 }
 
-const markAllRead = vi.fn()
-const archive = vi.fn()
-
-let mockItems: NotificationItem[] = []
-const describeNotificationMock = vi.fn((r: NotificationItem) => ({
-  title: `TITLE:${r.type}`,
-  body: typeof r.payload.subject_name === 'string' ? r.payload.subject_name : '',
+const mocks = vi.hoisted(() => ({
+  archive: vi.fn(),
+  describeNotification: vi.fn(),
+  fetchHistoryPage: vi.fn(),
+  markAllNotificationsRead: vi.fn(),
+  markNotificationRead: vi.fn(),
+  state: {
+    liveItems: [] as NotificationItem[],
+    historyItems: [] as HistoryItem[],
+  },
 }))
+
+function historyPage(items: HistoryItem[]): HistoryPage {
+  return {
+    items,
+    totalElements: items.length,
+    totalPages: items.length > 0 ? 1 : 0,
+    pageNumber: 0,
+  }
+}
 
 vi.mock('../NotificationCenter', () => ({
   useNotificationCenter: () => ({
-    items: mockItems,
-    unreadCount: mockItems.filter((i) => !i.read && !i.archived).length,
-    markAllRead,
-    archive,
+    items: mocks.state.liveItems,
+    unreadCount: mocks.state.liveItems.filter((i) => !i.read && !i.archived).length,
+    markAllRead: vi.fn(),
+    archive: mocks.archive,
     clearAll: vi.fn(),
   }),
-  describeNotification: (r: NotificationItem) => describeNotificationMock(r),
+  describeNotification: (r: NotificationItem) => mocks.describeNotification(r),
+}))
+
+vi.mock('../notificationsApi', () => ({
+  fetchHistoryPage: (...args: unknown[]) => mocks.fetchHistoryPage(...args),
+  fetchUnreadCount: vi.fn(),
+  markAllNotificationsRead: (...args: unknown[]) =>
+    mocks.markAllNotificationsRead(...args),
+  markNotificationRead: (...args: unknown[]) => mocks.markNotificationRead(...args),
 }))
 
 function renderPage(): void {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  })
   render(
-    <MemoryRouter>
-      <NotificationsPage />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <NotificationsPage />
+      </MemoryRouter>
+    </QueryClientProvider>,
   )
 }
 
 describe('NotificationsPage', () => {
   beforeEach(() => {
-    mockItems = []
-    markAllRead.mockClear()
-    archive.mockClear()
-    describeNotificationMock.mockClear()
+    mocks.state.liveItems = []
+    mocks.state.historyItems = []
+    mocks.archive.mockClear()
+    mocks.describeNotification.mockReset()
+    mocks.fetchHistoryPage.mockReset()
+    mocks.markAllNotificationsRead.mockReset()
+    mocks.markNotificationRead.mockReset()
+    mocks.describeNotification.mockImplementation((r: NotificationItem) => ({
+      title: `TITLE:${r.type}`,
+      body: typeof r.payload.subject_name === 'string' ? r.payload.subject_name : '',
+    }))
+    mocks.fetchHistoryPage.mockImplementation(() =>
+      Promise.resolve(historyPage(mocks.state.historyItems)),
+    )
+    mocks.markAllNotificationsRead.mockResolvedValue(undefined)
+    mocks.markNotificationRead.mockResolvedValue(undefined)
   })
 
-  it('shows the empty state when there are no notifications', () => {
+  it('shows the empty state when there are no notifications', async () => {
     renderPage()
-    expect(screen.getByText('Тихо')).toBeInTheDocument()
+    expect(await screen.findByText('Тихо')).toBeInTheDocument()
   })
 
-  it('calls markAllRead once when mounted', () => {
-    mockItems = [
+  it('calls markAllRead once when mounted', async () => {
+    mocks.state.historyItems = [
       {
         id: 'a',
-        type: 'lesson.started',
+        userId: 42,
+        type: 'LESSON_STARTED',
         payload: { subject_name: 'Алгебра' },
-        receivedAt: new Date().toISOString(),
-        read: false,
-        archived: false,
+        sentAt: new Date().toISOString(),
+        readAt: null,
       },
     ]
     renderPage()
-    expect(markAllRead).toHaveBeenCalled()
+    await waitFor(() =>
+      expect(mocks.markAllNotificationsRead).toHaveBeenCalledTimes(1),
+    )
   })
 
-  it('renders each unarchived notification with its title', () => {
-    mockItems = [
+  it('renders each unarchived notification with its title', async () => {
+    mocks.state.historyItems = [
       {
         id: 'a',
-        type: 'lesson.started',
+        userId: 42,
+        type: 'LESSON_STARTED',
         payload: { subject_name: 'Алгебра' },
-        receivedAt: new Date(Date.now() - 1000).toISOString(),
-        read: false,
-        archived: false,
+        sentAt: new Date(Date.now() - 1000).toISOString(),
+        readAt: null,
       },
       {
         id: 'b',
-        type: 'homework.published',
+        userId: 42,
+        type: 'EXCUSE_APPROVED',
+        payload: { subject_name: 'Физика' },
+        sentAt: new Date().toISOString(),
+        readAt: new Date().toISOString(),
+      },
+    ]
+    mocks.state.liveItems = [
+      {
+        id: 'b',
+        type: 'excuse.decided',
         payload: { subject_name: 'Физика' },
         receivedAt: new Date().toISOString(),
         read: true,
-        archived: true, // archived → should NOT render
+        archived: true,
       },
     ]
     renderPage()
-    expect(screen.getByText('TITLE:lesson.started')).toBeInTheDocument()
-    expect(screen.queryByText('TITLE:homework.published')).toBeNull()
+    expect(await screen.findByText('TITLE:lesson.started')).toBeInTheDocument()
+    expect(screen.queryByText('TITLE:excuse.decided')).toBeNull()
   })
 })
 

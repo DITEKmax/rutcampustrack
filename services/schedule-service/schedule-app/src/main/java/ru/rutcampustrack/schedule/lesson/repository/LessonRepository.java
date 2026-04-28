@@ -213,6 +213,27 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     List<Lesson> findActiveDueForClosure(@Param("now") LocalDateTime now);
 
     /**
+     * Возвращает ACTIVE-пары, у которых пересечена середина (start + (end-start)/2)
+     * и для которых midpoint-reminder ещё не отправлялся. Дополнительный
+     * фильтр {@code now < end_time} защищает от race с LessonStatusTransitionJob —
+     * не имеет смысла слать напоминание, если до закрытия пары меньше grace.
+     *
+     * <p>Используется {@code LessonReminderJob} для idempotent публикации
+     * {@code lesson.reminder} с {@code phase=midpoint}.
+     */
+    @Query(value = """
+        SELECT l.* FROM lessons l
+        JOIN schedule_items si ON si.id = l.schedule_item_id
+        WHERE l.status::text = 'active'
+          AND l.reminder_midpoint_sent_at IS NULL
+          AND (l.date + si.start_time + (si.end_time - si.start_time) / 2)
+                  <= CAST(:now AS timestamp)
+          AND (l.date + si.end_time) > CAST(:now AS timestamp)
+        ORDER BY l.date, si.start_time
+        """, nativeQuery = true)
+    List<Lesson> findActiveDueForMidpointReminder(@Param("now") LocalDateTime now);
+
+    /**
      * Counts lessons whose status is NOT 'planned' (i.e. active/closed/cancelled)
      * across all schedule_items referencing the given subject_id. Used by
      * CountSubjectReferences gRPC to decide whether deleting the subject risks

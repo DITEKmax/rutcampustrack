@@ -15,14 +15,17 @@ async def handle_lesson_closed(
     bot: Bot,
     academic_client,
     redis_client: ReminderRedisClient,
-    reminder_scheduler,
 ) -> None:
     """Delete all reminder messages for the closed lesson and clear Redis keys.
 
     Protocol:
-    1. Cancel pending timer tasks (NOTIF-02/-03) before they fire stale reminders.
-    2. Resolve group members (cached in academic_client, 5-min TTL).
-    3. For each student: delete all stored message_ids, then clear the Redis key.
+    1. Resolve group members (cached in academic_client, 5-min TTL).
+    2. For each student: delete all stored message_ids, then clear the Redis key.
+
+    Per-lesson midpoint reminders теперь управляются schedule-service
+    (LessonReminderJob идемпотентен через lessons.reminder_midpoint_sent_at),
+    поэтому отдельная логика "cancel pending timer tasks" больше не нужна —
+    в боте нет in-memory тасков.
 
     TelegramBadRequest is silently caught — message may have already been deleted by
     NOTIF-05 (student checked in) or by the student themselves.
@@ -33,12 +36,6 @@ async def handle_lesson_closed(
     if lesson_id is None or group_id is None:
         logger.warning("lesson.closed missing required fields: lesson_id or group_id")
         return
-
-    # Cancel any pending timer tasks before they fire
-    if reminder_scheduler is not None:
-        reminder_scheduler.cancel_lesson(lesson_id)
-    else:
-        logger.warning("reminder_scheduler is None — skipping cancel_lesson(%s)", lesson_id)
 
     # Resolve group members (cached in academic_client, 5-min TTL)
     members = await academic_client.get_group_members(group_id)

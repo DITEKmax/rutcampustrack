@@ -86,4 +86,13 @@ public class Lesson {
     @Setter
     @Column(name = "closed_at")
     private OffsetDateTime closedAt;
+
+    /**
+     * Marker idempotent-публикации midpoint-напоминания
+     * ({@code lesson.reminder}). Job выставляет в момент публикации;
+     * NULL означает "ещё не отправлено". См. {@code LessonReminderJob}.
+     */
+    @Setter
+    @Column(name = "reminder_midpoint_sent_at")
+    private OffsetDateTime reminderMidpointSentAt;
 }

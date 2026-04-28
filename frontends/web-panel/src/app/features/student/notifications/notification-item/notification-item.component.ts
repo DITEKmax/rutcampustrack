@@ -4,6 +4,13 @@ import { Observable, of } from 'rxjs';
 import type { NotificationItem } from '../../shared/student-schedule.types';
 import { SubjectCacheService } from '../../shared/subject-cache.service';
 
+const ATTENDANCE_STATUS_RU: Record<string, string> = {
+  present: 'Присутствует (б)',
+  absent: 'Отсутствует (н)',
+  excused: 'Уважительная (у)',
+  free_attendance: 'Свобод. посещение (сп)',
+};
+
 @Component({
   selector: 'app-notification-item',
   standalone: true,
@@ -85,10 +92,11 @@ export class NotificationItemComponent implements OnChanges {
   get heading(): string {
     switch (this.item.type) {
       case 'lesson.started': return 'Пара началась';
+      case 'lesson.reminder': return 'Не забудьте отметиться';
       case 'lesson.cancelled': return 'Пара отменена';
       case 'homework.published': return 'Новое задание';
       case 'homework.updated': return 'Задание обновлено';
-      case 'attendance.marked': return 'Посещаемость подтверждена';
+      case 'attendance.marked': return 'Староста изменил статус';
       case 'late_checkin.decided': return this.isApproved
         ? 'Отметка подтверждена'
         : 'Отметка отклонена';
@@ -102,10 +110,11 @@ export class NotificationItemComponent implements OnChanges {
   get iconClass(): string {
     switch (this.item.type) {
       case 'lesson.started': return 'ph-play-circle ph-fill';
+      case 'lesson.reminder': return 'ph-bell-ringing ph-fill';
       case 'lesson.cancelled': return 'ph-x-circle ph-fill';
       case 'homework.published': return 'ph-notebook ph-fill';
       case 'homework.updated': return 'ph-pencil-simple ph-fill';
-      case 'attendance.marked': return 'ph-check-circle ph-fill';
+      case 'attendance.marked': return 'ph-pencil-line ph-fill';
       case 'late_checkin.decided':
       case 'excuse.decided':
         return this.isApproved ? 'ph-check-circle ph-fill' : 'ph-x-circle ph-fill';
@@ -116,6 +125,7 @@ export class NotificationItemComponent implements OnChanges {
   get iconColorClass(): string {
     switch (this.item.type) {
       case 'lesson.started': return 'icon-secondary';
+      case 'lesson.reminder': return 'icon-warning';
       case 'lesson.cancelled': return 'icon-danger';
       case 'homework.published': return 'icon-info';
       case 'homework.updated': return 'icon-warning';
@@ -138,6 +148,10 @@ export class NotificationItemComponent implements OnChanges {
     switch (this.item.type) {
       case 'lesson.started':
         return `${this.capitalize(subjectName)} началась — не забудьте отметиться.`;
+      case 'lesson.reminder': {
+        const num = lessonNumber ? ` №${lessonNumber}` : '';
+        return `Идёт пара${num} по ${subjectName} — отметьтесь, если ещё не успели.`;
+      }
       case 'lesson.cancelled': {
         const d = dateText ? ` ${dateText}` : '';
         return `Пара «${subjectName}»${d} отменена.`;
@@ -151,8 +165,11 @@ export class NotificationItemComponent implements OnChanges {
           ? `Задание по ${subjectName} обновлено: «${title}».`
           : `Задание по ${subjectName} обновлено.`;
       case 'attendance.marked': {
+        const status = String(p['status'] ?? '');
+        const statusRu = ATTENDANCE_STATUS_RU[status] ?? status;
         const num = lessonNumber ? ` №${lessonNumber}` : '';
-        return `Вы отмечены на паре${num}.`;
+        const date = dateText ? `, ${dateText}` : '';
+        return `Староста проставил статус «${statusRu}» на паре${num} ${subjectName}${date}.`;
       }
       case 'late_checkin.decided': {
         const verdict = this.isApproved ? 'подтвердил вашу отметку' : 'отклонил запрос на отметку';

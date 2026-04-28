@@ -56,6 +56,7 @@ export default function NotificationSettingsPage() {
 
   const categories: NotificationCategory[] = [
     'lessons',
+    'reminders',
     'homework',
     'tickets',
     'schedule',

@@ -133,10 +133,25 @@ public class MarkingService {
         // Read back the document for event publishing and response construction
         AttendanceDocument doc = mongoTemplate.findOne(filter, AttendanceDocument.class);
 
-        // INFRA-06: Publish attendance.marked event
-        eventPublisher.publishMarked(doc);
+        // INFRA-06: Publish attendance.marked event. NOTIF unification:
+        // обогащаем payload именем предмета — bot/PWA/web-panel показывают
+        // студенту "Староста поставил «Х» на паре №N {Предмет}". Если gRPC
+        // упадёт, шлём событие без subject_name (graceful degradation).
+        String subjectName = resolveSubjectName(lesson.getSubjectId());
+        eventPublisher.publishMarked(doc, subjectName);
 
         return doc;
+    }
+
+    /** Best-effort gRPC lookup; на ошибку — null, payload без subject_name. */
+    private String resolveSubjectName(Long subjectId) {
+        if (subjectId == null) return null;
+        try {
+            return academicGrpcClient.getSubjectsByIds(java.util.List.of(subjectId))
+                    .get(subjectId);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     /**
@@ -276,8 +291,21 @@ public class MarkingService {
         }
 
         // Публикация событий — после того как весь batch персистирован.
+        // NOTIF unification: один gRPC getSubjectsByIds на batch (не N).
+        Set<Long> subjectIds = new HashSet<>();
         for (AttendanceDocument doc : result) {
-            eventPublisher.publishMarked(doc);
+            if (doc.getSubjectId() != null) subjectIds.add(doc.getSubjectId());
+        }
+        Map<Long, String> subjectNames;
+        try {
+            subjectNames = subjectIds.isEmpty()
+                    ? Map.of()
+                    : academicGrpcClient.getSubjectsByIds(new ArrayList<>(subjectIds));
+        } catch (Exception ex) {
+            subjectNames = Map.of();
+        }
+        for (AttendanceDocument doc : result) {
+            eventPublisher.publishMarked(doc, subjectNames.get(doc.getSubjectId()));
         }
 
         return result;

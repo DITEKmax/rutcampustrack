@@ -86,6 +86,7 @@ class EventSchemaCoverageTest {
             "lesson.deleted",
             "lesson.one_off.cancelled",
             "lesson.one_off.created",
+            "lesson.reminder",
             "lesson.started",
             "otp.requested",
             "otp.verified",

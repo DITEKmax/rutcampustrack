@@ -21,7 +21,6 @@ from bot.services.jwt_redis_client import JwtRedisClient
 from bot.services.notification_prefs import NotificationPrefsClient
 from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
-from bot.services.reminder_scheduler import ReminderScheduler
 from bot.services.request_message_tracker import RequestMessageTracker
 from bot.services.send_queue import TelegramSendQueue
 
@@ -180,15 +179,9 @@ async def main() -> None:
         password=config.redis_password,
     )
 
-    # Create reminder scheduler (NOTIF-02, NOTIF-03 — Plan 25-01/25-02)
-    reminder_scheduler = ReminderScheduler(
-        bot=bot,
-        academic_client=academic_client,
-        send_queue=send_queue,
-        redis_client=redis_client,
-    )
-
-    # Create event dispatcher with all dependencies
+    # Create event dispatcher with all dependencies. Midpoint/end reminders
+    # теперь публикуются schedule-service (lesson.reminder event) — bot их
+    # потребляет через handle_lesson_reminder, in-memory scheduler удалён.
     dispatcher = EventDispatcher(
         bot=bot,
         academic_client=academic_client,
@@ -196,7 +189,6 @@ async def main() -> None:
         redis_client=redis_client,
         config=config,
         otp_tracker=otp_tracker,
-        reminder_scheduler=reminder_scheduler,
         request_tracker=request_tracker,
     )
 

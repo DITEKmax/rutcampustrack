@@ -37,11 +37,20 @@ export interface Teacher {
   login: string
 }
 
+export type SubjectType = 'LECTURE' | 'PRACTICE' | 'LAB'
+
 export interface Subject {
   id: number
   name: string
+  type?: SubjectType
   teacherId?: number
   teacherName?: string
+}
+
+export const SUBJECT_TYPE_LABELS: Record<SubjectType, string> = {
+  LECTURE: 'Лекция',
+  PRACTICE: 'Практика',
+  LAB: 'Лабораторная',
 }
 
 export interface JournalCell {

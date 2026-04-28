@@ -8,7 +8,7 @@ import {
   useJournal,
   useResolveThreshold,
 } from '@/features/headman/shared/headmanApi'
-import type { JournalCell, Subject } from '@/features/headman/shared/types'
+import type { JournalCell, Subject, SubjectType } from '@/features/headman/shared/types'
 import { PullToRefresh } from '@/shared/components/PullToRefresh'
 import { SubjectStatsCard } from './SubjectStatsCard'
 
@@ -73,6 +73,7 @@ function computeStudentStats(cells: JournalCell[]): {
 interface SubjectStats {
   subjectId: number
   subjectName: string
+  subjectType?: SubjectType
   groupPercent: number
   threshold: number
   studentRows: Array<{ studentId: number; studentName: string; attendancePercent: number }>
@@ -118,7 +119,8 @@ function statsReducer(
         prev.threshold === action.stats.threshold &&
         prev.isRedZone === action.stats.isRedZone &&
         prev.studentRows.length === action.stats.studentRows.length &&
-        prev.subjectName === action.stats.subjectName
+        prev.subjectName === action.stats.subjectName &&
+        prev.subjectType === action.stats.subjectType
       ) {
         return state
       }
@@ -175,12 +177,13 @@ function SubjectStatsCollector({
     onStats({
       subjectId: subject.id,
       subjectName: subject.name,
+      subjectType: subject.type,
       groupPercent,
       threshold,
       studentRows,
       isRedZone: groupPercent < threshold,
     })
-  }, [onStats, subject.id, subject.name, groupPercent, threshold, studentRows])
+  }, [onStats, subject.id, subject.name, subject.type, groupPercent, threshold, studentRows])
 
   return null
 }
@@ -297,6 +300,7 @@ export function StatsPage() {
           subjectId={s.subjectId}
           groupId={groupId}
           subjectName={s.subjectName}
+          subjectType={s.subjectType}
           groupAttendancePercent={s.groupPercent}
           threshold={s.threshold}
           studentRows={s.studentRows}

@@ -219,14 +219,16 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
         mockMvc.perform(headmanRequest(AttendanceStatus.PRESENT))
                 .andExpect(status().isOk());
 
-        // Verify AttendanceEventPublisher.publishMarked was called with a valid document
+        // Verify AttendanceEventPublisher.publishMarked was called with a valid document.
+        // NOTIF unification: 2-arg form (subjectName может быть null если gRPC mock'а нет).
         verify(attendanceEventPublisher).publishMarked(
                 org.mockito.ArgumentMatchers.argThat(doc ->
                         doc.getLessonId().equals(LESSON_ID)
                                 && doc.getUserId().equals(USER_ID)
                                 && doc.getStatus() == AttendanceStatus.PRESENT
                                 && doc.getSource() == AttendanceSource.HEADMAN
-                )
+                ),
+                org.mockito.ArgumentMatchers.any()
         );
     }
 

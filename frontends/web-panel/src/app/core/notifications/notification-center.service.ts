@@ -6,6 +6,7 @@ import { AuthService } from '../auth/auth.service';
 import { AuthApi } from '../auth/auth.api';
 import { buildWsUrl } from '../auth/ws-ticket';
 import { NotificationHistoryService } from './notification-history.service';
+import { NotificationPrefsService } from './notification-prefs.service';
 
 /**
  * Единый источник правды для всех STOMP-уведомлений в веб-панели.
@@ -39,6 +40,7 @@ import { NotificationHistoryService } from './notification-history.service';
 /** События, которые попадают в историю уведомлений (bell + список). */
 const STORED_TYPES: ReadonlySet<string> = new Set([
   'lesson.started',
+  'lesson.reminder',
   'lesson.cancelled',
   'homework.published',
   'homework.updated',
@@ -57,6 +59,7 @@ const STORED_TYPES: ReadonlySet<string> = new Set([
 const USER_SCOPED_TYPES: ReadonlySet<string> = new Set([
   'late_checkin.decided',
   'excuse.decided',
+  'attendance.marked',
 ]);
 
 /** События, которые показываем только старосте группы. */
@@ -86,6 +89,7 @@ export class NotificationCenterService {
   private readonly auth = inject(AuthService);
   private readonly authApi = inject(AuthApi);
   private readonly historyService = inject(NotificationHistoryService);
+  private readonly prefsService = inject(NotificationPrefsService);
 
   private client: Client | null = null;
   private connectedKey: string | null = null; // `${userId}:${groupId}:${isHeadman}`
@@ -192,10 +196,22 @@ export class NotificationCenterService {
       }
     }
 
+    // attendance.marked в историю студента попадает ТОЛЬКО для manual-mark
+    // старостой. Self-check-in и auto-absent — служебные ACK.
+    if (envelope.type === 'attendance.marked') {
+      if (envelope.payload?.['marked_by'] !== 'headman') {
+        this.eventSubject.next(envelope);
+        return;
+      }
+    }
+
     // Пробрасываем raw envelope подписчикам (авто-закрытие карточек и т.п.).
     this.eventSubject.next(envelope);
 
     if (!STORED_TYPES.has(envelope.type)) return;
+
+    // NOTIF unification: респектим локальные пользовательские настройки.
+    if (!this.prefsService.shouldStoreInHistory(envelope.type)) return;
 
     const record: NotificationRecord = {
       id: crypto.randomUUID(),
@@ -211,8 +227,11 @@ export class NotificationCenterService {
     this.persist();
     // M10 G7: backend consumer после persist делает evict Caffeine
     // unread-count; refresh чтобы badge из server-side источника не
-    // отставал на 30s TTL.
+    // отставал на 30s TTL. NOTIF unification: также refresh страничного
+    // списка — пользователь, открывший /student/notifications, увидит
+    // новую запись без F5.
     this.historyService.refreshUnreadCount();
+    this.historyService.refreshList();
   }
 
   private loadFromStorage(): NotificationRecord[] {

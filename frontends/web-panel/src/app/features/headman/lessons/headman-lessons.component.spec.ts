@@ -309,6 +309,28 @@ describe('HeadmanLessonsComponent — paginator (DEV-C8)', () => {
     component.onPage({ pageIndex: 1, pageSize: 1, length: 2 } as any);
     expect(component.pagedDayGroups()[0].date).toBe('2026-04-16');
   });
+
+  it('semester month groups are built from the full list, not the local page slice', () => {
+    const { component } = setup({
+      getGroupLessons: vi.fn(() => of({ _embedded: { lessonResponseList: [
+        { ...LESSONS[0], id: 201, date: '2026-02-10' },
+        { ...LESSONS[2], id: 202, date: '2026-06-12' },
+      ] } })),
+    });
+    component.period.set('semester');
+    component.onPage({ pageIndex: 0, pageSize: 1, length: 2 } as any);
+
+    expect(component.pagedDayGroups().map(day => day.date)).toEqual(['2026-02-10']);
+    expect(component.monthGroups().flatMap(month => month.days).map(day => day.date))
+      .toEqual(['2026-02-10', '2026-06-12']);
+  });
+
+  it('hides the local paginator in semester mode', () => {
+    const { fixture, component } = setup();
+    component.period.set('semester');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('mat-paginator')).toBeNull();
+  });
 });
 
 describe('HeadmanLessonsComponent — cancellation audit (DEV-C9)', () => {

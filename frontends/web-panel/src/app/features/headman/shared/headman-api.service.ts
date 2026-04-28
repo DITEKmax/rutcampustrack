@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { EMPTY, Observable, of, throwError } from 'rxjs';
+import { catchError, expand, map, reduce } from 'rxjs/operators';
 import {
   ExcuseTicket,
   ExcuseTicketStatus,
@@ -35,6 +35,7 @@ import { LateCheckinRequestView } from '../late-checkin/late-checkin.types';
 @Injectable({ providedIn: 'root' })
 export class HeadmanApiService {
   private readonly http = inject(HttpClient);
+  private static readonly SCHEDULE_PAGE_SIZE = 200;
 
   // Dashboard data (forkJoin sources — no dedicated headman dashboard endpoint exists)
 
@@ -446,12 +447,88 @@ export class HeadmanApiService {
     dateTo: string,
     status?: string,
   ): Observable<any> {
+    return this.getGroupLessonsPage(
+      groupId,
+      dateFrom,
+      dateTo,
+      status,
+      0,
+      HeadmanApiService.SCHEDULE_PAGE_SIZE,
+    ).pipe(
+      expand((pageResp: any) => {
+        const currentPage = Number(pageResp?.page?.number ?? 0);
+        const totalPages = Number(pageResp?.page?.totalPages ?? 1);
+        if (!Number.isFinite(currentPage) || !Number.isFinite(totalPages)) {
+          return EMPTY;
+        }
+        const nextPage = currentPage + 1;
+        return nextPage < totalPages
+          ? this.getGroupLessonsPage(
+              groupId,
+              dateFrom,
+              dateTo,
+              status,
+              nextPage,
+              HeadmanApiService.SCHEDULE_PAGE_SIZE,
+            )
+          : EMPTY;
+      }),
+      reduce((pages: any[], pageResp: any) => [...pages, pageResp], []),
+      map((pages: any[]) => this.mergePagedEmbedded(pages, 'lessonResponseList')),
+    );
+  }
+
+  private getGroupLessonsPage(
+    groupId: number,
+    dateFrom: string,
+    dateTo: string,
+    status: string | undefined,
+    page: number,
+    size: number,
+  ): Observable<any> {
     let params = new HttpParams()
       .set('dateFrom', dateFrom)
       .set('dateTo', dateTo)
-      .set('size', '500');
+      .set('page', String(page))
+      .set('size', String(size));
     if (status) params = params.set('status', status);
     return this.http.get(`/api/schedule/groups/${groupId}/lessons`, { params });
+  }
+
+  private mergePagedEmbedded(pages: any[], fallbackKey: string): any {
+    const first = pages[0] ?? {};
+    const embeddedKey = this.firstEmbeddedKey(pages) ?? fallbackKey;
+    const mergedItems = pages.flatMap(page => {
+      const embedded = page?._embedded;
+      if (!embedded) return [];
+      const value = embedded[embeddedKey] ?? Object.values(embedded)[0];
+      return Array.isArray(value) ? value : [];
+    });
+
+    return {
+      ...first,
+      _embedded: {
+        ...(first._embedded ?? {}),
+        [embeddedKey]: mergedItems,
+      },
+      page: {
+        ...(first.page ?? {}),
+        size: mergedItems.length,
+        totalElements: mergedItems.length,
+        totalPages: 1,
+        number: 0,
+      },
+    };
+  }
+
+  private firstEmbeddedKey(pages: any[]): string | null {
+    for (const page of pages) {
+      const embedded = page?._embedded;
+      if (!embedded) continue;
+      const [key] = Object.keys(embedded);
+      if (key) return key;
+    }
+    return null;
   }
 
   /**

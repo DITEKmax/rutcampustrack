@@ -284,7 +284,8 @@ describe('HeadmanApiService', () => {
         r.url === '/api/schedule/groups/5/lessons'
         && r.params.get('dateFrom') === '2026-04-15'
         && r.params.get('dateTo') === '2026-04-29'
-        && r.params.get('size') === '500',
+        && r.params.get('page') === '0'
+        && r.params.get('size') === '200',
       );
       expect(req.request.method).toBe('GET');
       req.flush({ _embedded: { lessonResponseList: [] } });
@@ -294,6 +295,36 @@ describe('HeadmanApiService', () => {
       service.getGroupLessons(5, '2026-04-15', '2026-04-29', 'planned').subscribe();
       const req = httpMock.expectOne(r => r.params.get('status') === 'planned');
       req.flush({ _embedded: { lessonResponseList: [] } });
+    });
+
+    it('loads and merges all backend pages', () => {
+      let result: any;
+      service.getGroupLessons(5, '2026-02-09', '2026-06-14', 'planned,active,closed,cancelled')
+        .subscribe(resp => { result = resp; });
+
+      const first = httpMock.expectOne(r =>
+        r.url === '/api/schedule/groups/5/lessons'
+        && r.params.get('page') === '0'
+        && r.params.get('size') === '200',
+      );
+      first.flush({
+        _embedded: { lessonResponseList: [{ id: 1, date: '2026-02-10' }] },
+        page: { size: 200, totalElements: 201, totalPages: 2, number: 0 },
+      });
+
+      const second = httpMock.expectOne(r =>
+        r.url === '/api/schedule/groups/5/lessons'
+        && r.params.get('page') === '1'
+        && r.params.get('size') === '200',
+      );
+      second.flush({
+        _embedded: { lessonResponseList: [{ id: 2, date: '2026-06-12' }] },
+        page: { size: 200, totalElements: 201, totalPages: 2, number: 1 },
+      });
+
+      expect(result._embedded.lessonResponseList.map((lesson: any) => lesson.id)).toEqual([1, 2]);
+      expect(result.page.totalElements).toBe(2);
+      expect(result.page.totalPages).toBe(1);
     });
   });
 

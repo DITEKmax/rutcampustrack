@@ -182,7 +182,7 @@ const MONTH_RANGE_DAYS = 30;
         }
       }
 
-      @if (!loading() && !error() && dayGroups().length > 0) {
+      @if (!loading() && !error() && period() !== 'semester' && dayGroups().length > 0) {
         <mat-paginator
           [length]="dayGroups().length"
           [pageSize]="pageSize()"
@@ -461,7 +461,7 @@ export class HeadmanLessonsComponent implements OnInit, AfterViewChecked {
 
   /** Group dayGroups в месяцы (только для period='semester'). Текущий месяц помечается isCurrent=true. */
   readonly monthGroups = computed<MonthGroup[]>(() => {
-    const days = this.pagedDayGroups();
+    const days = this.dayGroups();
     const todayPrefix = this.todayIso().slice(0, 7); // 'YYYY-MM'
     const map = new Map<string, DayGroup[]>();
     for (const d of days) {

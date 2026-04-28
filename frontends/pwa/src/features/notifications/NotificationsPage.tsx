@@ -7,6 +7,23 @@ import {
   useNotificationCenter,
   type NotificationRecord,
 } from './NotificationCenter'
+import {
+  useMarkAllRead,
+  useMarkNotificationRead,
+  useNotificationHistory,
+} from './useNotificationHistory'
+import type { HistoryItem } from './notificationsApi'
+
+/**
+ * Страница «Уведомления».
+ *
+ * Источник правды — серверная history (`GET /api/notifications`, M10):
+ * 30-дневный лог, переживает релогин, F5 и переустановку PWA. Live-события
+ * через STOMP инвалидируют react-query (см. NotificationCenter), поэтому
+ * новые записи появляются без явного refetch'а. sessionStorage-кеш
+ * NotificationCenter оставлен только для нативных банеров — список рендерим
+ * исключительно из server query.
+ */
 
 function formatRelative(iso: string): string {
   const dt = new Date(iso).getTime()
@@ -33,23 +50,53 @@ function notificationRoute(type: string): string | null {
   }
 }
 
+function toRecord(item: HistoryItem): NotificationRecord {
+  return {
+    id: item.id,
+    type: item.type,
+    payload: item.payload ?? {},
+    receivedAt: item.sentAt,
+    read: item.readAt !== null,
+    archived: false,
+  }
+}
+
 export function NotificationsPage() {
-  const { items, markAllRead, archive } = useNotificationCenter()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    markAllRead()
-  }, [markAllRead])
-
-  const visible = useMemo(
-    () =>
-      items
-        .filter((i) => !i.archived)
-        .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt)),
-    [items],
+  // sessionStorage-кеш — для совместимости с архивом (swipe убирает локально).
+  const { archive, items: liveItems } = useNotificationCenter()
+  const archivedIds = useMemo(
+    () => new Set(liveItems.filter((i) => i.archived).map((i) => i.id)),
+    [liveItems],
   )
 
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useNotificationHistory(false)
+
+  const markAllRead = useMarkAllRead()
+  const markRead = useMarkNotificationRead()
+
+  // Сбрасываем счётчик непрочитанных при первом открытии.
+  useEffect(() => {
+    markAllRead.mutate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const visible = useMemo(() => {
+    const pages = data?.pages ?? []
+    const flat: NotificationRecord[] = []
+    for (const p of pages) for (const it of p.items) flat.push(toRecord(it))
+    return flat.filter((r) => !archivedIds.has(r.id))
+  }, [data, archivedIds])
+
   const handleTap = (item: NotificationRecord) => {
+    if (!item.read) markRead.mutate(item.id)
     const route = notificationRoute(item.type)
     if (route) navigate(route)
   }
@@ -87,21 +134,44 @@ export function NotificationsPage() {
         </button>
       </header>
 
-      {visible.length === 0 ? (
+      {isLoading ? (
+        <LoadingState />
+      ) : isError ? (
+        <ErrorState />
+      ) : visible.length === 0 ? (
         <EmptyState />
       ) : (
-        <ul className="flex flex-col gap-3">
-          <AnimatePresence initial={false}>
-            {visible.map((item) => (
-              <NotificationRow
-                key={item.id}
-                item={item}
-                onArchive={() => archive(item.id)}
-                onTap={notificationRoute(item.type) ? () => handleTap(item) : undefined}
-              />
-            ))}
-          </AnimatePresence>
-        </ul>
+        <>
+          <ul className="flex flex-col gap-3">
+            <AnimatePresence initial={false}>
+              {visible.map((item) => (
+                <NotificationRow
+                  key={item.id}
+                  item={item}
+                  onArchive={() => archive(item.id)}
+                  onTap={() => handleTap(item)}
+                  hasRoute={!!notificationRoute(item.type)}
+                />
+              ))}
+            </AnimatePresence>
+          </ul>
+          {hasNextPage && (
+            <button
+              type="button"
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="mx-auto mt-4 rounded-full px-4 py-2 text-sm"
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-primary)',
+                opacity: isFetchingNextPage ? 0.5 : 1,
+              }}
+            >
+              {isFetchingNextPage ? 'Загрузка…' : 'Загрузить ещё'}
+            </button>
+          )}
+        </>
       )}
     </div>
   )
@@ -111,13 +181,14 @@ function NotificationRow({
   item,
   onArchive,
   onTap,
+  hasRoute,
 }: {
   item: NotificationRecord
   onArchive: () => void
-  onTap?: () => void
+  onTap: () => void
+  hasRoute: boolean
 }) {
   const { title, body } = describeNotification(item)
-  const actionable = !!onTap
 
   const handleDragEnd = (_e: never, info: PanInfo) => {
     if (Math.abs(info.offset.x) > 96) {
@@ -142,9 +213,9 @@ function NotificationRow({
         background: 'var(--bg-secondary)',
         borderColor: item.read ? 'var(--border-subtle)' : 'var(--border-accent)',
         touchAction: 'pan-y',
-        cursor: actionable ? 'pointer' : undefined,
+        cursor: 'pointer',
       }}
-      aria-label={`${title}. ${actionable ? 'Нажми чтобы перейти.' : ''} Потяни в сторону чтобы архивировать`}
+      aria-label={`${title}. ${hasRoute ? 'Нажми чтобы перейти.' : ''} Потяни в сторону чтобы архивировать`}
     >
       <div className="flex items-start gap-3">
         <span
@@ -179,7 +250,7 @@ function NotificationRow({
             {formatRelative(item.receivedAt)}
           </p>
         </div>
-        {actionable && (
+        {hasRoute && (
           <ArrowRight
             size={16}
             weight="bold"
@@ -227,6 +298,28 @@ function EmptyState() {
         Здесь появятся оповещения о парах, домашках и решениях по
         тикетам. Смахнуть вбок — убрать в архив.
       </p>
+    </div>
+  )
+}
+
+function LoadingState() {
+  return (
+    <div
+      className="mt-10 flex flex-col items-center gap-2 text-center"
+      style={{ color: 'var(--text-muted)' }}
+    >
+      <p className="text-sm">Загружаем уведомления…</p>
+    </div>
+  )
+}
+
+function ErrorState() {
+  return (
+    <div
+      className="mt-10 rounded-2xl border border-dashed p-6 text-center"
+      style={{ borderColor: 'var(--border-default)', color: 'var(--text-muted)' }}
+    >
+      <p className="text-sm">Не удалось загрузить историю. Проверь соединение и потяни вниз для обновления.</p>
     </div>
   )
 }

@@ -33,11 +33,12 @@ import { notificationsQueryKeys } from './useNotificationHistory'
  * системе телефона со звуком" requirement.
  */
 
-// attendance.marked — это ACK собственной отметки студента, не уведомление.
-// В PWA он всё равно прилетает по STOMP и используется пушами/SW для сброса
-// reminder-сообщений, но в список уведомлений его не кладём.
+// attendance.marked попадает в историю ТОЛЬКО для manual-mark старостой
+// (фильтр payload.marked_by === 'headman' в handleFrame). Self-check-in и
+// auto-absent — служебные ACK, в список не кладём.
 const STORED_TYPES: ReadonlySet<string> = new Set([
   'lesson.started',
+  'lesson.reminder',
   'lesson.cancelled',
   'lesson.one_off.created',
   'lesson.one_off.cancelled',
@@ -47,6 +48,7 @@ const STORED_TYPES: ReadonlySet<string> = new Set([
   'late_checkin.decided',
   'excuse.requested',
   'excuse.decided',
+  'attendance.marked',
   'group.renamed',
   'group.archived',
 ])
@@ -54,6 +56,7 @@ const STORED_TYPES: ReadonlySet<string> = new Set([
 const USER_SCOPED_TYPES: ReadonlySet<string> = new Set([
   'late_checkin.decided',
   'excuse.decided',
+  'attendance.marked',
 ])
 
 const HEADMAN_ONLY_TYPES: ReadonlySet<string> = new Set([
@@ -112,6 +115,10 @@ function buildTitle(type: string, payload: Record<string, unknown>): string {
   switch (type) {
     case 'lesson.started':
       return 'Пара началась'
+    case 'lesson.reminder':
+      return 'Не забудьте отметиться'
+    case 'attendance.marked':
+      return 'Староста изменил статус'
     case 'lesson.cancelled':
       return 'Пара отменена'
     case 'lesson.one_off.created':
@@ -150,6 +157,13 @@ const EXCUSE_TYPE_RU: Record<string, string> = {
   exemption: 'Освобождение',
   free_attendance: 'Свобод. посещение',
   other: 'Другое',
+}
+
+const ATTENDANCE_STATUS_RU: Record<string, string> = {
+  present: 'Присутствует (б)',
+  absent: 'Отсутствует (н)',
+  excused: 'Уважительная (у)',
+  free_attendance: 'Свобод. посещение (сп)',
 }
 
 function str(payload: Record<string, unknown>, key: string): string {
@@ -196,6 +210,26 @@ function buildBody(
   switch (type) {
     case 'lesson.started':
       return lessonRef || 'Время отметиться'
+    case 'lesson.reminder':
+      return lessonRef || 'Сейчас идёт пара'
+    case 'attendance.marked': {
+      const status = str(payload, 'status')
+      const statusRu = ATTENDANCE_STATUS_RU[status] ?? status
+      const subject = str(payload, 'subject_name')
+      const number = payload.lesson_number
+      const date = str(payload, 'lesson_date')
+      const parts: string[] = []
+      if (statusRu) parts.push(statusRu)
+      if (typeof number === 'number' && subject) {
+        parts.push(`№${number} · ${subject}`)
+      } else if (typeof number === 'number') {
+        parts.push(`№${number}`)
+      } else if (subject) {
+        parts.push(subject)
+      }
+      if (date) parts.push(formatShortDate(date))
+      return parts.join(' · ')
+    }
     case 'lesson.cancelled': {
       const reason = str(payload, 'cancel_reason')
       const base = lessonRef || 'Пара отменена'
@@ -291,6 +325,12 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
             ) {
               return
             }
+          }
+
+          // attendance.marked: показываем студенту ТОЛЬКО ручную правку
+          // старостой. self-check-in и auto-absent — служебные события.
+          if (envelope.type === 'attendance.marked') {
+            if (envelope.payload?.['marked_by'] !== 'headman') return
           }
 
           if (!STORED_TYPES.has(envelope.type)) return

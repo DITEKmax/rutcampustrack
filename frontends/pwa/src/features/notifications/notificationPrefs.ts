@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react'
  */
 export type NotificationCategory =
   | 'lessons'
+  | 'reminders'
   | 'homework'
   | 'tickets'
   | 'schedule'
@@ -13,6 +14,7 @@ export type NotificationCategory =
 
 export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   lessons: 'Пары (начало, отмена)',
+  reminders: 'Напоминания об отметке',
   homework: 'Домашние задания',
   tickets: 'Тикеты (у.п., опоздания)',
   schedule: 'Изменения расписания',
@@ -22,6 +24,7 @@ export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
 const CATEGORY_MAP: Record<string, NotificationCategory> = {
   'lesson.started': 'lessons',
   'lesson.cancelled': 'lessons',
+  'lesson.reminder': 'reminders',
   'lesson.one_off.created': 'schedule',
   'lesson.one_off.cancelled': 'schedule',
   'homework.published': 'homework',
@@ -54,6 +57,7 @@ export interface NotificationPrefs {
 export const DEFAULT_PREFS: NotificationPrefs = {
   categories: {
     lessons: true,
+    reminders: true,
     homework: true,
     tickets: true,
     schedule: true,

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Check } from '@phosphor-icons/react'
+import { CaretDown, Check } from '@phosphor-icons/react'
 import { useSetSubjectThreshold, mapHeadmanApiError } from '@/features/headman/shared/headmanApi'
 
 export interface SubjectStudentRow {
@@ -18,8 +18,6 @@ export interface SubjectStatsCardProps {
   studentRows: SubjectStudentRow[]
 }
 
-const MAX_VISIBLE_ROWS = 10
-
 /**
  * SubjectStatsCard — per-subject card with group average, per-student rows, and
  * inline threshold editor (UI-SPEC §Component Inventory #9).
@@ -27,6 +25,12 @@ const MAX_VISIBLE_ROWS = 10
  * Red-zone logic: if `groupAttendancePercent < threshold`, card gets a danger
  * left-border + warning badge; per-student red dots appear when the student
  * percent is below threshold.
+ *
+ * Per-student list is collapsed by default (just the count + expand button).
+ * Expanding shows ALL students sorted by attendance percent ascending (worst
+ * first) — so the headman sees who needs attention without paging to the
+ * web-panel. Equal percents → alphabetical by surname (already pre-sorted by
+ * the backend ICU collation).
  *
  * Threshold editor:
  *   input (0..100) → Check button → useSetSubjectThreshold.mutate({ subjectId, minPercentage })
@@ -38,7 +42,16 @@ export function SubjectStatsCard(props: SubjectStatsCardProps) {
 
   const [editValue, setEditValue] = useState<number>(threshold)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const { mutate, isPending, isError, error, isSuccess, reset } = useSetSubjectThreshold()
+
+  // Sort by attendance % ascending (worst-first). Stable sort means equal
+  // percents fall back to the order from props — backend already returns
+  // students sorted by surname via ICU collation (V21+V22).
+  const sortedRows = useMemo(
+    () => [...studentRows].sort((a, b) => a.attendancePercent - b.attendancePercent),
+    [studentRows],
+  )
 
   // Keep local state in sync when threshold prop changes from parent (e.g. after cache refetch)
   useEffect(() => {
@@ -58,8 +71,6 @@ export function SubjectStatsCard(props: SubjectStatsCardProps) {
   }, [isSuccess, reset])
 
   const isRedZone = groupAttendancePercent < threshold
-  const visibleRows = studentRows.slice(0, MAX_VISIBLE_ROWS)
-  const extraCount = Math.max(0, studentRows.length - MAX_VISIBLE_ROWS)
 
   function handleSave() {
     const clamped = Math.max(0, Math.min(100, Math.round(editValue)))
@@ -126,37 +137,56 @@ export function SubjectStatsCard(props: SubjectStatsCardProps) {
         </div>
       </div>
 
-      {/* Section 3 — per-student rows */}
-      {visibleRows.length > 0 && (
-        <div className="mb-4 flex flex-col gap-1.5">
-          {visibleRows.map((row) => {
-            const belowThreshold = row.attendancePercent < threshold
-            return (
-              <div
-                key={row.studentId}
-                className="flex items-center gap-2 text-sm"
-              >
-                {belowThreshold && (
-                  <span
-                    aria-hidden="true"
-                    className="inline-block w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ background: 'var(--accent-danger)' }}
-                  />
-                )}
-                <span className="flex-1 truncate">{row.studentName}</span>
-                <span className="font-semibold tabular-nums">
-                  {Math.round(row.attendancePercent)}%
-                </span>
-              </div>
-            )
-          })}
-          {extraCount > 0 && (
-            <p
-              className="text-xs mt-1"
-              style={{ color: 'var(--text-muted)' }}
+      {/* Section 3 — per-student rows (collapsible) */}
+      {sortedRows.length > 0 && (
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            aria-controls={`students-${subjectId}`}
+            className="flex w-full items-center justify-between gap-2 text-sm font-semibold py-1"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            <span>
+              {expanded ? 'Скрыть студентов' : `Развернуть (${sortedRows.length})`}
+            </span>
+            <CaretDown
+              size={16}
+              weight="bold"
+              style={{
+                transition: 'transform 200ms ease-out',
+                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            />
+          </button>
+          {expanded && (
+            <div
+              id={`students-${subjectId}`}
+              className="mt-2 flex flex-col gap-1.5"
             >
-              Ещё {extraCount} студентов — смотрите в веб-панели
-            </p>
+              {sortedRows.map((row) => {
+                const belowThreshold = row.attendancePercent < threshold
+                return (
+                  <div
+                    key={row.studentId}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    {belowThreshold && (
+                      <span
+                        aria-hidden="true"
+                        className="inline-block w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ background: 'var(--accent-danger)' }}
+                      />
+                    )}
+                    <span className="flex-1 truncate">{row.studentName}</span>
+                    <span className="font-semibold tabular-nums">
+                      {Math.round(row.attendancePercent)}%
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           )}
         </div>
       )}

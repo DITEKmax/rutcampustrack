@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { CaretDown, Check } from '@phosphor-icons/react'
 import { useSetSubjectThreshold, mapHeadmanApiError } from '@/features/headman/shared/headmanApi'
+import { SUBJECT_TYPE_LABELS, type SubjectType } from '@/features/headman/shared/types'
 
 export interface SubjectStudentRow {
   studentId: number
@@ -13,6 +14,7 @@ export interface SubjectStatsCardProps {
   subjectId: number
   groupId: number
   subjectName: string
+  subjectType?: SubjectType
   groupAttendancePercent: number
   threshold: number
   studentRows: SubjectStudentRow[]
@@ -38,7 +40,8 @@ export interface SubjectStatsCardProps {
  *   On error: inline red text via mapHeadmanApiError.
  */
 export function SubjectStatsCard(props: SubjectStatsCardProps) {
-  const { subjectId, subjectName, groupAttendancePercent, threshold, studentRows } = props
+  const { subjectId, subjectName, subjectType, groupAttendancePercent, threshold, studentRows } = props
+  const typeLabel = subjectType ? SUBJECT_TYPE_LABELS[subjectType] : null
 
   const [editValue, setEditValue] = useState<number>(threshold)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -100,8 +103,16 @@ export function SubjectStatsCard(props: SubjectStatsCardProps) {
       data-testid={`subject-stats-card-${subjectId}`}
     >
       {/* Section 1 — subject header */}
-      <div className="flex items-center gap-2 mb-3">
-        <h2 className="text-base font-semibold flex-1">{subjectName}</h2>
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <h2 className="text-base font-semibold flex-1 min-w-0">{subjectName}</h2>
+        {typeLabel && (
+          <span
+            className="text-xs font-semibold px-2 py-0.5 rounded"
+            style={{ background: 'var(--bg-surface)', color: 'var(--text-secondary)' }}
+          >
+            {typeLabel}
+          </span>
+        )}
         {isRedZone && (
           <>
             <span

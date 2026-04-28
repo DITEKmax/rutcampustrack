@@ -66,9 +66,31 @@ class NotificationHistoryConsumerMapTypeTest {
     }
 
     @Test
-    void mapsAttendanceMarked() {
-        assertThat(NotificationHistoryConsumer.mapType("attendance.marked", EMPTY))
-                .contains(NotificationType.ATTENDANCE_RED_ZONE);
+    void mapsAttendanceMarkedByHeadman() {
+        assertThat(NotificationHistoryConsumer.mapType("attendance.marked",
+                Map.of("marked_by", "headman")))
+                .contains(NotificationType.ATTENDANCE_MARKED_BY_HEADMAN);
+    }
+
+    @Test
+    void skipsAttendanceMarkedBySelf() {
+        // Self check-in — собственное действие студента, не уведомление.
+        assertThat(NotificationHistoryConsumer.mapType("attendance.marked",
+                Map.of("marked_by", "self")))
+                .isEmpty();
+    }
+
+    @Test
+    void skipsAttendanceMarkedByAuto() {
+        // Авто-absent при закрытии пары — служебная запись, не уведомление.
+        assertThat(NotificationHistoryConsumer.mapType("attendance.marked",
+                Map.of("marked_by", "auto")))
+                .isEmpty();
+    }
+
+    @Test
+    void skipsAttendanceMarkedWithoutMarkedBy() {
+        assertThat(NotificationHistoryConsumer.mapType("attendance.marked", EMPTY)).isEmpty();
     }
 
     @Test
@@ -76,6 +98,8 @@ class NotificationHistoryConsumerMapTypeTest {
         assertThat(NotificationHistoryConsumer.mapType("lesson.started", EMPTY)).isEmpty();
         assertThat(NotificationHistoryConsumer.mapType("lesson.closed", EMPTY)).isEmpty();
         assertThat(NotificationHistoryConsumer.mapType("lesson.cancelled", EMPTY)).isEmpty();
+        // lesson.reminder тоже broadcast по группе — в per-user history не пишется.
+        assertThat(NotificationHistoryConsumer.mapType("lesson.reminder", EMPTY)).isEmpty();
     }
 
     @Test

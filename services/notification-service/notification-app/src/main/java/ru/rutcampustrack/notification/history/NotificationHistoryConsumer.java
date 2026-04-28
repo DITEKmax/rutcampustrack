@@ -116,7 +116,17 @@ public class NotificationHistoryConsumer extends AbstractEventConsumer {
             case "late_checkin.requested" -> Optional.of(NotificationType.LATE_CHECKIN_REQUESTED);
             case "late_checkin.decided", "late_checkin.decision" -> Optional.of(decisionType(payload,
                     NotificationType.LATE_CHECKIN_APPROVED, NotificationType.LATE_CHECKIN_REJECTED));
-            case "attendance.marked" -> Optional.of(NotificationType.ATTENDANCE_RED_ZONE);
+            // attendance.marked записываем в историю студента ТОЛЬКО если статус
+            // выставил староста вручную (marked_by="headman"). Self-check-in и
+            // авто-absent (marked_by="self"|"auto") — это не уведомление, в
+            // history не попадают.
+            case "attendance.marked" -> "headman".equals(payload.get("marked_by"))
+                    ? Optional.of(NotificationType.ATTENDANCE_MARKED_BY_HEADMAN)
+                    : Optional.empty();
+            // lesson.reminder — broadcast по группе, без payload.user_id.
+            // В per-user history не попадает (как и lesson.started/closed/
+            // cancelled). PWA/web-panel рендерят через live STOMP +
+            // sessionStorage-кеш текущей сессии.
             default -> Optional.empty();
         };
     }

@@ -52,9 +52,15 @@ export function PullToRefresh({
     const el = rootRef.current
     if (!el || disabled) return
 
-    const findScrollable = (target: HTMLElement | null): HTMLElement | null => {
-      let node: HTMLElement | null = target
-      while (node && node !== el) {
+    // Walk UP from the PullToRefresh root — its parent (motion.div / Outlet
+     // wrapper) usually isn't overflow, the real scroll container is <main> in
+     // AppShell. Searching from e.target down to `el` (as the previous version
+     // did) returned el.parentElement, which had scrollTop=0 forever and made
+     // the handler think the user was always at the top — blocking upward
+     // scrolls anywhere on the page after the first downward gesture.
+    const findScrollable = (): HTMLElement | null => {
+      let node: HTMLElement | null = el.parentElement
+      while (node) {
         const style = getComputedStyle(node)
         const overflowY = style.overflowY
         if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
@@ -62,13 +68,13 @@ export function PullToRefresh({
         }
         node = node.parentElement
       }
-      return el.parentElement
+      return (document.scrollingElement as HTMLElement | null) ?? document.documentElement
     }
 
     const onTouchStart = (e: TouchEvent) => {
       if (phase === 'refreshing') return
       if (e.touches.length !== 1) return
-      const scrollable = findScrollable(e.target as HTMLElement)
+      const scrollable = findScrollable()
       if (scrollable && scrollable.scrollTop > 0) {
         startYRef.current = null
         return

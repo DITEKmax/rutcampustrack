@@ -16,6 +16,7 @@ import ru.rutcampustrack.academic.contract.dto.user.UpdateAvatarRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
+import ru.rutcampustrack.academic.contract.dto.user.UserSummaryResponse;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
@@ -126,6 +127,16 @@ public class UserController implements UserApi {
         List<User> teachers = userService.listTeachers();
         List<EntityModel<UserResponse>> models = teachers.stream()
                 .map(userAssembler::toModel)
+                .toList();
+        return ResponseEntity.ok(CollectionModel.of(models));
+    }
+
+    @Override
+    @RequireRole({STUDENT, TEACHER, ADMIN})
+    public ResponseEntity<CollectionModel<EntityModel<UserSummaryResponse>>> getUsersByIds(List<Long> ids) {
+        List<User> users = userService.findUsersByIds(ids);
+        List<EntityModel<UserSummaryResponse>> models = users.stream()
+                .map(u -> EntityModel.of(new UserSummaryResponse(u.getId(), u.getDisplayName())))
                 .toList();
         return ResponseEntity.ok(CollectionModel.of(models));
     }

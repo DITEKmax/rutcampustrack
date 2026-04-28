@@ -37,16 +37,34 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query(value = "SELECT EXISTS (SELECT 1 FROM users WHERE employee_number = :employeeNumber)", nativeQuery = true)
     boolean existsByEmployeeNumber(@Param("employeeNumber") String employeeNumber);
 
-    List<User> findByGroupId(Long groupId);
-    Page<User> findByGroupId(Long groupId, Pageable pageable);
+    // Group/role listings: ORDER BY ... COLLATE "ru_icu" so Cyrillic surnames
+    // sort alphabetically (Ё between Е and Ж, not at end). Index: idx_users_lastname_icu (V22).
+    // Native queries — JPQL can't express COLLATE clauses.
 
-    @Query(value = "SELECT * FROM users WHERE role = cast(:role AS user_role) AND status <> 'archived'", nativeQuery = true)
+    @Query(value = "SELECT * FROM users WHERE group_id = :groupId AND status <> 'archived' "
+            + "ORDER BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
+            nativeQuery = true)
+    List<User> findByGroupId(@Param("groupId") Long groupId);
+
+    @Query(value = "SELECT * FROM users WHERE group_id = :groupId AND status <> 'archived' "
+            + "ORDER BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
+            countQuery = "SELECT COUNT(*) FROM users WHERE group_id = :groupId AND status <> 'archived'",
+            nativeQuery = true)
+    Page<User> findByGroupId(@Param("groupId") Long groupId, Pageable pageable);
+
+    @Query(value = "SELECT * FROM users WHERE role = cast(:role AS user_role) AND status <> 'archived' "
+            + "ORDER BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
+            countQuery = "SELECT COUNT(*) FROM users WHERE role = cast(:role AS user_role) AND status <> 'archived'",
+            nativeQuery = true)
     Page<User> findByRole(@Param("role") String role, Pageable pageable);
 
     @Query(value = "SELECT COUNT(*) FROM users WHERE role = cast(:role AS user_role) AND status <> 'archived'", nativeQuery = true)
     long countByRole(@Param("role") String role);
 
-    @Query(value = "SELECT * FROM users WHERE group_id = :groupId AND role = cast(:role AS user_role) AND status <> 'archived'", nativeQuery = true)
+    @Query(value = "SELECT * FROM users WHERE group_id = :groupId AND role = cast(:role AS user_role) AND status <> 'archived' "
+            + "ORDER BY last_name COLLATE \"ru_icu\", first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
+            countQuery = "SELECT COUNT(*) FROM users WHERE group_id = :groupId AND role = cast(:role AS user_role) AND status <> 'archived'",
+            nativeQuery = true)
     Page<User> findByGroupIdAndRole(@Param("groupId") Long groupId, @Param("role") String role, Pageable pageable);
 
     /** Login generation — atomic via PostgreSQL sequence (per D-03/D-04) */

@@ -45,8 +45,19 @@ class MigrationConcurrentlyTest {
      * регрессию (issue #3961) — CONCURRENTLY вешал pg_advisory_lock,
      * блокируя всё IT (locally + CI). Future migrations на заполненной
      * audit_log должны использовать CONCURRENTLY + executeInTransaction=false.
+     *
+     * <p>2026-04-28: bumped 20→22. V21 (CREATE COLLATION ru_icu — no INDEX) +
+     * V22 (CREATE INDEX idx_users_lastname_icu без CONCURRENTLY).
+     * Изначально V22 была написана с CONCURRENTLY + companion .sql.conf
+     * (executeInTransaction=false), но Flyway 10.20.1 issue #3961 повесил
+     * Spring context при первом старте в e2e (контейнер unhealthy через
+     * 3 минуты, dependency_failed_to_start). Откатили на plain CREATE INDEX
+     * по тому же паттерну, что V20 audit_log:
+     *   • в текущем prod (~300 строк users) write lock = миллисекунды,
+     *   • после апгрейда Flyway до ≥10.21 (issue #3961 закрыт) можно будет
+     *     выпустить V{N}__reindex_users_concurrently если объём вырастет.
      */
-    private static final int BASELINE_CUTOFF = 20;
+    private static final int BASELINE_CUTOFF = 22;
 
     private static final Path MIGRATION_DIR =
             Path.of("src/main/resources/db/migration");

@@ -28,6 +28,9 @@ import ru.rutcampustrack.academic.contract.dto.user.UpdateAvatarRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UpdateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
+import ru.rutcampustrack.academic.contract.dto.user.UserSummaryResponse;
+
+import java.util.List;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 
@@ -141,4 +144,19 @@ public interface UserApi {
     @ApiResponse(responseCode = "200", description = "Список преподавателей")
     @GetMapping("/teachers")
     ResponseEntity<CollectionModel<EntityModel<UserResponse>>> listTeachers();
+
+    @Operation(
+            summary = "Batch-резолв display-имён пользователей по ID",
+            description = "Возвращает только {id, fullName} для каждого найденного пользователя. " +
+                    "Доступно STUDENT/TEACHER/ADMIN — намеренно не отдаёт PII (login/email/telegramId/role). " +
+                    "Используется для подстановки имён в audit-местах (cancelledBy, и т.п.). " +
+                    "Cap: max 100 ids на один запрос. Несуществующие ID молча пропускаются.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Список найденных профилей (порядок не гарантируется)"),
+            @ApiResponse(responseCode = "400", description = "Превышен лимит 100 ids или ids пуст")
+    })
+    @GetMapping("/by-ids")
+    ResponseEntity<CollectionModel<EntityModel<UserSummaryResponse>>> getUsersByIds(
+            @Parameter(description = "Список ID пользователей через запятую (1..100 элементов)")
+            @RequestParam List<Long> ids);
 }

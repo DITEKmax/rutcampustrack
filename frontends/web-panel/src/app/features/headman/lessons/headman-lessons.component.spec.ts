@@ -32,6 +32,12 @@ const SUBJECTS = [{ id: 1, name: 'Алгебра' }, { id: 2, name: 'Физик�
 function makeApi(overrides: Partial<HeadmanApiService> = {}): HeadmanApiService {
   return {
     getGroupLessons: vi.fn(() => of({ _embedded: { lessonResponseList: LESSONS } })),
+    // C6: defensive default — компонент дёргает forkJoin([getGroupLessons, getOneOffLessons])
+    // в любом kind кроме 'cancelled'. Полное покрытие one-off merge — в C10.
+    getOneOffLessons: vi.fn(() => of({ _embedded: { oneOffLessonResponseList: [] } })),
+    // C4: defensive default — листинг семестров вызывается только при period='semester'.
+    // По default'у period='month' → не вызывается, но мок защищает от регрессий.
+    listSemesters: vi.fn(() => of({ _embedded: { semesterResponseList: [] } })),
     listSubjects: vi.fn(() => of({ _embedded: { subjectResponseList: SUBJECTS } })),
     cancelLesson: vi.fn(() => of(null)),
     restoreLesson: vi.fn(() => of(null)),
@@ -143,5 +149,217 @@ describe('HeadmanLessonsComponent', () => {
     });
     expect(component.error()).toBeTruthy();
     expect(component.loading()).toBe(false);
+  });
+});
+
+describe('HeadmanLessonsComponent — period chip (DEV-C4)', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  it('default period = "month"', () => {
+    const { component } = setup();
+    expect(component.period()).toBe('month');
+    expect(component.pageTitle()).toBe('Пары на месяц');
+  });
+
+  it('switching to "today" reloads with single-day range', () => {
+    const { component, api } = setup();
+    (api.getGroupLessons as any).mockClear();
+    component.onPeriodChange('today');
+    expect(component.period()).toBe('today');
+    expect(api.getGroupLessons).toHaveBeenCalledTimes(1);
+    const [, dateFrom, dateTo] = (api.getGroupLessons as any).mock.calls[0];
+    expect(dateFrom).toBe(dateTo); // single day
+    expect(component.pageTitle()).toBe('Пары на сегодня');
+  });
+
+  it('switching to "semester" calls listSemesters, then refetch with semester range', () => {
+    const SEMESTER = { id: 7, name: 'Весенний 2025/2026', startDate: '2026-02-09', endDate: '2026-06-14', active: true };
+    const { component, api } = setup({
+      listSemesters: vi.fn(() => of({ _embedded: { semesterResponseList: [SEMESTER] } })),
+    });
+    (api.getGroupLessons as any).mockClear();
+    component.onPeriodChange('semester');
+    expect(api.listSemesters).toHaveBeenCalled();
+    expect(component.activeSemester()?.startDate).toBe('2026-02-09');
+    const [, from, to] = (api.getGroupLessons as any).mock.calls[0];
+    expect(from).toBe('2026-02-09');
+    expect(to).toBe('2026-06-14');
+    expect(component.pageTitle()).toBe('Пары на семестр (Весенний 2025/2026)');
+  });
+
+  it('switching to "semester" without active semester sets error', () => {
+    const { component } = setup({
+      listSemesters: vi.fn(() => of({ _embedded: { semesterResponseList: [] } })),
+    });
+    component.onPeriodChange('semester');
+    expect(component.error()).toContain('Активный семестр');
+  });
+
+  it('onPeriodChange ignores same value', () => {
+    const { component, api } = setup();
+    (api.getGroupLessons as any).mockClear();
+    component.onPeriodChange('month'); // same as default
+    expect(api.getGroupLessons).not.toHaveBeenCalled();
+  });
+});
+
+describe('HeadmanLessonsComponent — kind chip (DEV-C5/C6)', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  it('default kind = "all" → status filter includes cancelled, fetches one-off', () => {
+    const { api } = setup();
+    expect(api.getGroupLessons).toHaveBeenCalledWith(5, expect.any(String), expect.any(String), 'planned,active,closed,cancelled');
+    expect(api.getOneOffLessons).toHaveBeenCalled();
+  });
+
+  it('kind="cancelled" → status filter only cancelled, one-off NOT fetched', () => {
+    const { component, api } = setup();
+    (api.getGroupLessons as any).mockClear();
+    (api.getOneOffLessons as any).mockClear();
+    component.onKindChange('cancelled');
+    expect(api.getGroupLessons).toHaveBeenCalledWith(5, expect.any(String), expect.any(String), 'cancelled');
+    expect(api.getOneOffLessons).not.toHaveBeenCalled();
+  });
+
+  it('kind="oneoff" → only one-off rendered, template skipped', () => {
+    const ONE_OFF = { id: 999, groupId: 5, subjectId: 1, semesterId: 7, date: '2026-04-15', lessonNumber: 3, classroom: 'A1' };
+    const { component } = setup({
+      getOneOffLessons: vi.fn(() => of({ _embedded: { oneOffLessonResponseList: [ONE_OFF] } })),
+    });
+    component.onKindChange('oneoff');
+    const all = component.lessons();
+    expect(all.every(l => l.source === 'oneoff')).toBe(true);
+    expect(all.length).toBe(1);
+    expect(all[0].id).toBe(999);
+  });
+
+  it('one-off in same slot as cancelled template = replacement=true', () => {
+    // CANCELLED template на (date=2026-04-15, lessonNumber=2) уже в LESSONS[1].
+    const REPLACEMENT_OO = {
+      id: 555, groupId: 5, subjectId: 1, semesterId: 7,
+      date: '2026-04-15', lessonNumber: 2, classroom: 'A99',
+    };
+    const { component } = setup({
+      getOneOffLessons: vi.fn(() => of({ _embedded: { oneOffLessonResponseList: [REPLACEMENT_OO] } })),
+    });
+    const oo = component.lessons().find(l => l.id === 555);
+    expect(oo?.source).toBe('oneoff');
+    expect(oo?.replacement).toBe(true);
+  });
+
+  it('one-off in non-conflicting slot = replacement=undefined', () => {
+    const STANDALONE_OO = {
+      id: 777, groupId: 5, subjectId: 1, semesterId: 7,
+      date: '2026-04-20', lessonNumber: 5, classroom: 'B5',
+    };
+    const { component } = setup({
+      getOneOffLessons: vi.fn(() => of({ _embedded: { oneOffLessonResponseList: [STANDALONE_OO] } })),
+    });
+    const oo = component.lessons().find(l => l.id === 777);
+    expect(oo?.replacement).toBeFalsy();
+  });
+});
+
+describe('HeadmanLessonsComponent — paginator (DEV-C8)', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  it('default pageSize = 50, pageIndex = 0', () => {
+    const { component } = setup();
+    expect(component.pageSize()).toBe(50);
+    expect(component.pageIndex()).toBe(0);
+  });
+
+  it('onPage updates pageIndex and pageSize', () => {
+    const { component } = setup();
+    component.onPage({ pageIndex: 2, pageSize: 100, length: 200 } as any);
+    expect(component.pageIndex()).toBe(2);
+    expect(component.pageSize()).toBe(100);
+  });
+
+  it('changing kind chip resets pageIndex to 0', () => {
+    const { component } = setup();
+    component.onPage({ pageIndex: 3, pageSize: 50, length: 200 } as any);
+    expect(component.pageIndex()).toBe(3);
+    component.onKindChange('cancelled');
+    expect(component.pageIndex()).toBe(0);
+  });
+
+  it('pagedDayGroups slices correctly', () => {
+    const { component } = setup();
+    // У нас 2 day-groups (2026-04-15, 2026-04-16). С pageSize=1 на странице 0 — первая, на странице 1 — вторая.
+    component.onPage({ pageIndex: 0, pageSize: 1, length: 2 } as any);
+    expect(component.pagedDayGroups().length).toBe(1);
+    expect(component.pagedDayGroups()[0].date).toBe('2026-04-15');
+    component.onPage({ pageIndex: 1, pageSize: 1, length: 2 } as any);
+    expect(component.pagedDayGroups()[0].date).toBe('2026-04-16');
+  });
+});
+
+describe('HeadmanLessonsComponent — cancellation audit (DEV-C9)', () => {
+  beforeEach(() => TestBed.resetTestingModule());
+
+  it('batch-резолвит имена авторов отмен после загрузки', () => {
+    const CANCELLED_LESSONS = [
+      { ...LESSONS[1], cancelledBy: 42, cancelledAt: '2026-04-23T11:32:00Z' },
+      { ...LESSONS[0], id: 200, status: 'CANCELLED', cancelReason: 'X', cancelledBy: 42, cancelledAt: '2026-04-23T12:00:00Z' },
+      { ...LESSONS[2], id: 201, status: 'CANCELLED', cancelReason: 'Y', cancelledBy: 99, cancelledAt: '2026-04-22T08:00:00Z' },
+    ];
+    const getUsersByIds = vi.fn(() => of({ _embedded: { userSummaryResponseList: [
+      { id: 42, fullName: 'Иванов Иван Иванович' },
+      { id: 99, fullName: 'Петров Пётр' },
+    ] } }));
+    const { component } = setup({
+      getGroupLessons: vi.fn(() => of({ _embedded: { lessonResponseList: CANCELLED_LESSONS } })),
+      getUsersByIds: getUsersByIds as any,
+    });
+    // Должен быть вызван ровно один раз, с уникальными IDs (42, 99) — без дубля 42.
+    expect(getUsersByIds).toHaveBeenCalledTimes(1);
+    const calledIds = getUsersByIds.mock.calls[0][0] as number[];
+    expect(calledIds.sort()).toEqual([42, 99]);
+    expect(component.userNames().get(42)).toBe('Иванов Иван Иванович');
+  });
+
+  it('cancellerDisplay форматирует «Отменена ... — Имя» с резолвом', () => {
+    const lesson = {
+      ...LESSONS[1],
+      cancelledBy: 42,
+      cancelledAt: '2026-04-23T11:32:00Z',
+    } as any;
+    const { component } = setup({
+      getGroupLessons: vi.fn(() => of({ _embedded: { lessonResponseList: [lesson] } })),
+      getUsersByIds: vi.fn(() => of({ _embedded: { userSummaryResponseList: [{ id: 42, fullName: 'Сидоров С.С.' }] } })) as any,
+    });
+    const display = component.cancellerDisplay(lesson);
+    expect(display).toContain('Отменена');
+    expect(display).toContain('Сидоров С.С.');
+    expect(display).toContain('апреля');
+  });
+
+  it('cancellerDisplay показывает «вами» для cancelledBy === currentUser.id', () => {
+    const lesson = {
+      ...LESSONS[1],
+      cancelledBy: 1, // совпадает с currentUser.id из setup()
+      cancelledAt: '2026-04-23T11:32:00Z',
+    } as any;
+    const { component } = setup({
+      getGroupLessons: vi.fn(() => of({ _embedded: { lessonResponseList: [lesson] } })),
+    });
+    expect(component.cancellerDisplay(lesson)).toContain('вами');
+  });
+
+  it('cancellerDisplay returns null если нет cancelledAt', () => {
+    const { component } = setup();
+    expect(component.cancellerDisplay({ status: 'CANCELLED', cancelledAt: null } as any)).toBeNull();
+  });
+
+  it('тихо degrades если getUsersByIds падает', () => {
+    const lesson = { ...LESSONS[1], cancelledBy: 42, cancelledAt: '2026-04-23T11:32:00Z' };
+    const { component } = setup({
+      getGroupLessons: vi.fn(() => of({ _embedded: { lessonResponseList: [lesson] } })),
+      getUsersByIds: vi.fn(() => throwError(() => new Error('500'))) as any,
+    });
+    // Никаких error / snackbar — данные lessons всё равно загрузились.
+    expect(component.error()).toBeNull();
+    expect(component.lessons().length).toBe(1);
   });
 });

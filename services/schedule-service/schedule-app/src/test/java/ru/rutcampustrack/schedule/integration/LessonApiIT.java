@@ -118,10 +118,14 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("CANCELLED")))
-                .andExpect(jsonPath("$.cancelReason", is("Snow day")));
+                .andExpect(jsonPath("$.cancelReason", is("Snow day")))
+                .andExpect(jsonPath("$.cancelledBy").exists())
+                .andExpect(jsonPath("$.cancelledAt").exists());
 
         Lesson saved = lessonRepository.findById(lesson.getId()).orElseThrow();
         org.assertj.core.api.Assertions.assertThat(saved.getStatus()).isEqualTo(LessonStatus.CANCELLED);
+        org.assertj.core.api.Assertions.assertThat(saved.getCancelledBy()).isNotNull();
+        org.assertj.core.api.Assertions.assertThat(saved.getCancelledAt()).isNotNull();
     }
 
     @Test
@@ -189,6 +193,8 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 1));
         lesson.setCancelReason("old reason");
+        lesson.setCancelledBy(99L);
+        lesson.setCancelledAt(java.time.OffsetDateTime.now());
         lessonRepository.save(lesson);
 
         mockMvc.perform(withHeadmanHeaders(
@@ -196,11 +202,15 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("PLANNED")))
-                .andExpect(jsonPath("$.cancelReason", nullValue()));
+                .andExpect(jsonPath("$.cancelReason", nullValue()))
+                .andExpect(jsonPath("$.cancelledBy", nullValue()))
+                .andExpect(jsonPath("$.cancelledAt", nullValue()));
 
         Lesson saved = lessonRepository.findById(lesson.getId()).orElseThrow();
         org.assertj.core.api.Assertions.assertThat(saved.getStatus()).isEqualTo(LessonStatus.PLANNED);
         org.assertj.core.api.Assertions.assertThat(saved.getCancelReason()).isNull();
+        org.assertj.core.api.Assertions.assertThat(saved.getCancelledBy()).isNull();
+        org.assertj.core.api.Assertions.assertThat(saved.getCancelledAt()).isNull();
     }
 
     @Test

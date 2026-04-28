@@ -14,13 +14,25 @@ interface Slice {
 }
 
 function buildSlices(b: StatusBreakdown): Slice[] {
-  const presentExceptForgot = Math.max(0, b.present - b.forgotToCheckin)
+  // Three categories matching the actual attendance model:
+  //   - "Присутствовал" — present (includes approved late check-ins, the
+  //     backend already flips them from absent to present).
+  //   - "Прогул" — absent (includes rejected late check-ins).
+  //   - "Уважит." — excused + freeAttendance. "Свободное посещение" is just
+  //     one of the excuse types the headman picks; for attendance % it's
+  //     equivalent to excused. Splitting them on a summary donut implied a
+  //     non-existent distinction (the previous "Больничный" label for
+  //     freeAttendance was also wrong — illness is a separate excuseType
+  //     that resolves to plain EXCUSED, not FREE_ATTENDANCE).
+  // forgotToCheckin is dropped: it's a count of approved late check-ins and
+  // is already included in `present`, so showing it as its own slice and
+  // subtracting it from present double-counted nothing-meaningful.
+  // cancelled is intentionally not shown (a cancelled lesson is not a
+  // missed lesson and is excluded from the attendance %).
   return [
-    { key: 'present', label: 'Присутствовал', value: presentExceptForgot, color: 'var(--accent-primary)' },
+    { key: 'present', label: 'Присутствовал', value: b.present, color: 'var(--accent-primary)' },
     { key: 'absent', label: 'Прогул', value: b.absent, color: 'var(--accent-danger)' },
-    { key: 'excused', label: 'Уважит.', value: b.excused, color: 'var(--accent-secondary)' },
-    { key: 'free', label: 'Больничный', value: b.freeAttendance, color: 'var(--accent-info)' },
-    { key: 'forgot', label: 'Забыл отметиться', value: b.forgotToCheckin, color: 'var(--accent-warning)' },
+    { key: 'excused', label: 'Уважит.', value: b.excused + b.freeAttendance, color: 'var(--accent-secondary)' },
   ]
 }
 

@@ -44,6 +44,8 @@ public class LessonAssembler {
                 l.getBlockedByUserId(),
                 l.getBlockedAt(),
                 l.getCancelReason(),
+                l.getCancelledBy(),
+                l.getCancelledAt(),
                 l.getCreatedAt()
         );
     }

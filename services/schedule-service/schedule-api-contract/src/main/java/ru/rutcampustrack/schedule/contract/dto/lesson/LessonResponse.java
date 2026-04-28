@@ -37,6 +37,16 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
     private Long blockedByUserId;
     private OffsetDateTime blockedAt;
     private String cancelReason;
+    /**
+     * user_id старосты/админа, отменившего пару (M09 G5, dev branch).
+     * NULL для строк, отменённых до миграции V13, или для не-CANCELLED.
+     */
+    private Long cancelledBy;
+    /**
+     * Момент отмены UTC. NULL для строк, отменённых до миграции V13,
+     * или для не-CANCELLED.
+     */
+    private OffsetDateTime cancelledAt;
     private OffsetDateTime createdAt;
 
     public LessonResponse() {}
@@ -48,7 +58,7 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
                            boolean geoBlocked, String cancelReason, OffsetDateTime createdAt) {
         this(id, scheduleItemId, groupId, subjectId, date, status,
                 dayOfWeek, lessonNumber, startTime, endTime, weekType, room,
-                geoBlocked, false, null, null, cancelReason, createdAt);
+                geoBlocked, false, null, null, cancelReason, null, null, createdAt);
     }
 
     public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
@@ -58,6 +68,20 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
                            boolean geoBlocked, boolean blockedByHeadman,
                            Long blockedByUserId, OffsetDateTime blockedAt,
                            String cancelReason, OffsetDateTime createdAt) {
+        this(id, scheduleItemId, groupId, subjectId, date, status,
+                dayOfWeek, lessonNumber, startTime, endTime, weekType, room,
+                geoBlocked, blockedByHeadman, blockedByUserId, blockedAt,
+                cancelReason, null, null, createdAt);
+    }
+
+    public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
+                           LocalDate date, LessonStatus status,
+                           Short dayOfWeek, Short lessonNumber, LocalTime startTime,
+                           LocalTime endTime, WeekType weekType, String room,
+                           boolean geoBlocked, boolean blockedByHeadman,
+                           Long blockedByUserId, OffsetDateTime blockedAt,
+                           String cancelReason, Long cancelledBy, OffsetDateTime cancelledAt,
+                           OffsetDateTime createdAt) {
         this.id = id;
         this.scheduleItemId = scheduleItemId;
         this.groupId = groupId;
@@ -75,6 +99,8 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
         this.blockedByUserId = blockedByUserId;
         this.blockedAt = blockedAt;
         this.cancelReason = cancelReason;
+        this.cancelledBy = cancelledBy;
+        this.cancelledAt = cancelledAt;
         this.createdAt = createdAt;
     }
 
@@ -144,6 +170,14 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
 
     public String getCancelReason() {
         return cancelReason;
+    }
+
+    public Long getCancelledBy() {
+        return cancelledBy;
+    }
+
+    public OffsetDateTime getCancelledAt() {
+        return cancelledAt;
     }
 
     public OffsetDateTime getCreatedAt() {

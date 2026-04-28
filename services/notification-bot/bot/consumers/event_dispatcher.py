@@ -30,7 +30,6 @@ class EventDispatcher:
         redis_client: ReminderRedisClient,
         config: Settings,
         otp_tracker: OtpMessageTracker,
-        reminder_scheduler=None,  # Optional — injected by __main__.py (Plan 25-02)
         request_tracker: RequestMessageTracker | None = None,
     ) -> None:
         self._bot = bot
@@ -39,7 +38,6 @@ class EventDispatcher:
         self._redis_client = redis_client
         self._config = config
         self._otp_tracker = otp_tracker
-        self._reminder_scheduler = reminder_scheduler
         self._request_tracker = request_tracker
 
         # Import handlers here to avoid circular imports at module level
@@ -53,6 +51,8 @@ class EventDispatcher:
         from bot.notifications.lesson_closed import handle_lesson_closed
         from bot.notifications.lesson_one_off_cancelled import handle_lesson_one_off_cancelled
         from bot.notifications.lesson_one_off_created import handle_lesson_one_off_created
+        from bot.notifications.lesson_reminder import handle_lesson_reminder
+        from bot.notifications.lesson_started import handle_lesson_started
         from bot.notifications.otp_requested import handle_otp_requested
         from bot.notifications.otp_verified import handle_otp_verified
 
@@ -61,7 +61,21 @@ class EventDispatcher:
 
         # Handler registry: event_type -> async callable(event: dict)
         self._handlers: dict[str, Callable[[dict], Awaitable[None]]] = {
-            "lesson.started": lambda event: self._handle_lesson_started_with_scheduling(event),
+            "lesson.started": lambda event: handle_lesson_started(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+                redis_client=self._redis_client,
+                config=self._config,
+            ),
+            "lesson.reminder": lambda event: handle_lesson_reminder(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+                redis_client=self._redis_client,
+            ),
             "lesson.cancelled": lambda event: handle_lesson_cancelled(
                 event,
                 bot=self._bot,
@@ -115,7 +129,6 @@ class EventDispatcher:
                 bot=self._bot,
                 academic_client=self._academic_client,
                 redis_client=self._redis_client,
-                reminder_scheduler=self._reminder_scheduler,
             ),
             "attendance.marked": lambda event: handle_attendance_marked(
                 event,
@@ -231,32 +244,6 @@ class EventDispatcher:
                     exc_info=True,
                 )
         await self._request_tracker.delete(kind, request_id)
-
-    async def _handle_lesson_started_with_scheduling(self, event: dict) -> None:
-        """Handle lesson.started: send initial messages then schedule reminders.
-
-        This wrapper calls handle_lesson_started (NOTIF-01) and then, if a
-        ReminderScheduler is available, schedules midpoint and near-end reminders
-        (NOTIF-02 and NOTIF-03).
-        """
-        from bot.notifications.lesson_started import handle_lesson_started
-
-        await handle_lesson_started(
-            event,
-            bot=self._bot,
-            academic_client=self._academic_client,
-            send_queue=self._send_queue,
-            redis_client=self._redis_client,
-            config=self._config,
-        )
-        if self._reminder_scheduler is not None:
-            payload = event.get("payload", {})
-            lesson_id = payload.get("lesson_id")
-            group_id = payload.get("group_id")
-            start_time = payload.get("start_time")
-            end_time = payload.get("end_time")
-            if all(v is not None for v in [lesson_id, group_id, start_time, end_time]):
-                self._reminder_scheduler.schedule_reminders(lesson_id, group_id, start_time, end_time)
 
     async def dispatch(self, event: dict) -> None:
         """Dispatch an event dict to the appropriate handler.

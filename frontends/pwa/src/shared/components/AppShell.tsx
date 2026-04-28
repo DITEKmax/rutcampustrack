@@ -39,12 +39,17 @@ export function AppShell() {
         }}
       >
         {/*
-         * Single Suspense boundary above AnimatePresence. When a lazy route
-         * chunk suspends, React does not blow away the previous tree —
-         * AnimatePresence's exit animation can finish before the new tree
-         * commits. Keeping Suspense *inside* the motion.div caused transient
-         * black screens (no fallback, no previous content) when switching
-         * from a non-lazy route (/checkin) to a still-loading lazy one.
+         * Two Suspense boundaries:
+         * - Outer: cold-start safety net so SOMETHING renders if no previous
+         *   tree exists (first navigation after refresh).
+         * - Inner (under motion.div): keeps the suspended chunk from delaying
+         *   AnimatePresence's mode="wait" exit. Without it, the new motion.div
+         *   only mounts AFTER the old one finishes exit AND the lazy chunk
+         *   resolves — and by then framer-motion has already skipped the
+         *   `animate` pass, leaving the page at opacity:0. Symptom: blank
+         *   screen on /homework or /schedule until something (e.g. opening the
+         *   drawer) forces a re-render. Inner Suspense lets motion.div mount
+         *   immediately with a spinner, then swap in real content when ready.
          */}
         <Suspense fallback={<LoadingSpinner />}>
           <AnimatePresence mode="wait" initial={false}>
@@ -58,7 +63,9 @@ export function AppShell() {
                 ease: 'easeOut',
               }}
             >
-              <Outlet />
+              <Suspense fallback={<LoadingSpinner />}>
+                <Outlet />
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </Suspense>

@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -361,5 +362,30 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
         ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.geoBlocked", is(false)));
+    }
+
+    // --- VIEW-01: lessons listing with case-insensitive status filter ---
+
+    /**
+     * Regression: web-panel headman lessons page sends
+     * {@code ?status=planned,active,closed,cancelled} (lowercase, CSV).
+     * Without {@link ru.rutcampustrack.schedule.config.WebConfig} the Spring
+     * binder fails to parse lowercase enum values and returns 400.
+     */
+    @Test
+    void getLessons_lowercaseStatusCsv_isAccepted() throws Exception {
+        ScheduleItem item = createScheduleItem();
+        createLesson(item.getId(), LessonStatus.PLANNED, LocalDate.of(2026, 4, 28));
+        createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 29));
+
+        mockMvc.perform(withHeadmanHeaders(
+                get("/schedule/groups/" + GROUP_ID + "/lessons")
+                        .param("dateFrom", "2026-04-28")
+                        .param("dateTo", "2026-05-27")
+                        .param("size", "500")
+                        .param("status", "planned,active,closed,cancelled")
+        ))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.totalElements", is(2)));
     }
 }

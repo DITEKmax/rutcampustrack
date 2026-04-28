@@ -1,6 +1,6 @@
 import { Suspense, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { AppHeader } from './AppHeader'
 import { BottomNav } from './BottomNav'
 import { DrawerMenu } from './DrawerMenu'
@@ -38,36 +38,19 @@ export function AppShell() {
           paddingBottom: 'calc(64px + env(safe-area-inset-bottom))',
         }}
       >
-        {/*
-         * Two Suspense boundaries:
-         * - Outer: cold-start safety net so SOMETHING renders if no previous
-         *   tree exists (first navigation after refresh).
-         * - Inner (under motion.div): keeps the suspended chunk from delaying
-         *   AnimatePresence's mode="wait" exit. Without it, the new motion.div
-         *   only mounts AFTER the old one finishes exit AND the lazy chunk
-         *   resolves — and by then framer-motion has already skipped the
-         *   `animate` pass, leaving the page at opacity:0. Symptom: blank
-         *   screen on /homework or /schedule until something (e.g. opening the
-         *   drawer) forces a re-render. Inner Suspense lets motion.div mount
-         *   immediately with a spinner, then swap in real content when ready.
-         */}
+        {/* Mount the next route immediately; exit-wait animations can strand lazy pages at opacity:0. */}
         <Suspense fallback={<LoadingSpinner />}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={location.pathname}
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-              transition={{
-                duration: reduceMotion ? 0 : 0.2,
-                ease: 'easeOut',
-              }}
-            >
-              <Suspense fallback={<LoadingSpinner />}>
-                <Outlet />
-              </Suspense>
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            key={location.pathname}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.16,
+              ease: 'easeOut',
+            }}
+          >
+            <Outlet />
+          </motion.div>
         </Suspense>
       </main>
 

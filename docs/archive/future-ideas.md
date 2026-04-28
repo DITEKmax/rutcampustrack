@@ -718,7 +718,58 @@ NotificationCenter на server-side useInfiniteQuery + optimistic mutations.
 history. v0.1: gRPC resolve `headman_id` по `group_id` →
 дополнительный persist для actionable items.
 
-**Оценка пакета (N1-N11):** 5-7 человеко-дней.
+### N12. Per-user `lesson.reminder` history (notification unification follow-up)
+
+**Источник:** ChatGPT/Codex discussion 2026-04-28 после итерации
+«Унификация уведомлений: PWA + web-panel + Telegram + reminders».
+
+**Текущее состояние:** `schedule-service` публикует один групповой
+`lesson.reminder` без `payload.user_id`. `notification-web` live-роутит
+его в `/topic/group/{group_id}`, но `NotificationHistoryConsumer`
+осознанно skip'ает событие: `notification_history` — per-user storage,
+а у group event нет ответа на вопрос «какому студенту сохранить запись».
+
+**Продуктовый риск:** live-уведомление может появиться в текущей
+PWA/web-сессии, но после F5 / relogin / открытия другого устройства
+reminder исчезает из списка, хотя пользователь ожидает правило
+«уведомления хранятся 30 дней». Плюс group-level live event не знает,
+кто уже отметился, поэтому frontend без дополнительной проверки может
+показать reminder студенту, который уже поставил отметку.
+
+**Идея:** сделать `lesson.reminder` адресным user-facing событием:
+1. `schedule-service` остаётся источником таймера: «у пары наступила
+   середина».
+2. `attendance-service` получает этот сигнал и выбирает студентов,
+   у которых по `lesson_id` ещё нет attendance record со статусом
+   `present` / `excused` / `free_attendance`.
+3. Для каждого такого студента публикуется отдельный `lesson.reminder`
+   с `payload.user_id` + lesson metadata (`lesson_id`, `group_id`,
+   `subject_id`, `subject_name`, `lesson_number`, `start_time`,
+   `end_time`, `phase`).
+4. `NotificationHistoryConsumer.mapType("lesson.reminder")` сохраняет
+   такие события как `NotificationType.LESSON_REMINDER`.
+5. Bot, web, PWA и WebPush работают от одного адресного события,
+   вместо разной фильтрации в каждом consumer'е.
+
+**Важно не делать:** просто добавить `lesson.reminder → LESSON_REMINDER`
+в `mapType` на текущем payload. Без `user_id` это либо не сохранится,
+либо начнёт писать reminder всем студентам группы, включая уже
+отметившихся.
+
+**Открытый дизайн-вопрос:** toggle `reminders` сейчас локальный в
+PWA/web (`localStorage`) и отдельный в Telegram (`/prefs`). Для полной
+симметрии WebPush/background-delivery нужен server-side prefs storage
+или отдельное решение: иначе service worker/backend не знают, что
+конкретный пользователь выключил reminders в PWA.
+
+**Когда делать:** отдельным follow-up после CI-fix notification
+unification, перед заявлением что reminders полностью соответствуют
+«TG + PWA + web + 30-day history».
+
+**Оценка:** 1-2 дня (attendance fan-out + event schema + history
+consumer + WebPush eligibility + tests).
+
+**Оценка пакета (N1-N12):** 6-9 человеко-дней.
 
 ---
 

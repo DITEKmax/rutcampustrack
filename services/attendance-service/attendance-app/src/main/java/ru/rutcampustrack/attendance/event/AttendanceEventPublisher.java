@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -37,15 +38,32 @@ public class AttendanceEventPublisher {
 
     /**
      * Публикует attendance.marked event для документа.
+     *
+     * <p>{@code subjectName} — опциональное обогащение для consumer'ов
+     * (NOTIF unification): notification-bot и frontends показывают студенту
+     * "Староста поставил «Х» на паре №N {Предмет}" при manual mark
+     * ({@code marked_by="headman"}). Если null/пусто — поле просто не
+     * появляется в payload, существующие consumer'ы не падают.
      */
-    public void publishMarked(AttendanceDocument doc) {
-        Map<String, Object> payload = Map.of(
-                "lesson_id", doc.getLessonId(),
-                "user_id", doc.getUserId(),
-                "group_id", doc.getGroupId(),
-                "status", doc.getStatus().name().toLowerCase(),
-                "marked_by", doc.getSource().name().toLowerCase()
-        );
+    public void publishMarked(AttendanceDocument doc, String subjectName) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("lesson_id", doc.getLessonId());
+        payload.put("user_id", doc.getUserId());
+        payload.put("group_id", doc.getGroupId());
+        payload.put("status", doc.getStatus().name().toLowerCase());
+        payload.put("marked_by", doc.getSource().name().toLowerCase());
+        if (doc.getLessonNumber() != null) {
+            payload.put("lesson_number", doc.getLessonNumber());
+        }
+        if (doc.getLessonDate() != null) {
+            payload.put("lesson_date", doc.getLessonDate().toString());
+        }
+        if (doc.getSubjectId() != null) {
+            payload.put("subject_id", doc.getSubjectId());
+        }
+        if (subjectName != null && !subjectName.isBlank()) {
+            payload.put("subject_name", subjectName);
+        }
 
         Map<String, Object> envelope = EventEnvelope.build(EVENT_TYPE, payload);
 
@@ -56,5 +74,13 @@ public class AttendanceEventPublisher {
             throw new IllegalStateException("Failed to serialize attendance.marked", e);
         }
         outboxStorage.save(EVENT_TYPE, json);
+    }
+
+    /**
+     * Backward-compat overload — для callers, которые ещё не передают
+     * subjectName (auto-absent через LessonEventService, self check-in).
+     */
+    public void publishMarked(AttendanceDocument doc) {
+        publishMarked(doc, null);
     }
 }

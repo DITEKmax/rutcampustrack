@@ -56,8 +56,26 @@
             "student_geo",
             "headman",
             "auto_scheduler",
-            "late_checkin"
+            "late_checkin",
+            "headman_excuse"
           ]
+        },
+        "lesson_number": {
+          "$ref": "_common.json#/$defs/lessonNumber",
+          "description": "Optional. NOTIF unification: bot/PWA/web показывают студенту 'Староста проставил статус ... на паре №N'."
+        },
+        "lesson_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Optional. ISO-8601 date пары (LocalDate.toString())."
+        },
+        "subject_id": {
+          "type": "integer",
+          "description": "Optional. Subject ID для resolve через cache на consumer."
+        },
+        "subject_name": {
+          "type": "string",
+          "description": "Optional. Имя предмета — обогащение для display, best-effort gRPC lookup в publisher."
         }
       }
     },

@@ -153,7 +153,7 @@ class MarkingServiceTest {
                 LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.PRESENT));
 
         verify(mongoTemplate).upsert(any(), any(), eq(AttendanceDocument.class));
-        verify(eventPublisher).publishMarked(result);
+        verify(eventPublisher).publishMarked(eq(result), any());
         assertThat(result).isNotNull();
         assertThat(result.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
         assertThat(result.getSource()).isEqualTo(AttendanceSource.HEADMAN);
@@ -172,7 +172,7 @@ class MarkingServiceTest {
                 .isInstanceOf(AccessDeniedException.class);
 
         verify(mongoTemplate, never()).upsert(any(), any(), eq(AttendanceDocument.class));
-        verify(eventPublisher, never()).publishMarked(any());
+        verify(eventPublisher, never()).publishMarked(any(), any());
     }
 
     // -------------------------------------------------------------------------
@@ -251,7 +251,7 @@ class MarkingServiceTest {
         AttendanceDocument result = markingService.markAttendance(
                 LESSON_ID, USER_ID, new MarkRequest(AttendanceStatus.EXCUSED));
 
-        verify(eventPublisher).publishMarked(result);
+        verify(eventPublisher).publishMarked(eq(result), any());
     }
 
     // -------------------------------------------------------------------------
@@ -285,7 +285,7 @@ class MarkingServiceTest {
         // M05 audit fix: findAndModify заменил upsert+findOne (bug-hunter 2.1).
         verify(mongoTemplate, org.mockito.Mockito.times(3))
                 .findAndModify(any(), any(), any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
-        verify(eventPublisher, org.mockito.Mockito.times(3)).publishMarked(any());
+        verify(eventPublisher, org.mockito.Mockito.times(3)).publishMarked(any(), any());
     }
 
     /**
@@ -303,7 +303,7 @@ class MarkingServiceTest {
 
         verify(mongoTemplate, never()).findAndModify(any(), any(),
                 any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
-        verify(eventPublisher, never()).publishMarked(any());
+        verify(eventPublisher, never()).publishMarked(any(), any());
     }
 
     /**
@@ -330,7 +330,7 @@ class MarkingServiceTest {
 
         verify(mongoTemplate, never()).findAndModify(any(), any(),
                 any(FindAndModifyOptions.class), eq(AttendanceDocument.class));
-        verify(eventPublisher, never()).publishMarked(any());
+        verify(eventPublisher, never()).publishMarked(any(), any());
     }
 
     /**

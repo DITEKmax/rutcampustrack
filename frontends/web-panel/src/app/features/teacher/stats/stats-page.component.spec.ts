@@ -95,4 +95,20 @@ describe('StatsPageComponent', () => {
     expect(comp.chartEntries()).toHaveLength(1);
     expect(comp.chartEntries()[0].name).toBe('Математика');
   });
+
+  it('derives subjects from teacher assignments when group changes', () => {
+    const fixture = TestBed.createComponent(StatsPageComponent);
+    const comp = fixture.componentInstance;
+    fixture.detectChanges();
+
+    comp.assignments.set([
+      { id: 1, groupId: 10, subjectId: 20, subjectName: 'Математика', teacherId: 1 },
+    ]);
+
+    comp.onGroupChange(10);
+
+    expect(comp.subjects()).toEqual([{ id: 20, name: 'Математика' }]);
+    expect(mockApiService.getSubjects).not.toHaveBeenCalled();
+    expect(mockApiService.getJournal).toHaveBeenCalled();
+  });
 });

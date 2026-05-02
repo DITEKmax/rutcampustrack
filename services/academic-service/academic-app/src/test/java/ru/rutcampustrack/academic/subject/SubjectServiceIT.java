@@ -269,4 +269,41 @@ class SubjectServiceIT extends AbstractAcademicIntegrationTest {
         assertThat(adminBody).contains("Own Group Subject");
         assertThat(adminBody).contains("Other Group Subject");
     }
+
+    @Test
+    void listSubjects_forTeacher_returnsAssignedSubjects() throws Exception {
+        seedOtherGroupAndTeacher();
+
+        Long semesterId = jdbcTemplate.queryForObject(
+                "SELECT id FROM semesters WHERE name = 'Spring 2026'", Long.class);
+        Long assignedSubjectId = jdbcTemplate.queryForObject(
+                "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?) RETURNING id",
+                Long.class, "Assigned Teacher Subject", seedGroupId);
+        jdbcTemplate.queryForObject(
+                "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?) RETURNING id",
+                Long.class, "Unassigned Teacher Subject", seedGroupId);
+        Long otherTeacherSubjectId = jdbcTemplate.queryForObject(
+                "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?) RETURNING id",
+                Long.class, "Other Teacher Subject", otherGroupId);
+
+        jdbcTemplate.update(
+                "INSERT INTO teacher_subject_groups (teacher_id, subject_id, group_id, semester_id) VALUES (?, ?, ?, ?)",
+                seedTeacherId, assignedSubjectId, seedGroupId, semesterId);
+        jdbcTemplate.update(
+                "INSERT INTO teacher_subject_groups (teacher_id, subject_id, group_id, semester_id) VALUES (?, ?, ?, ?)",
+                otherTeacherId, otherTeacherSubjectId, otherGroupId, semesterId);
+
+        MvcResult res = mockMvc.perform(get("/academic/subjects")
+                        .header("X-User-Id", seedTeacherId)
+                        .header("X-User-Role", "TEACHER")
+                        .header("X-Group-Id", "")
+                        .header("X-Is-Headman", "false"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String body = res.getResponse().getContentAsString();
+        assertThat(body).contains("Assigned Teacher Subject");
+        assertThat(body).doesNotContain("Unassigned Teacher Subject");
+        assertThat(body).doesNotContain("Other Teacher Subject");
+    }
 }

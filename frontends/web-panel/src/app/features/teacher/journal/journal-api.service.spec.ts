@@ -46,7 +46,10 @@ describe('JournalApiService', () => {
   it('getMyAssignments() calls GET /api/academic/assignments/my', () => {
     service.getMyAssignments().subscribe();
 
-    const req = httpMock.expectOne('/api/academic/assignments/my');
+    const req = httpMock.expectOne(r =>
+      r.url === '/api/academic/assignments/my' &&
+      r.params.get('size') === '200',
+    );
     expect(req.request.method).toBe('GET');
     req.flush({ _embedded: { assignmentResponseList: [] } });
   });

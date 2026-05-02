@@ -13,7 +13,7 @@ import type {
   AssignmentResponse,
   GroupResponse,
   JournalResponse,
-  SubjectResponse,
+  SubjectOption,
 } from './types';
 
 @Component({
@@ -36,7 +36,7 @@ export class JournalPageComponent implements OnInit {
   private readonly journalApi = inject(JournalApiService);
 
   readonly groups = signal<GroupResponse[]>([]);
-  readonly subjects = signal<SubjectResponse[]>([]);
+  readonly subjects = signal<SubjectOption[]>([]);
   readonly journalData = signal<JournalResponse | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -78,17 +78,22 @@ export class JournalPageComponent implements OnInit {
     this.selectedGroupId.set(groupId);
     this.selectedSubjectId.set(null);
     this.journalData.set(null);
+    this.subjects.set(this.getSubjectsForGroup(groupId));
+  }
 
-    // Filter subjects by assignments for this group
-    const subjectIds = new Set(
-      this.assignments.filter(a => a.groupId === groupId).map(a => a.subjectId),
-    );
-
-    this.journalApi.getSubjects().subscribe({
-      next: subjects => {
-        this.subjects.set(subjects.filter(s => subjectIds.has(s.id)));
-      },
-    });
+  private getSubjectsForGroup(groupId: number): SubjectOption[] {
+    const subjectsById = new Map<number, SubjectOption>();
+    for (const assignment of this.assignments) {
+      if (assignment.groupId !== groupId) {
+        continue;
+      }
+      subjectsById.set(assignment.subjectId, {
+        id: assignment.subjectId,
+        name: assignment.subjectName?.trim() || `Предмет #${assignment.subjectId}`,
+      });
+    }
+    return Array.from(subjectsById.values())
+      .sort((left, right) => left.name.localeCompare(right.name, 'ru'));
   }
 
   loadJournal(): void {

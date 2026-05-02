@@ -8,7 +8,7 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { JournalApiService } from '../journal/journal-api.service';
-import type { AssignmentResponse, GroupResponse, SubjectResponse } from '../journal/types';
+import type { AssignmentResponse, GroupResponse, SubjectOption } from '../journal/types';
 import { deriveStudentChartData, deriveOverallStats, StudentChartData, OverallStats } from './stats-utils';
 import { SubjectChartComponent } from './subject-chart/subject-chart.component';
 import { OverallStatCardComponent } from './overall-stat-card/overall-stat-card.component';
@@ -31,7 +31,7 @@ export class StatsPageComponent implements OnInit {
   private readonly journalApi = inject(JournalApiService);
 
   groups = signal<GroupResponse[]>([]);
-  subjects = signal<SubjectResponse[]>([]);
+  subjects = signal<SubjectOption[]>([]);
   assignments = signal<AssignmentResponse[]>([]);
   selectedGroupId = signal<number | null>(null);
   loading = signal(false);
@@ -65,80 +65,81 @@ export class StatsPageComponent implements OnInit {
     this.overallStats.set({ totalLessons: 0, attendanceRate: 0 });
     this.error.set(null);
 
-    const subjectIds = new Set(
-      this.assignments()
-        .filter(a => a.groupId === groupId)
-        .map(a => a.subjectId),
+    const filtered = this.getSubjectsForGroup(groupId);
+    this.subjects.set(filtered);
+
+    if (filtered.length === 0) {
+      return;
+    }
+
+    this.loading.set(true);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const semesterStart = `${new Date().getFullYear()}-01-01`;
+
+    const requests = filtered.map(subject =>
+      this.journalApi.getJournal(groupId, subject.id, semesterStart, today).pipe(
+        catchError(() => of(null)),
+      ),
     );
 
-    this.journalApi.getSubjects().subscribe({
-      next: subjects => {
-        const filtered = subjects.filter(s => subjectIds.has(s.id));
-        this.subjects.set(filtered);
+    forkJoin(requests).subscribe({
+      next: responses => {
+        const newMap = new Map<string, StudentChartData[]>();
+        responses.forEach((response, index) => {
+          if (response) {
+            const subjectName = filtered[index].name;
+            newMap.set(subjectName, deriveStudentChartData(response));
+          }
+        });
+        this.chartDataMap.set(newMap);
 
-        if (filtered.length === 0) {
-          return;
+        // Compute aggregated overall stats from all responses
+        const validResponses = responses.filter(r => r !== null);
+        if (validResponses.length > 0) {
+          let totalLessons = 0;
+          let totalPresent = 0;
+          let totalRecords = 0;
+          validResponses.forEach(r => {
+            const stats = deriveOverallStats(r!);
+            totalLessons += stats.totalLessons;
+            // Re-count actual records for accurate rate
+            r!.students.forEach(s => {
+              s.records.forEach(cell => {
+                if (cell.status !== 'cancelled') {
+                  totalRecords++;
+                  if (cell.status === 'present') totalPresent++;
+                }
+              });
+            });
+          });
+          this.overallStats.set({
+            totalLessons,
+            attendanceRate: totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0,
+          });
         }
 
-        this.loading.set(true);
-
-        const today = new Date().toISOString().slice(0, 10);
-        const semesterStart = `${new Date().getFullYear()}-01-01`;
-
-        const requests = filtered.map(subject =>
-          this.journalApi.getJournal(groupId, subject.id, semesterStart, today).pipe(
-            catchError(() => of(null)),
-          ),
-        );
-
-        forkJoin(requests).subscribe({
-          next: responses => {
-            const newMap = new Map<string, StudentChartData[]>();
-            responses.forEach((response, index) => {
-              if (response) {
-                const subjectName = filtered[index].name;
-                newMap.set(subjectName, deriveStudentChartData(response));
-              }
-            });
-            this.chartDataMap.set(newMap);
-
-            // Derive overall stats from all journal data combined
-            const allRecords: StudentChartData[] = [];
-            newMap.forEach(data => allRecords.push(...data));
-
-            // Compute aggregated overall stats from all responses
-            const validResponses = responses.filter(r => r !== null);
-            if (validResponses.length > 0) {
-              let totalLessons = 0;
-              let totalPresent = 0;
-              let totalRecords = 0;
-              validResponses.forEach(r => {
-                const stats = deriveOverallStats(r!);
-                totalLessons += stats.totalLessons;
-                // Re-count actual records for accurate rate
-                r!.students.forEach(s => {
-                  s.records.forEach(cell => {
-                    if (cell.status !== 'cancelled') {
-                      totalRecords++;
-                      if (cell.status === 'present') totalPresent++;
-                    }
-                  });
-                });
-              });
-              this.overallStats.set({
-                totalLessons,
-                attendanceRate: totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0,
-              });
-            }
-
-            this.loading.set(false);
-          },
-          error: () => {
-            this.error.set('Не удалось загрузить статистику. Попробуйте позже.');
-            this.loading.set(false);
-          },
-        });
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('Не удалось загрузить статистику. Попробуйте позже.');
+        this.loading.set(false);
       },
     });
+  }
+
+  private getSubjectsForGroup(groupId: number): SubjectOption[] {
+    const subjectsById = new Map<number, SubjectOption>();
+    for (const assignment of this.assignments()) {
+      if (assignment.groupId !== groupId) {
+        continue;
+      }
+      subjectsById.set(assignment.subjectId, {
+        id: assignment.subjectId,
+        name: assignment.subjectName?.trim() || `Предмет #${assignment.subjectId}`,
+      });
+    }
+    return Array.from(subjectsById.values())
+      .sort((left, right) => left.name.localeCompare(right.name, 'ru'));
   }
 }

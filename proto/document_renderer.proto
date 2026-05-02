@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package rutcampustrack.documentrenderer;
+
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.documentrenderer.grpc";
+
+service DocumentRendererGrpcService {
+  rpc Convert (ConvertDocumentRequest) returns (ConvertDocumentResponse);
+}
+
+enum TargetFormat {
+  TARGET_FORMAT_UNSPECIFIED = 0;
+  PDF = 1;
+  PNG = 2;
+}
+
+message ConvertDocumentRequest {
+  bytes docx = 1;
+  TargetFormat target_format = 2;
+  int32 png_dpi = 3;
+}
+
+message ConvertDocumentResponse {
+  bytes content = 1;
+  string content_type = 2;
+  string extension = 3;
+}

@@ -164,6 +164,27 @@ services:
   # NOTIFICATION SERVICES
   # ============================================================
 
+  document-renderer-service:
+    build:
+      context: .
+      dockerfile: services/document-renderer-service/document-renderer-app/Dockerfile
+    container_name: rct-document-renderer-service
+    environment:
+      GRPC_SECRET: ${GRPC_SECRET:-rct_dev_grpc_secret}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318/v1/traces
+    expose:
+      - "9095"
+      - "19095"
+    networks:
+      - private_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9095/actuator/health/liveness || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
   notification-web:
     build:
       context: ./services/notification-service/notification-app

@@ -6,6 +6,96 @@
   font-size: 14px;
 }
 
+/* ---- Report export controls ---- */
+.report-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.report-format-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid var(--border-subtle, var(--mat-sys-outline-variant));
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-surface, var(--mat-sys-surface));
+}
+
+.report-format-toggle__button {
+  min-width: 54px;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--text-secondary, var(--mat-sys-on-surface-variant));
+  font: 700 12px/1 var(--font-mono);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-base, 150ms) var(--ease-out, ease-out),
+    color var(--duration-base, 150ms) var(--ease-out, ease-out);
+}
+
+.report-format-toggle__button:hover {
+  color: var(--text-primary, var(--mat-sys-on-surface));
+}
+
+.report-format-toggle__button--active {
+  background: var(--accent-primary, var(--mat-sys-primary));
+  color: var(--accent-primary-contrast, var(--mat-sys-on-primary));
+}
+
+.report-actions__secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 16px;
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid var(--border-default, var(--mat-sys-outline-variant));
+  background: var(--bg-surface, var(--mat-sys-surface));
+  color: var(--text-primary, var(--mat-sys-on-surface));
+  font: 600 0.875rem/1 var(--font-heading);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-base, 150ms) var(--ease-out, ease-out),
+    border-color var(--duration-base, 150ms) var(--ease-out, ease-out);
+}
+
+.report-actions__secondary:hover {
+  background: var(--bg-elevated, var(--mat-sys-surface-container-high));
+  border-color: var(--border-accent, var(--mat-sys-primary));
+}
+
+.report-actions__secondary i {
+  font-size: 18px;
+  line-height: 1;
+}
+
+@media (max-width: 720px) {
+  .report-actions {
+    justify-content: stretch;
+    width: 100%;
+  }
+
+  .report-format-toggle,
+  .report-actions .btn-brand,
+  .report-actions__secondary {
+    width: 100%;
+  }
+
+  .report-format-toggle__button {
+    flex: 1 1 0;
+  }
+}
+
 /* ---- Week navigation ---- */
 .week-nav {
   display: flex;

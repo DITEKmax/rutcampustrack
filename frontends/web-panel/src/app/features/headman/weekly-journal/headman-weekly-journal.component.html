@@ -5,6 +5,44 @@
       <h1 class="page-title">Журнал посещаемости</h1>
       <p class="page-subtitle">Отметьте присутствие студентов</p>
     </div>
+    @if (canUseReports()) {
+      <div class="page-header__actions report-actions" aria-label="Экспорт отчета">
+        <div class="report-format-toggle" role="group" aria-label="Формат отчета за текущую неделю">
+          @for (format of reportFormats; track format) {
+            <button
+              type="button"
+              class="report-format-toggle__button"
+              [class.report-format-toggle__button--active]="currentReportFormat() === format"
+              [attr.aria-pressed]="currentReportFormat() === format"
+              (click)="selectCurrentReportFormat(format)"
+            >
+              {{ format.toUpperCase() }}
+            </button>
+          }
+        </div>
+        <button
+          type="button"
+          class="btn-brand"
+          (click)="downloadOpenedWeekReport()"
+          [disabled]="reportDownloading()"
+        >
+          @if (reportDownloading()) {
+            <mat-spinner diameter="16"></mat-spinner>
+          } @else {
+            <i class="ph ph-download-simple"></i>
+          }
+          Скачать отчет за текущую неделю
+        </button>
+        <button
+          type="button"
+          class="report-actions__secondary"
+          (click)="openMultiWeekReportDialog()"
+        >
+          <i class="ph ph-files"></i>
+          Скачать несколько недель
+        </button>
+      </div>
+    }
   </div>
 
   <!-- Week navigation -->

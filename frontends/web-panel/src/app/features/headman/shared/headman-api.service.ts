@@ -8,6 +8,12 @@ import {
   PagedExcuseResponse,
 } from '../excuses/excuse.types';
 import { LateCheckinRequestView } from '../late-checkin/late-checkin.types';
+import type {
+  HeadmanWeeklyExportRequest,
+  HeadmanWeeklyReportFormat,
+  HeadmanWeeklyWeeksResponse,
+  ReportBlobResponse,
+} from './headman-report.types';
 
 /**
  * Shared HttpClient wrapper for all headman-cabinet REST calls.
@@ -286,6 +292,40 @@ export class HeadmanApiService {
    */
   getLessonAttendance(lessonId: number): Observable<any> {
     return this.http.get(`/api/attendance/reports/lesson/${lessonId}`);
+  }
+
+  /**
+   * List active-semester weeks available for the headman's weekly report.
+   * Endpoint derives group from JWT; client must not pass groupId.
+   */
+  listHeadmanWeeklyReportWeeks(): Observable<HeadmanWeeklyWeeksResponse> {
+    return this.http.get<HeadmanWeeklyWeeksResponse>('/api/attendance/reports/headman-weekly/weeks');
+  }
+
+  /**
+   * Export one displayed weekly journal week as a binary file.
+   * Endpoint derives group from JWT; `weekStart` is the Monday currently open in the journal.
+   */
+  downloadHeadmanWeeklyReport(
+    weekStart: string,
+    format: HeadmanWeeklyReportFormat,
+  ): Observable<ReportBlobResponse> {
+    return this.http.get('/api/attendance/reports/headman-weekly/current', {
+      params: new HttpParams().set('weekStart', weekStart).set('format', format),
+      observe: 'response',
+      responseType: 'blob',
+    });
+  }
+
+  /**
+   * Export selected active-semester weeks. Non-consecutive weeks are allowed.
+   * Endpoint derives group from JWT; request body intentionally has no groupId.
+   */
+  exportHeadmanWeeklyReport(body: HeadmanWeeklyExportRequest): Observable<ReportBlobResponse> {
+    return this.http.post('/api/attendance/reports/headman-weekly/export', body, {
+      observe: 'response',
+      responseType: 'blob',
+    });
   }
 
   /**

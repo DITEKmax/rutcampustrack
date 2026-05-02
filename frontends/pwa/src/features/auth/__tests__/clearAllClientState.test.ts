@@ -8,7 +8,7 @@ import { clearAllClientState } from '../clearAllClientState'
  *  1. Чистит localStorage + sessionStorage.
  *  2. Удаляет headman-api-cache-* + runtime-* из Service Worker caches.
  *  3. НЕ удаляет другие caches (precache etc).
- *  4. Unsubscribe из PushManager + DELETE /api/notifications/push/subscribe.
+ *  4. Unsubscribe из PushManager + DELETE /api/push/subscribe.
  */
 
 describe('clearAllClientState — logout state cleanup (09 P0-4 regression guard)', () => {
@@ -52,7 +52,7 @@ describe('clearAllClientState — logout state cleanup (09 P0-4 regression guard
       value: cachesMock, configurable: true, writable: true,
     })
 
-    // Fetch mock — для DELETE /api/notifications/push/subscribe
+    // Fetch mock — для DELETE /api/push/subscribe
     globalThis.fetch = vi.fn().mockResolvedValue({ ok: true, status: 204 } as Response)
 
     // Navigator mock — serviceWorker + PushManager
@@ -119,7 +119,7 @@ describe('clearAllClientState — logout state cleanup (09 P0-4 regression guard
     await clearAllClientState(token)
 
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/notifications/push/subscribe',
+      '/api/push/subscribe',
       expect.objectContaining({
         method: 'DELETE',
         credentials: 'include',

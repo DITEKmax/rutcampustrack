@@ -14,7 +14,6 @@ import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
-import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.contract.api.ReportApi;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -73,7 +72,7 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
 
     @BeforeEach
     void setUp() {
-        mongoTemplate.remove(new Query(), AttendanceDocument.class);
+        mongoTemplate.remove(new Query(), "attendances");
         Mockito.reset(academicGrpcClient, scheduleGrpcClient, documentRendererGrpcClient);
 
         stubAcademic();
@@ -232,30 +231,29 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
     }
 
     private void seedAttendance() {
-        attendanceRepository.save(attendance(1000L, 100L, FIRST_WEEK, AttendanceStatus.PRESENT));
-        attendanceRepository.save(attendance(1000L, 101L, FIRST_WEEK, AttendanceStatus.ABSENT));
-        attendanceRepository.save(attendance(3000L, 100L, THIRD_WEEK, AttendanceStatus.EXCUSED));
+        mongoTemplate.save(attendance(1000L, 100L, FIRST_WEEK, AttendanceStatus.PRESENT));
+        mongoTemplate.save(attendance(1000L, 101L, FIRST_WEEK, AttendanceStatus.ABSENT));
+        mongoTemplate.save(attendance(3000L, 100L, THIRD_WEEK, AttendanceStatus.EXCUSED));
     }
 
-    private static AttendanceDocument attendance(Long lessonId,
-                                                 Long userId,
-                                                 LocalDate date,
-                                                 AttendanceStatus status) {
+    private static AttendanceFixture attendance(Long lessonId,
+                                                Long userId,
+                                                LocalDate date,
+                                                AttendanceStatus status) {
         Instant now = Instant.parse("2026-05-02T09:00:00Z");
-        return AttendanceDocument.builder()
-                .lessonId(lessonId)
-                .userId(userId)
-                .groupId(GROUP_ID)
-                .subjectId(SUBJECT_ID)
-                .semesterId(SEMESTER_ID)
-                .lessonNumber(1)
-                .lessonDate(date)
-                .status(status)
-                .source(AttendanceSource.HEADMAN)
-                .markedBy(HEADMAN_ID)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
+        return new AttendanceFixture(
+                lessonId,
+                userId,
+                GROUP_ID,
+                SUBJECT_ID,
+                SEMESTER_ID,
+                1,
+                date,
+                status,
+                AttendanceSource.HEADMAN,
+                HEADMAN_ID,
+                now,
+                now);
     }
 
     private static StudentInfo student(Long id, String displayName) {
@@ -287,4 +285,32 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
             return entries;
         }
     }
+
+    @org.springframework.data.mongodb.core.mapping.Document(collection = "attendances")
+    private record AttendanceFixture(
+            @org.springframework.data.mongodb.core.mapping.Field("lesson_id")
+            Long lessonId,
+            @org.springframework.data.mongodb.core.mapping.Field("user_id")
+            Long userId,
+            @org.springframework.data.mongodb.core.mapping.Field("group_id")
+            Long groupId,
+            @org.springframework.data.mongodb.core.mapping.Field("subject_id")
+            Long subjectId,
+            @org.springframework.data.mongodb.core.mapping.Field("semester_id")
+            Long semesterId,
+            @org.springframework.data.mongodb.core.mapping.Field("lesson_number")
+            Integer lessonNumber,
+            @org.springframework.data.mongodb.core.mapping.Field("lesson_date")
+            LocalDate lessonDate,
+            @org.springframework.data.mongodb.core.mapping.Field("status")
+            AttendanceStatus status,
+            @org.springframework.data.mongodb.core.mapping.Field("source")
+            AttendanceSource source,
+            @org.springframework.data.mongodb.core.mapping.Field("marked_by")
+            Long markedBy,
+            @org.springframework.data.mongodb.core.mapping.Field("created_at")
+            Instant createdAt,
+            @org.springframework.data.mongodb.core.mapping.Field("updated_at")
+            Instant updatedAt
+    ) {}
 }

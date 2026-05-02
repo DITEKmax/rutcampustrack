@@ -201,12 +201,21 @@ class WebPushDeliveryServiceTest {
         doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
 
         CompletableFuture<Void> result = service.sendToGroup(7L, "homework.published",
-                Map.of("subject_name", "История", "title", "Лабораторная 4", "group_id", 7));
+                Map.of(
+                        "subject_name", "История",
+                        "title", "Лабораторная 4",
+                        "description", "Read chapter 4",
+                        "link", "https://example.com/hw.pdf",
+                        "group_id", 7));
         result.join();
 
         String payloadStr = new String(payloadCaptor.getValue());
         assertThat(payloadStr).contains("Новое ДЗ");
         assertThat(payloadStr).contains("История");
         assertThat(payloadStr).contains("Лабораторная 4");
+        String body = new ObjectMapper().readTree(payloadStr).get("body").asText();
+        assertThat(body).contains("Лабораторная 4");
+        assertThat(body).contains("Read chapter 4");
+        assertThat(body).contains("https://example.com/hw.pdf");
     }
 }

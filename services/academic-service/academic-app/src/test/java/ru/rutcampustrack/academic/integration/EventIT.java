@@ -407,6 +407,8 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         assertThat(payload.get("group_id").asLong()).isEqualTo(groupA.getId());
         assertThat(payload.get("subject_id").asLong()).isEqualTo(testSubject.getId());
         assertThat(payload.get("title").asText()).isEqualTo("HW Title");
+        assertThat(payload.get("description").asText()).isEqualTo("description");
+        assertThat(payload.path("link").isMissingNode() || payload.path("link").isNull()).isTrue();
         assertThat(payload.get("has_link").asBoolean()).isFalse();
         // Phase 61 / D-07: payload обязан содержать lesson_date + lesson_number
         assertThat(payload.get("lesson_date").asText()).isEqualTo(LocalDate.now().plusDays(1).toString());
@@ -442,6 +444,8 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         assertThat(payload.get("homework_id").asLong()).isEqualTo(homework.getId());
         assertThat(payload.get("group_id").asLong()).isEqualTo(groupA.getId());
         assertThat(payload.get("title").asText()).isEqualTo("Updated Title");
+        assertThat(payload.get("description").asText()).isEqualTo("new desc");
+        assertThat(payload.get("link").asText()).isEqualTo("https://link.example.com");
         // Phase 61 / D-07: homework.updated payload обязан содержать subject_id + lesson_date + lesson_number
         assertThat(payload.get("subject_id").asLong()).isEqualTo(testSubject.getId());
         assertThat(payload.get("lesson_date").asText()).isEqualTo(LocalDate.now().plusDays(1).toString());

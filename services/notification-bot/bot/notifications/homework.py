@@ -49,17 +49,25 @@ async def handle_homework(
             )
         return "Предмет"
 
+    def _add_optional(lines, value):
+        if isinstance(value, str) and value.strip():
+            lines.append(value.strip())
+
+    def _build_card(prefix, subject_name):
+        lines = [prefix, "", subject_name, title]
+        _add_optional(lines, payload.get("description"))
+        _add_optional(lines, payload.get("link"))
+        if lesson_date and lesson_number:
+            lines.append(f"Пара {lesson_number}, {lesson_date}")
+        return "\n".join(lines)
+
     if event_type == "homework.published":
         subject_name = await _resolve_subject_name(payload.get("subject_id"))
-        text = f"Новое домашнее задание\n\n{subject_name}\n{title}"
-        if lesson_date and lesson_number:
-            text += f"\nПара {lesson_number}, {lesson_date}"
+        text = _build_card("Новое домашнее задание", subject_name)
     elif event_type == "homework.updated":
         # Phase 61 / D-07: payload теперь содержит subject_id + lesson_date + lesson_number.
         subject_name = await _resolve_subject_name(payload.get("subject_id"))
-        text = f"ДЗ изменено: {subject_name} — {title}"
-        if lesson_date and lesson_number:
-            text += f"\nПара {lesson_number}, {lesson_date}"
+        text = _build_card("ДЗ изменено", subject_name)
     else:
         logger.debug("handle_homework called with unexpected event_type: %s", event_type)
         return

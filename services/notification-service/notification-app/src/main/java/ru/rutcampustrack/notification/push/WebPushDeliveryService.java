@@ -234,17 +234,7 @@ public class WebPushDeliveryService {
                 yield classroom.isEmpty() ? parts : parts + " · ауд. " + classroom;
             }
             case "lesson.one_off.cancelled" -> lessonBody(payload, "Староста отменил пару");
-            case "homework.published", "homework.updated" -> {
-                String title = str(payload, "title");
-                String lessonPart = formatLessonRef(payload);
-                if (title.isEmpty() && lessonPart.isEmpty()) {
-                    yield "Откройте приложение для подробностей";
-                }
-                if (title.isEmpty()) {
-                    yield lessonPart;
-                }
-                yield lessonPart.isEmpty() ? title : title + " · " + lessonPart;
-            }
+            case "homework.published", "homework.updated" -> homeworkBody(payload);
             case "group.renamed" -> {
                 String newName = str(payload, "new_name");
                 if (!newName.isEmpty()) {
@@ -285,6 +275,24 @@ public class WebPushDeliveryService {
     private String lessonBody(Map<String, Object> payload, String fallback) {
         String lessonRef = formatLessonRef(payload);
         return lessonRef.isEmpty() ? fallback : lessonRef;
+    }
+
+    private String homeworkBody(Map<String, Object> payload) {
+        List<String> lines = new ArrayList<>();
+        addIfNotBlank(lines, str(payload, "title"));
+        addIfNotBlank(lines, formatLessonRef(payload));
+        addIfNotBlank(lines, str(payload, "description"));
+        addIfNotBlank(lines, str(payload, "link"));
+        if (lines.isEmpty()) {
+            return "Откройте приложение для подробностей";
+        }
+        return String.join("\n", lines);
+    }
+
+    private static void addIfNotBlank(List<String> lines, String value) {
+        if (value != null && !value.isBlank()) {
+            lines.add(value);
+        }
     }
 
     private String formatLessonRef(Map<String, Object> payload) {

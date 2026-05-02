@@ -50,6 +50,10 @@ function notificationRoute(type: string): string | null {
   }
 }
 
+function isHomeworkNotification(type: string): boolean {
+  return type === 'homework.published' || type === 'homework.updated'
+}
+
 const HISTORY_TYPE_TO_EVENT_TYPE: Record<string, string> = {
   EXCUSE_REQUESTED: 'excuse.requested',
   EXCUSE_APPROVED: 'excuse.decided',
@@ -276,7 +280,11 @@ function NotificationRow({
           </p>
           {body && (
             <p
-              className="mt-0.5 line-clamp-2 text-xs"
+              className={
+                isHomeworkNotification(item.type)
+                  ? 'mt-0.5 whitespace-pre-wrap text-xs'
+                  : 'mt-0.5 line-clamp-2 text-xs'
+              }
               style={{ color: 'var(--text-secondary)' }}
             >
               {body}

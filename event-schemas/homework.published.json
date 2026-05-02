@@ -45,6 +45,18 @@
         "title": {
           "type": "string"
         },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "has_link": {
           "type": "boolean"
         },

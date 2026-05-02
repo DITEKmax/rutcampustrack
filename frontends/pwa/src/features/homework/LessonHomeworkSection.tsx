@@ -108,16 +108,24 @@ export function LessonHomeworkSection({
                     >
                       {hw.title}
                     </p>
+                    {hw.description && (
+                      <p
+                        className="mt-1 whitespace-pre-wrap leading-snug"
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        {hw.description}
+                      </p>
+                    )}
                     {hw.link && (
                       <a
                         href={hw.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px]"
+                        className="mt-1 inline-flex max-w-full items-start gap-1 text-[11px]"
                         style={{ color: 'var(--accent-primary)' }}
                       >
-                        <LinkIcon size={10} weight="bold" />
-                        Ссылка
+                        <LinkIcon size={10} weight="bold" className="mt-0.5 shrink-0" />
+                        <span className="min-w-0 break-all">{hw.link}</span>
                       </a>
                     )}
                   </div>

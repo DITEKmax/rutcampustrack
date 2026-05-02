@@ -16,15 +16,22 @@ public class HomeworkUpdatedEvent extends DomainEvent {
             @JsonProperty("group_id") Long groupId,
             @JsonProperty("subject_id") Long subjectId,
             String title,
+            String description,
+            String link,
             @JsonProperty("has_link") boolean hasLink,
             @JsonProperty("lesson_date") String lessonDate,
             @JsonProperty("lesson_number") Integer lessonNumber
     ) {}
 
     public HomeworkUpdatedEvent(Object source, Long homeworkId, Long groupId,
-                                 Long subjectId, String title, boolean hasLink,
+                                 Long subjectId, String title, String description, String link,
                                  String lessonDate, Integer lessonNumber) {
         super(source, "homework.updated",
-                new Payload(homeworkId, groupId, subjectId, title, hasLink, lessonDate, lessonNumber));
+                new Payload(homeworkId, groupId, subjectId, title, description, link,
+                        hasLink(link), lessonDate, lessonNumber));
+    }
+
+    private static boolean hasLink(String link) {
+        return link != null && !link.isBlank();
     }
 }

@@ -193,6 +193,21 @@ function formatLessonRef(payload: Record<string, unknown>): string {
   return parts.join(', ')
 }
 
+function addIfPresent(lines: string[], value: string): void {
+  if (value.trim()) lines.push(value.trim())
+}
+
+function buildHomeworkBody(payload: Record<string, unknown>, lessonRef: string): string {
+  const lines: string[] = []
+  addIfPresent(lines, str(payload, 'title'))
+  addIfPresent(lines, lessonRef)
+  addIfPresent(lines, str(payload, 'description'))
+  addIfPresent(lines, str(payload, 'link'))
+  return lines.length > 0
+    ? lines.join('\n')
+    : 'Откройте приложение для подробностей'
+}
+
 function buildBody(
   type: string,
   payload: Record<string, unknown>,
@@ -244,10 +259,7 @@ function buildBody(
       return lessonRef || 'Староста отменил пару'
     case 'homework.published':
     case 'homework.updated': {
-      const title = str(payload, 'title')
-      if (!title && !lessonRef) return 'Откройте приложение для подробностей'
-      if (!title) return lessonRef
-      return lessonRef ? `${title} · ${lessonRef}` : title
+      return buildHomeworkBody(payload, lessonRef)
     }
     case 'excuse.requested': {
       const parts: string[] = []

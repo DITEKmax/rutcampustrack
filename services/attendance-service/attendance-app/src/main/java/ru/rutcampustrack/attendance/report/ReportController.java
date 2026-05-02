@@ -3,10 +3,15 @@ package ru.rutcampustrack.attendance.report;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.attendance.contract.api.ReportApi;
 import ru.rutcampustrack.attendance.contract.dto.report.AttendanceRecordEntry;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeeksResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
@@ -15,6 +20,7 @@ import ru.rutcampustrack.attendance.contract.dto.report.StudentStatsResponse;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.security.RequireRole;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,6 +39,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class ReportController implements ReportApi {
 
     private final ReportService reportService;
+    private final HeadmanWeeklyReportService headmanWeeklyReportService;
 
     @RequireRole({UserRole.STUDENT, UserRole.TEACHER})
     @Override
@@ -84,5 +91,36 @@ public class ReportController implements ReportApi {
                 entityModels,
                 linkTo(methodOn(ReportController.class).getStudentRecords(subjectId)).withSelfRel());
         return ResponseEntity.ok(collectionModel);
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<EntityModel<HeadmanWeeklyWeeksResponse>> getHeadmanWeeklyWeeks() {
+        HeadmanWeeklyWeeksResponse response = headmanWeeklyReportService.getActiveSemesterWeeks();
+        EntityModel<HeadmanWeeklyWeeksResponse> model = EntityModel.of(response,
+                linkTo(methodOn(ReportController.class).getHeadmanWeeklyWeeks()).withSelfRel());
+        return ResponseEntity.ok(model);
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<byte[]> exportHeadmanWeeklyCurrent(LocalDate weekStart, String format) {
+        return download(headmanWeeklyReportService.exportSingleWeek(weekStart, format));
+    }
+
+    @RequireRole(UserRole.STUDENT)
+    @Override
+    public ResponseEntity<byte[]> exportHeadmanWeekly(HeadmanWeeklyExportRequest request) {
+        return download(headmanWeeklyReportService.exportSelectedWeeks(request));
+    }
+
+    private static ResponseEntity<byte[]> download(HeadmanWeeklyExportResult result) {
+        ContentDisposition disposition = ContentDisposition.attachment()
+                .filename(result.fileName(), StandardCharsets.UTF_8)
+                .build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(result.contentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(result.content());
     }
 }

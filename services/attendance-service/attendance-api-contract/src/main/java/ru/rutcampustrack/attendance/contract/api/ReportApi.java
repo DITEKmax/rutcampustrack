@@ -6,15 +6,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.attendance.contract.dto.report.AttendanceRecordEntry;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportRequest;
+import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyWeeksResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.JournalResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentDashboardResponse;
@@ -30,6 +35,11 @@ import java.time.LocalDate;
 @Tag(name = "Reports", description = "Attendance reports")
 @RequestMapping("/attendance/reports")
 public interface ReportApi {
+
+    String DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    String PDF_MEDIA_TYPE = "application/pdf";
+    String PNG_MEDIA_TYPE = "image/png";
+    String ZIP_MEDIA_TYPE = "application/zip";
 
     @Operation(summary = "Lesson attendance list")
     @ApiResponses({
@@ -77,4 +87,57 @@ public interface ReportApi {
     @GetMapping("/student/dashboard")
     ResponseEntity<EntityModel<StudentDashboardResponse>> getStudentDashboard(
             @RequestParam(required = false, defaultValue = "5") Integer topLimit);
+
+    @Operation(summary = "Weeks of the active semester available for headman weekly report export")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Weeks retrieved"),
+            @ApiResponse(responseCode = "403", description = "Only a headman can export weekly reports",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Academic service unavailable",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/headman-weekly/weeks")
+    ResponseEntity<EntityModel<HeadmanWeeklyWeeksResponse>> getHeadmanWeeklyWeeks();
+
+    @Operation(summary = "Export one headman weekly report")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Report file",
+                    content = {
+                            @Content(mediaType = DOCX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = PDF_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = PNG_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary"))
+                    }),
+            @ApiResponse(responseCode = "400", description = "Unknown export format",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Only a headman can export weekly reports",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "Week is outside the active semester or template limits are exceeded",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Renderer or upstream service unavailable",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping("/headman-weekly/current")
+    ResponseEntity<byte[]> exportHeadmanWeeklyCurrent(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStart,
+            @RequestParam String format);
+
+    @Operation(summary = "Export multiple selected headman weekly reports")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Report file",
+                    content = {
+                            @Content(mediaType = DOCX_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = PDF_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary")),
+                            @Content(mediaType = ZIP_MEDIA_TYPE, schema = @Schema(type = "string", format = "binary"))
+                    }),
+            @ApiResponse(responseCode = "400", description = "Unknown export format or invalid request body",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Only a headman can export weekly reports",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "Selected weeks are outside the active semester or template limits are exceeded",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = "Renderer or upstream service unavailable",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/headman-weekly/export")
+    ResponseEntity<byte[]> exportHeadmanWeekly(@Valid @RequestBody HeadmanWeeklyExportRequest request);
 }

@@ -93,6 +93,14 @@ public class GlobalExceptionHandler {
                 "Вне зоны геофенса", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(ReportValidationException.class)
+    public ResponseEntity<ErrorResponse> handleReportValidation(
+            ReportValidationException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.UNPROCESSABLE_ENTITY, "report-validation-failed",
+                "Report cannot be generated", ex.getMessage(), request);
+    }
+
     @ExceptionHandler(GeofenceBlockedException.class)
     public ResponseEntity<ErrorResponse> handleGeofenceBlocked(
             GeofenceBlockedException ex,
@@ -110,7 +118,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             ScheduleServiceUnavailableException.class,
-            AcademicServiceUnavailableException.class
+            AcademicServiceUnavailableException.class,
+            ReportExportUnavailableException.class
     })
     public ResponseEntity<ErrorResponse> handleServiceUnavailable(RuntimeException ex,
                                                                   HttpServletRequest request) {

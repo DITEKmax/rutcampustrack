@@ -26,5 +26,10 @@ public interface AttendanceReadPort {
      */
     List<AttendanceRecord> findByGroupAndSubject(Long groupId, Long subjectId, LocalDate from, LocalDate to);
 
+    /**
+     * Find all attendance records for a group within a date range (both boundaries inclusive).
+     */
+    List<AttendanceRecord> findByGroupAndDateRange(Long groupId, LocalDate from, LocalDate to);
+
     Optional<AttendanceRecord> findByLessonIdAndUserId(Long lessonId, Long userId);
 }

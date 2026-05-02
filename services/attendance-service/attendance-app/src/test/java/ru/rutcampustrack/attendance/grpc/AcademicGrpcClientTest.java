@@ -10,6 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GeofenceResponse;
+import ru.rutcampustrack.academic.grpc.GroupRequest;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
@@ -41,6 +43,33 @@ class AcademicGrpcClientTest {
         stubField.setAccessible(true);
         stubField.set(client, mockStub);
         when(mockStub.withDeadlineAfter(anyLong(), any())).thenReturn(mockStub);
+    }
+
+    @Test
+    void getGroup_buildsCorrectRequest() {
+        when(mockStub.getGroup(any())).thenReturn(GroupResponse.getDefaultInstance());
+
+        client.getGroup(7L);
+
+        verify(mockStub).getGroup(GroupRequest.newBuilder()
+                .setGroupId(7L)
+                .build());
+    }
+
+    @Test
+    void getGroup_notFound_throwsResourceNotFoundException() {
+        when(mockStub.getGroup(any()))
+                .thenThrow(new StatusRuntimeException(Status.NOT_FOUND));
+
+        assertThrows(ResourceNotFoundException.class, () -> client.getGroup(7L));
+    }
+
+    @Test
+    void getGroup_unavailable_throwsAcademicServiceUnavailableException() {
+        when(mockStub.getGroup(any()))
+                .thenThrow(new StatusRuntimeException(Status.UNAVAILABLE));
+
+        assertThrows(AcademicServiceUnavailableException.class, () -> client.getGroup(7L));
     }
 
     @Test

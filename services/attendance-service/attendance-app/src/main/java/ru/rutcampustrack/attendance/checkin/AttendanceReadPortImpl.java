@@ -60,6 +60,18 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
     }
 
     @Override
+    public List<AttendanceRecord> findByGroupAndDateRange(Long groupId, LocalDate from, LocalDate to) {
+        Query query = new Query(
+                Criteria.where("group_id").is(groupId)
+                        .and("lesson_date").gte(from).lte(to)
+        );
+        return mongoTemplate.find(query, AttendanceDocument.class)
+                .stream()
+                .map(this::toRecord)
+                .toList();
+    }
+
+    @Override
     public Optional<AttendanceRecord> findByLessonIdAndUserId(Long lessonId, Long userId) {
         Query query = new Query(
                 Criteria.where("lesson_id").is(lessonId)

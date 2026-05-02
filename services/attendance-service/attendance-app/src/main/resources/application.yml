@@ -38,6 +38,9 @@ grpc:
     academic-service:
       address: static://academic-service:19091
       negotiation-type: plaintext
+    document-renderer-service:
+      address: static://document-renderer-service:19095
+      negotiation-type: plaintext
 
 springdoc:
   api-docs:

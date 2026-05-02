@@ -29,7 +29,9 @@ export class JournalApiService {
 
   getMyAssignments(): Observable<AssignmentResponse[]> {
     return this.http
-      .get<PagedResponse<AssignmentResponse>>('/api/academic/assignments/my')
+      .get<PagedResponse<AssignmentResponse>>('/api/academic/assignments/my', {
+        params: new HttpParams().set('size', '200'),
+      })
       .pipe(
         map(response => (Object.values(response._embedded ?? {})[0] ?? []) as AssignmentResponse[]),
       );

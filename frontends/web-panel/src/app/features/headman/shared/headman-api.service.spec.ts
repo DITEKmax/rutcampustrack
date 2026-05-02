@@ -328,6 +328,73 @@ describe('HeadmanApiService', () => {
     });
   });
 
+  describe('headman weekly report export', () => {
+    it('lists active semester weeks without groupId', () => {
+      service.listHeadmanWeeklyReportWeeks().subscribe(resp => {
+        expect(resp.weeks[0].weekStart).toBe('2026-04-27');
+      });
+
+      const req = httpMock.expectOne('/api/attendance/reports/headman-weekly/weeks');
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.keys()).toEqual([]);
+      req.flush({
+        semesterId: 1,
+        semesterName: 'Spring',
+        semesterDateFrom: '2026-04-29',
+        semesterDateTo: '2026-05-12',
+        weeks: [
+          {
+            weekOfSemester: 1,
+            isoWeek: 18,
+            label: 'Н1',
+            weekStart: '2026-04-27',
+            weekEnd: '2026-05-03',
+            current: true,
+          },
+        ],
+      });
+    });
+
+    it('downloads one displayed week as blob with weekStart and format params only', () => {
+      service.downloadHeadmanWeeklyReport('2026-04-27', 'pdf').subscribe(resp => {
+        expect(resp.body).toBeInstanceOf(Blob);
+      });
+
+      const req = httpMock.expectOne(r =>
+        r.url === '/api/attendance/reports/headman-weekly/current'
+        && r.params.get('weekStart') === '2026-04-27'
+        && r.params.get('format') === 'pdf'
+        && r.params.keys().length === 2,
+      );
+      expect(req.request.method).toBe('GET');
+      expect(req.request.responseType).toBe('blob');
+      req.flush(new Blob(['pdf']), {
+        headers: { 'Content-Type': 'application/pdf' },
+      });
+    });
+
+    it('exports selected weeks as blob without groupId in request body', () => {
+      service.exportHeadmanWeeklyReport({
+        weekStarts: ['2026-04-27', '2026-05-11'],
+        format: 'png',
+      }).subscribe(resp => {
+        expect(resp.body).toBeInstanceOf(Blob);
+      });
+
+      const req = httpMock.expectOne('/api/attendance/reports/headman-weekly/export');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.responseType).toBe('blob');
+      expect(req.request.body).toEqual({
+        weekStarts: ['2026-04-27', '2026-05-11'],
+        format: 'png',
+      });
+      expect(req.request.body.groupId).toBeUndefined();
+      req.flush(new Blob(['zip']), {
+        headers: { 'Content-Type': 'application/zip' },
+      });
+    });
+  });
+
   describe('listSemesters', () => {
     it('calls GET /api/academic/semesters with size=200', () => {
       service.listSemesters().subscribe();

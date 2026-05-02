@@ -215,6 +215,12 @@ describe('StudentCheckinComponent', () => {
       .click(btn);
     fixture.detectChanges();
 
+    expect(vi.mocked(navigator.geolocation.getCurrentPosition)).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 15000 },
+    );
+
     const postReq = httpMock.expectOne(
       r => r.url === '/api/attendance/checkin' && r.method === 'POST',
     );

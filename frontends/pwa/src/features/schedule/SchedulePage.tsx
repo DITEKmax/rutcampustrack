@@ -405,19 +405,17 @@ export function SchedulePage() {
                       isBlockable={isHeadman && isLessonBlockable(lesson)}
                       homeworkPreview={preview}
                     />
-                    {isHeadman && (
-                      <LessonHomeworkSection
-                        homeworks={homeworks ?? []}
-                        groupId={groupId}
-                        semesterId={semesterId ?? null}
-                        subjectId={lesson.subjectId}
-                        lessonDate={lesson.date}
-                        lessonNumber={lesson.lessonNumber}
-                        isCancelled={lesson.status === 'CANCELLED'}
-                        canManage={true}
-                        currentUserId={user?.id}
-                      />
-                    )}
+                    <LessonHomeworkSection
+                      homeworks={homeworks ?? []}
+                      groupId={groupId}
+                      semesterId={semesterId ?? null}
+                      subjectId={lesson.subjectId}
+                      lessonDate={lesson.date}
+                      lessonNumber={lesson.lessonNumber}
+                      isCancelled={lesson.status === 'CANCELLED'}
+                      canManage={isHeadman}
+                      currentUserId={user?.id}
+                    />
                   </motion.div>
                 )
               })}

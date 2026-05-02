@@ -1,0 +1,42 @@
+server:
+  port: 9095
+
+spring:
+  application:
+    name: document-renderer-service
+
+grpc:
+  server:
+    port: 19095
+  auth:
+    secret: ${GRPC_SECRET:}
+
+document-renderer:
+  libreoffice-command: ${LIBREOFFICE_COMMAND:soffice}
+  pdftoppm-command: ${PDFTOPPM_COMMAND:pdftoppm}
+  timeout-seconds: ${DOCUMENT_RENDERER_TIMEOUT_SECONDS:25}
+  png-dpi: ${DOCUMENT_RENDERER_PNG_DPI:200}
+
+rutcampustrack:
+  security:
+    required-env-vars: GRPC_SECRET
+
+logging:
+  level:
+    ru.rutcampustrack: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

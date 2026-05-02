@@ -5,28 +5,40 @@ import type { PushState } from '../usePushSubscription'
 
 const mockSubscribe = vi.fn()
 const mockUnsubscribe = vi.fn()
+const mockRefresh = vi.fn()
+const mockShowTestNotification = vi.fn()
 
 let mockState: PushState = 'default'
+let mockSubscribed = false
+let mockChecking = false
 let mockLoading = false
 let mockError: string | null = null
 
 vi.mock('../usePushSubscription', () => ({
   usePushSubscription: () => ({
     state: mockState,
+    subscribed: mockSubscribed,
+    checking: mockChecking,
     loading: mockLoading,
     error: mockError,
     subscribe: mockSubscribe,
     unsubscribe: mockUnsubscribe,
+    refresh: mockRefresh,
+    showTestNotification: mockShowTestNotification,
   }),
 }))
 
 describe('PushPermissionCard', () => {
   beforeEach(() => {
     mockState = 'default'
+    mockSubscribed = false
+    mockChecking = false
     mockLoading = false
     mockError = null
     mockSubscribe.mockClear()
     mockUnsubscribe.mockClear()
+    mockRefresh.mockClear()
+    mockShowTestNotification.mockClear()
   })
 
   it('renders enable button when state is default', () => {
@@ -34,10 +46,19 @@ describe('PushPermissionCard', () => {
     expect(screen.getByText('Включить уведомления')).toBeInTheDocument()
   })
 
-  it('renders disable button when state is granted', () => {
+  it('renders disable button when subscription is active', () => {
     mockState = 'granted'
+    mockSubscribed = true
     render(<PushPermissionCard />)
     expect(screen.getByText('Отключить уведомления')).toBeInTheDocument()
+    expect(screen.getByText('Тест в шторку')).toBeInTheDocument()
+  })
+
+  it('renders restore button when permission exists without subscription', () => {
+    mockState = 'granted'
+    mockSubscribed = false
+    render(<PushPermissionCard />)
+    expect(screen.getByText('Восстановить push')).toBeInTheDocument()
   })
 
   it('renders unsupported message when state is unsupported', () => {

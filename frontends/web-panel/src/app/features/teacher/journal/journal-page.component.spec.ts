@@ -7,7 +7,7 @@ import { JournalApiService } from './journal-api.service';
 import type { AssignmentResponse, GroupResponse, JournalResponse, SubjectResponse } from './types';
 
 const mockAssignments: AssignmentResponse[] = [
-  { id: 1, groupId: 10, subjectId: 20, teacherId: 1 },
+  { id: 1, groupId: 10, groupName: 'ИТ-21', subjectId: 20, subjectName: 'Математика', teacherId: 1 },
 ];
 
 const mockGroups: GroupResponse[] = [
@@ -126,7 +126,7 @@ describe('JournalPageComponent', () => {
     expect(mockApi.getJournal).not.toHaveBeenCalled();
   });
 
-  it('onGroupChange resets selectedSubjectId and journalData, then loads subjects', () => {
+  it('onGroupChange resets selectedSubjectId and journalData, then derives subjects from assignments', () => {
     const fixture = TestBed.createComponent(JournalPageComponent);
     const comp = fixture.componentInstance;
     fixture.detectChanges();
@@ -140,6 +140,7 @@ describe('JournalPageComponent', () => {
     expect(comp.selectedGroupId()).toBe(10);
     expect(comp.selectedSubjectId()).toBeNull();
     expect(comp.journalData()).toBeNull();
-    expect(mockApi.getSubjects).toHaveBeenCalled();
+    expect(comp.subjects()).toEqual([{ id: 20, name: 'Математика' }]);
+    expect(mockApi.getSubjects).not.toHaveBeenCalled();
   });
 });

@@ -148,8 +148,16 @@ public class SubjectService {
      */
     @Transactional(readOnly = true)
     public Page<Subject> listSubjects(Pageable pageable) {
-        if (requestContext.getRole() == UserRole.ADMIN) {
+        UserRole role = requestContext.getRole();
+        if (role == UserRole.ADMIN) {
             return subjectRepository.findAll(pageable);
+        }
+        if (role == UserRole.TEACHER) {
+            Long teacherId = requestContext.getUserId();
+            if (teacherId == null) {
+                return Page.empty(pageable);
+            }
+            return subjectRepository.findAssignedToTeacher(teacherId, requireActiveSemesterId(), pageable);
         }
         Long groupId = requestContext.getGroupId();
         if (groupId == null) {

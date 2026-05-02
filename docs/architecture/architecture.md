@@ -35,7 +35,7 @@
 
 ## 2. Топология сервисов
 
-### Перечень сервисов (5 + Gateway + 2 контейнера Notification)
+### Перечень сервисов (6 + Gateway + 2 контейнера Notification)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -53,7 +53,9 @@
 │               ├──► [Schedule Service :9092]      → PostgreSQL        │
 │               └──► [Attendance Service :9093]    → MongoDB           │
 │                     ├── checkin/  (домен отметок)                    │
-│                     └── report/   (домен отчётов, изолирован)        │
+│                     ├── report/   (домен отчётов, изолирован)        │
+│                     └── gRPC → [Document Renderer :9095]             │
+│                           DOCX → PDF/PNG via LibreOffice + Poppler   │
 │                                                                      │
 │  [Notification Web :9094]  Java                                      │
 │     ├── WebSocket push    → Web Panel, PWA (real-time)               │
@@ -404,8 +406,25 @@ static final ArchRule reportDoesNotAccessCheckinInternals =
 **Вызывает gRPC:**
 - Schedule Service: `GetActiveLesson` — есть ли активная пара
 - Academic Service: `GetGroupMembers` — проверка членства, `GetCampusGeofence` — параметры геофенса, `GetTeacherSubjects` — авторизация преподавателя
+- Document Renderer: `RenderDocument` — конвертация DOCX-отчётов в PDF/PNG
 
 **Публикует события:** `attendance.marked`, `attendance.session.closed`
+
+---
+
+### 3.5.1 Document Renderer Service
+
+Внутренний stateless gRPC-сервис для конвертации документов.
+
+- Контракт: `proto/document_renderer.proto`
+- Порт: `9095`
+- Публичного REST/Gateway маршрута нет
+- БД и очереди не использует
+- Основной поток: Attendance Service формирует DOCX-отчёт, а для PDF/PNG вызывает Document Renderer по gRPC
+- Реализация конвертации: LibreOffice headless для DOCX → PDF, Poppler для PDF → PNG
+- Ошибки рендера Attendance Service отображает как `503 Renderer unavailable` в API отчётов
+
+Такой вынос держит LibreOffice/Poppler вне attendance-service и оставляет генерацию отчётов разделённой: бизнес-данные и DOCX-шаблон остаются в Attendance, тяжёлая конвертация файлов — в Renderer.
 
 ---
 
@@ -487,6 +506,7 @@ vapid:private_key   → "<base64>"     TTL: нет (постоянный)
 | Gateway → Все сервисы | HTTP/REST | Синхронный | JSON |
 | Attendance → Schedule | gRPC | Синхронный | Protobuf |
 | Attendance → Academic | gRPC | Синхронный | Protobuf |
+| Attendance → Document Renderer | gRPC | Синхронный | Protobuf, DOCX bytes → PDF/PNG bytes |
 | Schedule → Academic | gRPC | Синхронный | Protobuf |
 | Notification Bot → Academic | gRPC | Синхронный | Protobuf |
 | Schedule → RabbitMQ | AMQP | Асинхронный | JSON |
@@ -618,6 +638,12 @@ attendance-service удаляет orphan-attendance-doc'и по этим id'ам
 - Offline fallback: расписание, статистика, ДЗ доступны для чтения
 - Push event handler: показ нативного уведомления с action-кнопкой «Отметиться»
 - При check-in офлайн: сообщение «Нет подключения к сети»
+
+**PWA versioning policy:**
+- `sw.js`, `index.html` и `/version.json` должны отдаваться без кэша.
+- Хешированные assets можно отдавать как immutable.
+- Принудительная переустановка PWA браузером невозможна, поэтому используется update gate: клиент сравнивает runtime-версию с `/version.json`, показывает блокирующее окно обновления и не даёт продолжать работу на запрещённой версии.
+- Backend дополнительно может вернуть `426 Upgrade Required`, если клиент пришёл со старым `X-PWA-Version`.
 
 **Install UX:**
 - Android/Chrome: перехват `beforeinstallprompt` → кастомный баннер «Установить RutTrack»
@@ -1243,12 +1269,14 @@ Teacher → [Web Panel] → GET /reports/group/45/subject/67 + JWT
 |---------|------------|
 | MongoDB для посещаемости | Polyglot persistence для портфолио + гибкая схема excuse без миграций + денормализация для быстрых запросов без JOIN |
 | Report внутри Attendance | Нет своей БД, только читает данные Attendance. Изоляция через порт-интерфейс + ArchUnit. При необходимости выносится в отдельный сервис за один рефакторинг |
+| Document Renderer как отдельный gRPC-сервис | Изолирует LibreOffice/Poppler от attendance-service и оставляет конвертацию документов внутренним контрактом |
 | 2 контейнера Notification | Разные рантаймы (JVM vs Python), независимый деплой, общий fanout exchange RabbitMQ |
 | gRPC между сервисами | Типобезопасные контракты, кодогенерация, обнаружение несовместимости на этапе компиляции |
 | Angular для веб-панели | Enterprise-фреймворк для сложных форм и таблиц, встроенный DI, реактивные формы |
 | React для Mini App | Telegram SDK оптимизирован для React, лёгкий bundle через Vite |
 | React для PWA | Общий стек с Mini App, переиспользование API-клиента и компонентов |
 | PWA отдельно от Web Panel | Мобильный UX для студентов/старост/преподавателей vs enterprise-админка — разные задачи и целевые устройства |
+| PWA update gate вместо принудительной переустановки | Браузеры не дают надёжно форсировать reinstall PWA; контроль версии делается через no-store `version.json`, Service Worker update и блокирующий UI |
 | Web Push как третий канал | Дублирует Telegram push для PWA-пользователей, работает когда приложение закрыто |
 | `is_headman` флаг вместо роли | Староста — это студент с расширенными правами, не отдельная роль. Упрощает авторизацию |
 | Long ID вместо UUID | PostgreSQL BIGSERIAL быстрее UUID в индексах, компактнее в MongoDB |

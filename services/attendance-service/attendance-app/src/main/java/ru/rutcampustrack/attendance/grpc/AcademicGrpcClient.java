@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GeofenceResponse;
+import ru.rutcampustrack.academic.grpc.GroupRequest;
+import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
@@ -37,6 +39,20 @@ public class AcademicGrpcClient {
 
     @GrpcClient("academic-service")
     private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
+
+    public GroupResponse getGroup(Long groupId) {
+        try {
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getGroup(GroupRequest.newBuilder()
+                            .setGroupId(groupId)
+                            .build());
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
+                throw new ResourceNotFoundException("Group", "id", groupId);
+            }
+            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+        }
+    }
 
     public GroupMembersResponse getGroupMembers(Long groupId) {
         try {

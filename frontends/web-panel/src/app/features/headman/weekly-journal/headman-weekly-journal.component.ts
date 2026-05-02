@@ -9,13 +9,19 @@ import {
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { HeadmanApiService } from '../shared/headman-api.service';
+import { HeadmanWeeklyReportDialogComponent } from './headman-weekly-report-dialog.component';
 import { addDays, formatDate, getMonday, isSameWeek } from '../../student/schedule/week-utils';
+import type {
+  HeadmanWeeklyReportFormat,
+  ReportBlobResponse,
+} from '../shared/headman-report.types';
 import type { AttendanceStatus } from '../../../api/schema';
 
 import type { LessonResponse } from '../../../api/schema';
@@ -47,6 +53,25 @@ interface DayGroup {
 }
 
 const WEEKDAY_LABELS = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'] as const;
+const REPORT_FORMAT_EXT: Record<HeadmanWeeklyReportFormat, string> = {
+  docx: 'docx',
+  pdf: 'pdf',
+  png: 'png',
+};
+
+export function filenameFromContentDisposition(header: string | null): string | null {
+  if (!header) return null;
+  const encoded = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(header);
+  if (encoded?.[1]) {
+    try {
+      return decodeURIComponent(encoded[1].replace(/^"|"$/g, ''));
+    } catch {
+      return encoded[1].replace(/^"|"$/g, '');
+    }
+  }
+  const plain = /filename\s*=\s*"?([^";]+)"?/i.exec(header);
+  return plain?.[1] ?? null;
+}
 
 @Component({
   selector: 'app-headman-weekly-journal',
@@ -67,11 +92,15 @@ const WEEKDAY_LABELS = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'] 
 export class HeadmanWeeklyJournalComponent implements OnInit {
   private readonly headmanApi = inject(HeadmanApiService);
   private readonly auth = inject(AuthService);
+  private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
+  readonly reportFormats: HeadmanWeeklyReportFormat[] = ['docx', 'pdf', 'png'];
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly monday = signal<Date>(getMonday(new Date()));
+  readonly reportDownloading = signal(false);
+  readonly currentReportFormat = signal<HeadmanWeeklyReportFormat>('docx');
   readonly students = signal<Student[]>([]);
   readonly lessons = signal<Lesson[]>([]);
   readonly subjects = signal<Map<number, string>>(new Map());
@@ -91,6 +120,7 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
   });
 
   readonly isCurrentWeek = computed(() => isSameWeek(this.monday(), new Date()));
+  readonly canUseReports = computed(() => this.auth.currentUser()?.isHeadman === true);
 
   readonly dayGroups = computed<DayGroup[]>(() => {
     const monday = this.monday();
@@ -258,6 +288,43 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
     this.loadWeek();
   }
 
+  selectCurrentReportFormat(format: HeadmanWeeklyReportFormat): void {
+    this.currentReportFormat.set(format);
+  }
+
+  downloadOpenedWeekReport(): void {
+    if (!this.canUseReports() || this.reportDownloading()) return;
+    this.reportDownloading.set(true);
+    const weekStart = formatDate(this.monday());
+    const format = this.currentReportFormat();
+    this.headmanApi
+      .downloadHeadmanWeeklyReport(weekStart, format)
+      .subscribe({
+        next: response => {
+          this.reportDownloading.set(false);
+          this.saveBlobResponse(response, `weekly-report-${weekStart}.${REPORT_FORMAT_EXT[format]}`);
+        },
+        error: err => {
+          this.reportDownloading.set(false);
+          this.snackBar.open(this.reportErrorMessageFor(err), undefined, { duration: 6000 });
+        },
+      });
+  }
+
+  openMultiWeekReportDialog(): void {
+    if (!this.canUseReports()) return;
+    const ref = this.dialog.open(HeadmanWeeklyReportDialogComponent, {
+      width: '640px',
+      maxWidth: '95vw',
+      ariaLabel: 'Скачать отчет за несколько недель',
+    });
+    ref.afterClosed().subscribe(response => {
+      if (response) {
+        this.saveBlobResponse(response, 'weekly-report.docx');
+      }
+    });
+  }
+
   getStatus(lessonId: number, userId: number): AttendanceStatus | undefined {
     return this.statusMap().get(`${lessonId}_${userId}`);
   }
@@ -312,6 +379,31 @@ export class HeadmanWeeklyJournalComponent implements OnInit {
         }, 600);
       }
     });
+  }
+
+  private saveBlobResponse(response: ReportBlobResponse, fallbackFilename: string): void {
+    const blob = response.body;
+    if (!blob) {
+      this.snackBar.open('Сервис вернул пустой файл отчета.', undefined, { duration: 5000 });
+      return;
+    }
+    const filename = filenameFromContentDisposition(response.headers.get('content-disposition')) ?? fallbackFilename;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  private reportErrorMessageFor(err: any): string {
+    if (err?.status === 422) return 'Отчет не помещается в текущий шаблон или неделя вне семестра.';
+    if (err?.status === 503) return 'Сервис подготовки PDF/PNG временно недоступен.';
+    if (err?.status === 403) return 'Скачивание доступно только старосте группы.';
+    return 'Не удалось скачать отчет. Попробуйте позже.';
   }
 
 }

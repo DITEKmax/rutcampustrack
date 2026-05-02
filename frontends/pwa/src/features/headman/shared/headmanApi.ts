@@ -12,6 +12,10 @@ import type {
   ExcuseTicket,
   ExcuseTicketStatus,
   LateCheckinRequest,
+  HeadmanWeeklyExportRequest,
+  HeadmanWeeklyReportFormat,
+  HeadmanWeeklyWeeksResponse,
+  ReportBlobResponse,
 } from './types'
 import type { AttendanceStatus } from './types'
 
@@ -279,6 +283,52 @@ export function usePendingLateCheckinRequests(groupId?: number) {
     retry: false,
     staleTime: 30 * 1000,
     enabled: groupId !== 0,
+  })
+}
+
+export function useHeadmanWeeklyReportWeeks(enabled = true) {
+  return useQuery<HeadmanWeeklyWeeksResponse>({
+    queryKey: ['headmanWeeklyReportWeeks'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/attendance/reports/headman-weekly/weeks')
+      return data
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled,
+  })
+}
+
+export function useDownloadHeadmanWeeklyReport() {
+  return useMutation({
+    mutationFn: async ({
+      weekStart,
+      format,
+    }: {
+      weekStart: string
+      format: HeadmanWeeklyReportFormat
+    }): Promise<ReportBlobResponse> => {
+      const { data, headers } = await apiClient.get(
+        '/attendance/reports/headman-weekly/current',
+        {
+          params: { weekStart, format },
+          responseType: 'blob',
+        },
+      )
+      return { data, headers }
+    },
+  })
+}
+
+export function useExportHeadmanWeeklyReport() {
+  return useMutation({
+    mutationFn: async (body: HeadmanWeeklyExportRequest): Promise<ReportBlobResponse> => {
+      const { data, headers } = await apiClient.post(
+        '/attendance/reports/headman-weekly/export',
+        body,
+        { responseType: 'blob' },
+      )
+      return { data, headers }
+    },
   })
 }
 

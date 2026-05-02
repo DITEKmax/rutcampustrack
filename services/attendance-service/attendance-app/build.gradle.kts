@@ -52,6 +52,10 @@ dependencies {
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
 
+    // M17 — headman weekly .docx export template renderer spike.
+    implementation("pro.verron:docx-stamper:1.6.9")
+    runtimeOnly("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
+
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
     implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")

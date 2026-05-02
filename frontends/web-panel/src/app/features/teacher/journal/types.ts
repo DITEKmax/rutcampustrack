@@ -42,8 +42,17 @@ export interface JournalCell {
 export interface AssignmentResponse {
   id: number;
   groupId: number;
+  groupName?: string | null;
   subjectId: number;
+  subjectName?: string | null;
   teacherId: number;
+  teacherName?: string | null;
+  semesterId?: number;
+}
+
+export interface SubjectOption {
+  id: number;
+  name: string;
 }
 
 /** Column definition for the journal grid */

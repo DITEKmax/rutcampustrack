@@ -13,6 +13,9 @@ grpc:
     academic-service:
       address: static://localhost:19091
       negotiation-type: plaintext
+    document-renderer-service:
+      address: static://localhost:19095
+      negotiation-type: plaintext
 
 rutcampustrack:
   security:

@@ -16,10 +16,12 @@
  *   GET /api/academic/subjects*           (list, details, teacher queries)
  *   GET /api/academic/thresholds/resolve*
  *   GET /api/attendance/reports/journal*
+ *   GET /api/attendance/reports/headman-weekly/weeks
  *   GET /api/attendance/excuses/pending*  (may 404 — non-200 not cached per D-18)
  *   GET /api/attendance/late-checkins/pending*
  *
  * Deliberately excluded:
+ *   /api/attendance/reports/headman-weekly/current — binary export download
  *   /api/attendance/lessons/:id/students/:id  — mutation path (PUT mark attendance)
  *   All other /api/auth/, /api/academic/users/:id, /api/schedule/ paths
  */
@@ -45,6 +47,9 @@ export function isHeadmanApiRequest(url: URL): boolean {
 
   // /api/attendance/reports/journal*
   if (pathname.startsWith('/api/attendance/reports/journal')) return true
+
+  // /api/attendance/reports/headman-weekly/weeks — metadata only, not binary exports.
+  if (pathname === '/api/attendance/reports/headman-weekly/weeks') return true
 
   // /api/attendance/excuses/pending*
   if (pathname.startsWith('/api/attendance/excuses/pending')) return true

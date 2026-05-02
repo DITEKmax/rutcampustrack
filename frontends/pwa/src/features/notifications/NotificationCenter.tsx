@@ -20,6 +20,7 @@ import {
 } from './notificationPrefs'
 import { markAllNotificationsRead } from './notificationsApi'
 import { notificationsQueryKeys } from './useNotificationHistory'
+import { PWA_ICON_URL } from '@/features/push/pushUtils'
 
 /**
  * Global notification center for the PWA.
@@ -193,6 +194,21 @@ function formatLessonRef(payload: Record<string, unknown>): string {
   return parts.join(', ')
 }
 
+function addIfPresent(lines: string[], value: string): void {
+  if (value.trim()) lines.push(value.trim())
+}
+
+function buildHomeworkBody(payload: Record<string, unknown>, lessonRef: string): string {
+  const lines: string[] = []
+  addIfPresent(lines, str(payload, 'title'))
+  addIfPresent(lines, lessonRef)
+  addIfPresent(lines, str(payload, 'description'))
+  addIfPresent(lines, str(payload, 'link'))
+  return lines.length > 0
+    ? lines.join('\n')
+    : 'Откройте приложение для подробностей'
+}
+
 function buildBody(
   type: string,
   payload: Record<string, unknown>,
@@ -244,10 +260,7 @@ function buildBody(
       return lessonRef || 'Староста отменил пару'
     case 'homework.published':
     case 'homework.updated': {
-      const title = str(payload, 'title')
-      if (!title && !lessonRef) return 'Откройте приложение для подробностей'
-      if (!title) return lessonRef
-      return lessonRef ? `${title} · ${lessonRef}` : title
+      return buildHomeworkBody(payload, lessonRef)
     }
     case 'excuse.requested': {
       const parts: string[] = []
@@ -442,7 +455,8 @@ function showNativeNotification(record: NotificationRecord): void {
   if (Notification.permission !== 'granted') return
   if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
     // Focused PWA — no need to raise a system banner; the tab already shows
-    // the unread badge. The service worker suppresses foreground pushes too.
+    // the unread badge. Web Push from the service worker still shows in the OS
+    // shade because it is the reliable installed-PWA delivery path.
     return
   }
 
@@ -451,8 +465,8 @@ function showNativeNotification(record: NotificationRecord): void {
   try {
     const n = new Notification(title, {
       body,
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
+      icon: PWA_ICON_URL,
+      badge: PWA_ICON_URL,
       tag: `${record.type}-${record.id}`,
       silent: false,
     })

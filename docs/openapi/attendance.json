@@ -138,6 +138,138 @@
         }
       }
     },
+    "/attendance/reports/headman-weekly/export" : {
+      "post" : {
+        "tags" : [ "Reports" ],
+        "summary" : "Export multiple selected headman weekly reports",
+        "operationId" : "exportHeadmanWeekly",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HeadmanWeeklyExportRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Report file",
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/zip" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Unknown export format or invalid request body",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Only a headman can export weekly reports",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Selected weeks are outside the active semester or template limits are exceeded",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Renderer or upstream service unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/marks/batch" : {
       "post" : {
         "tags" : [ "Marking" ],
@@ -1398,6 +1530,243 @@
         }
       }
     },
+    "/attendance/reports/headman-weekly/weeks" : {
+      "get" : {
+        "tags" : [ "Reports" ],
+        "summary" : "Weeks of the active semester available for headman weekly report export",
+        "operationId" : "getHeadmanWeeklyWeeks",
+        "responses" : {
+          "200" : {
+            "description" : "Weeks retrieved",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelHeadmanWeeklyWeeksResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Only a headman can export weekly reports",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Academic service unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/reports/headman-weekly/current" : {
+      "get" : {
+        "tags" : [ "Reports" ],
+        "summary" : "Export one headman weekly report",
+        "operationId" : "exportHeadmanWeeklyCurrent",
+        "parameters" : [ {
+          "name" : "weekStart",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "format",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Report file",
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "image/png" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Unknown export format",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Only a headman can export weekly reports",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Week is outside the active semester or template limits are exceeded",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Renderer or upstream service unavailable",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/attendance/late-checkin/pending" : {
       "get" : {
         "tags" : [ "Late Check-in" ],
@@ -2158,6 +2527,32 @@
           }
         }
       },
+      "HeadmanWeeklyExportRequest" : {
+        "type" : "object",
+        "description" : "Request for exporting one or more headman weekly reports",
+        "properties" : {
+          "weekStarts" : {
+            "type" : "array",
+            "description" : "Monday dates of selected academic weeks",
+            "example" : [ "2026-04-27", "2026-05-11" ],
+            "items" : {
+              "type" : "string",
+              "format" : "date"
+            },
+            "maxItems" : 2147483647,
+            "minItems" : 1
+          },
+          "format" : {
+            "type" : "string",
+            "description" : "Export format: docx, pdf, or png",
+            "enum" : [ "docx", "pdf", "png" ],
+            "example" : "pdf",
+            "minLength" : 1,
+            "pattern" : "docx|pdf|png"
+          }
+        },
+        "required" : [ "format", "weekStarts" ]
+      },
       "MarkBatchItem" : {
         "type" : "object",
         "description" : "Одна отметка в пакете: ID пары, ID студента, статус",
@@ -2795,6 +3190,63 @@
             "items" : {
               "$ref" : "#/components/schemas/JournalCell"
             }
+          }
+        }
+      },
+      "EntityModelHeadmanWeeklyWeeksResponse" : {
+        "type" : "object",
+        "properties" : {
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "semesterName" : {
+            "type" : "string"
+          },
+          "semesterDateFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "semesterDateTo" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weeks" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanWeeklyWeekOption"
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "HeadmanWeeklyWeekOption" : {
+        "type" : "object",
+        "description" : "Academic week available for headman weekly report export",
+        "properties" : {
+          "weekOfSemester" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "isoWeek" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "weekStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weekEnd" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "current" : {
+            "type" : "boolean"
           }
         }
       },

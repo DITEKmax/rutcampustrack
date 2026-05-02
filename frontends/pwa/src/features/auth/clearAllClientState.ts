@@ -15,7 +15,7 @@
  * SW precache НЕ чистится — он per-version, не содержит user-specific данных.
  *
  * @param accessToken — access-JWT из memory (до обнуления). Нужен чтобы
- *   backend DELETE /api/notifications/push/subscribe прошёл Gateway
+ *   backend DELETE /api/push/subscribe прошёл Gateway
  *   JwtAuthenticationFilter (M03b Группа 11 security-audit MEDIUM-1).
  *   Без него запрос получает 401 и subscription остаётся в БД → после
  *   logout на shared-устройстве push-уведомления продолжат приходить.
@@ -55,7 +55,7 @@ export async function clearAllClientState(accessToken?: string | null): Promise<
           if (accessToken) {
             headers.Authorization = `Bearer ${accessToken}`
           }
-          await fetch('/api/notifications/push/subscribe', {
+          await fetch('/api/push/subscribe', {
             method: 'DELETE',
             credentials: 'include',
             headers,

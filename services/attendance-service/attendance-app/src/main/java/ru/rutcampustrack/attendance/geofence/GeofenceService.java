@@ -65,8 +65,19 @@ public class GeofenceService {
     }
 
     private GeofenceData getOrRefresh() {
-        if (cachedGeofence == null || isCacheExpired()) {
+        GeofenceData current = cachedGeofence;
+        if (current == null) {
             refresh();
+            return cachedGeofence;
+        }
+
+        if (isCacheExpired()) {
+            try {
+                refresh();
+            } catch (RuntimeException e) {
+                log.warn("Could not refresh campus geofence, using stale cached value: {}", e.getMessage());
+                return current;
+            }
         }
         return cachedGeofence;
     }

@@ -54,6 +54,17 @@ Permissions-Policy — все в `default.conf` server 443 block. **НЕ
 | `/api/attendance/excuses/with-file` | `rct-api-gateway:8080` | Multipart upload (25m body limit) |
 | `/swagger-ui*`, `/v3/api-docs`, `/openapi/`, `/grafana/` | `rct-api-gateway:8080` / `rct-grafana:3000` | Auth via basic-auth (`.htpasswd`) |
 
+## PWA inner nginx cache policy
+
+Для контейнера `rct-pwa-nginx` source of truth — `frontends/pwa/nginx.conf`.
+
+Критичные правила:
+
+- `/sw.js`, `/index.html` и `/version.json` должны отдавать `Cache-Control: no-store, no-cache, must-revalidate`.
+- Хешированные JS/CSS/images/fonts можно отдавать с долгим immutable-кэшем.
+- `/version.json` используется как runtime policy для PWA update gate. Если этот файл закэшируется, установленная PWA может не увидеть требование обновиться.
+- Внешний nginx для `/app/*` должен проксировать эти cache headers как есть и не переопределять их через `proxy_hide_header`/`add_header` без учёта внутренних правил.
+
 ## Reload checklist
 
 При изменении `nginx.conf` / `conf.d/*.conf`:
@@ -96,6 +107,8 @@ Permissions-Policy — все в `default.conf` server 443 block. **НЕ
 - M06 G1: HEALTHCHECK в Dockerfile + digest-pin observability.
 - M07 G11: `client_max_body_size` per-location refactor. Global 12m → 2m,
   excuse with-file 25m per-location. NEW-152 runbook (этот файл).
+- 2026-05-03: задокументирована no-store cache policy для PWA `version.json`,
+  `index.html` и `sw.js`.
 
 ---
 

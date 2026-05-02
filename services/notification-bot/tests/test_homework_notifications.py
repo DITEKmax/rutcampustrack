@@ -27,6 +27,8 @@ def _make_homework_published_event(
     group_id: int = 5,
     subject_id: int = 42,
     title: str = "Задание 1",
+    description: str = None,
+    link: str = None,
     lesson_id: int = None,
     has_link: bool = False,
 ):
@@ -37,6 +39,10 @@ def _make_homework_published_event(
         "title": title,
         "has_link": has_link,
     }
+    if description is not None:
+        payload["description"] = description
+    if link is not None:
+        payload["link"] = link
     if lesson_id is not None:
         payload["lesson_id"] = lesson_id
     return {
@@ -50,6 +56,8 @@ def _make_homework_updated_event(
     group_id: int = 5,
     subject_id: int = 42,
     title: str = "Задание 1 (обновлено)",
+    description: str = None,
+    link: str = None,
     lesson_date: str = "2026-05-01",
     lesson_number: int = 2,
 ):
@@ -60,6 +68,8 @@ def _make_homework_updated_event(
             "group_id": group_id,
             "subject_id": subject_id,
             "title": title,
+            "description": description,
+            "link": link,
             "lesson_date": lesson_date,
             "lesson_number": lesson_number,
         },
@@ -122,7 +132,11 @@ async def test_homework_published_text_contains_subject_and_title():
     send_queue.put = capture_put
 
     await handle_homework(
-        _make_homework_published_event(title="Лабораторная работа №3"),
+        _make_homework_published_event(
+            title="Лабораторная работа №3",
+            description="Решить задачи 1-5",
+            link="https://example.com/homework.pdf",
+        ),
         bot=bot,
         academic_client=academic_client,
         send_queue=send_queue,
@@ -135,6 +149,8 @@ async def test_homework_published_text_contains_subject_and_title():
     text = call_kwargs.get("text", "")
     assert "Физика" in text
     assert "Лабораторная работа №3" in text
+    assert "Решить задачи 1-5" in text
+    assert "https://example.com/homework.pdf" in text
     assert "Новое домашнее задание" in text
 
 
@@ -195,7 +211,13 @@ async def test_homework_updated_text_contains_subject_and_title():
     send_queue.put = capture_put
 
     await handle_homework(
-        _make_homework_updated_event(title="Задача 3", lesson_date="2026-05-01", lesson_number=2),
+        _make_homework_updated_event(
+            title="Задача 3",
+            description="Добавлен второй вариант",
+            link="https://example.com/updated",
+            lesson_date="2026-05-01",
+            lesson_number=2,
+        ),
         bot=bot,
         academic_client=academic_client,
         send_queue=send_queue,
@@ -209,6 +231,8 @@ async def test_homework_updated_text_contains_subject_and_title():
     assert "ДЗ изменено" in text
     assert "Математика" in text
     assert "Задача 3" in text
+    assert "Добавлен второй вариант" in text
+    assert "https://example.com/updated" in text
     assert "Пара 2" in text
     assert "2026-05-01" in text
     # Ensure we did try to resolve the subject (D-07 требует lookup)

@@ -13,6 +13,7 @@ import {
 } from '@phosphor-icons/react'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { useGroupMembers, useGroupSubjects } from '@/features/headman/shared/headmanApi'
+import { HeadmanWeeklyReportCard } from './HeadmanWeeklyReportCard'
 
 interface HubCard {
   route: string
@@ -140,6 +141,8 @@ export function GroupHub() {
           ))}
         </div>
       </AnimatePresence>
+
+      <HeadmanWeeklyReportCard />
     </div>
   )
 }

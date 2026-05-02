@@ -143,7 +143,7 @@ public class HomeworkService {
         Homework saved = homeworkRepository.save(homework);
         eventPublisher.publishEvent(new HomeworkPublishedEvent(
                 this, saved.getId(), saved.getGroupId(), saved.getSubjectId(),
-                saved.getTitle(), saved.getLink() != null,
+                saved.getTitle(), saved.getDescription(), saved.getLink(),
                 saved.getLessonDate().toString(), saved.getLessonNumber()
         ));
         return saved;
@@ -190,7 +190,7 @@ public class HomeworkService {
         Homework saved = homeworkRepository.save(homework);
         eventPublisher.publishEvent(new HomeworkUpdatedEvent(
                 this, saved.getId(), saved.getGroupId(), saved.getSubjectId(),
-                saved.getTitle(), saved.getLink() != null,
+                saved.getTitle(), saved.getDescription(), saved.getLink(),
                 saved.getLessonDate().toString(), saved.getLessonNumber()
         ));
         return saved;

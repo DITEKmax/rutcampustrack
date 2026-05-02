@@ -142,6 +142,50 @@ describe('SchedulePage', () => {
     }, { timeout: 3000 })
   })
 
+  it('renders full homework details under a student schedule lesson', async () => {
+    const backendDow = getTodayBackendDow()
+    const lessons = makeLessons(backendDow, 1)
+    const homework = {
+      id: 55,
+      title: 'Read chapter 4',
+      description: 'Solve tasks 1-5',
+      link: 'https://example.com/hw.pdf',
+      subjectId: lessons[0].subjectId,
+      groupId: 5,
+      semesterId: 1,
+      publishedBy: 1,
+      completed: false,
+      createdAt: '2026-04-01T00:00:00Z',
+      lessonDate: lessons[0].date,
+      lessonNumber: lessons[0].lessonNumber,
+    }
+
+    mockedGet.mockImplementation(async (url: string) => {
+      if (url.includes('/schedule/groups/')) {
+        return { data: { _embedded: { lessonResponseList: lessons } } }
+      }
+      if (url.includes('/academic/homeworks')) {
+        return { data: { _embedded: { homeworkResponseList: [homework] } } }
+      }
+      if (url.includes('/academic/semesters')) {
+        return mockSemesters
+      }
+      if (url.includes('/academic/subjects/')) {
+        return { data: { id: lessons[0].subjectId, name: 'Physics' } }
+      }
+      return { data: {} }
+    })
+
+    render(<SchedulePage />, { wrapper: createWrapper() })
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Read chapter 4').length).toBeGreaterThanOrEqual(2)
+    })
+    expect(await screen.findByText('Solve tasks 1-5')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'https://example.com/hw.pdf' }))
+      .toHaveAttribute('href', 'https://example.com/hw.pdf')
+  })
+
   it('shows empty state when no lessons for selected day', async () => {
     mockedGet.mockImplementation(async (url: string) => {
       if (url.includes('/schedule/groups/')) {

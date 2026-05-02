@@ -19,7 +19,7 @@
 ## docs/ — раскладка по доменам
 
 ### architecture/ — архитектура системы
-- `architecture.md` — общий обзор (5 services + Gateway + 2 notification containers)
+- `architecture.md` — общий обзор (6 services + Gateway + 2 notification containers)
 - `database-schema.md` — схема БД (PostgreSQL × 2, MongoDB)
 - `event-schemas.md` — RabbitMQ JSON Schema контракты
 - `websocket-flow.md` — STOMP WebSocket flows
@@ -29,6 +29,7 @@
 - `api-error-conventions.md` — RFC 9457 Problem Details
 - `api-pagination.md` — пагинация HATEOAS
 - `api-rate-limits.md` — лимиты per-route
+- `headman-weekly-report.md` — API скачивания недельного отчёта старосты в DOCX/PDF/PNG
 - `internal-jwt-spec.md` — internal-JWT contract (M03a)
 - `openapi-conformance.md` — OpenAPI ↔ runtime conformance tests
 - `golden-tests.md` — contract tests

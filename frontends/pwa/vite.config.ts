@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
 
+const appVersion = process.env.VITE_APP_VERSION ?? process.env.npm_package_version ?? '0.0.0'
+
 export default defineConfig({
   // BUG-008: PWA serves under /app/ on prod (see nginx/conf.d/default.conf "/app/" location).
   // Without this base, Vite emits asset URLs like "/assets/...", which would be resolved
@@ -24,6 +26,7 @@ export default defineConfig({
         short_name: 'RutTrack',
         display: 'standalone',
         // start_url and scope must include /app/ so the installed PWA opens the right URL.
+        id: '/app/',
         start_url: '/app/',
         scope: '/app/',
         background_color: '#0A0E17',
@@ -42,6 +45,9 @@ export default defineConfig({
       }
     })
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

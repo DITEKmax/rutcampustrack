@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { attachProblemDetails, parseProblemDetails } from '@/api/problemDetails'
+import { APP_UPDATE_REQUIRED_EVENT, APP_VERSION } from './appVersion'
 
 let isRefreshing = false
 let pendingQueue: Array<{ resolve: (token: string) => void; reject: (err: unknown) => void }> = []
@@ -44,6 +45,7 @@ export const setAuthLogoutCallback = (fn: () => void) => {
 // Request interceptor: attach Bearer token
 apiClient.interceptors.request.use((config) => {
   const token = getAccessToken()
+  config.headers['X-PWA-Version'] = APP_VERSION
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`
   }
@@ -55,6 +57,18 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config
+    if (error.response?.status === 426) {
+      const detail = parseProblemDetails(error)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(APP_UPDATE_REQUIRED_EVENT, {
+          detail: {
+            message: detail?.detail ?? detail?.title,
+          },
+        }))
+      }
+      return Promise.reject(error)
+    }
+
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true
 

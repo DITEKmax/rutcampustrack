@@ -38,6 +38,7 @@ public class WebPushDeliveryService {
     /** Events that fan out to every subscriber of the group. */
     private static final Set<String> PUSH_EVENT_TYPES = Set.of(
             "lesson.started",
+            "lesson.reminder",
             "lesson.cancelled",
             "lesson.one_off.created",
             "lesson.one_off.cancelled",
@@ -47,7 +48,8 @@ public class WebPushDeliveryService {
             "group.archived",
             // Студент-таргетированные: доходят только подписчику user_id из payload.
             "excuse.decided",
-            "late_checkin.decided"
+            "late_checkin.decided",
+            "attendance.marked"
     );
 
     /** Events that fan out only to headmen of the group (старостам). */
@@ -59,7 +61,8 @@ public class WebPushDeliveryService {
     /** Events that are sent to a single subscriber identified by payload.user_id. */
     private static final Set<String> USER_SCOPED_EVENT_TYPES = Set.of(
             "excuse.decided",
-            "late_checkin.decided"
+            "late_checkin.decided",
+            "attendance.marked"
     );
 
     private final PushSubscriptionRepository repository;
@@ -162,6 +165,9 @@ public class WebPushDeliveryService {
                     .filter(PushSubscriptionDocument::isHeadman)
                     .collect(Collectors.toList());
         }
+        if ("attendance.marked".equals(eventType) && !"headman".equals(payload.get("marked_by"))) {
+            return List.of();
+        }
         if (USER_SCOPED_EVENT_TYPES.contains(eventType)) {
             Number userIdNum = (Number) payload.get("user_id");
             if (userIdNum == null) {
@@ -201,6 +207,8 @@ public class WebPushDeliveryService {
     private String buildTitle(String eventType, Map<String, Object> payload) {
         return switch (eventType) {
             case "lesson.started" -> "Пара началась";
+            case "lesson.reminder" -> "Не забудьте отметиться";
+            case "attendance.marked" -> "Староста изменил статус";
             case "lesson.cancelled" -> "Пара отменена";
             case "lesson.one_off.created" -> "Добавлена пара";
             case "lesson.one_off.cancelled" -> "Пара отменена";
@@ -223,6 +231,8 @@ public class WebPushDeliveryService {
     private String buildBody(String eventType, Map<String, Object> payload) {
         return switch (eventType) {
             case "lesson.started" -> lessonBody(payload, "Время отметиться");
+            case "lesson.reminder" -> lessonBody(payload, "Сейчас идёт пара");
+            case "attendance.marked" -> attendanceBody(payload);
             case "lesson.cancelled" -> {
                 String base = lessonBody(payload, "Пара отменена");
                 String reason = str(payload, "cancel_reason");
@@ -287,6 +297,37 @@ public class WebPushDeliveryService {
             return "Откройте приложение для подробностей";
         }
         return String.join("\n", lines);
+    }
+
+    private String attendanceBody(Map<String, Object> payload) {
+        List<String> parts = new ArrayList<>();
+        addIfNotBlank(parts, attendanceStatusRu(str(payload, "status")));
+
+        String subject = str(payload, "subject_name");
+        Number lessonNumber = (Number) payload.get("lesson_number");
+        if (lessonNumber != null && !subject.isBlank()) {
+            parts.add("№" + lessonNumber.intValue() + " · " + subject);
+        } else if (lessonNumber != null) {
+            parts.add("№" + lessonNumber.intValue());
+        } else {
+            addIfNotBlank(parts, subject);
+        }
+
+        addIfNotBlank(parts, formatShortDate(str(payload, "lesson_date")));
+        if (parts.isEmpty()) {
+            return "Откройте приложение для подробностей";
+        }
+        return String.join(" · ", parts);
+    }
+
+    private String attendanceStatusRu(String status) {
+        return switch (status) {
+            case "present" -> "Присутствует (б)";
+            case "absent" -> "Отсутствует (н)";
+            case "excused" -> "Уважительная (у)";
+            case "free_attendance" -> "Свобод. посещение (сп)";
+            default -> status;
+        };
     }
 
     private static void addIfNotBlank(List<String> lines, String value) {

@@ -157,6 +157,16 @@ class WebPushDeliveryServiceTest {
     }
 
     @Test
+    void shouldPush_lessonReminder_isTrue() {
+        assertThat(service.shouldPush("lesson.reminder")).isTrue();
+    }
+
+    @Test
+    void shouldPush_attendanceMarked_isTrue() {
+        assertThat(service.shouldPush("attendance.marked")).isTrue();
+    }
+
+    @Test
     void sendToGroup_groupRenamed_buildsTitleAndBody() throws Exception {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/gr");
         when(repository.findAllByGroupId(11L)).thenReturn(List.of(sub));
@@ -217,5 +227,71 @@ class WebPushDeliveryServiceTest {
         assertThat(body).contains("Лабораторная 4");
         assertThat(body).contains("Read chapter 4");
         assertThat(body).contains("https://example.com/hw.pdf");
+    }
+
+    @Test
+    void sendToGroup_lessonReminder_buildsTitleAndBody() throws Exception {
+        PushSubscriptionDocument sub = sub(1L, "https://push.example.com/reminder");
+        when(repository.findAllByGroupId(7L)).thenReturn(List.of(sub));
+
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
+
+        CompletableFuture<Void> result = service.sendToGroup(7L, "lesson.reminder",
+                Map.of("group_id", 7, "lesson_number", 3, "start_time", "14:30", "end_time", "16:00"));
+        result.join();
+
+        String payloadStr = new String(payloadCaptor.getValue());
+        var json = new ObjectMapper().readTree(payloadStr);
+        assertThat(json.get("event_type").asText()).isEqualTo("lesson.reminder");
+        assertThat(json.get("body").asText()).contains("3").contains("14:30");
+    }
+
+    @Test
+    void sendToGroup_attendanceMarkedByHeadman_targetsPayloadUserOnly() throws Exception {
+        PushSubscriptionDocument target = sub(2L, "https://push.example.com/target");
+        PushSubscriptionDocument other = sub(3L, "https://push.example.com/other");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(target, other));
+
+        ArgumentCaptor<PushSubscriptionDocument> subCaptor = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(subCaptor.capture(), payloadCaptor.capture());
+
+        CompletableFuture<Void> result = service.sendToGroup(10L, "attendance.marked",
+                Map.of(
+                        "group_id", 10,
+                        "user_id", 2,
+                        "marked_by", "headman",
+                        "status", "absent",
+                        "lesson_number", 2,
+                        "subject_name", "Physics",
+                        "lesson_date", "2026-04-17"
+                ));
+        result.join();
+
+        verify(webPushService, times(1)).send(any(Notification.class));
+        assertThat(subCaptor.getValue().getUserId()).isEqualTo(2L);
+
+        String payloadStr = new String(payloadCaptor.getValue());
+        var json = new ObjectMapper().readTree(payloadStr);
+        assertThat(json.get("event_type").asText()).isEqualTo("attendance.marked");
+        assertThat(json.get("body").asText()).contains("Physics").contains("17.04");
+    }
+
+    @Test
+    void sendToGroup_attendanceMarkedNotByHeadman_skipsPush() throws Exception {
+        PushSubscriptionDocument sub = sub(2L, "https://push.example.com/self");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(sub));
+
+        CompletableFuture<Void> result = service.sendToGroup(10L, "attendance.marked",
+                Map.of(
+                        "group_id", 10,
+                        "user_id", 2,
+                        "marked_by", "self",
+                        "status", "present"
+                ));
+        result.join();
+
+        verify(webPushService, never()).send(any(Notification.class));
     }
 }

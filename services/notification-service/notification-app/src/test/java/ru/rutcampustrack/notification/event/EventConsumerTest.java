@@ -200,7 +200,7 @@ class EventConsumerTest {
         verify(webPushDeliveryService).sendToGroup(7L, "homework.published", payload);
     }
 
-    // Test 4: excuse.requested does NOT call push
+    // Test 4: events are not pushed when WebPushDeliveryService says they are ineligible
     @Test
     void excuseRequested_doesNotTriggerPush() {
         when(webPushDeliveryService.shouldPush("excuse.requested")).thenReturn(false);
@@ -212,16 +212,31 @@ class EventConsumerTest {
         verify(webPushDeliveryService, never()).sendToGroup(anyLong(), anyString(), any());
     }
 
-    // Test 5: attendance.marked does NOT call push
     @Test
-    void attendanceMarked_doesNotTriggerPush() {
-        when(webPushDeliveryService.shouldPush("attendance.marked")).thenReturn(false);
-        Map<String, Object> payload = Map.of("group_id", 42, "user_id", 5);
+    void lessonReminder_triggersPush() {
+        when(webPushDeliveryService.shouldPush("lesson.reminder")).thenReturn(true);
+        Map<String, Object> payload = Map.of("group_id", 42, "lesson_id", 101);
+        Map<String, Object> envelope = Map.of("event_type", "lesson.reminder", "payload", payload);
+
+        consumer.onEvent(envelope);
+
+        verify(webPushDeliveryService).sendToGroup(42L, "lesson.reminder", payload);
+    }
+
+    // Test 5: attendance.marked calls push when it is a user-facing headman edit
+    @Test
+    void attendanceMarked_triggersPush() {
+        when(webPushDeliveryService.shouldPush("attendance.marked")).thenReturn(true);
+        Map<String, Object> payload = Map.of(
+                "group_id", 42,
+                "user_id", 5,
+                "marked_by", "headman"
+        );
         Map<String, Object> envelope = Map.of("event_type", "attendance.marked", "payload", payload);
 
         consumer.onEvent(envelope);
 
-        verify(webPushDeliveryService, never()).sendToGroup(anyLong(), anyString(), any());
+        verify(webPushDeliveryService).sendToGroup(42L, "attendance.marked", payload);
     }
 
     // Test 6: push is called AFTER STOMP (verify call order)

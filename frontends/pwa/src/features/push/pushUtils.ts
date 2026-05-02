@@ -1,11 +1,33 @@
+export const APP_BASE_PATH = '/app'
+export const PWA_ICON_URL = `${APP_BASE_PATH}/icons/icon-192.png`
+
+export function appPath(path = '/'): string {
+  const normalized = path.startsWith('/') ? path : `/${path}`
+  return `${APP_BASE_PATH}${normalized === '/' ? '/' : normalized}`
+}
+
 export function getUrlForEventType(eventType: string): string {
   switch (eventType) {
-    case 'lesson.started': return '/checkin'
-    case 'lesson.cancelled': return '/schedule'
+    case 'lesson.started':
+    case 'lesson.reminder':
+    case 'attendance.marked':
+      return appPath('/checkin')
+    case 'lesson.cancelled':
+    case 'lesson.one_off.created':
+    case 'lesson.one_off.cancelled':
+      return appPath('/schedule')
     case 'homework.published':
     case 'homework.updated':
-      return '/homework'
-    default: return '/'
+      return appPath('/homework')
+    case 'late_checkin.requested':
+      return appPath('/group/late-checkin')
+    case 'excuse.requested':
+      return appPath('/group/excuses')
+    case 'group.renamed':
+    case 'group.archived':
+      return appPath('/group')
+    default:
+      return appPath('/notifications')
   }
 }
 

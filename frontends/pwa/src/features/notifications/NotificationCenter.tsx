@@ -20,6 +20,7 @@ import {
 } from './notificationPrefs'
 import { markAllNotificationsRead } from './notificationsApi'
 import { notificationsQueryKeys } from './useNotificationHistory'
+import { PWA_ICON_URL } from '@/features/push/pushUtils'
 
 /**
  * Global notification center for the PWA.
@@ -454,7 +455,8 @@ function showNativeNotification(record: NotificationRecord): void {
   if (Notification.permission !== 'granted') return
   if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
     // Focused PWA — no need to raise a system banner; the tab already shows
-    // the unread badge. The service worker suppresses foreground pushes too.
+    // the unread badge. Web Push from the service worker still shows in the OS
+    // shade because it is the reliable installed-PWA delivery path.
     return
   }
 
@@ -463,8 +465,8 @@ function showNativeNotification(record: NotificationRecord): void {
   try {
     const n = new Notification(title, {
       body,
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
+      icon: PWA_ICON_URL,
+      badge: PWA_ICON_URL,
       tag: `${record.type}-${record.id}`,
       silent: false,
     })

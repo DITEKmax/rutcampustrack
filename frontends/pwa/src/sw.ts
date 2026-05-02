@@ -5,6 +5,7 @@ import { StaleWhileRevalidate } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
 import { CacheableResponsePlugin } from 'workbox-cacheable-response'
 import { isHeadmanApiRequest } from './sw-runtime-cache'
+import { getUrlForEventType, PWA_ICON_URL } from './features/push/pushUtils'
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -17,17 +18,6 @@ self.addEventListener('activate', (event) => {
 })
 
 precacheAndRoute(self.__WB_MANIFEST)
-
-function getUrlForEventType(eventType: string): string {
-  switch (eventType) {
-    case 'lesson.started': return '/checkin'
-    case 'lesson.cancelled': return '/schedule'
-    case 'homework.published':
-    case 'homework.updated':
-      return '/homework'
-    default: return '/'
-  }
-}
 
 // PUSHUI-01: Handle push events — show notification with deep-link data
 self.addEventListener('push', (event) => {
@@ -51,27 +41,19 @@ self.addEventListener('push', (event) => {
 
   const url = getUrlForEventType(event_type)
 
-  // PUSHUI-04: Foreground suppression — skip notification if PWA window is focused
-  const promiseChain = self.clients
-    .matchAll({ type: 'window', includeUncontrolled: true })
-    .then((clients) => {
-      const isFocused = clients.some((c) => (c as WindowClient).focused)
-      if (isFocused) return
-      // `silent: false` + `vibrate` ensure the device plays its default
-      // notification sound and haptics — Android respects `vibrate`, iOS
-      // respects `silent`. Without these the PWA shows a silent banner which
-      // users miss, especially with the phone in a pocket.
-      return self.registration.showNotification(title, {
-        body,
-        icon: '/icons/icon-192.png',
-        badge: '/icons/icon-192.png',
-        data: { url, event_type, lessonId: (data as Record<string, unknown>).lesson_id },
-        tag: `${event_type}-${(data as Record<string, unknown>).lesson_id ?? Date.now()}`,
-        silent: false,
-        vibrate: [200, 100, 200],
-        renotify: true,
-      } as NotificationOptions & { vibrate?: number[]; renotify?: boolean })
-    })
+  // Always show the OS notification for Web Push. The user explicitly enabled
+  // device notifications, and suppressing foreground push makes installed PWAs
+  // look broken when the app is open in the background task switcher.
+  const promiseChain = self.registration.showNotification(title, {
+    body,
+    icon: PWA_ICON_URL,
+    badge: PWA_ICON_URL,
+    data: { url, event_type, lessonId: (data as Record<string, unknown>).lesson_id },
+    tag: `${event_type}-${(data as Record<string, unknown>).lesson_id ?? Date.now()}`,
+    silent: false,
+    vibrate: [200, 100, 200],
+    renotify: true,
+  } as NotificationOptions & { vibrate?: number[]; renotify?: boolean })
 
   event.waitUntil(promiseChain)
 })
@@ -86,10 +68,21 @@ self.addEventListener('notificationclick', (event) => {
 
   const promiseChain = self.clients
     .matchAll({ type: 'window', includeUncontrolled: true })
-    .then((clients) => {
+    .then(async (clients) => {
       for (const client of clients) {
         if (client.url === urlToOpen) {
           return (client as WindowClient).focus()
+        }
+      }
+      for (const client of clients) {
+        const windowClient = client as WindowClient
+        const currentUrl = new URL(windowClient.url)
+        if (
+          currentUrl.origin === self.location.origin &&
+          currentUrl.pathname.startsWith('/app/')
+        ) {
+          const navigated = await windowClient.navigate(urlToOpen)
+          return (navigated ?? windowClient).focus()
         }
       }
       return self.clients.openWindow(urlToOpen)

@@ -21,6 +21,7 @@ import type { AttendanceRecord, LessonResponse } from '../shared/student-schedul
 import {
   mapCheckinError,
   mapRequestHeadmanError,
+  mapGeolocationError,
   GPS_DENIED_MESSAGE,
 } from './checkin-error-mapper';
 import { formatLoadError } from '../shared/format-load-error';
@@ -53,6 +54,12 @@ function todayDateString(): string {
 function formatHhMm(time: string): string {
   return time.slice(0, 5);
 }
+
+const GEOLOCATION_OPTIONS: PositionOptions = {
+  enableHighAccuracy: true,
+  timeout: 15000,
+  maximumAge: 15000,
+};
 
 /**
  * StudentCheckinComponent — the `/student/checkin` page.
@@ -256,10 +263,10 @@ export class StudentCheckinComponent implements OnInit, OnDestroy {
             },
           });
       },
-      () => {
-        this.state.set({ kind: 'error', message: GPS_DENIED_MESSAGE });
+      error => {
+        this.state.set({ kind: 'error', message: mapGeolocationError(error) });
       },
-      { timeout: 10000, maximumAge: 30000 },
+      GEOLOCATION_OPTIONS,
     );
   }
 

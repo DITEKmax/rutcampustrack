@@ -27,12 +27,30 @@ export function mapCheckinError(status: number): string {
 }
 
 /**
- * Shown when navigator.geolocation.getCurrentPosition rejects (permission
- * denied, unavailable, timeout). Same string for every error code — the
- * user-visible remediation is identical.
+ * Shown when navigator.geolocation.getCurrentPosition rejects with
+ * PERMISSION_DENIED.
  */
 export const GPS_DENIED_MESSAGE =
   'Нет доступа к геолокации. Разрешите доступ в настройках браузера и попробуйте снова.';
+
+export const GPS_UNAVAILABLE_MESSAGE =
+  'Не удалось определить местоположение. Проверьте GPS и попробуйте снова.';
+
+export const GPS_TIMEOUT_MESSAGE =
+  'Слишком долго ищем GPS. Попробуйте ещё раз в открытом месте.';
+
+export function mapGeolocationError(error: GeolocationPositionError): string {
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      return GPS_DENIED_MESSAGE;
+    case error.POSITION_UNAVAILABLE:
+      return GPS_UNAVAILABLE_MESSAGE;
+    case error.TIMEOUT:
+      return GPS_TIMEOUT_MESSAGE;
+    default:
+      return GPS_DENIED_MESSAGE;
+  }
+}
 
 /**
  * Map HTTP status → error message for POST /api/attendance/late-checkin/{lessonId}.

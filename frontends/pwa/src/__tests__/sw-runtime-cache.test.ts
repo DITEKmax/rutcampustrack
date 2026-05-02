@@ -26,6 +26,9 @@ describe('isHeadmanApiRequest — headman API route matcher', () => {
   it('matches /api/attendance/reports/journal', () => {
     expect(isHeadmanApiRequest(url('/api/attendance/reports/journal?groupId=1&subjectId=2&dateFrom=2026-04-13&dateTo=2026-04-13'))).toBe(true)
   })
+  it('matches /api/attendance/reports/headman-weekly/weeks metadata endpoint', () => {
+    expect(isHeadmanApiRequest(url('/api/attendance/reports/headman-weekly/weeks'))).toBe(true)
+  })
   it('matches /api/attendance/excuses/pending', () => {
     expect(isHeadmanApiRequest(url('/api/attendance/excuses/pending?groupId=42'))).toBe(true)
   })
@@ -39,6 +42,9 @@ describe('isHeadmanApiRequest — headman API route matcher', () => {
   })
   it('does NOT match attendance mutation path /api/attendance/lessons/:id/students/:id', () => {
     expect(isHeadmanApiRequest(url('/api/attendance/lessons/123/students/456'))).toBe(false)
+  })
+  it('does NOT match binary headman weekly export endpoint', () => {
+    expect(isHeadmanApiRequest(url('/api/attendance/reports/headman-weekly/current?weekStart=2026-04-27&format=docx'))).toBe(false)
   })
   it('does NOT match student endpoint /api/academic/users/:id', () => {
     expect(isHeadmanApiRequest(url('/api/academic/users/1'))).toBe(false)

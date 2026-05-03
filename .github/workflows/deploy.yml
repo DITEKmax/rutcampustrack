@@ -129,6 +129,16 @@ jobs:
           cache-from: type=gha,scope=attendance-service
           cache-to: type=gha,scope=attendance-service,mode=max
 
+      - name: Build and push document-renderer-service
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
+        with:
+          context: .
+          file: services/document-renderer-service/document-renderer-app/Dockerfile
+          push: true
+          tags: ghcr.io/ditekmax/rutcampustrack/document-renderer-service:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/document-renderer-service:latest
+          cache-from: type=gha,scope=document-renderer-service
+          cache-to: type=gha,scope=document-renderer-service,mode=max
+
       - name: Build and push notification-web
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
@@ -223,6 +233,7 @@ jobs:
           - academic-service
           - schedule-service
           - attendance-service
+          - document-renderer-service
           - notification-web
           - notification-bot
           - pwa-nginx
@@ -303,12 +314,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Verify signatures (11 images)
+      - name: Verify signatures (12 images)
         env:
           COSIGN_EXPERIMENTAL: "1"
         run: |
           set -e
-          IMAGES=(api-gateway auth-service academic-service schedule-service attendance-service notification-web notification-bot pwa-nginx mini-app-nginx web-panel-nginx landing-nginx)
+          IMAGES=(api-gateway auth-service academic-service schedule-service attendance-service document-renderer-service notification-web notification-bot pwa-nginx mini-app-nginx web-panel-nginx landing-nginx)
           for img in "${IMAGES[@]}"; do
             echo "--- Verifying ghcr.io/ditekmax/rutcampustrack/${img}:${{ env.DEPLOY_SHA }} ---"
             cosign verify \
@@ -316,7 +327,7 @@ jobs:
               --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
               "ghcr.io/ditekmax/rutcampustrack/${img}:${{ env.DEPLOY_SHA }}"
           done
-          echo "✓ All 11 images verified via Fulcio/Rekor"
+          echo "✓ All 12 images verified via Fulcio/Rekor"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5

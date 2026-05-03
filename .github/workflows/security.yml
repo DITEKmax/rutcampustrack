@@ -110,6 +110,7 @@ jobs:
           - academic-service
           - schedule-service
           - attendance-service
+          - document-renderer-service
           - notification-web
           - notification-bot
           - api-gateway

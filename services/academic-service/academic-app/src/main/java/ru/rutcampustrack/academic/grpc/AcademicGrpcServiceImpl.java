@@ -13,6 +13,7 @@ import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -222,6 +223,7 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
                 .map(s -> SubjectInfo.newBuilder()
                         .setSubjectId(s.getId())
                         .setSubjectName(s.getName())
+                        .setSubjectType(s.getType() != null ? s.getType().name().toLowerCase(Locale.ROOT) : "")
                         .build())
                 .toList();
 

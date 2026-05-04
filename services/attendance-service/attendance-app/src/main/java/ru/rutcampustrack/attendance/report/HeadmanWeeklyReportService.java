@@ -243,7 +243,7 @@ public class HeadmanWeeklyReportService {
 
         validateTemplateLessonLimits(weekStart, lessons);
 
-        Map<Long, String> subjectNames = academicGrpcClient.getSubjectsByIds(lessons.stream()
+        Map<Long, AcademicGrpcClient.SubjectDetails> subjects = academicGrpcClient.getSubjectDetailsByIds(lessons.stream()
                 .map(LessonResponse::getSubjectId)
                 .distinct()
                 .toList());
@@ -268,12 +268,13 @@ public class HeadmanWeeklyReportService {
                 LessonResponse lesson = dayLessons.get(i);
                 int reportSlot = i + 1;
                 reportSlotByLessonId.put(lesson.getId(), reportSlot);
+                AcademicGrpcClient.SubjectDetails subject = subjects.get(lesson.getSubjectId());
                 slots.add(new HeadmanWeeklyReportModel.LessonSlot(
                         lesson.getId(),
                         reportSlot,
                         lesson.getSubjectId(),
-                        compactSubjectName(subjectNames.getOrDefault(lesson.getSubjectId(), "Unknown")),
-                        ""));
+                        compactSubjectName(subject == null ? "Unknown" : subject.name()),
+                        lessonTypeAbbreviation(subject == null ? "" : subject.type())));
             }
             days.add(new HeadmanWeeklyReportModel.Day(date, slots));
         }
@@ -407,6 +408,15 @@ public class HeadmanWeeklyReportService {
                     : truncateWithEllipsis(abbreviated);
         }
         return truncateWithEllipsis(compact);
+    }
+
+    static String lessonTypeAbbreviation(String lessonType) {
+        return switch (normalizeSpaces(lessonType).toLowerCase(Locale.ROOT)) {
+            case "lecture" -> "\u041b\u041a";
+            case "practice" -> "\u041f\u0417";
+            case "lab" -> "\u041b\u0417";
+            default -> "";
+        };
     }
 
     private static String abbreviateSubjectByInitials(String value) {

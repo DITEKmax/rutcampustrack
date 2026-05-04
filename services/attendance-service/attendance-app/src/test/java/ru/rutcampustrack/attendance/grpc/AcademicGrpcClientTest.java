@@ -17,11 +17,16 @@ import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.SubjectInfo;
+import ru.rutcampustrack.academic.grpc.SubjectsByIdsRequest;
+import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -151,5 +156,36 @@ class AcademicGrpcClientTest {
                 .thenThrow(new StatusRuntimeException(Status.UNAVAILABLE));
 
         assertThrows(AcademicServiceUnavailableException.class, () -> client.isHeadman(100L, 7L));
+    }
+
+    @Test
+    void getSubjectDetailsByIds_returnsNamesAndTypes() {
+        when(mockStub.getSubjectsByIds(any())).thenReturn(SubjectsByIdsResponse.newBuilder()
+                .addSubjects(SubjectInfo.newBuilder()
+                        .setSubjectId(5L)
+                        .setSubjectName("Math")
+                        .setSubjectType("lab")
+                        .build())
+                .build());
+
+        var result = client.getSubjectDetailsByIds(List.of(5L));
+
+        assertThat(result).containsEntry(5L, new AcademicGrpcClient.SubjectDetails("Math", "lab"));
+        verify(mockStub).getSubjectsByIds(SubjectsByIdsRequest.newBuilder()
+                .addSubjectIds(5L)
+                .build());
+    }
+
+    @Test
+    void getSubjectsByIds_keepsNameOnlyCompatibility() {
+        when(mockStub.getSubjectsByIds(any())).thenReturn(SubjectsByIdsResponse.newBuilder()
+                .addSubjects(SubjectInfo.newBuilder()
+                        .setSubjectId(5L)
+                        .setSubjectName("Math")
+                        .setSubjectType("lecture")
+                        .build())
+                .build());
+
+        assertThat(client.getSubjectsByIds(List.of(5L))).containsEntry(5L, "Math");
     }
 }

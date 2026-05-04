@@ -160,11 +160,11 @@ class HeadmanWeeklyReportServiceTest {
                         .addLessons(lesson(102L, 7L, "2026-04-27", 6, "closed"))
                         .addLessons(lesson(103L, 8L, "2026-04-27", 8, "closed"))
                         .build());
-        when(academicGrpcClient.getSubjectsByIds(List.of(5L, 6L, 7L, 8L))).thenReturn(Map.of(
-                5L, "\u0421\u0438\u0441\u0442\u0435\u043c\u044b \u0438\u0441\u043a\u0443\u0441\u0441\u0442\u0432\u0435\u043d\u043d\u043e\u0433\u043e \u0438\u043d\u0442\u0435\u043b\u043b\u0435\u043a\u0442\u0430 \u0438 \u043c\u0430\u0448\u0438\u043d\u043d\u043e\u0435 \u043e\u0431\u0443\u0447\u0435\u043d\u0438\u0435",
-                6L, "\u0421\u0435\u0442\u0435\u0432\u044b\u0435 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0438 \u0438 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u044b",
-                7L, "\u0421\u0435\u0440\u0432\u0438\u0441-\u043e\u0440\u0438\u0435\u043d\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e\u0435 \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435",
-                8L, "\u0422\u0435\u043e\u0440\u0435\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u043e\u0441\u043d\u043e\u0432\u044b \u043f\u043e\u0441\u0442\u0440\u043e\u0435\u043d\u0438\u044f \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u043e\u043d\u043d\u044b\u0445 \u0441\u0438\u0441\u0442\u0435\u043c"));
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L, 6L, 7L, 8L))).thenReturn(Map.of(
+                5L, subjectDetails("\u0421\u0438\u0441\u0442\u0435\u043c\u044b \u0438\u0441\u043a\u0443\u0441\u0441\u0442\u0432\u0435\u043d\u043d\u043e\u0433\u043e \u0438\u043d\u0442\u0435\u043b\u043b\u0435\u043a\u0442\u0430 \u0438 \u043c\u0430\u0448\u0438\u043d\u043d\u043e\u0435 \u043e\u0431\u0443\u0447\u0435\u043d\u0438\u0435", "lecture"),
+                6L, subjectDetails("\u0421\u0435\u0442\u0435\u0432\u044b\u0435 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0438 \u0438 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u044b", "practice"),
+                7L, subjectDetails("\u0421\u0435\u0440\u0432\u0438\u0441-\u043e\u0440\u0438\u0435\u043d\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e\u0435 \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435", "lab"),
+                8L, subjectDetails("\u0422\u0435\u043e\u0440\u0435\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u043e\u0441\u043d\u043e\u0432\u044b \u043f\u043e\u0441\u0442\u0440\u043e\u0435\u043d\u0438\u044f \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u043e\u043d\u043d\u044b\u0445 \u0441\u0438\u0441\u0442\u0435\u043c", "unknown")));
         when(attendanceReadPort.findByGroupAndDateRange(10L, weekStart, LocalDate.of(2026, 5, 3)))
                 .thenReturn(List.of(
                         record(100L, 1L, 5L, weekStart, 3, AttendanceStatus.PRESENT),
@@ -181,6 +181,9 @@ class HeadmanWeeklyReportServiceTest {
                         "\u0421\u0435\u0442\u0435\u0432\u044b\u0435 \u0442\u0435\u0445\u043d. \u0438 \u043f\u0440\u043e\u0442.",
                         "\u0421\u0435\u0440\u0432\u0438\u0441-\u043e\u0440\u0438\u0435\u043d\u0442. \u043f\u0440\u043e\u0433\u0440.",
                         "\u0422\u0435\u043e\u0440\u0435\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u041e.\u041f.\u0410.\u0418.\u0421.");
+        assertThat(model.days().get(0).lessons())
+                .extracting(HeadmanWeeklyReportModel.LessonSlot::lessonType)
+                .containsExactly("\u041b\u041a", "\u041f\u0417", "\u041b\u0417", "");
         assertThat(model.students().get(0).displayName()).isEqualTo("\u041f\u0435\u0442\u0440\u043e\u0432 \u041f.\u041f.");
         assertThat(model.students().get(0).attendance())
                 .extracting(HeadmanWeeklyReportModel.AttendanceMark::lessonNumber)
@@ -333,7 +336,8 @@ class HeadmanWeeklyReportServiceTest {
                         .addLessons(lesson(101L, 6L, "2026-04-27", 2, "cancelled"))
                         .addLessons(lesson(102L, 5L, "2026-04-28", 1, "closed"))
                         .build());
-        when(academicGrpcClient.getSubjectsByIds(List.of(5L))).thenReturn(Map.of(5L, "Math"));
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L))).thenReturn(Map.of(
+                5L, subjectDetails("Math", "practice")));
         when(attendanceReadPort.findByGroupAndDateRange(10L, weekStart, LocalDate.of(2026, 5, 3)))
                 .thenReturn(List.of(
                         record(100L, 1L, 5L, LocalDate.of(2026, 4, 27), 1, AttendanceStatus.PRESENT),
@@ -351,6 +355,7 @@ class HeadmanWeeklyReportServiceTest {
         assertThat(model.days().get(0).lessons()).hasSize(1);
         assertThat(model.days().get(0).lessons().get(0).lessonId()).isEqualTo(100L);
         assertThat(model.days().get(0).lessons().get(0).subjectName()).isEqualTo("Math");
+        assertThat(model.days().get(0).lessons().get(0).lessonType()).isEqualTo("\u041f\u0417");
         assertThat(model.days().get(1).lessons()).hasSize(1);
         assertThat(model.days().get(5).lessons()).isEmpty();
 
@@ -459,6 +464,10 @@ class HeadmanWeeklyReportServiceTest {
         } catch (java.io.IOException ex) {
             throw new IllegalArgumentException(ex);
         }
+    }
+
+    private static AcademicGrpcClient.SubjectDetails subjectDetails(String name, String type) {
+        return new AcademicGrpcClient.SubjectDetails(name, type);
     }
 
     private static StudentInfo student(Long id, String displayName) {

@@ -18,6 +18,7 @@ import ru.rutcampustrack.attendance.contract.api.ReportApi;
 import ru.rutcampustrack.attendance.contract.dto.report.HeadmanWeeklyExportRequest;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
@@ -215,8 +216,8 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
                 .addStudents(student(100L, "Alpha Student"))
                 .addStudents(student(101L, "Beta Student"))
                 .build());
-        when(academicGrpcClient.getSubjectsByIds(List.of(SUBJECT_ID)))
-                .thenReturn(Map.of(SUBJECT_ID, "Math"));
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(SUBJECT_ID)))
+                .thenReturn(Map.of(SUBJECT_ID, new AcademicGrpcClient.SubjectDetails("Math", "lecture")));
     }
 
     private void stubSchedule() {

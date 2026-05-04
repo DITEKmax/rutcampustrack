@@ -23,6 +23,8 @@ import ru.rutcampustrack.academic.grpc.GeofenceResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.SubjectsByIdsRequest;
+import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsRequest;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
 import ru.rutcampustrack.academic.grpc.UserByTelegramIdRequest;
@@ -225,6 +227,19 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         TeacherSubjectsResponse response = stub.getTeacherSubjects(request);
 
         assertThat(response.getSubjectsList()).isEmpty();
+    }
+
+    @Test
+    void getSubjectsByIds_returnsSubjectNamesAndTypes() {
+        SubjectsByIdsRequest request = SubjectsByIdsRequest.newBuilder()
+                .addSubjectIds(subjectId)
+                .build();
+
+        SubjectsByIdsResponse response = stub.getSubjectsByIds(request);
+
+        assertThat(response.getSubjectsList()).hasSize(1);
+        assertThat(response.getSubjectsList().get(0).getSubjectName()).isEqualTo("Algorithms");
+        assertThat(response.getSubjectsList().get(0).getSubjectType()).isEqualTo("lecture");
     }
 
     // =====================================================================

@@ -135,6 +135,14 @@ public class AcademicGrpcClient {
     }
 
     public Map<Long, String> getSubjectsByIds(List<Long> subjectIds) {
+        return getSubjectDetailsByIds(subjectIds).entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().name(),
+                        (a, b) -> a));
+    }
+
+    public Map<Long, SubjectDetails> getSubjectDetailsByIds(List<Long> subjectIds) {
         if (subjectIds == null || subjectIds.isEmpty()) {
             return Map.of();
         }
@@ -146,10 +154,12 @@ public class AcademicGrpcClient {
             return response.getSubjectsList().stream()
                     .collect(Collectors.toMap(
                             SubjectInfo::getSubjectId,
-                            SubjectInfo::getSubjectName,
+                            subject -> new SubjectDetails(subject.getSubjectName(), subject.getSubjectType()),
                             (a, b) -> a));
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
         }
     }
+
+    public record SubjectDetails(String name, String type) {}
 }

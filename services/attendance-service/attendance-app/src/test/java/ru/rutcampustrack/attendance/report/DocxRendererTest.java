@@ -17,7 +17,7 @@ class DocxRendererTest {
 
     @Test
     void renderSingleWeekReplacesEveryPlaceholder() throws IOException {
-        byte[] docx = renderer.render(List.of(model(LocalDate.of(2026, 4, 27), "Math")));
+        byte[] docx = renderer.render(List.of(model(LocalDate.of(2026, 4, 27), "Math", "\u041b\u041a")));
         writeQaArtifact("headman-weekly-single.docx", docx);
 
         String documentXml = DocxRenderer.readDocumentXml(docx);
@@ -26,7 +26,7 @@ class DocxRendererTest {
         assertThat(documentXml)
                 .contains("UVPV511")
                 .contains("Math")
-                .contains("LK")
+                .contains("\u041b\u041a")
                 .contains("Student 01")
                 .contains("+");
         assertThat(documentXml)
@@ -38,8 +38,8 @@ class DocxRendererTest {
     @Test
     void renderMultipleWeeksCreatesOneDocumentWithPageBreaks() throws IOException {
         byte[] docx = renderer.render(List.of(
-                model(LocalDate.of(2026, 4, 27), "Math"),
-                model(LocalDate.of(2026, 5, 11), "Physics")));
+                model(LocalDate.of(2026, 4, 27), "Math", "\u041b\u041a"),
+                model(LocalDate.of(2026, 5, 11), "Physics", "\u041f\u0417")));
         writeQaArtifact("headman-weekly-multi.docx", docx);
 
         String documentXml = DocxRenderer.readDocumentXml(docx);
@@ -49,10 +49,10 @@ class DocxRendererTest {
         assertThat(documentXml).contains("Math").contains("Physics");
     }
 
-    private static HeadmanWeeklyReportModel model(LocalDate weekStart, String subjectName) {
+    private static HeadmanWeeklyReportModel model(LocalDate weekStart, String subjectName, String lessonType) {
         List<HeadmanWeeklyReportModel.Day> days = new ArrayList<>();
         days.add(new HeadmanWeeklyReportModel.Day(weekStart, List.of(
-                new HeadmanWeeklyReportModel.LessonSlot(100L, 1, 5L, subjectName, "LK"))));
+                new HeadmanWeeklyReportModel.LessonSlot(100L, 1, 5L, subjectName, lessonType))));
         for (int i = 1; i < HeadmanWeeklyReportModel.TEMPLATE_DAYS; i++) {
             days.add(new HeadmanWeeklyReportModel.Day(weekStart.plusDays(i), List.of()));
         }

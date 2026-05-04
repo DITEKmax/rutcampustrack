@@ -20,7 +20,7 @@ describe('deriveStudentChartData', () => {
           userId: 1,
           displayName: 'Иванов Иван',
           records: [
-            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: 'б' },
+            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
             { date: '2026-03-02', lessonNumber: 1, status: 'absent', symbol: 'н' },
             { date: '2026-03-03', lessonNumber: 1, status: 'excused', symbol: 'у' },
           ],
@@ -29,7 +29,7 @@ describe('deriveStudentChartData', () => {
           userId: 2,
           displayName: 'Петров Пётр',
           records: [
-            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: 'б' },
+            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
             { date: '2026-03-02', lessonNumber: 1, status: 'free_attendance', symbol: 'сп' },
             { date: '2026-03-03', lessonNumber: 1, status: 'absent', symbol: 'н' },
           ],
@@ -49,7 +49,7 @@ describe('deriveStudentChartData', () => {
           userId: 1,
           displayName: 'Иванов Иван',
           records: [
-            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: 'б' },
+            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
             { date: '2026-03-02', lessonNumber: 1, status: 'cancelled', symbol: '—' },
           ],
         },
@@ -103,7 +103,7 @@ describe('deriveOverallStats', () => {
           userId: 1,
           displayName: 'Иванов',
           records: [
-            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: 'б' },
+            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
             { date: '2026-03-02', lessonNumber: 1, status: 'absent', symbol: 'н' },
           ],
         },
@@ -111,8 +111,8 @@ describe('deriveOverallStats', () => {
           userId: 2,
           displayName: 'Петров',
           records: [
-            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: 'б' },
-            { date: '2026-03-02', lessonNumber: 1, status: 'present', symbol: 'б' },
+            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
+            { date: '2026-03-02', lessonNumber: 1, status: 'present', symbol: '+' },
           ],
         },
       ],
@@ -131,7 +131,7 @@ describe('deriveOverallStats', () => {
           userId: 1,
           displayName: 'Иванов',
           records: [
-            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: 'б' },
+            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
           ],
         },
       ],
@@ -153,7 +153,7 @@ describe('deriveOverallStats', () => {
           userId: 1,
           displayName: 'Иванов',
           records: [
-            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: 'б' },
+            { date: '2026-03-01', lessonNumber: 1, status: 'present', symbol: '+' },
             { date: '2026-03-02', lessonNumber: 1, status: 'cancelled', symbol: '—' },
           ],
         },

@@ -322,7 +322,7 @@ public class WebPushDeliveryService {
 
     private String attendanceStatusRu(String status) {
         return switch (status) {
-            case "present" -> "Присутствует (б)";
+            case "present" -> "Присутствует (+)";
             case "absent" -> "Отсутствует (н)";
             case "excused" -> "Уважительная (у)";
             case "free_attendance" -> "Свобод. посещение (сп)";

@@ -4,7 +4,7 @@
  * consistent across PWA views. A single source of truth also makes future
  * copy-to-mini-app trivial.
  *
- * "+"  = present (was "б" before 2026-04-16)
+ * "+"  = present
  * "н"  = absent
  * "у"  = excused — paired with excuseReason text from the backend cascade
  * "сп" = free_attendance

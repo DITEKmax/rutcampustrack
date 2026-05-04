@@ -816,7 +816,7 @@ export interface components {
             students?: components["schemas"]["JournalStudentRow"][];
             _links?: components["schemas"]["Links"];
         };
-        /** @description Ячейка журнала: ID пары, дата, номер пары, статус, символ (б/н/у/сп/отменена) и причина excuse */
+        /** @description Ячейка журнала: ID пары, дата, номер пары, статус, символ (+/н/у/сп/отменена) и причина excuse */
         JournalCell: {
             /** Format: int64 */
             lessonId?: number;

@@ -16,7 +16,7 @@ const mockRecord = (lessonId: number, status: string): AttendanceRecord => ({
   lessonDate: '2026-04-01',
   lessonNumber: 1,
   status,
-  symbol: status === 'absent' ? 'н' : 'б',
+  symbol: status === 'absent' ? 'н' : '+',
   source: 'auto',
 });
 

@@ -262,7 +262,7 @@ class WebPushDeliveryServiceTest {
                         "group_id", 10,
                         "user_id", 2,
                         "marked_by", "headman",
-                        "status", "absent",
+                        "status", "present",
                         "lesson_number", 2,
                         "subject_name", "Physics",
                         "lesson_date", "2026-04-17"
@@ -275,7 +275,11 @@ class WebPushDeliveryServiceTest {
         String payloadStr = new String(payloadCaptor.getValue());
         var json = new ObjectMapper().readTree(payloadStr);
         assertThat(json.get("event_type").asText()).isEqualTo("attendance.marked");
-        assertThat(json.get("body").asText()).contains("Physics").contains("17.04");
+        assertThat(json.get("body").asText())
+                .contains("Присутствует (+)")
+                .contains("Physics")
+                .contains("17.04")
+                .doesNotContain("(б)");
     }
 
     @Test

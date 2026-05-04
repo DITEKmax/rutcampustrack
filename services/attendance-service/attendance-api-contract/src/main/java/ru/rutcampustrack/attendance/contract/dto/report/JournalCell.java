@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * lessonId added (Phase 55 D-01) to support headman cell-click marking via
  * PUT /attendance/lessons/{lessonId}/students/{userId}.
  */
-@Schema(description = "Ячейка журнала: ID пары, дата, номер пары, статус, символ (б/н/у/сп/отменена) и причина excuse")
+@Schema(description = "Ячейка журнала: ID пары, дата, номер пары, статус, символ (+/н/у/сп/отменена) и причина excuse")
 public class JournalCell {
 
     private final Long lessonId;

@@ -125,7 +125,7 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(jsonPath("$.entries").isArray())
                 .andExpect(jsonPath("$.entries.length()").value(3))
                 .andExpect(jsonPath("$.entries[?(@.userId == 100)].status").value("present"))
-                .andExpect(jsonPath("$.entries[?(@.userId == 100)].symbol").value("б"))
+                .andExpect(jsonPath("$.entries[?(@.userId == 100)].symbol").value("+"))
                 .andExpect(jsonPath("$.entries[?(@.userId == 102)].status").value("absent"))
                 .andExpect(jsonPath("$.entries[?(@.userId == 102)].symbol").value("н"));
     }

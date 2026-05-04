@@ -9,7 +9,7 @@ describe('JournalCellComponent', () => {
       date: '2026-03-15',
       lessonNumber: 1,
       status: 'present',
-      symbol: 'б', // backend symbol is ignored — client maps by status
+      symbol: '+', // backend symbol is ignored — client maps by status
     };
 
     await render(JournalCellComponent, { componentInputs: { cell } });

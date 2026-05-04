@@ -128,7 +128,7 @@ export interface AttendanceRecord {
   lessonDate: string;      // YYYY-MM-DD
   lessonNumber: number;
   status: string;          // 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled'
-  symbol: string;          // 'б' | 'н' | 'у' | 'сп' | '--'
+  symbol: string;          // '+' | 'н' | 'у' | 'сп' | '--'
   source: string;          // 'manual' | 'auto' | 'checkin'
 }
 

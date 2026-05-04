@@ -5,7 +5,7 @@ import type { NotificationItem } from '../../shared/student-schedule.types';
 import { SubjectCacheService } from '../../shared/subject-cache.service';
 
 const ATTENDANCE_STATUS_RU: Record<string, string> = {
-  present: 'Присутствует (б)',
+  present: 'Присутствует (+)',
   absent: 'Отсутствует (н)',
   excused: 'Уважительная (у)',
   free_attendance: 'Свобод. посещение (сп)',

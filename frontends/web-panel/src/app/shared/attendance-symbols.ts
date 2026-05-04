@@ -1,7 +1,7 @@
 /**
  * Canonical attendance-status UI mapping for web-panel (mirrors PWA).
  *
- * "+"  = present (was "б" before 2026-04-16)
+ * "+"  = present
  * "н"  = absent
  * "у"  = excused — paired with excuseReason from backend
  * "сп" = free_attendance

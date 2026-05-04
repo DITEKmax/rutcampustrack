@@ -15,7 +15,7 @@ interface StatusBadgeProps {
 type StatusKey = LessonStatus | AttendanceStatus
 
 const config: Record<StatusKey, { label: string; tone: string; strikethrough?: boolean }> = {
-  present:         { label: 'б',             tone: 'status-present' },
+  present:         { label: '+',             tone: 'status-present' },
   absent:          { label: 'н',             tone: 'status-absent' },
   excused:         { label: 'у',             tone: 'status-excused' },
   free_attendance: { label: 'сп',            tone: 'status-free' },

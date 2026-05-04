@@ -54,7 +54,7 @@ public class ReportService {
 
     /** Status symbols per D-08 specification. */
     private static final Map<AttendanceStatus, String> STATUS_SYMBOLS = Map.of(
-            AttendanceStatus.PRESENT, "б",
+            AttendanceStatus.PRESENT, "+",
             AttendanceStatus.ABSENT, "н",
             AttendanceStatus.EXCUSED, "у",
             AttendanceStatus.FREE_ATTENDANCE, "сп",

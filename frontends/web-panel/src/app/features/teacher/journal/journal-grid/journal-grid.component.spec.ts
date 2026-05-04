@@ -14,10 +14,10 @@ const mockJournal: JournalResponse = {
       userId: 1,
       displayName: 'Иванов Иван Иванович',
       records: [
-        { date: '2026-03-15', lessonNumber: 1, status: 'present', symbol: 'б' },
+        { date: '2026-03-15', lessonNumber: 1, status: 'present', symbol: '+' },
         { date: '2026-03-15', lessonNumber: 2, status: 'absent', symbol: 'н' },
         { date: '2026-03-16', lessonNumber: 1, status: 'excused', symbol: 'у' },
-        { date: '2026-03-16', lessonNumber: 2, status: 'present', symbol: 'б' },
+        { date: '2026-03-16', lessonNumber: 2, status: 'present', symbol: '+' },
       ],
     },
     {
@@ -56,7 +56,7 @@ describe('JournalGridComponent', () => {
     const cell = fixture.componentInstance.getCellFor(row, '2026-03-15', 1);
     expect(cell).not.toBeNull();
     expect(cell?.status).toBe('present');
-    expect(cell?.symbol).toBe('б');
+    expect(cell?.symbol).toBe('+');
   });
 
   it('getCellFor() returns null for no matching record', async () => {

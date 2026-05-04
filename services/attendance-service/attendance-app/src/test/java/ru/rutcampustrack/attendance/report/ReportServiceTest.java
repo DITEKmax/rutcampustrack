@@ -288,6 +288,11 @@ class ReportServiceTest {
 
         assertThat(response.getEntries()).hasSize(3);
 
+        var entry100 = response.getEntries().stream()
+                .filter(e -> e.getUserId().equals(100L)).findFirst().orElseThrow();
+        assertThat(entry100.getStatus()).isEqualTo("present");
+        assertThat(entry100.getSymbol()).isEqualTo("+");
+
         var entry102 = response.getEntries().stream()
                 .filter(e -> e.getUserId().equals(102L)).findFirst().orElseThrow();
         assertThat(entry102.getStatus()).isEqualTo("absent");

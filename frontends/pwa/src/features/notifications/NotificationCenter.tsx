@@ -161,7 +161,7 @@ const EXCUSE_TYPE_RU: Record<string, string> = {
 }
 
 const ATTENDANCE_STATUS_RU: Record<string, string> = {
-  present: 'Присутствует (б)',
+  present: 'Присутствует (+)',
   absent: 'Отсутствует (н)',
   excused: 'Уважительная (у)',
   free_attendance: 'Свобод. посещение (сп)',

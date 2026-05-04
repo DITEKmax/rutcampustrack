@@ -328,8 +328,10 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       GRPC_SECRET: ${GRPC_SECRET}
-      # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
+      # M18 hotfix: weekly DOCX export killed prod attendance-service under
+      # 512m/75% heap; gateway saw PrematureClose BEFORE response. Keep heap
+      # lower and leave room for JVM native memory + DOCX zip buffers.
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=30.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     expose:
       - "9093"
     networks:
@@ -343,8 +345,9 @@ services:
         condition: service_healthy
       document-renderer-service:
         condition: service_healthy
-    # M09 G7 (NEW-157).
-    mem_limit: 512m
+    # M18 hotfix: report export allocates on top of Mongo, RabbitMQ, gRPC
+    # and OTel footprint; 512m caused a prod restart during download.
+    mem_limit: 768m
     mem_reservation: 384m
     restart: unless-stopped
     healthcheck:

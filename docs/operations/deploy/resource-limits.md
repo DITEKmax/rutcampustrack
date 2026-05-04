@@ -22,10 +22,10 @@
 | `auth-service` | 256M | 192M | `-XX:MaxRAMPercentage=75.0` | Stateless, 1 SELECT/login. Hikari 10 connections, Redis cache только OTP. |
 | `academic-service` | 512M | 384M | 75.0 | Самый горячий gRPC-сервер + Caffeine cache (subjects/groups/RBAC). Batch endpoints потребляют больше. |
 | `schedule-service` | 512M | 384M | 75.0 | LessonGeneration job держит `ScheduleItem`-кэш в памяти на период генерации (~пиковые 300MB при semester import). |
-| `attendance-service` | 512M | 384M | 75.0 | MongoDB driver + report aggregations (Mongo aggregation pipelines). |
+| `attendance-service` | 768M | 384M | 60.0 | MongoDB driver + report aggregations + DOCX export. M18: 512M/75% heap was killed during headman weekly DOCX download; lower heap leaves native headroom. |
 | `notification-web` | 256M | 192M | 75.0 | WebSocket STOMP + Web Push; event consumer. Без БД кэша. |
 | `api-gateway` | 256M | 192M | 75.0 | Spring Cloud Gateway reactive + Caffeine token exchange cache. |
-| **Subtotal Java** | **2304M** | **1728M** | | |
+| **Subtotal Java** | **2560M** | **1728M** | | |
 
 ### Bot (Python)
 
@@ -70,7 +70,7 @@
 
 ### Summary
 
-- **Total `mem_limit`:** 2304 + 256 + 1216 + 864 + 224 = **4864M**
+- **Total `mem_limit`:** 2560 + 256 + 1216 + 864 + 224 = **5120M**
 - **Total `mem_reservation`:** 1728 + 128 + 832 + 560 + 112 = **3360M**
 
 **Overcommit:** limits > RAM. Это OK т.к. normal-case RSS ниже лимитов,
@@ -83,7 +83,8 @@
 ## JVM opts
 
 Single-source-of-truth в `docker-compose.prod.yml` через env var
-`JAVA_TOOL_OPTIONS`:
+`JAVA_TOOL_OPTIONS`. Большинство Java-сервисов используют 75/50; report-heavy
+сервисы могут снижать heap до 60/30, когда важнее native headroom.
 
 ```yaml
 environment:
@@ -96,10 +97,13 @@ environment:
     -Djava.security.egd=file:/dev/./urandom
 ```
 
-- `MaxRAMPercentage=75.0`: heap = 0.75 × mem_limit. Для
+- default `MaxRAMPercentage=75.0`: heap = 0.75 × mem_limit. Для
   `mem_limit=512M` → heap=384M, остальное — Metaspace, code cache,
   stacks (~128M).
-- `InitialRAMPercentage=50.0`: сразу аллоцируем 50% чтобы G1GC не
+- `attendance-service` после M18 использует `MaxRAMPercentage=60.0` и
+  `InitialRAMPercentage=30.0`: DOCX export и драйверы требуют больше native
+  headroom, чем baseline 512M/75% оставлял.
+- default `InitialRAMPercentage=50.0`: сразу аллоцируем 50% чтобы G1GC не
   крутил expansion cycles на первые запросы.
 - `UseG1GC`: default в JDK 21, пишем явно для читаемости.
 - `HeapDumpOnOutOfMemoryError`: если всё-таки OOM — дамп в `/tmp` для

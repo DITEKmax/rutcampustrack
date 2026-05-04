@@ -210,6 +210,33 @@ class InternalJwtIssuerIT {
                 .anyRequestedFor(urlPathMatching("/attendance/.*")));
     }
 
+    @Test
+    @DisplayName("DOCX export binary response is proxied without JSON/error rewriting")
+    void headmanWeeklyDocxDownload_binaryResponsePassesThroughGateway() {
+        WIREMOCK.resetRequests();
+        byte[] docxBytes = new byte[]{'P', 'K', 3, 4, 1, 2, 3};
+        WIREMOCK.stubFor(get(urlEqualTo("/attendance/reports/headman-weekly/current?weekStart=2026-04-27&format=docx"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader(HttpHeaders.CONTENT_TYPE,
+                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                        .withHeader(HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename*=UTF-8''UVPV511_27.04.2026_03.05.2026.docx")
+                        .withBody(docxBytes)));
+        String jwt = signExternalJwt(42L, "STUDENT", 7L, true,
+                new Date(System.currentTimeMillis() + 60_000));
+
+        client.get().uri("/api/attendance/reports/headman-weekly/current?weekStart=2026-04-27&format=docx")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                .expectHeader().valueEquals(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename*=UTF-8''UVPV511_27.04.2026_03.05.2026.docx")
+                .expectBody(byte[].class)
+                .value(body -> assertThat(body).containsExactly(docxBytes));
+    }
+
     private String signExternalJwt(long userId, String role, Long groupId, boolean isHeadman, Date expiry) {
         var builder = Jwts.builder()
                 .subject(String.valueOf(userId))

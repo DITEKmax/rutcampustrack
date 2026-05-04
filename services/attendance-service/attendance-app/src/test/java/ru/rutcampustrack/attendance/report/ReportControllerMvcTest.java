@@ -78,6 +78,23 @@ class ReportControllerMvcTest {
     }
 
     @Test
+    void exportCurrentDocx_withCyrillicFilenameUsesAsciiSafeContentDisposition() throws Exception {
+        LocalDate weekStart = LocalDate.of(2026, 4, 27);
+        when(headmanWeeklyReportService.exportSingleWeek(weekStart, "docx"))
+                .thenReturn(new HeadmanWeeklyExportResult(
+                        "\u0423\u0412\u041f\u0412-511_27.04.2026_03.05.2026.docx",
+                        ReportApi.DOCX_MEDIA_TYPE,
+                        new byte[]{1, 2, 3}));
+
+        mockMvc.perform(get("/attendance/reports/headman-weekly/current")
+                        .param("weekStart", "2026-04-27")
+                        .param("format", "docx"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("filename*=")))
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, org.hamcrest.Matchers.not(containsString("\u0423\u0412\u041f\u0412"))));
+    }
+
+    @Test
     void exportCurrentPdf_returnsPdfContentType() throws Exception {
         LocalDate weekStart = LocalDate.of(2026, 4, 27);
         when(headmanWeeklyReportService.exportSingleWeek(weekStart, "pdf"))

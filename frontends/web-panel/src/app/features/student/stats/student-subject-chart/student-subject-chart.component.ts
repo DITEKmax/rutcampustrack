@@ -13,6 +13,9 @@ import type { SubjectStats } from '../../shared/student-schedule.types';
     <div class="chart-card" [class.is-redzone]="isRedzone">
       <div class="chart-card__header">
         <h3 class="chart-card__title">{{ stat.subjectName }}</h3>
+        @if (subjectTypeLabel) {
+          <span class="chart-card__type">{{ subjectTypeLabel }}</span>
+        }
         <span class="chart-card__ratio">{{ stat.attended }}/{{ stat.total }}</span>
       </div>
       @if (isRedzone) {
@@ -26,9 +29,9 @@ import type { SubjectStats } from '../../shared/student-schedule.types';
           baseChart
           role="img"
           [attr.aria-label]="stat.subjectName + ' — статистика посещаемости'"
-          [data]="barChartData"
-          [options]="barChartOptions"
-          [type]="'bar'">
+          [data]="pieChartData"
+          [options]="pieChartOptions"
+          [type]="'pie'">
         </canvas>
       </div>
     </div>
@@ -39,14 +42,48 @@ import type { SubjectStats } from '../../shared/student-schedule.types';
       border: 1px solid var(--border-default);
       border-radius: var(--radius-xl);
       padding: var(--space-4);
-      height: 320px;
+      min-height: 340px;
       display: flex;
       flex-direction: column;
     }
     .chart-card.is-redzone { border-color: var(--accent-warning); }
-    .chart-card__header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); }
-    .chart-card__title { font-size: var(--text-base); font-family: var(--font-heading); font-weight: 600; }
-    .chart-card__ratio { font-size: var(--text-sm); font-family: var(--font-mono); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+    .chart-card__header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+    .chart-card__title {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: var(--text-base);
+      font-family: var(--font-heading);
+      font-weight: 600;
+    }
+    .chart-card__type {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 var(--space-2);
+      border-radius: var(--radius-full);
+      background: color-mix(in oklab, var(--accent-primary) 12%, transparent);
+      border: 1px solid color-mix(in oklab, var(--accent-primary) 28%, transparent);
+      color: var(--accent-primary);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .chart-card__ratio {
+      font-size: var(--text-sm);
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
     .chart-card__redzone-badge {
       display: flex; align-items: center; gap: var(--space-1);
       font-size: var(--text-xs); color: var(--accent-warning);
@@ -55,7 +92,7 @@ import type { SubjectStats } from '../../shared/student-schedule.types';
       padding: 4px var(--space-2);
       margin-bottom: var(--space-2);
     }
-    .chart-container { flex: 1; position: relative; height: 240px; }
+    .chart-container { flex: 1; position: relative; min-height: 250px; }
   `],
 })
 export class StudentSubjectChartComponent implements OnChanges {
@@ -66,34 +103,63 @@ export class StudentSubjectChartComponent implements OnChanges {
     return this.stat.percentage < this.threshold;
   }
 
-  barChartData: ChartData<'bar'> = { labels: [], datasets: [] };
+  get subjectTypeLabel(): string {
+    switch ((this.stat?.subjectType ?? '').trim().toLowerCase()) {
+      case 'lecture':
+        return 'Лекция';
+      case 'practice':
+        return 'Практика';
+      case 'lab':
+        return 'Лабораторная';
+      default:
+        return '';
+    }
+  }
 
-  barChartOptions: ChartOptions<'bar'> = {
+  pieChartData: ChartData<'pie'> = { labels: [], datasets: [] };
+
+  pieChartOptions: ChartOptions<'pie'> = {
     responsive: true,
     maintainAspectRatio: false,
     animation: {
-      duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 400,
+      duration: this.prefersReducedMotion() ? 0 : 400,
     },
-    plugins: { legend: { position: 'top' } },
-    scales: {
-      x: { stacked: true },
-      y: { stacked: true, title: { display: true, text: 'Занятий' } },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          boxWidth: 12,
+          boxHeight: 12,
+          useBorderRadius: true,
+          padding: 14,
+        },
+      },
     },
   };
 
   ngOnChanges(): void {
-    const freeAttendance = Math.max(
-      0,
-      this.stat.total - this.stat.attended - this.stat.absent - this.stat.excused,
-    );
-    this.barChartData = {
-      labels: [this.stat.subjectName],
+    const present = Math.max(0, this.stat.attended - this.stat.excused);
+    this.pieChartData = {
+      labels: ['Пропуск', 'Уважительная причина', 'Был (+)'],
       datasets: [
-        { label: 'Присутствовал', data: [this.stat.attended], backgroundColor: 'rgba(0, 229, 160, 0.85)' },
-        { label: 'Уваж. причина', data: [this.stat.excused], backgroundColor: 'rgba(245, 158, 11, 0.85)' },
-        { label: 'Своб. посещение', data: [freeAttendance], backgroundColor: 'rgba(139, 92, 246, 0.85)' },
-        { label: 'Отсутствовал', data: [this.stat.absent], backgroundColor: 'rgba(239, 68, 68, 0.85)' },
+        {
+          label: 'Занятий',
+          data: [this.stat.absent, this.stat.excused, present],
+          backgroundColor: [
+            'rgba(239, 68, 68, 0.88)',
+            'rgba(245, 158, 11, 0.88)',
+            'rgba(0, 181, 126, 0.88)',
+          ],
+          borderWidth: 0,
+          hoverOffset: 4,
+        },
       ],
     };
+  }
+
+  private prefersReducedMotion(): boolean {
+    return typeof window !== 'undefined'
+      && typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 }

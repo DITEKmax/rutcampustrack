@@ -10,10 +10,12 @@ import { AuthService } from './core/auth/auth.service';
 import {
   Chart,
   BarController,
+  PieController,
   LineController,
   CategoryScale,
   LinearScale,
   BarElement,
+  ArcElement,
   LineElement,
   PointElement,
   Filler,
@@ -23,10 +25,12 @@ import {
 
 Chart.register(
   BarController,
+  PieController,
   LineController,
   CategoryScale,
   LinearScale,
   BarElement,
+  ArcElement,
   LineElement,
   PointElement,
   Filler,

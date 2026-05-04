@@ -14,11 +14,11 @@ dependencyManagement {
 
 // M11 G0.1: shared-web-api — единый источник DTO-типов API-контрактов.
 // Пустая Spring-зависимость (compileOnly на jackson-annotations,
-// swagger-annotations, jakarta.validation-api). Потребители: все
+// swagger-annotations-jakarta, jakarta.validation-api). Потребители: все
 // *-api-contract модули и shared-web-starter.
 dependencies {
     api("com.fasterxml.jackson.core:jackson-annotations")
-    api("io.swagger.core.v3:swagger-annotations:2.2.27")
+    api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
 
     // Tests
     testImplementation("org.junit.jupiter:junit-jupiter")

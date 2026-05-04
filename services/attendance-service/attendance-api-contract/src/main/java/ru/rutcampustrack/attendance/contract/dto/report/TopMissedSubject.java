@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * A single entry in the "top missed subjects" list on the student dashboard (v9.0).
  * Sorted by absent desc on the server.
  */
-@Schema(description = "Предмет из топа пропусков: ID, название, число пропусков, всего пар")
+@Schema(description = "Предмет из топа пропусков: ID, название, тип занятия, число пропусков, всего пар")
 public class TopMissedSubject {
 
     private final Long subjectId;

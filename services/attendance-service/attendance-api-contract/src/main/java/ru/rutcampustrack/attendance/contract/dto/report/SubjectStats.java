@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * subjectName is resolved via gRPC GetSubjectsByIds call in the service layer.
  * Plain Java class — no Lombok (contract module rule).
  */
-@Schema(description = "Статистика по одному предмету: ID, название, счётчики статусов, процент посещения")
+@Schema(description = "Статистика по одному предмету: ID, название, тип занятия, счётчики статусов, процент посещения")
 public class SubjectStats {
 
     private final Long subjectId;

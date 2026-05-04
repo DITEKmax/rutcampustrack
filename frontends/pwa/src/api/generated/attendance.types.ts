@@ -698,7 +698,7 @@ export interface components {
             /** Format: double */
             percentage?: number;
         };
-        /** @description Статистика по одному предмету: ID, название, счётчики статусов, процент посещения */
+        /** @description Статистика по одному предмету: ID, название, тип занятия, счётчики статусов, процент посещения */
         SubjectStats: {
             /** Format: int64 */
             subjectId?: number;
@@ -757,7 +757,7 @@ export interface components {
             /** Format: int32 */
             cancelled?: number;
         };
-        /** @description Предмет из топа пропусков: ID, название, число пропусков, всего пар */
+        /** @description Предмет из топа пропусков: ID, название, тип занятия, число пропусков, всего пар */
         TopMissedSubject: {
             /** Format: int64 */
             subjectId?: number;

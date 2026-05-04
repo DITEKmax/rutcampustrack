@@ -2867,13 +2867,16 @@
       },
       "SubjectStats" : {
         "type" : "object",
-        "description" : "Статистика по одному предмету: ID, название, счётчики статусов, процент посещения",
+        "description" : "Статистика по одному предмету: ID, название, тип занятия, счётчики статусов, процент посещения",
         "properties" : {
           "subjectId" : {
             "type" : "integer",
             "format" : "int64"
           },
           "subjectName" : {
+            "type" : "string"
+          },
+          "subjectType" : {
             "type" : "string"
           },
           "total" : {
@@ -3010,13 +3013,16 @@
       },
       "TopMissedSubject" : {
         "type" : "object",
-        "description" : "Предмет из топа пропусков: ID, название, число пропусков, всего пар",
+        "description" : "Предмет из топа пропусков: ID, название, тип занятия, число пропусков, всего пар",
         "properties" : {
           "subjectId" : {
             "type" : "integer",
             "format" : "int64"
           },
           "subjectName" : {
+            "type" : "string"
+          },
+          "subjectType" : {
             "type" : "string"
           },
           "absent" : {
@@ -3150,7 +3156,7 @@
       },
       "JournalCell" : {
         "type" : "object",
-        "description" : "Ячейка журнала: ID пары, дата, номер пары, статус, символ (б/н/у/сп/отменена) и причина excuse",
+        "description" : "Ячейка журнала: ID пары, дата, номер пары, статус, символ (+/н/у/сп/отменена) и причина excuse",
         "properties" : {
           "lessonId" : {
             "type" : "integer",

@@ -339,6 +339,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
+          # Cold VPS pulls of all production images can exceed appleboy's
+          # default 10m command timeout while `docker compose pull` downloads layers.
+          command_timeout: 45m
           envs: GHCR_TOKEN,IMAGE_TAG
           script: |
             set -e

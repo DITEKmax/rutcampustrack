@@ -703,6 +703,7 @@ export interface components {
             /** Format: int64 */
             subjectId?: number;
             subjectName?: string;
+            subjectType?: string;
             /** Format: int32 */
             total?: number;
             /** Format: int32 */
@@ -761,6 +762,7 @@ export interface components {
             /** Format: int64 */
             subjectId?: number;
             subjectName?: string;
+            subjectType?: string;
             /** Format: int32 */
             absent?: number;
             /** Format: int32 */

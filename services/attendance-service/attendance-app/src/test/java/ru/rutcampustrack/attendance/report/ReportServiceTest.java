@@ -76,6 +76,10 @@ class ReportServiceTest {
         lenient().when(semesterCacheService.getActiveSemesterId()).thenReturn(SEMESTER_ID);
         lenient().when(academicGrpcClient.getSubjectsByIds(any()))
                 .thenReturn(Map.of(SUBJECT_ID_1, "Math", SUBJECT_ID_2, "Physics"));
+        lenient().when(academicGrpcClient.getSubjectDetailsByIds(any()))
+                .thenReturn(Map.of(
+                        SUBJECT_ID_1, subjectDetails("Math", "lecture"),
+                        SUBJECT_ID_2, subjectDetails("Physics", "lab")));
         // Default: treat every lesson id as alive (exists in schedule-service).
         // Tests that care about orphan filtering should override this stub.
         lenient().when(scheduleGrpcClient.getLessonsByIds(any())).thenAnswer(inv -> {
@@ -100,6 +104,10 @@ class ReportServiceTest {
     private AttendanceRecord recordForUser(Long userId, Long subjectId, AttendanceStatus status) {
         return new AttendanceRecord(LESSON_ID, userId, GROUP_ID, subjectId,
                 LocalDate.of(2026, 4, 1), 1, status, AttendanceSource.STUDENT_GEO, null);
+    }
+
+    private static AcademicGrpcClient.SubjectDetails subjectDetails(String name, String type) {
+        return new AcademicGrpcClient.SubjectDetails(name, type);
     }
 
     // -------------------------------------------------------------------------
@@ -180,7 +188,7 @@ class ReportServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // Test 4: Subject names resolved via getSubjectsByIds gRPC (RPRT-03 D-13)
+    // Test 4: Subject names and types resolved via GetSubjectsByIds gRPC (RPRT-03 D-13)
     // -------------------------------------------------------------------------
 
     @Test
@@ -190,8 +198,10 @@ class ReportServiceTest {
                         record(SUBJECT_ID_1, AttendanceStatus.PRESENT),
                         record(SUBJECT_ID_2, AttendanceStatus.PRESENT)
                 ));
-        when(academicGrpcClient.getSubjectsByIds(any()))
-                .thenReturn(Map.of(SUBJECT_ID_1, "Math", SUBJECT_ID_2, "Physics"));
+        when(academicGrpcClient.getSubjectDetailsByIds(any()))
+                .thenReturn(Map.of(
+                        SUBJECT_ID_1, subjectDetails("Math", "lecture"),
+                        SUBJECT_ID_2, subjectDetails("Physics", "lab")));
 
         StudentStatsResponse response = reportService.getStudentStats();
 
@@ -200,12 +210,14 @@ class ReportServiceTest {
         SubjectStats mathStats = response.getSubjects().stream()
                 .filter(s -> s.getSubjectId().equals(SUBJECT_ID_1)).findFirst().orElseThrow();
         assertThat(mathStats.getSubjectName()).isEqualTo("Math");
+        assertThat(mathStats.getSubjectType()).isEqualTo("lecture");
 
         SubjectStats physicsStats = response.getSubjects().stream()
                 .filter(s -> s.getSubjectId().equals(SUBJECT_ID_2)).findFirst().orElseThrow();
         assertThat(physicsStats.getSubjectName()).isEqualTo("Physics");
+        assertThat(physicsStats.getSubjectType()).isEqualTo("lab");
 
-        verify(academicGrpcClient).getSubjectsByIds(any());
+        verify(academicGrpcClient).getSubjectDetailsByIds(any());
     }
 
     // -------------------------------------------------------------------------
@@ -402,8 +414,10 @@ class ReportServiceTest {
     @Test
     void dashboard_topMissedSortedByAbsentDescAndCapped() {
         when(academicGrpcClient.getActiveSemester()).thenReturn(semester("2026-02-09"));
-        when(academicGrpcClient.getSubjectsByIds(any()))
-                .thenReturn(Map.of(SUBJECT_ID_1, "Math", SUBJECT_ID_2, "Physics"));
+        when(academicGrpcClient.getSubjectDetailsByIds(any()))
+                .thenReturn(Map.of(
+                        SUBJECT_ID_1, subjectDetails("Math", "lecture"),
+                        SUBJECT_ID_2, subjectDetails("Physics", "practice")));
         when(attendanceReadPort.findByUserId(USER_ID, SEMESTER_ID))
                 .thenReturn(List.of(
                         recordOn(SUBJECT_ID_1, AttendanceStatus.ABSENT,
@@ -419,8 +433,11 @@ class ReportServiceTest {
 
         assertThat(top).hasSize(2);
         assertThat(top.get(0).getSubjectId()).isEqualTo(SUBJECT_ID_2);
+        assertThat(top.get(0).getSubjectName()).isEqualTo("Physics");
+        assertThat(top.get(0).getSubjectType()).isEqualTo("practice");
         assertThat(top.get(0).getAbsent()).isEqualTo(2);
         assertThat(top.get(1).getSubjectId()).isEqualTo(SUBJECT_ID_1);
+        assertThat(top.get(1).getSubjectType()).isEqualTo("lecture");
         assertThat(top.get(1).getAbsent()).isEqualTo(1);
     }
 }

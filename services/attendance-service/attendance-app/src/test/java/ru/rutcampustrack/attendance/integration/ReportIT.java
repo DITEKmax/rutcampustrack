@@ -9,6 +9,7 @@ import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Instant;
@@ -65,6 +66,10 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
         // D-13: subject name resolution via gRPC batch call
         lenient().when(academicGrpcClient.getSubjectsByIds(any()))
                 .thenReturn(Map.of(SUBJECT_ID, "Mathematics", SUBJECT_ID_2, "Physics"));
+        lenient().when(academicGrpcClient.getSubjectDetailsByIds(any()))
+                .thenReturn(Map.of(
+                        SUBJECT_ID, subjectDetails("Mathematics", "lecture"),
+                        SUBJECT_ID_2, subjectDetails("Physics", "lab")));
 
         // Every lesson id passed to scheduleGrpcClient.getLessonsByIds is considered alive —
         // ReportService uses this to filter orphan attendance docs, and these tests don't
@@ -95,6 +100,10 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
 
     private void insertAttendance(Long lessonId, Long userId, AttendanceStatus status) {
         insertAttendance(lessonId, userId, SUBJECT_ID, status, LocalDate.of(2026, 4, 1));
+    }
+
+    private static AcademicGrpcClient.SubjectDetails subjectDetails(String name, String type) {
+        return new AcademicGrpcClient.SubjectDetails(name, type);
     }
 
     // -------------------------------------------------------------------------
@@ -175,8 +184,8 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
         insertAttendance(2L, STUDENT_USER_ID, AttendanceStatus.ABSENT);
         insertAttendance(3L, STUDENT_USER_ID, SUBJECT_ID, AttendanceStatus.CANCELLED, LocalDate.of(2026, 4, 3));
 
-        when(academicGrpcClient.getSubjectsByIds(any()))
-                .thenReturn(Map.of(SUBJECT_ID, "Mathematics"));
+        when(academicGrpcClient.getSubjectDetailsByIds(any()))
+                .thenReturn(Map.of(SUBJECT_ID, subjectDetails("Mathematics", "lecture")));
 
         mockMvc.perform(get("/attendance/reports/student/stats")
                         .header("X-User-Id", STUDENT_USER_ID.toString())
@@ -189,6 +198,7 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(jsonPath("$.subjects[0].total").value(2))
                 .andExpect(jsonPath("$.subjects[0].percentage").value(50.0))
                 .andExpect(jsonPath("$.subjects[0].subjectName").value("Mathematics"))
+                .andExpect(jsonPath("$.subjects[0].subjectType").value("lecture"))
                 .andExpect(jsonPath("$.overall.total").value(2));
     }
 

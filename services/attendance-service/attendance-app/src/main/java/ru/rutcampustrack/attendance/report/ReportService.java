@@ -206,9 +206,9 @@ public class ReportService {
             return new StudentStatsResponse(List.of(), empty);
         }
 
-        // D-13: Resolve subject names via gRPC batch call
+        // D-13: Resolve subject names and types via gRPC batch call
         List<Long> subjectIds = new ArrayList<>(bySubject.keySet());
-        Map<Long, String> subjectNames = academicGrpcClient.getSubjectsByIds(subjectIds);
+        Map<Long, AcademicGrpcClient.SubjectDetails> subjects = academicGrpcClient.getSubjectDetailsByIds(subjectIds);
 
         List<SubjectStats> subjectStatsList = new ArrayList<>(bySubject.size());
         int totalOverall = 0, attendedOverall = 0, absentOverall = 0, excusedOverall = 0;
@@ -216,9 +216,11 @@ public class ReportService {
             int[] c = e.getValue();
             int total = c[0], attended = c[1], absent = c[2], excused = c[3];
             double pct = total == 0 ? 0.0 : (attended * 100.0) / total;
+            AcademicGrpcClient.SubjectDetails subject = subjects.get(e.getKey());
             subjectStatsList.add(new SubjectStats(
                     e.getKey(),
-                    subjectNames.getOrDefault(e.getKey(), "Unknown"),
+                    subject == null ? "Unknown" : subject.name(),
+                    subject == null ? "" : subject.type(),
                     total, attended, absent, excused, pct));
             totalOverall += total;
             attendedOverall += attended;
@@ -373,16 +375,21 @@ public class ReportService {
                         r -> new long[]{1L, r.status() == AttendanceStatus.ABSENT ? 1L : 0L},
                         (a, b) -> new long[]{a[0] + b[0], a[1] + b[1]}));
         if (agg.isEmpty()) return List.of();
-        Map<Long, String> names = academicGrpcClient.getSubjectsByIds(new ArrayList<>(agg.keySet()));
+        Map<Long, AcademicGrpcClient.SubjectDetails> subjects =
+                academicGrpcClient.getSubjectDetailsByIds(new ArrayList<>(agg.keySet()));
         return agg.entrySet().stream()
                 .filter(e -> e.getValue()[1] > 0)
                 .sorted(Comparator.comparingLong((Map.Entry<Long, long[]> e) -> e.getValue()[1]).reversed())
                 .limit(Math.max(1, limit))
-                .map(e -> new TopMissedSubject(
-                        e.getKey(),
-                        names.getOrDefault(e.getKey(), "Unknown"),
-                        (int) e.getValue()[1],
-                        (int) e.getValue()[0]))
+                .map(e -> {
+                    AcademicGrpcClient.SubjectDetails subject = subjects.get(e.getKey());
+                    return new TopMissedSubject(
+                            e.getKey(),
+                            subject == null ? "Unknown" : subject.name(),
+                            subject == null ? "" : subject.type(),
+                            (int) e.getValue()[1],
+                            (int) e.getValue()[0]);
+                })
                 .toList();
     }
 

@@ -1,6 +1,12 @@
 <div class="redzone-warning" role="alert">
   <i class="ph-duotone ph-warning" aria-hidden="true"></i>
   <p class="redzone-warning__text">
-    <strong>{{ subjectName }}</strong> — посещаемость ниже порога ({{ percentLabel }})
+    <span class="redzone-warning__subject">
+      <strong>{{ subjectName }}</strong>
+      @if (subjectTypeLabel) {
+        <span class="redzone-warning__type">{{ subjectTypeLabel }}</span>
+      }
+    </span>
+    — посещаемость ниже порога ({{ percentLabel }})
   </p>
 </div>

@@ -5,9 +5,10 @@ import { RedzoneWarningComponent } from './redzone-warning.component';
 describe('RedzoneWarningComponent', () => {
   it('renders subject name, rounded percentage, and the threshold copy', async () => {
     const { container } = await render(RedzoneWarningComponent, {
-      componentInputs: { subjectName: 'Математика', percentage: 42 },
+      componentInputs: { subjectName: 'Математика', subjectType: 'practice', percentage: 42 },
     });
     expect(screen.getByText('Математика')).toBeTruthy();
+    expect(screen.getByText('ПЗ')).toBeTruthy();
     expect(screen.getByText(/42%/)).toBeTruthy();
     expect(screen.getByText(/посещаемость ниже порога/)).toBeTruthy();
     expect(container.querySelector('.redzone-warning')).toBeTruthy();

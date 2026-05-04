@@ -18,9 +18,23 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 })
 export class RedzoneWarningComponent {
   @Input({ required: true }) subjectName!: string;
+  @Input() subjectType: string | null | undefined;
   @Input({ required: true }) percentage!: number;
 
   get percentLabel(): string {
     return `${Math.round(this.percentage)}%`;
+  }
+
+  get subjectTypeLabel(): string {
+    switch ((this.subjectType ?? '').trim().toLowerCase()) {
+      case 'lecture':
+        return '\u041b\u041a';
+      case 'practice':
+        return '\u041f\u0417';
+      case 'lab':
+        return '\u041b\u0417';
+      default:
+        return '';
+    }
   }
 }

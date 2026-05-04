@@ -12,6 +12,7 @@ public class SubjectStats {
 
     private final Long subjectId;
     private final String subjectName;
+    private final String subjectType;
     private final int total;
     private final int attended;
     private final int absent;
@@ -20,8 +21,14 @@ public class SubjectStats {
 
     public SubjectStats(Long subjectId, String subjectName, int total, int attended,
                         int absent, int excused, double percentage) {
+        this(subjectId, subjectName, "", total, attended, absent, excused, percentage);
+    }
+
+    public SubjectStats(Long subjectId, String subjectName, String subjectType, int total, int attended,
+                        int absent, int excused, double percentage) {
         this.subjectId = subjectId;
         this.subjectName = subjectName;
+        this.subjectType = subjectType;
         this.total = total;
         this.attended = attended;
         this.absent = absent;
@@ -35,6 +42,10 @@ public class SubjectStats {
 
     public String getSubjectName() {
         return subjectName;
+    }
+
+    public String getSubjectType() {
+        return subjectType;
     }
 
     public int getTotal() {

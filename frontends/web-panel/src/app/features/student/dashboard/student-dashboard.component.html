@@ -69,6 +69,7 @@
           @for (subject of redZoneSubjects(); track subject.subjectId) {
             <app-redzone-warning
               [subjectName]="subject.subjectName"
+              [subjectType]="subject.subjectType"
               [percentage]="subject.percentage"
             />
           }

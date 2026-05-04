@@ -11,18 +11,25 @@ public class TopMissedSubject {
 
     private final Long subjectId;
     private final String subjectName;
+    private final String subjectType;
     private final int absent;
     private final int total;
 
     public TopMissedSubject(Long subjectId, String subjectName, int absent, int total) {
+        this(subjectId, subjectName, "", absent, total);
+    }
+
+    public TopMissedSubject(Long subjectId, String subjectName, String subjectType, int absent, int total) {
         this.subjectId = subjectId;
         this.subjectName = subjectName;
+        this.subjectType = subjectType;
         this.absent = absent;
         this.total = total;
     }
 
     public Long getSubjectId() { return subjectId; }
     public String getSubjectName() { return subjectName; }
+    public String getSubjectType() { return subjectType; }
     public int getAbsent() { return absent; }
     public int getTotal() { return total; }
 }

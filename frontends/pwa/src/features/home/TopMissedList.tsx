@@ -5,6 +5,19 @@ interface Props {
   items: TopMissedSubject[]
 }
 
+function subjectTypeLabel(type: string | null | undefined): string | null {
+  switch ((type ?? '').trim().toLowerCase()) {
+    case 'lecture':
+      return 'ЛК'
+    case 'practice':
+      return 'ПЗ'
+    case 'lab':
+      return 'ЛЗ'
+    default:
+      return null
+  }
+}
+
 /**
  * Rank circle with gradient colour from red (rank 1) down to yellow (rank 5+).
  * Position number inside a subtle filled disk.
@@ -61,40 +74,58 @@ export function TopMissedList({ items }: Props) {
         </p>
       ) : (
         <ul className="flex flex-col">
-          {items.map((item, idx) => (
-            <li
-              key={item.subjectId}
-              className="flex items-center gap-[var(--space-3)] py-[var(--space-3)]"
-              style={{
-                borderBottom:
-                  idx < items.length - 1
-                    ? '1px solid var(--border-subtle)'
-                    : 'none',
-              }}
-            >
-              <RankBadge rank={idx + 1} />
-              <div className="min-w-0 flex-1">
-                <p
-                  className="truncate text-[var(--text-sm)]"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  {item.subjectName}
-                </p>
-                <p
-                  className="text-[var(--text-xs)]"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  всего {item.total} пар
-                </p>
-              </div>
-              <span
-                className="shrink-0 text-[var(--text-sm)] font-semibold tabular-nums"
-                style={{ color: 'var(--accent-danger)' }}
+          {items.map((item, idx) => {
+            const typeLabel = subjectTypeLabel(item.subjectType)
+            return (
+              <li
+                key={item.subjectId}
+                className="flex items-center gap-[var(--space-3)] py-[var(--space-3)]"
+                style={{
+                  borderBottom:
+                    idx < items.length - 1
+                      ? '1px solid var(--border-subtle)'
+                      : 'none',
+                }}
               >
-                {item.absent} пр.
-              </span>
-            </li>
-          ))}
+                <RankBadge rank={idx + 1} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <p
+                      className="truncate text-[var(--text-sm)]"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {item.subjectName}
+                    </p>
+                    {typeLabel && (
+                      <span
+                        className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none"
+                        style={{
+                          background: 'color-mix(in oklab, var(--accent-warning) 14%, transparent)',
+                          border: '1px solid color-mix(in oklab, var(--accent-warning) 32%, transparent)',
+                          color: 'var(--accent-warning)',
+                          fontFamily: 'var(--font-mono)',
+                        }}
+                      >
+                        {typeLabel}
+                      </span>
+                    )}
+                  </div>
+                  <p
+                    className="text-[var(--text-xs)]"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    всего {item.total} пар
+                  </p>
+                </div>
+                <span
+                  className="shrink-0 text-[var(--text-sm)] font-semibold tabular-nums"
+                  style={{ color: 'var(--accent-danger)' }}
+                >
+                  {item.absent} пр.
+                </span>
+              </li>
+            )
+          })}
         </ul>
       )}
     </motion.section>

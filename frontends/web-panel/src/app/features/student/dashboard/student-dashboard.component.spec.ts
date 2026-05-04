@@ -252,6 +252,7 @@ describe('StudentDashboardComponent', () => {
           {
             subjectId: 1,
             subjectName: 'Мат',
+            subjectType: 'lab',
             total: 10,
             attended: 4,
             absent: 6,
@@ -277,6 +278,7 @@ describe('StudentDashboardComponent', () => {
     expect(banners.length).toBe(1);
     const banner = banners[0] as HTMLElement;
     expect(banner.textContent).toContain('Мат');
+    expect(banner.textContent).toContain('ЛЗ');
     expect(banner.textContent).toContain('42%');
   });
 

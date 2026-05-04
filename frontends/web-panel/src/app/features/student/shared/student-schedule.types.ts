@@ -53,6 +53,7 @@ export type LessonResponse = GeneratedLessonResponse & {
 export interface SubjectStats {
   subjectId: number;
   subjectName: string;
+  subjectType?: string | null;
   total: number;
   attended: number;
   absent: number;

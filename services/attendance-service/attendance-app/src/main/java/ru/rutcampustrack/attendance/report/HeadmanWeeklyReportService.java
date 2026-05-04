@@ -29,8 +29,11 @@ import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -39,6 +42,26 @@ import java.util.zip.ZipOutputStream;
 @Service
 @RequiredArgsConstructor
 public class HeadmanWeeklyReportService {
+
+    private static final Locale RU_LOCALE = Locale.forLanguageTag("ru");
+    private static final int MAX_SUBJECT_DISPLAY_CHARS = 28;
+    private static final Set<String> SUBJECT_ABBREVIATION_STOP_WORDS = Set.of(
+            "и", "в", "во", "на", "по", "для", "с", "со", "из", "от", "о", "об", "при"
+    );
+    private static final List<TextReplacement> SUBJECT_NAME_REPLACEMENTS = List.of(
+            new TextReplacement("Системы искусственного интеллекта", "Сист. ИИ"),
+            new TextReplacement("искусственного интеллекта", "ИИ"),
+            new TextReplacement("машинное обучение", "МО"),
+            new TextReplacement("Сервис-ориентированное", "Сервис-ориент."),
+            new TextReplacement("программирование", "прогр."),
+            new TextReplacement("технологии", "техн."),
+            new TextReplacement("Технологии", "Техн."),
+            new TextReplacement("протоколы", "прот."),
+            new TextReplacement("Администрирование", "Админ."),
+            new TextReplacement("Разработка", "Разраб."),
+            new TextReplacement("приложений", "прил."),
+            new TextReplacement("Информационные", "Инф.")
+    );
 
     private final AcademicGrpcClient academicGrpcClient;
     private final ScheduleGrpcClient scheduleGrpcClient;
@@ -233,27 +256,34 @@ public class HeadmanWeeklyReportService {
                         Function.identity(),
                         (first, ignored) -> first));
 
+        Map<Long, Integer> reportSlotByLessonId = new HashMap<>();
         List<HeadmanWeeklyReportModel.Day> days = new ArrayList<>(HeadmanWeeklyReportModel.TEMPLATE_DAYS);
         for (int day = 0; day < HeadmanWeeklyReportModel.TEMPLATE_DAYS; day++) {
             LocalDate date = weekStart.plusDays(day);
-            List<HeadmanWeeklyReportModel.LessonSlot> slots = lessons.stream()
+            List<LessonResponse> dayLessons = lessons.stream()
                     .filter(lesson -> LocalDate.parse(lesson.getDate()).equals(date))
-                    .map(lesson -> new HeadmanWeeklyReportModel.LessonSlot(
-                            lesson.getId(),
-                            lesson.getLessonNumber(),
-                            lesson.getSubjectId(),
-                            subjectNames.getOrDefault(lesson.getSubjectId(), "Unknown"),
-                            ""))
                     .toList();
+            List<HeadmanWeeklyReportModel.LessonSlot> slots = new ArrayList<>(dayLessons.size());
+            for (int i = 0; i < dayLessons.size(); i++) {
+                LessonResponse lesson = dayLessons.get(i);
+                int reportSlot = i + 1;
+                reportSlotByLessonId.put(lesson.getId(), reportSlot);
+                slots.add(new HeadmanWeeklyReportModel.LessonSlot(
+                        lesson.getId(),
+                        reportSlot,
+                        lesson.getSubjectId(),
+                        compactSubjectName(subjectNames.getOrDefault(lesson.getSubjectId(), "Unknown")),
+                        ""));
+            }
             days.add(new HeadmanWeeklyReportModel.Day(date, slots));
         }
 
         List<HeadmanWeeklyReportModel.Student> reportStudents = students.stream()
                 .map(student -> new HeadmanWeeklyReportModel.Student(
                         student.getUserId(),
-                        student.getDisplayName(),
+                        compactStudentDisplayName(student.getDisplayName()),
                         lessons.stream()
-                                .map(lesson -> attendanceMark(student, lesson, attendance))
+                                .map(lesson -> attendanceMark(student, lesson, attendance, reportSlotByLessonId))
                                 .toList()))
                 .toList();
 
@@ -274,12 +304,13 @@ public class HeadmanWeeklyReportService {
     private HeadmanWeeklyReportModel.AttendanceMark attendanceMark(
             StudentInfo student,
             LessonResponse lesson,
-            Map<AttendanceKey, AttendanceRecord> attendance) {
+            Map<AttendanceKey, AttendanceRecord> attendance,
+            Map<Long, Integer> reportSlotByLessonId) {
         AttendanceRecord record = attendance.get(new AttendanceKey(lesson.getId(), student.getUserId()));
         return new HeadmanWeeklyReportModel.AttendanceMark(
                 lesson.getId(),
                 LocalDate.parse(lesson.getDate()),
-                lesson.getLessonNumber(),
+                reportSlotByLessonId.getOrDefault(lesson.getId(), lesson.getLessonNumber()),
                 record == null ? "" : HeadmanWeeklyReportModel.symbolFor(record.status()));
     }
 
@@ -340,5 +371,80 @@ public class HeadmanWeeklyReportService {
         return date.with(DayOfWeek.MONDAY);
     }
 
+    static String compactStudentDisplayName(String displayName) {
+        String normalized = normalizeSpaces(displayName);
+        if (normalized.isEmpty()) {
+            return "";
+        }
+        String[] parts = normalized.split(" ");
+        if (parts.length < 2) {
+            return normalized;
+        }
+
+        StringBuilder initials = new StringBuilder();
+        for (int i = 1; i < parts.length && initials.length() < 4; i++) {
+            String part = parts[i].replaceAll("[^\\p{L}]", "");
+            if (!part.isEmpty()) {
+                initials.append(part.substring(0, 1).toUpperCase(RU_LOCALE)).append('.');
+            }
+        }
+        return initials.isEmpty() ? normalized : parts[0] + " " + initials;
+    }
+
+    static String compactSubjectName(String subjectName) {
+        String compact = normalizeSpaces(subjectName);
+        for (TextReplacement replacement : SUBJECT_NAME_REPLACEMENTS) {
+            compact = compact.replace(replacement.from(), replacement.to());
+        }
+        if (compact.length() <= MAX_SUBJECT_DISPLAY_CHARS) {
+            return compact;
+        }
+
+        String abbreviated = abbreviateSubjectByInitials(compact);
+        if (!abbreviated.isBlank()) {
+            return abbreviated.length() <= MAX_SUBJECT_DISPLAY_CHARS
+                    ? abbreviated
+                    : truncateWithEllipsis(abbreviated);
+        }
+        return truncateWithEllipsis(compact);
+    }
+
+    private static String abbreviateSubjectByInitials(String value) {
+        String[] words = value.split(" ");
+        if (words.length < 2) {
+            return "";
+        }
+
+        StringBuilder result = new StringBuilder(words[0]);
+        boolean hasInitials = false;
+        for (int i = 1; i < words.length; i++) {
+            String word = words[i].replaceAll("^[^\\p{L}\\p{N}]+|[^\\p{L}\\p{N}]+$", "");
+            if (word.isEmpty()
+                    || SUBJECT_ABBREVIATION_STOP_WORDS.contains(word.toLowerCase(RU_LOCALE))) {
+                continue;
+            }
+            if (!hasInitials) {
+                result.append(' ');
+                hasInitials = true;
+            }
+            result.append(word.substring(0, 1).toUpperCase(RU_LOCALE))
+                    .append('.');
+        }
+        return result.toString();
+    }
+
+    private static String truncateWithEllipsis(String value) {
+        if (value.length() <= MAX_SUBJECT_DISPLAY_CHARS) {
+            return value;
+        }
+        return value.substring(0, MAX_SUBJECT_DISPLAY_CHARS - 3).stripTrailing() + "...";
+    }
+
+    private static String normalizeSpaces(String value) {
+        return value == null ? "" : value.trim().replaceAll("\\s+", " ");
+    }
+
     private record AttendanceKey(Long lessonId, Long userId) {}
+
+    private record TextReplacement(String from, String to) {}
 }

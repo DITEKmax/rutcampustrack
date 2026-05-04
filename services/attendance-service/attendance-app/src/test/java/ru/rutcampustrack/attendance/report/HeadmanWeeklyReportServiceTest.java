@@ -149,6 +149,48 @@ class HeadmanWeeklyReportServiceTest {
     }
 
     @Test
+    void buildReportModels_compactsLessonSlotsNamesAndSubjectsForTemplate() {
+        LocalDate weekStart = LocalDate.of(2026, 4, 27);
+        stubAcademicForReport(semester("2026-04-27", "2026-05-31"),
+                student(1L, "\u041f\u0435\u0442\u0440\u043e\u0432 \u041f\u0435\u0442\u0440 \u041f\u0430\u0432\u043b\u043e\u0432\u0438\u0447"));
+        when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03"))
+                .thenReturn(LessonsResponse.newBuilder()
+                        .addLessons(lesson(100L, 5L, "2026-04-27", 3, "closed"))
+                        .addLessons(lesson(101L, 6L, "2026-04-27", 5, "closed"))
+                        .addLessons(lesson(102L, 7L, "2026-04-27", 6, "closed"))
+                        .addLessons(lesson(103L, 8L, "2026-04-27", 8, "closed"))
+                        .build());
+        when(academicGrpcClient.getSubjectsByIds(List.of(5L, 6L, 7L, 8L))).thenReturn(Map.of(
+                5L, "\u0421\u0438\u0441\u0442\u0435\u043c\u044b \u0438\u0441\u043a\u0443\u0441\u0441\u0442\u0432\u0435\u043d\u043d\u043e\u0433\u043e \u0438\u043d\u0442\u0435\u043b\u043b\u0435\u043a\u0442\u0430 \u0438 \u043c\u0430\u0448\u0438\u043d\u043d\u043e\u0435 \u043e\u0431\u0443\u0447\u0435\u043d\u0438\u0435",
+                6L, "\u0421\u0435\u0442\u0435\u0432\u044b\u0435 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0438 \u0438 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u044b",
+                7L, "\u0421\u0435\u0440\u0432\u0438\u0441-\u043e\u0440\u0438\u0435\u043d\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e\u0435 \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435",
+                8L, "\u0422\u0435\u043e\u0440\u0435\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u043e\u0441\u043d\u043e\u0432\u044b \u043f\u043e\u0441\u0442\u0440\u043e\u0435\u043d\u0438\u044f \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u043e\u043d\u043d\u044b\u0445 \u0441\u0438\u0441\u0442\u0435\u043c"));
+        when(attendanceReadPort.findByGroupAndDateRange(10L, weekStart, LocalDate.of(2026, 5, 3)))
+                .thenReturn(List.of(
+                        record(100L, 1L, 5L, weekStart, 3, AttendanceStatus.PRESENT),
+                        record(102L, 1L, 7L, weekStart, 6, AttendanceStatus.ABSENT)));
+
+        HeadmanWeeklyReportModel model = service.buildReportModels(List.of(weekStart)).get(0);
+
+        assertThat(model.days().get(0).lessons())
+                .extracting(HeadmanWeeklyReportModel.LessonSlot::lessonNumber)
+                .containsExactly(1, 2, 3, 4);
+        assertThat(model.days().get(0).lessons())
+                .extracting(HeadmanWeeklyReportModel.LessonSlot::subjectName)
+                .containsExactly("\u0421\u0438\u0441\u0442. \u0418\u0418 \u0438 \u041c\u041e",
+                        "\u0421\u0435\u0442\u0435\u0432\u044b\u0435 \u0442\u0435\u0445\u043d. \u0438 \u043f\u0440\u043e\u0442.",
+                        "\u0421\u0435\u0440\u0432\u0438\u0441-\u043e\u0440\u0438\u0435\u043d\u0442. \u043f\u0440\u043e\u0433\u0440.",
+                        "\u0422\u0435\u043e\u0440\u0435\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u041e.\u041f.\u0410.\u0418.\u0421.");
+        assertThat(model.students().get(0).displayName()).isEqualTo("\u041f\u0435\u0442\u0440\u043e\u0432 \u041f.\u041f.");
+        assertThat(model.students().get(0).attendance())
+                .extracting(HeadmanWeeklyReportModel.AttendanceMark::lessonNumber)
+                .containsExactly(1, 2, 3, 4);
+        assertThat(model.students().get(0).attendance())
+                .extracting(HeadmanWeeklyReportModel.AttendanceMark::symbol)
+                .containsExactly("+", "", "\u043d", "");
+    }
+
+    @Test
     void exportSingleWeek_docxReturnsFilenameContentTypeAndBytes() {
         LocalDate weekStart = LocalDate.of(2026, 4, 27);
         stubAcademicForReport(semester("2026-04-27", "2026-05-31"),

@@ -1,5 +1,7 @@
 package ru.rutcampustrack.schedule.events;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +42,7 @@ import static org.mockito.Mockito.when;
 class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
 
     private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Autowired
     LessonReminderJob job;
@@ -87,7 +90,7 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
         assertThat(errors)
                 .as("lesson.reminder payload должен соответствовать event-schemas/lesson.reminder.json")
                 .isEmpty();
-        assertThat(reminder.get().payload()).contains("\"phase\":\"midpoint\"");
+        assertThat(reminderPhase(reminder.get())).isEqualTo("midpoint");
     }
 
     @Test
@@ -109,7 +112,7 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
         Set<ValidationMessage> errors = EventSchemaValidator.validate(
                 "lesson.reminder.json", reminder.get().payload());
         assertThat(errors).isEmpty();
-        assertThat(reminder.get().payload()).contains("\"phase\":\"near_end\"");
+        assertThat(reminderPhase(reminder.get())).isEqualTo("near_end");
     }
 
     @Test
@@ -152,7 +155,7 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void midpointIsNotCaughtUpInsideNearEndWindow() {
+    void midpointIsNotCaughtUpInsideNearEndWindow() throws Exception {
         ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
         createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
 
@@ -166,7 +169,7 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
                 .filter(r -> "lesson.reminder".equals(r.eventType()))
                 .toList();
         assertThat(reminders).hasSize(1);
-        assertThat(reminders.get(0).payload()).contains("\"phase\":\"near_end\"");
+        assertThat(reminderPhase(reminders.get(0))).isEqualTo("near_end");
     }
 
     private ScheduleItem createScheduleItem(LocalTime startTime, LocalTime endTime) {
@@ -192,5 +195,10 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
         lesson.setStatus(status);
         lesson.setCreatedAt(OffsetDateTime.now());
         return lessonRepository.save(lesson);
+    }
+
+    private static String reminderPhase(OutboxRecord record) throws Exception {
+        JsonNode root = MAPPER.readTree(record.payload());
+        return root.path("payload").path("phase").asText();
     }
 }

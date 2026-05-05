@@ -5,6 +5,9 @@
     "version" : "v0"
   },
   "tags" : [ {
+    "name" : "Notification Preferences",
+    "description" : "User notification delivery settings"
+  }, {
     "name" : "Push",
     "description" : "Web Push subscription management"
   }, {
@@ -12,6 +15,192 @@
     "description" : "История уведомлений пользователя (M10)"
   } ],
   "paths" : {
+    "/notifications/preferences" : {
+      "get" : {
+        "tags" : [ "Notification Preferences" ],
+        "summary" : "Get current user's notification preferences",
+        "operationId" : "getPreferences",
+        "responses" : {
+          "200" : {
+            "description" : "Preferences returned",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelNotificationPreferencesDto"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Notification Preferences" ],
+        "summary" : "Replace current user's notification preferences",
+        "operationId" : "updatePreferences",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateNotificationPreferencesRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Preferences saved",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelNotificationPreferencesDto"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/push/subscribe" : {
       "post" : {
         "tags" : [ "Push" ],
@@ -768,6 +957,44 @@
   },
   "components" : {
     "schemas" : {
+      "UpdateNotificationPreferencesRequest" : {
+        "type" : "object",
+        "description" : "Notification preference update request",
+        "properties" : {
+          "categories" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "boolean"
+            },
+            "description" : "Per-category enabled flags. Unknown categories are ignored by the service."
+          },
+          "mutedUntil" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "UTC instant until which all user-facing notifications are muted. Null removes mute."
+          }
+        }
+      },
+      "EntityModelNotificationPreferencesDto" : {
+        "type" : "object",
+        "properties" : {
+          "categories" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "boolean"
+            },
+            "description" : "Per-category enabled flags. Missing categories are treated as enabled."
+          },
+          "mutedUntil" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "UTC instant until which all user-facing notifications are muted"
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
       "Keys" : {
         "type" : "object",
         "description" : "Ключи шифрования Web Push подписки",

@@ -23,7 +23,7 @@ _CLEANUP_STATUSES = frozenset({"present", "excused", "free_attendance"})
 
 # Человекочитаемые подписи статусов для текста уведомления студенту.
 _STATUS_LABEL_RU: dict[str, str] = {
-    "present": "присутствует (б)",
+    "present": "присутствует (+)",
     "absent": "отсутствует (н)",
     "excused": "уважительная (у)",
     "free_attendance": "свободное посещение (сп)",

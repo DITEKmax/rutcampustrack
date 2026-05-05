@@ -43,6 +43,7 @@ def _make_event(
 def _make_deps(students=None, message_ids=None):
     """Build mocked dependencies for handle_attendance_marked."""
     bot = MagicMock()
+    bot.send_message = AsyncMock()
     bot.delete_message = AsyncMock()
 
     academic_client = MagicMock()
@@ -53,6 +54,26 @@ def _make_deps(students=None, message_ids=None):
     redis_client.delete_key = AsyncMock()
 
     return bot, academic_client, redis_client
+
+
+@pytest.mark.asyncio
+async def test_attendance_marked_headman_present_uses_plus_status_label():
+    """Headman manual present mark is shown as присутствует (+), not присутствует (б)."""
+    students = [_make_student(user_id=10, telegram_id=1010)]
+    bot, academic_client, redis_client = _make_deps(students=students, message_ids=[])
+    event = _make_event(status="present", marked_by="headman")
+
+    await handle_attendance_marked(
+        event,
+        bot=bot,
+        academic_client=academic_client,
+        redis_client=redis_client,
+    )
+
+    bot.send_message.assert_awaited_once()
+    sent_text = bot.send_message.await_args.kwargs["text"]
+    assert sent_text.splitlines()[0] == "Староста проставил вам статус: присутствует (+)"
+    assert "(б)" not in sent_text
 
 
 @pytest.mark.asyncio

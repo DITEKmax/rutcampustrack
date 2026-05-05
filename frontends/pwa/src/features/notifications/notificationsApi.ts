@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/lib/axios'
+import type { NotificationCategory } from './notificationPrefs'
 
 /**
  * Backend notification history API client (M10 G6).
@@ -37,6 +38,11 @@ export interface HistoryPage {
   pageNumber: number
 }
 
+export interface NotificationPreferencesPayload {
+  categories: Partial<Record<NotificationCategory, boolean>>
+  mutedUntil: string | null
+}
+
 export async function fetchHistoryPage(
   page: number,
   size: number = 20,
@@ -66,4 +72,27 @@ export async function markNotificationRead(id: string): Promise<void> {
 
 export async function markAllNotificationsRead(): Promise<void> {
   await apiClient.post('/notifications/mark-all-read')
+}
+
+export async function fetchNotificationPreferences(): Promise<NotificationPreferencesPayload> {
+  const { data } = await apiClient.get<NotificationPreferencesPayload>(
+    '/notifications/preferences',
+  )
+  return {
+    categories: data.categories ?? {},
+    mutedUntil: data.mutedUntil ?? null,
+  }
+}
+
+export async function updateNotificationPreferences(
+  payload: NotificationPreferencesPayload,
+): Promise<NotificationPreferencesPayload> {
+  const { data } = await apiClient.put<NotificationPreferencesPayload>(
+    '/notifications/preferences',
+    payload,
+  )
+  return {
+    categories: data.categories ?? {},
+    mutedUntil: data.mutedUntil ?? null,
+  }
 }

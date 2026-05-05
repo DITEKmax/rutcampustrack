@@ -1,6 +1,15 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import { PullToRefresh } from '../PullToRefresh'
+
+function dispatchTouch(target: Element, type: string, clientY: number) {
+  const event = new Event(type, { bubbles: true, cancelable: true })
+  Object.defineProperty(event, 'touches', {
+    value: type === 'touchend' ? [] : [{ clientY }],
+    configurable: true,
+  })
+  target.dispatchEvent(event)
+}
 
 describe('PullToRefresh', () => {
   it('renders children', () => {
@@ -32,5 +41,24 @@ describe('PullToRefresh', () => {
       </PullToRefresh>,
     )
     expect(screen.getByText('disabled-content')).toBeInTheDocument()
+  })
+
+  it('ignores touch gestures from nested overlays', async () => {
+    const onRefresh = vi.fn().mockResolvedValue(undefined)
+    render(
+      <PullToRefresh onRefresh={onRefresh} threshold={20}>
+        <div data-pull-to-refresh-ignore="true">sheet-content</div>
+      </PullToRefresh>,
+    )
+
+    const sheetContent = screen.getByText('sheet-content')
+
+    await act(async () => {
+      dispatchTouch(sheetContent, 'touchstart', 0)
+      dispatchTouch(sheetContent, 'touchmove', 60)
+      dispatchTouch(sheetContent, 'touchend', 60)
+    })
+
+    expect(onRefresh).not.toHaveBeenCalled()
   })
 })

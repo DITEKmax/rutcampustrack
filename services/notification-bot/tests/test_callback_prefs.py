@@ -11,6 +11,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from bot.handlers.prefs import (
+    cb_mute_clear,
+    cb_mute_day,
     cb_toggle_category,
     cb_toggle_global,
     cmd_open_settings,
@@ -89,9 +91,9 @@ async def test_cmd_open_settings_shows_menu_with_all_categories_default_on(prefs
     assert "🔔" in text  # по умолчанию globally-enabled
     markup = kwargs["reply_markup"]
     # 1 global + 6 категорий = 7 кнопок (каждая в своей row)
-    assert len(markup.inline_keyboard) == 7
+    assert len(markup.inline_keyboard) == 8
     # Каждая категория по умолчанию включена → checkbox ✅
-    for row in markup.inline_keyboard[1:]:
+    for row in markup.inline_keyboard[2:]:
         assert row[0].text.startswith("✅")
 
 
@@ -110,7 +112,7 @@ async def test_cmd_open_settings_when_globally_disabled_hides_categories(
     markup = msg.answer.await_args.kwargs["reply_markup"]
     assert "🔕" in text
     # Только global-toggle строка
-    assert len(markup.inline_keyboard) == 1
+    assert len(markup.inline_keyboard) == 2
 
 
 # ====================================================== cb_toggle_global
@@ -138,6 +140,33 @@ async def test_toggle_global_from_off_to_on_deletes_redis_key(prefs_callback_fac
     value = await fake_redis.get("bot:notif:100")
     assert value is None  # enable → delete key
     cb.answer.assert_awaited_once_with("Уведомления включены")
+
+
+@pytest.mark.asyncio
+async def test_mute_day_sets_mute_key_and_clear_removes_it(prefs_callback_factory, prefs_client, fake_redis):
+    cb = prefs_callback_factory("prefs:mute:day", user_id=100)
+
+    await cb_mute_day(cb, prefs_client=prefs_client)
+
+    value = await fake_redis.get("bot:notif:mute:100")
+    assert value is not None
+    cb.answer.assert_awaited_once_with("Пауза включена на день")
+
+    cb_clear = prefs_callback_factory("prefs:mute:clear", user_id=100)
+    await cb_mute_clear(cb_clear, prefs_client=prefs_client)
+
+    value = await fake_redis.get("bot:notif:mute:100")
+    assert value is None
+    cb_clear.answer.assert_awaited_once_with("Пауза снята")
+
+
+@pytest.mark.asyncio
+async def test_is_enabled_respects_shared_user_category_pref(prefs_client, fake_redis):
+    await fake_redis.hset("notif:prefs:user:10", "reminders", "off")
+
+    enabled = await prefs_client.is_enabled(telegram_id=100, category="reminders", user_id=10)
+
+    assert enabled is False
 
 
 # ====================================================== cb_toggle_category

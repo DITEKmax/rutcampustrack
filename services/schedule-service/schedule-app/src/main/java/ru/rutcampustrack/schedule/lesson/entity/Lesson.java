@@ -95,4 +95,8 @@ public class Lesson {
     @Setter
     @Column(name = "reminder_midpoint_sent_at")
     private OffsetDateTime reminderMidpointSentAt;
+
+    @Setter
+    @Column(name = "reminder_near_end_sent_at")
+    private OffsetDateTime reminderNearEndSentAt;
 }

@@ -68,7 +68,7 @@ describe('JournalApiService', () => {
   });
 
   it('getSubjects() calls GET /api/academic/subjects and unwraps _embedded', () => {
-    const mockSubject = { id: 10, name: 'Математика' };
+    const mockSubject = { id: 10, name: 'Математика', type: 'LECTURE' };
     let result: any[] = [];
 
     service.getSubjects().subscribe(subjects => (result = subjects));
@@ -78,5 +78,28 @@ describe('JournalApiService', () => {
     req.flush({ _embedded: { subjectResponseList: [mockSubject] } });
 
     expect(result).toEqual([mockSubject]);
+  });
+
+  it('getSemesters() calls GET /api/academic/semesters and unwraps _embedded', () => {
+    const mockSemester = {
+      id: 7,
+      name: 'Весенний 2026',
+      dateFrom: '2026-02-09',
+      dateTo: '2026-06-14',
+      active: true,
+      createdAt: '2026-01-01T00:00:00Z',
+    };
+    let result: any[] = [];
+
+    service.getSemesters().subscribe(semesters => (result = semesters));
+
+    const req = httpMock.expectOne(r =>
+      r.url === '/api/academic/semesters' &&
+      r.params.get('size') === '200',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({ _embedded: { semesterResponseList: [mockSemester] } });
+
+    expect(result).toEqual([mockSemester]);
   });
 });

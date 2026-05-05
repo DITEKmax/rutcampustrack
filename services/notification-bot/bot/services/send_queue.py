@@ -47,7 +47,7 @@ class TelegramSendQueue:
         while True:
             task = await self._queue.get()
             if self._prefs_client is not None and task.chat_id is not None:
-                if not await self._prefs_client.is_enabled(task.chat_id, task.category):
+                if not await self._prefs_client.is_enabled(task.chat_id, task.category, user_id=task.user_id):
                     self._queue.task_done()
                     continue
             await self._consume_token()

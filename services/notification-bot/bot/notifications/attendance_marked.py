@@ -19,7 +19,7 @@ from bot.services.redis_client import ReminderRedisClient
 logger = logging.getLogger(__name__)
 
 # Статусы, при которых reminder-сообщения больше не нужны.
-_CLEANUP_STATUSES = frozenset({"present", "excused", "free_attendance"})
+_CLEANUP_STATUSES = frozenset({"present", "absent", "excused", "free_attendance"})
 
 # Человекочитаемые подписи статусов для текста уведомления студенту.
 _STATUS_LABEL_RU: dict[str, str] = {

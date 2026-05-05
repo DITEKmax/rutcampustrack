@@ -77,6 +77,6 @@ async def handle_lesson_started(
                 coroutine_factory=send_and_store,
                 user_id=student.user_id,
                 chat_id=student.telegram_id,
-                category="lessons",
+                category="reminders",
             )
         )

@@ -6,6 +6,7 @@ import type {
   GroupResponse,
   JournalResponse,
   PagedResponse,
+  SemesterResponse,
   SubjectResponse,
 } from './types';
 
@@ -54,6 +55,16 @@ export class JournalApiService {
       })
       .pipe(
         map(response => (Object.values(response._embedded ?? {})[0] ?? []) as SubjectResponse[]),
+      );
+  }
+
+  getSemesters(): Observable<SemesterResponse[]> {
+    return this.http
+      .get<PagedResponse<SemesterResponse>>('/api/academic/semesters', {
+        params: new HttpParams().set('size', '200'),
+      })
+      .pipe(
+        map(response => (Object.values(response._embedded ?? {})[0] ?? []) as SemesterResponse[]),
       );
   }
 }

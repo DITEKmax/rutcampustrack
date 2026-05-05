@@ -5,16 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalTime;
 
 /**
- * Domain event published when a lesson is past its midpoint and not yet
- * closed — students who haven't checked in get a reminder.
+ * Domain event for attendance reminders during an active lesson.
  *
- * <p>Шлётся раз на пару (idempotent через {@code lessons.reminder_midpoint_sent_at}).
- * Per-user filtering ("отметился ли студент") выполняют consumer'ы:
- * notification-bot читает Redis ключ {@code reminder:lesson:user}, фронт
- * видит только если у пользователя ещё не выставлен PRESENT/EXCUSED/...
+ * <p>{@code phase=midpoint} is published after the lesson midpoint;
+ * {@code phase=near_end} is published roughly five minutes before the end.
+ * Both phases are idempotent via {@code lessons.reminder_midpoint_sent_at}
+ * and {@code lessons.reminder_near_end_sent_at}.
  *
- * <p>{@code phase} зарезервирован для будущих фаз ("near_end" — для второго
- * напоминания за 5 минут до конца); сейчас всегда {@code "midpoint"}.
+ * <p>Per-user delivery filtering is done by notification consumers using
+ * notification preferences and reminder attendance state, so students who
+ * have already checked in do not receive repeated reminders.
  *
  * <p>Schema: {@code event-schemas/lesson.reminder.json}.
  */

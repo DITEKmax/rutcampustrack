@@ -13,6 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
+import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 
 import java.time.Clock;
 import java.util.List;
@@ -40,11 +42,25 @@ class WebPushDeliveryServiceTest {
     @Mock
     private MongoTemplate mongoTemplate;
 
+    @Mock
+    private NotificationPreferencesService preferencesService;
+
+    @Mock
+    private ReminderAttendanceStateService reminderAttendanceStateService;
+
     private WebPushDeliveryService service;
 
     @BeforeEach
     void setUp() throws Exception {
-        service = spy(new WebPushDeliveryService(repository, webPushService, new ObjectMapper(), mongoTemplate, Clock.systemUTC()));
+        lenient().when(preferencesService.isEnabledForUser(any(), anyString())).thenReturn(true);
+        service = spy(new WebPushDeliveryService(
+                repository,
+                webPushService,
+                new ObjectMapper(),
+                mongoTemplate,
+                Clock.systemUTC(),
+                preferencesService,
+                reminderAttendanceStateService));
         // Stub createNotification to avoid real EC key parsing in all tests
         doReturn(mockNotification).when(service).createNotification(any(PushSubscriptionDocument.class), any(byte[].class));
     }
@@ -245,6 +261,34 @@ class WebPushDeliveryServiceTest {
         var json = new ObjectMapper().readTree(payloadStr);
         assertThat(json.get("event_type").asText()).isEqualTo("lesson.reminder");
         assertThat(json.get("body").asText()).contains("3").contains("14:30");
+    }
+
+    @Test
+    void sendToGroup_lessonReminder_skipsAlreadyMarkedStudents() throws Exception {
+        PushSubscriptionDocument marked = sub(1L, "https://push.example.com/marked");
+        PushSubscriptionDocument unmarked = sub(2L, "https://push.example.com/unmarked");
+        when(repository.findAllByGroupId(7L)).thenReturn(List.of(marked, unmarked));
+        when(reminderAttendanceStateService.isMarked(101L, 1L)).thenReturn(true);
+        when(reminderAttendanceStateService.isMarked(101L, 2L)).thenReturn(false);
+
+        service.sendToGroup(7L, "lesson.reminder", Map.of("group_id", 7, "lesson_id", 101)).join();
+
+        verify(webPushService, times(1)).send(any(Notification.class));
+        verify(reminderAttendanceStateService).isMarked(101L, 1L);
+        verify(reminderAttendanceStateService).isMarked(101L, 2L);
+    }
+
+    @Test
+    void sendToGroup_lessonStarted_respectsReminderPreferences() throws Exception {
+        PushSubscriptionDocument enabled = sub(1L, "https://push.example.com/enabled");
+        PushSubscriptionDocument disabled = sub(2L, "https://push.example.com/disabled");
+        when(repository.findAllByGroupId(7L)).thenReturn(List.of(enabled, disabled));
+        when(preferencesService.isEnabledForUser(1L, "lesson.started")).thenReturn(true);
+        when(preferencesService.isEnabledForUser(2L, "lesson.started")).thenReturn(false);
+
+        service.sendToGroup(7L, "lesson.started", Map.of("group_id", 7, "lesson_id", 101)).join();
+
+        verify(webPushService, times(1)).send(any(Notification.class));
     }
 
     @Test

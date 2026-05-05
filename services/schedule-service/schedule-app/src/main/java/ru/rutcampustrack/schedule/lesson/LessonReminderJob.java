@@ -18,12 +18,13 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
- * Cron job that publishes a {@code lesson.reminder} event for every active
- * lesson once its midpoint is reached.
+ * Cron job that publishes {@code lesson.reminder} events for active lessons:
+ * once around the midpoint and once near the end.
  *
  * <p>Runs alongside {@link LessonStatusTransitionJob} (the latter handles
- * PLANNED→ACTIVE and ACTIVE→CLOSED). Idempotency anchor:
- * {@code lessons.reminder_midpoint_sent_at} (V15). Setting it inside the
+ * PLANNED→ACTIVE and ACTIVE→CLOSED). Idempotency anchors:
+ * {@code lessons.reminder_midpoint_sent_at} and {@code lessons.reminder_near_end_sent_at}.
+ * Setting a marker inside the
  * same {@code @Transactional} as the outbox write (via the
  * {@code @TransactionalEventListener(BEFORE_COMMIT)} pattern) makes the
  * pair atomic — a Rabbit publish failure rolls back the marker, and the
@@ -60,23 +61,34 @@ public class LessonReminderJob {
     @Transactional
     public void runReminders() {
         LocalDateTime nowMoscow = LocalDateTime.now(clock);
-        List<Lesson> due = lessonRepository.findActiveDueForMidpointReminder(nowMoscow);
-        if (due.isEmpty()) {
+        List<Lesson> midpointDue = lessonRepository.findActiveDueForMidpointReminder(nowMoscow);
+        List<Lesson> nearEndDue = lessonRepository.findActiveDueForNearEndReminder(nowMoscow);
+        if (midpointDue.isEmpty() && nearEndDue.isEmpty()) {
             return;
         }
         OffsetDateTime nowOffset = OffsetDateTime.now(clock);
-        for (Lesson lesson : due) {
-            ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
-                    .orElseThrow(() -> new IllegalStateException(
-                            "ScheduleItem not found for lesson " + lesson.getId()));
-            eventPublisher.publishEvent(new LessonReminderEvent(this,
-                    lesson.getId(), item.getGroupId(), item.getSubjectId(),
-                    item.getLessonNumber(),
-                    item.getStartTime(), item.getEndTime(), item.getRoom(),
-                    "midpoint"));
+        for (Lesson lesson : midpointDue) {
+            publishReminder(lesson, "midpoint");
             lesson.setReminderMidpointSentAt(nowOffset);
         }
-        lessonRepository.saveAll(due);
-        log.info("Lesson midpoint reminders published: count={}", due.size());
+        for (Lesson lesson : nearEndDue) {
+            publishReminder(lesson, "near_end");
+            lesson.setReminderNearEndSentAt(nowOffset);
+        }
+        lessonRepository.saveAll(midpointDue);
+        lessonRepository.saveAll(nearEndDue);
+        log.info("Lesson reminders published: midpoint={}, nearEnd={}",
+                midpointDue.size(), nearEndDue.size());
+    }
+
+    private void publishReminder(Lesson lesson, String phase) {
+        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "ScheduleItem not found for lesson " + lesson.getId()));
+        eventPublisher.publishEvent(new LessonReminderEvent(this,
+                lesson.getId(), item.getGroupId(), item.getSubjectId(),
+                item.getLessonNumber(),
+                item.getStartTime(), item.getEndTime(), item.getRoom(),
+                phase));
     }
 }

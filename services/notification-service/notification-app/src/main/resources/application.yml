@@ -18,6 +18,12 @@ spring:
       # M13 G7: ?replicaSet=rs0 для MongoTransactionManager multi-doc transactions
       # (bitnami/mongodb single-node RS).
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/notification_db?replicaSet=rs0}
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:rct_dev_pass}
+      timeout: 1s
+      connect-timeout: 1s
     web:
       pageable:
         # M10 G9 H2 hot-patch: default 20 оставлен локально; M13 G3 перевёл

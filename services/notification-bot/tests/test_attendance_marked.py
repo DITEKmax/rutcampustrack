@@ -98,8 +98,8 @@ async def test_attendance_marked_present_deletes_messages_and_clears_redis():
 
 
 @pytest.mark.asyncio
-async def test_attendance_marked_absent_does_not_delete():
-    """status=absent: bot.delete_message and delete_key are NOT called."""
+async def test_attendance_marked_absent_deletes_messages():
+    """status=absent: student is already marked, so active reminders are cleared."""
     students = [_make_student(user_id=10, telegram_id=1010)]
     bot, academic_client, redis_client = _make_deps(students=students, message_ids=[50])
 
@@ -110,8 +110,8 @@ async def test_attendance_marked_absent_does_not_delete():
         redis_client=redis_client,
     )
 
-    bot.delete_message.assert_not_called()
-    redis_client.delete_key.assert_not_called()
+    bot.delete_message.assert_called_once_with(chat_id=1010, message_id=50)
+    redis_client.delete_key.assert_called_once_with(101, 10)
 
 
 @pytest.mark.asyncio

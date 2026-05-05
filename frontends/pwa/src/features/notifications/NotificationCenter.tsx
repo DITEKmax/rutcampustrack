@@ -308,6 +308,7 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
 
   const [items, setItems] = useState<NotificationRecord[]>(() => loadFromStorage())
   const itemsRef = useRef(items)
+  const markedLessonIdsRef = useRef<Set<number>>(new Set())
   useEffect(() => {
     itemsRef.current = items
     persist(items)
@@ -342,7 +343,21 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
 
           // attendance.marked: показываем студенту ТОЛЬКО ручную правку
           // старостой. self-check-in и auto-absent — служебные события.
+          if (envelope.type === 'lesson.reminder') {
+            const lessonId = envelope.payload?.['lesson_id']
+            if (
+              typeof lessonId === 'number' &&
+              markedLessonIdsRef.current.has(lessonId)
+            ) {
+              return
+            }
+          }
+
           if (envelope.type === 'attendance.marked') {
+            const lessonId = envelope.payload?.['lesson_id']
+            if (typeof lessonId === 'number') {
+              markedLessonIdsRef.current.add(lessonId)
+            }
             if (envelope.payload?.['marked_by'] !== 'headman') return
           }
 

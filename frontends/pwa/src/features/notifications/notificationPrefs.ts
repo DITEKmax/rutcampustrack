@@ -13,7 +13,7 @@ export type NotificationCategory =
   | 'group'
 
 export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
-  lessons: 'Пары (начало, отмена)',
+  lessons: 'Пары и отмены',
   reminders: 'Напоминания об отметке',
   homework: 'Домашние задания',
   tickets: 'Тикеты (у.п., опоздания)',
@@ -22,7 +22,7 @@ export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
 }
 
 const CATEGORY_MAP: Record<string, NotificationCategory> = {
-  'lesson.started': 'lessons',
+  'lesson.started': 'reminders',
   'lesson.cancelled': 'lessons',
   'lesson.reminder': 'reminders',
   'lesson.one_off.created': 'schedule',
@@ -49,6 +49,7 @@ export interface QuietHours {
 
 export interface NotificationPrefs {
   categories: Record<NotificationCategory, boolean>
+  mutedUntil: string | null
   /** Тихий режим: в этом окне подавляем native Notification, но событие
    * по-прежнему попадает в историю с пометкой read=false. */
   quietHours: QuietHours | null
@@ -63,6 +64,7 @@ export const DEFAULT_PREFS: NotificationPrefs = {
     schedule: true,
     group: true,
   },
+  mutedUntil: null,
   quietHours: null,
 }
 
@@ -76,6 +78,8 @@ export function loadPrefs(): NotificationPrefs {
     const parsed = JSON.parse(raw) as Partial<NotificationPrefs>
     return {
       categories: { ...DEFAULT_PREFS.categories, ...(parsed.categories ?? {}) },
+      mutedUntil:
+        typeof parsed.mutedUntil === 'string' ? parsed.mutedUntil : null,
       quietHours: parsed.quietHours ?? null,
     }
   } catch {
@@ -119,6 +123,7 @@ export function shouldSuppressBanner(
   prefs: NotificationPrefs,
   now = new Date(),
 ): boolean {
+  if (isMutedNow(prefs, now)) return true
   const cat = categoryOf(eventType)
   if (cat && !prefs.categories[cat]) return true
   if (isQuietNow(prefs.quietHours, now)) return true
@@ -128,10 +133,18 @@ export function shouldSuppressBanner(
 export function shouldStoreInHistory(
   eventType: string,
   prefs: NotificationPrefs,
+  now = new Date(),
 ): boolean {
+  if (isMutedNow(prefs, now)) return false
   const cat = categoryOf(eventType)
   if (cat && !prefs.categories[cat]) return false
   return true
+}
+
+export function isMutedNow(prefs: NotificationPrefs, now = new Date()): boolean {
+  if (!prefs.mutedUntil) return false
+  const until = new Date(prefs.mutedUntil)
+  return Number.isFinite(until.getTime()) && until > now
 }
 
 /**

@@ -378,6 +378,9 @@ services:
       # M14 G9: INTERNAL_ISSUER_SECRET для WS-ticket consume
       # (notification.ws-ticket.internal-issuer-secret в application.yml).
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       JWT_PUBLIC_KEY_PATH: /keys/public.key
       NOTIFICATION_WS_ALLOWED_ORIGINS: ${NOTIFICATION_WS_ALLOWED_ORIGINS}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
@@ -395,6 +398,8 @@ services:
       - private_net
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       mongo-attendance:
         condition: service_healthy

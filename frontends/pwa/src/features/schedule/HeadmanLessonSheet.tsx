@@ -142,6 +142,12 @@ export function HeadmanLessonSheet({
           ? `Ауд. ${lesson.room} · ${lesson.startTime.slice(0, 5)}–${lesson.endTime.slice(0, 5)}`
           : undefined
       }
+      maxHeight="100dvh"
+      className="h-dvh rounded-t-none"
+      closeOnBackdrop={false}
+      closeOnEscape={false}
+      closeOnSwipeDown={false}
+      showDragHandle={false}
     >
       {lesson && (
         <>

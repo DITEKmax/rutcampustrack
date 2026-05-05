@@ -1,33 +1,39 @@
 <div class="journal-grid-wrapper">
-  <cdk-virtual-scroll-viewport [itemSize]="40" [minBufferPx]="400" [maxBufferPx]="800"
-    class="journal-viewport">
-    <table cdk-table [dataSource]="dataSource()">
-      <!-- Sticky student name column -->
-      <ng-container cdkColumnDef="student" sticky>
-        <th cdk-header-cell *cdkHeaderCellDef class="student-header">Студент</th>
-        <td cdk-cell *cdkCellDef="let row" class="student-cell"
-            [title]="row.displayName">
-          {{ row.displayName }}
-        </td>
-      </ng-container>
-
-      <!-- Dynamic date/lesson columns -->
-      @for (col of columns(); track col.id) {
-        <ng-container [cdkColumnDef]="col.id">
-          <th cdk-header-cell *cdkHeaderCellDef class="date-header"
-              [class.today-column]="col.isToday">
-            <div class="date-label">{{ col.displayDate }}</div>
-            <div class="lesson-label">Пара {{ col.lessonNumber }}</div>
+  <table class="journal-table">
+    <thead>
+      <tr>
+        <th class="student-column student-column--head">Студент</th>
+        @for (col of columns(); track col.id) {
+          <th class="date-column" [class.today-column]="col.isToday">
+            <span class="date-column__weekday">{{ col.weekday }}</span>
+            <span class="date-column__date">{{ col.displayDate }}</span>
+            <span class="date-column__lesson">Пара {{ col.lessonNumber }}</span>
           </th>
-          <td cdk-cell *cdkCellDef="let row" class="status-cell">
-            <app-journal-cell [cell]="getCellFor(row, col.date, col.lessonNumber)" />
+        }
+        <th class="stat-cell stat-cell--head">Статистика</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of dataSource(); track row.userId) {
+        @let stats = getStats(row.userId);
+        <tr class="student-row">
+          <td class="student-column" [title]="row.displayName">{{ row.displayName }}</td>
+          @for (col of columns(); track col.id) {
+            <td class="status-cell">
+              <app-journal-cell [cell]="getCellFor(row, col.id)" />
+            </td>
+          }
+          <td
+            class="stat-cell"
+            [class.stat-cell--good]="stats.percent >= 80"
+            [class.stat-cell--warn]="stats.percent >= 50 && stats.percent < 80"
+            [class.stat-cell--bad]="stats.percent < 50"
+          >
+            <span class="stat-cell__percent">{{ stats.percent }}%</span>
+            <span class="stat-cell__detail">{{ stats.attended }}/{{ stats.total }}</span>
           </td>
-        </ng-container>
+        </tr>
       }
-
-      <tr cdk-header-row *cdkHeaderRowDef="displayedColumns(); sticky: true"></tr>
-      <tr cdk-row *cdkRowDef="let row; columns: displayedColumns();"
-          [class.even-row]="isEvenRow(row)"></tr>
-    </table>
-  </cdk-virtual-scroll-viewport>
+    </tbody>
+  </table>
 </div>

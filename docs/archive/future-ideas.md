@@ -5,6 +5,123 @@
 
 ---
 
+### Notification surface parity для STUDENT / HEADMAN
+
+**Симптом (аудит 2026-05-04):**
+Уведомления для ролей студент/староста сейчас расходятся между каналами:
+Telegram-ботом, PWA Web Push/live-center, web-panel live bell и
+серверной `notification_history`. Из-за этого пользователь может получить
+событие в одном месте, но не увидеть его в другом, а после F5/релогина
+часть live-событий пропадает из истории.
+
+**Текущее состояние по каналам:**
+
+Telegram (`notification-bot`) шлёт личные сообщения пользователям с
+привязанным `telegram_id`:
+- всем студентам группы, включая старосту как участника группы:
+  `lesson.started`, `lesson.reminder`, `lesson.cancelled`,
+  `lesson.one_off.created`, `lesson.one_off.cancelled`,
+  `homework.published`, `homework.updated`, `group.renamed`,
+  `group.archived`;
+- конкретному студенту: `excuse.decided`, `late_checkin.decided`,
+  `attendance.marked` при ручной правке старостой;
+- только старостам группы: `excuse.requested`, `late_checkin.requested`
+  с inline approve/reject кнопками;
+- system-only: `otp.requested` / `otp.verified` для логина.
+
+PWA Web Push (`notification-web`) сейчас ближе всего к полному набору:
+- всем подписчикам группы: `lesson.started`, `lesson.reminder`,
+  `lesson.cancelled`, `lesson.one_off.created`,
+  `lesson.one_off.cancelled`, `homework.published`,
+  `homework.updated`, `group.renamed`, `group.archived`;
+- только подпискам старост: `excuse.requested`,
+  `late_checkin.requested`;
+- только конкретному `payload.user_id`: `excuse.decided`,
+  `late_checkin.decided`, `attendance.marked`;
+- `attendance.marked` пушится только при `marked_by == "headman"`.
+
+PWA live-center через STOMP хранит в `sessionStorage`:
+`lesson.started`, `lesson.reminder`, `lesson.cancelled`,
+`lesson.one_off.created`, `lesson.one_off.cancelled`,
+`homework.published`, `homework.updated`, `late_checkin.requested`,
+`late_checkin.decided`, `excuse.requested`, `excuse.decided`,
+`attendance.marked`, `group.renamed`, `group.archived`.
+
+Web-panel live bell через STOMP хранит только:
+`lesson.started`, `lesson.reminder`, `lesson.cancelled`,
+`homework.published`, `homework.updated`, `attendance.marked`,
+`late_checkin.requested`, `late_checkin.decided`,
+`excuse.requested`, `excuse.decided`.
+
+Серверная история `notification_history` persist'ит только:
+`EXCUSE_REQUESTED`, `EXCUSE_APPROVED`, `EXCUSE_REJECTED`,
+`LATE_CHECKIN_REQUESTED`, `LATE_CHECKIN_APPROVED`,
+`LATE_CHECKIN_REJECTED`, `ATTENDANCE_MARKED_BY_HEADMAN`.
+Broadcast-события (`lesson.*`, `homework.*`, `group.*`) сейчас в
+server-side history не попадают.
+
+**Главные расхождения:**
+
+1. **Web-panel отстаёт от PWA/TG:** в `NotificationCenterService.STORED_TYPES`
+   нет `lesson.one_off.created`, `lesson.one_off.cancelled`,
+   `group.renamed`, `group.archived`. При этом категории `schedule`
+   и `group` в web-panel prefs уже есть, но события не сохраняются.
+2. **Server history уже live/push:** пары, напоминания, отмены, ДЗ,
+   разовые пары и изменения группы приходят live/push, но не переживают
+   F5/релогин, потому что не persist'ятся.
+3. **Headman request history адресована не тому пользователю:** для
+   `excuse.requested` и `late_checkin.requested` history consumer берёт
+   `payload.user_id`, то есть студента-заявителя. По смыслу эти
+   уведомления адресованы старостам группы, поэтому староста получает
+   live/TG/push, но не получает запись в своей persistent history.
+4. **`lesson.reminder` фильтруется по-разному:** Telegram шлёт только
+   тем, у кого ещё активен reminder state в Redis; PWA/web push и
+   web-panel получают group fanout без per-user фильтра "уже отметился".
+5. **Настройки уведомлений не едины:** Telegram prefs живут в Redis у
+   бота, PWA/web prefs живут в `localStorage`, backend Web Push не знает
+   про клиентские категории/quiet hours.
+6. **`ATTENDANCE_RED_ZONE` есть в `NotificationType`, но не реализован
+   как реальное notification event.** Сейчас red-zone — UI/metrics
+   история, а не доставка уведомлений.
+
+**Что сделать позже:**
+
+1. Завести single source of truth для notification-routing:
+   `event_type -> recipients -> channels -> category -> persistent?`.
+   Лучше держать это рядом с `notification-service`, а не дублировать
+   вручную в bot/PWA/web-panel.
+2. Расширить web-panel `STORED_TYPES`, formatting и routes на
+   `lesson.one_off.*` и `group.*`, чтобы web-panel не отставал от PWA.
+3. Решить модель persistent history:
+   - либо явно считать history только targeted/user-facing событиями и
+     убрать misleading маппинги `LESSON_*`/`ATTENDANCE_RED_ZONE` из enum/UI;
+   - либо persist'ить broadcast-события per recipient, включая fanout по
+     членам группы, с нормальной unread-семантикой.
+4. Исправить `excuse.requested` / `late_checkin.requested` history:
+   писать записи старостам-получателям, а не студенту-заявителю.
+   Понадобится fanout на user IDs старост группы через academic gRPC/cache.
+5. Синхронизировать категории и quiet hours между Telegram, PWA, web-panel
+   и Web Push. Минимально — хранить user prefs на backend, а каналы читать
+   один и тот же источник.
+6. Определиться с `lesson.reminder`: либо per-user delivery во всех
+   каналах, либо явно документировать что web/PWA reminder — group-level.
+7. Если нужен red-zone alert, добавить отдельное событие
+   `attendance.red_zone.entered` или аналогичный targeted event вместо
+   мёртвого enum-only `ATTENDANCE_RED_ZONE`.
+
+**Оценка работы:**
+~2-4 дня на первый нормальный срез: web-panel parity + history fix для
+headman requests + базовый routing manifest. Полная унификация prefs и
+per-recipient persistent fanout — ближе к 1 неделе, потому что затронет
+notification-service, bot, PWA и web-panel.
+
+**Когда делать:**
+После стабилизации текущего v0.0.x. Это не блокирует core-flow, но станет
+заметным, когда пользователи начнут полагаться на страницу уведомлений как
+на долговременный журнал, а не только на live-баннеры.
+
+---
+
 ## Безопасность
 
 ### Magic-link для первого входа (вместо plaintext initial_password)

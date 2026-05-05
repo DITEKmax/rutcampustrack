@@ -8,59 +8,72 @@
     </div>
   </header>
 
-  <!-- Filters -->
   <div class="page-card">
     <div class="page-filters">
       <mat-form-field class="w-48">
         <mat-label>Группа</mat-label>
-        <mat-select (selectionChange)="onGroupChange($event.value)">
+        <mat-select [value]="selectedGroupId()" (selectionChange)="onGroupChange($event.value)">
           @for (g of groups(); track g.id) {
             <mat-option [value]="g.id">{{ g.name }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field class="w-48">
+      <mat-form-field class="w-56">
         <mat-label>Предмет</mat-label>
-        <mat-select (selectionChange)="selectedSubjectId.set($event.value)">
+        <mat-select [value]="selectedSubjectId()" (selectionChange)="onSubjectChange($event.value)">
           @for (s of subjects(); track s.id) {
-            <mat-option [value]="s.id">{{ s.name }}</mat-option>
+            <mat-option [value]="s.id">{{ s.label ?? s.name }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
 
       <mat-form-field class="w-40">
         <mat-label>С</mat-label>
-        <input matInput [matDatepicker]="pickerFrom" [value]="dateFrom()"
-               (dateChange)="dateFrom.set($event.value?.toISOString().slice(0,10) ?? '')">
+        <input
+          matInput
+          [matDatepicker]="pickerFrom"
+          [value]="dateFrom()"
+          (dateChange)="onDateFromChange($event.value)"
+        >
         <mat-datepicker-toggle matIconSuffix [for]="pickerFrom" />
         <mat-datepicker #pickerFrom />
       </mat-form-field>
 
       <mat-form-field class="w-40">
         <mat-label>По</mat-label>
-        <input matInput [matDatepicker]="pickerTo" [value]="dateTo()"
-               (dateChange)="dateTo.set($event.value?.toISOString().slice(0,10) ?? '')">
+        <input
+          matInput
+          [matDatepicker]="pickerTo"
+          [value]="dateTo()"
+          (dateChange)="onDateToChange($event.value)"
+        >
         <mat-datepicker-toggle matIconSuffix [for]="pickerTo" />
         <mat-datepicker #pickerTo />
       </mat-form-field>
 
-      <button type="button"
-              class="btn-brand"
-              [disabled]="!canApply() || loading()"
-              (click)="loadJournal()">
+      <button
+        type="button"
+        class="btn-brand"
+        [disabled]="!canApply() || loading()"
+        (click)="loadJournal()"
+      >
         <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
         Показать журнал
       </button>
     </div>
+
+    @if (dateRangeInvalid()) {
+      <p class="text-sm" style="color: var(--accent-danger); margin-top: var(--space-2);">
+        Дата начала должна быть не позже даты окончания.
+      </p>
+    }
   </div>
 
-  <!-- Loading -->
   @if (loading()) {
-    <p class="text-sm" style="color: var(--text-secondary);">Загрузка журнала…</p>
+    <p class="text-sm" style="color: var(--text-secondary);">Загрузка журнала...</p>
   }
 
-  <!-- Error -->
   @if (error()) {
     <div class="page-error" role="alert">
       <i class="ph ph-warning-circle" aria-hidden="true"></i>
@@ -71,7 +84,6 @@
     </div>
   }
 
-  <!-- Empty state -->
   @if (!journalData() && !loading() && !error()) {
     <div class="page-card">
       <div class="page-empty">
@@ -86,7 +98,6 @@
     </div>
   }
 
-  <!-- Grid -->
   @if (journalData()) {
     <div class="page-card page-card--flush">
       <app-journal-grid [journalData]="journalData()!" />

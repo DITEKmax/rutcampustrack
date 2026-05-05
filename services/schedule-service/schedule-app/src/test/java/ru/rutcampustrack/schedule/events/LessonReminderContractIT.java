@@ -23,6 +23,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -86,6 +87,29 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
         assertThat(errors)
                 .as("lesson.reminder payload должен соответствовать event-schemas/lesson.reminder.json")
                 .isEmpty();
+        assertThat(reminder.get().payload()).contains("\"phase\":\"midpoint\"");
+    }
+
+    @Test
+    void publishedNearEndReminderPayload_matchesSchema() throws Exception {
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
+
+        Instant fixed = ZonedDateTime.of(2026, 4, 3, 10, 1, 0, 0, MOSCOW).toInstant();
+        when(clock.instant()).thenReturn(fixed);
+        when(clock.getZone()).thenReturn(MOSCOW);
+
+        job.runReminders();
+
+        Optional<OutboxRecord> reminder = outboxStorage.findPending(100).stream()
+                .filter(r -> "lesson.reminder".equals(r.eventType()))
+                .findFirst();
+        assertThat(reminder).isPresent();
+
+        Set<ValidationMessage> errors = EventSchemaValidator.validate(
+                "lesson.reminder.json", reminder.get().payload());
+        assertThat(errors).isEmpty();
+        assertThat(reminder.get().payload()).contains("\"phase\":\"near_end\"");
     }
 
     @Test
@@ -125,6 +149,24 @@ class LessonReminderContractIT extends AbstractScheduleIntegrationTest {
         boolean any = outboxStorage.findPending(100).stream()
                 .anyMatch(r -> "lesson.reminder".equals(r.eventType()));
         assertThat(any).isFalse();
+    }
+
+    @Test
+    void midpointIsNotCaughtUpInsideNearEndWindow() {
+        ScheduleItem item = createScheduleItem(LocalTime.of(8, 30), LocalTime.of(10, 5));
+        createLesson(item.getId(), LocalDate.of(2026, 4, 3), LessonStatus.ACTIVE);
+
+        Instant fixed = ZonedDateTime.of(2026, 4, 3, 10, 1, 0, 0, MOSCOW).toInstant();
+        when(clock.instant()).thenReturn(fixed);
+        when(clock.getZone()).thenReturn(MOSCOW);
+
+        job.runReminders();
+
+        List<OutboxRecord> reminders = outboxStorage.findPending(100).stream()
+                .filter(r -> "lesson.reminder".equals(r.eventType()))
+                .toList();
+        assertThat(reminders).hasSize(1);
+        assertThat(reminders.get(0).payload()).contains("\"phase\":\"near_end\"");
     }
 
     private ScheduleItem createScheduleItem(LocalTime startTime, LocalTime endTime) {

@@ -57,6 +57,9 @@ dependencies {
     // NEW: MongoDB for push_subscriptions
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
+    // Shared user notification prefs for notification-web and notification-bot.
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
     // M10 G4 — Caffeine local L1 cache для unread-count endpoint.
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")

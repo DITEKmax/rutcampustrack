@@ -1,7 +1,5 @@
-import { TestBed } from '@angular/core/testing';
-import { Component } from '@angular/core';
-import { render, screen } from '@testing-library/angular';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { render } from '@testing-library/angular';
+import { describe, it, expect } from 'vitest';
 import { JournalGridComponent } from './journal-grid.component';
 import type { JournalResponse } from '../types';
 
@@ -36,7 +34,7 @@ describe('JournalGridComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('columns() signal produces correct column IDs from 2 dates × 2 lessons = 4 columns', async () => {
+  it('columns() signal produces correct column IDs from 2 dates x 2 lessons = 4 columns', async () => {
     const { fixture } = await render(JournalGridComponent, {
       componentInputs: { journalData: mockJournal },
     });
@@ -48,12 +46,12 @@ describe('JournalGridComponent', () => {
     expect(columns.map(c => c.id)).toContain('2026-03-16_lesson2');
   });
 
-  it('getCellFor() returns correct cell for matching date and lessonNumber', async () => {
+  it('getCellFor() returns correct cell for matching column', async () => {
     const { fixture } = await render(JournalGridComponent, {
       componentInputs: { journalData: mockJournal },
     });
     const row = mockJournal.students[0];
-    const cell = fixture.componentInstance.getCellFor(row, '2026-03-15', 1);
+    const cell = fixture.componentInstance.getCellFor(row, '2026-03-15_lesson1');
     expect(cell).not.toBeNull();
     expect(cell?.status).toBe('present');
     expect(cell?.symbol).toBe('+');
@@ -63,17 +61,31 @@ describe('JournalGridComponent', () => {
     const { fixture } = await render(JournalGridComponent, {
       componentInputs: { journalData: mockJournal },
     });
-    const row = mockJournal.students[1]; // empty records
-    const cell = fixture.componentInstance.getCellFor(row, '2026-03-15', 1);
+    const row = mockJournal.students[1];
+    const cell = fixture.componentInstance.getCellFor(row, '2026-03-15_lesson1');
     expect(cell).toBeNull();
   });
 
-  it('displayedColumns() starts with "student" followed by column IDs', async () => {
+  it('getStats() returns per-student attendance statistics', async () => {
     const { fixture } = await render(JournalGridComponent, {
       componentInputs: { journalData: mockJournal },
     });
-    const displayedColumns = fixture.componentInstance.displayedColumns();
-    expect(displayedColumns[0]).toBe('student');
-    expect(displayedColumns.length).toBe(5); // 1 student + 4 date columns
+    const stats = fixture.componentInstance.getStats(1);
+    expect(stats.total).toBe(4);
+    expect(stats.attended).toBe(3);
+    expect(stats.absent).toBe(1);
+    expect(stats.excused).toBe(1);
+    expect(stats.percent).toBe(75);
+  });
+
+  it('renders the familiar matrix headers and sticky statistics column', async () => {
+    const { fixture } = await render(JournalGridComponent, {
+      componentInputs: { journalData: mockJournal },
+    });
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.student-column--head')?.textContent?.trim()).toBe('Студент');
+    expect(element.querySelector('.stat-cell--head')?.textContent?.trim()).toBe('Статистика');
+    expect(element.querySelectorAll('.date-column').length).toBe(4);
   });
 });

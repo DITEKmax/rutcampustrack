@@ -40,5 +40,15 @@ public class PushMongoConfig {
         ops.ensureIndex(new Index()
                 .on("last_seen", Sort.Direction.ASC)
                 .named("idx_last_seen"));
+
+        IndexOperations reminderOps = mongoTemplate.indexOps("reminder_attendance_state");
+        reminderOps.ensureIndex(new Index()
+                .on("lesson_id", Sort.Direction.ASC)
+                .on("user_id", Sort.Direction.ASC)
+                .unique()
+                .named("uniq_lesson_user"));
+        reminderOps.ensureIndex(new Index()
+                .on("lesson_id", Sort.Direction.ASC)
+                .named("idx_reminder_lesson"));
     }
 }

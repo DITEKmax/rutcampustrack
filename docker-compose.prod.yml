@@ -410,6 +410,9 @@ services:
       # (notification.ws-ticket.internal-issuer-secret в application.yml).
       # Должен совпадать с api-gateway / auth-service INTERNAL_ISSUER_SECRET.
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       JWT_PUBLIC_KEY_PATH: /keys/public.key
       NOTIFICATION_WS_ALLOWED_ORIGINS: ${NOTIFICATION_WS_ALLOWED_ORIGINS:-https://ruttrack.site}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
@@ -433,6 +436,8 @@ services:
       - private_net
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       mongo-attendance:
         condition: service_healthy

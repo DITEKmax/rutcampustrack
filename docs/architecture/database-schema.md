@@ -250,6 +250,8 @@ CREATE TABLE lessons (
     cancel_reason       VARCHAR(512),                      -- причина отмены
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     closed_at           TIMESTAMPTZ,
+    reminder_midpoint_sent_at TIMESTAMPTZ,                  -- lesson.reminder phase=midpoint уже опубликован
+    reminder_near_end_sent_at TIMESTAMPTZ,                  -- lesson.reminder phase=near_end уже опубликован
 
     UNIQUE (schedule_item_id, date)
 );
@@ -439,6 +441,37 @@ db.notification_history.createIndex(
 );
 ```
 
+### Коллекция: reminder_attendance_state
+
+Техническая коллекция Notification Web для server-side фильтрации `lesson.reminder`.
+`attendance.marked` upsert'ит состояние студента по паре, а `lesson.closed`,
+`lesson.cancelled` и `lesson.deleted` удаляют состояние пары. Коллекция не является
+историей посещаемости; source of truth остаётся в `attendance_db`.
+
+```javascript
+{
+  _id:       ObjectId,
+  lesson_id: NumberLong,
+  user_id:   NumberLong,
+  status:    String,      // present / absent / excused / ...
+  marked_at: ISODate
+}
+```
+
+Индексы создаются программно в `PushMongoConfig`:
+
+```javascript
+db.reminder_attendance_state.createIndex(
+  { lesson_id: 1, user_id: 1 },
+  { name: "uniq_lesson_user", unique: true }
+);
+
+db.reminder_attendance_state.createIndex(
+  { lesson_id: 1 },
+  { name: "idx_lesson" }
+);
+```
+
 **TTL caveat:** Mongo TTL изменяется только через `collMod` после
 создания индекса. Изменение env var НЕ перезаписывает существующий
 индекс на работающем volume (отложено в `docs/archive/future-ideas.md` —
@@ -459,7 +492,7 @@ Compromise одного credential'а не даёт доступа к данны
 
 ---
 
-## Redis (Auth Service + Academic Service кэш)
+## Redis (Auth Service + Academic Service кэш + Notification preferences)
 
 ### Auth Service — эфемерные данные
 
@@ -486,6 +519,33 @@ campus:geofence                   → JSON               TTL: 60 мин
 ```
 rate:checkin:{user_id}            → counter            TTL: 60 сек (макс. 3 попытки/мин)
 checkin:lock:{lesson_id}:{user_id} → "1"               TTL: 5 сек (дедупликация двойного клика)
+```
+
+### Notification Service — настройки уведомлений
+
+```
+notif:prefs:user:{user_id}         → hash               TTL: нет
+  lessons                          → "on" | "off"
+  reminders                        → "on" | "off"
+  homework                         → "on" | "off"
+  tickets                          → "on" | "off"
+  schedule                         → "on" | "off"
+  group                            → "on" | "off"
+  mute_until                       → ISO-8601 Instant   пусто/нет поля = не заглушено
+```
+
+Этот hash общий для PWA/Web Push и Telegram. `lesson.started` и
+`lesson.reminder` относятся к категории `reminders`; при недоступности Redis
+Notification Web fail-open'ит доставку, чтобы outage настроек не ломал срочные
+уведомления.
+
+### Notification Bot — локальные legacy-настройки и message ids
+
+```
+bot:notif:{telegram_id}            → "on" | "off"       TTL: нет
+bot:notif:cat:{telegram_id}        → hash categories    TTL: нет
+bot:notif:mute:{telegram_id}       → ISO-8601 Instant   TTL: нет
+reminder:lesson:user:{...}         → Telegram message ids для cleanup
 ```
 
 ---
@@ -583,7 +643,8 @@ public class LowercaseEnumConverter<E extends Enum<E>> implements AttributeConve
 | `attendances` (коллекция) | attendance_db (MongoDB) | Attendance Service |
 | `notification_history` (коллекция) | notification_db (MongoDB) | Notification Web (M10) |
 | `push_subscriptions` (коллекция) | notification_db (MongoDB) | Notification Web |
-| Redis все ключи | Redis | Auth + Academic + Attendance |
+| `reminder_attendance_state` (коллекция) | notification_db (MongoDB) | Notification Web |
+| Redis все ключи | Redis | Auth + Academic + Attendance + Notification |
 
 ---
 

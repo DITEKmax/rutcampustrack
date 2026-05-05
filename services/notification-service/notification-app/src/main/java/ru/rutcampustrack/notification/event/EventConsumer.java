@@ -2,9 +2,11 @@ package ru.rutcampustrack.notification.event;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.notification.push.WebPushDeliveryService;
+import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
@@ -26,13 +28,23 @@ public class EventConsumer extends AbstractEventConsumer {
     private final SimpMessagingTemplate messagingTemplate;
     private final WebPushDeliveryService webPushDeliveryService;
     private final IdempotencyGuard idempotencyGuard;
+    private final ReminderAttendanceStateService reminderAttendanceStateService;
+
+    @Autowired
+    public EventConsumer(SimpMessagingTemplate messagingTemplate,
+                         WebPushDeliveryService webPushDeliveryService,
+                         IdempotencyGuard idempotencyGuard,
+                         ReminderAttendanceStateService reminderAttendanceStateService) {
+        this.messagingTemplate = messagingTemplate;
+        this.webPushDeliveryService = webPushDeliveryService;
+        this.idempotencyGuard = idempotencyGuard;
+        this.reminderAttendanceStateService = reminderAttendanceStateService;
+    }
 
     public EventConsumer(SimpMessagingTemplate messagingTemplate,
                          WebPushDeliveryService webPushDeliveryService,
                          IdempotencyGuard idempotencyGuard) {
-        this.messagingTemplate = messagingTemplate;
-        this.webPushDeliveryService = webPushDeliveryService;
-        this.idempotencyGuard = idempotencyGuard;
+        this(messagingTemplate, webPushDeliveryService, idempotencyGuard, null);
     }
 
     @RabbitListener(queues = "notification-web.events")
@@ -58,6 +70,8 @@ public class EventConsumer extends AbstractEventConsumer {
                 return;
             }
 
+            updateReminderAttendanceState(eventType, payload);
+
             Number groupIdNum = (Number) payload.get("group_id");
             if (groupIdNum == null) {
                 log.debug("Event {} has no group_id in payload, skipping WebSocket routing", eventType);
@@ -82,5 +96,18 @@ public class EventConsumer extends AbstractEventConsumer {
                 log.debug("Triggered async push for {} to group {}", eventType, groupId);
             }
         });
+    }
+
+    private void updateReminderAttendanceState(String eventType, Map<String, Object> payload) {
+        if (reminderAttendanceStateService == null) {
+            return;
+        }
+        if ("attendance.marked".equals(eventType)) {
+            reminderAttendanceStateService.recordMarked(payload);
+        } else if ("lesson.closed".equals(eventType)
+                || "lesson.cancelled".equals(eventType)
+                || "lesson.deleted".equals(eventType)) {
+            reminderAttendanceStateService.deleteLessonState(payload);
+        }
     }
 }

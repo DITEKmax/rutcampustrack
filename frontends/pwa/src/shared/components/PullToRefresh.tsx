@@ -71,9 +71,18 @@ export function PullToRefresh({
       return (document.scrollingElement as HTMLElement | null) ?? document.documentElement
     }
 
+    const shouldIgnoreTarget = (target: EventTarget | null): boolean =>
+      target instanceof Element &&
+      target.closest('[data-pull-to-refresh-ignore="true"]') !== null
+
     const onTouchStart = (e: TouchEvent) => {
       if (phase === 'refreshing') return
       if (e.touches.length !== 1) return
+      if (shouldIgnoreTarget(e.target)) {
+        startYRef.current = null
+        capturedRef.current = false
+        return
+      }
       const scrollable = findScrollable()
       if (scrollable && scrollable.scrollTop > 0) {
         startYRef.current = null

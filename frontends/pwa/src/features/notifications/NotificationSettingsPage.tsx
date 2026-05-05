@@ -1,12 +1,19 @@
 import { useNavigate } from 'react-router'
-import { ArrowLeft, MoonStars } from '@phosphor-icons/react'
+import { useEffect } from 'react'
+import { ArrowLeft, BellSlash, MoonStars } from '@phosphor-icons/react'
 import {
   CATEGORY_LABELS,
   DEFAULT_PREFS,
+  isMutedNow,
+  loadPrefs,
   useNotificationPrefs,
   type NotificationCategory,
   type NotificationPrefs,
 } from './notificationPrefs'
+import {
+  fetchNotificationPreferences,
+  updateNotificationPreferences,
+} from './notificationsApi'
 
 /**
  * Настройки уведомлений. Хранятся в localStorage (клиентская фильтрация),
@@ -24,6 +31,40 @@ import {
 export default function NotificationSettingsPage() {
   const navigate = useNavigate()
   const [prefs, setPrefs] = useNotificationPrefs()
+  const mutedActive = isMutedNow(prefs)
+
+  useEffect(() => {
+    let mounted = true
+    fetchNotificationPreferences()
+      .then((serverPrefs) => {
+        if (!mounted) return
+        const current = loadPrefs()
+        setPrefs({
+          ...current,
+          categories: {
+            ...current.categories,
+            ...serverPrefs.categories,
+          },
+          mutedUntil: serverPrefs.mutedUntil,
+        })
+      })
+      .catch(() => {
+        // Settings remain usable offline with local prefs.
+      })
+    return () => {
+      mounted = false
+    }
+  }, [setPrefs])
+
+  const syncPrefs = (next: NotificationPrefs) => {
+    setPrefs(next)
+    updateNotificationPreferences({
+      categories: next.categories,
+      mutedUntil: next.mutedUntil,
+    }).catch(() => {
+      // Local state is still useful offline; server sync will retry on next edit.
+    })
+  }
 
   const toggleCategory = (category: NotificationCategory) => {
     const next: NotificationPrefs = {
@@ -33,7 +74,7 @@ export default function NotificationSettingsPage() {
         [category]: !prefs.categories[category],
       },
     }
-    setPrefs(next)
+    syncPrefs(next)
   }
 
   const toggleQuietHours = () => {
@@ -52,7 +93,16 @@ export default function NotificationSettingsPage() {
     })
   }
 
-  const resetAll = () => setPrefs(DEFAULT_PREFS)
+  const setPause = (days: number) => {
+    const mutedUntil = new Date(
+      Date.now() + days * 24 * 60 * 60 * 1000,
+    ).toISOString()
+    syncPrefs({ ...prefs, mutedUntil })
+  }
+
+  const clearPause = () => syncPrefs({ ...prefs, mutedUntil: null })
+
+  const resetAll = () => syncPrefs(DEFAULT_PREFS)
 
   const categories: NotificationCategory[] = [
     'lessons',
@@ -140,6 +190,77 @@ export default function NotificationSettingsPage() {
           borderColor: 'var(--border-subtle)',
         }}
       >
+        <div className="flex items-center gap-2 px-4 pt-4">
+          <BellSlash
+            size={18}
+            weight="duotone"
+            style={{ color: 'var(--accent-primary)' }}
+          />
+          <h2
+            className="text-sm font-semibold"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Пауза
+          </h2>
+        </div>
+        <p
+          className="px-4 pt-1 text-xs"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {mutedActive && prefs.mutedUntil
+            ? `До ${formatMutedUntil(prefs.mutedUntil)}`
+            : 'Без временной паузы'}
+        </p>
+        <div className="grid grid-cols-2 gap-2 px-4 py-3">
+          <button
+            type="button"
+            onClick={() => setPause(1)}
+            className="rounded-lg border px-3 py-2 text-sm font-medium"
+            style={{
+              background: 'var(--bg-primary)',
+              borderColor: 'var(--border-default)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            На день
+          </button>
+          <button
+            type="button"
+            onClick={() => setPause(7)}
+            className="rounded-lg border px-3 py-2 text-sm font-medium"
+            style={{
+              background: 'var(--bg-primary)',
+              borderColor: 'var(--border-default)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            На неделю
+          </button>
+          <button
+            type="button"
+            onClick={clearPause}
+            className="col-span-2 rounded-lg border px-3 py-2 text-sm font-medium"
+            disabled={!mutedActive}
+            style={{
+              background: mutedActive
+                ? 'var(--bg-primary)'
+                : 'var(--bg-tertiary)',
+              borderColor: 'var(--border-default)',
+              color: mutedActive ? 'var(--text-primary)' : 'var(--text-muted)',
+            }}
+          >
+            Снять паузу
+          </button>
+        </div>
+      </section>
+
+      <section
+        className="rounded-2xl border"
+        style={{
+          background: 'var(--bg-secondary)',
+          borderColor: 'var(--border-subtle)',
+        }}
+      >
         <div className="flex items-center justify-between gap-4 px-4 pt-4">
           <div className="flex items-center gap-2">
             <MoonStars
@@ -193,6 +314,17 @@ export default function NotificationSettingsPage() {
       </button>
     </div>
   )
+}
+
+function formatMutedUntil(value: string): string {
+  const date = new Date(value)
+  if (!Number.isFinite(date.getTime())) return value
+  return date.toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function Toggle({

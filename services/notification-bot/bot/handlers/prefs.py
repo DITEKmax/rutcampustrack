@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 
 from aiogram import F, Router
 from aiogram.types import (
@@ -41,6 +42,9 @@ _CATEGORY_LABELS: dict[str, str] = {
 
 _GLOBAL_CB = "prefs:global:toggle"
 _CAT_CB_PREFIX = "prefs:cat:"
+_MUTE_DAY_CB = "prefs:mute:day"
+_MUTE_WEEK_CB = "prefs:mute:week"
+_MUTE_CLEAR_CB = "prefs:mute:clear"
 
 
 def main_keyboard(notifications_enabled: bool | None = None) -> ReplyKeyboardMarkup:
@@ -67,8 +71,11 @@ def _checkbox(enabled: bool) -> str:
 async def _build_menu(prefs_client: NotificationPrefsClient, telegram_id: int) -> tuple[str, InlineKeyboardMarkup]:
     global_on = await prefs_client.is_global_enabled(telegram_id)
     categories = await prefs_client.get_categories(telegram_id)
+    muted_until = await prefs_client.get_muted_until(telegram_id)
 
     header = "🔔 Уведомления включены" if global_on else "🔕 Уведомления глобально выключены"
+    if muted_until is not None:
+        header = f"{header}\nПауза до {_format_mute_until(muted_until)}"
     body = (
         "Выберите, какие уведомления хотите получать в этом боте. "
         "Настройки для браузера и PWA — отдельные, в приложении."
@@ -83,6 +90,14 @@ async def _build_menu(prefs_client: NotificationPrefsClient, telegram_id: int) -
             )
         ]
     ]
+    rows.append(
+        [
+            InlineKeyboardButton(text="Пауза на день", callback_data=_MUTE_DAY_CB),
+            InlineKeyboardButton(text="Пауза на неделю", callback_data=_MUTE_WEEK_CB),
+        ]
+    )
+    if muted_until is not None:
+        rows.append([InlineKeyboardButton(text="Снять паузу", callback_data=_MUTE_CLEAR_CB)])
     if global_on:
         for category in CATEGORIES:
             enabled = categories.get(category, True)
@@ -96,6 +111,10 @@ async def _build_menu(prefs_client: NotificationPrefsClient, telegram_id: int) -
                 ]
             )
     return text, InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def _format_mute_until(value) -> str:
+    return value.strftime("%d.%m %H:%M UTC")
 
 
 @prefs_router.message(F.text == SETTINGS_LABEL)
@@ -120,6 +139,44 @@ async def cb_toggle_global(callback: CallbackQuery, prefs_client: NotificationPr
         await callback.message.edit_text(text, reply_markup=markup)
     except Exception:
         logger.debug("edit_text failed for prefs menu", exc_info=True)
+    await callback.answer(verdict)
+
+
+@prefs_router.callback_query(F.data == _MUTE_DAY_CB)
+async def cb_mute_day(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
+    await _set_mute(callback, prefs_client, timedelta(days=1), "Пауза включена на день")
+
+
+@prefs_router.callback_query(F.data == _MUTE_WEEK_CB)
+async def cb_mute_week(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
+    await _set_mute(callback, prefs_client, timedelta(days=7), "Пауза включена на неделю")
+
+
+@prefs_router.callback_query(F.data == _MUTE_CLEAR_CB)
+async def cb_mute_clear(callback: CallbackQuery, prefs_client: NotificationPrefsClient) -> None:
+    telegram_id = callback.from_user.id
+    await prefs_client.clear_mute(telegram_id)
+    text, markup = await _build_menu(prefs_client, telegram_id)
+    try:
+        await callback.message.edit_text(text, reply_markup=markup)
+    except Exception:
+        logger.debug("edit_text failed for prefs mute clear", exc_info=True)
+    await callback.answer("Пауза снята")
+
+
+async def _set_mute(
+    callback: CallbackQuery,
+    prefs_client: NotificationPrefsClient,
+    duration: timedelta,
+    verdict: str,
+) -> None:
+    telegram_id = callback.from_user.id
+    await prefs_client.mute_for(telegram_id, duration)
+    text, markup = await _build_menu(prefs_client, telegram_id)
+    try:
+        await callback.message.edit_text(text, reply_markup=markup)
+    except Exception:
+        logger.debug("edit_text failed for prefs mute", exc_info=True)
     await callback.answer(verdict)
 
 

@@ -11,10 +11,12 @@ import type {
   AttendanceStatus,
   GroupResponse,
   PagedResponse,
+  SemesterResponse,
   SubjectResponse,
+  SubjectType,
 } from '../../../api/schema';
 
-export type { GroupResponse, PagedResponse, SubjectResponse };
+export type { GroupResponse, PagedResponse, SemesterResponse, SubjectResponse, SubjectType };
 
 export interface JournalResponse {
   groupId: number;
@@ -53,6 +55,8 @@ export interface AssignmentResponse {
 export interface SubjectOption {
   id: number;
   name: string;
+  type?: SubjectType | null;
+  label?: string;
 }
 
 /** Column definition for the journal grid */

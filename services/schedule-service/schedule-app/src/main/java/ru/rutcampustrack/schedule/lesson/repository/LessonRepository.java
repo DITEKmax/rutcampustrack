@@ -228,10 +228,21 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
           AND l.reminder_midpoint_sent_at IS NULL
           AND (l.date + si.start_time + (si.end_time - si.start_time) / 2)
                   <= CAST(:now AS timestamp)
-          AND (l.date + si.end_time) > CAST(:now AS timestamp)
+          AND (l.date + si.end_time - INTERVAL '5 minutes') > CAST(:now AS timestamp)
         ORDER BY l.date, si.start_time
         """, nativeQuery = true)
     List<Lesson> findActiveDueForMidpointReminder(@Param("now") LocalDateTime now);
+
+    @Query(value = """
+        SELECT l.* FROM lessons l
+        JOIN schedule_items si ON si.id = l.schedule_item_id
+        WHERE l.status::text = 'active'
+          AND l.reminder_near_end_sent_at IS NULL
+          AND (l.date + si.end_time - INTERVAL '5 minutes') <= CAST(:now AS timestamp)
+          AND (l.date + si.end_time) > CAST(:now AS timestamp)
+        ORDER BY l.date, si.end_time
+        """, nativeQuery = true)
+    List<Lesson> findActiveDueForNearEndReminder(@Param("now") LocalDateTime now);
 
     /**
      * Counts lessons whose status is NOT 'planned' (i.e. active/closed/cancelled)

@@ -20,6 +20,14 @@ interface BottomSheetProps {
   maxHeight?: string
   /** Extra class names on the sheet panel. */
   className?: string
+  /** Close when the backdrop is tapped. Default true. */
+  closeOnBackdrop?: boolean
+  /** Close on Escape. Default true. */
+  closeOnEscape?: boolean
+  /** Close on vertical drag/swipe down. Default true. */
+  closeOnSwipeDown?: boolean
+  /** Show the small drag affordance at the top. Default true. */
+  showDragHandle?: boolean
   children: React.ReactNode
 }
 
@@ -47,22 +55,26 @@ export function BottomSheet({
   subtitle,
   maxHeight = '92vh',
   className,
+  closeOnBackdrop = true,
+  closeOnEscape = true,
+  closeOnSwipeDown = true,
+  showDragHandle = true,
   children,
 }: BottomSheetProps) {
   const reduceMotion = useReducedMotion()
   const onDragEnd = useSwipeHandler({
     verticalThreshold: 120,
-    onSwipeDown: onClose,
+    onSwipeDown: closeOnSwipeDown ? onClose : undefined,
   })
 
   useEffect(() => {
-    if (!open) return
+    if (!open || !closeOnEscape) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
+  }, [open, onClose, closeOnEscape])
 
   return (
     <AnimatePresence>
@@ -74,9 +86,11 @@ export function BottomSheet({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: reduceMotion ? 0 : 0.2 }}
-            onClick={onClose}
+            onClick={closeOnBackdrop ? onClose : undefined}
             className="fixed inset-0 z-[var(--z-overlay)] bg-black/55 backdrop-blur-sm"
             aria-hidden="true"
+            data-bottom-sheet-backdrop="true"
+            data-pull-to-refresh-ignore="true"
           />
 
           <motion.div
@@ -91,14 +105,16 @@ export function BottomSheet({
               duration: reduceMotion ? 0 : 0.3,
               ease: [0.16, 1, 0.3, 1],
             }}
-            drag={reduceMotion ? false : 'y'}
+            drag={reduceMotion || !closeOnSwipeDown ? false : 'y'}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.35 }}
-            onDragEnd={onDragEnd}
+            onDragEnd={closeOnSwipeDown ? onDragEnd : undefined}
+            data-bottom-sheet-panel="true"
+            data-pull-to-refresh-ignore="true"
             className={cn(
               'fixed inset-x-0 bottom-0 z-[var(--z-modal)]',
               'rounded-t-[var(--radius-lg)] border-t',
-              'flex flex-col pb-[env(safe-area-inset-bottom)]',
+              'flex flex-col overflow-hidden overscroll-contain pb-[env(safe-area-inset-bottom)]',
               className,
             )}
             style={{
@@ -109,16 +125,18 @@ export function BottomSheet({
             }}
           >
             {/* Drag handle */}
-            <div className="flex justify-center pt-[var(--space-2)] pb-[var(--space-1)]">
-              <span
-                aria-hidden="true"
-                className="block h-1 w-10 rounded-full"
-                style={{ background: 'var(--border-default)' }}
-              />
-            </div>
+            {showDragHandle && (
+              <div className="flex shrink-0 justify-center pt-[var(--space-2)] pb-[var(--space-1)]">
+                <span
+                  aria-hidden="true"
+                  className="block h-1 w-10 rounded-full"
+                  style={{ background: 'var(--border-default)' }}
+                />
+              </div>
+            )}
 
             {heading !== undefined && (
-              <div className="flex items-start gap-[var(--space-3)] px-[var(--space-5)] pb-[var(--space-3)]">
+              <div className="flex shrink-0 items-start gap-[var(--space-3)] px-[var(--space-5)] pb-[var(--space-3)] pt-[var(--space-3)]">
                 <div className="min-w-0 flex-1">
                   <h2
                     className="line-clamp-2 text-[var(--text-lg)] font-semibold leading-snug"
@@ -150,7 +168,7 @@ export function BottomSheet({
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto">{children}</div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
           </motion.div>
         </>
       )}

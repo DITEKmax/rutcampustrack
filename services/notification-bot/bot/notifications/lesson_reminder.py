@@ -31,6 +31,13 @@ async def handle_lesson_reminder(
         logger.warning("lesson.reminder missing required fields: lesson_id or group_id")
         return
 
+    phase = payload.get("phase")
+    reminder_text = (
+        "Пара скоро закончится. Если вы ещё не отметились, сделайте это сейчас."
+        if phase == "near_end"
+        else "Напоминание: отметьтесь на паре!"
+    )
+
     members = await academic_client.get_group_members(group_id)
     queued = 0
     for student in members:
@@ -45,7 +52,7 @@ async def handle_lesson_reminder(
         async def send_and_store(s=student):
             result = await bot.send_message(
                 chat_id=s.telegram_id,
-                text="Напоминание: отметьтесь на паре!",
+                text=reminder_text,
             )
             await redis_client.add_message_id(lesson_id, s.user_id, result.message_id)
 

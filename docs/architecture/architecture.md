@@ -60,11 +60,11 @@
 │  [Notification Web :9094]  Java                                      │
 │     ├── WebSocket push    → Web Panel, PWA (real-time)               │
 │     ├── Web Push adapter  → Service Worker → PWA (background push)   │
-│     └── REST: /push/subscribe, /vapid-public-key                     │
+│     └── REST: /push/*, /vapid-public-key, /preferences               │
 │  [Notification Bot]        Python — Telegram уведомления             │
 │                                                                      │
 │  [RabbitMQ :5672]  ← события от Schedule, Attendance                │
-│  [Redis :6379]     ← OTP, кэш Academic, reminder msgs, VAPID keys  │
+│  [Redis :6379]     ← OTP, кэш Academic, notification prefs, bot msgs │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -74,10 +74,10 @@
 |--------|-----------|---------|-------|----------|
 | Auth Service | ❌ | ❌ | ✅ (OTP, JWT key) | ❌ |
 | Academic Service | ✅ (academic_db) | ❌ | ✅ (кэш) | Publish: `group.updated`, `semester.archived` |
-| Schedule Service | ✅ (schedule_db) | ❌ | ❌ | Publish: `lesson.started`, `lesson.closed` |
+| Schedule Service | ✅ (schedule_db) | ❌ | ❌ | Publish: `lesson.started`, `lesson.reminder`, `lesson.closed` |
 | Attendance Service | ❌ | ✅ (attendance_db) | ❌ | Publish: `attendance.marked`, `attendance.session.closed` |
-| Notification Web | ❌ | ✅ (push_subscriptions) | ✅ (VAPID keys) | Consume: все события |
-| Notification Bot | ❌ | ❌ | ✅ (reminder msgs) | Consume: все события |
+| Notification Web | ❌ | ✅ (`push_subscriptions`, `reminder_attendance_state`) | ✅ (notification prefs) | Consume: все события |
+| Notification Bot | ❌ | ❌ | ✅ (reminder msgs, notification prefs) | Consume: все события |
 
 ---
 
@@ -284,10 +284,11 @@ service ScheduleService {
 **Вызывает gRPC:**
 - Academic Service: `GetGroup`, `GetTeacherSubjects` — проверка прав на создание/изменение расписания
 
-**Публикует события:** `lesson.started`, `lesson.closed`
+**Публикует события:** `lesson.started`, `lesson.reminder`, `lesson.closed`
 
 **Автоматические задачи (Spring `@Scheduled`):**
 - Смена статуса пар: PLANNED → ACTIVE (по времени начала), ACTIVE → CLOSED (по времени окончания)
+- Напоминания об отметке: `lesson.started` в начале пары, `lesson.reminder phase=midpoint` в середине и `phase=near_end` примерно за 5 минут до конца; обе reminder-фазы idempotent через timestamp-поля в `lessons`.
 - Ленивая генерация `lessons` из `schedule_items` при первом запросе на неделю
 
 ---
@@ -436,7 +437,7 @@ static final ArchRule reportDoesNotAccessCheckinInternals =
 
 **Стек:** Java Spring Boot + Spring WebSocket + webpush-java + Caffeine
 **Порт:** 9094
-**Хранилище:** MongoDB `notification_db` (с M10) + Redis (VAPID)
+**Хранилище:** MongoDB `notification_db` (с M10) + Redis (notification preferences)
 
 **Роль:** stateful push-уведомления через три канала доставки **+
 персистентная история** (M10, см. раздел «Notification History» ниже)
@@ -454,12 +455,14 @@ static final ArchRule reportDoesNotAccessCheckinInternals =
 - REST API: `POST /api/ws/push/subscribe`, `DELETE /api/ws/push/subscribe`, `GET /api/ws/vapid-public-key`
 - Автоматическое удаление подписки при HTTP 410 Gone
 - Payload: JSON с `title`, `body`, `action_url`, `event_type`
+- Server-side фильтрация по `notif:prefs:user:{user_id}` и `reminder_attendance_state`, чтобы `lesson.reminder` не уходил уже отметившимся студентам.
 
 **Канал 3 — Telegram (через Notification Bot):**
 - Отдельный контейнер, см. ниже
 
 **Подписан на RabbitMQ-события:**
 - `lesson.started` → WebSocket push + Web Push студентам: «Пара началась, отметьтесь»
+- `lesson.reminder` → WebSocket push + Web Push студентам без отметки: повторное напоминание в середине и ближе к концу пары
 - `lesson.closed` → WebSocket push старосте: «Сессия отметки завершена»
 - `lesson.cancelled` → WebSocket push + Web Push студентам: «Пара отменена»
 - `attendance.marked` → WebSocket push студенту: подтверждение отметки
@@ -469,8 +472,7 @@ static final ArchRule reportDoesNotAccessCheckinInternals =
 
 **Redis-ключи:**
 ```
-vapid:public_key    → "<base64>"     TTL: нет (постоянный)
-vapid:private_key   → "<base64>"     TTL: нет (постоянный)
+notif:prefs:user:{user_id} → hash(categories, mute_until) TTL: нет
 ```
 
 **WebSocket endpoint:** `ws://notification-web:9094/ws`
@@ -483,7 +485,7 @@ vapid:private_key   → "<base64>"     TTL: нет (постоянный)
 
 **Функции:**
 - Отправка OTP-кодов для авторизации (consumer `otp.requested` из Auth)
-- Push-уведомления студентам о начале пар
+- Push-уведомления студентам о начале пар и reminder-фазах
 - Команды бота: `/start`, `/login`, `/status`
 
 **Подписан на RabbitMQ-события:** те же, что и Notification Web, плюс:
@@ -684,7 +686,7 @@ attendance-service удаляет orphan-attendance-doc'и по этим id'ам
 
 | Хранилище | Сервис-владелец | Обоснование |
 |-----------|----------------|-------------|
-| Redis | Auth Service (OTP, JWT key), Academic Service (кэш) | TTL для эфемерных данных, sub-ms latency |
+| Redis | Auth Service (OTP, JWT key), Academic Service (кэш), Notification Service (preferences, bot message ids) | TTL для эфемерных данных, sub-ms latency |
 | PostgreSQL: academic_db | Academic Service | ACID, сложные JOIN, FK-целостность для справочников |
 | PostgreSQL: schedule_db | Schedule Service | Транзакционные изменения статусов пар |
 | MongoDB: attendance_db | Attendance Service | Write-heavy, гибкая схема excuse, горизонтальное масштабирование |
@@ -1243,6 +1245,9 @@ Teacher → [Web Panel] → GET /reports/group/45/subject/67 + JWT
     → [Notification Bot]
       → gRPC → [Academic Service] GetGroupMembers(group_id)
       → Telegram Bot API: массовая рассылка: «Пара началась, отметьтесь»
+  → позже LessonReminderJob публикует "lesson.reminder"
+    → phase=midpoint: только студентам без отметки
+    → phase=near_end: только студентам без отметки
 ```
 
 ---

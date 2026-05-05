@@ -42,7 +42,7 @@ JSON Schema для событий RabbitMQ. Все схемы живут в `eve
 | Event | Schema | Триггер |
 |-------|--------|---------|
 | `lesson.started` | `lesson.started.json` | Пара перешла в ACTIVE (cron) |
-| `lesson.reminder` | `lesson.reminder.json` | Idempotent broadcast при пересечении середины active-пары (LessonReminderJob, NOTIF unification). Bot/PWA/web фильтруют по «студент уже отметился» локально. |
+| `lesson.reminder` | `lesson.reminder.json` | Idempotent broadcast в фазах `phase=midpoint` (середина active-пары) и `phase=near_end` (за ~5 минут до конца). Schedule помечает отправку в `lessons`, Notification Web/Bot фильтруют server-side по пользовательским настройкам и состоянию отметки; PWA дополнительно скрывает foreground-уведомление после локальной отметки. |
 | `lesson.closed` | `lesson.closed.json` | Пара перешла в CLOSED (end_time + 5min) |
 | `lesson.cancelled` | `lesson.cancelled.json` | Староста/admin отменил пару |
 | `lesson.deleted` | `lesson.deleted.json` | Admin удалил пару из расписания |

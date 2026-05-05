@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import redis.asyncio as aioredis
@@ -44,7 +45,8 @@ CATEGORIES: tuple[str, ...] = (
 # Ивент → категория. None означает «категория неприменима», отправляем
 # без фильтрации по категории (но глобальный toggle всё равно работает).
 _EVENT_CATEGORY: dict[str, str] = {
-    "lesson.started": "lessons",
+    "lesson.started": "reminders",
+    "lesson.reminder": "reminders",
     "lesson.cancelled": "lessons",
     "lesson.one_off.created": "schedule",
     "lesson.one_off.cancelled": "schedule",
@@ -54,9 +56,9 @@ _EVENT_CATEGORY: dict[str, str] = {
     "excuse.decided": "tickets",
     "late_checkin.requested": "tickets",
     "late_checkin.decided": "tickets",
+    "attendance.marked": "tickets",
     "group.renamed": "group",
     "group.archived": "group",
-    "attendance.reminder": "reminders",
 }
 
 
@@ -68,6 +70,9 @@ def category_for_event(event_type: str) -> Optional[str]:
 class NotificationPrefsClient:
     _GLOBAL_PREFIX = "bot:notif:"
     _CATEGORY_PREFIX = "bot:notif:cat:"
+    _TELEGRAM_MUTE_PREFIX = "bot:notif:mute:"
+    _USER_PREF_PREFIX = "notif:prefs:user:"
+    _MUTE_UNTIL_FIELD = "mute_until"
 
     def __init__(
         self,
@@ -89,7 +94,18 @@ class NotificationPrefsClient:
     def _category_key(self, telegram_id: int) -> str:
         return f"{self._CATEGORY_PREFIX}{telegram_id}"
 
-    async def is_enabled(self, telegram_id: Optional[int], category: Optional[str] = None) -> bool:
+    def _telegram_mute_key(self, telegram_id: int) -> str:
+        return f"{self._TELEGRAM_MUTE_PREFIX}{telegram_id}"
+
+    def _user_pref_key(self, user_id: int) -> str:
+        return f"{self._USER_PREF_PREFIX}{user_id}"
+
+    async def is_enabled(
+        self,
+        telegram_id: Optional[int],
+        category: Optional[str] = None,
+        user_id: Optional[int] = None,
+    ) -> bool:
         """True, если сообщение должно быть отправлено пользователю.
 
         telegram_id=None — системное сообщение (без пользователя), всегда True.
@@ -98,6 +114,11 @@ class NotificationPrefsClient:
         if telegram_id is None:
             return True
         try:
+            if user_id is not None and not await self._user_preferences_enabled(user_id, category):
+                return False
+            muted_until = await self.get_muted_until(telegram_id)
+            if muted_until is not None and muted_until > _now_utc():
+                return False
             global_value = await self._redis.get(self._global_key(telegram_id))
             if global_value == "off":
                 return False
@@ -108,6 +129,17 @@ class NotificationPrefsClient:
         except Exception:
             logger.exception("Redis error reading notif pref for telegram_id=%s", telegram_id)
             return True  # fail-open — лучше прислать, чем потерять
+
+    async def _user_preferences_enabled(self, user_id: int, category: Optional[str]) -> bool:
+        key = self._user_pref_key(user_id)
+        muted_raw = await self._redis.hget(key, self._MUTE_UNTIL_FIELD)
+        muted_until = _parse_instant(muted_raw)
+        if muted_until is not None and muted_until > _now_utc():
+            return False
+        if category is None:
+            return True
+        cat_value = await self._redis.hget(key, category)
+        return cat_value != "off"
 
     async def disable(self, telegram_id: int) -> None:
         """Глобально отключить уведомления (legacy API)."""
@@ -142,5 +174,45 @@ class NotificationPrefsClient:
             logger.exception("Redis error reading global pref for telegram_id=%s", telegram_id)
             return True
 
+    async def mute_for(self, telegram_id: int, duration: timedelta) -> datetime:
+        muted_until = _now_utc() + duration
+        await self._redis.set(self._telegram_mute_key(telegram_id), _format_instant(muted_until))
+        return muted_until
+
+    async def clear_mute(self, telegram_id: int) -> None:
+        await self._redis.delete(self._telegram_mute_key(telegram_id))
+
+    async def get_muted_until(self, telegram_id: int) -> Optional[datetime]:
+        try:
+            value = await self._redis.get(self._telegram_mute_key(telegram_id))
+        except Exception:
+            logger.exception("Redis error reading mute pref for telegram_id=%s", telegram_id)
+            return None
+        muted_until = _parse_instant(value)
+        if muted_until is not None and muted_until <= _now_utc():
+            await self.clear_mute(telegram_id)
+            return None
+        return muted_until
+
     async def close(self) -> None:
         await self._redis.aclose()
+
+
+def _now_utc() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _format_instant(value: datetime) -> str:
+    return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _parse_instant(value: object) -> Optional[datetime]:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
+    except ValueError:
+        try:
+            return datetime.fromtimestamp(float(value), timezone.utc)
+        except (TypeError, ValueError):
+            return None

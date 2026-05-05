@@ -5,12 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import org.apache.http.client.HttpResponseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
+import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -70,17 +73,32 @@ public class WebPushDeliveryService {
     private final ObjectMapper objectMapper;
     private final MongoTemplate mongoTemplate;
     private final Clock clock;
+    private final NotificationPreferencesService preferencesService;
+    private final ReminderAttendanceStateService reminderAttendanceStateService;
+
+    @Autowired
+    public WebPushDeliveryService(PushSubscriptionRepository repository,
+                                   PushService webPushService,
+                                   ObjectMapper objectMapper,
+                                   MongoTemplate mongoTemplate,
+                                   Clock clock,
+                                   NotificationPreferencesService preferencesService,
+                                   ReminderAttendanceStateService reminderAttendanceStateService) {
+        this.repository = repository;
+        this.webPushService = webPushService;
+        this.objectMapper = objectMapper;
+        this.mongoTemplate = mongoTemplate;
+        this.clock = clock;
+        this.preferencesService = preferencesService;
+        this.reminderAttendanceStateService = reminderAttendanceStateService;
+    }
 
     public WebPushDeliveryService(PushSubscriptionRepository repository,
                                    PushService webPushService,
                                    ObjectMapper objectMapper,
                                    MongoTemplate mongoTemplate,
                                    Clock clock) {
-        this.repository = repository;
-        this.webPushService = webPushService;
-        this.objectMapper = objectMapper;
-        this.mongoTemplate = mongoTemplate;
-        this.clock = clock;
+        this(repository, webPushService, objectMapper, mongoTemplate, clock, null, null);
     }
 
     /**
@@ -163,6 +181,7 @@ public class WebPushDeliveryService {
         if (HEADMAN_ONLY_EVENT_TYPES.contains(eventType)) {
             return subs.stream()
                     .filter(PushSubscriptionDocument::isHeadman)
+                    .filter(s -> preferencesEnabled(s, eventType))
                     .collect(Collectors.toList());
         }
         if ("attendance.marked".equals(eventType) && !"headman".equals(payload.get("marked_by"))) {
@@ -177,9 +196,34 @@ public class WebPushDeliveryService {
             long userId = userIdNum.longValue();
             return subs.stream()
                     .filter(s -> s.getUserId() != null && s.getUserId() == userId)
+                    .filter(s -> preferencesEnabled(s, eventType))
                     .collect(Collectors.toList());
         }
-        return subs;
+        return subs.stream()
+                .filter(s -> preferencesEnabled(s, eventType))
+                .filter(s -> reminderRecipientAllowed(s, eventType, payload))
+                .collect(Collectors.toList());
+    }
+
+    private boolean preferencesEnabled(PushSubscriptionDocument sub, String eventType) {
+        return preferencesService == null || preferencesService.isEnabledForUser(sub.getUserId(), eventType);
+    }
+
+    private boolean reminderRecipientAllowed(PushSubscriptionDocument sub,
+                                             String eventType,
+                                             Map<String, Object> payload) {
+        if (!"lesson.reminder".equals(eventType) || reminderAttendanceStateService == null) {
+            return true;
+        }
+        if (sub.getUserId() == null) {
+            return true;
+        }
+        Object lessonIdRaw = payload.get("lesson_id");
+        if (!(lessonIdRaw instanceof Number lessonId)) {
+            log.warn("lesson.reminder payload has no lesson_id; sending without attendance filter");
+            return true;
+        }
+        return !reminderAttendanceStateService.isMarked(lessonId.longValue(), sub.getUserId());
     }
 
     /**

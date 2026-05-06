@@ -60,19 +60,21 @@ describe('HeadmanLessonSheet', () => {
       />,
     )
 
-    const panel = container.querySelector('[data-bottom-sheet-panel="true"]')
+    expect(container.querySelector('[data-bottom-sheet-panel="true"]')).toBeNull()
+
+    const panel = document.body.querySelector('[data-bottom-sheet-panel="true"]')
     expect(panel).toHaveClass('h-dvh', 'rounded-t-none')
     expect(panel).toHaveStyle({ maxHeight: '100dvh' })
     expect(screen.getByText('Algorithms')).toBeInTheDocument()
     expect(screen.getByText((text) => text.includes('09:00') && text.includes('10:35')))
       .toBeInTheDocument()
 
-    fireEvent.click(container.querySelector('[data-bottom-sheet-backdrop="true"]')!)
+    fireEvent.click(document.body.querySelector('[data-bottom-sheet-backdrop="true"]')!)
     fireEvent.keyDown(window, { key: 'Escape' })
 
     expect(onClose).not.toHaveBeenCalled()
 
-    fireEvent.click(container.querySelector('button[aria-label]')!)
+    fireEvent.click(document.body.querySelector('button[aria-label]')!)
 
     expect(onClose).toHaveBeenCalledTimes(1)
   })

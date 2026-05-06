@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { X } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
@@ -76,7 +77,7 @@ export function BottomSheet({
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose, closeOnEscape])
 
-  return (
+  const sheet = (
     <AnimatePresence>
       {open && (
         <>
@@ -174,4 +175,6 @@ export function BottomSheet({
       )}
     </AnimatePresence>
   )
+
+  return typeof document === 'undefined' ? sheet : createPortal(sheet, document.body)
 }

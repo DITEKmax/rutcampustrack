@@ -21,7 +21,15 @@ describe('BottomSheet', () => {
       </BottomSheet>,
     )
 
-    fireEvent.click(container.querySelector('[data-bottom-sheet-backdrop="true"]')!)
+    expect(container.querySelector('[data-bottom-sheet-panel="true"]')).toBeNull()
+
+    const panel = document.body.querySelector('[data-bottom-sheet-panel="true"]')
+    const backdrop = document.body.querySelector('[data-bottom-sheet-backdrop="true"]')
+
+    expect(panel).toBeInTheDocument()
+    expect(backdrop).toBeInTheDocument()
+
+    fireEvent.click(backdrop!)
     fireEvent.keyDown(window, { key: 'Escape' })
 
     expect(onClose).not.toHaveBeenCalled()
@@ -29,7 +37,7 @@ describe('BottomSheet', () => {
     fireEvent.click(screen.getByRole('button'))
 
     expect(onClose).toHaveBeenCalledTimes(1)
-    expect(container.querySelector('[data-bottom-sheet-panel="true"]')).toHaveAttribute(
+    expect(panel).toHaveAttribute(
       'data-pull-to-refresh-ignore',
       'true',
     )

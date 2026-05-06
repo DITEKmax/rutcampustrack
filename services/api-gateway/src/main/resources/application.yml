@@ -330,6 +330,12 @@ gateway:
   auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
 
 rutcampustrack:
+  pwa:
+    version-policy:
+      enabled: ${PWA_VERSION_POLICY_ENABLED:false}
+      latest: ${PWA_VERSION_POLICY_LATEST:}
+      minimum-supported: ${PWA_VERSION_POLICY_MINIMUM_SUPPORTED:}
+      force: ${PWA_VERSION_POLICY_FORCE:false}
   security:
     # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
     required-env-vars: REDIS_PASSWORD,INTERNAL_ISSUER_SECRET

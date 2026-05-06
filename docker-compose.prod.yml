@@ -522,6 +522,10 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       # M03a: Gateway → auth-service token-exchange shared secret
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
+      # PWA hard-update fallback: old clients that still call API get 426.
+      PWA_VERSION_POLICY_ENABLED: "true"
+      PWA_VERSION_POLICY_LATEST: 1-${IMAGE_TAG:-0.0.0}
+      PWA_VERSION_POLICY_FORCE: "true"
       # M09 G7 (NEW-157).
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp"
     expose:
@@ -931,6 +935,10 @@ services:
     build:
       context: ./frontends/pwa
       dockerfile: Dockerfile
+      args:
+        VITE_APP_VERSION: 1-${IMAGE_TAG:-0.0.0}
+        VITE_MIN_SUPPORTED_VERSION: ${PWA_MIN_SUPPORTED_VERSION:-}
+        VITE_FORCE_UPDATE: ${PWA_FORCE_UPDATE:-true}
     image: ghcr.io/ditekmax/rutcampustrack/pwa-nginx:${IMAGE_TAG:-latest}
     container_name: rct-pwa-nginx
     expose:

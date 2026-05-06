@@ -54,6 +54,7 @@
 #### operations/deploy/ — развёртывание
 - `prod-deploy-checklist.md` — pre-deploy чеклист
 - `ci-cd.md` — GitHub Actions
+- `pwa-forced-updates.md` — обязательное обновление PWA на каждый prod deploy
 - `dockerfile-conventions.md` — multi-stage Dockerfiles
 - `nginx-config.md` — nginx reverse-proxy
 - `resource-limits.md` — mem_limit конвенция

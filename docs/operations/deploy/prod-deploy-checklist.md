@@ -27,6 +27,8 @@
   notification_history TTL + compound indexes (M13 G6).
 - [swagger-prod-access.md](runbooks/swagger-prod-access.md) — basic-auth
   для /swagger-ui + /prometheus + /alertmanager (M11 G4 + M13 G14).
+- [pwa-forced-updates.md](pwa-forced-updates.md) — hard-update PWA через
+  `DEPLOY_SHA`, `/app/version.json` и gateway `426` fallback.
 - [alerts.md](alerts.md) — каталог 18 alert'ов с Symptom/Meaning/Runbook
   (M04 → M13 G19/G20).
 - [security-headers.md](security-headers.md) — CSP / HSTS / report-uri

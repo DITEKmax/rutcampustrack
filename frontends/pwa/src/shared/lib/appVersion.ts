@@ -15,6 +15,10 @@ export interface UpdateRequiredEventDetail {
   message?: string
 }
 
+function normalizeVersion(version?: string): string {
+  return version?.trim() ?? ''
+}
+
 function parseVersion(version: string): number[] {
   return version
     .split(/[.+-]/)
@@ -39,4 +43,15 @@ export function compareVersions(left: string, right: string): number {
 export function isVersionOlder(current: string, target?: string): boolean {
   if (!target) return false
   return compareVersions(current, target) < 0
+}
+
+export function isUpdateRequiredByPolicy(current: string, policy: VersionPolicy): boolean {
+  const currentVersion = normalizeVersion(current)
+  const latest = normalizeVersion(policy.latest)
+
+  if (policy.force && latest.length > 0) {
+    return currentVersion !== latest
+  }
+
+  return isVersionOlder(currentVersion, policy.minimumSupported)
 }

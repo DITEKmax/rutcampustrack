@@ -166,6 +166,10 @@ jobs:
           file: frontends/pwa/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/pwa-nginx:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/pwa-nginx:latest
+          build-args: |
+            VITE_APP_VERSION=1-${{ env.DEPLOY_SHA }}
+            VITE_MIN_SUPPORTED_VERSION=1-${{ env.DEPLOY_SHA }}
+            VITE_FORCE_UPDATE=true
           cache-from: type=gha,scope=pwa
           cache-to: type=gha,scope=pwa,mode=max
 

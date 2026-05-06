@@ -13,6 +13,19 @@ const flushQueue = (token: string | null, error: unknown = null) => {
   pendingQueue = []
 }
 
+function firstHeaderValue(value: unknown): string | undefined {
+  if (Array.isArray(value)) {
+    return typeof value[0] === 'string' ? value[0] : undefined
+  }
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
+function stringFromRecord(record: unknown, key: string): string | undefined {
+  if (!record || typeof record !== 'object') return undefined
+  const value = (record as Record<string, unknown>)[key]
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
 /**
  * Базовый axios-клиент PWA. M03b Группа 6 — `withCredentials: true` ставится
  * per-call на `/auth/*` endpoints (см. api.ts), чтобы HttpOnly cookie
@@ -59,9 +72,19 @@ apiClient.interceptors.response.use(
     const original = error.config
     if (error.response?.status === 426) {
       const detail = parseProblemDetails(error)
+      const body = error.response.data
+      const extras = body && typeof body === 'object'
+        ? (body as { extras?: unknown }).extras
+        : undefined
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent(APP_UPDATE_REQUIRED_EVENT, {
           detail: {
+            latest: firstHeaderValue(error.response.headers['x-pwa-latest-version'])
+              ?? stringFromRecord(body, 'latest')
+              ?? stringFromRecord(extras, 'latest'),
+            minimumSupported: firstHeaderValue(error.response.headers['x-pwa-minimum-supported-version'])
+              ?? stringFromRecord(body, 'minimumSupported')
+              ?? stringFromRecord(extras, 'minimumSupported'),
             message: detail?.detail ?? detail?.title,
           },
         }))

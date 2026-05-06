@@ -64,6 +64,9 @@ M06 Группа 5 (NEW-105).
   1. `docker/login-action@v3` → GHCR с `GHCR_TOKEN`.
   2. 11 × `docker/build-push-action@v7` — build+push с tags
      `:${{ github.sha }}` + `:latest` (M06 G2, QD1).
+     PWA build получает `VITE_APP_VERSION=1-${DEPLOY_SHA}` и генерирует
+     forced `version.json`; контракт описан в
+     [pwa-forced-updates.md](pwa-forced-updates.md).
   3. `appleboy/ssh-action@v1` → VPS:
      - `git pull --ff-only`.
      - JWT-keys volume init (openssl genrsa 3072 если отсутствуют).

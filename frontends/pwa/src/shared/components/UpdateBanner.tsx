@@ -7,12 +7,12 @@ import {
   APP_UPDATE_REQUIRED_EVENT,
   APP_VERSION,
   VERSION_POLICY_URL,
-  isVersionOlder,
+  isUpdateRequiredByPolicy,
   type UpdateRequiredEventDetail,
   type VersionPolicy,
 } from '@/shared/lib/appVersion'
 
-const POLICY_CHECK_INTERVAL_MS = 10 * 60 * 1000
+const POLICY_CHECK_INTERVAL_MS = 60 * 1000
 
 type UpdateReason = 'service-worker' | 'version-policy' | 'api-version'
 
@@ -29,9 +29,7 @@ function buildVersionPolicyUrl(): string {
 }
 
 function shouldBlockByPolicy(policy: VersionPolicy): boolean {
-  if (isVersionOlder(APP_VERSION, policy.minimumSupported)) return true
-  if (policy.force && isVersionOlder(APP_VERSION, policy.latest)) return true
-  return false
+  return isUpdateRequiredByPolicy(APP_VERSION, policy)
 }
 
 function gateFromPolicy(policy: VersionPolicy): UpdateGateState {
@@ -112,7 +110,11 @@ export function UpdateBanner() {
         message: detail.message,
       })
     }
-    const handleOnline = () => setOffline(false)
+    const handleOnline = () => {
+      setOffline(false)
+      void swRegistrationRef.current?.update()
+      void checkPolicy()
+    }
     const handleOffline = () => setOffline(true)
 
     navigator.serviceWorker?.addEventListener('controllerchange', handleControllerChange)
@@ -150,9 +152,9 @@ export function UpdateBanner() {
     }
   }, [offline])
 
-  const title = gate?.reason === 'api-version'
-    ? 'Версия больше не поддерживается'
-    : 'Необходимо обновить RutTrack'
+  const title = gate?.reason === 'service-worker'
+    ? 'Необходимо обновить RutTrack'
+    : 'Версия больше не поддерживается'
 
   const description = gate?.message
     ?? 'Вышла новая сборка приложения. Обновите PWA, чтобы продолжить работу с актуальными уведомлениями и расписанием.'

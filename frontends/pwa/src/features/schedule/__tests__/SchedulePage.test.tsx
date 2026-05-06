@@ -204,6 +204,45 @@ describe('SchedulePage', () => {
     }, { timeout: 3000 })
   })
 
+  it('shows fixed today pill when selected day is not today', async () => {
+    const backendDow = getTodayBackendDow()
+    const lessons = makeLessons(backendDow, 1)
+
+    mockedGet.mockImplementation(async (url: string) => {
+      if (url.includes('/schedule/groups/')) {
+        return { data: { _embedded: { lessonResponseList: lessons } } }
+      }
+      if (url.includes('/academic/semesters')) {
+        return mockSemesters
+      }
+      if (url.includes('/academic/subjects/')) {
+        return { data: { id: lessons[0].subjectId, name: 'Physics' } }
+      }
+      return { data: {} }
+    })
+
+    render(<SchedulePage />, { wrapper: createWrapper() })
+
+    expect(screen.queryByTestId('schedule-today-pill')).not.toBeInTheDocument()
+
+    const user = userEvent.setup()
+    const tabs = await screen.findAllByRole('tab')
+    const todayIndex = backendDow - 1
+    const otherIndex = todayIndex === 0 ? 1 : 0
+    await user.click(tabs[otherIndex])
+
+    const pill = await screen.findByTestId('schedule-today-pill')
+    expect(pill).toHaveClass('fixed', 'left-1/2', '-translate-x-1/2')
+    expect(pill.style.bottom).toBe(
+      'calc(var(--bottom-nav-height) + 16px + env(safe-area-inset-bottom))',
+    )
+
+    await user.click(pill)
+    await waitFor(() => {
+      expect(screen.queryByTestId('schedule-today-pill')).not.toBeInTheDocument()
+    })
+  })
+
   it('day tab click changes displayed lessons', async () => {
     // Put lessons only on Monday (dayOfWeek=1)
     const mondayLessons = makeLessons(1, 1)

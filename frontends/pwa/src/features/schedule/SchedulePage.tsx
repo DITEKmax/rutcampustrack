@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { CaretLeft, CaretRight, CalendarBlank } from '@phosphor-icons/react'
 import { useAuth } from '@/features/auth/AuthProvider'
@@ -48,12 +49,6 @@ function getTodayDayIndex(): number {
   const dow = new Date().getDay()
   if (dow === 0) return 5
   return dow - 1
-}
-
-function isSameWeek(a: Date, b: Date): boolean {
-  const mondayA = getMonday(a)
-  const mondayB = getMonday(b)
-  return mondayA.getTime() === mondayB.getTime()
 }
 
 const BLOCK_WINDOW_DAYS = 14
@@ -182,8 +177,6 @@ export function SchedulePage() {
     }
   }, [dayLessons])
 
-  const isCurrentWeek = isSameWeek(currentWeekStart, new Date())
-
   const handleSwipeWeek = useCallback(
     (direction: 'prev' | 'next') => {
       if (direction === 'next') weekNav.goNext()
@@ -255,6 +248,10 @@ export function SchedulePage() {
       queryClient.invalidateQueries({ queryKey: ['homeworks'] }),
     ])
   }, [queryClient])
+
+  const isSelectedScheduleToday =
+    weekNav.isAtToday && selectedDayIndex === getTodayDayIndex()
+  const todayPillRoot = typeof document === 'undefined' ? null : document.body
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
@@ -460,36 +457,41 @@ export function SchedulePage() {
         onToast={(type, message) => setToast({ type, message })}
       />
 
-      {/* Floating "Сегодня" pill */}
-      <AnimatePresence>
-        {!isCurrentWeek && (
-          <motion.button
-            key="today-pill"
-            type="button"
-            initial={{ y: 16, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 16, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            whileTap={{ scale: 0.96 }}
-            onClick={handleTodayPill}
-            className={cn(
-              'fixed left-1/2 z-[var(--z-sticky)] -translate-x-1/2',
-              'flex items-center gap-2 rounded-full px-5 py-2.5',
-              'text-sm font-semibold',
-            )}
-            style={{
-              bottom: 'calc(80px + env(safe-area-inset-bottom))',
-              background: 'var(--gradient-brand)',
-              color: 'var(--accent-primary-contrast)',
-              boxShadow: 'var(--glow-primary)',
-            }}
-          >
-            <CalendarBlank size={16} weight="fill" aria-hidden="true" />
-            Сегодня
-          </motion.button>
-        )}
-      </AnimatePresence>
     </div>
+    {todayPillRoot &&
+      createPortal(
+        <AnimatePresence>
+          {!isSelectedScheduleToday && (
+            <motion.button
+              key="today-pill"
+              type="button"
+              data-testid="schedule-today-pill"
+              initial={{ y: 16, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 16, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              whileTap={{ scale: 0.96 }}
+              onClick={handleTodayPill}
+              className={cn(
+                'fixed left-1/2 -translate-x-1/2',
+                'flex items-center gap-2 rounded-full px-5 py-2.5',
+                'text-sm font-semibold',
+              )}
+              style={{
+                bottom: 'calc(var(--bottom-nav-height) + 16px + env(safe-area-inset-bottom))',
+                zIndex: 'calc(var(--z-sticky) + 1)',
+                background: 'var(--gradient-brand)',
+                color: 'var(--accent-primary-contrast)',
+                boxShadow: 'var(--glow-primary)',
+              }}
+            >
+              <CalendarBlank size={16} weight="fill" aria-hidden="true" />
+              Сегодня
+            </motion.button>
+          )}
+        </AnimatePresence>,
+        todayPillRoot,
+      )}
     </PullToRefresh>
   )
 }

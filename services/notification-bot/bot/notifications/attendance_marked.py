@@ -46,6 +46,9 @@ async def handle_attendance_marked(
         logger.warning("attendance.marked missing required fields")
         return
 
+    if status in _CLEANUP_STATUSES:
+        await redis_client.mark_student_marked(lesson_id, user_id, status)
+
     members = await academic_client.get_group_members(group_id)
     student = next((m for m in members if m.user_id == user_id), None)
     if student is None or not student.telegram_id:

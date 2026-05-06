@@ -139,7 +139,8 @@ EOF
 
 **Контекст:** если publisher-тик упал (SchedulerLock expired без
 advance pointer), PENDING-rows могут висеть часами. `outbox.lag`
-gauge растёт.
+gauge растёт. Транспортные сбои RabbitMQ не переводят rows в `failed`;
+они остаются `pending` и ретраятся следующим tick'ом.
 
 **Dry-run:**
 
@@ -156,7 +157,7 @@ for svc in academic schedule; do
 done
 ```
 
-**Apply (force re-send через resetting retry_count):**
+**Apply (legacy failed rows только после ручной проверки):**
 
 ```bash
 docker exec -i rct-postgres-schedule psql -U rct_user -d schedule_db <<'EOF'
@@ -165,7 +166,7 @@ SET retry_count = 0, last_error = NULL, status = 'pending'
 WHERE status = 'failed'
   AND created_at > now() - interval '1 day';
 EOF
-# Restart publisher — он подхватит следующим tick'ом:
+# Restart publisher — он подхватит pending rows следующим tick'ом:
 docker compose restart schedule-service
 ```
 

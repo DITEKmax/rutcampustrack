@@ -9,6 +9,17 @@ const testState = vi.hoisted(() => ({
   isHeadman: true,
   downloadMutateAsync: vi.fn(),
   exportMutateAsync: vi.fn(),
+  journalQueries: [] as Array<{
+    data: Array<{
+      lessonId: number
+      studentId: number
+      studentName: string
+      date: string
+      status: 'present' | 'absent' | 'excused' | 'free_attendance' | 'cancelled'
+    }>
+    isLoading: boolean
+    isError: boolean
+  }>,
 }))
 
 vi.mock('@/shared/lib/axios', () => ({
@@ -28,8 +39,9 @@ vi.mock('@/shared/lib/axios', () => ({
 }))
 
 vi.mock('@/features/headman/shared/headmanApi', () => ({
-  useGroupMembers: vi.fn(() => ({ data: [{ id: 1, fullName: 'Иванов' }, { id: 2, fullName: 'Петров' }], isLoading: false }),),
+  useGroupMembers: vi.fn(() => ({ data: [{ id: 1, fullName: 'Иванов Иван' }, { id: 2, fullName: 'Петров Петр' }], isLoading: false }),),
   useGroupSubjects: vi.fn(() => ({ data: [{ id: 1, name: 'Математика' }, { id: 2, name: 'Физика' }, { id: 3, name: 'История' }], isLoading: false }),),
+  useSubjectJournals: vi.fn(() => testState.journalQueries),
   useHeadmanWeeklyReportWeeks: vi.fn(() => ({
     data: {
       semesterId: 1,
@@ -78,6 +90,31 @@ describe('GroupHub', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     testState.isHeadman = true
+    testState.journalQueries = [
+      {
+        data: [
+          { lessonId: 1, studentId: 1, studentName: 'Иванов Иван', date: '2026-05-04', status: 'present' },
+          { lessonId: 2, studentId: 1, studentName: 'Иванов Иван', date: '2026-05-05', status: 'absent' },
+          { lessonId: 3, studentId: 2, studentName: 'Петров Петр', date: '2026-05-05', status: 'excused' },
+        ],
+        isLoading: false,
+        isError: false,
+      },
+      {
+        data: [
+          { lessonId: 4, studentId: 1, studentName: 'Иванов Иван', date: '2026-05-06', status: 'free_attendance' },
+          { lessonId: 5, studentId: 1, studentName: 'Иванов Иван', date: '2026-05-07', status: 'present' },
+          { lessonId: 6, studentId: 2, studentName: 'Петров Петр', date: '2026-05-07', status: 'free_attendance' },
+        ],
+        isLoading: false,
+        isError: false,
+      },
+      {
+        data: [],
+        isLoading: false,
+        isError: false,
+      },
+    ]
     testState.downloadMutateAsync.mockResolvedValue({
       data: new Blob(['docx']),
       headers: { 'content-disposition': "attachment; filename*=UTF-8''report.docx" },
@@ -144,7 +181,15 @@ describe('GroupHub', () => {
     expect(screen.queryByRole('heading', { name: 'Отчеты старосты' })).not.toBeInTheDocument()
   })
 
-  it('Test 6: downloads selected single week as blob', async () => {
+  it('Test 6: renders aggregated student attendance breakdown by student, not by subject', () => {
+    renderGroupHub()
+
+    expect(screen.getByRole('heading', { name: 'Статистика по студентам' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Иванов: посещение 50%, уважительная причина 25%, пропуски 25%')).toBeInTheDocument()
+    expect(screen.getByLabelText('Петров: посещение 0%, уважительная причина 100%, пропуски 0%')).toBeInTheDocument()
+  })
+
+  it('Test 7: downloads selected single week as blob', async () => {
     const user = userEvent.setup()
     renderGroupHub()
 
@@ -159,7 +204,7 @@ describe('GroupHub', () => {
     expect(URL.createObjectURL).toHaveBeenCalled()
   })
 
-  it('Test 7: exports non-consecutive weeks from bottom sheet', async () => {
+  it('Test 8: exports non-consecutive weeks from bottom sheet', async () => {
     const user = userEvent.setup()
     renderGroupHub()
 

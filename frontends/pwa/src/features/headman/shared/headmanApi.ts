@@ -1,4 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useQueries,
+  type UseQueryResult,
+} from '@tanstack/react-query'
 import { apiClient } from '@/shared/lib/axios'
 import type {
   GroupMember,
@@ -20,6 +26,8 @@ import type {
 import type { AttendanceStatus } from './types'
 
 // ─── GET queries ─────────────────────────────────────────────────────────────
+
+const JOURNAL_STALE_TIME = 5 * 60 * 1000
 
 export function useGroupMembers(page = 0, size = 50) {
   return useQuery<GroupMember[]>({
@@ -69,6 +77,39 @@ export function useGroupTeachers(groupId: number) {
  * the endpoint returns the tree shape directly — so every caller saw an empty
  * list and the stats page rendered 100% for every subject and student.
  */
+export async function fetchJournalCells(
+  groupId: number,
+  subjectId: number,
+  dateFrom: string,
+  dateTo: string,
+) {
+  const { data } = await apiClient.get('/attendance/reports/journal', {
+    params: { groupId, subjectId, dateFrom, dateTo },
+  })
+  const students: Array<{
+    userId: number
+    displayName: string
+    records: Array<{
+      lessonId: number
+      date: string
+      status: AttendanceStatus
+    }>
+  }> = data?.students ?? []
+  const cells: JournalCell[] = []
+  for (const s of students) {
+    for (const r of s.records ?? []) {
+      cells.push({
+        lessonId: r.lessonId,
+        studentId: s.userId,
+        studentName: s.displayName,
+        date: r.date,
+        status: r.status,
+      })
+    }
+  }
+  return cells
+}
+
 export function useJournal(
   groupId: number,
   subjectId: number,
@@ -77,36 +118,26 @@ export function useJournal(
 ) {
   return useQuery<JournalCell[]>({
     queryKey: ['journal', groupId, subjectId, dateFrom, dateTo],
-    queryFn: async () => {
-      const { data } = await apiClient.get('/attendance/reports/journal', {
-        params: { groupId, subjectId, dateFrom, dateTo },
-      })
-      const students: Array<{
-        userId: number
-        displayName: string
-        records: Array<{
-          lessonId: number
-          date: string
-          status: AttendanceStatus
-        }>
-      }> = data?.students ?? []
-      const cells: JournalCell[] = []
-      for (const s of students) {
-        for (const r of s.records ?? []) {
-          cells.push({
-            lessonId: r.lessonId,
-            studentId: s.userId,
-            studentName: s.displayName,
-            date: r.date,
-            status: r.status,
-          })
-        }
-      }
-      return cells
-    },
-    staleTime: 5 * 60 * 1000, // 5 min
+    queryFn: () => fetchJournalCells(groupId, subjectId, dateFrom, dateTo),
+    staleTime: JOURNAL_STALE_TIME,
     enabled: !!groupId && !!subjectId,
   })
+}
+
+export function useSubjectJournals(
+  groupId: number,
+  subjects: Array<Pick<Subject, 'id'>>,
+  dateFrom: string,
+  dateTo: string,
+): UseQueryResult<JournalCell[]>[] {
+  return useQueries({
+    queries: subjects.map((subject) => ({
+      queryKey: ['journal', groupId, subject.id, dateFrom, dateTo],
+      queryFn: () => fetchJournalCells(groupId, subject.id, dateFrom, dateTo),
+      staleTime: JOURNAL_STALE_TIME,
+      enabled: !!groupId && !!subject.id,
+    })),
+  }) as UseQueryResult<JournalCell[]>[]
 }
 
 export function useResolveThreshold(groupId: number, subjectId: number) {

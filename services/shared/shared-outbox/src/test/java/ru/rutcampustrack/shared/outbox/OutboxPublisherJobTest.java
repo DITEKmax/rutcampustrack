@@ -8,12 +8,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -58,7 +57,7 @@ class OutboxPublisherJobTest {
     }
 
     @Test
-    void senderThrows_marksFailed_doesNotMarkSent() throws Exception {
+    void senderThrows_keepsPendingForRetry() throws Exception {
         OutboxStorage storage = mock(OutboxStorage.class);
         OutboxEventSender sender = mock(OutboxEventSender.class);
         OutboxRecord rec = new OutboxRecord(42L, "attendance.marked", "{}", Instant.now());
@@ -67,31 +66,37 @@ class OutboxPublisherJobTest {
                 .send("attendance.marked", "{}");
 
         OutboxPublisherJob job = new OutboxPublisherJob(storage, sender);
-        int published = job.publishBatch();
 
-        assertThat(published).isZero();
-        verify(storage).markFailed(eq(42L), any());
+        assertThatThrownBy(job::publishBatch)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Outbox publish failed");
+
+        verify(storage, never()).markFailed(any(), any());
         verify(storage, never()).markSent(any());
     }
 
     @Test
-    void partialFailure_processesAllRecords() throws Exception {
+    void partialFailure_stopsAndLeavesWholeBatchPending() throws Exception {
         OutboxStorage storage = mock(OutboxStorage.class);
         OutboxEventSender sender = mock(OutboxEventSender.class);
         List<OutboxRecord> batch = List.of(
                 new OutboxRecord(1L, "ok", "{}", Instant.now()),
                 new OutboxRecord(2L, "bad", "{}", Instant.now()),
-                new OutboxRecord(3L, "ok", "{}", Instant.now()));
+                new OutboxRecord(3L, "later", "{}", Instant.now()));
         when(storage.findPending(OutboxPublisherJob.BATCH_SIZE)).thenReturn(batch);
         doThrow(new RuntimeException("broken payload")).when(sender).send("bad", "{}");
 
         OutboxPublisherJob job = new OutboxPublisherJob(storage, sender);
-        int published = job.publishBatch();
 
-        assertThat(published).isEqualTo(2);
-        verify(storage).markSent(1L);
-        verify(storage).markFailed(eq(2L), any());
-        verify(storage).markSent(3L);
+        assertThatThrownBy(job::publishBatch)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Outbox publish failed");
+
+        verify(sender).send("ok", "{}");
+        verify(sender).send("bad", "{}");
+        verify(sender, never()).send("later", "{}");
+        verify(storage, never()).markFailed(any(), any());
+        verify(storage, never()).markSent(any());
     }
 
     @Test

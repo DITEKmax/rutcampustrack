@@ -545,7 +545,8 @@ Notification Web fail-open'ит доставку, чтобы outage настро
 bot:notif:{telegram_id}            → "on" | "off"       TTL: нет
 bot:notif:cat:{telegram_id}        → hash categories    TTL: нет
 bot:notif:mute:{telegram_id}       → ISO-8601 Instant   TTL: нет
-reminder:lesson:user:{...}         → Telegram message ids для cleanup
+reminder:msgs:{lesson_id}:{user_id} → Telegram message ids для cleanup
+reminder:marked:{lesson_id}:{user_id} → status marker для фильтрации reminder-фаз
 ```
 
 ---

@@ -22,14 +22,12 @@ import java.util.List;
  *
  * <p>Транзакционность: {@code @Transactional} на tick — вся batch'а идёт
  * одной tx. После успешной publish-попытки sender'ом → {@code markSent}.
- * При exception → {@code markFailed} + log. Следующий tick подхватит если
- * row остался pending (Rabbit был недоступен — sender бросит exception,
- * status останется pending — repeat).
+ * При transport exception запись не переводится в FAILED: job логирует сбой,
+ * бросает exception наружу, и следующий tick снова подхватывает pending rows.
  *
- * <p>Важно: {@code markFailed} помечает запись FAILED (не pending) —
- * такой row больше не будет подобран. Retry-стратегия «вечных pending'ов»
- * при Rabbit outage работает через sender: sender бросает, tx откатывается,
- * row остаётся pending (markSent/markFailed в той же tx не успел вызваться).
+ * <p>Важно: {@code markFailed} помечает запись FAILED (не pending), поэтому
+ * для временной недоступности RabbitMQ он не используется. Семантика отправки —
+ * at-least-once, consumers дедуплицируют повторные события по {@code event_id}.
  *
  * <p>Сервис-потребитель регистрирует этот job как {@code @Bean} и
  * {@code @Component} сразу не нужен — Spring сканирует shared-outbox пакет
@@ -87,25 +85,27 @@ public class OutboxPublisherJob {
         if (batch.isEmpty()) {
             return 0;
         }
-        int successCount = 0;
+        // Keep transport failures retryable: do not mark a row FAILED after a
+        // single RabbitMQ outage. Consumers deduplicate repeated sends by event_id.
         for (OutboxRecord record : batch) {
             try {
                 sender.send(record.eventType(), record.payload());
-                storage.markSent(record.id());
-                successCount++;
-                incrementPublished(record.eventType());
             } catch (Exception e) {
                 log.error("Outbox publish failed: id={}, eventType={}, error={}",
                         record.id(), record.eventType(), e.getMessage());
-                storage.markFailed(record.id(), e.getMessage());
                 incrementFailed(record.eventType());
+                throw new IllegalStateException("Outbox publish failed: id=" + record.id()
+                        + ", eventType=" + record.eventType(), e);
             }
         }
-        if (successCount > 0) {
-            log.debug("Outbox tick: published={}, failed={}",
-                    successCount, batch.size() - successCount);
+        for (OutboxRecord record : batch) {
+            storage.markSent(record.id());
+            incrementPublished(record.eventType());
         }
-        return successCount;
+        if (!batch.isEmpty()) {
+            log.debug("Outbox tick: published={}, failed=0", batch.size());
+        }
+        return batch.size();
     }
 
     private void incrementPublished(String eventType) {
@@ -120,7 +120,7 @@ public class OutboxPublisherJob {
     private void incrementFailed(String eventType) {
         if (meterRegistry == null) return;
         Counter.builder("outbox.failed.total")
-                .description("Количество outbox-событий, помеченных FAILED (sender threw)")
+                .description("Количество неуспешных publish-попыток outbox-событий")
                 .tag("event_type", eventType)
                 .register(meterRegistry)
                 .increment();

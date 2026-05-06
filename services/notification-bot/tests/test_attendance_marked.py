@@ -52,6 +52,7 @@ def _make_deps(students=None, message_ids=None):
     redis_client = MagicMock()
     redis_client.get_message_ids = AsyncMock(return_value=message_ids or [])
     redis_client.delete_key = AsyncMock()
+    redis_client.mark_student_marked = AsyncMock()
 
     return bot, academic_client, redis_client
 
@@ -94,6 +95,7 @@ async def test_attendance_marked_present_deletes_messages_and_clears_redis():
     bot.delete_message.assert_any_call(chat_id=1010, message_id=50)
     bot.delete_message.assert_any_call(chat_id=1010, message_id=51)
     bot.delete_message.assert_any_call(chat_id=1010, message_id=52)
+    redis_client.mark_student_marked.assert_called_once_with(101, 10, "present")
     redis_client.delete_key.assert_called_once_with(101, 10)
 
 
@@ -166,6 +168,7 @@ async def test_attendance_marked_present_silently_ignores_telegram_bad_request()
     redis_client = MagicMock()
     redis_client.get_message_ids = AsyncMock(return_value=[77])
     redis_client.delete_key = AsyncMock()
+    redis_client.mark_student_marked = AsyncMock()
 
     # Must not raise
     await handle_attendance_marked(
@@ -193,6 +196,7 @@ async def test_attendance_marked_present_no_messages_is_noop():
     )
 
     bot.delete_message.assert_not_called()
+    redis_client.mark_student_marked.assert_called_once_with(101, 10, "present")
     redis_client.delete_key.assert_not_called()
 
 
@@ -204,6 +208,7 @@ async def test_attendance_marked_missing_user_id_returns_early():
     academic_client = MagicMock()
     redis_client = MagicMock()
     redis_client.delete_key = AsyncMock()
+    redis_client.mark_student_marked = AsyncMock()
 
     bad_event = {
         "event_type": "attendance.marked",
@@ -217,6 +222,7 @@ async def test_attendance_marked_missing_user_id_returns_early():
     )
 
     bot.delete_message.assert_not_called()
+    redis_client.mark_student_marked.assert_not_called()
     redis_client.delete_key.assert_not_called()
 
 

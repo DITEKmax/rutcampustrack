@@ -61,6 +61,29 @@ async def test_ttl_set(fake_redis):
 
 
 @pytest.mark.asyncio
+async def test_marked_state_roundtrip(fake_redis):
+    client = _make_client(fake_redis)
+
+    assert await client.is_student_marked(10, 100) is False
+
+    await client.mark_student_marked(10, 100, "present")
+
+    assert await client.is_student_marked(10, 100) is True
+    ttl = await fake_redis.ttl("reminder:marked:10:100")
+    assert ttl > 0
+
+
+@pytest.mark.asyncio
+async def test_delete_marked_key(fake_redis):
+    client = _make_client(fake_redis)
+    await client.mark_student_marked(11, 101, "absent")
+
+    await client.delete_marked_key(11, 101)
+
+    assert await client.is_student_marked(11, 101) is False
+
+
+@pytest.mark.asyncio
 async def test_redis_down_add_graceful(fake_redis):
     """ConnectionError during rpush is swallowed — no exception raised to caller."""
     client = _make_client(fake_redis)
@@ -76,3 +99,11 @@ async def test_redis_down_get_graceful(fake_redis):
     with patch.object(fake_redis, "lrange", new=AsyncMock(side_effect=ConnectionError("down"))):
         result = await client.get_message_ids(5, 50)
     assert result == []
+
+
+@pytest.mark.asyncio
+async def test_redis_down_marked_read_fails_open(fake_redis):
+    client = _make_client(fake_redis)
+    with patch.object(fake_redis, "get", new=AsyncMock(side_effect=ConnectionError("down"))):
+        result = await client.is_student_marked(5, 50)
+    assert result is False

@@ -1,10 +1,8 @@
-"""Handler for lesson.reminder events — fan-out reminder to students who haven't checked in yet.
+"""Handler for lesson.reminder events.
 
-Источник события — schedule-service LessonReminderJob (раз на пару, при пересечении
-середины). Per-user фильтрация: студент уже отметился, если ReminderRedisClient
-очистил ключ (в attendance_marked.py при PRESENT/EXCUSED/FREE_ATTENDANCE).
-
-Категория для пользовательских настроек — "reminders" (см. NotificationPrefsClient).
+Fans out midpoint/near-end reminders to Telegram users who have not been
+marked for the lesson yet. The checked-in state is tracked separately from
+message ids so a failed start-message send does not suppress later reminders.
 """
 
 import logging
@@ -43,10 +41,7 @@ async def handle_lesson_reminder(
     for student in members:
         if not student.telegram_id:
             continue
-        existing_ids = await redis_client.get_message_ids(lesson_id, student.user_id)
-        if not existing_ids:
-            # Студент уже отметился (NOTIF-05 очистил ключ) либо не получал стартового
-            # сообщения — напоминать нечего.
+        if await redis_client.is_student_marked(lesson_id, student.user_id):
             continue
 
         async def send_and_store(s=student):

@@ -1,4 +1,4 @@
-"""Handler for lesson.closed events — deletes all reminder messages and clears Redis keys."""
+"""Handler for lesson.closed events."""
 
 import logging
 
@@ -16,20 +16,7 @@ async def handle_lesson_closed(
     academic_client,
     redis_client: ReminderRedisClient,
 ) -> None:
-    """Delete all reminder messages for the closed lesson and clear Redis keys.
-
-    Protocol:
-    1. Resolve group members (cached in academic_client, 5-min TTL).
-    2. For each student: delete all stored message_ids, then clear the Redis key.
-
-    Per-lesson midpoint reminders теперь управляются schedule-service
-    (LessonReminderJob идемпотентен через lessons.reminder_midpoint_sent_at),
-    поэтому отдельная логика "cancel pending timer tasks" больше не нужна —
-    в боте нет in-memory тасков.
-
-    TelegramBadRequest is silently caught — message may have already been deleted by
-    NOTIF-05 (student checked in) or by the student themselves.
-    """
+    """Delete reminder messages and per-lesson reminder state."""
     payload = event.get("payload", {})
     lesson_id = payload.get("lesson_id")
     group_id = payload.get("group_id")
@@ -37,23 +24,20 @@ async def handle_lesson_closed(
         logger.warning("lesson.closed missing required fields: lesson_id or group_id")
         return
 
-    # Resolve group members (cached in academic_client, 5-min TTL)
     members = await academic_client.get_group_members(group_id)
     for student in members:
-        if not student.telegram_id:
-            continue
-        message_ids = await redis_client.get_message_ids(lesson_id, student.user_id)
-        if not message_ids:
-            continue  # Already cleaned up (NOTIF-05) or never received a reminder
-        for msg_id in message_ids:
-            try:
-                await bot.delete_message(chat_id=student.telegram_id, message_id=msg_id)
-            except TelegramBadRequest:
-                pass  # Already deleted — idempotent
-            except Exception:
-                logger.warning(
-                    "Failed to delete message_id=%d for chat_id=%d",
-                    msg_id,
-                    student.telegram_id,
-                )
-        await redis_client.delete_key(lesson_id, student.user_id)
+        if student.telegram_id:
+            message_ids = await redis_client.get_message_ids(lesson_id, student.user_id)
+            for msg_id in message_ids:
+                try:
+                    await bot.delete_message(chat_id=student.telegram_id, message_id=msg_id)
+                except TelegramBadRequest:
+                    pass
+                except Exception:
+                    logger.warning(
+                        "Failed to delete message_id=%d for chat_id=%d",
+                        msg_id,
+                        student.telegram_id,
+                    )
+            await redis_client.delete_key(lesson_id, student.user_id)
+        await redis_client.delete_marked_key(lesson_id, student.user_id)

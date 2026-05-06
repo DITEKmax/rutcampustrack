@@ -13,7 +13,9 @@ import {
 } from '@phosphor-icons/react'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { useGroupMembers, useGroupSubjects } from '@/features/headman/shared/headmanApi'
+import { useAuth } from '@/features/auth/AuthProvider'
 import { HeadmanWeeklyReportCard } from './HeadmanWeeklyReportCard'
+import { StudentAttendanceStatsBlock } from './StudentAttendanceStatsBlock'
 
 interface HubCard {
   route: string
@@ -68,6 +70,7 @@ const HUB_CARDS: HubCard[] = [
 ]
 
 export function GroupHub() {
+  const { user } = useAuth()
   const { data: members, isLoading: membersLoading } = useGroupMembers()
   const { data: subjects, isLoading: subjectsLoading } = useGroupSubjects()
 
@@ -84,6 +87,7 @@ export function GroupHub() {
 
   const membersCount = members?.length
   const subjectsCount = subjects?.length
+  const groupId = user?.groupId ?? 0
 
   return (
     <div className="p-6 pb-24">
@@ -141,6 +145,14 @@ export function GroupHub() {
           ))}
         </div>
       </AnimatePresence>
+
+      {groupId > 0 && (
+        <StudentAttendanceStatsBlock
+          groupId={groupId}
+          members={members ?? []}
+          subjects={subjects ?? []}
+        />
+      )}
 
       <HeadmanWeeklyReportCard />
     </div>

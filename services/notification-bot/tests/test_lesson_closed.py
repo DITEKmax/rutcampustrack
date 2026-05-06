@@ -46,6 +46,7 @@ def _make_handler_deps(students=None, message_ids_per_student=None):
     else:
         redis_client.get_message_ids = AsyncMock(return_value=[])
     redis_client.delete_key = AsyncMock()
+    redis_client.delete_marked_key = AsyncMock()
 
     return bot, academic_client, redis_client
 
@@ -77,6 +78,9 @@ async def test_lesson_closed_deletes_all_message_ids_and_clears_redis():
     assert redis_client.delete_key.call_count == 2
     redis_client.delete_key.assert_any_call(101, 1)
     redis_client.delete_key.assert_any_call(101, 2)
+    assert redis_client.delete_marked_key.call_count == 2
+    redis_client.delete_marked_key.assert_any_call(101, 1)
+    redis_client.delete_marked_key.assert_any_call(101, 2)
 
 
 @pytest.mark.asyncio
@@ -99,6 +103,7 @@ async def test_lesson_closed_skips_students_without_telegram_id():
 
     assert bot.delete_message.call_count == 1
     assert redis_client.delete_key.call_count == 1
+    assert redis_client.delete_marked_key.call_count == 2
 
 
 @pytest.mark.asyncio
@@ -116,6 +121,7 @@ async def test_lesson_closed_silently_ignores_telegram_bad_request():
     redis_client = MagicMock()
     redis_client.get_message_ids = AsyncMock(return_value=[99])
     redis_client.delete_key = AsyncMock()
+    redis_client.delete_marked_key = AsyncMock()
 
     await handle_lesson_closed(
         _make_event(),
@@ -125,6 +131,7 @@ async def test_lesson_closed_silently_ignores_telegram_bad_request():
     )
 
     redis_client.delete_key.assert_called_once_with(101, 1)
+    redis_client.delete_marked_key.assert_called_once_with(101, 1)
 
 
 @pytest.mark.asyncio
@@ -148,7 +155,8 @@ async def test_lesson_closed_skips_students_with_empty_message_ids():
 
     assert bot.delete_message.call_count == 1
     bot.delete_message.assert_called_once_with(chat_id=222, message_id=55)
-    assert redis_client.delete_key.call_count == 1
+    assert redis_client.delete_key.call_count == 2
+    assert redis_client.delete_marked_key.call_count == 2
 
 
 @pytest.mark.asyncio
@@ -159,6 +167,7 @@ async def test_lesson_closed_returns_early_on_missing_payload_fields():
     academic_client.get_group_members = AsyncMock(return_value=[])
     redis_client = MagicMock()
     redis_client.delete_key = AsyncMock()
+    redis_client.delete_marked_key = AsyncMock()
 
     bad_event = {"event_type": "lesson.closed", "payload": {"group_id": 5}}
     await handle_lesson_closed(
@@ -170,3 +179,4 @@ async def test_lesson_closed_returns_early_on_missing_payload_fields():
 
     bot.delete_message.assert_not_called()
     redis_client.delete_key.assert_not_called()
+    redis_client.delete_marked_key.assert_not_called()

@@ -485,7 +485,9 @@ notif:prefs:user:{user_id} → hash(categories, mute_until) TTL: нет
 
 **Функции:**
 - Отправка OTP-кодов для авторизации (consumer `otp.requested` из Auth)
-- Push-уведомления студентам о начале пар и reminder-фазах
+- Push-уведомления студентам о начале пар и reminder-фазах: `lesson.started`
+  отправляется всем студентам группы с Telegram ID, `lesson.reminder` отправляется
+  только тем, по кому ещё нет Redis-состояния `reminder:marked:{lesson_id}:{user_id}`
 - Команды бота: `/start`, `/login`, `/status`
 
 **Подписан на RabbitMQ-события:** те же, что и Notification Web, плюс:
@@ -890,7 +892,7 @@ Spring Boot autoconfiguration (правило NEW-34). Подробный quick-
                          ▼
                   OutboxPublisherJob @Scheduled + @SchedulerLock("outbox-publisher")
                     findPending(100) → for each: sender.send() → markSent
-                    ошибка транспорта → markFailed (retry_count++)
+                    ошибка транспорта → row остаётся pending до следующего tick
                          │
                          ▼
                     RabbitTemplate.send(rut-uit.events, payload, Content-Type=application/json)
@@ -903,7 +905,9 @@ Spring Boot autoconfiguration (правило NEW-34). Подробный quick-
 - **Atomicity** — outbox.save идёт в той же tx что и доменная запись. Откат
   одного = откат другого (решено 02 P0-6 message loss).
 - **At-least-once delivery** — если Rabbit недоступен, row остаётся `pending`,
-  следующий tick публикует. `markSent` выполняется только после успеха sender'а.
+  следующий tick публикует. `markSent` выполняется только после успеха sender'а;
+  transport exception не переводит row в `failed`, чтобы временный RabbitMQ outage
+  не терял user-facing события (`lesson.started`, `lesson.reminder` и т.д.).
 - **Cluster safety** — `@SchedulerLock` (ShedLock) исключает конкурентную публикацию
   при scale-out (решено 03 P0-2 double-publish race). Lock name `outbox-publisher`
   — у каждого сервиса своя ShedLock-таблица в своей БД, так что 3 сервиса не
@@ -911,7 +915,8 @@ Spring Boot autoconfiguration (правило NEW-34). Подробный quick-
 - **Retention** — `OutboxCleanupJob` (cron 3am) удаляет `sent` rows старше 7 дней
   (NEW-7). Настраивается через `rutcampustrack.outbox.retention-days:7`.
 - **Observability** — Micrometer: `outbox.lag` (gauge, pending count),
-  `outbox.published.total` / `outbox.failed.total` (counter, tag event_type).
+  `outbox.published.total` / `outbox.failed.total` (counter publish-попыток,
+  tag event_type).
 - **Архитектурный инвариант** — ArchUnit `ScheduledMustHaveSchedulerLockTest`
   проверяет что любой `@Scheduled` метод имеет `@SchedulerLock` или явный
   `@SuppressWarnings("SingleInstance")` (NEW-28).

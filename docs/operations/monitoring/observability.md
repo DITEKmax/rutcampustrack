@@ -158,8 +158,9 @@ sum by (service) (rate({service=~".+"} |= "ERROR" [5m]))
 1. Grafana → outbox.lag.seconds per job → найти отстающий сервис.
 2. Проверить RabbitMQ health (`rct-rabbitmq` up?) — publisher job
    зависит от него.
-3. Логи сервиса: `{service="<svc>"} |= "OutboxPublisherJob"`. Ищи
-   `markFailed` с last_error.
+3. Логи сервиса: `{service="<svc>"} |= "Outbox publish failed"`. При
+   transport-сбое rows остаются `pending` и должны уйти после восстановления
+   RabbitMQ; `outbox.lag.seconds` должен вернуться к baseline.
 4. RabbitMQ management UI (в dev экспонирован `:15672`): queue depth,
    DLQ size. Consumers online?
 

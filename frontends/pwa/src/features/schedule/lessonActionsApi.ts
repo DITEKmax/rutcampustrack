@@ -98,6 +98,33 @@ export function useUnblockLesson() {
   })
 }
 
+export function useCancelLesson() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      lessonId,
+      reason,
+    }: {
+      lessonId: number
+      reason: string
+    }) => {
+      const { data } = await apiClient.patch(
+        `/schedule/lessons/${lessonId}/cancel`,
+        { reason },
+      )
+      return data
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['schedule'] })
+      qc.invalidateQueries({ queryKey: ['lessonAttendance', vars.lessonId] })
+      qc.invalidateQueries({ queryKey: ['journal'] })
+      qc.invalidateQueries({ queryKey: ['studentRecords'] })
+      qc.invalidateQueries({ queryKey: ['student-dashboard'] })
+      qc.invalidateQueries({ queryKey: ['todayLesson'] })
+    },
+  })
+}
+
 export function mapLessonActionError(status: number | undefined): string {
   switch (status) {
     case 403:

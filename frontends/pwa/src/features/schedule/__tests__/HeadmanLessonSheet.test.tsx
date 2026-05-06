@@ -1,7 +1,10 @@
-import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { HeadmanLessonSheet } from '../HeadmanLessonSheet'
 import type { LessonResponse } from '../types'
+
+const cancelLessonMutation = vi.hoisted(() => vi.fn())
 
 vi.mock('../headmanSheetApi', () => ({
   useLessonAttendance: () => ({
@@ -29,6 +32,14 @@ vi.mock('../headmanSheetApi', () => ({
   }),
 }))
 
+vi.mock('../lessonActionsApi', () => ({
+  useCancelLesson: () => ({
+    mutateAsync: cancelLessonMutation,
+    isPending: false,
+  }),
+  mapLessonActionError: () => 'Ошибка отмены',
+}))
+
 const lesson: LessonResponse = {
   id: 1,
   scheduleItemId: 100,
@@ -47,6 +58,11 @@ const lesson: LessonResponse = {
 }
 
 describe('HeadmanLessonSheet', () => {
+  beforeEach(() => {
+    cancelLessonMutation.mockReset()
+    cancelLessonMutation.mockResolvedValue(undefined)
+  })
+
   it('opens as a full-screen sheet and closes only by the close button', () => {
     const onClose = vi.fn()
 
@@ -76,6 +92,38 @@ describe('HeadmanLessonSheet', () => {
 
     fireEvent.click(document.body.querySelector('button[aria-label]')!)
 
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('cancels a lesson from the manage tab with a trimmed reason', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+    const onToast = vi.fn()
+
+    render(
+      <HeadmanLessonSheet
+        open
+        lesson={lesson}
+        subjectName="Algorithms"
+        onClose={onClose}
+        onToast={onToast}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Управление' }))
+    await user.type(
+      screen.getByLabelText('Причина отмены'),
+      '  Преподаватель заболел  ',
+    )
+    await user.click(screen.getByRole('button', { name: 'Отменить пару' }))
+
+    await waitFor(() => {
+      expect(cancelLessonMutation).toHaveBeenCalledWith({
+        lessonId: lesson.id,
+        reason: 'Преподаватель заболел',
+      })
+    })
+    expect(onToast).toHaveBeenCalledWith('success', 'Пара отменена')
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 })

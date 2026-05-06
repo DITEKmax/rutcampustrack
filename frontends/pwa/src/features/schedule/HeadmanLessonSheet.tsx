@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'motion/react'
-import { Broom, CheckCircle } from '@phosphor-icons/react'
+import { Broom, CheckCircle, XCircle } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { BottomSheet } from '@/shared/components/BottomSheet'
 import type { LessonResponse } from './types'
+import { mapLessonActionError, useCancelLesson } from './lessonActionsApi'
 import {
   useLessonAttendance,
   useHeadmanMarkAttendance,
@@ -22,6 +23,8 @@ interface Props {
 }
 
 type Tab = 'roster' | 'manage' | 'report'
+
+const CANCEL_REASON_MAX_LENGTH = 500
 
 /** A student was self-marked → show "ст" badge so headman sees the origin. */
 function isSelfMarked(source: AttendanceSource | null): boolean {
@@ -55,9 +58,26 @@ export function HeadmanLessonSheet({
   const attendance = useLessonAttendance(lesson?.id ?? null)
   const markMutation = useHeadmanMarkAttendance()
   const markBatchMutation = useHeadmanMarkBatch()
+  const cancelMutation = useCancelLesson()
   const [pendingUserId, setPendingUserId] = useState<number | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelTouched, setCancelTouched] = useState(false)
 
   const entries = attendance.data?.entries ?? []
+  const trimmedCancelReason = cancelReason.trim()
+  const cancelError = useMemo(() => {
+    if (!cancelTouched) return null
+    if (!trimmedCancelReason) return 'Укажи причину отмены'
+    if (trimmedCancelReason.length > CANCEL_REASON_MAX_LENGTH) {
+      return `Не больше ${CANCEL_REASON_MAX_LENGTH} символов`
+    }
+    return null
+  }, [cancelTouched, trimmedCancelReason])
+
+  useEffect(() => {
+    setCancelReason('')
+    setCancelTouched(false)
+  }, [lesson?.id])
 
   const summary = useMemo(() => {
     const total = entries.length
@@ -129,13 +149,40 @@ export function HeadmanLessonSheet({
     setTimeout(() => setTab('roster'), 300)
   }
 
+  const handleCancelLesson = async () => {
+    if (!lesson) return
+    setCancelTouched(true)
+    if (
+      !trimmedCancelReason ||
+      trimmedCancelReason.length > CANCEL_REASON_MAX_LENGTH
+    ) {
+      return
+    }
+    triggerHaptic()
+    try {
+      await cancelMutation.mutateAsync({
+        lessonId: lesson.id,
+        reason: trimmedCancelReason,
+      })
+      setCancelReason('')
+      setCancelTouched(false)
+      onToast('success', 'Пара отменена')
+      handleClose()
+    } catch (e: unknown) {
+      const status = (e as { response?: { status?: number } })?.response?.status
+      onToast('error', mapLessonActionError(status))
+    }
+  }
+
   const isOpen = open && !!lesson
+  const isManageBusy =
+    markMutation.isPending || markBatchMutation.isPending || cancelMutation.isPending
 
   return (
     <BottomSheet
       open={isOpen}
       onClose={handleClose}
-      title="Ручное проставление посещаемости"
+      title="Действия с парой"
       heading={lesson ? subjectName : undefined}
       subtitle={
         lesson
@@ -167,7 +214,18 @@ export function HeadmanLessonSheet({
               <ManageTab
                 onAllPresent={() => handleBulkMark('present')}
                 onClear={() => handleBulkMark('absent')}
-                isBusy={markMutation.isPending}
+                onCancelLesson={handleCancelLesson}
+                cancelReason={cancelReason}
+                cancelError={cancelError}
+                cancelReasonMaxLength={CANCEL_REASON_MAX_LENGTH}
+                onCancelReasonChange={(value) => {
+                  setCancelReason(value)
+                  if (cancelTouched) setCancelTouched(true)
+                }}
+                onCancelReasonBlur={() => setCancelTouched(true)}
+                isBusy={isManageBusy}
+                isCancelBusy={cancelMutation.isPending}
+                canCancel={lesson.status !== 'CANCELLED'}
               />
             )}
             {tab === 'report' && <ReportTab summary={summary} />}
@@ -398,11 +456,27 @@ function MarkBtn({
 function ManageTab({
   onAllPresent,
   onClear,
+  onCancelLesson,
+  cancelReason,
+  cancelError,
+  cancelReasonMaxLength,
+  onCancelReasonChange,
+  onCancelReasonBlur,
   isBusy,
+  isCancelBusy,
+  canCancel,
 }: {
   onAllPresent: () => void
   onClear: () => void
+  onCancelLesson: () => void
+  cancelReason: string
+  cancelError: string | null
+  cancelReasonMaxLength: number
+  onCancelReasonChange: (value: string) => void
+  onCancelReasonBlur: () => void
   isBusy: boolean
+  isCancelBusy: boolean
+  canCancel: boolean
 }) {
   return (
     <div className="flex flex-col gap-[var(--space-3)]">
@@ -420,6 +494,17 @@ function ManageTab({
         onClick={onClear}
         disabled={isBusy}
         tone="danger"
+      />
+      <CancelLessonBlock
+        reason={cancelReason}
+        error={cancelError}
+        maxLength={cancelReasonMaxLength}
+        onReasonChange={onCancelReasonChange}
+        onReasonBlur={onCancelReasonBlur}
+        onSubmit={onCancelLesson}
+        disabled={isBusy}
+        isBusy={isCancelBusy}
+        canCancel={canCancel}
       />
     </div>
   )
@@ -483,6 +568,134 @@ function ManageRow({
         </p>
       </div>
     </motion.button>
+  )
+}
+
+function CancelLessonBlock({
+  reason,
+  error,
+  maxLength,
+  onReasonChange,
+  onReasonBlur,
+  onSubmit,
+  disabled,
+  isBusy,
+  canCancel,
+}: {
+  reason: string
+  error: string | null
+  maxLength: number
+  onReasonChange: (value: string) => void
+  onReasonBlur: () => void
+  onSubmit: () => void
+  disabled: boolean
+  isBusy: boolean
+  canCancel: boolean
+}) {
+  const trimmed = reason.trim()
+  const submitDisabled =
+    disabled || !canCancel || !trimmed || trimmed.length > maxLength
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        onSubmit()
+      }}
+      className="rounded-[var(--radius-md)] border px-[var(--space-4)] py-[var(--space-4)]"
+      style={{
+        background: 'var(--bg-secondary)',
+        borderColor: 'color-mix(in oklab, var(--accent-danger) 35%, var(--border-subtle))',
+      }}
+    >
+      <div className="flex items-start gap-[var(--space-3)]">
+        <span
+          aria-hidden="true"
+          className="grid size-11 shrink-0 place-items-center rounded-[var(--radius-sm)]"
+          style={{
+            background: 'color-mix(in oklab, var(--accent-danger) 14%, transparent)',
+            color: 'var(--accent-danger)',
+            border: '1px solid color-mix(in oklab, var(--accent-danger) 40%, transparent)',
+          }}
+        >
+          <XCircle size={22} weight="duotone" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p
+            className="text-[var(--text-sm)] font-semibold"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Отменить пару
+          </p>
+          <p
+            className="text-[var(--text-xs)]"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Болезнь, приказ, замена расписания
+          </p>
+        </div>
+      </div>
+
+      <label
+        htmlFor="headman-cancel-reason"
+        className="mt-[var(--space-3)] block text-[var(--text-xs)] font-semibold"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        Причина отмены
+      </label>
+      <textarea
+        id="headman-cancel-reason"
+        value={reason}
+        maxLength={maxLength}
+        rows={3}
+        disabled={disabled || !canCancel}
+        aria-invalid={!!error}
+        aria-describedby={
+          error ? 'headman-cancel-reason-error' : 'headman-cancel-reason-count'
+        }
+        onChange={(event) => onReasonChange(event.target.value)}
+        onBlur={onReasonBlur}
+        placeholder="Например: преподаватель заболел"
+        className={cn(
+          'mt-1 min-h-20 w-full resize-none rounded-[var(--radius-md)] border',
+          'px-[var(--space-3)] py-[var(--space-2)] text-[var(--text-sm)] outline-none',
+          'transition-colors disabled:opacity-50',
+        )}
+        style={{
+          background: 'var(--bg-primary)',
+          borderColor: error ? 'var(--accent-danger)' : 'var(--border-subtle)',
+          color: 'var(--text-primary)',
+        }}
+      />
+      <div className="mt-1 flex min-h-4 items-center justify-between gap-2">
+        <span
+          id="headman-cancel-reason-error"
+          className="text-[11px]"
+          style={{ color: error ? 'var(--accent-danger)' : 'transparent' }}
+        >
+          {error ?? ' '}
+        </span>
+        <span
+          id="headman-cancel-reason-count"
+          className="shrink-0 text-[11px] tabular-nums"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {trimmed.length}/{maxLength}
+        </span>
+      </div>
+
+      <motion.button
+        type="submit"
+        whileTap={{ scale: submitDisabled ? 1 : 0.98 }}
+        disabled={submitDisabled}
+        className="mt-[var(--space-3)] inline-flex h-10 w-full items-center justify-center rounded-[var(--radius-md)] text-[var(--text-sm)] font-semibold disabled:opacity-50"
+        style={{
+          background: 'var(--accent-danger)',
+          color: 'var(--bg-primary)',
+        }}
+      >
+        {isBusy ? 'Отменяем...' : 'Отменить пару'}
+      </motion.button>
+    </form>
   )
 }
 

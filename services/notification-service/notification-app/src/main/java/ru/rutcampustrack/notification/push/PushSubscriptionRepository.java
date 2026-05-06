@@ -4,6 +4,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Spring Data MongoDB repository for push subscriptions.
@@ -18,6 +19,8 @@ import java.util.List;
 public interface PushSubscriptionRepository extends MongoRepository<PushSubscriptionDocument, String> {
 
     List<PushSubscriptionDocument> findAllByGroupId(Long groupId);
+
+    Optional<PushSubscriptionDocument> findByUserIdAndEndpoint(Long userId, String endpoint);
 
     void deleteByUserIdAndEndpoint(Long userId, String endpoint);
 

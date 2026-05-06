@@ -326,7 +326,7 @@ function NotificationSettingsDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end bg-black/45 p-3 sm:items-center sm:justify-center"
+      className="fixed inset-0 z-[var(--z-modal)] flex items-end bg-black/45 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:items-center sm:justify-center sm:p-3"
       role="presentation"
       onClick={onClose}
     >

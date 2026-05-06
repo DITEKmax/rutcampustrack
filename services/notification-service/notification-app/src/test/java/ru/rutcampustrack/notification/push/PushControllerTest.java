@@ -17,6 +17,8 @@ import ru.rutcampustrack.notification.security.RequestContext;
 import ru.rutcampustrack.notification.security.RequireRole;
 
 import java.lang.reflect.Method;
+import java.time.Instant;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -101,6 +103,49 @@ class PushControllerTest {
         ArgumentCaptor<PushSubscriptionDocument> captor = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
         verify(repository).save(captor.capture());
         assertThat(captor.getValue().getGroupId()).isEqualTo(7L);
+    }
+
+    @Test
+    void subscribe_updatesExistingSubscriptionAndKeepsCreatedAt() {
+        when(requestContext.getUserId()).thenReturn(42L);
+        when(requestContext.getGroupId()).thenReturn(9L);
+        when(requestContext.isHeadman()).thenReturn(true);
+
+        Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
+        PushSubscriptionDocument existing = PushSubscriptionDocument.builder()
+                .id("existing-id")
+                .userId(42L)
+                .groupId(5L)
+                .endpoint("https://push.example.com/sub/xyz")
+                .p256dh("old-p256dh")
+                .auth("old-auth")
+                .headman(false)
+                .createdAt(createdAt)
+                .lastSeen(Instant.parse("2026-01-02T00:00:00Z"))
+                .build();
+        when(repository.findByUserIdAndEndpoint(42L, "https://push.example.com/sub/xyz"))
+                .thenReturn(Optional.of(existing));
+
+        SubscribeRequest request = new SubscribeRequest(
+                "https://push.example.com/sub/xyz",
+                new SubscribeRequest.Keys("new-p256dh", "new-auth")
+        );
+
+        ResponseEntity<Void> response = controller.subscribe(request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        ArgumentCaptor<PushSubscriptionDocument> captor = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        verify(repository).save(captor.capture());
+        PushSubscriptionDocument saved = captor.getValue();
+        assertThat(saved.getId()).isEqualTo("existing-id");
+        assertThat(saved.getUserId()).isEqualTo(42L);
+        assertThat(saved.getGroupId()).isEqualTo(9L);
+        assertThat(saved.getEndpoint()).isEqualTo("https://push.example.com/sub/xyz");
+        assertThat(saved.getP256dh()).isEqualTo("new-p256dh");
+        assertThat(saved.getAuth()).isEqualTo("new-auth");
+        assertThat(saved.isHeadman()).isTrue();
+        assertThat(saved.getCreatedAt()).isEqualTo(createdAt);
+        assertThat(saved.getLastSeen()).isAfter(createdAt);
     }
 
     // Test 5: PushController.unsubscribe() deletes subscription by userId+endpoint and returns 204

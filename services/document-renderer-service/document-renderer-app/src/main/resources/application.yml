@@ -1,5 +1,8 @@
 server:
   port: 9095
+  tomcat:
+    mbeanregistry:
+      enabled: true
 
 spring:
   application:
@@ -40,3 +43,6 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true

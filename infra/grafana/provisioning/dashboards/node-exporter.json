@@ -524,7 +524,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} > bool 0) * ((node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{instance=\"$node\",job=\"$job\"}) / (node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"})) * 100",
+          "expr": "((((node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{instance=\"$node\",job=\"$job\"}) / node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"}) * 100) unless (node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} == 0)) or ((node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} == bool 0) * 0)",
           "instant": true,
           "range": false,
           "refId": "A",

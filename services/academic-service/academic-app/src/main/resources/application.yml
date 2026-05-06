@@ -1,5 +1,8 @@
 server:
   port: 9091
+  tomcat:
+    mbeanregistry:
+      enabled: true
 
 spring:
   application:
@@ -135,3 +138,7 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        grpc.client.duration: true

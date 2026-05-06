@@ -375,6 +375,9 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
 
 # M04 QA1: INFO-default для secure-by-default. DEBUG включается через
 # application-dev.yml (SPRING_PROFILES_ACTIVE=dev) или env-override.

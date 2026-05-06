@@ -14,7 +14,7 @@
       "description": "histogram_quantile(0.5) на 5-минутном rate. Baseline ~5ms loopback docker, alert при > 100ms = downstream перегружен.",
       "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
       "id": 1,
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
       "targets": [
         {
           "expr": "histogram_quantile(0.5, sum by (service, method, le) (rate(grpc_client_duration_seconds_bucket[5m])))",
@@ -30,7 +30,7 @@
       "description": "P95 — хвосты. Alert-триггер > 500ms (80% от deadline 3s).",
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
       "id": 2,
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
       "targets": [
         {
           "expr": "histogram_quantile(0.95, sum by (service, method, le) (rate(grpc_client_duration_seconds_bucket[5m])))",
@@ -46,7 +46,7 @@
       "description": "P99 — deadline approach. > 2.5s = следующий запрос почти гарантировано получит DEADLINE_EXCEEDED.",
       "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
       "id": 3,
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
       "targets": [
         {
           "expr": "histogram_quantile(0.99, sum by (service, method, le) (rate(grpc_client_duration_seconds_bucket[5m])))",
@@ -62,7 +62,7 @@
       "description": "rate по gRPC status code — UNAVAILABLE / DEADLINE_EXCEEDED / FAILED_PRECONDITION (NEW-149 runtime-guard) / NOT_FOUND. Alert при > 5% error-rate sustained 5min.",
       "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
       "id": 4,
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
       "targets": [
         {
           "expr": "sum by (service, method, status) (rate(grpc_client_duration_seconds_count{status!=\"OK\"}[5m]))",
@@ -78,7 +78,7 @@
       "description": "Количество уникальных (service, method) пар за последние 5 минут. Baseline: attendance→schedule 5 методов + attendance→academic 8 + schedule→academic 4 = 17.",
       "gridPos": {"h": 4, "w": 6, "x": 0, "y": 16},
       "id": 5,
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
       "targets": [
         {
           "expr": "count(count by (service, method) (rate(grpc_client_duration_seconds_count[5m])))",

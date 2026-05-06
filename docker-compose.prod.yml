@@ -566,8 +566,18 @@ services:
     container_name: rct-node-exporter
     command:
       - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.processes'
+      - '--collector.interrupts'
+      - '--collector.tcpstat'
+      - '--collector.systemd'
     volumes:
       - /:/host:ro,rslave
+      # Optional host signals used by Node Exporter Full: systemd unit/socket
+      # state, process/thread counts, IRQ detail and TCP socket queues.
+      # Hardware sensors still depend on physical host support.
+      - /var/run/dbus:/var/run/dbus:ro,rslave
     expose:
       - "9100"
     networks:

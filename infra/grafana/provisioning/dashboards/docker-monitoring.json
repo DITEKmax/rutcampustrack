@@ -26,7 +26,7 @@
       "maxDataPoints": 100,
       "options": { "colorMode": "none", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "count(rate(container_last_seen{name=~\".+\"}[$interval]))", "intervalFactor": 2, "refId": "A", "step": 1800 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "count(label_replace(container_last_seen{name=~\".+\"}, \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(container_last_seen{name=\"\", container_label_com_docker_compose_service=~\".+\"}, \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\"))", "intervalFactor": 2, "refId": "A", "step": 1800 }],
       "title": "Containers",
       "type": "stat"
     },
@@ -157,7 +157,7 @@
       "id": 8,
       "options": { "legend": { "calcs": [], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(rate(container_network_receive_bytes_total{name=~\".+\"}[$interval])) by (name)", "intervalFactor": 2, "legendFormat": "{{name}}", "refId": "A", "step": 240 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum by (container_name) (label_replace(rate(container_network_receive_bytes_total{name=~\".+\"}[$interval]), \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(rate(container_network_receive_bytes_total{name=\"\", container_label_com_docker_compose_service=~\".+\"}[$interval]), \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\"))", "intervalFactor": 2, "legendFormat": "{{container_name}}", "refId": "A", "step": 240 }],
       "title": "Received Network Traffic per Container",
       "type": "timeseries"
     },
@@ -168,7 +168,7 @@
       "id": 9,
       "options": { "legend": { "calcs": [], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(rate(container_network_transmit_bytes_total{name=~\".+\"}[$interval])) by (name)", "intervalFactor": 2, "legendFormat": "{{name}}", "refId": "A", "step": 240 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum by (container_name) (label_replace(rate(container_network_transmit_bytes_total{name=~\".+\"}[$interval]), \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(rate(container_network_transmit_bytes_total{name=\"\", container_label_com_docker_compose_service=~\".+\"}[$interval]), \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\"))", "intervalFactor": 2, "legendFormat": "{{container_name}}", "refId": "A", "step": 240 }],
       "title": "Sent Network Traffic per Container",
       "type": "timeseries"
     },
@@ -179,7 +179,7 @@
       "id": 1,
       "options": { "legend": { "calcs": [], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\".+\"}[$interval])) by (name) * 100", "intervalFactor": 2, "legendFormat": "{{name}}", "refId": "F", "step": 240 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum by (container_name) (label_replace(rate(container_cpu_usage_seconds_total{name=~\".+\"}[$interval]), \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(rate(container_cpu_usage_seconds_total{name=\"\", container_label_com_docker_compose_service=~\".+\"}[$interval]), \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\")) * 100", "intervalFactor": 2, "legendFormat": "{{container_name}}", "refId": "F", "step": 240 }],
       "title": "CPU Usage per Container",
       "type": "timeseries"
     },
@@ -190,7 +190,7 @@
       "id": 34,
       "options": { "legend": { "calcs": [], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(container_memory_swap{name=~\".+\"}) by (name)", "intervalFactor": 2, "legendFormat": "{{name}}", "refId": "A", "step": 240 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum by (container_name) (label_replace(container_memory_swap{name=~\".+\"}, \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(container_memory_swap{name=\"\", container_label_com_docker_compose_service=~\".+\"}, \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\"))", "intervalFactor": 2, "legendFormat": "{{container_name}}", "refId": "A", "step": 240 }],
       "title": "Memory Swap per Container",
       "type": "timeseries"
     },
@@ -201,7 +201,7 @@
       "id": 10,
       "options": { "legend": { "calcs": [], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(container_memory_rss{name=~\".+\"}) by (name)", "intervalFactor": 2, "legendFormat": "{{name}}", "refId": "A", "step": 240 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum by (container_name) (label_replace(container_memory_working_set_bytes{name=~\".+\"}, \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(container_memory_working_set_bytes{name=\"\", container_label_com_docker_compose_service=~\".+\"}, \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\"))", "intervalFactor": 2, "legendFormat": "{{container_name}}", "refId": "A", "step": 240 }],
       "title": "Memory Usage per Container",
       "type": "timeseries"
     },
@@ -212,7 +212,7 @@
       "id": 36,
       "options": { "cellHeight": "sm", "showHeader": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(container_spec_memory_limit_bytes{name=~\".+\"}) by (name)", "intervalFactor": 2, "legendFormat": "{{name}}", "refId": "B", "step": 240 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum by (container_name) (label_replace(container_spec_memory_limit_bytes{name=~\".+\"}, \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(container_spec_memory_limit_bytes{name=\"\", container_label_com_docker_compose_service=~\".+\"}, \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\"))", "intervalFactor": 2, "legendFormat": "{{container_name}}", "refId": "B", "step": 240 }],
       "title": "Limit memory",
       "transformations": [{ "id": "reduce", "options": { "includeTimeField": false, "reducers": ["lastNotNull"] } }],
       "type": "table"
@@ -224,7 +224,7 @@
       "id": 37,
       "options": { "cellHeight": "sm", "showHeader": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "container_memory_usage_bytes{name=~\".+\"}", "intervalFactor": 2, "legendFormat": "{{name}}", "refId": "C", "step": 240 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum by (container_name) (label_replace(container_memory_usage_bytes{name=~\".+\"}, \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(container_memory_usage_bytes{name=\"\", container_label_com_docker_compose_service=~\".+\"}, \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\"))", "intervalFactor": 2, "legendFormat": "{{container_name}}", "refId": "C", "step": 240 }],
       "title": "Usage memory",
       "transformations": [{ "id": "reduce", "options": { "includeTimeField": false, "reducers": ["lastNotNull"] } }],
       "type": "table"
@@ -236,7 +236,7 @@
       "id": 35,
       "options": { "cellHeight": "sm", "showHeader": true },
       "pluginVersion": "12.4.2",
-      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "sum(100 - ((container_spec_memory_limit_bytes{name=~\".+\"} - container_memory_usage_bytes{name=~\".+\"}) * 100 / container_spec_memory_limit_bytes{name=~\".+\"})) by (name)", "intervalFactor": 2, "legendFormat": "{{name}}", "refId": "A", "step": 240 }],
+      "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "100 * sum by (container_name) (label_replace(container_memory_usage_bytes{name=~\".+\"}, \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(container_memory_usage_bytes{name=\"\", container_label_com_docker_compose_service=~\".+\"}, \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\")) / sum by (container_name) (label_replace(container_spec_memory_limit_bytes{name=~\".+\"}, \"container_name\", \"$1\", \"name\", \"(.+)\") or label_replace(container_spec_memory_limit_bytes{name=\"\", container_label_com_docker_compose_service=~\".+\"}, \"container_name\", \"$1\", \"container_label_com_docker_compose_service\", \"(.+)\"))", "intervalFactor": 2, "legendFormat": "{{container_name}}", "refId": "A", "step": 240 }],
       "title": "Remaining memory",
       "transformations": [{ "id": "reduce", "options": { "includeTimeField": false, "reducers": ["lastNotNull"] } }],
       "type": "table"

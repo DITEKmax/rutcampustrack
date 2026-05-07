@@ -100,10 +100,7 @@ class TelegramSendQueue:
                     continue
                 if delay is None:
                     logger.error(
-                        (
-                            "Send failed after %d attempts user_id=%s chat_id=%s "
-                            "category=%s error=%s — skipping"
-                        ),
+                        ("Send failed after %d attempts user_id=%s chat_id=%s category=%s error=%s — skipping"),
                         len(self._RETRY_DELAYS) + 1,
                         task.user_id,
                         task.chat_id,
@@ -114,10 +111,7 @@ class TelegramSendQueue:
                     self._total_failed += 1
                     return
                 logger.warning(
-                    (
-                        "Send attempt %d failed user_id=%s chat_id=%s "
-                        "category=%s error=%s — retrying in %ds"
-                    ),
+                    ("Send attempt %d failed user_id=%s chat_id=%s category=%s error=%s — retrying in %ds"),
                     attempt,
                     task.user_id,
                     task.chat_id,

@@ -46,20 +46,21 @@ class NotificationHistoryConsumerMapTypeTest {
     }
 
     @Test
-    void mapsLateCheckinDecisionApproved() {
+    void skipsLateCheckinDecisionCommand() {
         assertThat(NotificationHistoryConsumer.mapType("late_checkin.decision",
-                Map.of("status", "approved")))
-                .contains(NotificationType.LATE_CHECKIN_APPROVED);
+                Map.of("approved", true, "request_id", "req-1")))
+                .isEmpty();
+    }
+
+    @Test
+    void mapsLateCheckinDecidedApproved() {
         assertThat(NotificationHistoryConsumer.mapType("late_checkin.decided",
                 Map.of("status", "approved")))
                 .contains(NotificationType.LATE_CHECKIN_APPROVED);
     }
 
     @Test
-    void mapsLateCheckinDecisionRejected() {
-        assertThat(NotificationHistoryConsumer.mapType("late_checkin.decision",
-                Map.of("status", "rejected")))
-                .contains(NotificationType.LATE_CHECKIN_REJECTED);
+    void mapsLateCheckinDecidedRejected() {
         assertThat(NotificationHistoryConsumer.mapType("late_checkin.decided",
                 Map.of("status", "rejected")))
                 .contains(NotificationType.LATE_CHECKIN_REJECTED);

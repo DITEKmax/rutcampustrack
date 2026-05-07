@@ -117,13 +117,16 @@ public class WebPushDeliveryService {
     public CompletableFuture<Void> sendToGroup(long groupId, String eventType, Map<String, Object> payload) {
         List<PushSubscriptionDocument> subs = repository.findAllByGroupId(groupId);
         if (subs.isEmpty()) {
-            log.debug("No push subscriptions for group {}", groupId);
+            log.info("Push delivery skipped event={} group={} subscriptions=0 reason=no_subscriptions",
+                    eventType, groupId);
             return CompletableFuture.completedFuture(null);
         }
 
         List<PushSubscriptionDocument> targets = filterRecipients(subs, eventType, payload);
         if (targets.isEmpty()) {
-            log.debug("No eligible push recipients for event {} in group {}", eventType, groupId);
+            log.info(
+                    "Push delivery skipped event={} group={} subscriptions={} targets=0 reason=no_eligible_recipients",
+                    eventType, groupId, subs.size());
             return CompletableFuture.completedFuture(null);
         }
 
@@ -132,6 +135,8 @@ public class WebPushDeliveryService {
         byte[] payloadBytes = buildPayloadJson(title, body, eventType, payload);
 
         List<String> deliveredEndpoints = new ArrayList<>(targets.size());
+        int failed = 0;
+        int expired = 0;
         for (PushSubscriptionDocument sub : targets) {
             try {
                 Notification notification = createNotification(sub, payloadBytes);
@@ -142,14 +147,19 @@ public class WebPushDeliveryService {
                 if (isGone(e)) {
                     // D-10: Auto-delete expired subscription on HTTP 410 (PUSH-07)
                     repository.deleteByEndpoint(sub.getEndpoint());
+                    expired++;
                     log.info("Deleted expired push subscription: {}", sub.getEndpoint());
                 } else {
                     // D-08: Log and continue — do not block other subscriptions
+                    failed++;
                     log.warn("Push failed for {}: {}", sub.getEndpoint(), e.getMessage());
                 }
             }
         }
         touchLastSeen(deliveredEndpoints);
+        log.info(
+                "Push delivery finished event={} group={} subscriptions={} targets={} sent={} failed={} expired={}",
+                eventType, groupId, subs.size(), targets.size(), deliveredEndpoints.size(), failed, expired);
         return CompletableFuture.completedFuture(null);
     }
 

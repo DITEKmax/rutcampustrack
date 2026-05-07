@@ -114,8 +114,13 @@ public class NotificationHistoryConsumer extends AbstractEventConsumer {
             case "excuse.decided" -> Optional.of(decisionType(payload,
                     NotificationType.EXCUSE_APPROVED, NotificationType.EXCUSE_REJECTED));
             case "late_checkin.requested" -> Optional.of(NotificationType.LATE_CHECKIN_REQUESTED);
-            case "late_checkin.decided", "late_checkin.decision" -> Optional.of(decisionType(payload,
+            case "late_checkin.decided" -> Optional.of(decisionType(payload,
                     NotificationType.LATE_CHECKIN_APPROVED, NotificationType.LATE_CHECKIN_REJECTED));
+            // late_checkin.decision is an internal bot -> attendance command.
+            // It has request_id/approved/decision_by but no student user_id;
+            // attendance-service publishes user-facing late_checkin.decided
+            // after applying the decision.
+            case "late_checkin.decision" -> Optional.empty();
             // attendance.marked записываем в историю студента ТОЛЬКО если статус
             // выставил староста вручную (marked_by="headman"). Self-check-in и
             // авто-absent (marked_by="self"|"auto") — это не уведомление, в

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from hashlib import sha256
 
 from aiogram import F, Router
 from aiogram.types import (
@@ -30,6 +31,13 @@ prefs_router = Router()
 
 SETTINGS_LABEL = "⚙️ Настройки уведомлений"
 LOGIN_LABEL = "🔑 Получить код для входа"
+HOMEWORK_WEEK_LABEL = "📚 ДЗ на неделю"
+
+_MAIN_KEYBOARD_LAYOUT: tuple[tuple[str, ...], ...] = (
+    (HOMEWORK_WEEK_LABEL,),
+    (SETTINGS_LABEL,),
+    (LOGIN_LABEL,),
+)
 
 _CATEGORY_LABELS: dict[str, str] = {
     "lessons": "Пары",
@@ -55,13 +63,16 @@ def main_keyboard(notifications_enabled: bool | None = None) -> ReplyKeyboardMar
     """
     del notifications_enabled  # unused — kept for backward-compat keyword args
     return ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text=SETTINGS_LABEL)],
-            [KeyboardButton(text=LOGIN_LABEL)],
-        ],
+        keyboard=[[KeyboardButton(text=label) for label in row] for row in _MAIN_KEYBOARD_LAYOUT],
         resize_keyboard=True,
         is_persistent=True,
     )
+
+
+def keyboard_signature() -> str:
+    """Stable signature for backend-driven reply keyboard updates."""
+    raw = "\n".join("|".join(row) for row in _MAIN_KEYBOARD_LAYOUT)
+    return sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
 def _checkbox(enabled: bool) -> str:

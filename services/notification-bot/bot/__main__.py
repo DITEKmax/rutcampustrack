@@ -10,14 +10,25 @@ from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
-from bot.handlers import excuse_router, late_checkin_router, login_router, prefs_router, start_router, status_router
+from bot.handlers import (
+    excuse_router,
+    homework_router,
+    late_checkin_router,
+    login_router,
+    prefs_router,
+    start_router,
+    status_router,
+)
+from bot.handlers.prefs import keyboard_signature, main_keyboard
 from bot.middlewares import ObservabilityMiddleware
 from bot.observability import setup_observability
+from bot.services.academic_http_client import AcademicHttpClient
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.event_publisher import EventPublisher
 from bot.services.idempotency_guard import BotIdempotencyGuard
 from bot.services.jwt_redis_client import JwtRedisClient
+from bot.services.keyboard_sync import KeyboardSyncClient, sync_registered_keyboards
 from bot.services.notification_prefs import NotificationPrefsClient
 from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
@@ -33,6 +44,7 @@ logger = logging.getLogger(__name__)
 # Global references for health check
 _consumer_task: asyncio.Task | None = None
 _bot_task: asyncio.Task | None = None
+_keyboard_sync_task: asyncio.Task | None = None
 
 
 async def health_handler(request: web.Request) -> web.Response:
@@ -86,16 +98,18 @@ async def create_clients():
     )
     auth_client = AuthHttpClient(base_url=f"http://{config.auth_service_host}:{config.auth_service_port}")
     attendance_client = AttendanceHttpClient(base_url=config.api_gateway_url)
+    academic_http_client = AcademicHttpClient(base_url=config.api_gateway_url)
 
     # Start HTTP sessions (must be in async context — Pitfall 3)
     await auth_client.start()
     await attendance_client.start()
+    await academic_http_client.start()
 
-    return academic_client, schedule_client, jwt_redis, auth_client, attendance_client
+    return academic_client, schedule_client, jwt_redis, auth_client, attendance_client, academic_http_client
 
 
 async def main() -> None:
-    global _consumer_task, _bot_task
+    global _consumer_task, _bot_task, _keyboard_sync_task
 
     # M08 G8 (NEW-164) — kill process before any listener starts if secrets
     # are missing. Without this, bot connects to gRPC with empty
@@ -105,7 +119,14 @@ async def main() -> None:
     await run_health_server()
 
     # Create service clients
-    academic_client, schedule_client, jwt_redis, auth_client, attendance_client = await create_clients()
+    (
+        academic_client,
+        schedule_client,
+        jwt_redis,
+        auth_client,
+        attendance_client,
+        academic_http_client,
+    ) = await create_clients()
 
     # Create Bot and Dispatcher
     bot = Bot(token=config.bot_token)
@@ -120,6 +141,12 @@ async def main() -> None:
 
     # Notification on/off prefs (Redis-backed)
     prefs_client = NotificationPrefsClient(
+        host=config.redis_host,
+        port=config.redis_port,
+        password=config.redis_password,
+    )
+
+    keyboard_sync = KeyboardSyncClient(
         host=config.redis_host,
         port=config.redis_port,
         password=config.redis_password,
@@ -155,7 +182,9 @@ async def main() -> None:
     dp["jwt_redis"] = jwt_redis
     dp["auth_client"] = auth_client
     dp["attendance_client"] = attendance_client
+    dp["academic_http_client"] = academic_http_client
     dp["prefs_client"] = prefs_client
+    dp["keyboard_sync"] = keyboard_sync
     dp["otp_tracker"] = otp_tracker
     dp["event_publisher"] = event_publisher
     dp["request_tracker"] = request_tracker
@@ -163,6 +192,7 @@ async def main() -> None:
     # Register routers
     dp.include_router(start_router)
     dp.include_router(login_router)
+    dp.include_router(homework_router)
     dp.include_router(status_router)
     dp.include_router(prefs_router)
     dp.include_router(late_checkin_router)
@@ -201,6 +231,15 @@ async def main() -> None:
         )
     )
 
+    _keyboard_sync_task = asyncio.create_task(
+        sync_registered_keyboards(
+            bot=bot,
+            keyboard_sync=keyboard_sync,
+            keyboard=main_keyboard(),
+            keyboard_version=keyboard_signature(),
+        )
+    )
+
     # Start bot polling (handle_signals=False — Pitfall 5: signals managed by main loop)
     _bot_task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
 
@@ -219,7 +258,7 @@ async def main() -> None:
         logger.info("Main cancelled, shutting down")
     finally:
         # Cleanup
-        for task in [_consumer_task, _bot_task]:
+        for task in [_consumer_task, _bot_task, _keyboard_sync_task]:
             if task and not task.done():
                 task.cancel()
         await send_queue.shutdown()
@@ -229,8 +268,10 @@ async def main() -> None:
         await otp_tracker.close()
         await auth_client.close()
         await attendance_client.close()
+        await academic_http_client.close()
         await jwt_redis.close()
         await prefs_client.close()
+        await keyboard_sync.close()
         await schedule_client.close()
         await academic_client.close()
         await event_publisher.close()

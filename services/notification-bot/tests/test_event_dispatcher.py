@@ -133,6 +133,8 @@ async def test_dispatcher_has_all_event_types():
         "lesson.cancelled",
         "homework.published",
         "homework.updated",
+        "homework.weekly_digest",
+        "homework.due_reminder",
         "excuse.requested",
         "excuse.decided",
         "late_checkin.requested",

@@ -5,7 +5,8 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from bot.handlers.prefs import main_keyboard
+from bot.handlers.prefs import keyboard_signature, main_keyboard
+from bot.services.keyboard_sync import mark_keyboard_synced
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +35,12 @@ _INSTALL_BLOCK = (
 
 
 @start_router.message(Command("start"))
-async def cmd_start(message: Message, academic_client, prefs_client) -> None:
+async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sync=None) -> None:
     """Handle /start command — account linking (D-02, D-03)."""
     telegram_id = message.from_user.id
     notifications_enabled = await prefs_client.is_enabled(telegram_id)
     keyboard = main_keyboard(notifications_enabled=notifications_enabled)
+    await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature())
     try:
         response = await academic_client.get_user_by_telegram_id(telegram_id)
 

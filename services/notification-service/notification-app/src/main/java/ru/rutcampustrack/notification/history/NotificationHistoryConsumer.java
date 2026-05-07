@@ -128,6 +128,8 @@ public class NotificationHistoryConsumer extends AbstractEventConsumer {
             case "attendance.marked" -> "headman".equals(payload.get("marked_by"))
                     ? Optional.of(NotificationType.ATTENDANCE_MARKED_BY_HEADMAN)
                     : Optional.empty();
+            case "homework.weekly_digest" -> Optional.of(NotificationType.HOMEWORK_WEEKLY_DIGEST);
+            case "homework.due_reminder" -> Optional.of(NotificationType.HOMEWORK_DUE_REMINDER);
             // lesson.reminder — broadcast по группе, без payload.user_id.
             // В per-user history не попадает (как и lesson.started/closed/
             // cancelled). PWA/web-panel рендерят через live STOMP +

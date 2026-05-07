@@ -45,6 +45,8 @@ const STORED_TYPES: ReadonlySet<string> = new Set([
   'lesson.one_off.cancelled',
   'homework.published',
   'homework.updated',
+  'homework.weekly_digest',
+  'homework.due_reminder',
   'late_checkin.requested',
   'late_checkin.decided',
   'excuse.requested',
@@ -58,6 +60,8 @@ const USER_SCOPED_TYPES: ReadonlySet<string> = new Set([
   'late_checkin.decided',
   'excuse.decided',
   'attendance.marked',
+  'homework.weekly_digest',
+  'homework.due_reminder',
 ])
 
 const HEADMAN_ONLY_TYPES: ReadonlySet<string> = new Set([
@@ -130,6 +134,10 @@ function buildTitle(type: string, payload: Record<string, unknown>): string {
       return 'Новое домашнее задание'
     case 'homework.updated':
       return 'Изменения в домашнем задании'
+    case 'homework.weekly_digest':
+      return 'ДЗ на следующую неделю'
+    case 'homework.due_reminder':
+      return 'ДЗ через 2 дня'
     case 'late_checkin.requested':
       return 'Запрос опоздалой отметки'
     case 'late_checkin.decided':
@@ -179,6 +187,13 @@ function formatShortDate(iso: string): string {
   return iso
 }
 
+function formatFullDate(iso: string): string {
+  if (iso.length >= 10 && iso[4] === '-' && iso[7] === '-') {
+    return `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`
+  }
+  return iso
+}
+
 function formatLessonRef(payload: Record<string, unknown>): string {
   const parts: string[] = []
   const lessonNumber = payload.lesson_number
@@ -207,6 +222,76 @@ function buildHomeworkBody(payload: Record<string, unknown>, lessonRef: string):
   return lines.length > 0
     ? lines.join('\n')
     : 'Откройте приложение для подробностей'
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+function asRecordList(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is Record<string, unknown> =>
+        !!item && typeof item === 'object' && !Array.isArray(item),
+      )
+    : []
+}
+
+function numberValue(value: unknown): number {
+  return typeof value === 'number' ? value : 0
+}
+
+function homeworkItemLine(item: Record<string, unknown>): string {
+  const parts: string[] = []
+  addIfPresent(parts, str(item, 'subject_name'))
+  addIfPresent(parts, str(item, 'title'))
+  addIfPresent(parts, formatLessonRef(item))
+  return parts.length > 0 ? parts.join(' · ') : 'Домашнее задание'
+}
+
+function buildHomeworkDueReminderBody(payload: Record<string, unknown>): string {
+  const homework = asRecord(payload.homework)
+  if (Object.keys(homework).length === 0) {
+    return 'Откройте ДЗ, чтобы проверить дедлайн'
+  }
+  const dueDate = str(payload, 'due_date') || str(homework, 'lesson_date')
+  const line = homeworkItemLine(homework)
+  return dueDate ? `Дедлайн: ${formatFullDate(dueDate)}\n${line}` : line
+}
+
+function buildHomeworkWeeklyDigestBody(payload: Record<string, unknown>): string {
+  const total = numberValue(payload.total_count)
+  if (total <= 0) return 'На следующую неделю невыполненных заданий нет'
+  const items = asRecordList(payload.items)
+  if (items.length === 0) return `${total} заданий`
+
+  const byDate = new Map<string, Record<string, unknown>[]>()
+  for (const item of items) {
+    const date = str(item, 'lesson_date')
+    const group = byDate.get(date) ?? []
+    group.push(item)
+    byDate.set(date, group)
+  }
+
+  const lines: string[] = []
+  let index = 1
+  for (const date of [...byDate.keys()].sort()) {
+    if (date) lines.push(formatFullDate(date))
+    const dateItems = byDate.get(date) ?? []
+    dateItems
+      .sort((a, b) => {
+        const lessonDiff = numberValue(a.lesson_number) - numberValue(b.lesson_number)
+        if (lessonDiff !== 0) return lessonDiff
+        return str(a, 'title').localeCompare(str(b, 'title'), 'ru')
+      })
+      .forEach((item) => {
+        lines.push(`${index}. ${homeworkItemLine(item)}`)
+        index += 1
+      })
+  }
+  if (total > items.length) lines.push(`Еще ${total - items.length}`)
+  return lines.join('\n')
 }
 
 function buildBody(
@@ -262,6 +347,10 @@ function buildBody(
     case 'homework.updated': {
       return buildHomeworkBody(payload, lessonRef)
     }
+    case 'homework.weekly_digest':
+      return buildHomeworkWeeklyDigestBody(payload)
+    case 'homework.due_reminder':
+      return buildHomeworkDueReminderBody(payload)
     case 'excuse.requested': {
       const parts: string[] = []
       if (student) parts.push(student)

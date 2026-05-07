@@ -74,6 +74,18 @@ class NotificationHistoryConsumerMapTypeTest {
     }
 
     @Test
+    void mapsHomeworkWeeklyDigest() {
+        assertThat(NotificationHistoryConsumer.mapType("homework.weekly_digest", EMPTY))
+                .contains(NotificationType.HOMEWORK_WEEKLY_DIGEST);
+    }
+
+    @Test
+    void mapsHomeworkDueReminder() {
+        assertThat(NotificationHistoryConsumer.mapType("homework.due_reminder", EMPTY))
+                .contains(NotificationType.HOMEWORK_DUE_REMINDER);
+    }
+
+    @Test
     void skipsAttendanceMarkedBySelf() {
         // Self check-in — собственное действие студента, не уведомление.
         assertThat(NotificationHistoryConsumer.mapType("attendance.marked",

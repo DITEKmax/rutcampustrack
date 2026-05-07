@@ -107,6 +107,18 @@ class EventDispatcher:
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
             ),
+            "homework.weekly_digest": lambda event: handle_homework(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
+            "homework.due_reminder": lambda event: handle_homework(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
             "excuse.requested": lambda event: handle_headman_alert(
                 event,
                 bot=self._bot,

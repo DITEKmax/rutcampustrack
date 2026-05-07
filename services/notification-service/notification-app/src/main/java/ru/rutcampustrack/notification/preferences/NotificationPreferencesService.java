@@ -106,7 +106,8 @@ public class NotificationPreferencesService {
             case "lesson.started", "lesson.reminder" -> "reminders";
             case "lesson.cancelled" -> "lessons";
             case "lesson.one_off.created", "lesson.one_off.cancelled" -> "schedule";
-            case "homework.published", "homework.updated" -> "homework";
+            case "homework.published", "homework.updated",
+                 "homework.weekly_digest", "homework.due_reminder" -> "homework";
             case "excuse.requested", "excuse.decided",
                  "late_checkin.requested", "late_checkin.decided",
                  "attendance.marked" -> "tickets";

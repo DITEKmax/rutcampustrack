@@ -18,6 +18,8 @@ export function getUrlForEventType(eventType: string): string {
       return appPath('/schedule')
     case 'homework.published':
     case 'homework.updated':
+    case 'homework.weekly_digest':
+    case 'homework.due_reminder':
       return appPath('/homework')
     case 'late_checkin.requested':
       return appPath('/group/late-checkin')

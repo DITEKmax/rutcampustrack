@@ -308,3 +308,123 @@ async def test_homework_published_subject_fallback_on_grpc_error():
     call_kwargs = bot.send_message.call_args.kwargs
     text = call_kwargs.get("text", "")
     assert "Предмет" in text
+
+
+@pytest.mark.asyncio
+async def test_homework_due_reminder_sends_direct_to_target_user():
+    """homework.due_reminder is user-scoped and does not fan out through group members."""
+    bot = MagicMock()
+    bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+
+    academic_client = MagicMock()
+    academic_client.get_user_by_id = AsyncMock(return_value=_make_student(user_id=7, telegram_id=777))
+    academic_client.get_group_members = AsyncMock()
+
+    captured_tasks = []
+    send_queue = MagicMock()
+
+    async def capture_put(task):
+        captured_tasks.append(task)
+
+    send_queue.put = capture_put
+
+    await handle_homework(
+        {
+            "event_type": "homework.due_reminder",
+            "payload": {
+                "user_id": 7,
+                "group_id": 5,
+                "semester_id": 1,
+                "days_before_due": 2,
+                "due_date": "2026-05-05",
+                "homework": {
+                    "homework_id": 100,
+                    "subject_name": "Math",
+                    "title": "Essay",
+                    "lesson_date": "2026-05-05",
+                    "lesson_number": 2,
+                },
+            },
+        },
+        bot=bot,
+        academic_client=academic_client,
+        send_queue=send_queue,
+    )
+
+    academic_client.get_user_by_id.assert_awaited_once_with(7)
+    academic_client.get_group_members.assert_not_called()
+    assert len(captured_tasks) == 1
+    assert captured_tasks[0].user_id == 7
+    assert captured_tasks[0].chat_id == 777
+    assert captured_tasks[0].category == "homework"
+
+    await captured_tasks[0].coroutine_factory()
+    call_kwargs = bot.send_message.call_args.kwargs
+    assert call_kwargs["chat_id"] == 777
+    text = call_kwargs.get("text", "")
+    assert "Math" in text
+    assert "Essay" in text
+    assert "05.05.2026" in text
+
+
+@pytest.mark.asyncio
+async def test_homework_weekly_digest_formats_grouped_items():
+    """homework.weekly_digest groups the per-user item list by deadline date."""
+    bot = MagicMock()
+    bot.send_message = AsyncMock(return_value=MagicMock(message_id=1))
+
+    academic_client = MagicMock()
+    academic_client.get_user_by_id = AsyncMock(return_value=_make_student(user_id=8, telegram_id=888))
+
+    captured_tasks = []
+    send_queue = MagicMock()
+
+    async def capture_put(task):
+        captured_tasks.append(task)
+
+    send_queue.put = capture_put
+
+    await handle_homework(
+        {
+            "event_type": "homework.weekly_digest",
+            "payload": {
+                "user_id": 8,
+                "group_id": 5,
+                "semester_id": 1,
+                "week_start": "2026-05-04",
+                "week_end": "2026-05-10",
+                "total_count": 2,
+                "items": [
+                    {
+                        "homework_id": 100,
+                        "subject_name": "Math",
+                        "title": "Essay",
+                        "lesson_date": "2026-05-05",
+                        "lesson_number": 2,
+                    },
+                    {
+                        "homework_id": 200,
+                        "subject_name": "History",
+                        "title": "Read",
+                        "lesson_date": "2026-05-04",
+                        "lesson_number": 1,
+                    },
+                ],
+            },
+        },
+        bot=bot,
+        academic_client=academic_client,
+        send_queue=send_queue,
+    )
+
+    assert len(captured_tasks) == 1
+    await captured_tasks[0].coroutine_factory()
+
+    text = bot.send_message.call_args.kwargs.get("text", "")
+    assert "04.05.2026" in text
+    assert "05.05.2026" in text
+    assert text.index("04.05.2026") < text.index("05.05.2026")
+    assert "History" in text
+    assert "Read" in text
+    assert "Math" in text
+    assert "Essay" in text

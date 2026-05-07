@@ -29,6 +29,8 @@ const CATEGORY_MAP: Record<string, NotificationCategory> = {
   'lesson.one_off.cancelled': 'schedule',
   'homework.published': 'homework',
   'homework.updated': 'homework',
+  'homework.weekly_digest': 'homework',
+  'homework.due_reminder': 'homework',
   'excuse.requested': 'tickets',
   'excuse.decided': 'tickets',
   'late_checkin.requested': 'tickets',

@@ -44,6 +44,8 @@ function notificationRoute(type: string): string | null {
       return '/group/excuses'
     case 'homework.published':
     case 'homework.updated':
+    case 'homework.weekly_digest':
+    case 'homework.due_reminder':
       return '/homework'
     default:
       return null
@@ -51,7 +53,10 @@ function notificationRoute(type: string): string | null {
 }
 
 function isHomeworkNotification(type: string): boolean {
-  return type === 'homework.published' || type === 'homework.updated'
+  return type === 'homework.published'
+    || type === 'homework.updated'
+    || type === 'homework.weekly_digest'
+    || type === 'homework.due_reminder'
 }
 
 const HISTORY_TYPE_TO_EVENT_TYPE: Record<string, string> = {
@@ -65,6 +70,8 @@ const HISTORY_TYPE_TO_EVENT_TYPE: Record<string, string> = {
   LESSON_CLOSED: 'lesson.closed',
   LESSON_CANCELLED: 'lesson.cancelled',
   LESSON_REMINDER: 'lesson.reminder',
+  HOMEWORK_WEEKLY_DIGEST: 'homework.weekly_digest',
+  HOMEWORK_DUE_REMINDER: 'homework.due_reminder',
   ATTENDANCE_MARKED_BY_HEADMAN: 'attendance.marked',
 }
 

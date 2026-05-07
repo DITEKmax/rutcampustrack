@@ -183,6 +183,12 @@ class WebPushDeliveryServiceTest {
     }
 
     @Test
+    void shouldPush_homeworkDigestAndReminder_isTrue() {
+        assertThat(service.shouldPush("homework.weekly_digest")).isTrue();
+        assertThat(service.shouldPush("homework.due_reminder")).isTrue();
+    }
+
+    @Test
     void sendToGroup_groupRenamed_buildsTitleAndBody() throws Exception {
         PushSubscriptionDocument sub = sub(1L, "https://push.example.com/gr");
         when(repository.findAllByGroupId(11L)).thenReturn(List.of(sub));
@@ -243,6 +249,84 @@ class WebPushDeliveryServiceTest {
         assertThat(body).contains("Лабораторная 4");
         assertThat(body).contains("Read chapter 4");
         assertThat(body).contains("https://example.com/hw.pdf");
+    }
+
+    @Test
+    void sendToGroup_homeworkDueReminder_targetsPayloadUserOnly() throws Exception {
+        PushSubscriptionDocument target = sub(2L, "https://push.example.com/homework-target");
+        PushSubscriptionDocument other = sub(3L, "https://push.example.com/homework-other");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(target, other));
+
+        ArgumentCaptor<PushSubscriptionDocument> subCaptor = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(subCaptor.capture(), payloadCaptor.capture());
+
+        service.sendToGroup(10L, "homework.due_reminder",
+                Map.of(
+                        "group_id", 10,
+                        "user_id", 2,
+                        "due_date", "2026-05-05",
+                        "homework", Map.of(
+                                "subject_name", "Math",
+                                "title", "Essay",
+                                "lesson_number", 2,
+                                "lesson_date", "2026-05-05"
+                        )
+                ))
+                .join();
+
+        verify(webPushService, times(1)).send(any(Notification.class));
+        assertThat(subCaptor.getValue().getUserId()).isEqualTo(2L);
+
+        var json = new ObjectMapper().readTree(new String(payloadCaptor.getValue()));
+        assertThat(json.get("event_type").asText()).isEqualTo("homework.due_reminder");
+        assertThat(json.get("body").asText()).contains("Math").contains("Essay");
+    }
+
+    @Test
+    void sendToGroup_homeworkWeeklyDigest_buildsStructuredBody() throws Exception {
+        PushSubscriptionDocument sub = sub(2L, "https://push.example.com/homework-digest");
+        PushSubscriptionDocument other = sub(3L, "https://push.example.com/homework-digest-other");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(sub, other));
+
+        ArgumentCaptor<PushSubscriptionDocument> subCaptor = ArgumentCaptor.forClass(PushSubscriptionDocument.class);
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(subCaptor.capture(), payloadCaptor.capture());
+
+        service.sendToGroup(10L, "homework.weekly_digest",
+                Map.of(
+                        "group_id", 10,
+                        "user_id", 2,
+                        "week_start", "2026-05-04",
+                        "week_end", "2026-05-10",
+                        "total_count", 2,
+                        "items", List.of(
+                                Map.of(
+                                        "subject_name", "Math",
+                                        "title", "Essay",
+                                        "lesson_number", 2,
+                                        "lesson_date", "2026-05-05"
+                                ),
+                                Map.of(
+                                        "subject_name", "History",
+                                        "title", "Read",
+                                        "lesson_number", 1,
+                                        "lesson_date", "2026-05-06"
+                                )
+                        )
+                ))
+                .join();
+
+        verify(webPushService, times(1)).send(any(Notification.class));
+        assertThat(subCaptor.getValue().getUserId()).isEqualTo(2L);
+
+        var json = new ObjectMapper().readTree(new String(payloadCaptor.getValue()));
+        assertThat(json.get("event_type").asText()).isEqualTo("homework.weekly_digest");
+        assertThat(json.get("body").asText())
+                .contains("Math")
+                .contains("Essay")
+                .contains("History")
+                .contains("Read");
     }
 
     @Test

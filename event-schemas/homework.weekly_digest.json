@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "homework.weekly_digest",
+  "description": "Academic Service sends a per-student Sunday digest with incomplete homework for the next active-semester week.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "homework.weekly_digest"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "user_id",
+        "group_id",
+        "semester_id",
+        "week_start",
+        "week_end",
+        "total_count",
+        "items"
+      ],
+      "properties": {
+        "user_id": {
+          "type": "integer"
+        },
+        "group_id": {
+          "type": "integer"
+        },
+        "semester_id": {
+          "type": "integer"
+        },
+        "week_start": {
+          "type": "string",
+          "format": "date"
+        },
+        "week_end": {
+          "type": "string",
+          "format": "date"
+        },
+        "total_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/homeworkItem"
+          }
+        }
+      }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "homeworkItem": {
+      "type": "object",
+      "required": [
+        "homework_id",
+        "subject_id",
+        "subject_name",
+        "title",
+        "has_link",
+        "lesson_date",
+        "lesson_number"
+      ],
+      "properties": {
+        "homework_id": {
+          "type": "integer"
+        },
+        "subject_id": {
+          "type": "integer"
+        },
+        "subject_name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "has_link": {
+          "type": "boolean"
+        },
+        "lesson_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "lesson_number": {
+          "$ref": "_common.json#/$defs/lessonNumber"
+        }
+      }
+    }
+  }
+}

@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WebPushDeliveryService {
 
-    /** Events that fan out to every subscriber of the group. */
+    /** Events that should create Web Push notifications. */
     private static final Set<String> PUSH_EVENT_TYPES = Set.of(
             "lesson.started",
             "lesson.reminder",
@@ -52,7 +52,9 @@ public class WebPushDeliveryService {
             // Студент-таргетированные: доходят только подписчику user_id из payload.
             "excuse.decided",
             "late_checkin.decided",
-            "attendance.marked"
+            "attendance.marked",
+            "homework.weekly_digest",
+            "homework.due_reminder"
     );
 
     /** Events that fan out only to headmen of the group (старостам). */
@@ -65,7 +67,9 @@ public class WebPushDeliveryService {
     private static final Set<String> USER_SCOPED_EVENT_TYPES = Set.of(
             "excuse.decided",
             "late_checkin.decided",
-            "attendance.marked"
+            "attendance.marked",
+            "homework.weekly_digest",
+            "homework.due_reminder"
     );
 
     private final PushSubscriptionRepository repository;
@@ -268,6 +272,8 @@ public class WebPushDeliveryService {
             case "lesson.one_off.cancelled" -> "Пара отменена";
             case "homework.published" -> "Новое ДЗ";
             case "homework.updated" -> "ДЗ обновлено";
+            case "homework.weekly_digest" -> "ДЗ на следующую неделю";
+            case "homework.due_reminder" -> "ДЗ через 2 дня";
             case "group.renamed" -> "Группа переименована";
             case "group.archived" -> "Группа архивирована";
             case "excuse.requested" -> "Новый тикет о пропуске";
@@ -299,6 +305,8 @@ public class WebPushDeliveryService {
             }
             case "lesson.one_off.cancelled" -> lessonBody(payload, "Староста отменил пару");
             case "homework.published", "homework.updated" -> homeworkBody(payload);
+            case "homework.weekly_digest" -> homeworkWeeklyDigestBody(payload);
+            case "homework.due_reminder" -> homeworkDueReminderBody(payload);
             case "group.renamed" -> {
                 String newName = str(payload, "new_name");
                 if (!newName.isEmpty()) {
@@ -351,6 +359,38 @@ public class WebPushDeliveryService {
             return "Откройте приложение для подробностей";
         }
         return String.join("\n", lines);
+    }
+
+    private String homeworkDueReminderBody(Map<String, Object> payload) {
+        Map<String, Object> homework = map(payload.get("homework"));
+        if (homework.isEmpty()) {
+            return "Откройте ДЗ, чтобы проверить дедлайн";
+        }
+        return homeworkItemLine(homework);
+    }
+
+    private String homeworkWeeklyDigestBody(Map<String, Object> payload) {
+        int total = intValue(payload.get("total_count"));
+        if (total <= 0) {
+            return "На следующую неделю невыполненных заданий нет";
+        }
+        List<Map<String, Object>> items = maps(payload.get("items"));
+        List<String> lines = new ArrayList<>();
+        for (int i = 0; i < Math.min(items.size(), 3); i++) {
+            addIfNotBlank(lines, homeworkItemLine(items.get(i)));
+        }
+        if (total > lines.size()) {
+            lines.add("Еще " + (total - lines.size()));
+        }
+        return lines.isEmpty() ? total + " заданий" : String.join("\n", lines);
+    }
+
+    private String homeworkItemLine(Map<String, Object> homework) {
+        List<String> parts = new ArrayList<>();
+        addIfNotBlank(parts, str(homework, "subject_name"));
+        addIfNotBlank(parts, str(homework, "title"));
+        addIfNotBlank(parts, formatLessonRef(homework));
+        return parts.isEmpty() ? "Домашнее задание" : String.join(" · ", parts);
     }
 
     private String attendanceBody(Map<String, Object> payload) {
@@ -427,6 +467,26 @@ public class WebPushDeliveryService {
     private static String str(Map<String, Object> payload, String key) {
         Object v = payload.get(key);
         return v instanceof String s ? s : "";
+    }
+
+    private static int intValue(Object raw) {
+        return raw instanceof Number n ? n.intValue() : 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> map(Object raw) {
+        return raw instanceof Map<?, ?> ? (Map<String, Object>) raw : Map.of();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> maps(Object raw) {
+        if (!(raw instanceof List<?> list)) {
+            return List.of();
+        }
+        return list.stream()
+                .filter(Map.class::isInstance)
+                .map(item -> (Map<String, Object>) item)
+                .toList();
     }
 
     private static String firstNonEmpty(String a, String b) {

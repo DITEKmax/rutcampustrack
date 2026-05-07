@@ -1,6 +1,7 @@
-"""Handler for homework events — sends notifications to all group students."""
+"""Handlers for homework notification events."""
 
 import logging
+from collections import defaultdict
 
 from aiogram import Bot
 
@@ -16,13 +17,20 @@ async def handle_homework(
     send_queue: TelegramSendQueue,
     **kwargs,
 ) -> None:
-    """Send homework notification to all group students with telegram_id.
+    """Send homework notifications.
 
-    Handles both homework.published (with subject resolution) and homework.updated.
+    Handles group-wide publish/update events and per-student digest/reminder events.
     Threat T-24-07: validates required fields group_id and title before processing.
     """
     event_type = event.get("event_type")
     payload = event.get("payload", {})
+
+    if event_type == "homework.weekly_digest":
+        await _handle_weekly_digest(payload, bot=bot, academic_client=academic_client, send_queue=send_queue)
+        return
+    if event_type == "homework.due_reminder":
+        await _handle_due_reminder(payload, bot=bot, academic_client=academic_client, send_queue=send_queue)
+        return
 
     try:
         group_id = payload["group_id"]
@@ -85,3 +93,123 @@ async def handle_homework(
                 category="homework",
             )
         )
+
+
+async def _handle_weekly_digest(payload: dict, bot: Bot, academic_client, send_queue: TelegramSendQueue) -> None:
+    user_id = payload.get("user_id")
+    if user_id is None:
+        logger.warning("homework.weekly_digest missing user_id")
+        return
+
+    user = await _resolve_user(user_id, academic_client)
+    if user is None or not getattr(user, "telegram_id", 0):
+        return
+
+    text = _build_weekly_digest_text(payload)
+    await send_queue.put(
+        SendTask(
+            coroutine_factory=lambda chat=user.telegram_id, t=text: bot.send_message(chat_id=chat, text=t),
+            user_id=user_id,
+            chat_id=user.telegram_id,
+            category="homework",
+        )
+    )
+
+
+async def _handle_due_reminder(payload: dict, bot: Bot, academic_client, send_queue: TelegramSendQueue) -> None:
+    user_id = payload.get("user_id")
+    homework = payload.get("homework")
+    if user_id is None or not isinstance(homework, dict):
+        logger.warning("homework.due_reminder missing user_id or homework")
+        return
+
+    user = await _resolve_user(user_id, academic_client)
+    if user is None or not getattr(user, "telegram_id", 0):
+        return
+
+    text = _build_due_reminder_text(payload, homework)
+    await send_queue.put(
+        SendTask(
+            coroutine_factory=lambda chat=user.telegram_id, t=text: bot.send_message(chat_id=chat, text=t),
+            user_id=user_id,
+            chat_id=user.telegram_id,
+            category="homework",
+        )
+    )
+
+
+async def _resolve_user(user_id, academic_client):
+    try:
+        return await academic_client.get_user_by_id(int(user_id))
+    except Exception:
+        logger.warning("Could not resolve user_id=%s for homework notification", user_id, exc_info=True)
+        return None
+
+
+def _build_due_reminder_text(payload: dict, homework: dict) -> str:
+    due_date = payload.get("due_date") or homework.get("lesson_date")
+    lines = [
+        "⏰ Напоминание о домашнем задании",
+        "",
+        f"Дедлайн: {_format_date(due_date)}",
+        _format_homework_item(homework, numbered=False),
+    ]
+    _add_optional(lines, "Описание", homework.get("description"))
+    _add_optional(lines, "Ссылка", homework.get("link"))
+    return _truncate("\n".join(line for line in lines if line is not None))
+
+
+def _build_weekly_digest_text(payload: dict) -> str:
+    week_start = _format_date(payload.get("week_start"))
+    week_end = _format_date(payload.get("week_end"))
+    items = [item for item in payload.get("items", []) if isinstance(item, dict)]
+    lines = [
+        "📚 Домашнее задание на следующую неделю",
+        f"{week_start} — {week_end}",
+        "",
+    ]
+    if not items:
+        lines.append("Невыполненных заданий на следующую неделю нет.")
+        return "\n".join(lines)
+
+    by_date: dict[str, list[dict]] = defaultdict(list)
+    for item in items:
+        by_date[str(item.get("lesson_date") or "")].append(item)
+
+    index = 1
+    for lesson_date in sorted(by_date):
+        lines.append(_format_date(lesson_date))
+        for item in sorted(by_date[lesson_date], key=lambda i: (i.get("lesson_number") or 0, i.get("title") or "")):
+            lines.append(_format_homework_item(item, number=index))
+            index += 1
+        lines.append("")
+
+    return _truncate("\n".join(lines).strip())
+
+
+def _format_homework_item(item: dict, numbered: bool = True, number: int | None = None) -> str:
+    prefix = f"{number}. " if numbered and number is not None else ""
+    subject = item.get("subject_name") or "Предмет"
+    title = item.get("title") or "Домашнее задание"
+    lesson_number = item.get("lesson_number")
+    lesson_part = f" · пара №{lesson_number}" if lesson_number else ""
+    return f"{prefix}{subject}{lesson_part}\n   {title}"
+
+
+def _add_optional(lines: list[str], label: str, value) -> None:
+    if isinstance(value, str) and value.strip():
+        lines.extend(["", f"{label}:", value.strip()])
+
+
+def _format_date(value) -> str:
+    if not isinstance(value, str) or len(value) < 10:
+        return str(value or "")
+    if value[4] == "-" and value[7] == "-":
+        return f"{value[8:10]}.{value[5:7]}.{value[0:4]}"
+    return value
+
+
+def _truncate(text: str, limit: int = 3900) -> str:
+    if len(text) <= limit:
+        return text
+    return text[: limit - 16].rstrip() + "\n\n..."

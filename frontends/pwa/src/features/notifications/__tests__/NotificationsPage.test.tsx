@@ -146,6 +146,32 @@ describe('NotificationsPage', () => {
     expect(await screen.findByText('TITLE:lesson.started')).toBeInTheDocument()
     expect(screen.queryByText('TITLE:excuse.decided')).toBeNull()
   })
+
+  it('normalizes homework digest and reminder history types', async () => {
+    mocks.state.historyItems = [
+      {
+        id: 'weekly',
+        userId: 42,
+        type: 'HOMEWORK_WEEKLY_DIGEST',
+        payload: { subject_name: 'Math' },
+        sentAt: new Date().toISOString(),
+        readAt: null,
+      },
+      {
+        id: 'due',
+        userId: 42,
+        type: 'HOMEWORK_DUE_REMINDER',
+        payload: { subject_name: 'History' },
+        sentAt: new Date().toISOString(),
+        readAt: null,
+      },
+    ]
+
+    renderPage()
+
+    expect(await screen.findByText('TITLE:homework.weekly_digest')).toBeInTheDocument()
+    expect(screen.getByText('TITLE:homework.due_reminder')).toBeInTheDocument()
+  })
 })
 
 describe('NotificationCenter — native notification side effects', () => {

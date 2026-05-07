@@ -57,6 +57,10 @@ public class Homework {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @Setter
+    @Column(name = "due_reminder_sent_at")
+    private OffsetDateTime dueReminderSentAt;
+
     public Homework(Long groupId, Long subjectId, Long semesterId,
                     String title, String description, String link, Long publishedBy,
                     LocalDate lessonDate, Integer lessonNumber) {

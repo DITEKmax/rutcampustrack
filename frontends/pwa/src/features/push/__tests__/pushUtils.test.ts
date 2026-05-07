@@ -25,6 +25,8 @@ describe('getUrlForEventType', () => {
   it('returns /app/homework for homework events', () => {
     expect(getUrlForEventType('homework.published')).toBe('/app/homework')
     expect(getUrlForEventType('homework.updated')).toBe('/app/homework')
+    expect(getUrlForEventType('homework.weekly_digest')).toBe('/app/homework')
+    expect(getUrlForEventType('homework.due_reminder')).toBe('/app/homework')
   })
 
   it('returns headman pages for request events', () => {

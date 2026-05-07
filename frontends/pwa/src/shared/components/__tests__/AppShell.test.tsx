@@ -38,6 +38,8 @@ function renderShell(initialEntry: string) {
           <Route path="checkin" element={<div data-testid="checkin-page">Отметка</div>} />
           <Route path="schedule" element={<div data-testid="schedule-page">Расписание</div>} />
           <Route path="homework" element={<div data-testid="homework-page">Домашние задания</div>} />
+          <Route path="late-checkin" element={<div data-testid="late-checkin-page">Запрос отметки</div>} />
+          <Route path="excuses" element={<div data-testid="excuses-page">Уважительные пропуски</div>} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -64,5 +66,18 @@ describe('AppShell navigation', () => {
     await user.click(screen.getByRole('link', { name: /домашние задания/i }))
 
     expect(await screen.findByTestId('homework-page')).toBeInTheDocument()
+  })
+
+  it('opens student request pages from the drawer', async () => {
+    const user = userEvent.setup()
+    renderShell('/checkin')
+
+    await user.click(screen.getByRole('button', { name: /открыть меню/i }))
+    await user.click(screen.getByRole('link', { name: /запрос отметки/i }))
+    expect(await screen.findByTestId('late-checkin-page')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /открыть меню/i }))
+    await user.click(screen.getByRole('link', { name: /уважительные пропуски/i }))
+    expect(await screen.findByTestId('excuses-page')).toBeInTheDocument()
   })
 })

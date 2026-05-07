@@ -69,6 +69,12 @@ const HEADMAN_ONLY_TYPES: ReadonlySet<string> = new Set([
   'excuse.requested',
 ])
 
+const STUDENT_REQUEST_REFRESH_TYPES: ReadonlySet<string> = new Set([
+  'late_checkin.decided',
+  'excuse.decided',
+  'attendance.marked',
+])
+
 const STORAGE_KEY = 'rct.pwa.notifications.v1'
 const MAX_ITEMS = 200
 
@@ -448,6 +454,11 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
               markedLessonIdsRef.current.add(lessonId)
             }
             if (envelope.payload?.['marked_by'] !== 'headman') return
+          }
+
+          if (STUDENT_REQUEST_REFRESH_TYPES.has(envelope.type)) {
+            queryClient.invalidateQueries({ queryKey: ['studentRequests'] })
+            queryClient.invalidateQueries({ queryKey: ['studentRecords'] })
           }
 
           if (!STORED_TYPES.has(envelope.type)) return

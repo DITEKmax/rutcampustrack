@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { NavLink } from 'react-router'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { BookOpen, ClockCountdown, User, X, type Icon } from '@phosphor-icons/react'
+import { BookOpen, ClockCountdown, FileText, User, X, type Icon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
 interface DrawerItem {
@@ -13,6 +13,7 @@ interface DrawerItem {
 const ITEMS: DrawerItem[] = [
   { to: '/homework', icon: BookOpen, label: 'Домашние задания' },
   { to: '/late-checkin', icon: ClockCountdown, label: 'Запрос отметки' },
+  { to: '/excuses', icon: FileText, label: 'Уважительные пропуски' },
   { to: '/profile', icon: User, label: 'Профиль' },
 ]
 

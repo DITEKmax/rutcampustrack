@@ -24,6 +24,7 @@ const ProfilePage = lazy(() => import('./features/profile/ProfilePage'))
 const NotificationsPage = lazy(() => import('./features/notifications/NotificationsPage').then(m => ({ default: m.NotificationsPage })))
 const NotificationSettingsPage = lazy(() => import('./features/notifications/NotificationSettingsPage'))
 const StudentLateCheckinPage = lazy(() => import('./features/student/late-checkin/StudentLateCheckinPage').then(m => ({ default: m.StudentLateCheckinPage })))
+const StudentExcusesPage = lazy(() => import('./features/student/excuses/StudentExcusesPage').then(m => ({ default: m.StudentExcusesPage })))
 const GroupHub = lazy(() => import('./features/headman/group-hub/GroupHub').then(m => ({ default: m.GroupHub })))
 const Overview = lazy(() => import('./features/headman/overview/Overview').then(m => ({ default: m.Overview })))
 const StudentsList = lazy(() => import('./features/headman/students/StudentsList').then(m => ({ default: m.StudentsList })))
@@ -60,6 +61,7 @@ const router = createBrowserRouter([
       { path: 'notifications', element: <NotificationsPage /> },
       { path: 'notifications/settings', element: <NotificationSettingsPage /> },
       { path: 'late-checkin', element: <StudentLateCheckinPage /> },
+      { path: 'excuses', element: <StudentExcusesPage /> },
       { path: 'homework', element: <HomeworkPage /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'group', element: <GroupHub /> },

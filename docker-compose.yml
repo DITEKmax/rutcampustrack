@@ -134,6 +134,12 @@ services:
       - "4318:4318"  # OTLP HTTP/protobuf — Spring Boot Micrometer default (M16 G1)
     networks:
       - private_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3200/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
     restart: unless-stopped
 
   # M04 Группа 9 — Alertmanager (dev profile). Secret для webhook

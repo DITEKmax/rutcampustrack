@@ -1,5 +1,6 @@
 package ru.rutcampustrack.shared.web.exception;
 
+import jakarta.servlet.RequestDispatcher;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.access.AccessDeniedException;
@@ -91,7 +93,34 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("HttpMediaTypeNotSupported → 415")
+    @DisplayName("SockJS/WebSocket write failure -> empty response without problem+json converter")
+    void handleNotWritableForWebSocketTransport() {
+        MockHttpServletRequest wsRequest = new MockHttpServletRequest("POST", "/ws/512/lpmckv5r/xhr_streaming");
+        wsRequest.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, 401);
+        HttpMessageNotWritableException ex = new HttpMessageNotWritableException(
+                "No converter for LinkedHashMap with application/javascript");
+
+        ResponseEntity<?> resp = handler.handleNotWritable(ex, wsRequest);
+
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(resp.getHeaders().getContentType()).isNull();
+        assertThat(resp.getBody()).isNull();
+    }
+
+    @Test
+    @DisplayName("Non-WebSocket write failure -> standard 500 problem+json")
+    void handleNotWritableForRestEndpoint() {
+        HttpMessageNotWritableException ex = new HttpMessageNotWritableException("converter failed");
+
+        ResponseEntity<?> resp = handler.handleNotWritable(ex, request);
+
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(resp.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(resp.getBody()).isInstanceOf(ErrorResponse.class);
+    }
+
+    @Test
+    @DisplayName("HttpMediaTypeNotSupported -> 415")
     void handleMediaType() {
         HttpMediaTypeNotSupportedException ex =
                 new HttpMediaTypeNotSupportedException(MediaType.TEXT_XML, List.of(MediaType.APPLICATION_JSON));

@@ -593,6 +593,10 @@ services:
     # /proc/net чтения, оно идёт через standard kernel API.
     cap_drop:
       - NET_RAW
+    # systemd collector uses the host DBus socket; Ubuntu/AppArmor blocks
+    # even read-only DBus method calls under Docker's default profile.
+    security_opt:
+      - apparmor:unconfined
     # M13 G11 (NEW-154/155/157) — bound aux container memory.
     # node-exporter — резидентный footprint ~15-25m, 128m даёт запас
     # под /proc reading peaks без OOM на 8GB VPS.
@@ -773,9 +777,16 @@ services:
       - "4318"  # OTLP HTTP (на будущее)
     networks:
       - private_net
-    # M09 G7 (NEW-157).
-    mem_limit: 128m
-    mem_reservation: 96m
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3200/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    # M18: Tempo compaction + WAL replay need more headroom than 128m.
+    # App services still do not depend on Tempo health.
+    mem_limit: 256m
+    mem_reservation: 192m
     restart: unless-stopped
 
   grafana:

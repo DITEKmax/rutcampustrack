@@ -1,5 +1,6 @@
 package ru.rutcampustrack.shared.web.exception;
 
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -94,6 +96,24 @@ public class GlobalExceptionHandler {
                 "Тип контента не поддерживается",
                 "Content-Type не поддерживается для этого endpoint'а",
                 request, null, null, null);
+    }
+
+    @ExceptionHandler(HttpMessageNotWritableException.class)
+    public ResponseEntity<?> handleNotWritable(
+            HttpMessageNotWritableException ex,
+            HttpServletRequest request) {
+        if (isWebSocketTransportRequest(request)) {
+            HttpStatus status = transportErrorStatus(request);
+            String traceId = MDC.get(MDC_TRACE_ID);
+            log.warn(
+                    "WebSocket transport response write failed correlation={} uri={} status={} message={}",
+                    traceId,
+                    request.getRequestURI(),
+                    status.value(),
+                    ex.getMessage());
+            return ResponseEntity.status(status).build();
+        }
+        return handleGeneral(ex, request);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -209,5 +229,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status)
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .body(body);
+    }
+
+    private static boolean isWebSocketTransportRequest(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        if (uri == null) {
+            return false;
+        }
+        return uri.equals("/ws")
+                || uri.startsWith("/ws/")
+                || uri.equals("/api/ws")
+                || uri.startsWith("/api/ws/");
+    }
+
+    private static HttpStatus transportErrorStatus(HttpServletRequest request) {
+        Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+        if (status instanceof Integer value) {
+            HttpStatus resolved = HttpStatus.resolve(value);
+            if (resolved != null) {
+                return resolved;
+            }
+        }
+        return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 }

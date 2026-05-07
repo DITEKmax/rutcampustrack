@@ -38,8 +38,8 @@ describe('deriveStudentChartData', () => {
     });
     const result = deriveStudentChartData(journal);
     expect(result).toHaveLength(2);
-    expect(result[0]).toMatchObject({ present: 1, absent: 1, excused: 1, freeAttendance: 0 });
-    expect(result[1]).toMatchObject({ present: 1, absent: 1, excused: 0, freeAttendance: 1 });
+    expect(result[0]).toMatchObject({ present: 1, absent: 1, excused: 1 });
+    expect(result[1]).toMatchObject({ present: 1, absent: 1, excused: 1 });
   });
 
   it('excludes cancelled records from counts', () => {
@@ -56,7 +56,7 @@ describe('deriveStudentChartData', () => {
       ],
     });
     const result = deriveStudentChartData(journal);
-    expect(result[0]).toMatchObject({ present: 1, absent: 0, excused: 0, freeAttendance: 0 });
+    expect(result[0]).toMatchObject({ present: 1, absent: 0, excused: 0 });
   });
 
   it('truncates displayName at 16 chars with ellipsis', () => {
@@ -138,6 +138,25 @@ describe('deriveOverallStats', () => {
     });
     const result = deriveOverallStats(journal);
     expect(result.attendanceRate).toBe(100);
+  });
+
+  it('counts excused and free attendance as attended in the overall percentage', () => {
+    const journal = makeJournal({
+      students: [
+        {
+          userId: 1,
+          displayName: 'Иванов',
+          records: [
+            { date: '2026-03-01', lessonNumber: 1, status: 'excused', symbol: 'у' },
+            { date: '2026-03-02', lessonNumber: 1, status: 'free_attendance', symbol: 'сп' },
+            { date: '2026-03-03', lessonNumber: 1, status: 'absent', symbol: 'н' },
+          ],
+        },
+      ],
+    });
+
+    const result = deriveOverallStats(journal);
+    expect(result.attendanceRate).toBe(67);
   });
 
   it('returns { totalLessons: 0, attendanceRate: 0 } for empty students array', () => {

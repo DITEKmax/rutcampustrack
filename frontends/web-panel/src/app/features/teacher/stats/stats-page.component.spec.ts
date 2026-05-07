@@ -12,6 +12,7 @@ function makeJournalApiMock() {
     getMyAssignments: vi.fn().mockReturnValue(of([])),
     getGroups: vi.fn().mockReturnValue(of([])),
     getSubjects: vi.fn().mockReturnValue(of([])),
+    getSemesters: vi.fn().mockReturnValue(of([])),
     getJournal: vi.fn().mockReturnValue(of({ groupId: 1, subjectId: 10, dates: [], students: [] })),
   };
 }
@@ -64,16 +65,20 @@ describe('StatsPageComponent', () => {
     expect(progressBar).toBeNull();
   });
 
-  it('calls getMyAssignments on init', () => {
+  it('loads assignments, groups, subjects and semesters on init', () => {
     const fixture = TestBed.createComponent(StatsPageComponent);
     fixture.detectChanges();
+
     expect(mockApiService.getMyAssignments).toHaveBeenCalled();
+    expect(mockApiService.getGroups).toHaveBeenCalled();
+    expect(mockApiService.getSubjects).toHaveBeenCalled();
+    expect(mockApiService.getSemesters).toHaveBeenCalled();
   });
 
   it('shows error message when error signal is set', () => {
     const fixture = TestBed.createComponent(StatsPageComponent);
     const comp = fixture.componentInstance;
-    comp.error.set('Не удалось загрузить статистику. Попробуйте позже.');
+    comp.error.set('Не удалось загрузить статистику по предмету. Попробуйте позже.');
     fixture.detectChanges();
     const text: string = fixture.nativeElement.textContent;
     expect(text).toContain('Не удалось загрузить статистику');
@@ -89,14 +94,14 @@ describe('StatsPageComponent', () => {
   it('chartEntries computed returns entries from chartDataMap', () => {
     const fixture = TestBed.createComponent(StatsPageComponent);
     const comp = fixture.componentInstance;
-    const map = new Map([['Математика', [{ name: 'Иванов', present: 3, excused: 0, freeAttendance: 0, absent: 1 }]]]);
+    const map = new Map([['Математика', [{ name: 'Иванов', present: 3, excused: 0, absent: 1 }]]]);
     comp.chartDataMap.set(map);
     fixture.detectChanges();
     expect(comp.chartEntries()).toHaveLength(1);
     expect(comp.chartEntries()[0].name).toBe('Математика');
   });
 
-  it('derives subjects from teacher assignments when group changes', () => {
+  it('derives subjects from teacher assignments and loads the first subject when group changes', () => {
     const fixture = TestBed.createComponent(StatsPageComponent);
     const comp = fixture.componentInstance;
     fixture.detectChanges();
@@ -107,8 +112,8 @@ describe('StatsPageComponent', () => {
 
     comp.onGroupChange(10);
 
-    expect(comp.subjects()).toEqual([{ id: 20, name: 'Математика' }]);
-    expect(mockApiService.getSubjects).not.toHaveBeenCalled();
-    expect(mockApiService.getJournal).toHaveBeenCalled();
+    expect(comp.subjects()).toEqual([{ id: 20, name: 'Математика', type: null, label: 'Математика' }]);
+    expect(comp.selectedSubjectId()).toBe(20);
+    expect(mockApiService.getJournal).toHaveBeenCalledWith(10, 20, expect.any(String), expect.any(String));
   });
 });

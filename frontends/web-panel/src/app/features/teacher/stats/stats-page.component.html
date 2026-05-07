@@ -1,21 +1,32 @@
-<div class="page-stack">
+<div class="page-stack teacher-stats">
   <header class="page-header">
     <div class="page-header__title">
       <h1>Статистика посещаемости</h1>
       <p class="page-header__subtitle">
-        Процент присутствия по предметам и общий показатель группы.
+        Процент присутствия по выбранному предмету и общий показатель группы.
       </p>
     </div>
   </header>
 
-  <!-- Filter row -->
   <div class="page-card">
     <div class="page-filters">
       <mat-form-field class="w-48">
         <mat-label>Группа</mat-label>
-        <mat-select (selectionChange)="onGroupChange($event.value)">
+        <mat-select [value]="selectedGroupId()" (selectionChange)="onGroupChange($event.value)">
           @for (g of groups(); track g.id) {
             <mat-option [value]="g.id">{{ g.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="w-64">
+        <mat-label>Предмет</mat-label>
+        <mat-select
+          [value]="selectedSubjectId()"
+          [disabled]="selectedGroupId() === null || subjects().length === 0 || loading()"
+          (selectionChange)="onSubjectChange($event.value)">
+          @for (s of subjects(); track s.id) {
+            <mat-option [value]="s.id">{{ s.label ?? s.name }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -33,20 +44,6 @@
     </div>
   }
 
-  @if (!loading() && !error() && chartDataMap().size === 0 && selectedGroupId()) {
-    <div class="page-card">
-      <div class="page-empty">
-        <div class="page-empty__icon" aria-hidden="true">
-          <i class="ph-duotone ph-chart-line"></i>
-        </div>
-        <h3 class="page-empty__title">Нет данных</h3>
-        <p class="page-empty__text">
-          Для выбранной группы ещё нет данных о посещаемости.
-        </p>
-      </div>
-    </div>
-  }
-
   @if (!selectedGroupId() && !loading() && !error()) {
     <div class="page-card">
       <div class="page-empty">
@@ -61,13 +58,54 @@
     </div>
   }
 
+  @if (selectedGroupId() && subjects().length === 0 && !loading() && !error()) {
+    <div class="page-card">
+      <div class="page-empty">
+        <div class="page-empty__icon" aria-hidden="true">
+          <i class="ph-duotone ph-books"></i>
+        </div>
+        <h3 class="page-empty__title">Нет предметов</h3>
+        <p class="page-empty__text">
+          Для выбранной группы нет назначенных предметов преподавателя.
+        </p>
+      </div>
+    </div>
+  }
+
+  @if (selectedGroupId() && subjects().length > 0 && !selectedSubjectId() && !loading() && !error()) {
+    <div class="page-card">
+      <div class="page-empty">
+        <div class="page-empty__icon" aria-hidden="true">
+          <i class="ph-duotone ph-chalkboard-teacher"></i>
+        </div>
+        <h3 class="page-empty__title">Выберите предмет</h3>
+        <p class="page-empty__text">
+          Статистика строится по одному предмету выбранной группы.
+        </p>
+      </div>
+    </div>
+  }
+
+  @if (!loading() && !error() && chartDataMap().size === 0 && selectedSubjectId()) {
+    <div class="page-card">
+      <div class="page-empty">
+        <div class="page-empty__icon" aria-hidden="true">
+          <i class="ph-duotone ph-chart-line"></i>
+        </div>
+        <h3 class="page-empty__title">Нет данных</h3>
+        <p class="page-empty__text">
+          Для выбранного предмета ещё нет данных о посещаемости.
+        </p>
+      </div>
+    </div>
+  }
+
   @if (chartDataMap().size > 0) {
     <app-overall-stat-card
       [totalLessons]="overallStats().totalLessons"
-      [attendanceRate]="overallStats().attendanceRate"
-      class="block" />
+      [attendanceRate]="overallStats().attendanceRate" />
 
-    <div class="grid grid-cols-1 lg:grid-cols-[repeat(auto-fill,minmax(480px,1fr))] gap-6">
+    <div class="teacher-stats__charts">
       @for (entry of chartEntries(); track entry.name) {
         <app-subject-chart
           [subjectName]="entry.name"

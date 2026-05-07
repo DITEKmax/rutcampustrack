@@ -4,8 +4,8 @@ import { SubjectChartComponent } from './subject-chart.component';
 import { StudentChartData } from '../stats-utils';
 
 const sampleData: StudentChartData[] = [
-  { name: 'Иванов', present: 5, excused: 1, freeAttendance: 0, absent: 2 },
-  { name: 'Петров', present: 7, excused: 0, freeAttendance: 1, absent: 0 },
+  { name: 'Иванов', present: 5, excused: 1, absent: 2 },
+  { name: 'Петров', present: 7, excused: 1, absent: 0 },
 ];
 
 describe('SubjectChartComponent', () => {
@@ -24,13 +24,13 @@ describe('SubjectChartComponent', () => {
     expect(comp).toBeTruthy();
   });
 
-  it('renders mat-card-title with the subject name', () => {
+  it('renders the subject name in the chart heading', () => {
     const fixture = TestBed.createComponent(SubjectChartComponent);
     const comp = fixture.componentInstance;
     comp.chartData = sampleData;
     comp.subjectName = 'Физика';
     fixture.detectChanges();
-    const title: HTMLElement = fixture.nativeElement.querySelector('mat-card-title');
+    const title: HTMLElement = fixture.nativeElement.querySelector('.chart-card__title');
     expect(title?.textContent?.trim()).toBe('Физика');
   });
 
@@ -44,13 +44,13 @@ describe('SubjectChartComponent', () => {
     expect(canvas).not.toBeNull();
   });
 
-  it('builds barChartData with 4 datasets on ngOnChanges', () => {
+  it('builds barChartData with 3 datasets on ngOnChanges', () => {
     const fixture = TestBed.createComponent(SubjectChartComponent);
     const comp = fixture.componentInstance;
     comp.chartData = sampleData;
     comp.subjectName = 'История';
     comp.ngOnChanges();
-    expect(comp.barChartData.datasets).toHaveLength(4);
+    expect(comp.barChartData.datasets).toHaveLength(3);
     expect(comp.barChartData.labels).toEqual(['Иванов', 'Петров']);
   });
 });

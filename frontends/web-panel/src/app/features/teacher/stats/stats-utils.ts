@@ -4,7 +4,6 @@ export interface StudentChartData {
   name: string;
   present: number;
   excused: number;
-  freeAttendance: number;
   absent: number;
 }
 
@@ -15,11 +14,10 @@ export interface OverallStats {
 
 export function deriveStudentChartData(journal: JournalResponse): StudentChartData[] {
   return journal.students.map(student => {
-    const counts = { present: 0, excused: 0, freeAttendance: 0, absent: 0 };
+    const counts = { present: 0, excused: 0, absent: 0 };
     student.records.forEach(cell => {
       if (cell.status === 'present') counts.present++;
-      else if (cell.status === 'excused') counts.excused++;
-      else if (cell.status === 'free_attendance') counts.freeAttendance++;
+      else if (cell.status === 'excused' || cell.status === 'free_attendance') counts.excused++;
       else if (cell.status === 'absent') counts.absent++;
       // 'cancelled' is excluded per business rules
     });
@@ -37,19 +35,21 @@ export function deriveOverallStats(journal: JournalResponse): OverallStats {
   }
   // Count unique non-cancelled lessons
   const lessonSet = new Set<string>();
-  let totalPresent = 0;
+  let totalAttended = 0;
   let totalRecords = 0;
   journal.students.forEach(student => {
     student.records.forEach(cell => {
       if (cell.status !== 'cancelled') {
         lessonSet.add(`${cell.date}_${cell.lessonNumber}`);
         totalRecords++;
-        if (cell.status === 'present') totalPresent++;
+        if (cell.status === 'present' || cell.status === 'excused' || cell.status === 'free_attendance') {
+          totalAttended++;
+        }
       }
     });
   });
   return {
     totalLessons: lessonSet.size,
-    attendanceRate: totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0,
+    attendanceRate: totalRecords > 0 ? Math.round((totalAttended / totalRecords) * 100) : 0,
   };
 }

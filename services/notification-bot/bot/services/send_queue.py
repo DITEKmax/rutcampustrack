@@ -7,6 +7,13 @@ from typing import Any, Awaitable, Callable, Optional
 logger = logging.getLogger(__name__)
 
 
+def _exception_summary(exc: Exception) -> str:
+    message = str(exc)
+    if message:
+        return f"{type(exc).__name__}: {message}"
+    return type(exc).__name__
+
+
 @dataclass
 class SendTask:
     coroutine_factory: Callable[[], Awaitable[Any]]
@@ -93,14 +100,31 @@ class TelegramSendQueue:
                     continue
                 if delay is None:
                     logger.error(
-                        "Send failed after %d attempts user_id=%s chat_id=%s — skipping",
-                        len(self._RETRY_DELAYS),
+                        (
+                            "Send failed after %d attempts user_id=%s chat_id=%s "
+                            "category=%s error=%s — skipping"
+                        ),
+                        len(self._RETRY_DELAYS) + 1,
                         task.user_id,
                         task.chat_id,
+                        task.category,
+                        _exception_summary(e),
+                        exc_info=True,
                     )
                     self._total_failed += 1
                     return
-                logger.warning("Send attempt %d failed — retrying in %ds", attempt, delay)
+                logger.warning(
+                    (
+                        "Send attempt %d failed user_id=%s chat_id=%s "
+                        "category=%s error=%s — retrying in %ds"
+                    ),
+                    attempt,
+                    task.user_id,
+                    task.chat_id,
+                    task.category,
+                    _exception_summary(e),
+                    delay,
+                )
                 await asyncio.sleep(delay)
 
     async def shutdown(self) -> None:

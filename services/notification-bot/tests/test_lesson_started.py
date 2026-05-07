@@ -93,10 +93,8 @@ async def test_lesson_started_sends_to_students_with_telegram_id():
 
 
 @pytest.mark.asyncio
-async def test_lesson_started_message_contains_inline_keyboard_with_web_app():
-    """Sent message has InlineKeyboardMarkup with WebAppInfo button."""
-    from aiogram.types import InlineKeyboardMarkup, WebAppInfo
-
+async def test_lesson_started_sends_plain_chat_message_without_web_app():
+    """lesson.started must not depend on Telegram Mini App/WebApp setup."""
     students = [_make_student(user_id=1, telegram_id=111)]
 
     bot = MagicMock()
@@ -132,14 +130,10 @@ async def test_lesson_started_message_contains_inline_keyboard_with_web_app():
     await captured_tasks[0].coroutine_factory()
 
     _, kwargs = bot.send_message.call_args
-    keyboard = kwargs.get("reply_markup") or bot.send_message.call_args[1].get("reply_markup")
-    assert isinstance(keyboard, InlineKeyboardMarkup)
-
-    # Verify the button has WebAppInfo with the correct URL
-    button = keyboard.inline_keyboard[0][0]
-    assert isinstance(button.web_app, WebAppInfo)
-    assert "lesson_id=77" in button.web_app.url
-    assert "checkin" in button.web_app.url
+    assert kwargs["chat_id"] == 111
+    assert "Пара началась!" in kwargs["text"]
+    assert "Откройте приложение и отметьтесь." in kwargs["text"]
+    assert "reply_markup" not in kwargs
 
 
 @pytest.mark.asyncio

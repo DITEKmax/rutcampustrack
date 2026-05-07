@@ -1,9 +1,8 @@
-"""Handler for lesson.started events — sends inline check-in button to group students."""
+"""Handler for lesson.started events — sends a Telegram reminder to group students."""
 
 import logging
 
 from aiogram import Bot
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 from bot.config import Settings
 from bot.services.send_queue import SendTask, TelegramSendQueue
@@ -19,9 +18,9 @@ async def handle_lesson_started(
     redis_client,
     config: Settings,
 ) -> None:
-    """Send an inline keyboard message with a WebAppInfo check-in button to all
-    group students that have a telegram_id set. Stores each sent message_id in
-    Redis so reminder cleanup can delete them later.
+    """Send a plain Telegram message to all group students that have a
+    telegram_id set. Stores each sent message_id in Redis so reminder cleanup
+    can delete them later.
 
     Threat T-24-02: missing payload fields are caught and logged.
     """
@@ -47,17 +46,12 @@ async def handle_lesson_started(
     except Exception:
         logger.warning("Could not resolve subject_id=%s for lesson.started, using fallback", subject_id)
 
-    text = f"Пара началась!\n\n{subject_name}\nАудитория: {room}\nВремя: {start_time} - {end_time}"
-
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="Отметиться",
-                    web_app=WebAppInfo(url=f"{config.mini_app_url}/checkin?lesson_id={lesson_id}"),
-                )
-            ]
-        ]
+    text = (
+        f"Пара началась!\n\n"
+        f"{subject_name}\n"
+        f"Аудитория: {room}\n"
+        f"Время: {start_time} - {end_time}\n\n"
+        "Откройте приложение и отметьтесь."
     )
 
     # Fetch group members — T-24-03: each student only receives their own message
@@ -69,7 +63,7 @@ async def handle_lesson_started(
 
         # Use default arg binding to avoid late-binding closure bug
         async def send_and_store(s=student):
-            result = await bot.send_message(chat_id=s.telegram_id, text=text, reply_markup=keyboard)
+            result = await bot.send_message(chat_id=s.telegram_id, text=text)
             await redis_client.add_message_id(lesson_id, s.user_id, result.message_id)
 
         await send_queue.put(

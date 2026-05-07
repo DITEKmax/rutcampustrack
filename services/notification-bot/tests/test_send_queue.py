@@ -138,6 +138,35 @@ async def test_max_retries_skip():
     await queue.shutdown()
 
 
+async def test_failed_send_logs_exception_summary(caplog):
+    """Permanent send failures must include exception details in logs."""
+    import logging
+
+    async def factory():
+        raise RuntimeError("permanent failure")
+
+    with patch("asyncio.sleep", new_callable=AsyncMock):
+        with caplog.at_level(logging.WARNING, logger="bot.services.send_queue"):
+            queue = TelegramSendQueue()
+            queue.start()
+            await queue.put(
+                SendTask(
+                    coroutine_factory=factory,
+                    user_id=10,
+                    chat_id=555,
+                    category="reminders",
+                )
+            )
+            await queue._queue.join()
+
+    assert "RuntimeError: permanent failure" in caplog.text
+    assert "user_id=10" in caplog.text
+    assert "chat_id=555" in caplog.text
+    assert "category=reminders" in caplog.text
+
+    await queue.shutdown()
+
+
 # ---------------------------------------------------------------------------
 # Shutdown logging
 # ---------------------------------------------------------------------------

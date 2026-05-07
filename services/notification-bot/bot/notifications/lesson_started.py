@@ -47,8 +47,8 @@ async def handle_lesson_started(
         logger.warning("Could not resolve subject_id=%s for lesson.started, using fallback", subject_id)
 
     text = (
-        f"Пара началась!\n\n"
-        f"{subject_name}\n"
+        f"📚 Пара началась\n\n"
+        f"Предмет: {subject_name}\n"
         f"Аудитория: {room}\n"
         f"Время: {start_time} - {end_time}\n\n"
         "Откройте приложение и отметьтесь."

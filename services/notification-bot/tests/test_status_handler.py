@@ -67,7 +67,7 @@ async def test_status_no_jwt():
 
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
-    assert "Сначала войдите через /login" in text
+    assert "Сначала получите код через /login" in text
 
 
 @pytest.mark.asyncio
@@ -92,7 +92,7 @@ async def test_status_no_active_lesson():
 
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
-    assert "Нет активной пары" in text
+    assert "нет активной пары" in text
 
 
 @pytest.mark.asyncio
@@ -188,5 +188,5 @@ async def test_status_token_expired():
     jwt_redis.delete.assert_called_once_with(12345)
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
-    assert "Токен истёк" in text
+    assert "Сессия истекла" in text
     assert "/login" in text

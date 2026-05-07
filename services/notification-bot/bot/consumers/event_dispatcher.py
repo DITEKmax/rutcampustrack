@@ -231,7 +231,7 @@ class EventDispatcher:
                 await self._bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=None)
                 await self._bot.send_message(
                     chat_id=chat_id,
-                    text=verdict_line,
+                    text=f"Решение: {verdict_line}",
                     reply_to_message_id=message_id,
                 )
             except Exception:

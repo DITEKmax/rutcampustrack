@@ -51,7 +51,7 @@ async def test_start_known_user_first_login():
 
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
-    assert "Ваш пароль: <code>pass123</code>" in text
+    assert "Пароль: <code>pass123</code>" in text
     assert "student00001" in text
     assert "Иван Иванов" in text
 
@@ -95,7 +95,7 @@ async def test_start_unknown_user():
 
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
-    assert "Ваш Telegram не привязан к системе" in text
+    assert "Ваш Telegram пока не привязан к системе" in text
     assert "старосте" in text
 
 

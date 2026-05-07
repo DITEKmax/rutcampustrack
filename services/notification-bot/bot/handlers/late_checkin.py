@@ -64,7 +64,7 @@ async def handle_late_checkin_decision(callback: CallbackQuery, **data) -> None:
 
     verdict_line = "✅ Подтверждено" if approved else "❌ Отклонено"
     original = callback.message.text or ""
-    new_text = f"{original}\n\n{verdict_line}"
+    new_text = f"{original}\n\nРешение: {verdict_line}"
     try:
         await callback.message.edit_text(new_text, reply_markup=None)
     except Exception:

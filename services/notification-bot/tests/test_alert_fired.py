@@ -35,7 +35,7 @@ def test_format_message_critical():
         }
     )
     assert "ServiceDown" in msg
-    assert "[CRITICAL]" in msg
+    assert "CRITICAL" in msg
     assert "🔔" in msg
     assert "🔴" in msg
     assert "auth-service down" in msg
@@ -52,7 +52,7 @@ def test_format_message_resolved():
     )
     assert "✅" in msg
     assert "🟡" in msg
-    assert "[WARNING]" in msg
+    assert "WARNING" in msg
 
 
 def test_format_message_truncates_long_description():

@@ -91,7 +91,7 @@ async def handle_excuse_decision(callback: CallbackQuery, **data) -> None:
     verdict_line = "✅ Одобрено" if approved else "❌ Отклонено"
     # Берём caption, если это document/photo, иначе — text.
     original = callback.message.caption if callback.message.caption else (callback.message.text or "")
-    new_text = f"{original}\n\n{verdict_line}"
+    new_text = f"{original}\n\nРешение: {verdict_line}"
     try:
         if callback.message.caption is not None:
             await callback.message.edit_caption(caption=new_text, reply_markup=None)

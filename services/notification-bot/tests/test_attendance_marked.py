@@ -73,7 +73,8 @@ async def test_attendance_marked_headman_present_uses_plus_status_label():
 
     bot.send_message.assert_awaited_once()
     sent_text = bot.send_message.await_args.kwargs["text"]
-    assert sent_text.splitlines()[0] == "Староста проставил вам статус: присутствует (+)"
+    assert sent_text.splitlines()[0] == "📝 Статус посещаемости обновлён"
+    assert "Статус: присутствует (+)" in sent_text
     assert "(б)" not in sent_text
 
 

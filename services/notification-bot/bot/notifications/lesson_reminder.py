@@ -31,9 +31,9 @@ async def handle_lesson_reminder(
 
     phase = payload.get("phase")
     reminder_text = (
-        "Пара скоро закончится. Если вы ещё не отметились, сделайте это сейчас."
+        "⏳ Пара скоро закончится\n\nЕсли вы ещё не отметились, сделайте это сейчас."
         if phase == "near_end"
-        else "Напоминание: отметьтесь на паре!"
+        else "⏰ Напоминание\n\nОтметьтесь на паре, если ещё не сделали этого."
     )
 
     members = await academic_client.get_group_members(group_id)

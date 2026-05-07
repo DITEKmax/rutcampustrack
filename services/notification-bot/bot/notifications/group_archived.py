@@ -5,6 +5,7 @@
 выпуском (4 курс → суффикс «(выпуск YYYY)»); сообщение поздравляет студентов.
 """
 
+import html
 import logging
 
 from aiogram import Bot
@@ -35,9 +36,9 @@ async def handle_group_archived(
         logger.warning("get_group failed for group_id=%s (group.archived), using fallback", group_id)
 
     if group_name:
-        text = f"🎓 Группа <b>{group_name}</b> архивирована. Поздравляем с выпуском!"
+        text = f"🎓 <b>Группа архивирована</b>\n\nГруппа: <b>{html.escape(group_name)}</b>\n\nПоздравляем с выпуском!"
     else:
-        text = "🎓 Ваша группа архивирована. Поздравляем с выпуском!"
+        text = "🎓 <b>Группа архивирована</b>\n\nПоздравляем с выпуском!"
 
     try:
         members = await academic_client.get_group_members(group_id)

@@ -45,12 +45,12 @@ async def cmd_login(
         # таймаута в handle_otp_requested).
     except aiohttp.ClientResponseError as e:
         if e.status == 429:
-            await message.answer("Слишком много попыток. Подождите.")
+            await message.answer("⏳ Слишком много попыток\n\nПодождите немного и запросите код снова.")
         elif e.status == 401:
-            await message.answer("Ваш аккаунт не найден. Обратитесь к старосте.")
+            await message.answer("⚠️ Аккаунт не найден\n\nОбратитесь к старосте, чтобы проверить привязку Telegram.")
         else:
             logger.warning("OTP request failed: %s", e)
-            await message.answer("Сервис временно недоступен. Попробуйте позже.")
+            await message.answer("⚠️ Сервис временно недоступен\n\nПопробуйте ещё раз чуть позже.")
     except Exception:
         logger.warning("OTP request failed unexpectedly", exc_info=True)
-        await message.answer("Сервис временно недоступен. Попробуйте позже.")
+        await message.answer("⚠️ Сервис временно недоступен\n\nПопробуйте ещё раз чуть позже.")

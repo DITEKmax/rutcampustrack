@@ -228,12 +228,12 @@ async def test_homework_updated_text_contains_subject_and_title():
 
     call_kwargs = bot.send_message.call_args.kwargs
     text = call_kwargs.get("text", "")
-    assert "ДЗ изменено" in text
+    assert "Домашнее задание изменено" in text
     assert "Математика" in text
     assert "Задача 3" in text
     assert "Добавлен второй вариант" in text
     assert "https://example.com/updated" in text
-    assert "Пара 2" in text
+    assert "Пара: №2" in text
     assert "2026-05-01" in text
     # Ensure we did try to resolve the subject (D-07 требует lookup)
     academic_client.get_subjects_by_ids.assert_awaited_once_with([42])
@@ -270,7 +270,7 @@ async def test_homework_updated_subject_fallback_on_grpc_error():
     await captured_tasks[0].coroutine_factory()
 
     text = bot.send_message.call_args.kwargs.get("text", "")
-    assert "ДЗ изменено" in text
+    assert "Домашнее задание изменено" in text
     assert "Предмет" in text
     assert "Упражнение" in text
 

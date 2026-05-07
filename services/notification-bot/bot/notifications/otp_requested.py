@@ -59,9 +59,10 @@ async def handle_otp_requested(
         bot_message = await bot.send_message(
             chat_id=telegram_id,
             text=(
-                f"Ваш код для входа: <code>{code}</code>\n\n"
-                f"Откройте веб-панель и введите этот код:\n{WEB_LOGIN_URL}\n\n"
-                f"Код действует {ttl_minutes} мин."
+                "🔑 <b>Код для входа</b>\n\n"
+                f"Код: <code>{code}</code>\n"
+                f"Действует: {ttl_minutes} мин.\n\n"
+                f"Веб-панель:\n{WEB_LOGIN_URL}"
             ),
             parse_mode="HTML",
         )

@@ -1,3 +1,4 @@
+import html
 import logging
 
 from aiogram import Router
@@ -11,26 +12,24 @@ logger = logging.getLogger(__name__)
 start_router = Router()
 
 _WHERE_TO_MARK_BLOCK = (
-    "🌐 <b>Где отмечаться на парах</b>\n"
-    "• Сайт без VPN: https://ru.ruttrack.site\n"
-    "• Сайт с VPN: https://ruttrack.site\n"
-    "• Mini App в Telegram\n"
-    "• Приложение (рекомендуется): <code>ru.ruttrack.site/app</code> — только на телефон"
+    "🌐 <b>Где отмечаться</b>\n"
+    "• Без VPN: https://ru.ruttrack.site\n"
+    "• С VPN: https://ruttrack.site\n"
+    "• Telegram Mini App\n"
+    "• Приложение на телефон: <code>ru.ruttrack.site/app</code>"
 )
 
 _INSTALL_BLOCK = (
     "📱 <b>Установка приложения</b>\n\n"
-    "🤖 <b>Android</b> — откройте ссылку <b>в Chrome</b>:\n"
-    "1. Нажмите ⋮ (три точки) в правом верхнем углу.\n"
-    "2. Выберите «Установить приложение» или «Добавить на главный экран».\n"
-    "3. Нажмите «Установить».\n"
-    "Иконка появится на рабочем столе.\n\n"
-    "🍎 <b>iPhone / iPad</b> — откройте ссылку <b>в Safari</b> "
-    "(не в Chrome или Яндекс):\n"
-    "1. Нажмите кнопку «Поделиться» внизу экрана (квадрат со стрелкой вверх).\n"
-    "2. Прокрутите и выберите «На экран „Домой“».\n"
-    "3. Нажмите «Добавить» в правом верхнем углу.\n"
-    "Иконка появится на главном экране."
+    "<b>Android</b>\n"
+    "1. Откройте ссылку в Chrome.\n"
+    "2. Нажмите ⋮ в правом верхнем углу.\n"
+    "3. Выберите «Установить приложение» или «Добавить на главный экран».\n\n"
+    "<b>iPhone / iPad</b>\n"
+    "1. Откройте ссылку в Safari.\n"
+    "2. Нажмите «Поделиться».\n"
+    "3. Выберите «На экран Домой».\n"
+    "4. Нажмите «Добавить»."
 )
 
 
@@ -46,19 +45,26 @@ async def cmd_start(message: Message, academic_client, prefs_client) -> None:
         if not response.found:
             # D-03: unknown telegram_id
             await message.answer(
-                "Ваш Telegram не привязан к системе. Обратитесь к старосте вашей группы для привязки аккаунта.",
+                "⚠️ <b>Аккаунт не найден</b>\n\n"
+                "Ваш Telegram пока не привязан к системе.\n\n"
+                "Обратитесь к старосте вашей группы, чтобы он привязал ваш аккаунт.",
                 reply_markup=keyboard,
+                parse_mode="HTML",
             )
             return
 
         # D-02: known user
+        display_name = html.escape(str(response.display_name or ""))
+        login = html.escape(str(response.login or ""))
         if response.initial_password:
             # First login — show credentials
+            initial_password = html.escape(str(response.initial_password or ""))
             await message.answer(
-                f"Добро пожаловать, {response.display_name}!\n\n"
-                f"Ваш логин: <code>{response.login}</code>\n"
-                f"Ваш пароль: <code>{response.initial_password}</code>\n\n"
-                "Используйте эти данные для входа. После входа смените пароль.\n\n"
+                f"👋 <b>Добро пожаловать, {display_name}</b>\n\n"
+                "🔐 <b>Данные для входа</b>\n"
+                f"Логин: <code>{login}</code>\n"
+                f"Пароль: <code>{initial_password}</code>\n\n"
+                "После первого входа смените пароль.\n\n"
                 f"{_WHERE_TO_MARK_BLOCK}\n\n"
                 f"{_INSTALL_BLOCK}",
                 reply_markup=keyboard,
@@ -66,10 +72,12 @@ async def cmd_start(message: Message, academic_client, prefs_client) -> None:
             )
         else:
             # Password already changed
+            group_name = html.escape(str(response.group_name or ""))
             await message.answer(
-                f"Добро пожаловать, {response.display_name}!\n\n"
-                f"Логин: <code>{response.login}</code>\n"
-                f"Группа: {response.group_name}\n\n"
+                f"👋 <b>Добро пожаловать, {display_name}</b>\n\n"
+                "👤 <b>Профиль</b>\n"
+                f"Логин: <code>{login}</code>\n"
+                f"Группа: {group_name}\n\n"
                 f"{_WHERE_TO_MARK_BLOCK}\n\n"
                 f"{_INSTALL_BLOCK}",
                 reply_markup=keyboard,
@@ -79,4 +87,8 @@ async def cmd_start(message: Message, academic_client, prefs_client) -> None:
     except Exception:
         # D-14: service unavailability
         logger.warning("Academic gRPC unavailable for /start", exc_info=True)
-        await message.answer("Сервис временно недоступен. Попробуйте позже.", reply_markup=keyboard)
+        await message.answer(
+            "⚠️ <b>Сервис временно недоступен</b>\n\nПопробуйте ещё раз чуть позже.",
+            reply_markup=keyboard,
+            parse_mode="HTML",
+        )

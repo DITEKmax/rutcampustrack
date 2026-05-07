@@ -94,7 +94,7 @@ async def test_rejected_event_sends_ru_message_with_comment():
     await captured[0].coroutine_factory()
     text = bot.send_message.call_args.kwargs["text"]
     assert "❌" in text
-    assert "отклонён" in text
+    assert "отклонена" in text
     assert "документы не прикреплены" in text
     academic_client.get_user_by_id.assert_awaited_once_with(42)
 
@@ -123,7 +123,7 @@ async def test_rejected_event_without_comment_falls_back_to_default():
     assert len(captured) == 1
     await captured[0].coroutine_factory()
     text = bot.send_message.call_args.kwargs["text"]
-    assert "отклонён" in text
+    assert "отклонена" in text
     assert "без комментария" in text
 
 

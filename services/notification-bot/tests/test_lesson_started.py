@@ -131,7 +131,7 @@ async def test_lesson_started_sends_plain_chat_message_without_web_app():
 
     _, kwargs = bot.send_message.call_args
     assert kwargs["chat_id"] == 111
-    assert "Пара началась!" in kwargs["text"]
+    assert "📚 Пара началась" in kwargs["text"]
     assert "Откройте приложение и отметьтесь." in kwargs["text"]
     assert "reply_markup" not in kwargs
 

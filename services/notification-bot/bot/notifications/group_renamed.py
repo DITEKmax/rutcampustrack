@@ -6,6 +6,7 @@ gRPC AcademicGrpcService.GetGroup и шлёт сообщение всем сту
 у которых привязан telegram_id.
 """
 
+import html
 import logging
 
 from aiogram import Bot
@@ -37,9 +38,9 @@ async def handle_group_renamed(
         logger.warning("get_group failed for group_id=%s (group.renamed), using fallback", group_id)
 
     if group_name:
-        text = f"📝 Ваша группа переименована: <b>{group_name}</b>"
+        text = f"📝 <b>Группа переименована</b>\n\nНовое название: <b>{html.escape(group_name)}</b>"
     else:
-        text = "📝 Ваша группа переименована."
+        text = "📝 <b>Группа переименована</b>"
 
     try:
         members = await academic_client.get_group_members(group_id)

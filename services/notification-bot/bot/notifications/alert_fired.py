@@ -76,13 +76,14 @@ def _format_message(payload: dict) -> str:
     severity_marker = SEVERITY_EMOJI.get(severity, "⚪")
 
     lines = [
-        f"{status_prefix} <b>{severity_marker} [{severity.upper()}] {name}</b>",
-        f"<i>status:</i> {html.escape(status)}",
+        f"{status_prefix} <b>Alert: {severity_marker} {html.escape(severity.upper())}</b>",
+        f"Название: {name}",
+        f"Статус: {html.escape(status)}",
     ]
     if summary:
-        lines.append(f"<b>{summary}</b>")
+        lines.extend(["", f"<b>Кратко:</b>\n{summary}"])
     if description:
-        lines.append(description)
+        lines.extend(["", f"<b>Описание:</b>\n{description}"])
     return "\n".join(lines)
 
 

@@ -70,11 +70,19 @@ async def handle_attendance_marked(
         elif subject_name:
             line_lesson = subject_name
         line_date = lesson_date or ""
-        text_parts = ["Староста проставил вам статус: " + status_label]
-        if line_lesson:
+        text_parts = [
+            "📝 Статус посещаемости обновлён",
+            "",
+            f"Статус: {status_label}",
+        ]
+        if lesson_number is not None:
+            text_parts.append(f"Пара: №{lesson_number}")
+        if subject_name:
+            text_parts.append(f"Предмет: {subject_name}")
+        elif line_lesson:
             text_parts.append(line_lesson)
         if line_date:
-            text_parts.append(line_date)
+            text_parts.append(f"Дата: {line_date}")
         try:
             await bot.send_message(chat_id=student.telegram_id, text="\n".join(text_parts))
         except Exception:

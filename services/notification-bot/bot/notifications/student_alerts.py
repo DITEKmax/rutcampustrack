@@ -47,19 +47,19 @@ async def handle_student_alert(
 
     if event_type == "late_checkin.decided":
         if status == "approved":
-            text = "✅ Староста подтвердил ваше присутствие на паре."
+            text = "✅ Присутствие подтверждено\n\nСтароста подтвердил ваше присутствие на паре."
         elif status == "rejected":
-            text = "❌ Староста отклонил запрос на подтверждение присутствия."
+            text = "❌ Запрос отклонён\n\nСтароста отклонил подтверждение присутствия."
         else:
             logger.debug("late_checkin.decided with unexpected status=%s", status)
             return
     elif status == "approved":
-        text = "✅ Ваш запрос на уважительную причину одобрен."
+        text = "✅ Уважительная причина одобрена"
         if decision_comment:
-            text += f"\n\nКомментарий: {decision_comment}"
+            text += f"\n\nКомментарий:\n{decision_comment}"
     elif status == "rejected":
         comment_line = decision_comment if decision_comment else "без комментария"
-        text = f"❌ Ваш запрос на уважительную причину отклонён.\n\nКомментарий: {comment_line}"
+        text = f"❌ Уважительная причина отклонена\n\nКомментарий:\n{comment_line}"
     else:
         logger.debug(
             "handle_student_alert called with unexpected status=%s event_type=%s",

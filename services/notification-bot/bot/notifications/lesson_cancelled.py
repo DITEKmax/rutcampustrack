@@ -41,7 +41,7 @@ async def handle_lesson_cancelled(
     except Exception:
         logger.warning("Could not resolve subject_id=%s for lesson.cancelled, using fallback", subject_id)
 
-    text = f"Отмена пары\n\n{subject_name}\nДата: {date}"
+    text = f"❌ Пара отменена\n\nПредмет: {subject_name}\nДата: {date}"
     if cancel_reason:
         text += f"\nПричина: {cancel_reason}"
 

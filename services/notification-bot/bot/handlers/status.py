@@ -33,25 +33,25 @@ async def cmd_status(
     # D-11: check for stored JWT
     tokens = await jwt_redis.get(telegram_id)
     if not tokens:
-        await message.answer("Сначала войдите через /login.")
+        await message.answer("🔐 Требуется вход\n\nСначала получите код через /login.")
         return
 
     try:
         # Look up user to get group_id
         user_response = await academic_client.get_user_by_telegram_id(telegram_id)
         if not user_response.found:
-            await message.answer("Ваш аккаунт не найден. Обратитесь к старосте.")
+            await message.answer("⚠️ Аккаунт не найден\n\nОбратитесь к старосте, чтобы проверить привязку.")
             return
 
         group_id = user_response.group_id
         if not group_id:
-            await message.answer("Вы не привязаны к группе.")
+            await message.answer("⚠️ Группа не указана\n\nВаш аккаунт пока не привязан к учебной группе.")
             return
 
         # D-08: get active lesson
         lesson = await schedule_client.get_active_lesson(group_id)
         if lesson is None:
-            await message.answer("Нет активной пары.")
+            await message.answer("🕒 Сейчас нет активной пары")
             return
 
         # Resolve subject name via Academic gRPC (Pitfall 7 from RESEARCH.md)
@@ -75,7 +75,7 @@ async def cmd_status(
         except TokenExpiredError:
             # Expired JWT — delete from Redis, ask to re-login (Pitfall 8)
             await jwt_redis.delete(telegram_id)
-            await message.answer("Токен истёк. Войдите снова через /login.")
+            await message.answer("🔐 Сессия истекла\n\nПолучите новый код через /login.")
             return
         except Exception:
             logger.warning("Failed to fetch attendance records", exc_info=True)
@@ -84,7 +84,7 @@ async def cmd_status(
         # D-10: format status message
         time_range = f"{lesson.start_time} — {lesson.end_time}"
         await message.answer(
-            f"Текущая пара:\n\n"
+            f"📚 Текущая пара\n\n"
             f"Предмет: {subject_name}\n"
             f"Аудитория: {lesson.room}\n"
             f"Время: {time_range}\n"
@@ -94,4 +94,4 @@ async def cmd_status(
     except Exception:
         # D-14: service unavailability
         logger.warning("Error in /status handler", exc_info=True)
-        await message.answer("Сервис временно недоступен. Попробуйте позже.")
+        await message.answer("⚠️ Сервис временно недоступен\n\nПопробуйте ещё раз чуть позже.")

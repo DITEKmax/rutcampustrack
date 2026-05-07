@@ -71,17 +71,17 @@ async def handle_headman_alert(
 
     if event_type == "excuse.requested":
         excuse_type_label = _excuse_type_label(payload.get("excuse_type"))
-        text = f"Запрос у.п.\n\nСтудент: {student_name}\nТип: {excuse_type_label}"
+        text = f"🧾 Запрос на уважительную причину\n\nСтудент: {student_name}\nТип: {excuse_type_label}"
 
         lessons = payload.get("lessons") or []
         if lessons:
             text += "\n\nПары:"
             for lesson in lessons:
-                text += "\n  · " + _format_lesson(lesson)
+                text += "\n• " + _format_lesson(lesson)
 
         comment = payload.get("comment")
         if comment:
-            text += f"\n\nКомментарий: {comment}"
+            text += f"\n\nКомментарий:\n{comment}"
 
         ticket_id = payload.get("ticket_id")
         if ticket_id:
@@ -113,7 +113,7 @@ async def handle_headman_alert(
                 file_bytes = None
             file_name = payload.get("file_name") or "attachment"
     elif event_type == "late_checkin.requested":
-        text = f"Запрос подтверждения присутствия\n\nСтудент: {student_name}"
+        text = f"✅ Запрос подтверждения присутствия\n\nСтудент: {student_name}"
         subject_name = payload.get("subject_name")
         if subject_name:
             text += f"\nПредмет: {subject_name}"

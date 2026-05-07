@@ -73,14 +73,15 @@ async def _build_menu(prefs_client: NotificationPrefsClient, telegram_id: int) -
     categories = await prefs_client.get_categories(telegram_id)
     muted_until = await prefs_client.get_muted_until(telegram_id)
 
-    header = "🔔 Уведомления включены" if global_on else "🔕 Уведомления глобально выключены"
-    if muted_until is not None:
-        header = f"{header}\nПауза до {_format_mute_until(muted_until)}"
-    body = (
-        "Выберите, какие уведомления хотите получать в этом боте. "
-        "Настройки для браузера и PWA — отдельные, в приложении."
+    status = "🔔 включены" if global_on else "🔕 глобально выключены"
+    pause = f"до {_format_mute_until(muted_until)}" if muted_until is not None else "нет"
+    text = (
+        "🔔 Настройки уведомлений\n\n"
+        f"Статус: {status}\n"
+        f"Пауза: {pause}\n\n"
+        "Выберите категории, которые хотите получать в Telegram.\n"
+        "Настройки браузера и PWA меняются отдельно в приложении."
     )
-    text = f"{header}\n\n{body}"
 
     rows: list[list[InlineKeyboardButton]] = [
         [

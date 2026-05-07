@@ -44,12 +44,7 @@ async def handle_lesson_one_off_cancelled(
             subject_id,
         )
 
-    text = (
-        "❌ Разовая пара отменена\n\n"
-        f"Предмет: {subject_name}\n"
-        f"Дата: {date}\n"
-        f"Пара: №{lesson_number}"
-    )
+    text = f"❌ Разовая пара отменена\n\nПредмет: {subject_name}\nДата: {date}\nПара: №{lesson_number}"
 
     members = await academic_client.get_group_members(group_id)
     for student in members:

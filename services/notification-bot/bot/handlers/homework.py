@@ -91,11 +91,7 @@ def _filter_week_homeworks(items: list[dict], start: date, end: date) -> list[di
 
 async def _resolve_subject_names(items: list[dict], academic_client) -> dict[int, str]:
     subject_ids = sorted(
-        {
-            int(subject_id)
-            for item in items
-            if (subject_id := _field(item, "subjectId", "subject_id")) is not None
-        }
+        {int(subject_id) for item in items if (subject_id := _field(item, "subjectId", "subject_id")) is not None}
     )
     if not subject_ids:
         return {}

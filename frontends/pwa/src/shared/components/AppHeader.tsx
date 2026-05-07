@@ -22,6 +22,7 @@ const routeLabels: Record<string, string> = {
   '/checkin': 'Отметка',
   '/profile': 'Профиль',
   '/homework': 'Домашние задания',
+  '/late-checkin': 'Запрос отметки',
 }
 
 function matchTitle(pathname: string): string {

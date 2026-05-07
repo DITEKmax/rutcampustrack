@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from bot.handlers.start import cmd_start
+from bot.handlers.start import cmd_credentials, cmd_links, cmd_start
 
 
 def _make_message(user_id: int = 12345) -> MagicMock:
@@ -113,3 +113,74 @@ async def test_start_grpc_error():
     message.answer.assert_called_once()
     text = message.answer.call_args[0][0]
     assert "Сервис временно недоступен" in text
+
+
+@pytest.mark.asyncio
+async def test_credentials_shows_initial_password_structured():
+    message = _make_message()
+    academic_client = MagicMock()
+    academic_client.get_user_by_telegram_id = AsyncMock(
+        return_value=_make_user_response(
+            found=True,
+            display_name="Иван Иванов",
+            login="student00001",
+            initial_password="itit123",
+            group_name="ИБ-21",
+        )
+    )
+
+    await cmd_credentials(message, academic_client=academic_client)
+
+    message.answer.assert_called_once()
+    text = message.answer.call_args[0][0]
+    assert "Данные для входа" in text
+    assert "Имя: Иван Иванов" in text
+    assert "Группа: ИБ-21" in text
+    assert "Логин: <code>student00001</code>" in text
+    assert "Пароль: <code>itit123</code>" in text
+
+
+@pytest.mark.asyncio
+async def test_credentials_hides_changed_password():
+    message = _make_message()
+    academic_client = MagicMock()
+    academic_client.get_user_by_telegram_id = AsyncMock(
+        return_value=_make_user_response(
+            found=True,
+            login="student00002",
+            initial_password="",
+            group_name="ИБ-21",
+        )
+    )
+
+    await cmd_credentials(message, academic_client=academic_client)
+
+    text = message.answer.call_args[0][0]
+    assert "Логин: <code>student00002</code>" in text
+    assert "Пароль: уже изменён." in text
+    assert "не хранит текущий пароль" in text
+
+
+@pytest.mark.asyncio
+async def test_credentials_unknown_user():
+    message = _make_message()
+    academic_client = MagicMock()
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(found=False))
+
+    await cmd_credentials(message, academic_client=academic_client)
+
+    text = message.answer.call_args[0][0]
+    assert "Аккаунт не найден" in text
+
+
+@pytest.mark.asyncio
+async def test_links_button_shows_site_and_pwa_links():
+    message = _make_message()
+
+    await cmd_links(message)
+
+    text = message.answer.call_args[0][0]
+    assert "https://ru.ruttrack.site" in text
+    assert "https://ruttrack.site" in text
+    assert "https://ru.ruttrack.site/app" in text
+    assert "PWA" in text

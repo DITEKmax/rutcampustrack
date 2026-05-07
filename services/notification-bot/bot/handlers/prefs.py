@@ -32,9 +32,12 @@ prefs_router = Router()
 SETTINGS_LABEL = "⚙️ Настройки уведомлений"
 LOGIN_LABEL = "🔑 Получить код для входа"
 HOMEWORK_WEEK_LABEL = "📚 ДЗ на неделю"
+CREDENTIALS_LABEL = "🔐 Данные для входа"
+LINKS_LABEL = "🌐 Сайт и PWA"
 
 _MAIN_KEYBOARD_LAYOUT: tuple[tuple[str, ...], ...] = (
     (HOMEWORK_WEEK_LABEL,),
+    (CREDENTIALS_LABEL, LINKS_LABEL),
     (SETTINGS_LABEL,),
     (LOGIN_LABEL,),
 )

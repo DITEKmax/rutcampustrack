@@ -1,11 +1,11 @@
 import html
 import logging
 
-from aiogram import Router
+from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from bot.handlers.prefs import keyboard_signature, main_keyboard
+from bot.handlers.prefs import CREDENTIALS_LABEL, LINKS_LABEL, keyboard_signature, main_keyboard
 from bot.services.keyboard_sync import mark_keyboard_synced
 
 logger = logging.getLogger(__name__)
@@ -18,6 +18,18 @@ _WHERE_TO_MARK_BLOCK = (
     "• С VPN: https://ruttrack.site\n"
     "• Telegram Mini App\n"
     "• Приложение на телефон: <code>ru.ruttrack.site/app</code>"
+)
+
+_LINKS_BLOCK = (
+    "🌐 <b>Сайт и PWA</b>\n\n"
+    "<b>Сайт</b>\n"
+    "• Без VPN: https://ru.ruttrack.site\n"
+    "• С VPN: https://ruttrack.site\n\n"
+    "<b>PWA / приложение на телефон</b>\n"
+    "• https://ru.ruttrack.site/app\n"
+    "• https://ruttrack.site/app\n\n"
+    "<b>Telegram Mini App</b>\n"
+    "• Откройте Mini App из профиля бота или из меню Telegram."
 )
 
 _INSTALL_BLOCK = (
@@ -94,3 +106,62 @@ async def cmd_start(message: Message, academic_client, prefs_client, keyboard_sy
             reply_markup=keyboard,
             parse_mode="HTML",
         )
+
+
+@start_router.message(Command("credentials"))
+@start_router.message(F.text == CREDENTIALS_LABEL)
+async def cmd_credentials(message: Message, academic_client) -> None:
+    """Show structured login data for the linked Telegram account."""
+    telegram_id = message.from_user.id
+    try:
+        response = await academic_client.get_user_by_telegram_id(telegram_id)
+    except Exception:
+        logger.warning("Academic gRPC unavailable for credentials", exc_info=True)
+        await message.answer("⚠️ <b>Сервис временно недоступен</b>\n\nПопробуйте ещё раз чуть позже.", parse_mode="HTML")
+        return
+
+    if not response.found:
+        await message.answer(
+            "⚠️ <b>Аккаунт не найден</b>\n\nВаш Telegram пока не привязан к системе.",
+            parse_mode="HTML",
+        )
+        return
+
+    display_name = html.escape(str(response.display_name or ""))
+    login = html.escape(str(response.login or ""))
+    group_name = html.escape(str(response.group_name or ""))
+    initial_password = html.escape(str(response.initial_password or ""))
+
+    lines = [
+        "🔐 <b>Данные для входа</b>",
+        "",
+        f"Имя: {display_name}",
+        f"Группа: {group_name or 'не указана'}",
+        f"Логин: <code>{login}</code>",
+    ]
+    if initial_password:
+        lines.extend(
+            [
+                f"Пароль: <code>{initial_password}</code>",
+                "",
+                "После первого входа смените пароль.",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "Пароль: уже изменён.",
+                "",
+                "Бот не хранит текущий пароль после смены. "
+                "Если пароль забыт, обратитесь к старосте или администратору.",
+            ]
+        )
+
+    await message.answer("\n".join(lines), parse_mode="HTML")
+
+
+@start_router.message(Command("links"))
+@start_router.message(F.text == LINKS_LABEL)
+async def cmd_links(message: Message) -> None:
+    """Show site and PWA links."""
+    await message.answer(f"{_LINKS_BLOCK}\n\n{_INSTALL_BLOCK}", parse_mode="HTML")

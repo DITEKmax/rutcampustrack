@@ -57,6 +57,17 @@ jobs:
 
       # M08 Группа 1 (P2-8/1) — только unit (*Test), БЕЗ *IT.
       # Быстрая jobs, блокирующая PR при базовых регрессиях.
+      - name: Warm Gradle wrapper
+        run: |
+          for attempt in 1 2 3; do
+            if ./gradlew --version --no-daemon; then
+              exit 0
+            fi
+            echo "Gradle wrapper download failed, retrying in $((attempt * 10))s ($attempt/3)"
+            sleep $((attempt * 10))
+          done
+          ./gradlew --version --no-daemon
+
       - name: Unit tests ${{ matrix.service.name }}
         run: ./gradlew ${{ matrix.service.path }}:test --no-daemon
 
@@ -108,6 +119,17 @@ jobs:
 
       # M08 Группа 1 (P2-8/1) — только *IT (Spring context + Testcontainers).
       # Gradle filter в root build.gradle.kts.
+      - name: Warm Gradle wrapper
+        run: |
+          for attempt in 1 2 3; do
+            if ./gradlew --version --no-daemon; then
+              exit 0
+            fi
+            echo "Gradle wrapper download failed, retrying in $((attempt * 10))s ($attempt/3)"
+            sleep $((attempt * 10))
+          done
+          ./gradlew --version --no-daemon
+
       - name: Integration tests ${{ matrix.service.name }}
         run: ./gradlew ${{ matrix.service.path }}:integrationTest --no-daemon
 
@@ -140,6 +162,17 @@ jobs:
         run: chmod +x gradlew
 
       # Lightweight verification tasks (не зависит от тестов).
+      - name: Warm Gradle wrapper
+        run: |
+          for attempt in 1 2 3; do
+            if ./gradlew --version --no-daemon; then
+              exit 0
+            fi
+            echo "Gradle wrapper download failed, retrying in $((attempt * 10))s ($attempt/3)"
+            sleep $((attempt * 10))
+          done
+          ./gradlew --version --no-daemon
+
       - name: Run verification tasks
         run: ./gradlew verifyNoDebugInProd verifyLogbackJsonInAllServices --no-daemon
 

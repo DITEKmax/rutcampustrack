@@ -39,10 +39,18 @@ function miniAppUrl(startParam: string): string {
   const tgWebAppData = new URLSearchParams({
     auth_date: '1777777777',
     hash: 'e2e-hash',
+    signature: 'e2e-signature',
     user: JSON.stringify({ id: 1001, first_name: 'Mini', username: 'student1001' }),
   }).toString();
   const params = new URLSearchParams({
     tgWebAppData,
+    tgWebAppThemeParams: JSON.stringify({
+      bg_color: '#ffffff',
+      text_color: '#000000',
+      button_color: '#00b87a',
+      button_text_color: '#ffffff',
+      secondary_bg_color: '#f8fafb',
+    }),
     tgWebAppVersion: '8.0',
     tgWebAppPlatform: 'tdesktop',
     tgWebAppStartParam: startParam,

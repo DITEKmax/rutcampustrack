@@ -3,8 +3,10 @@
 import logging
 
 from aiogram import Bot
+from aiogram.types import InlineKeyboardMarkup
 
 from bot.config import Settings
+from bot.services.mini_app_links import build_mini_app_button
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
 logger = logging.getLogger(__name__)
@@ -53,6 +55,16 @@ async def handle_lesson_started(
         f"Время: {start_time} - {end_time}\n\n"
         "Откройте приложение и отметьтесь."
     )
+    mini_app_button = build_mini_app_button(
+        text="Открыть отметку",
+        base_url=getattr(config, "mini_app_url", None),
+        start_param=f"checkin:{lesson_id}",
+    )
+    reply_markup = (
+        InlineKeyboardMarkup(inline_keyboard=[[mini_app_button]])
+        if mini_app_button is not None
+        else None
+    )
 
     # Fetch group members — T-24-03: each student only receives their own message
     members = await academic_client.get_group_members(group_id)
@@ -63,7 +75,10 @@ async def handle_lesson_started(
 
         # Use default arg binding to avoid late-binding closure bug
         async def send_and_store(s=student):
-            result = await bot.send_message(chat_id=s.telegram_id, text=text)
+            kwargs = {"chat_id": s.telegram_id, "text": text}
+            if reply_markup is not None:
+                kwargs["reply_markup"] = reply_markup
+            result = await bot.send_message(**kwargs)
             await redis_client.add_message_id(lesson_id, s.user_id, result.message_id)
 
         await send_queue.put(

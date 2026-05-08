@@ -1,4 +1,1 @@
-export interface CheckinRequest {
-  lat: number
-  lng: number
-}
+export type { CheckinRequest } from '@/api/schema'

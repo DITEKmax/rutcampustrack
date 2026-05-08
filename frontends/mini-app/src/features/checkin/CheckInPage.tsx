@@ -15,6 +15,7 @@ import { useBackButton } from '@/shared/hooks/useBackButton'
 import { useMainButton } from '@/shared/hooks/useMainButton'
 import { cn } from '@/lib/utils'
 import { useCheckin, mapCheckinError } from './api'
+import { getCheckinLocation, isBrowserLocationFallbackEnabled, mapLocationError } from './location'
 
 /**
  * CheckIn flow inside the Telegram Mini App.
@@ -39,45 +40,46 @@ export function CheckInPage() {
   useBackButton()
 
   const [gpsState, setGpsState] = useState<GpsState>('idle')
+  const [locationSource, setLocationSource] = useState<'telegram' | 'browser' | null>(null)
   const [result, setResult] = useState<ResultState>(null)
   const isSubmitting = checkinMutation.isPending
 
-  const handleCheckin = useCallback(() => {
+  const handleCheckin = useCallback(async () => {
     setGpsState('acquiring')
+    setLocationSource(null)
     setResult(null)
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setGpsState('acquired')
-        checkinMutation.mutate(
-          { lat: position.coords.latitude, lng: position.coords.longitude },
-          {
-            onSuccess: () => {
-              setResult({ kind: 'success' })
-              if (hapticFeedback.notificationOccurred.isAvailable()) {
-                hapticFeedback.notificationOccurred('success')
-              }
-              setTimeout(() => navigate('/'), 1500)
-            },
-            onError: (error: unknown) => {
-              const status =
-                (error as { response?: { status?: number } })?.response?.status ?? 500
-              setResult({ kind: 'error', status, message: mapCheckinError(status) })
-              if (hapticFeedback.notificationOccurred.isAvailable()) {
-                hapticFeedback.notificationOccurred('error')
-              }
-            },
+    try {
+      const location = await getCheckinLocation()
+      setGpsState('acquired')
+      setLocationSource(location.source)
+      checkinMutation.mutate(
+        { lat: location.lat, lng: location.lng },
+        {
+          onSuccess: () => {
+            setResult({ kind: 'success' })
+            if (hapticFeedback.notificationOccurred.isAvailable()) {
+              hapticFeedback.notificationOccurred('success')
+            }
+            setTimeout(() => navigate('/schedule'), 1500)
           },
-        )
-      },
-      () => {
-        setGpsState('error')
-        if (hapticFeedback.notificationOccurred.isAvailable()) {
-          hapticFeedback.notificationOccurred('error')
-        }
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    )
+          onError: (error: unknown) => {
+            const status =
+              (error as { response?: { status?: number } })?.response?.status ?? 500
+            setResult({ kind: 'error', status, message: mapCheckinError(status) })
+            if (hapticFeedback.notificationOccurred.isAvailable()) {
+              hapticFeedback.notificationOccurred('error')
+            }
+          },
+        },
+      )
+    } catch (error) {
+      setGpsState('error')
+      setResult({ kind: 'error', status: 0, message: mapLocationError(error) })
+      if (hapticFeedback.notificationOccurred.isAvailable()) {
+        hapticFeedback.notificationOccurred('error')
+      }
+    }
   }, [checkinMutation, navigate])
 
   const mainButtonText =
@@ -142,7 +144,13 @@ export function CheckInPage() {
       {/* Status cards */}
       <div className="mt-6 flex flex-col gap-3">
         {gpsState === 'acquiring' && <StatusCard tone="neutral" icon={<CircleNotch size={18} className="animate-spin" />} text="Определяем местоположение..." />}
-        {gpsState === 'acquired' && <StatusCard tone="success" icon={<MapPin size={18} weight="fill" />} text="Геолокация получена" />}
+        {gpsState === 'acquired' && (
+          <StatusCard
+            tone="success"
+            icon={<MapPin size={18} weight="fill" />}
+            text={locationSource === 'browser' ? 'Геолокация получена через dev fallback' : 'Геолокация получена через Telegram'}
+          />
+        )}
         {gpsState === 'error' && <StatusCard tone="danger" icon={<WarningCircle size={18} weight="bold" />} text="Не удалось получить геолокацию" />}
 
         {/* Result */}
@@ -172,7 +180,7 @@ export function CheckInPage() {
 
       {/* Dev fallback button (only shown outside Telegram where MainButton
           isn't available) */}
-      {import.meta.env.VITE_TMA_DEV === 'true' && (
+      {isBrowserLocationFallbackEnabled() && (
         <button
           type="button"
           onClick={handleCheckin}

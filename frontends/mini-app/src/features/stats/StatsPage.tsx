@@ -1,6 +1,7 @@
 import { ChartBar, WarningCircle, ArrowsClockwise } from '@phosphor-icons/react'
 import { SkeletonList } from '@/shared/components/Skeleton'
-import { useStudentStats } from './api'
+import { useAuth } from '@/features/auth/AuthProvider'
+import { useStudentStats, useStudentThresholds } from './api'
 import { SubjectStatsCard } from './SubjectStatsCard'
 
 /**
@@ -10,7 +11,9 @@ import { SubjectStatsCard } from './SubjectStatsCard'
  * per-subject list, and the standard three states (loading / error / empty).
  */
 export function StatsPage() {
+  const { user } = useAuth()
   const { data, isLoading, isError, refetch } = useStudentStats()
+  const thresholds = useStudentThresholds(user?.groupId, data?.subjects)
 
   return (
     <div className="px-3 pt-3 pb-[calc(72px+env(safe-area-inset-bottom))]">
@@ -147,7 +150,7 @@ export function StatsPage() {
           </section>
 
           {data.subjects.map((subj) => (
-            <SubjectStatsCard key={subj.subjectId} stats={subj} />
+            <SubjectStatsCard key={subj.subjectId} stats={subj} threshold={thresholds[subj.subjectId]} />
           ))}
         </div>
       )}

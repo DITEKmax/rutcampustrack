@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { RED_ZONE_THRESHOLD } from './api'
+import { DEFAULT_RED_ZONE_THRESHOLD } from './api'
 import type { SubjectStats } from './types'
 
 /**
@@ -13,10 +13,11 @@ import type { SubjectStats } from './types'
  */
 interface SubjectStatsCardProps {
   stats: SubjectStats
+  threshold?: number
 }
 
-export function SubjectStatsCard({ stats }: SubjectStatsCardProps) {
-  const isRedZone = stats.percentage < RED_ZONE_THRESHOLD
+export function SubjectStatsCard({ stats, threshold = DEFAULT_RED_ZONE_THRESHOLD }: SubjectStatsCardProps) {
+  const isRedZone = stats.percentage < threshold
   const pct = Math.min(Math.max(stats.percentage, 0), 100)
 
   return (

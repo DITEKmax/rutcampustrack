@@ -8,7 +8,7 @@ vi.mock('@/shared/lib/axios', () => ({
 }))
 
 import { apiClient } from '@/shared/lib/axios'
-import { useStudentStats, RED_ZONE_THRESHOLD } from '../api'
+import { useStudentStats, useStudentThresholds, DEFAULT_RED_ZONE_THRESHOLD } from '../api'
 import { SubjectStatsCard } from '../SubjectStatsCard'
 
 function createWrapper() {
@@ -35,16 +35,44 @@ describe('useStudentStats', () => {
   })
 })
 
-describe('RED_ZONE_THRESHOLD', () => {
+describe('DEFAULT_RED_ZONE_THRESHOLD', () => {
   it('equals 60', () => {
-    expect(RED_ZONE_THRESHOLD).toBe(60)
+    expect(DEFAULT_RED_ZONE_THRESHOLD).toBe(60)
+  })
+})
+
+describe('useStudentThresholds', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
+  it('resolves backend thresholds per subject', async () => {
+    ;(apiClient.get as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ data: { minPercentage: 75, level: 'group', sourceId: 1 } })
+      .mockResolvedValueOnce({ data: { minPercentage: 80, level: 'subject', sourceId: 2 } })
+
+    const subjects = [
+      { subjectId: 1, subjectName: 'Физика', total: 10, attended: 7, absent: 3, excused: 0, percentage: 70 },
+      { subjectId: 2, subjectName: 'Математика', total: 10, attended: 8, absent: 2, excused: 0, percentage: 80 },
+    ]
+
+    const { result } = renderHook(() => useStudentThresholds(5, subjects), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => expect(result.current[1]).toBe(75))
+    expect(result.current[2]).toBe(80)
+    expect(apiClient.get).toHaveBeenCalledWith('/academic/thresholds/resolve', {
+      params: { groupId: 5, subjectId: 1 },
+    })
+    expect(apiClient.get).toHaveBeenCalledWith('/academic/thresholds/resolve', {
+      params: { groupId: 5, subjectId: 2 },
+    })
   })
 })
 
 describe('SubjectStatsCard', () => {
   it('renders red zone indicator when percentage < 60', () => {
     const stats = { subjectId: 1, subjectName: 'Физика', total: 10, attended: 4, absent: 5, excused: 1, percentage: 40 }
-    const { container } = render(createElement(SubjectStatsCard, { stats }))
+    const { container } = render(createElement(SubjectStatsCard, { stats, threshold: 60 }))
 
     const card = container.firstElementChild as HTMLElement
     expect(card.className).toContain('border-l-4')
@@ -56,12 +84,20 @@ describe('SubjectStatsCard', () => {
 
   it('renders normal indicator when percentage >= 60', () => {
     const stats = { subjectId: 2, subjectName: 'Математика', total: 10, attended: 8, absent: 1, excused: 1, percentage: 80 }
-    const { container } = render(createElement(SubjectStatsCard, { stats }))
+    const { container } = render(createElement(SubjectStatsCard, { stats, threshold: 60 }))
 
     const card = container.firstElementChild as HTMLElement
     expect(card.className).not.toContain('border-l-destructive')
 
     const percentage = screen.getByText('80%')
     expect(percentage.className).not.toContain('text-destructive')
+  })
+
+  it('uses backend threshold when provided', () => {
+    const stats = { subjectId: 3, subjectName: 'История', total: 10, attended: 7, absent: 3, excused: 0, percentage: 70 }
+    const { container } = render(createElement(SubjectStatsCard, { stats, threshold: 75 }))
+
+    const card = container.firstElementChild as HTMLElement
+    expect(card.className).toContain('border-l-destructive')
   })
 })

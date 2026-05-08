@@ -21,7 +21,7 @@ export function useHomeworkList(groupId: number | undefined, semesterId: number 
     queryKey: ['homeworks', groupId, semesterId],
     queryFn: async () => {
       const { data } = await apiClient.get('/academic/homeworks', {
-        params: { groupId, semesterId, size: 50 },
+        params: { groupId, semesterId, size: 200 },
       })
       return data._embedded?.homeworkResponseList ?? []
     },

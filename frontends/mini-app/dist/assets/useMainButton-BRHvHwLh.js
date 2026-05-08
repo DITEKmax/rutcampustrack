@@ -1,0 +1,1 @@
+import{r as n,X as s}from"./index-Dw18WVKg.js";function f({text:r,isEnabled:a,isVisible:t,onClick:e}){n.useEffect(()=>{if(!s.setParams.isAvailable())return;s.setParams({text:r,isEnabled:a,isVisible:t});const u=s.onClick(e);return()=>{u(),s.setParams({isVisible:!1})}},[r,a,t,e])}export{f as u};

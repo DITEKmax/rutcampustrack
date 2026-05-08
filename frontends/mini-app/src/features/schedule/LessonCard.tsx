@@ -1,9 +1,9 @@
 import { motion } from 'motion/react'
-import { MapPin, CaretRight } from '@phosphor-icons/react'
+import { CaretRight, CheckCircle, DotsThreeVertical, MapPin } from '@phosphor-icons/react'
 import { hapticFeedback } from '@telegram-apps/sdk-react'
 import { StatusBadge } from './StatusBadge'
 import { cn } from '@/lib/utils'
-import type { LessonResponse } from './types'
+import type { AttendanceStatus, LessonResponse } from './types'
 
 /**
  * Mini-app lesson card — compact subway-station layout (brandbook §1, §4.2).
@@ -15,30 +15,48 @@ import type { LessonResponse } from './types'
 interface LessonCardProps {
   lesson: LessonResponse
   subjectName: string
+  personalStatus?: AttendanceStatus | null
   onCheckin: (lessonId: number) => void
+  onOpenActions?: () => void
 }
 
 function formatTime(time: string): string {
   return time.slice(0, 5)
 }
 
-export function LessonCard({ lesson, subjectName, onCheckin }: LessonCardProps) {
+function getDotColor(
+  status: LessonResponse['status'],
+  personalStatus: AttendanceStatus | null,
+): string {
+  if (personalStatus === 'present') return 'var(--status-present)'
+  if (personalStatus === 'absent') return 'var(--status-absent)'
+  if (personalStatus === 'excused') return 'var(--status-excused)'
+  if (personalStatus === 'free_attendance') return 'var(--status-free-attendance)'
+  if (status === 'ACTIVE') return 'var(--accent-primary)'
+  return 'var(--text-muted)'
+}
+
+export function LessonCard({
+  lesson,
+  subjectName,
+  personalStatus = null,
+  onCheckin,
+  onOpenActions,
+}: LessonCardProps) {
   const isActive = lesson.status === 'ACTIVE'
   const isCancelled = lesson.status === 'CANCELLED'
+  const canCheckin = isActive && !personalStatus
+  const showActions = !!onOpenActions && !isCancelled
 
   const handleClick = () => {
-    if (!isActive) return
+    if (!canCheckin) return
     if (hapticFeedback.impactOccurred.isAvailable()) {
       hapticFeedback.impactOccurred('light')
     }
     onCheckin(lesson.id)
   }
 
-  const dotColor = isActive
-    ? 'var(--accent-primary)'
-    : isCancelled
-      ? 'var(--text-muted)'
-      : 'var(--text-muted)'
+  const dotColor = getDotColor(lesson.status, personalStatus)
 
   return (
     <motion.article
@@ -48,7 +66,7 @@ export function LessonCard({ lesson, subjectName, onCheckin }: LessonCardProps) 
       onClick={handleClick}
       className={cn(
         'relative flex gap-3 rounded-2xl border p-3',
-        isActive && 'cursor-pointer',
+        canCheckin && 'cursor-pointer',
       )}
       style={{
         background: 'var(--bg-secondary)',
@@ -56,8 +74,8 @@ export function LessonCard({ lesson, subjectName, onCheckin }: LessonCardProps) 
         boxShadow: isActive ? 'var(--glow-primary)' : 'none',
         minHeight: isActive ? 44 : undefined,
       }}
-      role={isActive ? 'button' : undefined}
-      aria-label={isActive ? `${subjectName} — отметиться на паре` : undefined}
+      role={canCheckin ? 'button' : undefined}
+      aria-label={canCheckin ? `${subjectName} — отметиться на паре` : undefined}
     >
       {/* Left rail — time + station dot */}
       <div className="flex shrink-0 flex-col items-center gap-1 pt-0.5">
@@ -98,7 +116,7 @@ export function LessonCard({ lesson, subjectName, onCheckin }: LessonCardProps) 
           >
             {subjectName}
           </h3>
-          <StatusBadge status={lesson.status} />
+          <StatusBadge status={personalStatus ?? lesson.status} />
         </div>
 
         <p
@@ -109,7 +127,17 @@ export function LessonCard({ lesson, subjectName, onCheckin }: LessonCardProps) 
           Ауд. {lesson.room}
         </p>
 
-        {isActive && (
+        {isActive && personalStatus === 'present' && (
+          <p
+            className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold"
+            style={{ color: 'var(--accent-primary)' }}
+          >
+            <CheckCircle size={12} weight="fill" aria-hidden="true" />
+            Отмечено
+          </p>
+        )}
+
+        {canCheckin && (
           <p
             className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold"
             style={{ color: 'var(--accent-primary)' }}
@@ -117,6 +145,31 @@ export function LessonCard({ lesson, subjectName, onCheckin }: LessonCardProps) 
             Войти на пару
             <CaretRight size={10} weight="bold" aria-hidden="true" />
           </p>
+        )}
+
+        {showActions && (
+          <div
+            className="mt-2 flex justify-end border-t pt-2"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                onOpenActions?.()
+              }}
+              aria-label="Действия с парой"
+              className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-medium"
+              style={{
+                background: 'var(--bg-secondary)',
+                borderColor: 'var(--border-subtle)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <DotsThreeVertical size={14} weight="bold" aria-hidden="true" />
+              Действия
+            </button>
+          </div>
         )}
       </div>
     </motion.article>

@@ -15,7 +15,7 @@ def _make_dispatcher(handlers_override=None):
     send_queue = MagicMock()
     redis_client = MagicMock()
     config = MagicMock(spec=Settings)
-    config.mini_app_url = "https://t.me/RutTrackBot/checkin"
+    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
     otp_tracker = MagicMock()
 
     dispatcher = EventDispatcher(
@@ -95,7 +95,7 @@ async def test_dispatch_handler_exception_propagates():
 
 def test_config_mini_app_url_has_default():
     settings = Settings()
-    assert settings.mini_app_url == "https://t.me/RutTrackBot/checkin"
+    assert settings.mini_app_url == "https://t.me/ruttrack_bot/ruttrack"
 
 
 @pytest.mark.asyncio

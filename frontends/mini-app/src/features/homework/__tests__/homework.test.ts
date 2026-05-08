@@ -14,8 +14,8 @@ vi.mock('@/shared/lib/axios', () => ({
 import { apiClient } from '@/shared/lib/axios'
 import { useActiveSemester, useHomeworkList, useToggleHomework } from '../api'
 
-function createWrapper() {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+function createWrapper(queryClient?: QueryClient) {
+  const qc = queryClient ?? new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return ({ children }: { children: ReactNode }) =>
     createElement(QueryClientProvider, { client: qc }, children)
 }
@@ -74,6 +74,9 @@ describe('useHomeworkList', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data?.[0].title).toBe('ДЗ 1')
+    expect(apiClient.get).toHaveBeenCalledWith('/academic/homeworks', {
+      params: { groupId: 5, semesterId: 2, size: 200 },
+    })
   })
 })
 
@@ -104,5 +107,53 @@ describe('useToggleHomework', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(apiClient.delete).toHaveBeenCalledWith('/academic/homeworks/1/complete')
+  })
+
+  it('updates cached homework optimistically and rolls back on error', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    queryClient.setQueryData(['homeworks', 5, 2], [
+      {
+        id: 1,
+        title: 'ДЗ 1',
+        subjectId: 10,
+        subjectName: 'Физика',
+        groupId: 5,
+        semesterId: 2,
+        publishedBy: 7,
+        completed: false,
+        createdAt: '2026-05-08T00:00:00',
+        lessonDate: '2026-05-09',
+        lessonNumber: 1,
+        description: null,
+        link: null,
+        dueDate: null,
+      },
+    ])
+    let rejectPost: (error: Error) => void = () => {}
+    ;(apiClient.post as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Promise((_resolve, reject) => {
+        rejectPost = reject
+      }),
+    )
+
+    const { result } = renderHook(() => useToggleHomework(5, 2), {
+      wrapper: createWrapper(queryClient),
+    })
+
+    act(() => {
+      result.current.mutate({ id: 1, completed: false })
+    })
+
+    await waitFor(() => {
+      expect(queryClient.getQueryData<[{ completed: boolean }]>(['homeworks', 5, 2])?.[0].completed)
+        .toBe(true)
+    })
+
+    act(() => {
+      rejectPost(new Error('network'))
+    })
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect(queryClient.getQueryData<[{ completed: boolean }]>(['homeworks', 5, 2])?.[0].completed)
+      .toBe(false)
   })
 })

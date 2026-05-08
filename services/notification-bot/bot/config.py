@@ -47,8 +47,9 @@ class Settings(BaseSettings):
     jwt_key_prefix: str = "bot:jwt:"
     jwt_ttl: int = 604800
 
-    # Mini App URL for inline check-in button
-    mini_app_url: str = "https://t.me/RutTrackBot/checkin"
+    # Mini App URL for inline check-in button. Supports either a t.me Mini App
+    # deep link or a direct WebApp URL configured in BotFather.
+    mini_app_url: str = "https://t.me/ruttrack_bot/ruttrack"
 
     # OTP lifetime in seconds — mirrors OtpProperties.ttlSeconds in auth-service.
     # Used as TTL for otp_msgs:{telegram_id} Redis entries and for the deferred

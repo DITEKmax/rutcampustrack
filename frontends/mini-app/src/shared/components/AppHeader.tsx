@@ -1,24 +1,33 @@
 import { useLocation } from 'react-router'
+import { List } from '@phosphor-icons/react'
+import { hapticFeedback } from '@telegram-apps/sdk-react'
 import { ThemeToggle } from '@/shared/theme/ThemeToggle'
 import { cn } from '@/lib/utils'
 
 /**
  * Mini App top header (brandbook §4.6, §7).
  *
- * Compact (48px) sticky header with brand mark + current page title + theme
- * toggle. Sized for Telegram's 400-wide viewport. Safe-area top inset is
- * respected in case Telegram reserves space for its own chrome.
- *
- * The theme toggle placement in §4.8 of the brandbook specifically calls
- * for mini-app: "settings profile + optionally in header". There is no
- * profile page in the mini-app yet, so the header is the primary location.
- * Telegram's native theme still seeds the initial theme via
- * `TelegramThemeProvider`; the toggle lets users override.
+ * Compact sticky header with brand mark, current page title and theme toggle.
+ * Telegram's native theme seeds the initial theme via TelegramThemeProvider;
+ * the toggle lets users override it.
  */
 const routeLabels: Record<string, string> = {
-  '/': 'Расписание',
+  '/': 'Главная',
+  '/home': 'Главная',
+  '/schedule': 'Расписание',
   '/stats': 'Статистика',
   '/homework': 'Домашние задания',
+  '/late-checkin': 'Запрос отметки',
+  '/excuses': 'Уважительные пропуски',
+  '/profile': 'Профиль',
+  '/group': 'Группа',
+  '/group/overview': 'Обзор группы',
+  '/group/students': 'Студенты',
+  '/group/subjects': 'Предметы',
+  '/group/journal': 'Журнал',
+  '/group/stats': 'Статистика',
+  '/group/excuses': 'Уважительные пропуски',
+  '/group/late-checkin': 'Запросы отметки',
 }
 
 function matchTitle(pathname: string): string {
@@ -30,9 +39,20 @@ function matchTitle(pathname: string): string {
   return 'RutTrack'
 }
 
-export function AppHeader() {
+interface AppHeaderProps {
+  onOpenMenu: () => void
+}
+
+export function AppHeader({ onOpenMenu }: AppHeaderProps) {
   const { pathname } = useLocation()
   const title = matchTitle(pathname)
+
+  const handleOpenMenu = () => {
+    if (hapticFeedback.selectionChanged.isAvailable()) {
+      hapticFeedback.selectionChanged()
+    }
+    onOpenMenu()
+  }
 
   return (
     <header
@@ -74,7 +94,21 @@ export function AppHeader() {
         </p>
       </div>
 
-      <ThemeToggle compact />
+      <div className="flex items-center gap-1.5">
+        <ThemeToggle compact />
+        <button
+          type="button"
+          onClick={handleOpenMenu}
+          aria-label="Открыть меню"
+          className={cn(
+            'grid size-9 place-items-center rounded-full',
+            'transition-colors duration-150',
+            'text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
+          )}
+        >
+          <List size={21} weight="bold" aria-hidden="true" />
+        </button>
+      </div>
     </header>
   )
 }

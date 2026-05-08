@@ -8,7 +8,7 @@ vi.mock('@/shared/lib/axios', () => ({
 }))
 
 import { apiClient } from '@/shared/lib/axios'
-import { useTodaySchedule, useSubjectName } from '../api'
+import { useSubjectName, useTodaySchedule, useWeekSchedule } from '../api'
 
 function createWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -63,6 +63,33 @@ describe('useTodaySchedule', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data).toEqual([])
+  })
+})
+
+describe('useWeekSchedule', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
+  it('fetches a week range and sorts by date then lessonNumber', async () => {
+    const lessons = [
+      { id: 3, lessonNumber: 2, subjectId: 1, startTime: '10:40:00', endTime: '12:10:00', status: 'PLANNED', room: '201', date: '2025-01-14' },
+      { id: 1, lessonNumber: 1, subjectId: 2, startTime: '09:00:00', endTime: '10:30:00', status: 'ACTIVE', room: '101', date: '2025-01-13' },
+      { id: 2, lessonNumber: 3, subjectId: 3, startTime: '12:20:00', endTime: '13:50:00', status: 'PLANNED', room: '301', date: '2025-01-13' },
+    ]
+    ;(apiClient.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: { _embedded: { lessonResponseList: lessons } },
+    })
+
+    const { result } = renderHook(
+      () => useWeekSchedule(5, '2025-01-13', '2025-01-18'),
+      { wrapper: createWrapper() },
+    )
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    expect(result.current.data?.map((lesson) => lesson.id)).toEqual([1, 2, 3])
+    expect(apiClient.get).toHaveBeenCalledWith('/schedule/groups/5/lessons', {
+      params: { dateFrom: '2025-01-13', dateTo: '2025-01-18', size: 100 },
+    })
   })
 })
 

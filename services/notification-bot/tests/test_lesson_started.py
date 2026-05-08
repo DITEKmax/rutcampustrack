@@ -70,7 +70,7 @@ async def test_lesson_started_sends_to_students_with_telegram_id():
     redis_client.add_message_id = AsyncMock()
 
     config = MagicMock()
-    config.mini_app_url = "https://t.me/RutTrackBot/checkin"
+    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
 
     await handle_lesson_started(
         _make_event(),
@@ -115,7 +115,7 @@ async def test_lesson_started_sends_plain_chat_message_without_web_app():
     redis_client.add_message_id = AsyncMock()
 
     config = MagicMock()
-    config.mini_app_url = "https://t.me/RutTrackBot/checkin"
+    config.mini_app_url = ""
 
     await handle_lesson_started(
         _make_event(lesson_id=77),
@@ -134,6 +134,47 @@ async def test_lesson_started_sends_plain_chat_message_without_web_app():
     assert "📚 Пара началась" in kwargs["text"]
     assert "Откройте приложение и отметьтесь." in kwargs["text"]
     assert "reply_markup" not in kwargs
+
+
+@pytest.mark.asyncio
+async def test_lesson_started_adds_mini_app_checkin_deep_link():
+    """lesson.started passes lesson_id to Mini App via Telegram startapp launch param."""
+    students = [_make_student(user_id=1, telegram_id=111)]
+
+    bot = MagicMock()
+    bot.send_message = AsyncMock(return_value=MagicMock(message_id=42))
+
+    academic_client = MagicMock()
+    academic_client.get_group_members = AsyncMock(return_value=students)
+    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response("Физика"))
+
+    send_queue = MagicMock()
+    captured_tasks = []
+
+    async def capture_put(task):
+        captured_tasks.append(task)
+
+    send_queue.put = capture_put
+    redis_client = MagicMock()
+    redis_client.add_message_id = AsyncMock()
+
+    config = MagicMock()
+    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
+
+    await handle_lesson_started(
+        _make_event(lesson_id=77),
+        bot=bot,
+        academic_client=academic_client,
+        send_queue=send_queue,
+        redis_client=redis_client,
+        config=config,
+    )
+
+    await captured_tasks[0].coroutine_factory()
+
+    button = bot.send_message.call_args.kwargs["reply_markup"].inline_keyboard[0][0]
+    assert button.url == "https://t.me/ruttrack_bot/ruttrack?startapp=checkin%3A77"
+    assert button.web_app is None
 
 
 @pytest.mark.asyncio
@@ -162,7 +203,7 @@ async def test_lesson_started_stores_message_id_in_redis():
     redis_client.add_message_id = AsyncMock()
 
     config = MagicMock()
-    config.mini_app_url = "https://t.me/RutTrackBot/checkin"
+    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
 
     event = _make_event(lesson_id=200)
     await handle_lesson_started(
@@ -204,7 +245,7 @@ async def test_lesson_started_resolves_subject_name():
     redis_client.add_message_id = AsyncMock()
 
     config = MagicMock()
-    config.mini_app_url = "https://t.me/RutTrackBot/checkin"
+    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
 
     await handle_lesson_started(
         _make_event(),
@@ -245,7 +286,7 @@ async def test_lesson_started_fallback_subject_name_on_grpc_error():
     redis_client.add_message_id = AsyncMock()
 
     config = MagicMock()
-    config.mini_app_url = "https://t.me/RutTrackBot/checkin"
+    config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
 
     await handle_lesson_started(
         _make_event(),

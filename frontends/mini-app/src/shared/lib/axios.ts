@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { attachProblemDetails, parseProblemDetails } from '@/api/problemDetails'
 
 // Bare instance for auth calls (bypasses 401 interceptor — prevents infinite loop)
 export const bareAxios = axios.create()
@@ -38,6 +39,7 @@ apiClient.interceptors.response.use(
         return apiClient(original)
       }
     }
+    attachProblemDetails(error, parseProblemDetails(error))
     return Promise.reject(error)
   }
 )

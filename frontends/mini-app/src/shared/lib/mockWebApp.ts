@@ -36,6 +36,8 @@ export async function setupMockEnv(): Promise<void> {
     tgWebAppVersion: '8.0',
     tgWebAppPlatform: 'tdesktop',
   })
+  const startParam = import.meta.env.VITE_TMA_START_PARAM
+  if (startParam) launchParams.set('tgWebAppStartParam', startParam)
 
   mockTelegramEnv({
     launchParams,

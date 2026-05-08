@@ -7,7 +7,7 @@ name: OpenAPI Drift Guard
 # 1. Разработчик обновил backend DTO → регенерировал OpenAPI spec через
 #    `./gradlew bootRun` + curl → committed в `docs/openapi/*.json`.
 # 2. CI запускает `npm run generate:types:offline` (reads docs/openapi
-#    без запуска backend) в PWA + web-panel.
+#    без запуска backend) в PWA + web-panel + mini-app.
 # 3. Если `src/api/generated/*.types.ts` расходятся с только что
 #    сгенерированными — fail: разработчик забыл регенерировать types.
 #
@@ -24,6 +24,9 @@ on:
       - 'frontends/web-panel/src/app/api/generated/**'
       - 'frontends/web-panel/package.json'
       - 'frontends/web-panel/scripts/generate-types.mjs'
+      - 'frontends/mini-app/src/api/generated/**'
+      - 'frontends/mini-app/package.json'
+      - 'frontends/mini-app/scripts/generate-types.mjs'
       - '.github/workflows/openapi-drift.yml'
   pull_request:
     branches: ['**']
@@ -35,6 +38,9 @@ on:
       - 'frontends/web-panel/src/app/api/generated/**'
       - 'frontends/web-panel/package.json'
       - 'frontends/web-panel/scripts/generate-types.mjs'
+      - 'frontends/mini-app/src/api/generated/**'
+      - 'frontends/mini-app/package.json'
+      - 'frontends/mini-app/scripts/generate-types.mjs'
 
 jobs:
   drift-check:
@@ -55,6 +61,10 @@ jobs:
         working-directory: frontends/web-panel
         run: npm ci --no-audit --no-fund
 
+      - name: Install mini-app deps
+        working-directory: frontends/mini-app
+        run: npm ci --no-audit --no-fund
+
       - name: Regenerate PWA types (offline)
         working-directory: frontends/pwa
         run: npm run generate:types:offline
@@ -63,13 +73,18 @@ jobs:
         working-directory: frontends/web-panel
         run: npm run generate:types:offline
 
+      - name: Regenerate mini-app types (offline)
+        working-directory: frontends/mini-app
+        run: npm run generate:types:offline
+
       - name: Fail if generated types drifted
         run: |
           if ! git diff --exit-code -- \
             frontends/pwa/src/api/generated \
-            frontends/web-panel/src/app/api/generated; then
+            frontends/web-panel/src/app/api/generated \
+            frontends/mini-app/src/api/generated; then
             echo "::error::Committed generated types are out of sync with docs/openapi/*.json."
-            echo "::error::Run 'npm run generate:types:offline' in frontends/pwa and frontends/web-panel, then commit the updated .types.ts files."
+            echo "::error::Run 'npm run generate:types:offline' in frontends/pwa, frontends/web-panel, and frontends/mini-app, then commit the updated .types.ts files."
             exit 1
           fi
           echo "OpenAPI specs and generated types are in sync."

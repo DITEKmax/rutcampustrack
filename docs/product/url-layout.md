@@ -52,6 +52,7 @@ Decided: Phase 49-50 (v9.0). Nginx reverse proxy at `https://ruttrack.site`.
 | `/student/*` | web-panel SPA (lazy feature) | AUTH-v9-05 | Роль STUDENT (headman тоже проходит studentGuard). |
 | `/headman/*` | web-panel SPA (lazy feature) | AUTH-v9-04 | STUDENT + is_headman=true (headmanGuard). |
 | `/app/` | PWA (React + Vite, rct-pwa-nginx) | INFRA-v9-03 | Мобильный клиент RutTrack. |
+| `/mini-app/` | Telegram Mini App (React + Vite, rct-mini-app-nginx) | M19 | Telegram WebApp-клиент, открывается из бота без login/password. |
 | `/presentation/` | Landing (static HTML, rct-landing-nginx) | INFRA-v9-02, LAND-v9-01 | Описание проекта; доступ только по прямой ссылке. |
 | `/api/*` | API Gateway (localhost:8080 внутри сети) | — | REST + gRPC (обратный прокси из backend). |
 | `/api/ws` | Notification Web (notification-web:9094) | — | STOMP WebSocket endpoint. |

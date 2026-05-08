@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from 'react-router'
 import { motion } from 'motion/react'
-import { CalendarBlank, ChartBar, BookOpen, type Icon } from '@phosphor-icons/react'
+import { CalendarBlank, ChartBar, BookOpen, House, Users, type Icon } from '@phosphor-icons/react'
 import { hapticFeedback } from '@telegram-apps/sdk-react'
+import { useAuth } from '@/features/auth/AuthProvider'
 import { cn } from '@/lib/utils'
 
 /**
@@ -20,8 +21,9 @@ interface Tab {
   Icon: Icon
 }
 
-const tabs: Tab[] = [
-  { path: '/', label: 'Расписание', Icon: CalendarBlank },
+const studentTabs: Tab[] = [
+  { path: '/home', label: 'Главная', Icon: House },
+  { path: '/schedule', label: 'Расписание', Icon: CalendarBlank },
   { path: '/stats', label: 'Статистика', Icon: ChartBar },
   { path: '/homework', label: 'ДЗ', Icon: BookOpen },
 ]
@@ -29,6 +31,10 @@ const tabs: Tab[] = [
 export function BottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const tabs = user?.isHeadman
+    ? [...studentTabs, { path: '/group', label: 'Группа', Icon: Users }]
+    : studentTabs
 
   const handleTap = (path: string) => {
     if (location.pathname === path) return
@@ -50,7 +56,7 @@ export function BottomNav() {
     >
       <ul className="mx-auto flex items-stretch justify-around px-2 py-1.5">
         {tabs.map(({ path, label, Icon }) => {
-          const isActive = location.pathname === path
+          const isActive = location.pathname === path || location.pathname.startsWith(path + '/')
           return (
             <li key={path} className="flex-1">
               <button

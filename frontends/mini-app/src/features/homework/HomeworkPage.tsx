@@ -1,142 +1,214 @@
-import { Books, WarningCircle, ArrowsClockwise } from '@phosphor-icons/react'
+import { useCallback, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { ArrowsClockwise, Books, Funnel, WarningCircle } from '@phosphor-icons/react'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { useSubjectMap } from '@/features/schedule/api'
 import { SkeletonList } from '@/shared/components/Skeleton'
+import { addDays, formatDate, getMonday } from '@/shared/lib/dateUtils'
+import { cn } from '@/lib/utils'
 import { useActiveSemester, useHomeworkList, useToggleHomework } from './api'
-import { HomeworkItem } from './HomeworkItem'
+import { DayView } from './DayView'
+import { WeekView } from './WeekView'
+import { MonthView } from './MonthView'
+import { ModeSwitcher, type HomeworkMode } from './ModeSwitcher'
 import type { HomeworkResponse } from './types'
 
-/**
- * Homework tracker — grouped by subject.
- *
- * Title comes from AppHeader. This page lays out loading/error/empty states
- * plus the subject-grouped list. Toggling items is optimistic with Telegram
- * haptic feedback on each tap (wired inside HomeworkItem).
- */
-function groupBySubject(items: HomeworkResponse[]): Map<string, HomeworkResponse[]> {
-  const map = new Map<string, HomeworkResponse[]>()
-  for (const hw of items) {
-    const group = map.get(hw.subjectName) ?? []
-    group.push(hw)
-    map.set(hw.subjectName, group)
-  }
-  return map
+function firstDayOfCurrentMonth(): Date {
+  const date = new Date()
+  date.setDate(1)
+  date.setHours(0, 0, 0, 0)
+  return date
 }
 
 export function HomeworkPage() {
   const { user } = useAuth()
-  const { data: semester, isLoading: semLoading } = useActiveSemester()
-  const { data: homeworks, isLoading, isError, refetch } = useHomeworkList(
-    user?.groupId,
-    semester?.id,
-  )
+  const { data: semester, isLoading: semesterLoading } = useActiveSemester()
+  const {
+    data: homeworks,
+    isLoading: homeworkLoading,
+    isError,
+    refetch,
+  } = useHomeworkList(user?.groupId, semester?.id)
   const toggleMutation = useToggleHomework(user?.groupId, semester?.id)
 
-  const loading = semLoading || isLoading
+  const [mode, setMode] = useState<HomeworkMode>('day')
+  const [selectedDate, setSelectedDate] = useState<Date>(() => addDays(new Date(), 1))
+  const [weekMonday, setWeekMonday] = useState<Date>(() => getMonday(new Date()))
+  const [currentMonth, setCurrentMonth] = useState<Date>(firstDayOfCurrentMonth)
+  const [filterUncompleted, setFilterUncompleted] = useState(false)
+  const [toggling, setToggling] = useState<Set<number>>(new Set())
+
+  const subjectIds = useMemo(
+    () => (homeworks ?? []).map((homework) => homework.subjectId),
+    [homeworks],
+  )
+  const { subjectMap } = useSubjectMap(subjectIds)
+
+  const filteredHomeworks = useMemo(() => {
+    const all = homeworks ?? []
+    return filterUncompleted ? all.filter((homework) => !homework.completed) : all
+  }, [filterUncompleted, homeworks])
+
+  const dayHomeworks = useMemo(() => {
+    const iso = formatDate(selectedDate)
+    return filteredHomeworks
+      .filter((homework) => homework.lessonDate === iso)
+      .sort((a, b) => a.lessonNumber - b.lessonNumber)
+  }, [filteredHomeworks, selectedDate])
+
+  const onToggleComplete = useCallback(
+    (homework: HomeworkResponse) => {
+      if (toggling.has(homework.id)) return
+      setToggling((prev) => new Set(prev).add(homework.id))
+      void toggleMutation
+        .mutateAsync({ id: homework.id, completed: homework.completed })
+        .finally(() => {
+          setToggling((prev) => {
+            const next = new Set(prev)
+            next.delete(homework.id)
+            return next
+          })
+        })
+    },
+    [toggleMutation, toggling],
+  )
+
+  const loading = semesterLoading || homeworkLoading
+  const hasGroup = !!user?.groupId
 
   return (
-    <div className="px-3 pt-3 pb-[calc(72px+env(safe-area-inset-bottom))]">
-      {loading && <SkeletonList count={5} />}
+    <div className="flex min-h-full flex-col gap-3 px-3 pt-3 pb-[calc(72px+env(safe-area-inset-bottom))]">
+      <ModeSwitcher value={mode} onChange={setMode} />
 
-      {!loading && !semester && (
+      <button
+        type="button"
+        onClick={() => setFilterUncompleted((value) => !value)}
+        className={cn(
+          'inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5',
+          'text-xs font-semibold transition-colors',
+        )}
+        style={{
+          background: filterUncompleted
+            ? 'color-mix(in oklab, var(--accent-primary) 14%, transparent)'
+            : 'var(--bg-secondary)',
+          borderColor: filterUncompleted ? 'var(--accent-primary)' : 'var(--border-subtle)',
+          color: filterUncompleted ? 'var(--accent-primary)' : 'var(--text-secondary)',
+        }}
+        aria-pressed={filterUncompleted}
+      >
+        <Funnel size={14} weight={filterUncompleted ? 'fill' : 'regular'} aria-hidden="true" />
+        Только невыполненные
+      </button>
+
+      {!hasGroup && (
         <MessageCard
-          tone="warning"
-          title="Активный семестр не найден"
-          text="Обратитесь к старосте."
+          tone="info"
+          title="Нет группы"
+          text="Ваш Telegram-аккаунт не привязан к учебной группе."
         />
       )}
 
-      {isError && (
-        <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-center">
-          <div
-            className="grid size-12 place-items-center rounded-full"
-            style={{
-              background: 'color-mix(in oklab, var(--accent-danger) 14%, transparent)',
-              border: '1px solid color-mix(in oklab, var(--accent-danger) 30%, transparent)',
-              color: 'var(--accent-danger)',
-            }}
-          >
-            <WarningCircle size={22} weight="fill" />
-          </div>
-          <p
-            className="text-sm font-semibold text-balance"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
-            Не удалось загрузить задания
-          </p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold"
-            style={{
-              borderColor: 'var(--border-accent)',
-              color: 'var(--accent-primary)',
-              background: 'color-mix(in oklab, var(--accent-primary) 10%, transparent)',
-            }}
-          >
-            <ArrowsClockwise size={12} weight="bold" />
-            Обновить
-          </button>
-        </div>
+      {hasGroup && loading && <SkeletonList count={5} />}
+
+      {hasGroup && !loading && !semester && (
+        <MessageCard
+          tone="warning"
+          title="Активный семестр не найден"
+          text="Дождитесь активации семестра или обратитесь к старосте."
+        />
       )}
 
-      {!loading && !isError && semester && homeworks?.length === 0 && (
-        <div
-          className="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-dashed p-6 text-center"
-          style={{
-            borderColor: 'var(--border-default)',
-            background: 'color-mix(in oklab, var(--bg-secondary) 50%, transparent)',
-          }}
-        >
-          <div
-            className="grid size-12 place-items-center rounded-full"
-            style={{
-              background: 'color-mix(in oklab, var(--accent-primary) 12%, transparent)',
-              border: '1px solid var(--border-accent)',
-              color: 'var(--accent-primary)',
-            }}
-          >
-            <Books size={22} weight="duotone" />
-          </div>
-          <p
-            className="text-sm font-semibold text-balance"
-            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-          >
-            Нет домашних заданий
-          </p>
-          <p
-            className="max-w-[28ch] text-xs text-pretty"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            Всё сдано или пока ничего не задано.
-          </p>
-        </div>
+      {hasGroup && !loading && isError && <ErrorState onRetry={() => refetch()} />}
+
+      {hasGroup && !loading && !isError && semester && filteredHomeworks.length === 0 && (
+        <MessageCard
+          tone="info"
+          title={filterUncompleted ? 'Невыполненных заданий нет' : 'Нет домашних заданий'}
+          text={filterUncompleted ? 'Все задания отмечены как выполненные.' : 'Пока ничего не задано.'}
+        />
       )}
 
-      {!loading && !isError && semester && homeworks && homeworks.length > 0 && (
-        <div className="flex flex-col gap-5">
-          {Array.from(groupBySubject(homeworks)).map(([subjectName, items]) => (
-            <section key={subjectName} className="flex flex-col gap-2">
-              <p
-                className="text-[11px] font-medium uppercase tracking-wide"
-                style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
-              >
-                {subjectName}
-              </p>
-              <div className="flex flex-col gap-2">
-                {items.map((hw) => (
-                  <HomeworkItem
-                    key={hw.id}
-                    homework={hw}
-                    onToggle={(id, completed) =>
-                      toggleMutation.mutate({ id, completed })
-                    }
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+      {hasGroup && !loading && !isError && semester && filteredHomeworks.length > 0 && (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={mode}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+          >
+            {mode === 'day' && (
+              <DayView
+                date={selectedDate}
+                onDateChange={setSelectedDate}
+                homeworks={dayHomeworks}
+                subjectMap={subjectMap}
+                toggling={toggling}
+                onToggleComplete={onToggleComplete}
+              />
+            )}
+
+            {mode === 'week' && (
+              <WeekView
+                monday={weekMonday}
+                onMondayChange={setWeekMonday}
+                homeworks={filteredHomeworks}
+                subjectMap={subjectMap}
+                toggling={toggling}
+                onToggleComplete={onToggleComplete}
+              />
+            )}
+
+            {mode === 'month' && (
+              <MonthView
+                month={currentMonth}
+                onMonthChange={setCurrentMonth}
+                homeworks={filteredHomeworks}
+                onPickDate={(date) => {
+                  setSelectedDate(date)
+                  setMode('day')
+                }}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       )}
+    </div>
+  )
+}
+
+function ErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-center">
+      <div
+        className="grid size-12 place-items-center rounded-full"
+        style={{
+          background: 'color-mix(in oklab, var(--accent-danger) 14%, transparent)',
+          border: '1px solid color-mix(in oklab, var(--accent-danger) 30%, transparent)',
+          color: 'var(--accent-danger)',
+        }}
+      >
+        <WarningCircle size={22} weight="fill" />
+      </div>
+      <p
+        className="text-sm font-semibold text-balance"
+        style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
+      >
+        Не удалось загрузить задания
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold"
+        style={{
+          borderColor: 'var(--border-accent)',
+          color: 'var(--accent-primary)',
+          background: 'color-mix(in oklab, var(--accent-primary) 10%, transparent)',
+        }}
+      >
+        <ArrowsClockwise size={12} weight="bold" />
+        Обновить
+      </button>
     </div>
   )
 }
@@ -152,7 +224,13 @@ function MessageCard({
 }) {
   const fg = tone === 'warning' ? 'var(--accent-warning)' : 'var(--accent-info)'
   return (
-    <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-center">
+    <div
+      className="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-dashed p-6 text-center"
+      style={{
+        borderColor: 'var(--border-default)',
+        background: 'color-mix(in oklab, var(--bg-secondary) 50%, transparent)',
+      }}
+    >
       <div
         className="grid size-12 place-items-center rounded-full"
         style={{
@@ -161,7 +239,7 @@ function MessageCard({
           color: fg,
         }}
       >
-        <WarningCircle size={22} weight="fill" />
+        <Books size={22} weight="duotone" />
       </div>
       <p
         className="text-sm font-semibold text-balance"
@@ -169,10 +247,7 @@ function MessageCard({
       >
         {title}
       </p>
-      <p
-        className="max-w-[28ch] text-xs text-pretty"
-        style={{ color: 'var(--text-secondary)' }}
-      >
+      <p className="max-w-[28ch] text-xs text-pretty" style={{ color: 'var(--text-secondary)' }}>
         {text}
       </p>
     </div>

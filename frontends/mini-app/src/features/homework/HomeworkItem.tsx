@@ -1,4 +1,4 @@
-import { Check } from '@phosphor-icons/react'
+import { Check, Link as LinkIcon } from '@phosphor-icons/react'
 import { hapticFeedback } from '@telegram-apps/sdk-react'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
@@ -13,15 +13,23 @@ import type { HomeworkResponse } from './types'
  */
 interface HomeworkItemProps {
   homework: HomeworkResponse
-  onToggle: (id: number, completed: boolean) => void
+  subjectName?: string
+  disabled?: boolean
+  onToggle: () => void
 }
 
-export function HomeworkItem({ homework, onToggle }: HomeworkItemProps) {
+export function HomeworkItem({
+  homework,
+  subjectName,
+  disabled,
+  onToggle,
+}: HomeworkItemProps) {
   const handleToggle = () => {
+    if (disabled) return
     if (hapticFeedback.impactOccurred.isAvailable()) {
       hapticFeedback.impactOccurred('light')
     }
-    onToggle(homework.id, homework.completed)
+    onToggle()
   }
 
   return (
@@ -37,6 +45,7 @@ export function HomeworkItem({ homework, onToggle }: HomeworkItemProps) {
       <button
         type="button"
         onClick={handleToggle}
+        disabled={disabled}
         role="checkbox"
         aria-checked={homework.completed}
         aria-label={
@@ -44,7 +53,7 @@ export function HomeworkItem({ homework, onToggle }: HomeworkItemProps) {
             ? `Отметить "${homework.title}" как невыполненное`
             : `Отметить "${homework.title}" как выполненное`
         }
-        className="flex size-11 shrink-0 items-center justify-center"
+        className="flex size-11 shrink-0 items-center justify-center disabled:opacity-50"
       >
         <span
           aria-hidden="true"
@@ -66,6 +75,12 @@ export function HomeworkItem({ homework, onToggle }: HomeworkItemProps) {
 
       <div className="min-w-0 flex-1">
         <p
+          className="mb-0.5 text-[11px] font-medium uppercase tracking-wide"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {subjectName ?? homework.subjectName ?? 'Предмет'} · {homework.lessonNumber} пара
+        </p>
+        <p
           className={cn(
             'text-sm font-semibold leading-snug text-balance',
             homework.completed && 'line-through',
@@ -85,14 +100,28 @@ export function HomeworkItem({ homework, onToggle }: HomeworkItemProps) {
             {homework.description}
           </p>
         )}
-        {homework.dueDate && (
-          <p
-            className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium tabular-nums"
-            style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
-          >
-            До {homework.dueDate}
-          </p>
-        )}
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          {homework.dueDate && (
+            <p
+              className="inline-flex items-center gap-1 text-[11px] font-medium tabular-nums"
+              style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+            >
+              До {homework.dueDate}
+            </p>
+          )}
+          {homework.link && (
+            <a
+              href={homework.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold"
+              style={{ color: 'var(--accent-primary)' }}
+            >
+              <LinkIcon size={12} weight="bold" aria-hidden="true" />
+              Ссылка
+            </a>
+          )}
+        </div>
       </div>
     </motion.div>
   )

@@ -38,9 +38,7 @@ def build_mini_app_url(base_url: str | None, start_param: str | None = None) -> 
         return base_url
 
     query = [
-        (key, value)
-        for key, value in parse_qsl(parts.query, keep_blank_values=True)
-        if key not in _START_PARAM_KEYS
+        (key, value) for key, value in parse_qsl(parts.query, keep_blank_values=True) if key not in _START_PARAM_KEYS
     ]
     start_key = "startapp" if is_telegram_mini_app_link(base_url) else "tgWebAppStartParam"
     query.append((start_key, start_param))

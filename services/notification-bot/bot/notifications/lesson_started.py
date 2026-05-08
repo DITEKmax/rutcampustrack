@@ -60,11 +60,7 @@ async def handle_lesson_started(
         base_url=getattr(config, "mini_app_url", None),
         start_param=f"checkin:{lesson_id}",
     )
-    reply_markup = (
-        InlineKeyboardMarkup(inline_keyboard=[[mini_app_button]])
-        if mini_app_button is not None
-        else None
-    )
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=[[mini_app_button]]) if mini_app_button is not None else None
 
     # Fetch group members — T-24-03: each student only receives their own message
     members = await academic_client.get_group_members(group_id)

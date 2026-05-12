@@ -66,14 +66,37 @@ describe('getCheckinLocation', () => {
     expect(getLocation).toHaveBeenCalledTimes(1)
   })
 
-  it('rejects outside Telegram when browser fallback is disabled', async () => {
-    await expect(getCheckinLocation()).rejects.toMatchObject({
-      code: 'unsupported',
+  it('uses browser geolocation when Telegram location API is absent', async () => {
+    const getCurrentPosition = vi.fn((success: PositionCallback) => {
+      success({
+        coords: {
+          latitude: 55.76,
+          longitude: 37.64,
+          accuracy: 10,
+          altitude: null,
+          altitudeAccuracy: null,
+          heading: null,
+          speed: null,
+          toJSON: () => ({}),
+        },
+        timestamp: 1,
+        toJSON: () => ({}),
+      })
     })
+    setBrowserGeolocation({ getCurrentPosition })
+
+    await expect(getCheckinLocation()).resolves.toEqual({
+      lat: 55.76,
+      lng: 37.64,
+      source: 'browser',
+    })
+    expect(isBrowserLocationFallbackEnabled()).toBe(true)
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1)
   })
 
-  it('uses browser geolocation only when VITE_TMA_DEV enables fallback', async () => {
+  it('uses browser geolocation when VITE_TMA_DEV enables fallback', async () => {
     vi.stubEnv('VITE_TMA_DEV', 'true')
+    setTelegramWebApp({ requestLocation: (callback: TelegramLocationCallback) => callback(null) })
     const getCurrentPosition = vi.fn(
       (
         success: PositionCallback,
@@ -110,6 +133,18 @@ describe('getCheckinLocation', () => {
     })
     expect(isBrowserLocationFallbackEnabled()).toBe(true)
     expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps Telegram denial in production when Telegram location API exists', async () => {
+    setTelegramWebApp({ requestLocation: (callback: TelegramLocationCallback) => callback(null) })
+    setBrowserGeolocation({
+      getCurrentPosition: vi.fn(),
+    })
+
+    await expect(getCheckinLocation()).rejects.toMatchObject({
+      code: 'denied',
+    })
+    expect(isBrowserLocationFallbackEnabled()).toBe(false)
   })
 
   it('falls back to browser geolocation in dev when Telegram denies location', async () => {

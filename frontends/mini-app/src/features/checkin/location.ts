@@ -46,7 +46,7 @@ export interface CheckinLocationResult extends CheckinRequest {
 const LOCATION_TIMEOUT_MS = 15_000
 
 export function isBrowserLocationFallbackEnabled(): boolean {
-  return import.meta.env.VITE_TMA_DEV === 'true'
+  return import.meta.env.VITE_TMA_DEV === 'true' || !hasTelegramLocationApi()
 }
 
 export async function getCheckinLocation(): Promise<CheckinLocationResult> {
@@ -63,7 +63,7 @@ export async function getCheckinLocation(): Promise<CheckinLocationResult> {
 
   throw new CheckinLocationError(
     'unsupported',
-    'Telegram не предоставил API геолокации. Откройте отметку внутри Telegram.',
+    'Устройство не поддерживает геолокацию.',
   )
 }
 
@@ -99,6 +99,14 @@ async function getTelegramLocation(): Promise<CheckinLocationResult | null> {
   }
 
   return null
+}
+
+function hasTelegramLocationApi(): boolean {
+  const webApp = window.Telegram?.WebApp
+  return (
+    typeof webApp?.requestLocation === 'function' ||
+    typeof webApp?.LocationManager?.getLocation === 'function'
+  )
 }
 
 function requestTelegramLocation(

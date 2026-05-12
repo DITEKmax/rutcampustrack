@@ -36,6 +36,9 @@ service AcademicGrpcService {
 
   // Получить пользователя по Telegram ID (для бота)
   rpc GetUserByTelegramId (UserByTelegramIdRequest) returns (UserByTelegramIdResponse);
+
+  // Read homework for a student's group in a date range (for Telegram bot).
+  rpc GetHomeworksForWeek (HomeworksForWeekRequest) returns (HomeworksForWeekResponse);
 }
 
 message Empty {}
@@ -155,4 +158,28 @@ message UserByTelegramIdResponse {
   int64 telegram_id = 9;
   string initial_password = 10;
   bool password_changed = 11;
+}
+
+message HomeworksForWeekRequest {
+  int64 group_id = 1;
+  int64 semester_id = 2;
+  int64 student_id = 3;
+  string date_from = 4;
+  string date_to = 5;
+}
+
+message HomeworksForWeekResponse {
+  repeated HomeworkInfo homeworks = 1;
+}
+
+message HomeworkInfo {
+  int64 homework_id = 1;
+  int64 subject_id = 2;
+  string subject_name = 3;
+  string title = 4;
+  string description = 5;
+  string link = 6;
+  string lesson_date = 7;
+  int32 lesson_number = 8;
+  bool completed = 9;
 }

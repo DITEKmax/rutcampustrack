@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from bot.handlers.homework import cmd_homework_week
-from bot.services.academic_http_client import TokenExpiredError
 
 
 def _make_message(user_id: int = 12345) -> MagicMock:
@@ -15,85 +14,99 @@ def _make_message(user_id: int = 12345) -> MagicMock:
     return message
 
 
-def _make_user_response(found: bool = True, group_id: int = 10) -> MagicMock:
+def _make_user_response(found: bool = True, group_id: int = 10, user_id: int = 77) -> MagicMock:
     resp = MagicMock()
     resp.found = found
+    resp.user_id = user_id
     resp.group_id = group_id
     return resp
 
 
-def _make_subjects_response(*subjects: tuple[int, str]) -> MagicMock:
-    resp = MagicMock()
-    resp.subjects = [MagicMock(subject_id=subject_id, subject_name=name) for subject_id, name in subjects]
-    return resp
+def _make_semester(semester_id: int = 2) -> MagicMock:
+    semester = MagicMock()
+    semester.id = semester_id
+    return semester
+
+
+def _make_homework(
+    homework_id: int,
+    *,
+    subject_id: int = 42,
+    subject_name: str = "Физика",
+    title: str = "Лабораторная работа",
+    description: str = "",
+    link: str = "",
+    lesson_date: str = "2026-05-08",
+    lesson_number: int = 2,
+    completed: bool = False,
+) -> MagicMock:
+    homework = MagicMock()
+    homework.homework_id = homework_id
+    homework.subject_id = subject_id
+    homework.subject_name = subject_name
+    homework.title = title
+    homework.description = description
+    homework.link = link
+    homework.lesson_date = lesson_date
+    homework.lesson_number = lesson_number
+    homework.completed = completed
+    return homework
 
 
 @pytest.mark.asyncio
-async def test_homework_week_requires_login():
+async def test_homework_week_does_not_require_web_login():
     message = _make_message()
-    jwt_redis = MagicMock()
-    jwt_redis.get = AsyncMock(return_value=None)
+    academic_client = MagicMock()
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10, user_id=77))
+    academic_client.get_active_semester = AsyncMock(return_value=_make_semester(2))
+    academic_client.get_homeworks_for_week = AsyncMock(
+        return_value=[_make_homework(1, title="Лабораторная работа", lesson_date="2026-05-08")]
+    )
 
     await cmd_homework_week(
         message,
-        jwt_redis=jwt_redis,
-        academic_client=MagicMock(),
-        academic_http_client=MagicMock(),
+        academic_client=academic_client,
         today=date(2026, 5, 7),
     )
 
     message.answer.assert_awaited_once()
-    assert "/login" in message.answer.call_args.args[0]
+    text = message.answer.call_args.args[0]
+    assert "/login" not in text
+    assert "Лабораторная работа" in text
+    academic_client.get_homeworks_for_week.assert_awaited_once_with(
+        group_id=10,
+        semester_id=2,
+        student_id=77,
+        date_from="2026-05-07",
+        date_to="2026-05-13",
+    )
 
 
 @pytest.mark.asyncio
 async def test_homework_week_formats_upcoming_homeworks():
     message = _make_message()
-    jwt_redis = MagicMock()
-    jwt_redis.get = AsyncMock(return_value={"access_token": "tok", "refresh_token": "ref"})
 
     academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10))
-    academic_client.get_subjects_by_ids = AsyncMock(return_value=_make_subjects_response((42, "Физика")))
-
-    academic_http_client = MagicMock()
-    academic_http_client.get_active_semester = AsyncMock(return_value={"id": 2, "active": True})
-    academic_http_client.get_homeworks = AsyncMock(
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10, user_id=77))
+    academic_client.get_active_semester = AsyncMock(return_value=_make_semester(2))
+    academic_client.get_homeworks_for_week = AsyncMock(
         return_value=[
-            {
-                "id": 1,
-                "subjectId": 42,
-                "title": "Лабораторная работа",
-                "description": "Задачи 1-3",
-                "link": "https://example.com/hw.pdf",
-                "lessonDate": "2026-05-08",
-                "lessonNumber": 2,
-                "completed": False,
-            },
-            {
-                "id": 2,
-                "subjectId": 42,
-                "title": "Уже готово",
-                "lessonDate": "2026-05-09",
-                "lessonNumber": 1,
-                "completed": True,
-            },
-            {
-                "id": 3,
-                "subjectId": 42,
-                "title": "Дальнее ДЗ",
-                "lessonDate": "2026-05-14",
-                "lessonNumber": 1,
-                "completed": False,
-            },
+            _make_homework(
+                1,
+                title="Лабораторная работа",
+                description="Задачи 1-3",
+                link="https://example.com/hw.pdf",
+                lesson_date="2026-05-08",
+                lesson_number=2,
+            ),
+            _make_homework(2, title="Уже готово", lesson_date="2026-05-09", lesson_number=1, completed=True),
+            _make_homework(3, title="Дальнее ДЗ", lesson_date="2026-05-14", lesson_number=1),
         ]
     )
 
     await cmd_homework_week(
         message,
-        jwt_redis=jwt_redis,
         academic_client=academic_client,
-        academic_http_client=academic_http_client,
         today=date(2026, 5, 7),
     )
 
@@ -105,56 +118,42 @@ async def test_homework_week_formats_upcoming_homeworks():
     assert "https://example.com/hw.pdf" in text
     assert "✅ Физика · пара №1" in text
     assert "Дальнее ДЗ" not in text
-    academic_http_client.get_homeworks.assert_awaited_once_with("tok", group_id=10, semester_id=2)
+    academic_client.get_homeworks_for_week.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_homework_week_empty_range_message():
     message = _make_message()
-    jwt_redis = MagicMock()
-    jwt_redis.get = AsyncMock(return_value={"access_token": "tok", "refresh_token": "ref"})
 
     academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10))
-    academic_client.get_subjects_by_ids = AsyncMock()
-
-    academic_http_client = MagicMock()
-    academic_http_client.get_active_semester = AsyncMock(return_value={"id": 2, "active": True})
-    academic_http_client.get_homeworks = AsyncMock(return_value=[])
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10, user_id=77))
+    academic_client.get_active_semester = AsyncMock(return_value=_make_semester(2))
+    academic_client.get_homeworks_for_week = AsyncMock(return_value=[])
 
     await cmd_homework_week(
         message,
-        jwt_redis=jwt_redis,
         academic_client=academic_client,
-        academic_http_client=academic_http_client,
         today=date(2026, 5, 7),
     )
 
     text = message.answer.call_args.args[0]
     assert "На ближайшие 7 дней домашних заданий нет." in text
-    academic_client.get_subjects_by_ids.assert_not_called()
 
 
 @pytest.mark.asyncio
-async def test_homework_week_token_expired_deletes_jwt():
+async def test_homework_week_no_active_semester_message():
     message = _make_message()
-    jwt_redis = MagicMock()
-    jwt_redis.get = AsyncMock(return_value={"access_token": "old", "refresh_token": "ref"})
-    jwt_redis.delete = AsyncMock()
 
     academic_client = MagicMock()
-    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10))
-
-    academic_http_client = MagicMock()
-    academic_http_client.get_active_semester = AsyncMock(side_effect=TokenExpiredError("expired"))
+    academic_client.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=10, user_id=77))
+    academic_client.get_active_semester = AsyncMock(return_value=None)
+    academic_client.get_homeworks_for_week = AsyncMock()
 
     await cmd_homework_week(
         message,
-        jwt_redis=jwt_redis,
         academic_client=academic_client,
-        academic_http_client=academic_http_client,
         today=date(2026, 5, 7),
     )
 
-    jwt_redis.delete.assert_awaited_once_with(12345)
-    assert "Сессия истекла" in message.answer.call_args.args[0]
+    assert "нет активного семестра" in message.answer.call_args.args[0]
+    academic_client.get_homeworks_for_week.assert_not_called()

@@ -2,13 +2,11 @@ import logging
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
-import aiohttp
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
 from bot.handlers.prefs import HOMEWORK_WEEK_LABEL
-from bot.services.academic_http_client import TokenExpiredError
 
 logger = logging.getLogger(__name__)
 
@@ -21,17 +19,11 @@ _MOSCOW_TZ = timezone(timedelta(hours=3))
 @homework_router.message(F.text == HOMEWORK_WEEK_LABEL)
 async def cmd_homework_week(
     message: Message,
-    jwt_redis,
     academic_client,
-    academic_http_client,
     today: date | None = None,
 ) -> None:
     """Show homework for the nearest 7 days for the current Telegram user."""
     telegram_id = message.from_user.id
-    tokens = await jwt_redis.get(telegram_id)
-    if not tokens:
-        await message.answer("🔐 Требуется вход\n\nСначала получите код через /login.")
-        return
 
     try:
         user_response = await academic_client.get_user_by_telegram_id(telegram_id)
@@ -44,32 +36,44 @@ async def cmd_homework_week(
             await message.answer("⚠️ Группа не указана\n\nВаш аккаунт пока не привязан к учебной группе.")
             return
 
-        access_token = tokens["access_token"]
-        semester = await academic_http_client.get_active_semester(access_token)
+        start = today or datetime.now(_MOSCOW_TZ).date()
+        end = start + timedelta(days=6)
+        semester = await academic_client.get_active_semester()
         if semester is None:
             await message.answer("Сейчас нет активного семестра, поэтому список ДЗ недоступен.")
             return
 
-        semester_id = int(semester["id"])
-        homeworks = await academic_http_client.get_homeworks(access_token, group_id=group_id, semester_id=semester_id)
-        start = today or datetime.now(_MOSCOW_TZ).date()
-        end = start + timedelta(days=6)
+        semester_id = int(getattr(semester, "id"))
+        homeworks = [
+            _homework_proto_to_item(homework)
+            for homework in await academic_client.get_homeworks_for_week(
+                group_id=group_id,
+                semester_id=semester_id,
+                student_id=int(getattr(user_response, "user_id")),
+                date_from=start.isoformat(),
+                date_to=end.isoformat(),
+            )
+        ]
         upcoming = _filter_week_homeworks(homeworks, start, end)
-        subject_names = await _resolve_subject_names(upcoming, academic_client)
 
-        await message.answer(_build_homework_week_text(upcoming, subject_names, start, end))
-    except TokenExpiredError:
-        await jwt_redis.delete(telegram_id)
-        await message.answer("🔐 Сессия истекла\n\nПолучите новый код через /login.")
-    except aiohttp.ClientResponseError as exc:
-        logger.warning("Academic REST request failed for homework week: %s", exc)
-        if exc.status == 403:
-            await message.answer("⚠️ Нет доступа к домашним заданиям для вашей группы.")
-        else:
-            await message.answer("⚠️ Сервис временно недоступен\n\nПопробуйте ещё раз чуть позже.")
+        await message.answer(_build_homework_week_text(upcoming, {}, start, end))
     except Exception:
         logger.warning("Error in /homework handler", exc_info=True)
         await message.answer("⚠️ Сервис временно недоступен\n\nПопробуйте ещё раз чуть позже.")
+
+
+def _homework_proto_to_item(homework) -> dict:
+    return {
+        "id": getattr(homework, "homework_id", 0),
+        "subjectId": getattr(homework, "subject_id", 0),
+        "subjectName": getattr(homework, "subject_name", ""),
+        "title": getattr(homework, "title", ""),
+        "description": getattr(homework, "description", ""),
+        "link": getattr(homework, "link", ""),
+        "lessonDate": getattr(homework, "lesson_date", ""),
+        "lessonNumber": getattr(homework, "lesson_number", 0),
+        "completed": bool(getattr(homework, "completed", False)),
+    }
 
 
 def _filter_week_homeworks(items: list[dict], start: date, end: date) -> list[dict]:
@@ -128,7 +132,9 @@ def _build_homework_week_text(items: list[dict], subject_names: dict[int, str], 
 
 def _format_homework_item(item: dict, subject_names: dict[int, str]) -> list[str]:
     subject_id = _field(item, "subjectId", "subject_id")
-    subject_name = subject_names.get(int(subject_id), "Предмет") if subject_id is not None else "Предмет"
+    subject_name = _compact(_field(item, "subjectName", "subject_name"))
+    if not subject_name:
+        subject_name = subject_names.get(int(subject_id), "Предмет") if subject_id is not None else "Предмет"
     lesson_number = _field(item, "lessonNumber", "lesson_number")
     lesson_part = f" · пара №{lesson_number}" if lesson_number else ""
     completed = bool(_field(item, "completed"))

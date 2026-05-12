@@ -155,7 +155,7 @@ export function CheckInPage() {
           <StatusCard
             tone="success"
             icon={<MapPin size={18} weight="fill" />}
-            text={locationSource === 'browser' ? 'Геолокация получена через dev fallback' : 'Геолокация получена через Telegram'}
+            text={locationSource === 'browser' ? 'Геолокация получена через браузер' : 'Геолокация получена через Telegram'}
           />
         )}
         {gpsState === 'error' && <StatusCard tone="danger" icon={<WarningCircle size={18} weight="bold" />} text="Не удалось получить геолокацию" />}
@@ -185,8 +185,7 @@ export function CheckInPage() {
         )}
       </div>
 
-      {/* Dev fallback button (only shown outside Telegram where MainButton
-          isn't available) */}
+      {/* Fallback button for browser location mode where MainButton may be unavailable. */}
       {isBrowserLocationFallbackEnabled() && (
         <button
           type="button"

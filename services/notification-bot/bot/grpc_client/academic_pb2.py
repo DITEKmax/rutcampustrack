@@ -4,69 +4,80 @@
 # source: academic.proto
 # Protobuf Python Version: 6.31.0
 """Generated protocol buffer code."""
-
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import runtime_version as _runtime_version
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.internal import builder as _builder
-
-_runtime_version.ValidateProtobufRuntimeVersion(_runtime_version.Domain.PUBLIC, 6, 31, 0, "", "academic.proto")
+_runtime_version.ValidateProtobufRuntimeVersion(
+    _runtime_version.Domain.PUBLIC,
+    6,
+    31,
+    0,
+    '',
+    'academic.proto'
+)
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n\x0e\x61\x63\x61\x64\x65mic.proto\x12\x17rutcampustrack.academic"\x07\n\x05\x45mpty" \n\x0cGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03"J\n\rGroupResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0c\n\x04\x63ode\x18\x03 \x01(\t\x12\x11\n\tis_active\x18\x04 \x01(\x08"\'\n\x13GroupMembersRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03"N\n\x14GroupMembersResponse\x12\x36\n\x08students\x18\x01 \x03(\x0b\x32$.rutcampustrack.academic.StudentInfo"]\n\x0bStudentInfo\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x14\n\x0c\x64isplay_name\x18\x02 \x01(\t\x12\x12\n\nis_headman\x18\x03 \x01(\x08\x12\x13\n\x0btelegram_id\x18\x04 \x01(\x03"A\n\x16TeacherSubjectsRequest\x12\x12\n\nteacher_id\x18\x01 \x01(\x03\x12\x13\n\x0bsemester_id\x18\x02 \x01(\x03"X\n\x17TeacherSubjectsResponse\x12=\n\x08subjects\x18\x01 \x03(\x0b\x32+.rutcampustrack.academic.TeacherSubjectInfo"z\n\x12TeacherSubjectInfo\x12\x12\n\nsubject_id\x18\x01 \x01(\x03\x12\x14\n\x0csubject_name\x18\x02 \x01(\t\x12\x14\n\x0csubject_type\x18\x03 \x01(\t\x12\x10\n\x08group_id\x18\x04 \x01(\x03\x12\x12\n\ngroup_name\x18\x05 \x01(\t"8\n\x13HeadmanCheckRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x10\n\x08group_id\x18\x02 \x01(\x03"*\n\x14HeadmanCheckResponse\x12\x12\n\nis_headman\x18\x01 \x01(\x08"i\n\x10SemesterResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tdate_from\x18\x03 \x01(\t\x12\x0f\n\x07\x64\x61te_to\x18\x04 \x01(\t\x12\x17\n\x0f\x66irst_week_type\x18\x05 \x01(\t">\n\x10GeofenceResponse\x12\x0b\n\x03lat\x18\x01 \x01(\x01\x12\x0b\n\x03lng\x18\x02 \x01(\x01\x12\x10\n\x08radius_m\x18\x03 \x01(\x05"\x1e\n\x0bUserRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03"\x98\x01\n\x0cUserResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\r\n\x05login\x18\x02 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x03 \x01(\t\x12\x0c\n\x04role\x18\x04 \x01(\t\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x10\n\x08group_id\x18\x06 \x01(\x03\x12\x12\n\nis_headman\x18\x07 \x01(\x08\x12\x13\n\x0btelegram_id\x18\x08 \x01(\x03"+\n\x14SubjectsByIdsRequest\x12\x13\n\x0bsubject_ids\x18\x01 \x03(\x03"O\n\x15SubjectsByIdsResponse\x12\x36\n\x08subjects\x18\x01 \x03(\x0b\x32$.rutcampustrack.academic.SubjectInfo"7\n\x0bSubjectInfo\x12\x12\n\nsubject_id\x18\x01 \x01(\x03\x12\x14\n\x0csubject_name\x18\x02 \x01(\t".\n\x17UserByTelegramIdRequest\x12\x13\n\x0btelegram_id\x18\x01 \x01(\x03"\xf0\x01\n\x18UserByTelegramIdResponse\x12\r\n\x05\x66ound\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\x03\x12\r\n\x05login\x18\x03 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x04 \x01(\t\x12\x0c\n\x04role\x18\x05 \x01(\t\x12\x10\n\x08group_id\x18\x06 \x01(\x03\x12\x12\n\ngroup_name\x18\x07 \x01(\t\x12\x12\n\nis_headman\x18\x08 \x01(\x08\x12\x13\n\x0btelegram_id\x18\t \x01(\x03\x12\x18\n\x10initial_password\x18\n \x01(\t\x12\x18\n\x10password_changed\x18\x0b \x01(\x08\x32\xce\x07\n\x13\x41\x63\x61\x64\x65micGrpcService\x12Y\n\x08GetGroup\x12%.rutcampustrack.academic.GroupRequest\x1a&.rutcampustrack.academic.GroupResponse\x12n\n\x0fGetGroupMembers\x12,.rutcampustrack.academic.GroupMembersRequest\x1a-.rutcampustrack.academic.GroupMembersResponse\x12w\n\x12GetTeacherSubjects\x12/.rutcampustrack.academic.TeacherSubjectsRequest\x1a\x30.rutcampustrack.academic.TeacherSubjectsResponse\x12h\n\tIsHeadman\x12,.rutcampustrack.academic.HeadmanCheckRequest\x1a-.rutcampustrack.academic.HeadmanCheckResponse\x12^\n\x11GetActiveSemester\x12\x1e.rutcampustrack.academic.Empty\x1a).rutcampustrack.academic.SemesterResponse\x12^\n\x11GetCampusGeofence\x12\x1e.rutcampustrack.academic.Empty\x1a).rutcampustrack.academic.GeofenceResponse\x12Z\n\x0bGetUserById\x12$.rutcampustrack.academic.UserRequest\x1a%.rutcampustrack.academic.UserResponse\x12q\n\x10GetSubjectsByIds\x12-.rutcampustrack.academic.SubjectsByIdsRequest\x1a..rutcampustrack.academic.SubjectsByIdsResponse\x12z\n\x13GetUserByTelegramId\x12\x30.rutcampustrack.academic.UserByTelegramIdRequest\x1a\x31.rutcampustrack.academic.UserByTelegramIdResponseB#\n\x1fru.rutcampustrack.academic.grpcP\x01\x62\x06proto3'
-)
+
+
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61\x63\x61\x64\x65mic.proto\x12\x17rutcampustrack.academic\"\x07\n\x05\x45mpty\" \n\x0cGroupRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\"H\n\rGroupResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tis_active\x18\x04 \x01(\x08J\x04\x08\x03\x10\x04R\x04\x63ode\"\'\n\x13GroupMembersRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\"N\n\x14GroupMembersResponse\x12\x36\n\x08students\x18\x01 \x03(\x0b\x32$.rutcampustrack.academic.StudentInfo\"]\n\x0bStudentInfo\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x14\n\x0c\x64isplay_name\x18\x02 \x01(\t\x12\x12\n\nis_headman\x18\x03 \x01(\x08\x12\x13\n\x0btelegram_id\x18\x04 \x01(\x03\"A\n\x16TeacherSubjectsRequest\x12\x12\n\nteacher_id\x18\x01 \x01(\x03\x12\x13\n\x0bsemester_id\x18\x02 \x01(\x03\"X\n\x17TeacherSubjectsResponse\x12=\n\x08subjects\x18\x01 \x03(\x0b\x32+.rutcampustrack.academic.TeacherSubjectInfo\"z\n\x12TeacherSubjectInfo\x12\x12\n\nsubject_id\x18\x01 \x01(\x03\x12\x14\n\x0csubject_name\x18\x02 \x01(\t\x12\x14\n\x0csubject_type\x18\x03 \x01(\t\x12\x10\n\x08group_id\x18\x04 \x01(\x03\x12\x12\n\ngroup_name\x18\x05 \x01(\t\"8\n\x13HeadmanCheckRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x10\n\x08group_id\x18\x02 \x01(\x03\"*\n\x14HeadmanCheckResponse\x12\x12\n\nis_headman\x18\x01 \x01(\x08\"i\n\x10SemesterResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tdate_from\x18\x03 \x01(\t\x12\x0f\n\x07\x64\x61te_to\x18\x04 \x01(\t\x12\x17\n\x0f\x66irst_week_type\x18\x05 \x01(\t\">\n\x10GeofenceResponse\x12\x0b\n\x03lat\x18\x01 \x01(\x01\x12\x0b\n\x03lng\x18\x02 \x01(\x01\x12\x10\n\x08radius_m\x18\x03 \x01(\x05\"\x1e\n\x0bUserRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\"\xab\x01\n\x0cUserResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\r\n\x05login\x18\x02 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x03 \x01(\t\x12\x0c\n\x04role\x18\x04 \x01(\t\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x10\n\x08group_id\x18\x06 \x01(\x03\x12\x12\n\nis_headman\x18\x07 \x01(\x08\x12\x13\n\x0btelegram_id\x18\x08 \x01(\x03\x12\x11\n\tavatar_id\x18\t \x01(\t\"+\n\x14SubjectsByIdsRequest\x12\x13\n\x0bsubject_ids\x18\x01 \x03(\x03\"O\n\x15SubjectsByIdsResponse\x12\x36\n\x08subjects\x18\x01 \x03(\x0b\x32$.rutcampustrack.academic.SubjectInfo\"M\n\x0bSubjectInfo\x12\x12\n\nsubject_id\x18\x01 \x01(\x03\x12\x14\n\x0csubject_name\x18\x02 \x01(\t\x12\x14\n\x0csubject_type\x18\x03 \x01(\t\".\n\x17UserByTelegramIdRequest\x12\x13\n\x0btelegram_id\x18\x01 \x01(\x03\"\xf0\x01\n\x18UserByTelegramIdResponse\x12\r\n\x05\x66ound\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\x03\x12\r\n\x05login\x18\x03 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x04 \x01(\t\x12\x0c\n\x04role\x18\x05 \x01(\t\x12\x10\n\x08group_id\x18\x06 \x01(\x03\x12\x12\n\ngroup_name\x18\x07 \x01(\t\x12\x12\n\nis_headman\x18\x08 \x01(\x08\x12\x13\n\x0btelegram_id\x18\t \x01(\x03\x12\x18\n\x10initial_password\x18\n \x01(\t\x12\x18\n\x10password_changed\x18\x0b \x01(\x08\"x\n\x17HomeworksForWeekRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\x12\x13\n\x0bsemester_id\x18\x02 \x01(\x03\x12\x12\n\nstudent_id\x18\x03 \x01(\x03\x12\x11\n\tdate_from\x18\x04 \x01(\t\x12\x0f\n\x07\x64\x61te_to\x18\x05 \x01(\t\"T\n\x18HomeworksForWeekResponse\x12\x38\n\thomeworks\x18\x01 \x03(\x0b\x32%.rutcampustrack.academic.HomeworkInfo\"\xbe\x01\n\x0cHomeworkInfo\x12\x13\n\x0bhomework_id\x18\x01 \x01(\x03\x12\x12\n\nsubject_id\x18\x02 \x01(\x03\x12\x14\n\x0csubject_name\x18\x03 \x01(\t\x12\r\n\x05title\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x0c\n\x04link\x18\x06 \x01(\t\x12\x13\n\x0blesson_date\x18\x07 \x01(\t\x12\x15\n\rlesson_number\x18\x08 \x01(\x05\x12\x11\n\tcompleted\x18\t \x01(\x08\x32\xca\x08\n\x13\x41\x63\x61\x64\x65micGrpcService\x12Y\n\x08GetGroup\x12%.rutcampustrack.academic.GroupRequest\x1a&.rutcampustrack.academic.GroupResponse\x12n\n\x0fGetGroupMembers\x12,.rutcampustrack.academic.GroupMembersRequest\x1a-.rutcampustrack.academic.GroupMembersResponse\x12w\n\x12GetTeacherSubjects\x12/.rutcampustrack.academic.TeacherSubjectsRequest\x1a\x30.rutcampustrack.academic.TeacherSubjectsResponse\x12h\n\tIsHeadman\x12,.rutcampustrack.academic.HeadmanCheckRequest\x1a-.rutcampustrack.academic.HeadmanCheckResponse\x12^\n\x11GetActiveSemester\x12\x1e.rutcampustrack.academic.Empty\x1a).rutcampustrack.academic.SemesterResponse\x12^\n\x11GetCampusGeofence\x12\x1e.rutcampustrack.academic.Empty\x1a).rutcampustrack.academic.GeofenceResponse\x12Z\n\x0bGetUserById\x12$.rutcampustrack.academic.UserRequest\x1a%.rutcampustrack.academic.UserResponse\x12q\n\x10GetSubjectsByIds\x12-.rutcampustrack.academic.SubjectsByIdsRequest\x1a..rutcampustrack.academic.SubjectsByIdsResponse\x12z\n\x13GetUserByTelegramId\x12\x30.rutcampustrack.academic.UserByTelegramIdRequest\x1a\x31.rutcampustrack.academic.UserByTelegramIdResponse\x12z\n\x13GetHomeworksForWeek\x12\x30.rutcampustrack.academic.HomeworksForWeekRequest\x1a\x31.rutcampustrack.academic.HomeworksForWeekResponseB#\n\x1fru.rutcampustrack.academic.grpcP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "academic_pb2", _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'academic_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
-    _globals["DESCRIPTOR"]._loaded_options = None
-    _globals["DESCRIPTOR"]._serialized_options = b"\n\037ru.rutcampustrack.academic.grpcP\001"
-    _globals["_EMPTY"]._serialized_start = 43
-    _globals["_EMPTY"]._serialized_end = 50
-    _globals["_GROUPREQUEST"]._serialized_start = 52
-    _globals["_GROUPREQUEST"]._serialized_end = 84
-    _globals["_GROUPRESPONSE"]._serialized_start = 86
-    _globals["_GROUPRESPONSE"]._serialized_end = 160
-    _globals["_GROUPMEMBERSREQUEST"]._serialized_start = 162
-    _globals["_GROUPMEMBERSREQUEST"]._serialized_end = 201
-    _globals["_GROUPMEMBERSRESPONSE"]._serialized_start = 203
-    _globals["_GROUPMEMBERSRESPONSE"]._serialized_end = 281
-    _globals["_STUDENTINFO"]._serialized_start = 283
-    _globals["_STUDENTINFO"]._serialized_end = 376
-    _globals["_TEACHERSUBJECTSREQUEST"]._serialized_start = 378
-    _globals["_TEACHERSUBJECTSREQUEST"]._serialized_end = 443
-    _globals["_TEACHERSUBJECTSRESPONSE"]._serialized_start = 445
-    _globals["_TEACHERSUBJECTSRESPONSE"]._serialized_end = 533
-    _globals["_TEACHERSUBJECTINFO"]._serialized_start = 535
-    _globals["_TEACHERSUBJECTINFO"]._serialized_end = 657
-    _globals["_HEADMANCHECKREQUEST"]._serialized_start = 659
-    _globals["_HEADMANCHECKREQUEST"]._serialized_end = 715
-    _globals["_HEADMANCHECKRESPONSE"]._serialized_start = 717
-    _globals["_HEADMANCHECKRESPONSE"]._serialized_end = 759
-    _globals["_SEMESTERRESPONSE"]._serialized_start = 761
-    _globals["_SEMESTERRESPONSE"]._serialized_end = 866
-    _globals["_GEOFENCERESPONSE"]._serialized_start = 868
-    _globals["_GEOFENCERESPONSE"]._serialized_end = 930
-    _globals["_USERREQUEST"]._serialized_start = 932
-    _globals["_USERREQUEST"]._serialized_end = 962
-    _globals["_USERRESPONSE"]._serialized_start = 965
-    _globals["_USERRESPONSE"]._serialized_end = 1117
-    _globals["_SUBJECTSBYIDSREQUEST"]._serialized_start = 1119
-    _globals["_SUBJECTSBYIDSREQUEST"]._serialized_end = 1162
-    _globals["_SUBJECTSBYIDSRESPONSE"]._serialized_start = 1164
-    _globals["_SUBJECTSBYIDSRESPONSE"]._serialized_end = 1243
-    _globals["_SUBJECTINFO"]._serialized_start = 1245
-    _globals["_SUBJECTINFO"]._serialized_end = 1300
-    _globals["_USERBYTELEGRAMIDREQUEST"]._serialized_start = 1302
-    _globals["_USERBYTELEGRAMIDREQUEST"]._serialized_end = 1348
-    _globals["_USERBYTELEGRAMIDRESPONSE"]._serialized_start = 1351
-    _globals["_USERBYTELEGRAMIDRESPONSE"]._serialized_end = 1591
-    _globals["_ACADEMICGRPCSERVICE"]._serialized_start = 1594
-    _globals["_ACADEMICGRPCSERVICE"]._serialized_end = 2568
+  _globals['DESCRIPTOR']._loaded_options = None
+  _globals['DESCRIPTOR']._serialized_options = b'\n\037ru.rutcampustrack.academic.grpcP\001'
+  _globals['_EMPTY']._serialized_start=43
+  _globals['_EMPTY']._serialized_end=50
+  _globals['_GROUPREQUEST']._serialized_start=52
+  _globals['_GROUPREQUEST']._serialized_end=84
+  _globals['_GROUPRESPONSE']._serialized_start=86
+  _globals['_GROUPRESPONSE']._serialized_end=158
+  _globals['_GROUPMEMBERSREQUEST']._serialized_start=160
+  _globals['_GROUPMEMBERSREQUEST']._serialized_end=199
+  _globals['_GROUPMEMBERSRESPONSE']._serialized_start=201
+  _globals['_GROUPMEMBERSRESPONSE']._serialized_end=279
+  _globals['_STUDENTINFO']._serialized_start=281
+  _globals['_STUDENTINFO']._serialized_end=374
+  _globals['_TEACHERSUBJECTSREQUEST']._serialized_start=376
+  _globals['_TEACHERSUBJECTSREQUEST']._serialized_end=441
+  _globals['_TEACHERSUBJECTSRESPONSE']._serialized_start=443
+  _globals['_TEACHERSUBJECTSRESPONSE']._serialized_end=531
+  _globals['_TEACHERSUBJECTINFO']._serialized_start=533
+  _globals['_TEACHERSUBJECTINFO']._serialized_end=655
+  _globals['_HEADMANCHECKREQUEST']._serialized_start=657
+  _globals['_HEADMANCHECKREQUEST']._serialized_end=713
+  _globals['_HEADMANCHECKRESPONSE']._serialized_start=715
+  _globals['_HEADMANCHECKRESPONSE']._serialized_end=757
+  _globals['_SEMESTERRESPONSE']._serialized_start=759
+  _globals['_SEMESTERRESPONSE']._serialized_end=864
+  _globals['_GEOFENCERESPONSE']._serialized_start=866
+  _globals['_GEOFENCERESPONSE']._serialized_end=928
+  _globals['_USERREQUEST']._serialized_start=930
+  _globals['_USERREQUEST']._serialized_end=960
+  _globals['_USERRESPONSE']._serialized_start=963
+  _globals['_USERRESPONSE']._serialized_end=1134
+  _globals['_SUBJECTSBYIDSREQUEST']._serialized_start=1136
+  _globals['_SUBJECTSBYIDSREQUEST']._serialized_end=1179
+  _globals['_SUBJECTSBYIDSRESPONSE']._serialized_start=1181
+  _globals['_SUBJECTSBYIDSRESPONSE']._serialized_end=1260
+  _globals['_SUBJECTINFO']._serialized_start=1262
+  _globals['_SUBJECTINFO']._serialized_end=1339
+  _globals['_USERBYTELEGRAMIDREQUEST']._serialized_start=1341
+  _globals['_USERBYTELEGRAMIDREQUEST']._serialized_end=1387
+  _globals['_USERBYTELEGRAMIDRESPONSE']._serialized_start=1390
+  _globals['_USERBYTELEGRAMIDRESPONSE']._serialized_end=1630
+  _globals['_HOMEWORKSFORWEEKREQUEST']._serialized_start=1632
+  _globals['_HOMEWORKSFORWEEKREQUEST']._serialized_end=1752
+  _globals['_HOMEWORKSFORWEEKRESPONSE']._serialized_start=1754
+  _globals['_HOMEWORKSFORWEEKRESPONSE']._serialized_end=1838
+  _globals['_HOMEWORKINFO']._serialized_start=1841
+  _globals['_HOMEWORKINFO']._serialized_end=2031
+  _globals['_ACADEMICGRPCSERVICE']._serialized_start=2034
+  _globals['_ACADEMICGRPCSERVICE']._serialized_end=3132
 # @@protoc_insertion_point(module_scope)

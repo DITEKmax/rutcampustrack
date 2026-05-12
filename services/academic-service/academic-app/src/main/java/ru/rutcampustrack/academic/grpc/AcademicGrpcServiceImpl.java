@@ -4,17 +4,25 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.Homework;
+import ru.rutcampustrack.academic.entity.HomeworkCompletion;
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.TeacherSubjectGroup;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.HomeworkCompletionRepository;
+import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * gRPC service implementation for Academic Service.
@@ -46,6 +54,8 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final TeacherSubjectGroupRepository assignmentRepository;
+    private final HomeworkRepository homeworkRepository;
+    private final HomeworkCompletionRepository completionRepository;
     private final HeadmanRateLimiter headmanRateLimiter;
 
     public AcademicGrpcServiceImpl(
@@ -54,12 +64,16 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
             UserRepository userRepository,
             SubjectRepository subjectRepository,
             TeacherSubjectGroupRepository assignmentRepository,
+            HomeworkRepository homeworkRepository,
+            HomeworkCompletionRepository completionRepository,
             HeadmanRateLimiter headmanRateLimiter) {
         this.academicReadService = academicReadService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.subjectRepository = subjectRepository;
         this.assignmentRepository = assignmentRepository;
+        this.homeworkRepository = homeworkRepository;
+        this.completionRepository = completionRepository;
         this.headmanRateLimiter = headmanRateLimiter;
     }
 
@@ -288,6 +302,72 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
     }
 
     /**
+     * Read a student's group homework for a date range.
+     *
+     * <p>Used by notification-bot reply keyboard. The bot authenticates to gRPC
+     * with the shared secret, and this method still verifies that the requested
+     * student belongs to the requested group before returning group homework.
+     */
+    @Override
+    public void getHomeworksForWeek(HomeworksForWeekRequest request,
+            StreamObserver<HomeworksForWeekResponse> responseObserver) {
+        User student = userRepository.findById(request.getStudentId())
+                .orElseThrow(() -> new ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException(
+                        "User", "id", request.getStudentId()));
+        if (student.getGroupId() == null || !student.getGroupId().equals(request.getGroupId())) {
+            responseObserver.onError(Status.PERMISSION_DENIED
+                    .withDescription("student does not belong to requested group")
+                    .asRuntimeException());
+            return;
+        }
+
+        LocalDate from = parseIsoDate(request.getDateFrom(), "date_from");
+        LocalDate to = parseIsoDate(request.getDateTo(), "date_to");
+        if (to.isBefore(from)) {
+            throw new IllegalArgumentException("date_to must be greater than or equal to date_from");
+        }
+
+        List<Homework> homeworks = homeworkRepository
+                .findByGroupIdAndSemesterIdAndLessonDateBetweenOrderByLessonDateAscLessonNumberAscIdAsc(
+                        request.getGroupId(), request.getSemesterId(), from, to);
+        List<Long> homeworkIds = homeworks.stream()
+                .map(Homework::getId)
+                .toList();
+        Set<Long> completedHomeworkIds = homeworkIds.isEmpty()
+                ? Set.of()
+                : completionRepository.findByHomeworkIdInAndStudentId(homeworkIds, student.getId()).stream()
+                        .map(HomeworkCompletion::getHomeworkId)
+                        .collect(Collectors.toSet());
+
+        Set<Long> subjectIds = homeworks.stream()
+                .map(Homework::getSubjectId)
+                .collect(Collectors.toSet());
+        Map<Long, String> subjectNames = subjectIds.isEmpty()
+                ? Map.of()
+                : subjectRepository.findAllById(subjectIds).stream()
+                        .collect(Collectors.toMap(Subject::getId, Subject::getName, (left, right) -> left));
+
+        HomeworksForWeekResponse response = HomeworksForWeekResponse.newBuilder()
+                .addAllHomeworks(homeworks.stream()
+                        .map(homework -> HomeworkInfo.newBuilder()
+                                .setHomeworkId(homework.getId())
+                                .setSubjectId(homework.getSubjectId())
+                                .setSubjectName(subjectNames.getOrDefault(homework.getSubjectId(), ""))
+                                .setTitle(emptyIfNull(homework.getTitle()))
+                                .setDescription(emptyIfNull(homework.getDescription()))
+                                .setLink(emptyIfNull(homework.getLink()))
+                                .setLessonDate(homework.getLessonDate().toString())
+                                .setLessonNumber(homework.getLessonNumber())
+                                .setCompleted(completedHomeworkIds.contains(homework.getId()))
+                                .build())
+                        .toList())
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    /**
      * GRPC-07: Get user by ID including archived users.
      * Uses cached lookup that bypasses @SQLRestriction so downstream services
      * can access historical data for archived users.
@@ -310,5 +390,17 @@ public class AcademicGrpcServiceImpl extends AcademicGrpcServiceGrpc.AcademicGrp
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    private static LocalDate parseIsoDate(String raw, String field) {
+        try {
+            return LocalDate.parse(raw);
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException(field + " must be an ISO date", e);
+        }
+    }
+
+    private static String emptyIfNull(String value) {
+        return value != null ? value : "";
     }
 }

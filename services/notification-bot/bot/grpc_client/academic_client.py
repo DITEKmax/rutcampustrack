@@ -2,6 +2,7 @@ import logging
 import time
 from typing import Any
 
+import grpc
 import grpc.aio
 
 from bot.grpc_client import academic_pb2, academic_pb2_grpc
@@ -67,10 +68,39 @@ class AcademicGrpcClient:
         request = academic_pb2.UserByTelegramIdRequest(telegram_id=telegram_id)
         return await self._stub.GetUserByTelegramId(request, metadata=self._metadata)
 
+    async def get_active_semester(self):
+        """Return active semester proto, or None when Academic has no active semester."""
+        try:
+            return await self._stub.GetActiveSemester(academic_pb2.Empty(), metadata=self._metadata)
+        except grpc.aio.AioRpcError as exc:
+            if exc.code() == grpc.StatusCode.NOT_FOUND:
+                return None
+            raise
+
     async def get_subjects_by_ids(self, subject_ids: list[int]):
         """Resolve subject IDs to names. Returns SubjectsByIdsResponse proto."""
         request = academic_pb2.SubjectsByIdsRequest(subject_ids=subject_ids)
         return await self._stub.GetSubjectsByIds(request, metadata=self._metadata)
+
+    async def get_homeworks_for_week(
+        self,
+        *,
+        group_id: int,
+        semester_id: int,
+        student_id: int,
+        date_from: str,
+        date_to: str,
+    ) -> list[Any]:
+        """Return homework items for the student's group and requested date range."""
+        request = academic_pb2.HomeworksForWeekRequest(
+            group_id=group_id,
+            semester_id=semester_id,
+            student_id=student_id,
+            date_from=date_from,
+            date_to=date_to,
+        )
+        response = await self._stub.GetHomeworksForWeek(request, metadata=self._metadata)
+        return list(response.homeworks)
 
     async def close(self) -> None:
         await self._channel.close()

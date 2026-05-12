@@ -17,6 +17,7 @@ interface LessonCardProps {
   subjectName: string
   personalStatus?: AttendanceStatus | null
   onCheckin: (lessonId: number) => void
+  isCheckinLoading?: boolean
   onOpenActions?: () => void
 }
 
@@ -41,11 +42,13 @@ export function LessonCard({
   subjectName,
   personalStatus = null,
   onCheckin,
+  isCheckinLoading = false,
   onOpenActions,
 }: LessonCardProps) {
   const isActive = lesson.status === 'ACTIVE'
   const isCancelled = lesson.status === 'CANCELLED'
-  const canCheckin = isActive && !personalStatus
+  const canCheckin = isActive && !personalStatus && !isCheckinLoading
+  const showCheckin = isActive && !personalStatus
   const showActions = !!onOpenActions && !isCancelled
 
   const handleClick = () => {
@@ -66,7 +69,7 @@ export function LessonCard({
       onClick={handleClick}
       className={cn(
         'relative flex gap-3 rounded-2xl border p-3',
-        canCheckin && 'cursor-pointer',
+        showCheckin && 'cursor-pointer',
       )}
       style={{
         background: 'var(--bg-secondary)',
@@ -74,8 +77,9 @@ export function LessonCard({
         boxShadow: isActive ? 'var(--glow-primary)' : 'none',
         minHeight: isActive ? 44 : undefined,
       }}
-      role={canCheckin ? 'button' : undefined}
-      aria-label={canCheckin ? `${subjectName} — отметиться на паре` : undefined}
+      role={showCheckin ? 'button' : undefined}
+      aria-label={showCheckin ? `${subjectName} — отметиться на паре` : undefined}
+      aria-busy={isCheckinLoading || undefined}
     >
       {/* Left rail — time + station dot */}
       <div className="flex shrink-0 flex-col items-center gap-1 pt-0.5">
@@ -137,12 +141,12 @@ export function LessonCard({
           </p>
         )}
 
-        {canCheckin && (
+        {showCheckin && (
           <p
             className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold"
             style={{ color: 'var(--accent-primary)' }}
           >
-            Войти на пару
+            {isCheckinLoading ? 'Проверяем геолокацию...' : 'Отметиться'}
             <CaretRight size={10} weight="bold" aria-hidden="true" />
           </p>
         )}

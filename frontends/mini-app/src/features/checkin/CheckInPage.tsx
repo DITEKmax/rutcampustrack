@@ -1,4 +1,4 @@
-import { useState, useCallback, type ReactNode } from 'react'
+import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { motion } from 'motion/react'
 import { hapticFeedback } from '@telegram-apps/sdk-react'
@@ -36,6 +36,7 @@ export function CheckInPage() {
   const { lessonId } = useParams<{ lessonId: string }>()
   const navigate = useNavigate()
   const checkinMutation = useCheckin()
+  const didAutoStart = useRef(false)
 
   useBackButton()
 
@@ -81,6 +82,12 @@ export function CheckInPage() {
       }
     }
   }, [checkinMutation, navigate])
+
+  useEffect(() => {
+    if (didAutoStart.current) return
+    didAutoStart.current = true
+    void handleCheckin()
+  }, [handleCheckin])
 
   const mainButtonText =
     gpsState === 'acquiring'

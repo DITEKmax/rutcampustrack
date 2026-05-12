@@ -8,6 +8,7 @@ import {
 describe('resolveStartParamRoute', () => {
   it('opens check-in route from lesson start params', () => {
     expect(resolveStartParamRoute('checkin:123')).toBe('/checkin/123')
+    expect(resolveStartParamRoute('checkin-321')).toBe('/checkin/321')
     expect(resolveStartParamRoute('lesson_456')).toBe('/checkin/456')
     expect(resolveStartParamRoute('lesson-789')).toBe('/checkin/789')
   })
@@ -41,9 +42,9 @@ describe('getStartParamFromLaunchParams', () => {
   it('falls back to init data startParam', () => {
     expect(
       getStartParamFromLaunchParams({
-        tgWebAppData: { startParam: 'checkin:1' },
+        tgWebAppData: { startParam: 'checkin-1' },
       }),
-    ).toBe('checkin:1')
+    ).toBe('checkin-1')
   })
 })
 
@@ -51,6 +52,6 @@ describe('getStartParamFromSearch', () => {
   it('reads Telegram and dev query aliases', () => {
     expect(getStartParamFromSearch('?tgWebAppStartParam=homework')).toBe('homework')
     expect(getStartParamFromSearch('?start_param=excuses')).toBe('excuses')
-    expect(getStartParamFromSearch('?startapp=checkin%3A5')).toBe('checkin:5')
+    expect(getStartParamFromSearch('?startapp=checkin-5')).toBe('checkin-5')
   })
 })

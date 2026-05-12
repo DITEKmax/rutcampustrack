@@ -58,7 +58,7 @@ async def handle_lesson_started(
     mini_app_button = build_mini_app_button(
         text="Открыть отметку",
         base_url=getattr(config, "mini_app_url", None),
-        start_param=f"checkin:{lesson_id}",
+        start_param=f"checkin-{lesson_id}",
     )
     reply_markup = InlineKeyboardMarkup(inline_keyboard=[[mini_app_button]]) if mini_app_button is not None else None
 

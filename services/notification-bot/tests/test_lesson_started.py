@@ -173,7 +173,7 @@ async def test_lesson_started_adds_mini_app_checkin_deep_link():
     await captured_tasks[0].coroutine_factory()
 
     button = bot.send_message.call_args.kwargs["reply_markup"].inline_keyboard[0][0]
-    assert button.url == "https://t.me/ruttrack_bot/ruttrack?startapp=checkin%3A77"
+    assert button.url == "https://t.me/ruttrack_bot/ruttrack?startapp=checkin-77"
     assert button.web_app is None
 
 

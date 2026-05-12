@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import {
   ArrowsClockwise,
   CalendarBlank,
@@ -9,6 +8,7 @@ import {
   WarningCircle,
 } from '@phosphor-icons/react'
 import { motion } from 'motion/react'
+import { hapticFeedback } from '@telegram-apps/sdk-react'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { SkeletonList } from '@/shared/components/Skeleton'
 import { addDays, formatDate, formatWeekRange, getMonday } from '@/shared/lib/dateUtils'
@@ -16,6 +16,8 @@ import { useDateNavigation } from '@/shared/hooks/useDateNavigation'
 import { useSwipeHandler } from '@/shared/hooks/useSwipeHandler'
 import { cn } from '@/lib/utils'
 import { useStudentAttendanceRecords } from '@/features/student/requests/studentRequestsApi'
+import { useCheckin, mapCheckinError } from '@/features/checkin/api'
+import { getCheckinLocation, mapLocationError } from '@/features/checkin/location'
 import type { AttendanceStatus, LessonResponse } from './types'
 import { useSubjectMap, useWeekSchedule } from './api'
 import { WeekDayTabs } from './WeekDayTabs'
@@ -39,12 +41,14 @@ function getTodayDayIndex(): number {
 
 export function SchedulePage() {
   const { user } = useAuth()
-  const navigate = useNavigate()
+  const checkinMutation = useCheckin()
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getMonday(new Date()))
   const [selectedDayIndex, setSelectedDayIndex] = useState(getTodayDayIndex)
   const [actionLesson, setActionLesson] = useState<LessonResponse | null>(null)
   const [headmanLesson, setHeadmanLesson] = useState<LessonResponse | null>(null)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [checkingLessonId, setCheckingLessonId] = useState<number | null>(null)
+  const [optimisticStatuses, setOptimisticStatuses] = useState<Record<number, AttendanceStatus>>({})
 
   const isStudent = user?.role === 'STUDENT' && user.groupId
   const isHeadman = user?.role === 'STUDENT' && user.isHeadman
@@ -79,8 +83,9 @@ export function SchedulePage() {
         map[record.lessonId] = record.status
       }
     }
+    Object.assign(map, optimisticStatuses)
     return map
-  }, [attendanceRecords])
+  }, [attendanceRecords, optimisticStatuses])
   const selectedLessons = useMemo(() => {
     const backendDay = selectedDayIndex + 1
     return (lessons ?? [])
@@ -100,6 +105,37 @@ export function SchedulePage() {
     weekNav.goToToday()
     setSelectedDayIndex(getTodayDayIndex())
   }, [weekNav])
+
+  const handleCheckin = useCallback(
+    async (lessonId: number) => {
+      if (checkingLessonId !== null) return
+
+      setCheckingLessonId(lessonId)
+      setToast(null)
+
+      try {
+        const location = await getCheckinLocation()
+        await checkinMutation.mutateAsync({ lat: location.lat, lng: location.lng })
+        setOptimisticStatuses((prev) => ({ ...prev, [lessonId]: 'present' }))
+        setToast({ type: 'success', message: 'Отметка принята' })
+        if (hapticFeedback.notificationOccurred.isAvailable()) {
+          hapticFeedback.notificationOccurred('success')
+        }
+      } catch (error) {
+        const status = (error as { response?: { status?: number } })?.response?.status
+        setToast({
+          type: 'error',
+          message: status ? mapCheckinError(status) : mapLocationError(error),
+        })
+        if (hapticFeedback.notificationOccurred.isAvailable()) {
+          hapticFeedback.notificationOccurred('error')
+        }
+      } finally {
+        setCheckingLessonId(null)
+      }
+    },
+    [checkingLessonId, checkinMutation],
+  )
 
   const handleDaySwipe = useSwipeHandler({
     horizontalThreshold: 50,
@@ -159,7 +195,8 @@ export function SchedulePage() {
               lesson={lesson}
               subjectName={subjectMap[lesson.subjectId] ?? '…'}
               personalStatus={personalStatuses[lesson.id] ?? null}
-              onCheckin={(id) => navigate(`/checkin/${id}`)}
+              onCheckin={handleCheckin}
+              isCheckinLoading={checkingLessonId === lesson.id}
               onOpenActions={() => {
                 if (isHeadman) setHeadmanLesson(lesson)
                 else setActionLesson(lesson)

@@ -1,12 +1,18 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/shared/lib/axios'
+import { studentRequestsKeys } from '@/features/student/requests/studentRequestsApi'
 import type { CheckinRequest } from './types'
 
 export function useCheckin() {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: async (coords: CheckinRequest) => {
       const { data } = await apiClient.post('/attendance/checkin', coords)
       return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: studentRequestsKeys.records() })
     },
   })
 }

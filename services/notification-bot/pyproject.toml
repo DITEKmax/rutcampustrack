@@ -1,6 +1,10 @@
 [tool.ruff]
 target-version = "py312"
 line-length = 120
+extend-exclude = [
+    "bot/grpc_client/*_pb2.py",
+    "bot/grpc_client/*_pb2_grpc.py",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]

@@ -178,6 +178,11 @@ class WebPushDeliveryServiceTest {
     }
 
     @Test
+    void shouldPush_lessonBlocked_isTrue() {
+        assertThat(service.shouldPush("lesson.blocked")).isTrue();
+    }
+
+    @Test
     void shouldPush_attendanceMarked_isTrue() {
         assertThat(service.shouldPush("attendance.marked")).isTrue();
     }
@@ -345,6 +350,25 @@ class WebPushDeliveryServiceTest {
         var json = new ObjectMapper().readTree(payloadStr);
         assertThat(json.get("event_type").asText()).isEqualTo("lesson.reminder");
         assertThat(json.get("body").asText()).contains("3").contains("14:30");
+    }
+
+    @Test
+    void sendToGroup_lessonBlocked_buildsTitleAndBody() throws Exception {
+        PushSubscriptionDocument sub = sub(1L, "https://push.example.com/blocked");
+        when(repository.findAllByGroupId(7L)).thenReturn(List.of(sub));
+
+        ArgumentCaptor<byte[]> payloadCaptor = ArgumentCaptor.forClass(byte[].class);
+        doAnswer(inv -> mockNotification).when(service).createNotification(any(), payloadCaptor.capture());
+
+        service.sendToGroup(7L, "lesson.blocked",
+                Map.of("group_id", 7, "lesson_number", 3, "start_time", "14:30", "end_time", "16:00"))
+                .join();
+
+        String payloadStr = new String(payloadCaptor.getValue());
+        var json = new ObjectMapper().readTree(payloadStr);
+        assertThat(json.get("event_type").asText()).isEqualTo("lesson.blocked");
+        assertThat(json.get("title").asText()).contains("заблокирована");
+        assertThat(json.get("body").asText()).contains("3").contains("14:30").contains("староста");
     }
 
     @Test

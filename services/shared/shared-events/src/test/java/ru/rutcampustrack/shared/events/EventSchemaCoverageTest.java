@@ -81,6 +81,7 @@ class EventSchemaCoverageTest {
             "late_checkin.decided",
             "late_checkin.decision",
             "late_checkin.requested",
+            "lesson.blocked",
             "lesson.cancelled",
             "lesson.closed",
             "lesson.deleted",

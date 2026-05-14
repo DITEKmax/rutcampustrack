@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.rutcampustrack.schedule.event.LessonBlockedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
@@ -206,9 +207,8 @@ public class LessonService {
 
     /**
      * Headman hard-lock: blocks geo-checkin on a lesson so that attendance
-     * can only be set manually by the headman. Allowed only for PLANNED
-     * lessons that haven't started yet — past or cancelled lessons reject
-     * with 422.
+     * can only be set manually by the headman. Planned and active lessons
+     * can be blocked; closed or cancelled lessons reject with 422.
      */
     public LessonWithItem blockLessonByHeadman(Long lessonId) {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
@@ -216,14 +216,21 @@ public class LessonService {
         if (lesson.getStatus() == LessonStatus.CANCELLED) {
             throw new InvalidLessonStateException("Cannot block a cancelled lesson");
         }
-        if (lesson.getStatus() != LessonStatus.PLANNED) {
+        if (lesson.getStatus() != LessonStatus.PLANNED && lesson.getStatus() != LessonStatus.ACTIVE) {
             throw new InvalidLessonStateException(
-                    "Only future (planned) lessons can be blocked, current status: " + lesson.getStatus());
+                    "Only planned or active lessons can be blocked, current status: " + lesson.getStatus());
         }
         lesson.setBlockedByHeadman(true);
         lesson.setBlockedByUserId(requestContext.getUserId());
         lesson.setBlockedAt(OffsetDateTime.now());
-        return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
+        Lesson saved = lessonRepository.save(lesson);
+        ScheduleItem item = lwi.scheduleItem();
+        eventPublisher.publishEvent(new LessonBlockedEvent(this,
+                saved.getId(), item.getGroupId(), item.getSubjectId(),
+                saved.getDate(), item.getStartTime(), item.getEndTime(),
+                item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null,
+                item.getRoom(), saved.getBlockedByUserId(), saved.getBlockedAt()));
+        return new LessonWithItem(saved, item);
     }
 
     /**

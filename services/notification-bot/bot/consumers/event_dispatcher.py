@@ -47,6 +47,7 @@ class EventDispatcher:
         from bot.notifications.group_renamed import handle_group_renamed
         from bot.notifications.headman_alerts import handle_headman_alert
         from bot.notifications.homework import handle_homework
+        from bot.notifications.lesson_blocked import handle_lesson_blocked
         from bot.notifications.lesson_cancelled import handle_lesson_cancelled
         from bot.notifications.lesson_closed import handle_lesson_closed
         from bot.notifications.lesson_one_off_cancelled import handle_lesson_one_off_cancelled
@@ -77,6 +78,12 @@ class EventDispatcher:
                 redis_client=self._redis_client,
             ),
             "lesson.cancelled": lambda event: handle_lesson_cancelled(
+                event,
+                bot=self._bot,
+                academic_client=self._academic_client,
+                send_queue=self._send_queue,
+            ),
+            "lesson.blocked": lambda event: handle_lesson_blocked(
                 event,
                 bot=self._bot,
                 academic_client=self._academic_client,

@@ -280,6 +280,24 @@ class LessonApiIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
+    void blockLesson_active_success() throws Exception {
+        ScheduleItem item = createScheduleItem();
+        Lesson lesson = createLesson(item.getId(), LessonStatus.ACTIVE, LocalDate.of(2026, 4, 20));
+
+        mockMvc.perform(withHeadmanHeaders(
+                post("/schedule/lessons/" + lesson.getId() + "/blockage")
+        ))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.blockedByHeadman", is(true)))
+                .andExpect(jsonPath("$.blockedByUserId", is(USER_ID.intValue())));
+
+        Lesson saved = lessonRepository.findById(lesson.getId()).orElseThrow();
+        org.assertj.core.api.Assertions.assertThat(saved.isBlockedByHeadman()).isTrue();
+        org.assertj.core.api.Assertions.assertThat(saved.getBlockedByUserId()).isEqualTo(USER_ID);
+        org.assertj.core.api.Assertions.assertThat(saved.getBlockedAt()).isNotNull();
+    }
+
+    @Test
     void blockLesson_cancelled_returns422() throws Exception {
         ScheduleItem item = createScheduleItem();
         Lesson lesson = createLesson(item.getId(), LessonStatus.CANCELLED, LocalDate.of(2026, 4, 20));

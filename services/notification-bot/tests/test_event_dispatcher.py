@@ -66,6 +66,17 @@ async def test_dispatch_routes_lesson_cancelled():
 
 
 @pytest.mark.asyncio
+async def test_dispatch_routes_lesson_blocked():
+    mock_handler = AsyncMock()
+    dispatcher = _make_dispatcher(handlers_override={"lesson.blocked": mock_handler})
+
+    event = {"event_type": "lesson.blocked", "payload": {"lesson_id": 2}}
+    await dispatcher.dispatch(event)
+
+    mock_handler.assert_called_once_with(event)
+
+
+@pytest.mark.asyncio
 async def test_dispatch_unknown_event_type_does_not_raise():
     dispatcher = _make_dispatcher()
     event = {"event_type": "totally.unknown.event", "payload": {}}
@@ -132,6 +143,7 @@ async def test_dispatcher_has_all_event_types():
     expected_types = {
         "lesson.started",
         "lesson.reminder",
+        "lesson.blocked",
         "lesson.cancelled",
         "homework.published",
         "homework.updated",

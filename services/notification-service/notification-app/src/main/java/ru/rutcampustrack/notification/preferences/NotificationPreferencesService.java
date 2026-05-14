@@ -104,7 +104,7 @@ public class NotificationPreferencesService {
     public String categoryForEvent(String eventType) {
         return switch (eventType) {
             case "lesson.started", "lesson.reminder" -> "reminders";
-            case "lesson.cancelled" -> "lessons";
+            case "lesson.blocked", "lesson.cancelled" -> "lessons";
             case "lesson.one_off.created", "lesson.one_off.cancelled" -> "schedule";
             case "homework.published", "homework.updated",
                  "homework.weekly_digest", "homework.due_reminder" -> "homework";

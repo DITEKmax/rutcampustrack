@@ -40,6 +40,7 @@ import { PWA_ICON_URL } from '@/features/push/pushUtils'
 const STORED_TYPES: ReadonlySet<string> = new Set([
   'lesson.started',
   'lesson.reminder',
+  'lesson.blocked',
   'lesson.cancelled',
   'lesson.one_off.created',
   'lesson.one_off.cancelled',
@@ -128,6 +129,8 @@ function buildTitle(type: string, payload: Record<string, unknown>): string {
       return 'Пара началась'
     case 'lesson.reminder':
       return 'Не забудьте отметиться'
+    case 'lesson.blocked':
+      return 'Пара заблокирована'
     case 'attendance.marked':
       return 'Староста изменил статус'
     case 'lesson.cancelled':
@@ -319,6 +322,10 @@ function buildBody(
       return lessonRef || 'Время отметиться'
     case 'lesson.reminder':
       return lessonRef || 'Сейчас идёт пара'
+    case 'lesson.blocked':
+      return lessonRef
+        ? `${lessonRef} · самостоятельная отметка невозможна`
+        : 'Самостоятельная отметка невозможна. Отмечает староста'
     case 'attendance.marked': {
       const status = str(payload, 'status')
       const statusRu = ATTENDANCE_STATUS_RU[status] ?? status

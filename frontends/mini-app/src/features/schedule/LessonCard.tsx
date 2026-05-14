@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { CaretRight, CheckCircle, DotsThreeVertical, MapPin } from '@phosphor-icons/react'
+import { CaretRight, CheckCircle, DotsThreeVertical, Lock, MapPin } from '@phosphor-icons/react'
 import { hapticFeedback } from '@telegram-apps/sdk-react'
 import { StatusBadge } from './StatusBadge'
 import { cn } from '@/lib/utils'
@@ -47,8 +47,11 @@ export function LessonCard({
 }: LessonCardProps) {
   const isActive = lesson.status === 'ACTIVE'
   const isCancelled = lesson.status === 'CANCELLED'
-  const canCheckin = isActive && !personalStatus && !isCheckinLoading
-  const showCheckin = isActive && !personalStatus
+  const isBlockedByHeadman = !!lesson.blockedByHeadman
+  const isInactive = isCancelled || isBlockedByHeadman
+  const canCheckin = isActive && !personalStatus && !isCheckinLoading && !isBlockedByHeadman
+  const showCheckin = isActive && !personalStatus && !isBlockedByHeadman
+  const showBlockedNotice = isActive && !personalStatus && isBlockedByHeadman
   const showActions = !!onOpenActions && !isCancelled
 
   const handleClick = () => {
@@ -59,12 +62,12 @@ export function LessonCard({
     onCheckin(lesson.id)
   }
 
-  const dotColor = getDotColor(lesson.status, personalStatus)
+  const dotColor = isBlockedByHeadman ? 'var(--text-muted)' : getDotColor(lesson.status, personalStatus)
 
   return (
     <motion.article
       initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: isCancelled ? 0.55 : 1, y: 0 }}
+      animate={{ opacity: isInactive ? 0.58 : 1, y: 0 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
       onClick={handleClick}
       className={cn(
@@ -73,8 +76,8 @@ export function LessonCard({
       )}
       style={{
         background: 'var(--bg-secondary)',
-        borderColor: isActive ? 'var(--border-accent)' : 'var(--border-subtle)',
-        boxShadow: isActive ? 'var(--glow-primary)' : 'none',
+        borderColor: isActive && !isBlockedByHeadman ? 'var(--border-accent)' : 'var(--border-subtle)',
+        boxShadow: isActive && !isBlockedByHeadman ? 'var(--glow-primary)' : 'none',
         minHeight: isActive ? 44 : undefined,
       }}
       role={showCheckin ? 'button' : undefined}
@@ -148,6 +151,16 @@ export function LessonCard({
           >
             {isCheckinLoading ? 'Проверяем геолокацию...' : 'Отметиться'}
             <CaretRight size={10} weight="bold" aria-hidden="true" />
+          </p>
+        )}
+
+        {showBlockedNotice && (
+          <p
+            className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <Lock size={12} weight="fill" aria-hidden="true" />
+            Пара заблокирована старостой. Самостоятельная отметка невозможна.
           </p>
         )}
 

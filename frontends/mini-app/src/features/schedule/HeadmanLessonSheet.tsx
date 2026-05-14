@@ -4,6 +4,8 @@ import {
   Broom,
   CheckCircle,
   CircleNotch,
+  Lock,
+  LockOpen,
   XCircle,
 } from '@phosphor-icons/react'
 import { hapticFeedback } from '@telegram-apps/sdk-react'
@@ -12,10 +14,12 @@ import { cn } from '@/lib/utils'
 import type { LessonResponse } from './types'
 import {
   mapLessonActionError,
+  useBlockLesson,
   useCancelLesson,
   useHeadmanMarkAttendance,
   useHeadmanMarkBatch,
   useLessonAttendance,
+  useUnblockLesson,
   type AttendanceSource,
   type HeadmanAttendanceStatus,
   type LessonAttendanceEntry,
@@ -27,6 +31,7 @@ interface HeadmanLessonSheetProps {
   subjectName: string
   onClose: () => void
   onToast: (type: 'success' | 'error', message: string) => void
+  onLessonUpdated?: (lesson: LessonResponse) => void
 }
 
 type Tab = 'roster' | 'manage' | 'report'
@@ -55,6 +60,7 @@ export function HeadmanLessonSheet({
   subjectName,
   onClose,
   onToast,
+  onLessonUpdated,
 }: HeadmanLessonSheetProps) {
   const [tab, setTab] = useState<Tab>('roster')
   const [pendingUserId, setPendingUserId] = useState<number | null>(null)
@@ -64,6 +70,8 @@ export function HeadmanLessonSheet({
   const markMutation = useHeadmanMarkAttendance()
   const markBatchMutation = useHeadmanMarkBatch()
   const cancelMutation = useCancelLesson()
+  const blockMutation = useBlockLesson()
+  const unblockMutation = useUnblockLesson()
 
   const entries = attendance.data?.entries ?? []
   const trimmedCancelReason = cancelReason.trim()
@@ -160,8 +168,29 @@ export function HeadmanLessonSheet({
     }
   }
 
+  const handleToggleBlock = async () => {
+    if (!lesson) return
+    selectionHaptic()
+    try {
+      if (lesson.blockedByHeadman) {
+        await unblockMutation.mutateAsync(lesson.id)
+        onLessonUpdated?.({ ...lesson, blockedByHeadman: false })
+        onToast('success', 'Блокировка снята.')
+      } else {
+        await blockMutation.mutateAsync(lesson.id)
+        onLessonUpdated?.({ ...lesson, blockedByHeadman: true })
+        onToast('success', 'Пара заблокирована.')
+      }
+      notify('success')
+    } catch (error) {
+      onToast('error', mapLessonActionError(getHttpStatus(error)))
+      notify('error')
+    }
+  }
+
   const isOpen = open && !!lesson
-  const isBusy = markMutation.isPending || markBatchMutation.isPending || cancelMutation.isPending
+  const isBlockBusy = blockMutation.isPending || unblockMutation.isPending
+  const isBusy = markMutation.isPending || markBatchMutation.isPending || cancelMutation.isPending || isBlockBusy
 
   return (
     <BottomSheet
@@ -195,6 +224,7 @@ export function HeadmanLessonSheet({
                 onAllPresent={() => void handleBulkMark('present')}
                 onClear={() => void handleBulkMark('absent')}
                 onCancelLesson={() => void handleCancelLesson()}
+                onToggleBlock={() => void handleToggleBlock()}
                 cancelReason={cancelReason}
                 cancelError={cancelError}
                 cancelReasonMaxLength={CANCEL_REASON_MAX_LENGTH}
@@ -206,6 +236,13 @@ export function HeadmanLessonSheet({
                 isBusy={isBusy}
                 isCancelBusy={cancelMutation.isPending}
                 canCancel={lesson.status !== 'CANCELLED'}
+                isBlockedByHeadman={!!lesson.blockedByHeadman}
+                isBlockBusy={isBlockBusy}
+                canToggleBlock={
+                  lesson.status === 'PLANNED' ||
+                  lesson.status === 'ACTIVE' ||
+                  !!lesson.blockedByHeadman
+                }
               />
             )}
             {tab === 'report' && <ReportTab summary={summary} />}
@@ -390,6 +427,7 @@ function ManageTab({
   onAllPresent,
   onClear,
   onCancelLesson,
+  onToggleBlock,
   cancelReason,
   cancelError,
   cancelReasonMaxLength,
@@ -398,10 +436,14 @@ function ManageTab({
   isBusy,
   isCancelBusy,
   canCancel,
+  isBlockedByHeadman,
+  isBlockBusy,
+  canToggleBlock,
 }: {
   onAllPresent: () => void
   onClear: () => void
   onCancelLesson: () => void
+  onToggleBlock: () => void
   cancelReason: string
   cancelError: string | null
   cancelReasonMaxLength: number
@@ -410,9 +452,29 @@ function ManageTab({
   isBusy: boolean
   isCancelBusy: boolean
   canCancel: boolean
+  isBlockedByHeadman: boolean
+  isBlockBusy: boolean
+  canToggleBlock: boolean
 }) {
+  const blockTitle = isBlockedByHeadman
+    ? 'Разблокировать самостоятельную отметку'
+    : 'Заблокировать самостоятельную отметку'
+  const blockSubtitle = isBlockedByHeadman
+    ? 'Студенты снова смогут отмечаться, когда пара будет активна.'
+    : canToggleBlock
+      ? 'Студенты увидят, что отметка заблокирована старостой.'
+      : 'Доступно только для текущих и будущих пар.'
+
   return (
     <div className="flex flex-col gap-3">
+      <ManageRow
+        icon={isBlockedByHeadman ? <LockOpen size={22} weight="duotone" /> : <Lock size={22} weight="duotone" />}
+        title={blockTitle}
+        subtitle={blockSubtitle}
+        onClick={onToggleBlock}
+        disabled={isBusy || isBlockBusy || !canToggleBlock}
+        tone="warning"
+      />
       <ManageRow
         icon={<CheckCircle size={22} weight="duotone" />}
         title="Отметить всех присутствующими"
@@ -456,9 +518,13 @@ function ManageRow({
   subtitle: string
   onClick: () => void
   disabled?: boolean
-  tone?: 'danger'
+  tone?: 'danger' | 'warning'
 }) {
-  const accent = tone === 'danger' ? 'var(--accent-danger)' : 'var(--accent-primary)'
+  const accent = tone === 'danger'
+    ? 'var(--accent-danger)'
+    : tone === 'warning'
+      ? 'var(--accent-warning)'
+      : 'var(--accent-primary)'
   return (
     <motion.button
       type="button"

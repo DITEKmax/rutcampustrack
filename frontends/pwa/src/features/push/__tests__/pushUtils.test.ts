@@ -17,6 +17,7 @@ describe('getUrlForEventType', () => {
   })
 
   it('returns /app/schedule for schedule events', () => {
+    expect(getUrlForEventType('lesson.blocked')).toBe('/app/schedule')
     expect(getUrlForEventType('lesson.cancelled')).toBe('/app/schedule')
     expect(getUrlForEventType('lesson.one_off.created')).toBe('/app/schedule')
     expect(getUrlForEventType('lesson.one_off.cancelled')).toBe('/app/schedule')

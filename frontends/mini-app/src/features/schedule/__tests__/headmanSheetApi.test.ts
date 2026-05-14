@@ -9,15 +9,18 @@ vi.mock('@/shared/lib/axios', () => ({
     put: vi.fn(),
     post: vi.fn(),
     patch: vi.fn(),
+    delete: vi.fn(),
   },
 }))
 
 import { apiClient } from '@/shared/lib/axios'
 import {
   useCancelLesson,
+  useBlockLesson,
   useHeadmanMarkAttendance,
   useHeadmanMarkBatch,
   useLessonAttendance,
+  useUnblockLesson,
 } from '../headmanSheetApi'
 
 function createWrapper() {
@@ -128,5 +131,33 @@ describe('headmanSheetApi', () => {
     expect(apiClient.patch).toHaveBeenCalledWith('/schedule/lessons/44/cancel', {
       reason: 'Преподаватель заболел',
     })
+  })
+
+  it('blocks lesson through schedule blockage endpoint', async () => {
+    ;(apiClient.post as ReturnType<typeof vi.fn>).mockResolvedValue({ data: undefined })
+
+    const { result } = renderHook(() => useBlockLesson(), {
+      wrapper: createWrapper(),
+    })
+
+    await act(async () => {
+      await result.current.mutateAsync(44)
+    })
+
+    expect(apiClient.post).toHaveBeenCalledWith('/schedule/lessons/44/blockage')
+  })
+
+  it('unblocks lesson through schedule blockage endpoint', async () => {
+    ;(apiClient.delete as ReturnType<typeof vi.fn>).mockResolvedValue({ data: undefined })
+
+    const { result } = renderHook(() => useUnblockLesson(), {
+      wrapper: createWrapper(),
+    })
+
+    await act(async () => {
+      await result.current.mutateAsync(44)
+    })
+
+    expect(apiClient.delete).toHaveBeenCalledWith('/schedule/lessons/44/blockage')
   })
 })

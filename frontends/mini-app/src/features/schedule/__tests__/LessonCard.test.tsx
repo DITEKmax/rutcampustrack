@@ -40,4 +40,23 @@ describe('LessonCard', () => {
     expect(screen.getByText('Отметиться')).toBeInTheDocument()
     expect(onCheckin).toHaveBeenCalledWith(77)
   })
+
+  it('shows blocked state instead of check-in for a headman-blocked active lesson', () => {
+    const onCheckin = vi.fn()
+
+    render(
+      <LessonCard
+        lesson={{ ...activeLesson(), blockedByHeadman: true }}
+        subjectName="Математика"
+        personalStatus={null}
+        onCheckin={onCheckin}
+      />,
+    )
+
+    expect(screen.queryByText('Отметиться')).not.toBeInTheDocument()
+    expect(screen.getByText(/Пара заблокирована старостой/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText(/Пара заблокирована старостой/i))
+    expect(onCheckin).not.toHaveBeenCalled()
+  })
 })

@@ -23,6 +23,7 @@ export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
 
 const CATEGORY_MAP: Record<string, NotificationCategory> = {
   'lesson.started': 'reminders',
+  'lesson.blocked': 'lessons',
   'lesson.cancelled': 'lessons',
   'lesson.reminder': 'reminders',
   'lesson.one_off.created': 'schedule',

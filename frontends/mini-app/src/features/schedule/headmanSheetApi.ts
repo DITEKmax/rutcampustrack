@@ -169,6 +169,32 @@ export function useCancelLesson() {
   })
 }
 
+export function useBlockLesson() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (lessonId: number) => {
+      const { data } = await apiClient.post(`/schedule/lessons/${lessonId}/blockage`)
+      return data
+    },
+    onSuccess: (_data, lessonId) => {
+      invalidateAttendance(queryClient, lessonId)
+    },
+  })
+}
+
+export function useUnblockLesson() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (lessonId: number) => {
+      const { data } = await apiClient.delete(`/schedule/lessons/${lessonId}/blockage`)
+      return data
+    },
+    onSuccess: (_data, lessonId) => {
+      invalidateAttendance(queryClient, lessonId)
+    },
+  })
+}
+
 function invalidateAttendance(queryClient: ReturnType<typeof useQueryClient>, lessonId: number) {
   queryClient.invalidateQueries({ queryKey: headmanSheetKeys.lesson(lessonId) })
   queryClient.invalidateQueries({ queryKey: ['headman'] })

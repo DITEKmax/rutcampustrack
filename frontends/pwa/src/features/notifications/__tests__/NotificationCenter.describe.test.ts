@@ -57,4 +57,19 @@ describe('describeNotification', () => {
     expect(result.body).toContain('05.05.2026')
     expect(result.body).toContain('06.05.2026')
   })
+
+  it('describes blocked lessons', () => {
+    const result = describeNotification(
+      record('lesson.blocked', {
+        lesson_number: 3,
+        start_time: '12:20',
+        end_time: '13:50',
+      }),
+    )
+
+    expect(result.title).toBe('Пара заблокирована')
+    expect(result.body).toContain('№3')
+    expect(result.body).toContain('12:20')
+    expect(result.body).toContain('самостоятельная отметка невозможна')
+  })
 })

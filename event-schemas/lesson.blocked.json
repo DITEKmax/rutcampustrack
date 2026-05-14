@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "lesson.blocked",
+  "description": "Староста заблокировал самостоятельную отметку на паре. Генерируется Schedule Service, используется Telegram-ботом и PWA push/live-уведомлениями.",
+  "type": "object",
+  "required": [
+    "event_type",
+    "event_id",
+    "occurred_at",
+    "payload",
+    "event_version",
+    "trace_id",
+    "source"
+  ],
+  "properties": {
+    "event_type": {
+      "const": "lesson.blocked"
+    },
+    "event_id": {
+      "$ref": "_common.json#/$defs/eventId"
+    },
+    "occurred_at": {
+      "$ref": "_common.json#/$defs/occurredAt"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "lesson_id",
+        "group_id",
+        "subject_id",
+        "date"
+      ],
+      "properties": {
+        "lesson_id": {
+          "type": "integer"
+        },
+        "group_id": {
+          "type": "integer"
+        },
+        "subject_id": {
+          "type": "integer"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "start_time": {
+          "type": ["string", "null"],
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$",
+          "description": "HH:MM или HH:MM:SS, локальное время кампуса."
+        },
+        "end_time": {
+          "type": ["string", "null"],
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$"
+        },
+        "lesson_number": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 8
+        },
+        "room": {
+          "type": ["string", "null"]
+        },
+        "blocked_by": {
+          "type": ["integer", "null"],
+          "description": "user_id старосты, который включил блокировку."
+        },
+        "blocked_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "ISO-8601 с offset."
+        }
+      }
+    },
+    "event_version": {
+      "$ref": "_common.json#/$defs/eventVersion"
+    },
+    "trace_id": {
+      "$ref": "_common.json#/$defs/traceId"
+    },
+    "source": {
+      "type": "string",
+      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
+    }
+  }
+}

@@ -218,6 +218,7 @@ export function SchedulePage() {
         lesson={headmanLesson}
         subjectName={headmanLesson ? subjectMap[headmanLesson.subjectId] ?? 'Предмет' : 'Предмет'}
         onClose={() => setHeadmanLesson(null)}
+        onLessonUpdated={setHeadmanLesson}
         onToast={(type, message) => {
           setToast({ type, message })
           window.setTimeout(() => setToast(null), 2400)

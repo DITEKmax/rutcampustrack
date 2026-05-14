@@ -42,6 +42,7 @@ public class WebPushDeliveryService {
     private static final Set<String> PUSH_EVENT_TYPES = Set.of(
             "lesson.started",
             "lesson.reminder",
+            "lesson.blocked",
             "lesson.cancelled",
             "lesson.one_off.created",
             "lesson.one_off.cancelled",
@@ -266,6 +267,7 @@ public class WebPushDeliveryService {
         return switch (eventType) {
             case "lesson.started" -> "Пара началась";
             case "lesson.reminder" -> "Не забудьте отметиться";
+            case "lesson.blocked" -> "Пара заблокирована";
             case "attendance.marked" -> "Староста изменил статус";
             case "lesson.cancelled" -> "Пара отменена";
             case "lesson.one_off.created" -> "Добавлена пара";
@@ -292,6 +294,10 @@ public class WebPushDeliveryService {
         return switch (eventType) {
             case "lesson.started" -> lessonBody(payload, "Время отметиться");
             case "lesson.reminder" -> lessonBody(payload, "Сейчас идёт пара");
+            case "lesson.blocked" -> {
+                String base = lessonBody(payload, "Самостоятельная отметка невозможна");
+                yield base + " · отмечает староста";
+            }
             case "attendance.marked" -> attendanceBody(payload);
             case "lesson.cancelled" -> {
                 String base = lessonBody(payload, "Пара отменена");

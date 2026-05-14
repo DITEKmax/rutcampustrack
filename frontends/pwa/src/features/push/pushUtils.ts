@@ -13,6 +13,7 @@ export function getUrlForEventType(eventType: string): string {
     case 'attendance.marked':
       return appPath('/checkin')
     case 'lesson.cancelled':
+    case 'lesson.blocked':
     case 'lesson.one_off.created':
     case 'lesson.one_off.cancelled':
       return appPath('/schedule')

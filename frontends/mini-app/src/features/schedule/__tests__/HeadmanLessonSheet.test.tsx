@@ -7,6 +7,8 @@ import type { LessonResponse } from '../types'
 const markAttendanceMutation = vi.hoisted(() => vi.fn())
 const markBatchMutation = vi.hoisted(() => vi.fn())
 const cancelLessonMutation = vi.hoisted(() => vi.fn())
+const blockLessonMutation = vi.hoisted(() => vi.fn())
+const unblockLessonMutation = vi.hoisted(() => vi.fn())
 
 vi.mock('../headmanSheetApi', () => ({
   useLessonAttendance: () => ({
@@ -37,6 +39,14 @@ vi.mock('../headmanSheetApi', () => ({
     mutateAsync: cancelLessonMutation,
     isPending: false,
   }),
+  useBlockLesson: () => ({
+    mutateAsync: blockLessonMutation,
+    isPending: false,
+  }),
+  useUnblockLesson: () => ({
+    mutateAsync: unblockLessonMutation,
+    isPending: false,
+  }),
   mapLessonActionError: () => 'Ошибка отмены',
 }))
 
@@ -63,6 +73,8 @@ describe('HeadmanLessonSheet', () => {
     markAttendanceMutation.mockResolvedValue(undefined)
     markBatchMutation.mockResolvedValue(undefined)
     cancelLessonMutation.mockResolvedValue(undefined)
+    blockLessonMutation.mockResolvedValue(undefined)
+    unblockLessonMutation.mockResolvedValue(undefined)
   })
 
   it('opens as full-screen sheet and ignores Escape close', () => {
@@ -139,5 +151,32 @@ describe('HeadmanLessonSheet', () => {
     })
     expect(onToast).toHaveBeenCalledWith('success', 'Пара отменена.')
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('blocks an active lesson from manage tab', async () => {
+    const user = userEvent.setup()
+    const onToast = vi.fn()
+    const onLessonUpdated = vi.fn()
+    const activeLesson = { ...lesson, status: 'ACTIVE' as const }
+
+    render(
+      <HeadmanLessonSheet
+        open
+        lesson={activeLesson}
+        subjectName="Алгоритмы"
+        onClose={vi.fn()}
+        onToast={onToast}
+        onLessonUpdated={onLessonUpdated}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Управление' }))
+    await user.click(screen.getByRole('button', { name: /Заблокировать самостоятельную отметку/i }))
+
+    await waitFor(() => {
+      expect(blockLessonMutation).toHaveBeenCalledWith(44)
+    })
+    expect(onLessonUpdated).toHaveBeenCalledWith({ ...activeLesson, blockedByHeadman: true })
+    expect(onToast).toHaveBeenCalledWith('success', 'Пара заблокирована.')
   })
 })

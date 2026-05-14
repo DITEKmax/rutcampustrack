@@ -410,7 +410,8 @@ INTERNAL_ISSUER_SECRET=...
 # --- Telegram ---
 BOT_TOKEN=...
 TMA_BOT_TOKEN=...
-MINI_APP_URL=https://t.me/YourBot/checkin
+MINI_APP_URL=https://t.me/YourBot/your_mini_app
+MINI_APP_WEB_URL=https://ruttrack.site/mini-app/
 
 # --- SSL / nginx ---
 DOMAIN=ruttrack.site

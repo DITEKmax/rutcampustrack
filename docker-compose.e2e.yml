@@ -434,6 +434,7 @@ services:
       AUTH_SERVICE_PORT: "9090"
       API_GATEWAY_URL: http://api-gateway:8080
       MINI_APP_URL: ${MINI_APP_URL}
+      MINI_APP_WEB_URL: ${MINI_APP_WEB_URL:-https://localhost/mini-app/}
       ADMIN_TELEGRAM_IDS: ${ADMIN_TELEGRAM_IDS}
       TZ: Europe/Moscow
     networks:

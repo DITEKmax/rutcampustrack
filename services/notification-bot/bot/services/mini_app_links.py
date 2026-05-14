@@ -7,6 +7,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from aiogram.types import InlineKeyboardButton, WebAppInfo
 
 _TELEGRAM_LINK_HOSTS = {"t.me", "telegram.me"}
+_RESERVED_EXAMPLE_HOSTS = {"example.com", "example.net", "example.org"}
 _START_PARAM_KEYS = {"tgWebAppStartParam", "start_param", "startapp"}
 
 
@@ -19,7 +20,7 @@ def is_telegram_mini_app_link(url: str) -> bool:
 def build_mini_app_url(base_url: str | None, start_param: str | None = None) -> str | None:
     """Build a Mini App URL with a launch param.
 
-    `MINI_APP_URL` can be configured either as:
+    `MINI_APP_URL` / `MINI_APP_WEB_URL` can be configured either as:
     - a Telegram deep link, e.g. https://t.me/ruttrack_bot/ruttrack
     - a direct WebApp URL, e.g. https://ruttrack.site/mini-app/
     """
@@ -32,6 +33,9 @@ def build_mini_app_url(base_url: str | None, start_param: str | None = None) -> 
 
     parts = urlsplit(base_url)
     if parts.scheme != "https" or not parts.netloc:
+        return None
+    hostname = (parts.hostname or "").lower()
+    if hostname in _RESERVED_EXAMPLE_HOSTS or hostname.endswith(".example"):
         return None
 
     if not start_param:

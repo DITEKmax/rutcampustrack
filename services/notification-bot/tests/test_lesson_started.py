@@ -71,6 +71,7 @@ async def test_lesson_started_sends_to_students_with_telegram_id():
 
     config = MagicMock()
     config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
+    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
 
     await handle_lesson_started(
         _make_event(),
@@ -116,6 +117,7 @@ async def test_lesson_started_sends_plain_chat_message_without_web_app():
 
     config = MagicMock()
     config.mini_app_url = ""
+    config.mini_app_web_url = ""
 
     await handle_lesson_started(
         _make_event(lesson_id=77),
@@ -137,8 +139,8 @@ async def test_lesson_started_sends_plain_chat_message_without_web_app():
 
 
 @pytest.mark.asyncio
-async def test_lesson_started_adds_mini_app_checkin_deep_link():
-    """lesson.started passes lesson_id to Mini App via Telegram startapp launch param."""
+async def test_lesson_started_adds_mini_app_checkin_web_app_url():
+    """lesson.started passes lesson_id to Mini App via direct WebApp launch param."""
     students = [_make_student(user_id=1, telegram_id=111)]
 
     bot = MagicMock()
@@ -160,6 +162,7 @@ async def test_lesson_started_adds_mini_app_checkin_deep_link():
 
     config = MagicMock()
     config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
+    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
 
     await handle_lesson_started(
         _make_event(lesson_id=77),
@@ -173,8 +176,9 @@ async def test_lesson_started_adds_mini_app_checkin_deep_link():
     await captured_tasks[0].coroutine_factory()
 
     button = bot.send_message.call_args.kwargs["reply_markup"].inline_keyboard[0][0]
-    assert button.url == "https://t.me/ruttrack_bot/ruttrack?startapp=checkin-77"
-    assert button.web_app is None
+    assert button.url is None
+    assert button.web_app is not None
+    assert button.web_app.url == "https://ruttrack.site/mini-app/?tgWebAppStartParam=checkin-77"
 
 
 @pytest.mark.asyncio
@@ -204,6 +208,7 @@ async def test_lesson_started_stores_message_id_in_redis():
 
     config = MagicMock()
     config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
+    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
 
     event = _make_event(lesson_id=200)
     await handle_lesson_started(
@@ -246,6 +251,7 @@ async def test_lesson_started_resolves_subject_name():
 
     config = MagicMock()
     config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
+    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
 
     await handle_lesson_started(
         _make_event(),
@@ -287,6 +293,7 @@ async def test_lesson_started_fallback_subject_name_on_grpc_error():
 
     config = MagicMock()
     config.mini_app_url = "https://t.me/ruttrack_bot/ruttrack"
+    config.mini_app_web_url = "https://ruttrack.site/mini-app/"
 
     await handle_lesson_started(
         _make_event(),

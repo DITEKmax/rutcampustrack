@@ -30,7 +30,7 @@ def _make_settings(**overrides) -> Settings:
     `_env_file=None` via model_config is noisy — easier to just
     instantiate Settings() and mutate the attributes we care about.
     """
-    s = Settings()
+    s = Settings(_env_file=None)
     s.grpc_secret = "valid-secret"
     s.bot_token = "valid-bot-token"
     for k, v in overrides.items():
@@ -75,6 +75,16 @@ def test_all_secrets_populated_passes():
 
     # Must not raise
     validate_startup_config(settings)
+
+
+def test_example_mini_app_web_url_fails_startup():
+    """The check-in button must never open Telegram's placeholder Example Domain."""
+    settings = _make_settings(mini_app_web_url="https://example.com/")
+
+    with pytest.raises(StartupError) as exc_info:
+        validate_startup_config(settings)
+
+    assert "MINI_APP_WEB_URL" in str(exc_info.value)
 
 
 def test_multiple_missing_fields_reported_together():

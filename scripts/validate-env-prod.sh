@@ -3,7 +3,7 @@
 #
 # Проверяет:
 #   1. Файл существует и читаемый.
-#   2. Все 22 required переменные определены и не равны "CHANGE_ME"
+#   2. Все required переменные определены и не равны "CHANGE_ME"
 #      (либо substring "CHANGE_ME" в значении — частая ошибка copy-paste).
 #   3. Формат каждой соответствует ожиданиям:
 #      - GRPC_SECRET / INTERNAL_ISSUER_SECRET — base64 ≥ 32 bytes.
@@ -14,8 +14,8 @@
 #      - SWAGGER_HTPASSWD — login:hash, hash начинается с $$apr1$$ или $$2y$$.
 #      - ALERT_WEBHOOK_SECRET — hex 64 chars (32 bytes).
 #      - PASSWORD'ы — длина ≥ 8.
-#      - URL'ы (CORS_ALLOWED_ORIGIN, MINI_APP_URL, NOTIFICATION_WS_ALLOWED_ORIGINS) —
-#        начинаются с https://.
+#      - URL'ы (CORS_ALLOWED_ORIGIN, MINI_APP_URL, MINI_APP_WEB_URL,
+#        NOTIFICATION_WS_ALLOWED_ORIGINS) — начинаются с https://.
 #
 # Использование:
 #   scripts/validate-env-prod.sh                    # default: ./.env.prod
@@ -99,7 +99,7 @@ REQUIRED_VARS=(
     RABBITMQ_USER RABBITMQ_PASSWORD
     BOT_TOKEN TMA_BOT_TOKEN BOT_ALERT_TOKEN
     VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY VAPID_SUBJECT
-    MINI_APP_URL CORS_ALLOWED_ORIGIN
+    MINI_APP_URL MINI_APP_WEB_URL CORS_ALLOWED_ORIGIN
     GRPC_SECRET INTERNAL_ISSUER_SECRET
     ALERT_WEBHOOK_SECRET GRAFANA_PASSWORD
     SWAGGER_HTPASSWD
@@ -212,7 +212,7 @@ if ! [[ "$vapid_subj" =~ ^(mailto:|https://) ]]; then
 fi
 
 # URL fields.
-for url_var in CORS_ALLOWED_ORIGIN MINI_APP_URL; do
+for url_var in CORS_ALLOWED_ORIGIN MINI_APP_URL MINI_APP_WEB_URL; do
     val=$(env_get "$url_var")
     if ! [[ "$val" =~ ^https:// ]]; then
         err "$url_var должен начинаться с https://"

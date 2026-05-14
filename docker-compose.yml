@@ -257,6 +257,7 @@ services:
       AUTH_SERVICE_PORT: "9090"
       API_GATEWAY_URL: http://api-gateway:8080
       MINI_APP_URL: ${MINI_APP_URL:-https://t.me/ruttrack_bot/ruttrack}
+      MINI_APP_WEB_URL: ${MINI_APP_WEB_URL:-https://localhost/mini-app/}
       # M04 Группа 7 — distributed tracing OTLP gRPC → tempo:4317.
       # M16 G1: бот использует opentelemetry.exporter.otlp.proto.grpc, остаётся на 4317.
       # Java-сервисы (Spring Micrometer) шлют HTTP/protobuf на 4318/v1/traces.

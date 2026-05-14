@@ -12,6 +12,13 @@ from bot.services.send_queue import SendTask, TelegramSendQueue
 logger = logging.getLogger(__name__)
 
 
+def _get_checkin_mini_app_url(config: Settings) -> str | None:
+    direct_url = getattr(config, "mini_app_web_url", None)
+    if isinstance(direct_url, str) and direct_url.strip():
+        return direct_url
+    return getattr(config, "mini_app_url", None)
+
+
 async def handle_lesson_started(
     event: dict,
     bot: Bot,
@@ -57,7 +64,7 @@ async def handle_lesson_started(
     )
     mini_app_button = build_mini_app_button(
         text="Открыть отметку",
-        base_url=getattr(config, "mini_app_url", None),
+        base_url=_get_checkin_mini_app_url(config),
         start_param=f"checkin-{lesson_id}",
     )
     reply_markup = InlineKeyboardMarkup(inline_keyboard=[[mini_app_button]]) if mini_app_button is not None else None

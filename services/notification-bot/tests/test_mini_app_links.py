@@ -27,6 +27,7 @@ def test_build_mini_app_url_returns_none_for_blank_or_invalid_url():
     assert build_mini_app_url(None, "checkin-1") is None
     assert build_mini_app_url("not-a-url", "checkin-1") is None
     assert build_mini_app_url("http://ruttrack.site/mini-app/", "checkin-1") is None
+    assert build_mini_app_url("https://example.com/", "checkin-1") is None
 
 
 def test_build_mini_app_url_keeps_base_url_without_start_param():

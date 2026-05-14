@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings
 
+from bot.services.mini_app_links import build_mini_app_url
+
 
 class StartupError(RuntimeError):
     """Raised when mandatory configuration is missing — kills the process before
@@ -51,6 +53,12 @@ class Settings(BaseSettings):
     # deep link or a direct WebApp URL configured in BotFather.
     mini_app_url: str = "https://t.me/ruttrack_bot/ruttrack"
 
+    # Direct Mini App WebApp URL for lesson check-in buttons.
+    # Unlike the t.me short link above, this does not depend on the Mini App
+    # target URL stored in BotFather, so stale BotFather setup cannot redirect
+    # students to a placeholder page.
+    mini_app_web_url: str = "https://ruttrack.site/mini-app/"
+
     # OTP lifetime in seconds — mirrors OtpProperties.ttlSeconds in auth-service.
     # Used as TTL for otp_msgs:{telegram_id} Redis entries and for the deferred
     # message cleanup task scheduled by /login.
@@ -83,5 +91,7 @@ def validate_startup_config(settings: "Settings") -> None:
         missing.append("GRPC_SECRET (x-grpc-secret metadata for gRPC calls to academic/schedule)")
     if not settings.bot_token or settings.bot_token == "placeholder":
         missing.append("BOT_TOKEN (Telegram bot token)")
+    if build_mini_app_url(settings.mini_app_web_url, "checkin-1") is None:
+        missing.append("MINI_APP_WEB_URL (direct HTTPS Mini App URL, not example.com)")
     if missing:
         raise StartupError("Missing mandatory configuration:\n  - " + "\n  - ".join(missing))

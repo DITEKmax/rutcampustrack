@@ -1,0 +1,101 @@
+{
+  "schema": "rct.checks.v1",
+  "task": "JS-STUDENT-01 F3 PWA FIX-r2",
+  "revision": "02cabfdfd2c0b81580833b88cef36d71c7706f4e",
+  "baseRevision": "cedce8c60aee04261ca87a18b898b148719bee89",
+  "contractRevision": "FIX-r2",
+  "recordedAt": "2026-09-06T20:45:44+03:00",
+  "environment": "Windows; Node v24.14.0; npm 11.9.0; Vite 7.3.6; system Chrome with Playwright; worktree .agent/worktrees/js-student-01/fix-pwa",
+  "checks": [
+    {
+      "name": "Frontend dependency installation",
+      "command": "npm ci",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "222 packages installed; npm audit reported 0 vulnerabilities."
+    },
+    {
+      "name": "PWA typecheck",
+      "command": "npm run typecheck --workspace @rct/pwa-vue",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "vue-tsc completed without diagnostics after FIX-r2."
+    },
+    {
+      "name": "PWA lint",
+      "command": "npm run lint --workspace @rct/pwa-vue",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "ESLint completed with --max-warnings=0."
+    },
+    {
+      "name": "Service-worker syntax",
+      "command": "node --check pwa-vue/public/sw.js",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Existing API/token exclusions and non-GET bypass script parses successfully."
+    },
+    {
+      "name": "Offline verifier syntax",
+      "command": "node --check pwa-vue/scripts/verify-offline-shell.mjs",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "HTTPS, BASE_URL and bounded offline verifier parses successfully."
+    },
+    {
+      "name": "Default production build in sandbox",
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "cwd": "frontends",
+      "exitCode": 1,
+      "execution": "sandbox",
+      "status": "ENVIRONMENT_BLOCKED",
+      "evidence": "esbuild reported Access is denied while traversing ../../../../../../../.. and could not resolve the worktree Vite config; no TypeScript diagnostic was reported."
+    },
+    {
+      "name": "Default production build",
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "execution": "approved escalated shell",
+      "evidence": "Vite 7.3.6 transformed 98 modules and emitted sw-assets.js, index.html, hashed JS/CSS and fonts. The build did not require VITE_ENABLE_LOCAL_PWA_SW."
+    },
+    {
+      "name": "Clean fixture production build",
+      "command": "$env:VITE_MOBILE_FIXTURE_MODE='true'; npm run build --workspace @rct/pwa-vue; exit $LASTEXITCODE",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "execution": "approved escalated shell",
+      "evidence": "Fixture build emitted the production worker and generated precache list without VITE_ENABLE_LOCAL_PWA_SW."
+    },
+    {
+      "name": "Frozen hostname-gate regression",
+      "command": "Temporarily restore frozen src/main.ts from cedce8c60aee04261ca87a18b898b148719bee89, build the fixture, run verify-offline-shell.mjs on 127.0.0.1, then restore FIX-r2 src/main.ts",
+      "cwd": "frontends",
+      "exitCode": 1,
+      "expected": true,
+      "evidence": "The frozen implementation timed out waiting for a service-worker controller on non-localhost 127.0.0.1; the old hostname gate was reproduced and the working tree was restored before the code commit."
+    },
+    {
+      "name": "Whitespace and patch integrity",
+      "command": "git diff --check cedce8c60aee04261ca87a18b898b148719bee89..02cabfdfd2c0b81580833b88cef36d71c7706f4e",
+      "exitCode": 0,
+      "evidence": "No whitespace errors in the scoped code commit."
+    }
+  ],
+  "diagnostics": [
+    {
+      "check": "sandbox production build",
+      "exitCode": 1,
+      "request": "production build verification",
+      "reproduction": "Running the standard workspace build inside the filesystem sandbox causes esbuild to traverse a denied parent path and reject the worktree Vite config.",
+      "correction": "No product code changed for this environment-only failure.",
+      "recheck": "The same default and fixture builds pass with exitCode 0 in the approved escalated shell."
+    }
+  ],
+  "runtime": {
+    "status": "PASS",
+    "evidenceFile": ".agent/js-student-01-fix-pwa/runtime-evidence.json",
+    "previewUrl": "http://127.0.0.1:5185/?fixtureToday=default&fixtureDiagnostics=true",
+    "preview": "Task-owned Vite preview of fixture dist; terminal session 29848; fixture transport only, no live backend."
+  }
+}

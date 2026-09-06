@@ -1,0 +1,14 @@
+{
+  "status": 429,
+  "type": "https://ruttrack.example/problems/checkin-cooldown",
+  "title": "Повторная попытка пока недоступна",
+  "detail": "Повтори попытку после указанного сервером времени.",
+  "instance": "https://ruttrack.example/api/v1/student/lessons/77/checkin",
+  "timestamp": "2026-09-06T08:30:00Z",
+  "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+  "code": "CHECKIN_COOLDOWN",
+  "retryAt": "2026-09-06T08:35:00Z",
+  "extras": {
+    "lessonId": "77"
+  }
+}

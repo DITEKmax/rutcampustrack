@@ -1,0 +1,1882 @@
+{
+  "schema": "rutcampustrack.design-token-mapping.v2",
+  "implementationTarget": "future Vue + PCSS; rem base 16px for authored dimension lengths",
+  "sources": {
+    "liveFigma": [
+      "context/R006-variable-definitions.raw.json",
+      "context/R011-family-variable-definitions.raw.json"
+    ],
+    "canonical": "../../tokens-v2.json",
+    "sha256": {
+      "docs/design/packets/JS-STUDENT-01/context/R006-variable-definitions.raw.json": "6cdd2726249f41a140c1bcd381a47980b40791f2c0ddac5c9810b93954d8d5eb",
+      "docs/design/packets/JS-STUDENT-01/context/R011-family-variable-definitions.raw.json": "09a48343a27853c898d92d8d26c72d1d59962a4c0f6980f40508c42a91d61ba5",
+      "docs/design/tokens-v2.json": "53c5f074e398cc045538df0f3a119e58ab0173b8923f93d70a8546c04ca6a779"
+    }
+  },
+  "extraction": {
+    "codeCalls": [
+      "R002",
+      "R003",
+      "R004",
+      "R008",
+      "R009",
+      "R010"
+    ],
+    "actualReferenceCount": 34,
+    "referencesByCall": {
+      "R002": [
+        "color-accent-now",
+        "color-accent-on-now",
+        "color-state-danger-text",
+        "color-status-present-fill",
+        "color-status-present-on-fill",
+        "color-surface-base",
+        "color-surface-float",
+        "color-surface-raised",
+        "color-text-primary",
+        "color-text-secondary",
+        "component-mobile-bottom-nav-glass-background-blur",
+        "component-mobile-bottom-nav-glass-surface-opacity",
+        "font-family-sans",
+        "font-size-micro",
+        "font-weight-medium",
+        "radius-lg",
+        "radius-xl",
+        "radius/2xl",
+        "space-0",
+        "space-1",
+        "space-2"
+      ],
+      "R003": [
+        "color-accent-now",
+        "color-accent-on-now",
+        "color-disabled-surface",
+        "color-disabled-text",
+        "color-status-present-fill",
+        "color-status-present-on-fill",
+        "color-surface-base",
+        "color-surface-float",
+        "color-surface-raised",
+        "color-text-primary",
+        "color-text-secondary",
+        "component-mobile-bottom-nav-glass-background-blur",
+        "component-mobile-bottom-nav-glass-surface-opacity",
+        "font-family-sans",
+        "font-size-micro",
+        "font-weight-medium",
+        "radius-lg",
+        "radius-xl",
+        "radius/2xl",
+        "space-0",
+        "space-1",
+        "space-2"
+      ],
+      "R004": [
+        "color-accent-now",
+        "color-accent-on-now",
+        "color-status-present-fill",
+        "color-status-present-on-fill",
+        "color-surface-base",
+        "color-surface-float",
+        "color-surface-raised",
+        "color-text-primary",
+        "color-text-secondary",
+        "component-mobile-bottom-nav-glass-background-blur",
+        "component-mobile-bottom-nav-glass-surface-opacity",
+        "font-family-sans",
+        "font-size-micro",
+        "font-weight-medium",
+        "radius-lg",
+        "radius-xl",
+        "radius/2xl",
+        "space-0",
+        "space-1",
+        "space-2"
+      ],
+      "R008": [
+        "color-accent-now",
+        "color-accent-on-now",
+        "color-border-default",
+        "color-status-absent-fill",
+        "color-status-absent-on-fill",
+        "color-surface-base",
+        "color-surface-float",
+        "color-surface-raised",
+        "color-text-primary",
+        "color-text-secondary",
+        "component-mobile-bottom-nav-glass-background-blur",
+        "component-mobile-bottom-nav-glass-surface-opacity",
+        "font-family-sans",
+        "font-size-micro",
+        "font-weight-medium",
+        "radius-lg",
+        "radius-xl",
+        "radius/2xl",
+        "space-0",
+        "space-1",
+        "space-2"
+      ],
+      "R009": [
+        "border-hairline",
+        "color-border-default",
+        "color-status-absent-fill",
+        "color-status-absent-on-fill",
+        "color-surface-base",
+        "color-surface-float",
+        "color-surface-raised",
+        "color-text-muted",
+        "color-text-primary",
+        "color-text-secondary",
+        "font-family-sans",
+        "font-size-body",
+        "font-size-caption",
+        "font-size-dense",
+        "font-weight-regular",
+        "radius-xl",
+        "radius/2xl",
+        "space-0",
+        "space-1",
+        "space-2",
+        "space-3",
+        "space-4"
+      ],
+      "R010": [
+        "color-accent-now",
+        "color-accent-on-now",
+        "color-status-absent-fill",
+        "color-status-absent-on-fill",
+        "color-status-present-fill",
+        "color-surface-base",
+        "color-surface-float",
+        "color-surface-raised",
+        "color-text-primary",
+        "color-text-secondary",
+        "space-1"
+      ]
+    }
+  },
+  "mapping": [
+    {
+      "liveReference": "--border-hairline",
+      "usedByCalls": [
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R009": [
+          "var(--border-hairline,1px)",
+          "var(--border-hairline,1px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "1"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "border/hairline",
+        "cssVariable": "--border-hairline",
+        "darkDefinition": "1px",
+        "darkResolvedValue": "1px",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "1px"
+        }
+      },
+      "status": "exact-under-canonical-px-unit",
+      "note": "Captured number 1 equals canonical 1px hairline."
+    },
+    {
+      "liveReference": "--color-accent-now",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-accent-now,#b79cfa)",
+          "var(--color-accent-now,#b79cfa)",
+          "var(--color-accent-now,#b79cfa)"
+        ],
+        "R003": [
+          "var(--color-accent-now,#b79cfa)",
+          "var(--color-accent-now,#b79cfa)",
+          "var(--color-accent-now,#b79cfa)"
+        ],
+        "R004": [
+          "var(--color-accent-now,#b79cfa)"
+        ],
+        "R008": [
+          "var(--color-accent-now,#b79cfa)",
+          "var(--color-accent-now,#b79cfa)",
+          "var(--color-accent-now,#b79cfa)"
+        ],
+        "R010": [
+          "var(--color-accent-now,#b79cfa)",
+          "var(--color-accent-now,#b79cfa)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#b79cfa"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/accent/now",
+        "cssVariable": "--color-accent-now",
+        "darkDefinition": "{color/violet/300}",
+        "darkResolvedValue": "#B79CFA",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/violet/300}",
+          "light": "{color/violet/600}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-accent-on-now",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)"
+        ],
+        "R003": [
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)"
+        ],
+        "R004": [
+          "var(--color-accent-on-now,#0b0b0c)"
+        ],
+        "R008": [
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)"
+        ],
+        "R010": [
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)",
+          "var(--color-accent-on-now,#0b0b0c)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#0b0b0c"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/accent/on-now",
+        "cssVariable": "--color-accent-on-now",
+        "darkDefinition": "{color/neutral/1000}",
+        "darkResolvedValue": "#0B0B0C",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/1000}",
+          "light": "{color/neutral/0}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-border-default",
+      "usedByCalls": [
+        "R008",
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R008": [
+          "var(--color-border-default,#3d3846)",
+          "var(--color-border-default,#3d3846)"
+        ],
+        "R009": [
+          "var(--color-border-default,#3d3846)",
+          "var(--color-border-default,#3d3846)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#3d3846"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/border/default",
+        "cssVariable": "--color-border-default",
+        "darkDefinition": "{color/neutral/800}",
+        "darkResolvedValue": "#3D3846",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/800}",
+          "light": "{color/neutral/200}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-disabled-surface",
+      "usedByCalls": [
+        "R003"
+      ],
+      "serializedSourceExpressions": {
+        "R003": [
+          "var(--color-disabled-surface,#262626)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#262626"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/disabled/surface",
+        "cssVariable": "--color-disabled-surface",
+        "darkDefinition": "{color/gray/900}",
+        "darkResolvedValue": "#262626",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/gray/900}",
+          "light": "{color/gray/100}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-disabled-text",
+      "usedByCalls": [
+        "R003"
+      ],
+      "serializedSourceExpressions": {
+        "R003": [
+          "var(--color-disabled-text,#6b6b6b)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#6b6b6b"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/disabled/text",
+        "cssVariable": "--color-disabled-text",
+        "darkDefinition": "{color/gray/600}",
+        "darkResolvedValue": "#6B6B6B",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/gray/600}",
+          "light": "{color/gray/400}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-state-danger-text",
+      "usedByCalls": [
+        "R002"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-state-danger-text,#f27f7f)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#f27f7f"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/state/danger/text",
+        "cssVariable": "--color-state-danger-text",
+        "darkDefinition": "{color/red/300}",
+        "darkResolvedValue": "#F27F7F",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/red/300}",
+          "light": "{color/red/700}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-status-absent-fill",
+      "usedByCalls": [
+        "R008",
+        "R009",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R008": [
+          "var(--color-status-absent-fill,#f27f7f)"
+        ],
+        "R009": [
+          "var(--color-status-absent-fill,#f27f7f)"
+        ],
+        "R010": [
+          "var(--color-status-absent-fill,#f27f7f)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#f27f7f"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/status/absent/fill",
+        "cssVariable": "--color-status-absent-fill",
+        "darkDefinition": "{color/red/300}",
+        "darkResolvedValue": "#F27F7F",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/red/300}",
+          "light": "{color/red/200}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-status-absent-on-fill",
+      "usedByCalls": [
+        "R008",
+        "R009",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R008": [
+          "var(--color-status-absent-on-fill,#0b0b0c)"
+        ],
+        "R009": [
+          "var(--color-status-absent-on-fill,#0b0b0c)"
+        ],
+        "R010": [
+          "var(--color-status-absent-on-fill,#0b0b0c)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#0b0b0c"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/status/absent/on-fill",
+        "cssVariable": "--color-status-absent-on-fill",
+        "darkDefinition": "{color/neutral/1000}",
+        "darkResolvedValue": "#0B0B0C",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/1000}",
+          "light": "{color/red/900}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-status-present-fill",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-status-present-fill,#61dfb8)"
+        ],
+        "R003": [
+          "var(--color-status-present-fill,#61dfb8)"
+        ],
+        "R004": [
+          "var(--color-status-present-fill,#61dfb8)",
+          "var(--color-status-present-fill,#61dfb8)",
+          "var(--color-status-present-fill,#61dfb8)"
+        ],
+        "R010": [
+          "var(--color-status-present-fill,#61dfb8)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#61dfb8"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/status/present/fill",
+        "cssVariable": "--color-status-present-fill",
+        "darkDefinition": "{color/green/300}",
+        "darkResolvedValue": "#61DFB8",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/green/300}",
+          "light": "{color/green/200}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-status-present-on-fill",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-status-present-on-fill,#0b0b0c)"
+        ],
+        "R003": [
+          "var(--color-status-present-on-fill,#0b0b0c)"
+        ],
+        "R004": [
+          "var(--color-status-present-on-fill,#0b0b0c)",
+          "var(--color-status-present-on-fill,#0b0b0c)",
+          "var(--color-status-present-on-fill,#0b0b0c)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#0b0b0c"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/status/present/on-fill",
+        "cssVariable": "--color-status-present-on-fill",
+        "darkDefinition": "{color/neutral/1000}",
+        "darkResolvedValue": "#0B0B0C",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/1000}",
+          "light": "{color/green/900}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-surface-base",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-surface-base,#0b0b0c)"
+        ],
+        "R003": [
+          "var(--color-surface-base,#0b0b0c)"
+        ],
+        "R004": [
+          "var(--color-surface-base,#0b0b0c)"
+        ],
+        "R008": [
+          "var(--color-surface-base,#0b0b0c)"
+        ],
+        "R009": [
+          "var(--color-surface-base,#0b0b0c)"
+        ],
+        "R010": [
+          "var(--color-surface-base,#0b0b0c)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#0b0b0c"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/surface/base",
+        "cssVariable": "--color-surface-base",
+        "darkDefinition": "{color/neutral/1000}",
+        "darkResolvedValue": "#0B0B0C",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/1000}",
+          "light": "{color/neutral/25}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-surface-float",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-surface-float,#292531)"
+        ],
+        "R003": [
+          "var(--color-surface-float,#292531)"
+        ],
+        "R004": [
+          "var(--color-surface-float,#292531)"
+        ],
+        "R008": [
+          "var(--color-surface-float,#292531)",
+          "var(--color-surface-float,#292531)",
+          "var(--color-surface-float,#292531)"
+        ],
+        "R009": [
+          "var(--color-surface-float,#292531)"
+        ],
+        "R010": [
+          "var(--color-surface-float,#292531)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#292531"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/surface/float",
+        "cssVariable": "--color-surface-float",
+        "darkDefinition": "{color/neutral/900}",
+        "darkResolvedValue": "#292531",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/900}",
+          "light": "{color/neutral/0}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-surface-raised",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-surface-raised,#1c1922)",
+          "var(--color-surface-raised,#1c1922)"
+        ],
+        "R003": [
+          "var(--color-surface-raised,#1c1922)",
+          "var(--color-surface-raised,#1c1922)"
+        ],
+        "R004": [
+          "var(--color-surface-raised,#1c1922)",
+          "var(--color-surface-raised,#1c1922)",
+          "var(--color-surface-raised,#1c1922)",
+          "var(--color-surface-raised,#1c1922)"
+        ],
+        "R008": [
+          "var(--color-surface-raised,#1c1922)"
+        ],
+        "R009": [
+          "var(--color-surface-raised,#1c1922)",
+          "var(--color-surface-raised,#1c1922)",
+          "var(--color-surface-raised,#1c1922)",
+          "var(--color-surface-raised,#1c1922)"
+        ],
+        "R010": [
+          "var(--color-surface-raised,#1c1922)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#1c1922"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/surface/raised",
+        "cssVariable": "--color-surface-raised",
+        "darkDefinition": "{color/neutral/950}",
+        "darkResolvedValue": "#1C1922",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/950}",
+          "light": "{color/neutral/0}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-text-muted",
+      "usedByCalls": [
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R009": [
+          "var(--color-text-muted,#8a8299)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#8a8299"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/text/muted",
+        "cssVariable": "--color-text-muted",
+        "darkDefinition": "{color/neutral/500}",
+        "darkResolvedValue": "#8A8299",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/500}",
+          "light": "{color/neutral/600}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-text-primary",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)"
+        ],
+        "R003": [
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)"
+        ],
+        "R004": [
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)"
+        ],
+        "R008": [
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)"
+        ],
+        "R009": [
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)"
+        ],
+        "R010": [
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)",
+          "var(--color-text-primary,#edeaf3)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#edeaf3"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/text/primary",
+        "cssVariable": "--color-text-primary",
+        "darkDefinition": "{color/neutral/100}",
+        "darkResolvedValue": "#EDEAF3",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/100}",
+          "light": "{color/neutral/900}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--color-text-secondary",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)"
+        ],
+        "R003": [
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)"
+        ],
+        "R004": [
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)"
+        ],
+        "R008": [
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)"
+        ],
+        "R009": [
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)"
+        ],
+        "R010": [
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)",
+          "var(--color-text-secondary,#c8c2d6)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "#c8c2d6"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "semantic",
+        "figmaPath": "color/text/secondary",
+        "cssVariable": "--color-text-secondary",
+        "darkDefinition": "{color/neutral/300}",
+        "darkResolvedValue": "#C8C2D6",
+        "targetDefinition": {
+          "$type": "color",
+          "dark": "{color/neutral/300}",
+          "light": "{color/neutral/700}"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--component-mobile-bottom-nav-glass-background-blur",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--component-mobile-bottom-nav-glass-background-blur,12.5px)"
+        ],
+        "R003": [
+          "var(--component-mobile-bottom-nav-glass-background-blur,12.5px)"
+        ],
+        "R004": [
+          "var(--component-mobile-bottom-nav-glass-background-blur,12.5px)"
+        ],
+        "R008": [
+          "var(--component-mobile-bottom-nav-glass-background-blur,12.5px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "25"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "component",
+        "figmaPath": "component/mobile-bottom-nav/glass-background-blur",
+        "cssVariable": "--component-mobile-bottom-nav-glass-background-blur",
+        "darkDefinition": 25,
+        "darkResolvedValue": 25,
+        "targetDefinition": {
+          "$type": "number",
+          "dark": 25,
+          "light": 25,
+          "$description": "✏️ 04.09.2026 — значение 20 px заменено на 25 px прямым решением владельца. Navbar использует ровно один token-bound BACKGROUND_BLUR; локальный второй blur на экранном root запрещён."
+        }
+      },
+      "status": "exact-contextual-px",
+      "note": "Both sources specify blur magnitude 25; canonical description fixes its px use."
+    },
+    {
+      "liveReference": "--component-mobile-bottom-nav-glass-surface-opacity",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--component-mobile-bottom-nav-glass-surface-opacity,0.78)"
+        ],
+        "R003": [
+          "var(--component-mobile-bottom-nav-glass-surface-opacity,0.78)"
+        ],
+        "R004": [
+          "var(--component-mobile-bottom-nav-glass-surface-opacity,0.78)"
+        ],
+        "R008": [
+          "var(--component-mobile-bottom-nav-glass-surface-opacity,0.78)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "78"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "component",
+        "figmaPath": "component/mobile-bottom-nav/glass-surface-opacity",
+        "cssVariable": "--component-mobile-bottom-nav-glass-surface-opacity",
+        "darkDefinition": 78,
+        "darkResolvedValue": 78,
+        "targetDefinition": {
+          "$type": "number",
+          "dark": 78,
+          "light": 90
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--font-family-sans",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans)"
+        ],
+        "R003": [
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans)"
+        ],
+        "R004": [
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans)"
+        ],
+        "R008": [
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans)"
+        ],
+        "R009": [
+          "var(--font-family-sans,'Onest:Regular')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Regular')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Medium')",
+          "var(--font-family-sans,'Onest:Regular')",
+          "var(--font-family-sans)",
+          "var(--font-family-sans)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "Onest"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "font/family/sans",
+        "cssVariable": "--font-family-sans",
+        "darkDefinition": "Onest",
+        "darkResolvedValue": "Onest",
+        "targetDefinition": {
+          "$type": "string",
+          "$value": "Onest"
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--font-size-body",
+      "usedByCalls": [
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R009": [
+          "var(--font-size-body,16px)",
+          "var(--font-size-body,16px)",
+          "var(--font-size-body)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "16"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "font/size/body",
+        "cssVariable": "--font-size-body",
+        "darkDefinition": "1rem",
+        "darkResolvedValue": "1rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "1rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--font-size-caption",
+      "usedByCalls": [
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R009": [
+          "var(--font-size-caption,13px)",
+          "var(--font-size-caption)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "13"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "font/size/caption",
+        "cssVariable": "--font-size-caption",
+        "darkDefinition": "0.8125rem",
+        "darkResolvedValue": "0.8125rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "0.8125rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--font-size-dense",
+      "usedByCalls": [
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R009": [
+          "var(--font-size-dense,14px)",
+          "var(--font-size-dense,14px)",
+          "var(--font-size-dense,14px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "14"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "font/size/dense",
+        "cssVariable": "--font-size-dense",
+        "darkDefinition": "0.875rem",
+        "darkResolvedValue": "0.875rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "0.875rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--font-size-micro",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro)"
+        ],
+        "R003": [
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro)"
+        ],
+        "R004": [
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro)"
+        ],
+        "R008": [
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro,12px)",
+          "var(--font-size-micro)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "12"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "font/size/micro",
+        "cssVariable": "--font-size-micro",
+        "darkDefinition": "0.75rem",
+        "darkResolvedValue": "0.75rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "0.75rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--font-weight-medium",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--font-weight-medium)"
+        ],
+        "R003": [
+          "var(--font-weight-medium)"
+        ],
+        "R004": [
+          "var(--font-weight-medium)"
+        ],
+        "R008": [
+          "var(--font-weight-medium)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "500"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "font/weight/medium",
+        "cssVariable": "--font-weight-medium",
+        "darkDefinition": 500,
+        "darkResolvedValue": 500,
+        "targetDefinition": {
+          "$type": "number",
+          "$value": 500
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--font-weight-regular",
+      "usedByCalls": [
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R009": [
+          "var(--font-weight-regular)",
+          "var(--font-weight-regular)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "400"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "font/weight/regular",
+        "cssVariable": "--font-weight-regular",
+        "darkDefinition": 400,
+        "darkResolvedValue": 400,
+        "targetDefinition": {
+          "$type": "number",
+          "$value": 400
+        }
+      },
+      "status": "exact",
+      "note": "Captured live value equals the canonical dark definition."
+    },
+    {
+      "liveReference": "--radius-lg",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)"
+        ],
+        "R003": [
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)"
+        ],
+        "R004": [
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)"
+        ],
+        "R008": [
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)",
+          "var(--radius-lg,12px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "12"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "radius/lg",
+        "cssVariable": "--radius-lg",
+        "darkDefinition": "0.75rem",
+        "darkResolvedValue": "0.75rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "0.75rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--radius-xl",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--radius-xl,16px)"
+        ],
+        "R003": [
+          "var(--radius-xl,16px)"
+        ],
+        "R004": [
+          "var(--radius-xl,16px)"
+        ],
+        "R008": [
+          "var(--radius-xl,16px)"
+        ],
+        "R009": [
+          "var(--radius-xl,16px)",
+          "var(--radius-xl,16px)",
+          "var(--radius-xl,16px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "16"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "radius/xl",
+        "cssVariable": "--radius-xl",
+        "darkDefinition": "1rem",
+        "darkResolvedValue": "1rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "1rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--radius/2xl",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--radius\\\\/2xl,24px)",
+          "var(--radius\\/2xl,24px)",
+          "var(--radius\\/2xl,24px)"
+        ],
+        "R003": [
+          "var(--radius\\\\/2xl,24px)",
+          "var(--radius\\/2xl,24px)",
+          "var(--radius\\/2xl,24px)"
+        ],
+        "R004": [
+          "var(--radius\\\\/2xl,24px)",
+          "var(--radius\\/2xl,24px)",
+          "var(--radius\\/2xl,24px)"
+        ],
+        "R008": [
+          "var(--radius\\/2xl,24px)",
+          "var(--radius\\/2xl,24px)"
+        ],
+        "R009": [
+          "var(--radius\\/2xl,24px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "24"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "radius/2xl",
+        "cssVariable": "--radius-2xl",
+        "darkDefinition": "1.5rem",
+        "darkResolvedValue": "1.5rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "1.5rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--space-0",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)"
+        ],
+        "R003": [
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)"
+        ],
+        "R004": [
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)"
+        ],
+        "R008": [
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)"
+        ],
+        "R009": [
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)",
+          "var(--space-0,0px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "0"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "space/0",
+        "cssVariable": "--space-0",
+        "darkDefinition": "0",
+        "darkResolvedValue": "0",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "0"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--space-1",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009",
+        "R010"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)"
+        ],
+        "R003": [
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)"
+        ],
+        "R004": [
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)"
+        ],
+        "R008": [
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)"
+        ],
+        "R009": [
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)"
+        ],
+        "R010": [
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)",
+          "var(--space-1,4px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "4"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "space/1",
+        "cssVariable": "--space-1",
+        "darkDefinition": "0.25rem",
+        "darkResolvedValue": "0.25rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "0.25rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--space-2",
+      "usedByCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008",
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R002": [
+          "var(--space-2,8px)",
+          "var(--space-2,8px)"
+        ],
+        "R003": [
+          "var(--space-2,8px)",
+          "var(--space-2,8px)"
+        ],
+        "R004": [
+          "var(--space-2,8px)",
+          "var(--space-2,8px)"
+        ],
+        "R008": [
+          "var(--space-2,8px)"
+        ],
+        "R009": [
+          "var(--space-2,8px)",
+          "var(--space-2,8px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "8"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "space/2",
+        "cssVariable": "--space-2",
+        "darkDefinition": "0.5rem",
+        "darkResolvedValue": "0.5rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "0.5rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--space-3",
+      "usedByCalls": [
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R009": [
+          "var(--space-3,12px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "12"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "space/3",
+        "cssVariable": "--space-3",
+        "darkDefinition": "0.75rem",
+        "darkResolvedValue": "0.75rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "0.75rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    },
+    {
+      "liveReference": "--space-4",
+      "usedByCalls": [
+        "R009"
+      ],
+      "serializedSourceExpressions": {
+        "R009": [
+          "var(--space-4,16px)"
+        ]
+      },
+      "liveDefinition": {
+        "source": "context/R011-family-variable-definitions.raw.json",
+        "sourceValue": "16"
+      },
+      "canonical": {
+        "source": "../../tokens-v2.json",
+        "collection": "dimension",
+        "figmaPath": "space/4",
+        "cssVariable": "--space-4",
+        "darkDefinition": "1rem",
+        "darkResolvedValue": "1rem",
+        "targetDefinition": {
+          "$type": "dimension",
+          "$value": "1rem"
+        }
+      },
+      "status": "exact-under-rem-base-16",
+      "note": "Captured px number equals canonical rem value at the fixed 16px base."
+    }
+  ],
+  "referenceStyleGaps": [
+    {
+      "sourceCalls": [
+        "R002",
+        "R003",
+        "R004",
+        "R008"
+      ],
+      "nodes": [
+        "4581:3066",
+        "4585:222",
+        "4585:848024",
+        "4585:848130"
+      ],
+      "element": "role-pill",
+      "capturedStyle": "literal three-stop inline gradient",
+      "status": "reference-style-gap; no canonical token or alias created"
+    },
+    {
+      "sourceCalls": [
+        "R002",
+        "R008",
+        "R010"
+      ],
+      "nodes": [
+        "4581:3080",
+        "4585:848142",
+        "4588:848425"
+      ],
+      "element": "cta",
+      "capturedStyle": "literal three-stop generated gradient",
+      "status": "reference-style-gap; no canonical token or alias created"
+    }
+  ],
+  "componentReuse": [
+    {
+      "name": "shared/SelectField",
+      "classification": "live-captured reuse",
+      "evidence": "R009 data-name=shared/SelectField; registry names SelectField as existing component."
+    },
+    {
+      "name": "shared/FileUploadField/local",
+      "classification": "live-captured reuse",
+      "evidence": "R009 data-name=shared/FileUploadField/local; local qualifier is captured and no ownership promotion is inferred."
+    },
+    {
+      "name": "shared/AppButton / action/AttendanceButton",
+      "classification": "canonical registry reuse",
+      "evidence": "R002/R003/R004/R008/R010 contain cta; registry says attendance action is rendered by existing shared/AppButton."
+    },
+    {
+      "name": "attendance/AttendanceStatusBadge",
+      "classification": "canonical registry reuse",
+      "evidence": "R002/R003/R004/R008/R009/R010 contain status nodes; registry declares existing badge for Today schedule."
+    },
+    {
+      "name": "student/MobileTodayHero, student/MobileTodaySchedule, student/MobileCheckInTask, shared/MobileBottomNav",
+      "classification": "registry-reference only",
+      "evidence": "Existing registry contracts inform later composition; raw captures show hierarchy labels, not verified reusable Vue exports."
+    }
+  ],
+  "rules": [
+    "Use the canonical CSS variable shown in each record; do not copy live fallback literals.",
+    "Do not introduce aliases for unmatched --radius or literal gradients.",
+    "The dark live capture is evidence only; canonical token modes remain authoritative for later implementation."
+  ]
+}

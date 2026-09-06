@@ -1,0 +1,340 @@
+{
+  "schema": "rutcampustrack.design-packet.v1",
+  "status": "ready-captured-ui; implementation-contract-pending",
+  "createdAt": "2026-09-06T02:01:00+03:00",
+  "assembledAt": "2026-09-06T02:50:25+03:00",
+  "baseRevision": "87784165874e2da6fc261abc1c01584e24624289",
+  "story": {
+    "id": "JS-STUDENT-01",
+    "title": "Сегодня: текущая или ближайшая пара и отметка посещаемости",
+    "role": "student",
+    "surface": [
+      "PWA",
+      "TMA"
+    ],
+    "relatedSessionProjection": "JS-SYSTEM-14",
+    "loginScope": "not captured; separate UI is not invented by this packet"
+  },
+  "figma": {
+    "fileKey": "VgVjQYWILLG9AC7Eh12VMk",
+    "fileName": "ui-kit-rct",
+    "ownership": {
+      "status": "user-confirmed",
+      "team": "Ruttrack",
+      "whoami": {
+        "plan": "Full/Pro",
+        "teamId": "1667232262348400960",
+        "note": "does not establish file revision or remaining daily quota"
+      }
+    },
+    "snapshot": {
+      "revision": null,
+      "pinned": false,
+      "atomic": false,
+      "captureWindow": "unknown",
+      "theme": "dark-only",
+      "screenWidth": 390,
+      "screenHeight": 844,
+      "limitation": "Non-atomic unpinned reads; per-call capture timestamps were not retained by the relay."
+    },
+    "rateLimit": {
+      "source": "https://developers.figma.com/docs/figma-mcp-server/rate-limits-access/",
+      "plan": "Full/Pro",
+      "perMinute": 10,
+      "perDay": 200,
+      "remainingDaily": "unknown",
+      "queuePolicy": "root-global-budget; target <=4 starts/minute; >=15 seconds between starts"
+    }
+  },
+  "nodes": [
+    {
+      "id": "4572:3062",
+      "name": "student board",
+      "url": "https://www.figma.com/design/VgVjQYWILLG9AC7Eh12VMk/ui-kit-rct?node-id=4572-3062",
+      "purpose": "source board",
+      "status": "metadata-verified-r001"
+    },
+    {
+      "id": "4572:3065",
+      "name": "student family",
+      "url": "https://www.figma.com/design/VgVjQYWILLG9AC7Eh12VMk/ui-kit-rct?node-id=4572-3065",
+      "purpose": "current Today family",
+      "status": "metadata-verified-r001"
+    },
+    {
+      "id": "4572:3067",
+      "name": "student screen family",
+      "url": "https://www.figma.com/design/VgVjQYWILLG9AC7Eh12VMk/ui-kit-rct?node-id=4572-3067",
+      "purpose": "Today screen family",
+      "status": "metadata-verified-r001"
+    },
+    {
+      "id": "4581:3062",
+      "name": "Today default",
+      "url": "https://www.figma.com/design/VgVjQYWILLG9AC7Eh12VMk/ui-kit-rct?node-id=4581-3062",
+      "state": "default",
+      "status": "captured-r002"
+    },
+    {
+      "id": "4585:218",
+      "name": "Today geo-unconfirmed",
+      "url": "https://www.figma.com/design/VgVjQYWILLG9AC7Eh12VMk/ui-kit-rct?node-id=4585-218",
+      "state": "geo-unconfirmed",
+      "status": "captured-r003"
+    },
+    {
+      "id": "4585:848020",
+      "name": "Today attendance-confirmed",
+      "url": "https://www.figma.com/design/VgVjQYWILLG9AC7Eh12VMk/ui-kit-rct?node-id=4585-848020",
+      "state": "attendance-confirmed",
+      "status": "captured-r004"
+    },
+    {
+      "id": "4585:848126",
+      "name": "Today absent actions",
+      "url": "https://www.figma.com/design/VgVjQYWILLG9AC7Eh12VMk/ui-kit-rct?node-id=4585-848126",
+      "state": "absent-actions",
+      "status": "captured-r008"
+    },
+    {
+      "id": "4588:527",
+      "name": "absence reason form",
+      "url": "https://www.figma.com/design/VgVjQYWILLG9AC7Eh12VMk/ui-kit-rct?node-id=4588-527",
+      "state": "reason-form",
+      "status": "captured-r009"
+    },
+    {
+      "id": "4588:848409",
+      "name": "pending request",
+      "url": "https://www.figma.com/design/VgVjQYWILLG9AC7Eh12VMk/ui-kit-rct?node-id=4588-848409",
+      "state": "pending-request",
+      "status": "captured-r010"
+    }
+  ],
+  "artifacts": {
+    "context": [
+      {
+        "call": "R002",
+        "nodeId": "4581:3062",
+        "responseCompleteness": "complete-received",
+        "path": "context/R002-today-default.raw.json",
+        "bytes": 91883,
+        "sha256": "24b732ab0c68dfecb126577f4282013180221ae32eefc612d674443df7d88461"
+      },
+      {
+        "call": "R003",
+        "nodeId": "4585:218",
+        "responseCompleteness": "complete-received",
+        "path": "context/R003-geo-unconfirmed.raw.json",
+        "bytes": 90117,
+        "sha256": "7e7bc47ee264919279809a46a832fd9e7d3cceab449caf5edbadcb1645447505"
+      },
+      {
+        "call": "R004",
+        "nodeId": "4585:848020",
+        "responseCompleteness": "complete-received",
+        "path": "context/R004-attendance-confirmed.raw.json",
+        "bytes": 87134,
+        "sha256": "cf49441ab5e0c62b1cfa16037509d7ac0bf41cd97cee658e43f0352d48baf3c2"
+      },
+      {
+        "call": "R005",
+        "nodeId": "4572:3067",
+        "responseCompleteness": "complete-received",
+        "path": "context/R005-screen-family-metadata.raw.json",
+        "bytes": 37246,
+        "sha256": "d01b165b05116012db0e386e27d543a0f5d8c59e9d7eaba89fa082cbbb120816"
+      },
+      {
+        "call": "R006",
+        "nodeId": "4572:3067",
+        "responseCompleteness": "partial-variable-subset; superseded for tokens by R011",
+        "path": "context/R006-variable-definitions.raw.json",
+        "bytes": 1171,
+        "sha256": "6cdd2726249f41a140c1bcd381a47980b40791f2c0ddac5c9810b93954d8d5eb"
+      },
+      {
+        "call": "R007",
+        "nodeId": "4572:3067",
+        "responseCompleteness": "partial; response says svgAssetsTruncated=true; it is not a complete export",
+        "path": "context/R007-download-assets.raw.json",
+        "bytes": 4099,
+        "sha256": "17f1ee3846153a5b1a23bc3c58c9c87d7280fc099be1cb57011c82620b2ce4d3"
+      },
+      {
+        "call": "R008",
+        "nodeId": "4585:848126",
+        "responseCompleteness": "complete-received",
+        "path": "context/R008-absent-actions.raw.json",
+        "bytes": 87932,
+        "sha256": "ab27952550d650b584bf8cda84006743399255d9d08adf4e82ad93be371460be"
+      },
+      {
+        "call": "R009",
+        "nodeId": "4588:527",
+        "responseCompleteness": "complete-received",
+        "path": "context/R009-reason-form.raw.json",
+        "bytes": 72447,
+        "sha256": "07373f353e0fd1ee77ab886b3cab27a644a92c45c5caa887b717a0b4805fd180"
+      },
+      {
+        "call": "R010",
+        "nodeId": "4588:848409",
+        "responseCompleteness": "complete-received",
+        "path": "context/R010-pending-request.raw.json",
+        "bytes": 62488,
+        "sha256": "51607fba16224795ce8e9a928316cf6649020263c91df090af1c004fbcabd95b"
+      },
+      {
+        "call": "R011",
+        "nodeId": "4572:3067",
+        "responseCompleteness": "complete-received",
+        "path": "context/R011-family-variable-definitions.raw.json",
+        "bytes": 2007,
+        "sha256": "09a48343a27853c898d92d8d26c72d1d59962a4c0f6980f40508c42a91d61ba5"
+      }
+    ],
+    "screenshots": [
+      {
+        "call": "R002",
+        "nodeId": "4581:3062",
+        "state": "default",
+        "theme": "dark",
+        "width": 390,
+        "height": 844,
+        "mimeType": "image/png",
+        "path": "screenshots/R002-today-default.png",
+        "bytes": 48268,
+        "sha256": "f883138e67a47fe0d2a8bba23a3bfea857efa27902ec9979633f09550d2bc629"
+      },
+      {
+        "call": "R003",
+        "nodeId": "4585:218",
+        "state": "geo-unconfirmed",
+        "theme": "dark",
+        "width": 390,
+        "height": 844,
+        "mimeType": "image/png",
+        "path": "screenshots/R003-geo-unconfirmed.png",
+        "bytes": 47618,
+        "sha256": "c5ccde4975163787458dd447c11160a8307afda3fff59ffffa3bbdd2c86122c7"
+      },
+      {
+        "call": "R004",
+        "nodeId": "4585:848020",
+        "state": "attendance-confirmed",
+        "theme": "dark",
+        "width": 390,
+        "height": 844,
+        "mimeType": "image/png",
+        "path": "screenshots/R004-attendance-confirmed.png",
+        "bytes": 45586,
+        "sha256": "704fc00af9bbdf57712ee659ae2decc066d94ca48b68637024945c68367077fc"
+      },
+      {
+        "call": "R008",
+        "nodeId": "4585:848126",
+        "state": "absent-actions",
+        "theme": "dark",
+        "width": 390,
+        "height": 844,
+        "mimeType": "image/png",
+        "path": "screenshots/R008-absent-actions.png",
+        "bytes": 47627,
+        "sha256": "6edfa20bc00aca50348fd697829a07be7c42053832e28abf29e7edf6d51cd77c"
+      },
+      {
+        "call": "R009",
+        "nodeId": "4588:527",
+        "state": "reason-form",
+        "theme": "dark",
+        "width": 390,
+        "height": 844,
+        "mimeType": "image/png",
+        "path": "screenshots/R009-reason-form.png",
+        "bytes": 42524,
+        "sha256": "45854370bd7cbd3a18429a112d02193009b5363e5b6d6e7399bec2928de06b2b"
+      },
+      {
+        "call": "R010",
+        "nodeId": "4588:848409",
+        "state": "pending-request",
+        "theme": "dark",
+        "width": 390,
+        "height": 844,
+        "mimeType": "image/png",
+        "path": "screenshots/R010-pending-request.png",
+        "bytes": 35246,
+        "sha256": "5f29ad8105d5aa842c03a0fcc44de11e6bf077bb2e9c725c14b72305c2f9c079"
+      }
+    ],
+    "assets": {
+      "index": "assets/asset-index.json",
+      "sourceUrlRecords": 58,
+      "canonicalByteSources": 16,
+      "status": "complete for actual generated-code asset references",
+      "diagnostics": {
+        "schema": "rutcampustrack.figma-asset-diagnostics.v1",
+        "excludedUrl": "https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png",
+        "classification": "boilerplate documentation example, not an actual generated-code asset reference",
+        "downloadObservation": "HTTP 404 occurred before the parser was corrected",
+        "requiredAsset": false,
+        "action": "excluded from asset inventory and gaps; future extraction accepts code constants or literal img src only"
+      }
+    }
+  },
+  "coverage": {
+    "capturedFigmaStates": [
+      "default",
+      "geo-unconfirmed",
+      "attendance-confirmed",
+      "absent-actions",
+      "reason-form",
+      "pending-request"
+    ],
+    "plannedImplementationStates": [
+      "loading",
+      "error",
+      "offline",
+      "responsive",
+      "PWA-host",
+      "TMA-host"
+    ],
+    "ownerDecision": "2026-09-06: missing Figma nodes for planned states do not block this packet; implementation designs them from existing tokens, components, interface and domain logic.",
+    "readyForCapturedUi": true,
+    "readyForProductImplementation": false,
+    "implementationGate": "contract/backend/authz policy and real host/runtime verification are outside this captured-UI packet"
+  },
+  "files": {
+    "gaps": "gaps.md",
+    "decisions": "decisions.md",
+    "sources": "source-links.md",
+    "tokenMapping": "token-mapping.json",
+    "callLog": "call-log.json"
+  },
+  "documentHashes": {
+    "gaps.md": {
+      "path": "gaps.md",
+      "bytes": 2427,
+      "sha256": "7bd1867bed305166d27ac8ef41d193abd1cfd68bad91ccc5933947a3463692d2"
+    },
+    "decisions.md": {
+      "path": "decisions.md",
+      "bytes": 1195,
+      "sha256": "5a42db39698f5217f795b39bb5edabfab83a4cd9bfd21d6b0676686163ec6048"
+    },
+    "source-links.md": {
+      "path": "source-links.md",
+      "bytes": 2792,
+      "sha256": "0c7f3fa2a4f38cb599a14e763b166ec3ea0782c7e366f9183291629c12bd89a9"
+    },
+    "token-mapping.json": {
+      "path": "token-mapping.json",
+      "bytes": 59693,
+      "sha256": "68a873dac5c178fa71390cbd79413b80848016ce103e7f0d92116ba7bc5bccb6"
+    }
+  },
+  "externalEvidenceHashes": {
+    "docs/design/tokens-v2.json": "53c5f074e398cc045538df0f3a119e58ab0173b8923f93d70a8546c04ca6a779"
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "schema": "rutcampustrack.figma-call-log.v1",
+  "globalBudget": {
+    "source": "https://developers.figma.com/docs/figma-mcp-server/rate-limits-access/",
+    "plan": "Full/Pro",
+    "perMinute": 10,
+    "perDay": 200,
+    "remainingDaily": "unknown",
+    "queuePolicy": "root-global-budget; target <=4 starts/minute; >=15 seconds between starts"
+  },
+  "captureTiming": "Figma-native capturedAt and revision are unavailable for every call. R003–R011 retain reader-local before/after request timing proxies; R001 and R002 have no retained timing proxy.",
+  "calls": [
+    {
+      "id": "R001",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": null,
+      "tool": "Figma metadata read",
+      "nodes": [
+        "4572:3062",
+        "4572:3065",
+        "4572:3067",
+        "4581:3062",
+        "4585:218",
+        "4585:848020"
+      ],
+      "status": "success-with-limitation",
+      "responseCompleteness": "partial",
+      "note": "transport-truncated; no complete raw context, screenshot, asset bytes, or revision retained",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R002",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": null,
+      "tool": "Figma design context",
+      "nodes": [
+        "4581:3062"
+      ],
+      "status": "success",
+      "responseCompleteness": "complete",
+      "note": "default Today state; raw context and screenshot retained",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R003",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": {
+        "before": "2026-09-05T23:11:52.360Z",
+        "after": "2026-09-05T23:11:57.682Z"
+      },
+      "tool": "Figma design context",
+      "nodes": [
+        "4585:218"
+      ],
+      "status": "success",
+      "responseCompleteness": "complete",
+      "note": "geo-unconfirmed state; raw context and screenshot retained",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R004",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": {
+        "before": "2026-09-05T23:12:46.209Z",
+        "after": "2026-09-05T23:12:50.582Z"
+      },
+      "tool": "Figma design context",
+      "nodes": [
+        "4585:848020"
+      ],
+      "status": "success",
+      "responseCompleteness": "complete",
+      "note": "attendance-confirmed state; raw context and screenshot retained",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R005",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": {
+        "before": "2026-09-05T23:16:15.996Z",
+        "after": "2026-09-05T23:16:18.988Z"
+      },
+      "tool": "Figma metadata read",
+      "nodes": [
+        "4572:3067"
+      ],
+      "status": "success",
+      "responseCompleteness": "complete",
+      "note": "screen-family metadata retained",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R006",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": {
+        "before": "2026-09-05T23:16:39.492Z",
+        "after": "2026-09-05T23:16:41.483Z"
+      },
+      "tool": "Figma variable definitions",
+      "nodes": [
+        "4572:3067"
+      ],
+      "status": "success-with-limitation",
+      "responseCompleteness": "partial",
+      "note": "partial variable result; R011 is the complete retained family-variable response",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R007",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": {
+        "before": "2026-09-05T23:16:58.521Z",
+        "after": "2026-09-05T23:17:03.363Z"
+      },
+      "tool": "Figma asset export",
+      "nodes": [
+        "4572:3067"
+      ],
+      "status": "success-with-limitation",
+      "responseCompleteness": "partial",
+      "note": "response says svgAssetsTruncated=true; retained raw is evidence only, not a complete export",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R008",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": {
+        "before": "2026-09-05T23:19:41.628Z",
+        "after": "2026-09-05T23:19:47.096Z"
+      },
+      "tool": "Figma design context",
+      "nodes": [
+        "4585:848126"
+      ],
+      "status": "success",
+      "responseCompleteness": "complete",
+      "note": "absent-actions state; raw context and screenshot retained",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R009",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": {
+        "before": "2026-09-05T23:20:17.440Z",
+        "after": "2026-09-05T23:20:21.515Z"
+      },
+      "tool": "Figma design context",
+      "nodes": [
+        "4588:527"
+      ],
+      "status": "success",
+      "responseCompleteness": "complete",
+      "note": "reason-form state; raw context and screenshot retained",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R010",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": {
+        "before": "2026-09-05T23:20:48.870Z",
+        "after": "2026-09-05T23:20:54.597Z"
+      },
+      "tool": "Figma design context",
+      "nodes": [
+        "4588:848409"
+      ],
+      "status": "success",
+      "responseCompleteness": "complete",
+      "note": "pending-request state; raw context and screenshot retained",
+      "retry": "no Figma retry after retained response"
+    },
+    {
+      "id": "R011",
+      "figmaCapturedAt": null,
+      "localRequestTimingProxy": {
+        "before": "2026-09-05T23:22:51.340Z",
+        "after": "2026-09-05T23:22:54.277Z"
+      },
+      "tool": "Figma variable definitions",
+      "nodes": [
+        "4572:3067"
+      ],
+      "status": "success",
+      "responseCompleteness": "complete",
+      "note": "complete retained family-variable response",
+      "retry": "no Figma retry after retained response"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schema": "rct.baseline.v1",
+  "capturedAt": "2026-09-06T14:30:00+03:00",
+  "repository": "C:/Users/maksd/IntelliJIDEA/rutcampustrack",
+  "branch": "codex/materials-transfer",
+  "head": "87784165874e2da6fc261abc1c01584e24624289",
+  "gitStatus": {
+    "porcelainEntryCount": 1424,
+    "sha256": "96b2b501809706e87714a08927e554d9dfe427f00a63b0f06e8a70d0032d5aaf",
+    "trackedUnrelated": ["M docs/INDEX.md", "D skills-lock.json"],
+    "limitations": [
+      "Git could not read the user global ignore file in the sandbox.",
+      "One unrelated notification-bot pytest cache directory was unreadable."
+    ]
+  },
+  "bundles": {
+    "storySourcesV1": {
+      "files": 7,
+      "bytes": 3369995,
+      "sha256": "ed37019a40cce60e335eb10e048606da9dca703ec7808cfdd9b9e05f9301e203"
+    },
+    "designPacketV1": {
+      "files": 49,
+      "bytes": 933401,
+      "sha256": "6f1b4cf58cc86d72467b00af1493392570e5ef4d5b714c5fb15f138862279354"
+    },
+    "contractToolingV1": {
+      "files": 9,
+      "bytes": 137190,
+      "sha256": "2d9f5c9c9dd0eaf328016dcc62bff297c8f698baeeac501583dc3aec97d06955"
+    },
+    "rulesV1": {
+      "files": 7,
+      "bytes": 24552,
+      "sha256": "00fa91c4131b369a8901beff884f92cbc85ef09c775e9c5e403c936a035b08fa"
+    }
+  },
+  "overlayAllowlist": [
+    "AGENTS.md",
+    "frontends/AGENTS.md",
+    "services/AGENTS.md",
+    "tests/AGENTS.md",
+    "docs/agent-workflow.md",
+    "docs/implementation/{parallel-development.md,readiness.md,backlog.md,backend-delta.yaml}",
+    "docs/research/reference-rutcampustrack-design/knowledge/job-stories.md",
+    "docs/architecture/reference-rutcampustrack-design/backend-conflicts.md",
+    "docs/design/packets/JS-STUDENT-01/**",
+    ".agent/vertical-js-student-01/{contract-r1.md,decisions.md,baseline.json,fe-packet-r1.md,be-packet-r1.md}"
+  ],
+  "overlayExcluded": [
+    ".codex/**",
+    ".mcp*",
+    "**/.env*",
+    "**/*secret*",
+    "**/node_modules/**",
+    "**/build/**",
+    "**/cache/**",
+    ".agent/worktrees/**",
+    "docs/INDEX.md",
+    "skills-lock.json"
+  ],
+  "runtime": {
+    "java": "21.0.10",
+    "gradle": "8.12",
+    "node": "24.14.0",
+    "npm": "11.9.0",
+    "dockerServer": "28.5.2",
+    "defaultComposePortsObservedFree": true,
+    "composeIsolationGap": "fixed container_name and shared host ports require a task-owned integration override before parallel stack runtime"
+  },
+  "digestAlgorithm": "SHA-256 of sorted path<TAB>file-sha256 rows, LF terminated; status digest is SHA-256 of porcelain rows, LF terminated"
+}

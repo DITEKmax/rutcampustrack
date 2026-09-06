@@ -70,6 +70,10 @@ message LessonResponse {
   bool is_geo_blocked = 11;
   string room = 12;
   bool is_blocked_by_headman = 13;
+  // JS-STUDENT-01-r1: historical room provenance is not present in the
+  // current schedule schema. Empty state means UNKNOWN, never UNCHANGED.
+  string room_change_state = 14; // unchanged, changed, unknown
+  optional string previous_room = 15;
 }
 
 message LessonsResponse {

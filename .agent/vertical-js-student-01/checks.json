@@ -1,0 +1,141 @@
+{
+  "schema": "rct.checks.v1",
+  "revision": "87784165874e2da6fc261abc1c01584e24624289",
+  "contractRevision": "JS-STUDENT-01-r1",
+  "recordedAt": "2026-09-06T15:48:44+03:00",
+  "environment": "Windows 11; Java 21.0.10; Gradle 8.12; Node 24.14.0; npm 11.9.0; Docker Server 28.5.2",
+  "checks": [
+    {
+      "name": "OpenAPI snapshot update and contract seam",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*OpenApiSnapshotIT\" \"-Popenapi.snapshot.update=true\" --console=plain",
+      "exitCode": 0,
+      "evidence": "BUILD SUCCESSFUL; 3 tests; OpenAPI 3.0.1, nullable reference wrappers, flat geo union, singleton discriminators, required coordinates and both valid runtime payload shapes asserted."
+    },
+    {
+      "name": "OpenAPI no-drift rerun",
+      "command": ".\\gradlew.bat :services:mobile-bff:mobile-bff-app:integrationTest --tests \"*OpenApiSnapshotIT\" --rerun-tasks --console=plain",
+      "exitCode": 0,
+      "evidence": "BUILD SUCCESSFUL in 10s; 6 actionable tasks executed; committed snapshot equals runtime export."
+    },
+    {
+      "name": "Attendance and schedule protobuf generation",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:generateProto :services:schedule-service:schedule-app:generateProto --console=plain",
+      "exitCode": 0,
+      "evidence": "BUILD SUCCESSFUL in 4s after final eligibility, server_now, error detail and coordinate-presence schema."
+    },
+    {
+      "name": "Attendance and schedule compilation",
+      "command": ".\\gradlew.bat :services:attendance-service:attendance-app:compileJava :services:schedule-service:schedule-app:compileJava --console=plain",
+      "exitCode": 0,
+      "execution": "root outside filesystem sandbox",
+      "evidence": "BUILD SUCCESSFUL in 24s; 20 actionable tasks, 9 executed."
+    },
+    {
+      "name": "Frontend lock resolution",
+      "command": "npm install --package-lock-only --ignore-scripts",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Audited 221 packages; 0 vulnerabilities."
+    },
+    {
+      "name": "Frontend clean install",
+      "command": "npm ci --ignore-scripts",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "217 packages installed; 0 vulnerabilities."
+    },
+    {
+      "name": "Frontend dependency audit",
+      "command": "npm audit --json",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "0 info/low/moderate/high/critical vulnerabilities after removing the unused deprecated Telegram SDK chain."
+    },
+    {
+      "name": "Type generation",
+      "command": "npm run generate:types",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Generated from final snapshot SHA-256 c89b30f7fb9ee652e5c38e1bbffdab7e8c152aa994b4c4f9b273263ad5efd508."
+    },
+    {
+      "name": "Generated type drift",
+      "command": "npm run generate:types:check",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Generated TypeScript matches JS-STUDENT-01-r1 and final OpenAPI hash."
+    },
+    {
+      "name": "Fixture conformance",
+      "command": "npm run validate:fixtures",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "9 fixtures validated by the task's documented schema subset validator against the canonical snapshot; full runtime response conformance remains an integration gate."
+    },
+    {
+      "name": "Contract unit tests",
+      "command": "npm run test:contract",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "3 tests passed: fixture set, missing/null coordinate rejection and discriminated geo shape."
+    },
+    {
+      "name": "Vue and core foundation typecheck",
+      "command": "npm run typecheck",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "tsc mobile-core and vue-tsc for current PWA/TMA foundation files passed; app SFC entrypoints are not implemented yet."
+    },
+    {
+      "name": "Foundation typecheck",
+      "command": "npm run typecheck:foundation",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "Strict shared config passed."
+    },
+    {
+      "name": "Frontend foundation lint",
+      "command": "npm run lint",
+      "cwd": "frontends",
+      "exitCode": 0,
+      "evidence": "ESLint passed current mobile-core, PWA Vue and TMA Vue foundation scopes with max warnings 0; production UI remains unimplemented."
+    }
+  ],
+  "diagnostics": [
+    {
+      "check": "fixture conformance before nullable export correction",
+      "exitCode": 1,
+      "link": "required-nullable fields in JS-STUDENT-01-r1",
+      "reproduction": "Fixtures containing explicit null failed because the OpenAPI 3.1 export discarded @Schema(nullable=true).",
+      "correction": "Pinned canonical export to OpenAPI 3.0.1 and emitted nullable allOf wrappers for reference properties; retained strict fixtures.",
+      "recheck": "Fixture conformance, generated types and OpenAPI drift all pass."
+    },
+    {
+      "check": "initial npm audit",
+      "exitCode": 1,
+      "link": "new TMA foundation dependency",
+      "reproduction": "Four high findings followed the unused deprecated @telegram-apps/sdk -> valibot chain (GHSA-vqpr-j7v3-hqw9 plus inherited-object-name advisory).",
+      "correction": "Removed the unused SDK and froze a narrow typed boundary around Telegram's injected WebApp API.",
+      "recheck": "npm audit --json reports zero vulnerabilities."
+    },
+    {
+      "check": "service compile inside filesystem sandbox",
+      "exitCode": 1,
+      "link": "environment-only verification limitation",
+      "reproduction": "attendance-api-contract could not read already-built shared-web-api ErrorResponse classes, matching the earlier sandbox classpath symptom.",
+      "correction": "No product code changed for this warning/error.",
+      "recheck": "The identical targeted compile outside the sandbox passed with exit 0."
+    }
+  ],
+  "runtime": {
+    "status": "FOUNDATION_PASS",
+    "command": "$env:MOBILE_BFF_PORT='19080'; .\\gradlew.bat :services:mobile-bff:mobile-bff-app:bootRun --console=plain",
+    "startup": "Tomcat 19080; MobileBffApplication started in 2.302s",
+    "probes": [
+      "GET http://127.0.0.1:19080/actuator/health -> HTTP 200 {status:UP}",
+      "GET http://127.0.0.1:19080/api-docs -> HTTP 200, OpenAPI 3.0.1, info.version JS-STUDENT-01-r1, bearerAuth"
+    ],
+    "cleanup": "Task-owned PID 36144 stopped after probes.",
+    "limitation": "This proves only the BFF foundation process/export surface. The product story, Mongo transaction and HTTP-to-gRPC path remain implementation/runtime gates."
+  }
+}

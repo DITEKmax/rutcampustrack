@@ -1,0 +1,36 @@
+{
+  "semester": {
+    "id": "9",
+    "name": "Осень 2026",
+    "startsOn": "2026-09-01",
+    "endsOn": "2026-12-31"
+  },
+  "dateFrom": "2026-09-01",
+  "dateTo": "2026-12-31",
+  "updatedAt": "2026-09-06T08:25:00Z",
+  "lessons": [
+    {
+      "id": "77",
+      "date": "2026-09-06",
+      "lessonNumber": 2,
+      "startsAt": "11:20:00",
+      "endsAt": "12:50:00",
+      "status": "ACTIVE",
+      "subject": {
+        "id": "31",
+        "name": "Распределённые системы",
+        "type": "LECTURE"
+      },
+      "room": {
+        "current": "А-401",
+        "previous": null,
+        "changeState": "UNKNOWN"
+      }
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "https://ruttrack.example/api/v1/student/schedule?semesterId=9"
+    }
+  }
+}

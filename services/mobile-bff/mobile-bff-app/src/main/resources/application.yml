@@ -1,0 +1,17 @@
+server:
+  port: ${MOBILE_BFF_PORT:9080}
+
+spring:
+  application:
+    name: mobile-bff
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    version: OPENAPI_3_0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

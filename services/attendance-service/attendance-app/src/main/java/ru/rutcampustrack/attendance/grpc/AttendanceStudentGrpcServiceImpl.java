@@ -80,7 +80,8 @@ public class AttendanceStudentGrpcServiceImpl
                     lesson.getId(), lesson.getGroupId(), lesson.getSubjectId(),
                     semesterCacheService.getActiveSemesterId(), lesson.getLessonNumber(),
                     LocalDate.parse(lesson.getDate()), LocalTime.parse(lesson.getStartTime()),
-                    LocalTime.parse(lesson.getEndTime()), lesson.getStatus(), lesson.getIsGeoBlocked());
+                    LocalTime.parse(lesson.getEndTime()), lesson.getStatus(),
+                    lesson.getIsGeoBlocked() || lesson.getIsBlockedByHeadman());
             var ack = checkinService.checkin(
                     identity(claims, displayName), domainLesson, command.getIdempotencyKey(), geo);
             observer.onNext(toProto(ack));

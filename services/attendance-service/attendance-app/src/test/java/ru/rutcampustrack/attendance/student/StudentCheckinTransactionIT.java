@@ -2,6 +2,7 @@ package ru.rutcampustrack.attendance.student;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Counter;
+import com.networknt.schema.ValidationMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
@@ -48,6 +49,7 @@ import ru.rutcampustrack.attendance.student.StudentCheckinException.Code;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.*;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 import ru.rutcampustrack.shared.outbox.mongo.MongoOutboxStorage;
+import ru.rutcampustrack.attendance.events.EventSchemaValidator;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -57,6 +59,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -375,7 +378,14 @@ class StudentCheckinTransactionIT {
                 student, lesson(), "key-000000000001", new Coordinates(55.75, 37.61));
         assertThat(retry.outcome()).isEqualTo(Outcome.PRESENT);
         assertThat(outbox.findPending(10)).singleElement()
-                .satisfies(record -> assertThat(record.eventType()).isEqualTo("attendance.marked"));
+                .satisfies(record -> {
+                    assertThat(record.eventType()).isEqualTo("attendance.marked");
+                    Set<ValidationMessage> errors = EventSchemaValidator.validate(
+                            "attendance.marked.json", record.payload());
+                    assertThat(errors)
+                            .as("canonical attendance.marked payload must match event schema")
+                            .isEmpty();
+                });
     }
 
     @Test

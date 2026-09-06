@@ -810,7 +810,8 @@
       "post" : {
         "tags" : [ "Checkin" ],
         "summary" : "Геоотметка студента",
-        "description" : "Студент отправляет координаты. Система проверяет геофенс, активную пару и временное окно.",
+        "description" : "Устаревший путь отключён. Используйте канонический student check-in API.",
+        "deprecated" : true,
         "operationId" : "checkin",
         "requestBody" : {
           "content" : {
@@ -823,58 +824,8 @@
           "required" : true
         },
         "responses" : {
-          "201" : {
-            "description" : "Отметка успешно поставлена",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelCheckinResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Геоотметка заблокирована для данной пары",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Активная пара не найдена",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Отметка уже существует",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422" : {
-            "description" : "Координаты вне зоны геофенса",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429" : {
-            "description" : "Превышен лимит запросов",
+          "410" : {
+            "description" : "Устаревший путь отключён",
             "content" : {
               "*/*" : {
                 "schema" : {

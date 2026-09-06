@@ -1,0 +1,47 @@
+{
+  "schema": "rct.evidence.v1",
+  "task": "JS-STUDENT-01-TMA-RESUME",
+  "checkedAt": "2026-09-06T21:56:16+03:00",
+  "checkedRevision": "834f0ca7975914717bf77ea50c4469b92afcfb32",
+  "integrationRevision": "e583f05140c43311b547bbaeaa55c1a7bc3c9ce9",
+  "integrationTmaPick": "23e153f1bc6db9c311c3aaf6351eb3395eb7bb3e",
+  "scope": [
+    "frontends/tma-vue/**",
+    "frontends/mobile-core/** (read-only parity comparison)",
+    "services/auth-service/auth-app/src/test/** (read-only existing TmaIT)",
+    ".agent/js-student-01-tma-resume/**"
+  ],
+  "criteria": {
+    "integrationParity": {
+      "status": "PASS",
+      "evidence": "git diff --exit-code between checked TMA revision and integration HEAD is empty for frontends/tma-vue and frontends/mobile-core. Integration carries the same TMA change as cherry-pick 23e153f1."
+    },
+    "frontendContract": {
+      "status": "PASS_PRESERVED",
+      "evidence": "Prior TMA evidence records the SDK-order regression, canonical JSON request, success token extraction, 401 and missing-host checks, and the seven frontend checks. The current revision is content-equivalent and no product files changed during this resume."
+    },
+    "cryptographicBoundary": {
+      "status": "PASS",
+      "evidence": "The existing auth-service TmaIT ran through the integrationTest task: 8 tests, 0 failures, covering valid HMAC token issuance, tampered/bit-flipped/different-token/missing-hash rejection, expiry, unlinked user rejection and replay-window behavior. It uses test-only data and does not require Telegram."
+    },
+    "localFixture": {
+      "status": "PASS_WITH_ENV_WARNING",
+      "evidence": "Fixture mode launched at http://127.0.0.1:5186/?fixtureToday=default, rendered Today, and after clicking the available action rendered Отмечено/Отметка подтверждена. A screenshot was emitted from the browser after confirmation."
+    },
+    "realTelegram": {
+      "status": "GAP",
+      "evidence": "No Telegram client, bot, live signed initData, or real auth-service request from a Telegram session was available. The backend test proves the local HMAC boundary only; the fixture token is synthetic."
+    },
+    "scopeIntegrity": {
+      "status": "PASS",
+      "evidence": "The TMA worktree was clean before evidence creation; no product code or shared mobile-core file was changed. Only this resume evidence directory was added."
+    }
+  },
+  "priorEvidence": [
+    ".agent/js-student-01-fix-tma/checks.json",
+    ".agent/js-student-01-fix-tma/evidence.json",
+    ".agent/js-student-01-fix-tma/summary.md"
+  ],
+  "officialReference": "https://core.telegram.org/bots/webapps#initializing-mini-apps",
+  "secretHandling": "No live initData, user credentials, bot token, access token, private key, or other secret was read or recorded."
+}

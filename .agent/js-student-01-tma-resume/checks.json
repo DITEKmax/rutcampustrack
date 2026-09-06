@@ -1,0 +1,89 @@
+{
+  "schema": "rct.checks.v1",
+  "task": "JS-STUDENT-01-TMA-RESUME",
+  "revision": "834f0ca7975914717bf77ea50c4469b92afcfb32",
+  "branch": "codex/js-student-01-fix-tma",
+  "integrationRevision": "e583f05140c43311b547bbaeaa55c1a7bc3c9ce9",
+  "model": "gpt-5.6-luna",
+  "effort": "max",
+  "recordedAt": "2026-09-06T21:56:16+03:00",
+  "environment": "Windows PowerShell; Node 24.14.0; npm 11.9.0; Vite 7.3.6; Java 21.0.10; Gradle 8.12; Spring Boot 3.4.1; Testcontainers 1.20.4; Docker Desktop server 28.5.2. No downloads or live credentials used.",
+  "checks": [
+    {
+      "name": "Assigned TMA worktree clean before resume evidence",
+      "cwd": ".",
+      "command": "git status --short --branch",
+      "exitCode": 0,
+      "evidence": "Branch codex/js-student-01-fix-tma at 834f0ca… had no modified or untracked paths before creating this evidence directory."
+    },
+    {
+      "name": "TMA and shared mobile-core parity with integration",
+      "cwd": ".",
+      "command": "git diff --exit-code 834f0ca7975914717bf77ea50c4469b92afcfb32 codex/js-student-01-integration -- frontends/tma-vue frontends/mobile-core",
+      "exitCode": 0,
+      "evidence": "No content difference. Integration HEAD is e583f051… and the TMA pick is 23e153f1…; the same TMA/shared tree is present."
+    },
+    {
+      "name": "Correct auth-service TMA integration test",
+      "cwd": ".",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:integrationTest --tests 'ru.rutcampustrack.auth.integration.TmaIT' --no-daemon",
+      "exitCode": 0,
+      "evidence": "BUILD SUCCESSFUL. JUnit XML reports 8 tests, 0 skipped, 0 failures and 0 errors. Testcontainers-backed Spring auth-service validated test-generated HMAC initData and negative signature/auth cases."
+    },
+    {
+      "name": "Whitespace check on checked product revision",
+      "cwd": ".",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "evidence": "No whitespace errors; the checkout had no product diff at the time of the check."
+    },
+    {
+      "name": "Owned preview ports released",
+      "cwd": ".",
+      "command": "$tmaPortState = @(Get-NetTCPConnection -LocalPort 5186,5187 -State Listen -ErrorAction SilentlyContinue); if ($tmaPortState.Count -eq 0) { 'no listeners on 5186/5187'; exit 0 }; $tmaPortState | Select-Object LocalAddress,LocalPort,OwningProcess; exit 1",
+      "exitCode": 0,
+      "evidence": "No listeners remained on task-owned ports 5186/5187 after the local browser check."
+    }
+  ],
+  "preservedChecks": {
+    "source": ".agent/js-student-01-fix-tma/checks.json",
+    "status": "PRESERVED",
+    "details": "Historical TMA regression, typecheck, zero-warning lint, production build, diff-check and fixture/missing-host/401 browser results remain applicable because the product tree is unchanged. Their historical metadata names cedce8c…; this resume does not silently rewrite that revision."
+  },
+  "runtime": {
+    "fixture": {
+      "command": "$env:VITE_MOBILE_FIXTURE_MODE='true'; npm run dev --workspace @rct/tma-vue -- --host 127.0.0.1 --port 5186",
+      "startup": "Vite 7.3.6 ready at http://127.0.0.1:5186/",
+      "browserUrl": "http://127.0.0.1:5186/?fixtureToday=default",
+      "observations": [
+        "Today rendered the synthetic lesson list and enabled Отметиться action.",
+        "Clicking Отметиться changed the active lesson to Отмечено and the list item to Отметка подтверждена.",
+        "Screenshot emitted after the confirmed state in the Codex in-app browser."
+      ],
+      "processExitCode": 1,
+      "status": "PASS_WITH_ENV_WARNING",
+      "warning": "The browser flow completed, but stopping the preview produced Vite fs-allow errors for the pre-existing frontend dependency junction pointing to the sibling FE worktree's font files. This is an environment serving restriction; no code was changed."
+    }
+  },
+  "diagnostics": [
+    {
+      "name": "Wrong Gradle task is a no-op for *IT",
+      "command": ".\\gradlew.bat :services:auth-service:auth-app:test --tests 'ru.rutcampustrack.auth.integration.TmaIT' --no-daemon",
+      "exitCode": 0,
+      "status": "NOT_EVIDENCE",
+      "evidence": "The project's test task excludes *IT and its report contained zero tests. The correct integrationTest command above was then run and passed 8 tests."
+    },
+    {
+      "name": "Frontend dependency junction fs restriction",
+      "status": "ENVIRONMENT_WARNING",
+      "reproduction": "Vite requests the already-installed @fontsource-variable/onest files through a junction to the sibling FE worktree, which is outside the assigned fs allow list.",
+      "correction": "No product code changed; the browser flow was observed and the warning is retained as a runtime limitation.",
+      "recheck": "Owned preview stopped and ports 5186/5187 were confirmed free."
+    }
+  ],
+  "limitations": [
+    "The local browser host is a synthetic fixture and cannot prove Telegram client launch or Telegram HMAC authenticity.",
+    "TmaIT proves the auth-service HMAC and auth-date boundary with test-only data, not a live Telegram request.",
+    "The prior frontend checks are preserved from their recorded historical evidence because the checked product tree is unchanged; they were not blindly repeated."
+  ]
+}

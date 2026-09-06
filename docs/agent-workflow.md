@@ -1,80 +1,66 @@
 # Агентный workflow RutCampusTrack
 
-✏️ 06.09.2026, решение владельца. Этот документ заменяет маршрутизацию от
-05.09.2026. Control plane — текущий Codex; он не запускает второй orchestrator и
-не обещает качество, цену или scheduler модели.
+✏️ 06.09.2026, решение владельца. Общий model/risk routing, coordinator layer,
+leaf boundary и spawn-параметры каноничны в глобальном
+`C:\Users\maksd\.codex\AGENTS.md`. Этот project-specific документ не повторяет
+его таблицы и описывает порядок работы RutCampusTrack. Control plane — текущий
+Codex; второй orchestrator и собственный scheduler не создаются.
 
-## Выбор модели и риск
+## Project procedure
 
-| Работа | Model ID | Effort |
-|---|---|---|
-| Root orchestration | gpt-6-astra | medium |
-| Очевидный план S0/S1 | gpt-6-astra | low |
-| Неоднозначность, архитектура, продуктовый или риск-вопрос | gpt-6-astra | medium/high |
-| Узкий scout и fallback | gpt-5.6-luna | high |
-| Ограниченная реализация | gpt-5.6-luna | max |
-| Эскалация реализации или разбора | gpt-5.6-terra | high |
-| Hard debug, security, concurrency, важное review | gpt-5.6-sol | high |
-| Исключительный S4 после обоснования | gpt-5.6-sol | xhigh |
+Сначала root фиксирует scope, риск, ownership и compact contract из девяти
+разделов ниже. Root/planner открывает критичные оригиналы; bounded read-only
+coordinators возвращают только узкие evidence и могут запускать назначенные
+fresh leaves в рамках одного coordinator layer. Coordinator не пишет repo,
+docs/evidence или внешнее состояние; leaves не создают детей. Если отдельный
+coordinator не добавляет полезной параллельности, root направляет leaf напрямую.
 
-Astra medium — обычный root. Astra high используется лишь для критичной
-архитектуры, продукта или риска. Terra medium допустима для сложных связей,
-Terra high предпочтительна при эскалации реализации. Sol xhigh требует явного
-S4-обоснования и никогда не ослабляет меры S3.
+Обычная задача в shared checkout имеет одного writer. FE и BE одной истории
+работают в разных worktrees только после contract freeze и сверки
+baseline/revision; parallel writers используют независимые worktrees и
+выделенные runtime resources. Shared contracts, generated types, lockfiles,
+configs, docs и общий status имеют одного writer. Worktree не изолирует ports, DB
+и volumes: интегратор выделяет runtime resources и проверяет объединённый diff.
 
-## Минимально достаточный маршрут
+✏️ 06.09.2026, решение владельца для будущих партий. После freeze API и shared
+components независимые экраны можно выполнять параллельными fresh Luna max
+заданиями; затем для каждой роли в партии создаются отдельные задания на
+end-to-end сценарий от входа до результата, включая negative cases. При
+необходимости интегратор поднимает объединённый Docker runtime, после чего
+проводится fresh независимый Sol important review. Старых пользователей и
+данных нет, поэтому compatibility layer для legacy не добавляется; проверяются
+принятые новые flows, authz и data invariants. В текущей партии пять defects,
+TMA checks отложены владельцем; финальную интеграцию в main root выполнит позже,
+сохранив pre-dirty состояние.
 
-| Риск | Маршрут |
-|---|---|
-| S0 | Luna high для точного поиска либо Luna max для крошечной ограниченной правки → применимые checks → итог root; отдельный scout, planner и review не обязательны. |
-| S1 | Узкий scout при необходимости → compact contract → Luna max → checks/runtime. |
-| S2 | Luna high scout → Astra low/medium contract → Luna max; при сложности Terra high → checks/runtime → свежий Sol high важного review. |
-| S3 | Scout → Astra medium/high contract → Terra high или Sol high → tests/runtime → свежий Sol high review; свежий Astra medium/high architecture review при критичной архитектуре, риске или неопределённости. |
-| S4 | Исключение: обоснованный Sol xhigh или Astra high; S3-предохранители сохраняются. |
+## Escalation and independence
 
-Root активно делегирует полезную ограниченную работу, чтобы сохранять контекст;
-не создаёт фиксированный «зоопарк» ролей и не поручает широкое исследование без
-конкретного вопроса. Обычный task в shared folder имеет одного writer. Root,
-explorer и reviewer не пишут код; developer — единственный writer в назначенной
-области. После contract freeze FE и BE одной истории могут работать в разных
-worktrees с общими baseline и revision; contracts, generated types, lockfiles,
-configs, docs и общий status остаются у одного writer, а интеграцию делает
-назначенный developer.
+При дефекте contract/evidence, failing check, архитектурной границе или риске
+сначала зафиксируй воспроизведение и новое evidence. Любая implementation/debug
+эскалация проходит bounded repair contract (defect, request/reference,
+reproduction, evidence, correction, scope и root decision); один только риск S3
+не назначает более тяжёлый implementer. После правки обязательна независимая
+recheck затронутой части.
 
-## Эскалация и независимость
+Важный review выполняет fresh независимый reviewer по глобальному канону. Он
+получает исходную цель, contract, стабильный diff, checks и ссылки на критичные
+оригиналы, открывает оригиналы сам и не меняет файлы. Findings содержат
+severity, file:line, evidence, impact и воспроизведение.
 
-Эскалация нужна при дефекте контракта/evidence, коррекции scope, непонятном
-failing check, архитектурной границе или риске security/data loss/concurrency.
-Сначала устрани причину и получи новую информацию; не повторяй ту же попытку.
-Цепочка: cheapest capable Luna max, затем Terra high или Sol high, затем
-независимая повторная проверка. Выбирай ближайшую способную модель, а не
-проходи ступени формально.
+## Spawn и handoff
 
-Важный review выполняет свежий Sol high без transcript автора. Свежий
-Astra medium/high architecture review опционален при критичной архитектуре,
-риске или существенной неопределённости. Reviewer получает criteria, стабильный diff и evidence;
-последующая правка требует повторной проверки затронутой части.
+Каждый spawn получает явные model/effort, свежий compact packet и
+`fork_turns="none"`; роль не закрепляет model/effort в TOML. Фактическую пару
+подтверждай runtime metadata, а config считай только default для новых spawn:
+он не меняет уже запущенную сессию. Если поверхность не поддерживает выбранную
+пару, зафиксируй BLOCKED и сообщи root.
 
-## Spawn и роли
-
-`.codex/config.toml` задаёт root и безопасный fallback. Файлы explorer,
-developer и reviewer задают только поведение роли: model и effort в них не
-закрепляются, потому что они перекрыли бы routing явного запуска. Каждый spawn
-передаёт обязательную пару model/effort, свежий compact packet и `fork_turns="none"`;
-полная история не используется для override. Фактические параметры подтверждай
-runtime metadata. Config не меняет параметры уже запущенной сессии.
-
-Если поверхность не поддерживает выбранные model/effort, фиксируй BLOCKED
-routing и используй явно поддержанный выбор. Не создавай скрытый CLI-orchestrator.
-
-Handoff обязателен: research даёт compact evidence; planner открывает критичные
-оригиналы, а не только пересказ scout, и формирует contract; developer получает
-contract и необходимые файлы; reviewer получает исходную цель, contract, diff и
-checks. Explorer не пишет: он возвращает кратко files/symbols,
-patterns/dependencies, tests/constraints, uncertainties и locations. Developer
-читает применимые AGENTS.md и skills, сохраняет evidence, запускает проверки и
-runtime. Reviewer не вносит правки и формулирует finding как severity, file:line,
-evidence, impact и воспроизведение.
+Handoff: узкое evidence → root/planner и критичные originals → contract → fresh
+leaf и необходимые файлы → checks/runtime → independent review. Explorer
+возвращает files/symbols, patterns/dependencies, tests/constraints,
+uncertainties и locations; developer читает applicable AGENTS.md/skills,
+сохраняет evidence и summary; reviewer не вносит правки. Полный transcript
+автора не заменяет packet и evidence.
 
 ## Contract и состояние задачи
 

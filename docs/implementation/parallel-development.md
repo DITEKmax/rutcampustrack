@@ -203,17 +203,25 @@ Figma отдельно рекомендует небольшие логичес�
 
 ## 6. Два исполнителя без расхождения контрактов
 
+Общий model/risk routing и правила coordinator layer каноничны в глобальном
+`C:\Users\maksd\.codex\AGENTS.md`. Ниже остаётся только project-specific
+ownership; таблица не переопределяет model/effort и не создаёт новые роли.
+
 | Участник | Назначение | Область |
 |---|---|---|
-| Root Astra medium | Scope, модель/риск, зависимости, решения и приёмка | Общий план; не основной код |
-| FE developer Luna max | Ограниченная реализация PWA/TMA UI, adapter, states, mocks, tests | Свой frontend worktree |
-| BE developer Luna max; Terra high / Sol high по эскалации | Ограниченная BFF/domain delta, tests и измерения | Свой backend worktree |
-| Reviewer свежий Sol high | Важное review стабильного объединённого diff и runtime evidence | Без правок |
+| Root | Scope, contract, зависимости, решения и приёмка | Общий план; не основной код |
+| Task-scoped coordinator | Узкое read-only evidence; при назначении root может запустить свои leaves в одном coordinator layer | Только независимый bounded scope; без repo/docs/evidence-записи |
+| FE/BE developer leaf | Ограниченная реализация, tests и измерения по packet | Свой frontend/backend worktree |
+| Свежий reviewer | Важное независимое review стабильного объединённого diff и runtime evidence | Без правок |
 
-Explorer/architect нужны до записи по неопределённости. FE и BE — два экземпляра
-одной роли developer с разными packets, не новые постоянные TOML. Третий слот
-остаётся для необходимой независимой проверки. Свежий Astra medium/high architecture
-review назначается при критичной архитектуре, риске или неопределённости.
+Explorer нужен до записи при неопределённости, а coordinator запускается только
+когда это сохраняет полезную параллельность. Несколько coordinators допустимы
+в одном layer при независимых scopes/resources; nested coordinator запрещён.
+FE и BE — два экземпляра одной роли developer с разными packets, не новые
+постоянные TOML. Shared checkout имеет одного writer; parallel writers работают
+только в независимых worktrees с одним frozen baseline/revision и выделенными
+runtime resources. Shared contracts, generated types, lockfiles, configs, docs и
+status остаются у одного writer.
 
 Сначала один writer фиксирует contract revision и общие foundation-изменения
 в задаче; оба worktree получают один baseline. Если baseline пока uncommitted,

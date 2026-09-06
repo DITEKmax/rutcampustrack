@@ -27,7 +27,7 @@ export class StudentApi {
   private readonly fetcher: typeof fetch
 
   constructor(private readonly options: StudentApiOptions) {
-    this.fetcher = options.fetcher ?? fetch
+    this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
   }
 
   getSession(): Promise<StudentSession> {

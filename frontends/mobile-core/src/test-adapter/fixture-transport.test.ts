@@ -78,4 +78,20 @@ describe('Today fixture transport', () => {
       response: expect.objectContaining({ status: 403 }),
     })
   })
+
+  it('calls default browser fetch with the global receiver and leaves an injected fetch unchanged', async () => {
+    const defaultFetch = vi.fn(function (this: unknown) {
+      if (this !== globalThis) throw new TypeError('Illegal invocation')
+      return Promise.resolve(new Response(JSON.stringify({ id: 'session' })))
+    })
+    vi.stubGlobal('fetch', defaultFetch)
+    const defaultApi = new StudentApi({ accessToken: () => null })
+    await expect(defaultApi.getSession()).resolves.toEqual({ id: 'session' })
+    expect(defaultFetch).toHaveBeenCalledOnce()
+
+    const injectedFetch = vi.fn(() => Promise.resolve(new Response(JSON.stringify({ id: 'injected' }))))
+    const injectedApi = new StudentApi({ accessToken: () => null, fetcher: injectedFetch })
+    await expect(injectedApi.getSession()).resolves.toEqual({ id: 'injected' })
+    expect(injectedFetch).toHaveBeenCalledOnce()
+  })
 })

@@ -1,4 +1,64 @@
 import type { StudentCheckinAck, StudentCheckinCommand, StudentToday, TodayLesson, UnavailableReason } from '../api/types'
+import { StudentApiError } from '../api/student-client'
+
+export interface CheckinAttempt {
+  lessonId: string
+  command: StudentCheckinCommand
+  key: string
+}
+
+interface PendingCheckin {
+  attempt: Promise<CheckinAttempt>
+  inFlight: Promise<StudentCheckinAck> | null
+}
+
+/** Keeps a retryable command only for this running shell instance. */
+export class CheckinCommandRecovery {
+  private readonly pending = new Map<string, PendingCheckin>()
+
+  constructor(private readonly createKey: () => string = newIdempotencyKey) {}
+
+  execute(
+    lessonId: string,
+    acquireCommand: () => Promise<StudentCheckinCommand>,
+    submit: (attempt: CheckinAttempt) => Promise<StudentCheckinAck>,
+  ): Promise<StudentCheckinAck> {
+    let pending = this.pending.get(lessonId)
+    if (!pending) {
+      const attempt = Promise.resolve().then(async () => ({
+        lessonId,
+        command: await acquireCommand(),
+        key: this.createKey(),
+      }))
+      pending = { attempt, inFlight: null }
+      this.pending.set(lessonId, pending)
+      void attempt.catch(() => {
+        if (this.pending.get(lessonId) === pending) this.pending.delete(lessonId)
+      })
+    }
+    if (pending.inFlight) return pending.inFlight
+
+    const completion = pending.attempt
+      .then(submit)
+      .then(
+        (ack) => {
+          if (this.pending.get(lessonId) === pending) this.pending.delete(lessonId)
+          return ack
+        },
+        (error: unknown) => {
+          if (!isAmbiguousCheckinFailure(error) && this.pending.get(lessonId) === pending) this.pending.delete(lessonId)
+          throw error
+        },
+      )
+      .finally(() => { pending.inFlight = null })
+    pending.inFlight = completion
+    return completion
+  }
+}
+
+function isAmbiguousCheckinFailure(error: unknown): boolean {
+  return !(error instanceof StudentApiError) || error.response.status >= 500
+}
 
 export function unavailableReason(error: GeolocationPositionError | null): UnavailableReason {
   if (!error) return 'POSITION_UNAVAILABLE'

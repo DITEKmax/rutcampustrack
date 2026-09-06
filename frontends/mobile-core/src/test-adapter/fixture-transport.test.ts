@@ -89,9 +89,14 @@ describe('Today fixture transport', () => {
     await expect(defaultApi.getSession()).resolves.toEqual({ id: 'session' })
     expect(defaultFetch).toHaveBeenCalledOnce()
 
-    const injectedFetch = vi.fn(() => Promise.resolve(new Response(JSON.stringify({ id: 'injected' }))))
+    let injectedReceiver: unknown
+    const injectedFetch = vi.fn(function (this: unknown) {
+      injectedReceiver = this
+      return Promise.resolve(new Response(JSON.stringify({ id: 'injected' })))
+    })
     const injectedApi = new StudentApi({ accessToken: () => null, fetcher: injectedFetch })
     await expect(injectedApi.getSession()).resolves.toEqual({ id: 'injected' })
     expect(injectedFetch).toHaveBeenCalledOnce()
+    expect(injectedReceiver).toBe(injectedApi)
   })
 })

@@ -13,6 +13,8 @@ describe('geo check-in domain', () => {
   it('uses unavailable discriminator instead of zero coordinates', () => {
     expect(unavailableCommand('TIMEOUT')).toEqual({ geo: { kind: 'UNAVAILABLE', reason: 'TIMEOUT' } })
     expect(unavailableReason({ code: 1, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError)).toBe('PERMISSION_DENIED')
+    expect(unavailableReason({ code: 2, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError)).toBe('POSITION_UNAVAILABLE')
+    expect(unavailableReason({ code: 3, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError)).toBe('TIMEOUT')
   })
 
   it('waits for ACK before projecting pending and derives countdown from server time', () => {

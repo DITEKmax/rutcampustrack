@@ -1,0 +1,58 @@
+[
+  {
+    "revision": "f699a71d plus working R6 diff",
+    "environment": "Windows; Node v24.14.0; npm 11.9.0; isolated fix-retry worktree",
+    "command": "npx vitest run mobile-core/src/test-adapter/fixture-transport.test.ts (pre-fix F7)",
+    "exitCode": 1,
+    "result": "FAIL reproduced native fetch Illegal invocation"
+  },
+  {
+    "revision": "f699a71d plus working R6 diff",
+    "environment": "Windows; Node v24.14.0; npm 11.9.0",
+    "command": "npx vitest run mobile-core/src/domain/checkin-recovery.test.ts (pre-fix R6)",
+    "exitCode": 1,
+    "result": "FAIL reproduced absence of retry recovery contract"
+  },
+  {
+    "revision": "f699a71d plus working R6 diff",
+    "environment": "Windows; Node v24.14.0; npm 11.9.0",
+    "command": "npx vitest run mobile-core/src",
+    "exitCode": 0,
+    "result": "PASS 5 files, 14 tests; includes lost-response same-key/body, 4xx/ACK release, 5xx retention, geo codes and native/injected fetch"
+  },
+  {
+    "revision": "f699a71d plus working R6 diff",
+    "environment": "Windows; Node v24.14.0; npm 11.9.0",
+    "command": "npm run lint",
+    "exitCode": 0,
+    "result": "PASS all mobile-core, PWA Vue and TMA Vue lint"
+  },
+  {
+    "revision": "f699a71d plus working R6 diff",
+    "environment": "Windows; Node v24.14.0; npm 11.9.0; elevated local filesystem access required by esbuild in worktree",
+    "command": "npm run build",
+    "exitCode": 0,
+    "result": "PASS PWA and TMA production Vite builds"
+  },
+  {
+    "revision": "f699a71d plus working R6 diff",
+    "environment": "Windows; Node v24.14.0; npm 11.9.0; elevated local filesystem access required by esbuild in worktree",
+    "command": "npm run test --workspace @rct/tma-vue",
+    "exitCode": 0,
+    "result": "PASS Vitest 6/6 and Node entry test 1/1"
+  },
+  {
+    "revision": "f699a71d plus working R6 diff",
+    "environment": "Windows; Node v24.14.0; npm 11.9.0",
+    "command": "npm run typecheck",
+    "exitCode": 0,
+    "result": "PASS mobile-core, PWA Vue and TMA Vue"
+  },
+  {
+    "revision": "f699a71d plus working R6 diff",
+    "environment": "Windows; Node v24.14.0; npm 11.9.0",
+    "command": "git diff --check",
+    "exitCode": 0,
+    "result": "PASS"
+  }
+]

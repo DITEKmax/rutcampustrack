@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { TodayScreen, StudentApi, StudentApiError, createFixtureTransport, newIdempotencyKey, useToday } from '@rct/mobile-core'
+import { CheckinCommandRecovery, TodayScreen, StudentApi, StudentApiError, createFixtureTransport, useToday } from '@rct/mobile-core'
 import type { TodayLesson } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
 import { authenticateTma } from './tma-auth'
@@ -15,6 +15,7 @@ const offline = ref(!navigator.onLine)
 const error = ref<string | null>(null)
 const api = new StudentApi({ accessToken: () => accessToken.value, onUnauthorized: authenticate, ...(fixtureTransport ? { fetcher: fixtureTransport } : {}) })
 const { query, mutation } = useToday(api, computed(() => ready.value && accessToken.value !== null), offline)
+const checkinRecovery = new CheckinCommandRecovery()
 const todayLoading = computed(() => !ready.value || (accessToken.value !== null && query.isPending.value))
 
 async function authenticate(): Promise<void> {
@@ -30,7 +31,14 @@ async function bootstrap(): Promise<void> {
 
 async function checkin(lesson: TodayLesson): Promise<void> {
   error.value = null
-  try { await mutation.mutateAsync({ lessonId: lesson.schedule.id, command: await host.location(), key: newIdempotencyKey() }) }
+  if (offline.value) return
+  try {
+    await checkinRecovery.execute(
+      lesson.schedule.id,
+      () => host.location(),
+      (attempt) => mutation.mutateAsync(attempt),
+    )
+  }
   catch (cause) { error.value = cause instanceof StudentApiError ? cause.problem?.detail ?? cause.message : cause instanceof Error ? cause.message : 'Не удалось отправить отметку' }
 }
 

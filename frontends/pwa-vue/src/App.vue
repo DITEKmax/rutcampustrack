@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { TodayScreen, SemesterSnapshotStore, StudentApi, StudentApiError, commandFromCoordinates, createFixtureTransport, newIdempotencyKey, offlineToday, unavailableCommand, useToday } from '@rct/mobile-core'
+import { CheckinCommandRecovery, TodayScreen, SemesterSnapshotStore, StudentApi, StudentApiError, commandFromCoordinates, createFixtureTransport, offlineToday, unavailableCommand, unavailableReason, useToday } from '@rct/mobile-core'
 import type { StudentCheckinCommand, StudentSemesterSchedule, TodayLesson } from '@rct/mobile-core'
 import { usePwaAuth } from './auth'
 import { isRecoverableReadFailure } from '@rct/mobile-core'
@@ -25,6 +25,7 @@ const api = new StudentApi({
 })
 const session = ref<Awaited<ReturnType<typeof api.getSession>> | null>(null)
 const { query, mutation } = useToday(api, computed(() => sessionReady.value && auth.accessToken.value !== null), offline)
+const checkinRecovery = new CheckinCommandRecovery()
 
 async function cacheSemester(schedule: StudentSemesterSchedule): Promise<void> {
   if (!session.value) return
@@ -65,16 +66,20 @@ async function bootstrap(): Promise<void> {
   }
 }
 
-async function readPosition(): Promise<GeolocationPosition | null> {
+async function readPosition(): Promise<GeolocationPosition | GeolocationPositionError | null> {
   if (!navigator.geolocation) return null
-  return new Promise((resolve) => navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 }))
+  return new Promise((resolve) => navigator.geolocation.getCurrentPosition(resolve, resolve, { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 }))
 }
 
 async function checkin(lesson: TodayLesson): Promise<void> {
   bootstrapError.value = null
-  const command = fixtureMode ? fixtureCheckinCommand() : await productionCheckinCommand()
+  if (offline.value) return
   try {
-    await mutation.mutateAsync({ lessonId: lesson.schedule.id, command, key: newIdempotencyKey() })
+    await checkinRecovery.execute(
+      lesson.schedule.id,
+      () => fixtureMode ? Promise.resolve(fixtureCheckinCommand()) : productionCheckinCommand(),
+      (attempt) => mutation.mutateAsync(attempt),
+    )
   } catch (error) {
     const problem = error instanceof StudentApiError ? error.problem : null
     bootstrapError.value = problem?.detail ?? (error instanceof Error ? error.message : 'Не удалось отправить отметку')
@@ -82,8 +87,10 @@ async function checkin(lesson: TodayLesson): Promise<void> {
 }
 
 async function productionCheckinCommand(): Promise<StudentCheckinCommand> {
-  const position = await readPosition()
-  return position ? commandFromCoordinates(position) : unavailableCommand('POSITION_UNAVAILABLE')
+  const result = await readPosition()
+  return result && 'coords' in result
+    ? commandFromCoordinates(result)
+    : unavailableCommand(unavailableReason(result))
 }
 
 /** Fixture-only browser control: `fixtureGeo=unavailable|coordinates`; real GPS is never requested. */

@@ -146,12 +146,12 @@ public class StudentAttendanceSnapshotService {
         Instant closesAt = date.atTime(endsAt).atZone(clock.getZone()).toInstant().plus(BUFFER);
         if (now.isBefore(opensAt)) return disabled(EligibilityReason.TOO_EARLY, null);
         if (now.isAfter(closesAt)) return disabled(EligibilityReason.WINDOW_CLOSED, null);
-        if (retryAt != null && now.isBefore(retryAt)) {
-            return disabled(EligibilityReason.COOLDOWN, retryAt);
-        }
         if (request != null && request.getStatus() == LateCheckinRequestStatus.PENDING
                 && retryAt != null && now.isBefore(retryAt)) {
             return disabled(EligibilityReason.PENDING_CONFIRMATION, retryAt);
+        }
+        if (retryAt != null && now.isBefore(retryAt)) {
+            return disabled(EligibilityReason.COOLDOWN, retryAt);
         }
         return new Eligibility(true, EligibilityReason.ELIGIBLE, null);
     }

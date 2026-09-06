@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 import ru.rutcampustrack.attendance.events.EventSchemaValidator;
+import ru.rutcampustrack.attendance.event.EventEnvelope;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
@@ -15,6 +16,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -165,6 +167,29 @@ class LateCheckinEventContractTest {
         assertThat(payload.get("status").asText()).isEqualTo("cancelled");
         assertThat(payload.get("resolution_reason").asText()).isEqualTo("geo_confirmed");
         assertThat(payload.get("decision_by").isNull()).isTrue();
+    }
+
+    @Test
+    void decisionCommandRequiresPositiveInternalActor() throws Exception {
+        String valid = mapper.writeValueAsString(EventEnvelope.build("late_checkin.decision", Map.of(
+                "request_id", "req-42", "approved", true, "decision_by", 42L
+        )));
+        String invalid = mapper.writeValueAsString(EventEnvelope.build("late_checkin.decision", Map.of(
+                "request_id", "req-42", "approved", true, "decision_by", 0L
+        )));
+        String missing = mapper.writeValueAsString(EventEnvelope.build("late_checkin.decision", Map.of(
+                "request_id", "req-42", "approved", true
+        )));
+
+        assertThat(EventSchemaValidator.validate("late_checkin.decision.json", valid))
+                .as("bot command must carry the resolved internal academic user id")
+                .isEmpty();
+        assertThat(EventSchemaValidator.validate("late_checkin.decision.json", invalid))
+                .as("a non-positive audit actor must be rejected")
+                .isNotEmpty();
+        assertThat(EventSchemaValidator.validate("late_checkin.decision.json", missing))
+                .as("a missing audit actor must be rejected")
+                .isNotEmpty();
     }
 
     // =========================================================== helper

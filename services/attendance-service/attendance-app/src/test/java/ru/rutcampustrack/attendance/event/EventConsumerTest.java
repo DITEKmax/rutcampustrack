@@ -16,10 +16,14 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 /**
  * Unit tests for EventConsumer routing logic.
@@ -116,5 +120,26 @@ class EventConsumerTest {
     void missingEventType_isIgnored() {
         eventConsumer.onEvent(Map.of("event_id", "x", "payload", Map.of()));
         verifyNoInteractions(lessonEventService, semesterCacheService);
+    }
+
+    @Test
+    void lateCheckinDecision_passesPositiveInternalActorToTheService() {
+        eventConsumer.onEvent(envelope("late_checkin.decision", Map.of(
+                "request_id", "req-42", "decision_by", 42L, "approved", true
+        )));
+
+        verify(lateCheckinService).applyDecision("req-42", 42L, true);
+    }
+
+    @Test
+    void lateCheckinDecision_missingOrInvalidActorIsIgnored() {
+        eventConsumer.onEvent(envelope("late_checkin.decision", Map.of(
+                "request_id", "req-missing", "approved", true
+        )));
+        eventConsumer.onEvent(envelope("late_checkin.decision", Map.of(
+                "request_id", "req-zero", "decision_by", 0L, "approved", true
+        )));
+
+        verify(lateCheckinService, never()).applyDecision(anyString(), anyLong(), anyBoolean());
     }
 }

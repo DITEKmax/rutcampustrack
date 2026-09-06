@@ -26,7 +26,8 @@
       "type": "object",
       "required": [
         "request_id",
-        "approved"
+        "approved",
+        "decision_by"
       ],
       "properties": {
         "request_id": {
@@ -36,11 +37,9 @@
           "type": "boolean"
         },
         "decision_by": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "description": "Telegram user_id старосты (или null, если не удалось определить)"
+          "type": "integer",
+          "minimum": 1,
+          "description": "Внутренний academic user_id старосты, принявшего решение."
         }
       }
     },

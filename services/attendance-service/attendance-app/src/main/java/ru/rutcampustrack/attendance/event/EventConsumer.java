@@ -137,16 +137,16 @@ public class EventConsumer extends AbstractEventConsumer {
 
     /**
      * Consumed from notification-bot: headman pressed approve/reject on a late-checkin
-     * request. Payload: {@code request_id} (string), {@code decision_by} (long, telegram user_id),
+     * request. Payload: {@code request_id} (string), {@code decision_by} (positive internal user_id),
      * {@code approved} (bool).
      */
     private void handleLateCheckinDecision(Map<String, Object> envelope) {
         Map<String, Object> payload = extractPayload(envelope);
         if (payload == null) return;
         String requestId = (String) payload.get("request_id");
-        Long decisionBy = extractLong(payload, "decision_by");
+        Long decisionBy = extractPositiveLong(payload.get("decision_by"));
         Object approvedRaw = payload.get("approved");
-        if (requestId == null || !(approvedRaw instanceof Boolean)) {
+        if (requestId == null || decisionBy == null || !(approvedRaw instanceof Boolean)) {
             log.warn("late_checkin.decision: missing required fields, ignoring: {}", payload);
             return;
         }
@@ -186,5 +186,14 @@ public class EventConsumer extends AbstractEventConsumer {
         Object value = map.get(key);
         if (value == null) return null;
         return ((Number) value).longValue();
+    }
+
+    private Long extractPositiveLong(Object value) {
+        if (!(value instanceof Byte || value instanceof Short
+                || value instanceof Integer || value instanceof Long)) {
+            return null;
+        }
+        long candidate = ((Number) value).longValue();
+        return candidate > 0 ? candidate : null;
     }
 }

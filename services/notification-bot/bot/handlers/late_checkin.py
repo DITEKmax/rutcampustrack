@@ -19,7 +19,7 @@ import logging
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
-from bot.handlers.excuse import _verify_headman
+from bot.handlers.excuse import _resolve_headman
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +36,10 @@ async def handle_late_checkin_decision(callback: CallbackQuery, **data) -> None:
     action, request_id = parts[1], parts[2]
     approved = action == "approve"
 
-    # M09 G6 (06 P1-1) — role check ДО publish, симметрично excuse.py.
+    # Один lookup ДО publish даёт и role check, и canonical internal audit actor.
     academic_client = data.get("academic_client")
-    if not await _verify_headman(callback, academic_client):
+    headman = await _resolve_headman(callback, academic_client)
+    if headman is None:
         return
 
     event_publisher = data.get("event_publisher")
@@ -53,7 +54,7 @@ async def handle_late_checkin_decision(callback: CallbackQuery, **data) -> None:
             {
                 "request_id": request_id,
                 "approved": approved,
-                "decision_by": callback.from_user.id,
+                "decision_by": headman.user_id,
             },
         )
     except Exception:

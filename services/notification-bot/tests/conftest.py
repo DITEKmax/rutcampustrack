@@ -64,7 +64,7 @@ def event_publisher_mock():
 def academic_client_mock():
     """M09 G6.2 — AsyncMock для AcademicGrpcClient.get_user_by_telegram_id.
 
-    По умолчанию возвращает found + is_headman=True (чтобы handler'ы
+    По умолчанию возвращает found + is_headman=True + internal user_id (чтобы handler'ы
     проходили role check в happy-path). Тесты не-старосты override'ят
     return_value на `found=True, is_headman=False` или `found=False`.
     """
@@ -72,5 +72,6 @@ def academic_client_mock():
     user = MagicMock()
     user.found = True
     user.is_headman = True
+    user.user_id = 42
     client.get_user_by_telegram_id = AsyncMock(return_value=user)
     return client

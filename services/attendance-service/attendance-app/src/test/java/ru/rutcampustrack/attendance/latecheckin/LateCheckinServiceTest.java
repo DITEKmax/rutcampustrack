@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
 import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
@@ -48,6 +49,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -387,6 +389,34 @@ class LateCheckinServiceTest {
 
         assertThatThrownBy(() -> service.applyDecision(REQUEST_ID, 777L, true))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void applyDecision_validatesInternalActorInTheRequestGroupBeforePairWrite() {
+        Long internalHeadmanId = 42L;
+        LateCheckinRequest pending = newPending(REQUEST_ID);
+        when(repository.findById(REQUEST_ID)).thenReturn(Optional.of(pending));
+        when(academicGrpcClient.isHeadman(internalHeadmanId, GROUP_ID))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
+
+        assertThatThrownBy(() -> service.applyDecision(REQUEST_ID, internalHeadmanId, true))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(pairWriteCoordinator, never()).lock(anyLong(), anyLong(), anyLong(), any());
+        verify(repository, never()).save(any());
+        verifyNoInteractions(attendanceWritePort, eventPublisher, scheduleGrpcClient);
+    }
+
+    @Test
+    void applyDecision_rejectsMissingActorBeforeGroupLookupOrWrite() {
+        LateCheckinRequest pending = newPending(REQUEST_ID);
+        when(repository.findById(REQUEST_ID)).thenReturn(Optional.of(pending));
+
+        assertThatThrownBy(() -> service.applyDecision(REQUEST_ID, null, true))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verifyNoInteractions(academicGrpcClient, pairWriteCoordinator, attendanceWritePort, eventPublisher);
+        verify(repository, never()).save(any());
     }
 
     // ============================================================== helpers

@@ -241,7 +241,7 @@ public class LateCheckinService {
         if (!Objects.equals(request.getGroupId(), requestContext.getGroupId())) {
             throw new AccessDeniedException("Запрос принадлежит другой группе");
         }
-        applyDecision(requestId, requestContext.getUserId(), approved);
+        applyAuthorizedDecision(requestId, requestContext.getUserId(), approved);
         return repository.findById(requestId).orElse(request);
     }
 
@@ -250,11 +250,30 @@ public class LateCheckinService {
      * Idempotent — duplicate deliveries to an already-decided request are ignored.
      *
      * @param requestId  the Mongo id of the LateCheckinRequest
-     * @param decisionBy telegram user_id (bot path) or internal user_id (web path)
+     * @param decisionBy positive internal academic user_id from notification-bot
      * @param approved   true → APPROVED + attendance upsert; false → REJECTED
      */
     @Transactional
     public void applyDecision(String requestId, Long decisionBy, boolean approved) {
+        LateCheckinRequest initial = repository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+
+        // Duplicate or stale delivery is a no-op and must not acquire the pair lock.
+        if (initial.getStatus() != LateCheckinRequestStatus.PENDING) {
+            return;
+        }
+        if (decisionBy == null || decisionBy <= 0 || initial.getGroupId() == null) {
+            throw new AccessDeniedException("Решение может принимать только староста своей группы");
+        }
+        var headmanCheck = academicGrpcClient.isHeadman(decisionBy, initial.getGroupId());
+        if (headmanCheck == null || !headmanCheck.getIsHeadman()) {
+            throw new AccessDeniedException("Решение может принимать только староста своей группы");
+        }
+
+        applyAuthorizedDecision(requestId, decisionBy, approved);
+    }
+
+    private void applyAuthorizedDecision(String requestId, Long decisionBy, boolean approved) {
         LateCheckinRequest initial = repository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
 
@@ -263,7 +282,7 @@ public class LateCheckinService {
         LateCheckinRequest request = repository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
 
-        // Idempotency: already decided → drop silently (duplicate bot delivery)
+        // Idempotency/race: a geo retry or another delivery may have decided it after authorization.
         if (request.getStatus() != LateCheckinRequestStatus.PENDING) {
             return;
         }

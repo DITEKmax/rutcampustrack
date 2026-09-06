@@ -30,6 +30,7 @@ import ru.rutcampustrack.attendance.checkin.AttendanceRepository;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
 import ru.rutcampustrack.attendance.geofence.GeofenceService;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
@@ -38,11 +39,13 @@ import ru.rutcampustrack.attendance.checkin.AttendanceWritePortImpl;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinEventPublisher;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinRepository;
 import ru.rutcampustrack.attendance.latecheckin.LateCheckinService;
+import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.marking.MarkingService;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkRequest;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
+import ru.rutcampustrack.academic.grpc.HeadmanCheckResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.attendance.student.StudentCheckinException.Code;
@@ -201,6 +204,8 @@ class StudentCheckinTransactionIT {
                 .setDate("2026-09-06").setStartTime("10:00").setEndTime("11:00")
                 .setStatus("active").build());
         when(academicGrpcClient.getSubjectsByIds(List.of(20L))).thenReturn(java.util.Map.of(20L, "Предмет"));
+        when(academicGrpcClient.isHeadman(any(), any()))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
         when(semesterCacheService.getActiveSemesterId()).thenReturn(30L);
     }
 
@@ -389,6 +394,54 @@ class StudentCheckinTransactionIT {
     }
 
     @Test
+    void botDecisionUsesCanonicalActorAndAuthoritativeGroupCheckInMongoTransaction() {
+        LateCheckinRequest pending = seedLateCheckinRequest(LateCheckinRequestStatus.PENDING);
+        when(academicGrpcClient.isHeadman(42L, 10L))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
+
+        lateCheckinService.applyDecision(pending.getId(), 42L, true);
+
+        assertThat(lateCheckinRepository.findById(pending.getId()).orElseThrow())
+                .satisfies(request -> {
+                    assertThat(request.getStatus()).isEqualTo(LateCheckinRequestStatus.APPROVED);
+                    assertThat(request.getDecisionBy()).isEqualTo(42L);
+                });
+        assertThat(attendanceRepository.findAll()).singleElement()
+                .satisfies(attendance -> assertThat(attendance.getMarkedBy()).isEqualTo(42L));
+        verify(academicGrpcClient).isHeadman(42L, 10L);
+        verify(lateCheckinEvents).publishDecided(any(), any(), anyInt(), any(), any());
+    }
+
+    @Test
+    void botDecisionForForeignGroupHeadmanMakesNoMongoWrites() {
+        LateCheckinRequest pending = seedLateCheckinRequest(LateCheckinRequestStatus.PENDING);
+        when(academicGrpcClient.isHeadman(42L, 10L))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
+
+        assertThatThrownBy(() -> lateCheckinService.applyDecision(pending.getId(), 42L, true))
+                .isInstanceOf(AccessDeniedException.class);
+
+        assertThat(lateCheckinRepository.findById(pending.getId()).orElseThrow().getStatus())
+                .isEqualTo(LateCheckinRequestStatus.PENDING);
+        assertThat(attendanceRepository.findAll()).isEmpty();
+        assertThat(pairRepository.findAll()).isEmpty();
+        verifyNoInteractions(lateCheckinEvents);
+    }
+
+    @Test
+    void botDecisionForCancelledRequestRemainsNoOpWithoutAuthorizationOrWrites() {
+        LateCheckinRequest cancelled = seedLateCheckinRequest(LateCheckinRequestStatus.CANCELLED);
+
+        lateCheckinService.applyDecision(cancelled.getId(), 42L, true);
+
+        assertThat(lateCheckinRepository.findById(cancelled.getId()).orElseThrow().getStatus())
+                .isEqualTo(LateCheckinRequestStatus.CANCELLED);
+        assertThat(attendanceRepository.findAll()).isEmpty();
+        assertThat(pairRepository.findAll()).isEmpty();
+        verifyNoInteractions(academicGrpcClient, lateCheckinEvents);
+    }
+
+    @Test
     void concurrentSameKeyConvergesOnOneAckAndOnePendingEvent() throws Exception {
         int count = 12;
         CountDownLatch start = new CountDownLatch(1);
@@ -538,6 +591,23 @@ class StudentCheckinTransactionIT {
                 transactionTemplate,
                 clock
         );
+    }
+
+    private LateCheckinRequest seedLateCheckinRequest(LateCheckinRequestStatus status) {
+        Instant now = clock.instant();
+        return lateCheckinRepository.save(LateCheckinRequest.builder()
+                .studentId(100L)
+                .groupId(10L)
+                .lessonId(1L)
+                .subjectId(20L)
+                .semesterId(30L)
+                .lessonNumber(2)
+                .lessonDate(LocalDate.of(2026, 9, 6))
+                .studentName("Иван Иванов")
+                .status(status)
+                .createdAt(now)
+                .updatedAt(now)
+                .build());
     }
 
     private static void runConcurrent(Callable<?> first, Callable<?> second) throws Exception {

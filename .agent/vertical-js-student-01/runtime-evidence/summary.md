@@ -35,3 +35,7 @@ The final frontend asset binding is unchanged after the successful browser phase
 ## Limitations
 
 The production non-loopback PWA transport remains unverified because external TLS interception returned 499; evidence is the task HTTPS loopback origin, not a global trust/AV change. Real Telegram delivery is not proven. No additional full runtime was started after the accepted harness-expectation correction; its syntax and preflight checks passed, while the existing browser and server evidence are composed as described above.
+
+## Contract closure
+
+The full attendance unit suite passed after the late-checkin repair (`:services:attendance-service:attendance-app:test`, exit 0). The initial attendance OpenAPI snapshot check reproduced a legacy-checkin drift (exit 1). The canonical `-Popenapi.snapshot.update=true` export, its exact snapshot recheck, and each of the PWA/web-panel/mini-app offline generators then passed (all exit 0). A final generated-types `git diff --exit-code` check passed with no residual drift.

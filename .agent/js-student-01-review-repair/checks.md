@@ -1,4 +1,4 @@
-# Checks — revision before commit `e583f05140c43311b547bbaeaa55c1a7bc3c9ce9`
+# Checks — base revision `e583f05140c43311b547bbaeaa55c1a7bc3c9ce9`
 
 Environment: Windows 11, Java 21.0.10, Gradle 8.12, CPython 3.12.13, Docker/Testcontainers Mongo 7.0. Elevated Gradle was required because the normal sandbox ACL cannot read existing shared project classes; the same command then compiled normally.
 

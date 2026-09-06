@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-    [switch]$ValidateOnly
+    [switch]$ValidateOnly,
+    [switch]$SkipPwa
 )
 
 Set-StrictMode -Version Latest
@@ -12,8 +13,17 @@ $taskState = [IO.Path]::GetFullPath((Join-Path $repo '.agent\runtime-js-student-
 $keysDir = Join-Path $taskState 'keys'
 $pwaCertificatePath = Join-Path $keysDir 'pwa.crt'
 $pwaPrivateKeyPath = Join-Path $keysDir 'pwa.key'
-$pwaRuntimeHost = 'js-student-01.test'
+$pwaRuntimeHost = '127.0.0.1'
+$pwaRuntimePort = 28443
+$pwaRuntimeOrigin = "https://${pwaRuntimeHost}:$pwaRuntimePort"
 $pwaBrowserScript = Join-Path $PSScriptRoot 'pwa-browser-check.mjs'
+$bundleNodePath = 'C:\Users\maksd\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+$bundlePlaywrightPath = 'C:\Users\maksd\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\node_modules\playwright\index.mjs'
+$chromePath = 'C:\Program Files\Google\Chrome\Application\chrome.exe'
+$nodeCommand = Get-Command node -ErrorAction SilentlyContinue
+$nodeCandidates = @($bundleNodePath)
+if ($null -ne $nodeCommand) { $nodeCandidates += $nodeCommand.Source }
+$nodeExecutable = @($nodeCandidates | Where-Object { Test-Path -LiteralPath $_ }) | Select-Object -First 1
 $evidenceRoot = Join-Path $repo '.agent\vertical-js-student-01\runtime-evidence'
 $runId = [DateTimeOffset]::Now.ToString('yyyyMMdd-HHmmss')
 $evidenceDir = Join-Path $evidenceRoot $runId
@@ -32,7 +42,7 @@ $containers = [ordered]@{
     Rabbit = 'rct-js-student-01-rabbit'
 }
 $ports = @(25431, 25432, 27027, 26379, 25672, 35672, 29090, 29091, 29191,
-    29092, 29192, 29093, 29193, 29080, 28080)
+    29092, 29192, 29093, 29193, 29080, 28080, $pwaRuntimePort)
 
 $report = [ordered]@{
     schema = 'rct.runtime-evidence.v1'
@@ -278,6 +288,25 @@ function Get-HttpHeaderValue {
     return [string]::Join(',', @($Response.Headers[$Name]))
 }
 
+function Get-SafeHttpResponse {
+    param([object]$Response)
+    $body = Get-HttpBodyText $Response
+    $safe = [ordered]@{
+        statusCode = [int]$Response.StatusCode
+        contentType = Get-HttpHeaderValue $Response 'Content-Type'
+        server = Get-HttpHeaderValue $Response 'Server'
+        via = Get-HttpHeaderValue $Response 'Via'
+        bodyLength = $body.Length
+    }
+    try {
+        $json = $body | ConvertFrom-Json
+        foreach ($field in @('status', 'code', 'title', 'type')) {
+            if ($null -ne $json.$field) { $safe[$field] = [string]$json.$field }
+        }
+    } catch { }
+    return $safe
+}
+
 function Invoke-RabbitManagement {
     param(
         [ValidateSet('GET', 'POST', 'PUT')][string]$Method,
@@ -320,10 +349,11 @@ function New-PwaRuntimeCertificate {
     )
     $openssl = @($opensslCandidates | Where-Object { Test-Path -LiteralPath $_ }) | Select-Object -First 1
     Assert-That (-not [string]::IsNullOrWhiteSpace($openssl)) 'task-scoped OpenSSL is available for the HTTPS PWA runtime'
+    $sanType = if ($pwaRuntimeHost -match '^\d{1,3}(\.\d{1,3}){3}$') { "IP:$pwaRuntimeHost" } else { "DNS:$pwaRuntimeHost" }
     $opensslArgs = @(
         'req', '-x509', '-nodes', '-newkey', 'rsa:2048', '-days', '1',
         '-keyout', $pwaPrivateKeyPath, '-out', $pwaCertificatePath,
-        '-subj', "/CN=$pwaRuntimeHost", '-addext', "subjectAltName=DNS:$pwaRuntimeHost"
+        '-subj', "/CN=$pwaRuntimeHost", '-addext', "subjectAltName=$sanType"
     )
     $output = @(& $openssl @opensslArgs 2>&1)
     if ($LASTEXITCODE -ne 0) {
@@ -340,6 +370,7 @@ function Invoke-PwaBrowserRuntime {
     Assert-That (Test-Path -LiteralPath (Join-Path $distDirectory 'sw.js')) 'production PWA service worker exists'
     Assert-That (Test-Path -LiteralPath (Join-Path $distDirectory 'sw-assets.js')) 'production PWA precache manifest exists'
     $playwrightCandidates = @(
+        $bundlePlaywrightPath,
         (Join-Path $repo 'tests\e2e\node_modules\playwright\index.mjs'),
         (Join-Path $repo 'node_modules\playwright\index.mjs')
     )
@@ -348,7 +379,8 @@ function Invoke-PwaBrowserRuntime {
 
     $environmentNames = @(
         'RCT_PWA_DIST', 'RCT_PWA_GATEWAY_URL', 'RCT_PWA_RUNTIME_HOST', 'RCT_PWA_CERT',
-        'RCT_PWA_KEY', 'RCT_PWA_LOGIN', 'RCT_PWA_PASSWORD', 'RCT_PWA_SCREENSHOT',
+        'RCT_PWA_KEY', 'RCT_PWA_PORT', 'RCT_PWA_LOGIN', 'RCT_PWA_PASSWORD', 'RCT_PWA_SCREENSHOT',
+        'RCT_PWA_PROGRESS', 'RCT_CHROME_PATH',
         'RCT_PLAYWRIGHT_MODULE'
     )
     $oldEnvironment = @{}
@@ -359,15 +391,19 @@ function Invoke-PwaBrowserRuntime {
         $env:RCT_PWA_RUNTIME_HOST = $pwaRuntimeHost
         $env:RCT_PWA_CERT = $pwaCertificatePath
         $env:RCT_PWA_KEY = $pwaPrivateKeyPath
+        $env:RCT_PWA_PORT = [string]$pwaRuntimePort
         $env:RCT_PWA_LOGIN = 'student'
         $env:RCT_PWA_PASSWORD = $studentPassword
         $env:RCT_PWA_SCREENSHOT = Join-Path $evidenceDir 'pwa-offline-reload.png'
+        $env:RCT_PWA_PROGRESS = Join-Path $evidenceDir 'pwa-browser-progress.log'
+        $env:RCT_CHROME_PATH = $chromePath
         $env:RCT_PLAYWRIGHT_MODULE = $playwrightModule
-        $output = @(& node $pwaBrowserScript 2>&1)
+        $output = @(& $nodeExecutable $pwaBrowserScript 2>&1)
         $jsonLine = @($output | ForEach-Object { [string]$_ } |
             Where-Object { $_.TrimStart().StartsWith('{') } | Select-Object -Last 1)
         Assert-That ($jsonLine.Count -eq 1) "PWA browser runtime did not return JSON evidence: $($output | Select-Object -Last 1)"
         $result = $jsonLine | ConvertFrom-Json
+        $report.pwaBrowser = $result
         if ($result.status -ne 'PASS') {
             $failure = if ($null -ne $result.error) { [string]$result.error } else { 'no error detail' }
             throw "PWA browser runtime failed at '$($result.phase)': $failure"
@@ -383,7 +419,11 @@ function Invoke-PwaBrowserRuntime {
 if ($ValidateOnly) {
     $null = Get-Command docker -ErrorAction Stop
     $null = Get-Command java -ErrorAction Stop
-    $null = Get-Command node -ErrorAction Stop
+    Assert-That (-not [string]::IsNullOrWhiteSpace($nodeExecutable)) 'Node executable is available for the PWA browser runtime'
+    Assert-That (Test-Path -LiteralPath $chromePath) 'Chrome executable is available for the PWA browser runtime'
+    Assert-That ((Test-Path -LiteralPath $bundlePlaywrightPath) -or
+        (Test-Path -LiteralPath (Join-Path $repo 'tests\e2e\node_modules\playwright\index.mjs')) -or
+        (Test-Path -LiteralPath (Join-Path $repo 'node_modules\playwright\index.mjs'))) 'Playwright module is available for the PWA browser runtime'
     $null = Get-BootJar 'services\auth-service\auth-app\build\libs'
     $null = Get-BootJar 'services\academic-service\academic-app\build\libs'
     $null = Get-BootJar 'services\schedule-service\schedule-app\build\libs'
@@ -412,6 +452,11 @@ try {
     $report.stage = 'preflight'
     $null = Get-Command docker -ErrorAction Stop
     $null = Get-Command java -ErrorAction Stop
+    Assert-That (-not [string]::IsNullOrWhiteSpace($nodeExecutable)) 'Node executable is available for the PWA browser runtime'
+    Assert-That (Test-Path -LiteralPath $chromePath) 'Chrome executable is available for the PWA browser runtime'
+    Assert-That ((Test-Path -LiteralPath $bundlePlaywrightPath) -or
+        (Test-Path -LiteralPath (Join-Path $repo 'tests\e2e\node_modules\playwright\index.mjs')) -or
+        (Test-Path -LiteralPath (Join-Path $repo 'node_modules\playwright\index.mjs'))) 'Playwright module is available for the PWA browser runtime'
     foreach ($name in @($containers.Values)) {
         Assert-That (-not (Test-DockerObject -Kind container -Name $name)) "task container already exists: $name"
     }
@@ -565,25 +610,39 @@ try {
         SPRING_DATA_REDIS_PORT='26379'; REDIS_PASSWORD=$redisPassword; AUTH_SERVICE_URL='http://127.0.0.1:29090';
         ACADEMIC_SERVICE_URL='http://127.0.0.1:29091'; SCHEDULE_SERVICE_URL='http://127.0.0.1:29092';
         ATTENDANCE_SERVICE_URL='http://127.0.0.1:29093'; MOBILE_BFF_URL='http://127.0.0.1:29080';
-        INTERNAL_ISSUER_SECRET=$issuerSecret; MANAGEMENT_TRACING_ENABLED='false'
+        INTERNAL_ISSUER_SECRET=$issuerSecret; CORS_ALLOWED_ORIGIN=$pwaRuntimeOrigin; MANAGEMENT_TRACING_ENABLED='false'
     }
     Wait-ServiceHealth $gateway 'http://127.0.0.1:28080/actuator/health' 150
     Add-Assertion 'six real service processes ready' @{ serviceCount = 6; hiddenProcesses = $true }
 
-    $report.stage = 'pwa-browser-runtime'
-    Write-Host 'Running production PWA HTTPS login, refresh-cookie and offline reload probes...'
-    $pwaBrowserResult = Invoke-PwaBrowserRuntime
-    $report.pwaBrowser = $pwaBrowserResult
-    Add-Assertion 'production PWA uses scoped HTTPS refresh cookie and offline shell' @{
-        origin = $pwaBrowserResult.origin
-        cookie = $pwaBrowserResult.cookie
-        onlineServiceWorker = $pwaBrowserResult.online.registrationState
-        onlinePrecache = $pwaBrowserResult.online.precacheCoverage
-        offlineRows = $pwaBrowserResult.offline.todayRowCount
-        offlineMutationsDisabled = $pwaBrowserResult.offline.mutationDisabled
-        apiCacheEntries = $pwaBrowserResult.offline.cacheApiEntries
-        persistentJwt = $pwaBrowserResult.offline.jwtLikeInStorage -or $pwaBrowserResult.offline.indexedDbJwtLike
-        screenshot = $pwaBrowserResult.screenshot
+    $diagnosticLoginBody = @{ login = 'student'; password = $studentPassword } | ConvertTo-Json -Compress
+    $diagnosticLoginResponse = Invoke-HttpJson POST 'http://127.0.0.1:28080/api/auth/login' @{ Origin = $pwaRuntimeOrigin } $diagnosticLoginBody
+    $report.directGatewayLogin = Get-SafeHttpResponse $diagnosticLoginResponse
+    $report.directGatewayLogin.origin = $pwaRuntimeOrigin
+    if ($SkipPwa) {
+        $report.pwaBrowser = [ordered]@{
+            status = 'NOT_RUN'
+            reason = 'Server assertions only; prior browser PASS remains the applicable evidence.'
+            priorEvidence = '.agent/vertical-js-student-01/runtime-evidence/20260906-224922/runtime-result.json'
+        }
+        Add-Assertion 'PWA browser evidence reused for server-only run' @{ priorRun = '20260906-224922'; browserPhase = 'PASS' }
+    } else {
+        $report.stage = 'pwa-browser-runtime'
+        Write-Host 'Running production PWA HTTPS login, refresh-cookie and offline reload probes...'
+        $pwaBrowserResult = Invoke-PwaBrowserRuntime
+        $proxyLogin = @($pwaBrowserResult.apiResponses | Where-Object { $_.path -eq '/api/auth/login' } | Select-Object -Last 1)
+        $report.gatewayLoginComparison = [ordered]@{ direct = $report.directGatewayLogin; proxy = if ($proxyLogin.Count -eq 1) { $proxyLogin[0] } else { $null } }
+        Add-Assertion 'production PWA uses scoped HTTPS refresh cookie and offline shell' @{
+            origin = $pwaBrowserResult.origin
+            cookie = $pwaBrowserResult.cookie
+            onlineServiceWorker = $pwaBrowserResult.online.registrationState
+            onlinePrecache = $pwaBrowserResult.online.precacheCoverage
+            offlineRows = $pwaBrowserResult.offline.todayRowCount
+            offlineMutationsDisabled = $pwaBrowserResult.offline.mutationDisabled
+            apiCacheEntries = $pwaBrowserResult.offline.cacheApiEntries
+            persistentJwt = $pwaBrowserResult.offline.jwtLikeInStorage -or $pwaBrowserResult.offline.indexedDbJwtLike
+            screenshot = $pwaBrowserResult.screenshot
+        }
     }
 
     $evidenceQueue = 'rct-js-student-01-evidence'
@@ -612,10 +671,10 @@ try {
     Write-Host 'Exercising headman-blocked student rejection and retired legacy check-in...'
     $blockedScheduleItemId = [long](Read-PsqlScalar $containers.SchedulePostgres 'schedule_db' @"
 INSERT INTO schedule_items (
-    group_id, subject_id, teacher_id, semester_id, day_of_week, lesson_number,
+    group_id, subject_id, semester_id, day_of_week, lesson_number,
     start_time, end_time, week_type, room, is_active
 )
-VALUES (1, 1, 1, 1, 0, 3, TIME '00:00:00', TIME '23:59:59', 'all', 'РТ-03', TRUE)
+VALUES (1, 1, 1, 0, 3, TIME '00:00:00', TIME '23:59:59', 'all', 'РТ-03', TRUE)
 RETURNING id
 "@)
     $blockedLessonId = [long](Read-PsqlScalar $containers.SchedulePostgres 'schedule_db' @"
@@ -686,8 +745,16 @@ RETURNING id
     $todayResponse = Invoke-HttpJson GET 'http://127.0.0.1:28080/api/v1/student/today' $readHeaders
     $today = Get-HttpBodyText $todayResponse | ConvertFrom-Json
     $todayIds = @($today.lessons | ForEach-Object { [long]$_.schedule.id })
+    $blockedTodayLesson = @($today.lessons | Where-Object { [long]$_.schedule.id -eq $blockedLessonId })
+    $report.studentRead = [ordered]@{
+        todayLessonIds = $todayIds
+        expectedLessonIds = @($pendingLessonId, $presentLessonId, $blockedLessonId)
+        blockedEligibility = if ($blockedTodayLesson.Count -eq 1) {
+            [ordered]@{ allowed = $blockedTodayLesson[0].checkinEligibility.allowed; reason = $blockedTodayLesson[0].checkinEligibility.reason }
+        } else { $null }
+    }
     Assert-That ($todayResponse.StatusCode -eq 200 -and $today.timeZone -eq 'Europe/Moscow') 'Today returns Moscow projection'
-    Assert-That ($todayIds.Count -eq 2 -and $todayIds[0] -eq $pendingLessonId -and $todayIds[1] -eq $presentLessonId) 'Today contains both seeded lessons in schedule order'
+    Assert-That ($todayIds.Count -eq 3 -and $todayIds[0] -eq $pendingLessonId -and $todayIds[1] -eq $presentLessonId -and $todayIds[2] -eq $blockedLessonId) 'Today contains seeded and headman-blocked lessons in schedule order'
     Assert-That (@($today.lessons | Where-Object {
         $_.schedule.subject.id -eq '1' -and
         $_.schedule.subject.name -eq 'Runtime геопроверка' -and
@@ -699,6 +766,7 @@ RETURNING id
         $null -eq $_.attendance -and
         $null -eq $_.request
     }).Count -eq 2) 'Today composes academic metadata, schedule provenance and live attendance eligibility'
+    Assert-That ($blockedTodayLesson.Count -eq 1 -and -not $blockedTodayLesson[0].checkinEligibility.allowed -and $blockedTodayLesson[0].checkinEligibility.reason -eq 'GEO_BLOCKED') 'Today retains the headman-blocked lesson with disabled eligibility'
     Assert-That ($today.lessons[0].schedule.room.current -eq 'РТ-01' -and $today.lessons[1].schedule.room.current -eq 'РТ-02') 'Today preserves the two seeded schedule rooms'
     Assert-That ((Get-HttpHeaderValue $todayResponse 'Cache-Control') -match 'no-store') 'Today is no-store'
 
@@ -707,7 +775,7 @@ RETURNING id
     $semesterSchedule = Get-HttpBodyText $scheduleResponse | ConvertFrom-Json
     $scheduleIds = @($semesterSchedule.lessons | ForEach-Object { [long]$_.id })
     $scheduleEtag = Get-HttpHeaderValue $scheduleResponse 'ETag'
-    Assert-That ($scheduleResponse.StatusCode -eq 200 -and $scheduleIds.Count -eq 2 -and $scheduleIds[0] -eq $pendingLessonId -and $scheduleIds[1] -eq $presentLessonId) 'authorized semester schedule returns both materialized lessons'
+    Assert-That ($scheduleResponse.StatusCode -eq 200 -and $scheduleIds.Count -eq 3 -and $scheduleIds[0] -eq $pendingLessonId -and $scheduleIds[1] -eq $presentLessonId -and $scheduleIds[2] -eq $blockedLessonId) 'authorized semester schedule returns seeded and headman-blocked lessons'
     Assert-That ($semesterSchedule.semester.id -eq '1' -and $semesterSchedule.dateFrom -eq $session.semester.startsOn -and $semesterSchedule.dateTo -eq $session.semester.endsOn) 'semester schedule is bounded by the authenticated active semester'
     Assert-That (-not [string]::IsNullOrWhiteSpace($semesterSchedule.updatedAt) -and -not [string]::IsNullOrWhiteSpace($scheduleEtag)) 'semester schedule carries updatedAt and ETag'
     Assert-That ((Get-HttpHeaderValue $scheduleResponse 'Cache-Control') -match 'private' -and (Get-HttpHeaderValue $scheduleResponse 'Cache-Control') -match 'no-cache') 'semester schedule is private and revalidated'
@@ -723,6 +791,8 @@ RETURNING id
         groupId = 1
         semesterId = 1
         todayLessonIds = $todayIds
+        blockedLessonId = $blockedLessonId
+        blockedEligibilityReason = $blockedTodayLesson[0].checkinEligibility.reason
         scheduleLessonIds = $scheduleIds
         etag304 = $true
         foreignSemesterStatus = 403

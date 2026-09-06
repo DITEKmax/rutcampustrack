@@ -1,0 +1,353 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01-r1",
+  "runId": "20260906-224922",
+  "startedAt": "2026-09-06T22:49:22.8067701+03:00",
+  "status": "FAIL",
+  "stage": "headman-block-and-legacy-retirement",
+  "resources": {
+    "network": "rct-js-student-01",
+    "containers": [
+      "rct-js-student-01-pg-academic",
+      "rct-js-student-01-pg-schedule",
+      "rct-js-student-01-mongo",
+      "rct-js-student-01-redis",
+      "rct-js-student-01-rabbit"
+    ],
+    "ports": [
+      25431,
+      25432,
+      27027,
+      26379,
+      25672,
+      35672,
+      29090,
+      29091,
+      29191,
+      29092,
+      29192,
+      29093,
+      29193,
+      29080,
+      28080,
+      28443
+    ]
+  },
+  "services": {
+    "academic": {
+      "pid": 53424,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\academic.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\academic.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29091/actuator/health"
+    },
+    "auth": {
+      "pid": 53568,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\auth.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\auth.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29090/actuator/health"
+    },
+    "schedule": {
+      "pid": 15844,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\schedule.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\schedule.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29092/actuator/health"
+    },
+    "attendance": {
+      "pid": 52380,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\attendance.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\attendance.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29093/actuator/health"
+    },
+    "mobile-bff": {
+      "pid": 9224,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\mobile-bff.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\mobile-bff.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29080/actuator/health"
+    },
+    "gateway": {
+      "pid": 46140,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\gateway.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\gateway.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:28080/actuator/health"
+    }
+  },
+  "assertions": [
+    {
+      "name": "isolated infrastructure ready",
+      "passed": true,
+      "evidence": {
+        "containers": 5,
+        "anonymousStorage": true
+      }
+    },
+    {
+      "name": "six real service processes ready",
+      "passed": true,
+      "evidence": {
+        "hiddenProcesses": true,
+        "serviceCount": 6
+      }
+    },
+    {
+      "name": "production PWA uses scoped HTTPS refresh cookie and offline shell",
+      "passed": true,
+      "evidence": {
+        "persistentJwt": false,
+        "origin": "https://127.0.0.1:28443",
+        "offlineMutationsDisabled": true,
+        "cookie": {
+          "name": "rct_refresh",
+          "path": "/api/auth",
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Strict"
+        },
+        "onlineServiceWorker": "activated",
+        "offlineRows": 2,
+        "apiCacheEntries": 0,
+        "screenshot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\pwa-offline-reload.png",
+        "onlinePrecache": "7/7"
+      }
+    },
+    {
+      "name": "task-only RabbitMQ evidence sink ready",
+      "passed": true,
+      "evidence": {
+        "queue": "rct-js-student-01-evidence",
+        "durableAcrossBrokerRestart": true,
+        "exchange": "rut-uit.events"
+      }
+    },
+    {
+      "name": "real auth login through gateway",
+      "passed": true,
+      "evidence": {
+        "httpStatus": 200,
+        "tokenRecorded": false
+      }
+    }
+  ],
+  "directGatewayLogin": {
+    "statusCode": 200,
+    "contentType": "application/json",
+    "server": "",
+    "via": "",
+    "bodyLength": 1553,
+    "origin": "https://127.0.0.1:28443"
+  },
+  "pwaBrowser": {
+    "status": "PASS",
+    "phase": "production PWA offline reload",
+    "origin": "https://127.0.0.1:28443",
+    "seedStatus": 200,
+    "secureContext": true,
+    "cookie": {
+      "name": "rct_refresh",
+      "path": "/api/auth",
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    "online": {
+      "protocol": "https:",
+      "hostname": "127.0.0.1",
+      "isSecureContext": true,
+      "registrationState": "activated",
+      "controllerState": "activated",
+      "cacheNames": [
+        "rct-student-pwa-v3"
+      ],
+      "precacheCoverage": "7/7",
+      "cacheEntryCount": 8,
+      "cacheApiEntries": 0,
+      "jwtLikeInStorage": false,
+      "indexedDbDatabases": 1,
+      "indexedDbJwtLike": false,
+      "todayRowCount": 2,
+      "hasTodayHeading": true,
+      "hasRuntimeSubject": true,
+      "hasFixtureSubject": false,
+      "hasOfflineBadge": false,
+      "mutationDisabled": false
+    },
+    "offline": {
+      "protocol": "https:",
+      "hostname": "127.0.0.1",
+      "isSecureContext": true,
+      "registrationState": "activated",
+      "controllerState": "activated",
+      "cacheNames": [
+        "rct-student-pwa-v3"
+      ],
+      "precacheCoverage": "7/7",
+      "cacheEntryCount": 8,
+      "cacheApiEntries": 0,
+      "jwtLikeInStorage": false,
+      "indexedDbDatabases": 1,
+      "indexedDbJwtLike": false,
+      "todayRowCount": 2,
+      "hasTodayHeading": true,
+      "hasRuntimeSubject": true,
+      "hasFixtureSubject": false,
+      "hasOfflineBadge": true,
+      "mutationDisabled": true
+    },
+    "apiRequests": [
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/student/session",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/student/schedule?semesterId=1",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/student/today",
+        "status": 200
+      }
+    ],
+    "apiResponses": [
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "status": 200,
+        "contentType": "application/json",
+        "server": null,
+        "via": null,
+        "bodyLength": 1553,
+        "problem": {},
+        "setCookies": [
+          {
+            "name": "rct_refresh",
+            "path": "/api/auth",
+            "httpOnly": true,
+            "secure": true,
+            "sameSite": "Strict"
+          }
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh",
+        "status": 200,
+        "contentType": "application/json",
+        "server": null,
+        "via": null,
+        "bodyLength": 1553,
+        "problem": {},
+        "setCookies": [
+          {
+            "name": "rct_refresh",
+            "path": "/api/auth",
+            "httpOnly": true,
+            "secure": true,
+            "sameSite": "Strict"
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/student/session",
+        "status": 200,
+        "contentType": "application/json",
+        "server": null,
+        "via": null,
+        "bodyLength": 458,
+        "problem": {},
+        "setCookies": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/student/schedule?semesterId=1",
+        "status": 200,
+        "contentType": "application/json",
+        "server": null,
+        "via": null,
+        "bodyLength": 818,
+        "problem": {},
+        "setCookies": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/student/today",
+        "status": 200,
+        "contentType": "application/json",
+        "server": null,
+        "via": null,
+        "bodyLength": 951,
+        "problem": {},
+        "setCookies": []
+      }
+    ],
+    "offlineApiRequests": [
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh",
+        "failure": "net::ERR_INTERNET_DISCONNECTED"
+      }
+    ],
+    "offlineApiResponses": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: net::ERR_INTERNET_DISCONNECTED"
+    ],
+    "failedRequests": [
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh",
+        "failure": "net::ERR_INTERNET_DISCONNECTED"
+      }
+    ],
+    "screenshot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-224922\\pwa-offline-reload.png"
+  },
+  "gatewayLoginComparison": {
+    "direct": {
+      "statusCode": 200,
+      "contentType": "application/json",
+      "server": "",
+      "via": "",
+      "bodyLength": 1553,
+      "origin": "https://127.0.0.1:28443"
+    },
+    "proxy": {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "contentType": "application/json",
+      "server": null,
+      "via": null,
+      "bodyLength": 1553,
+      "problem": {},
+      "setCookies": [
+        {
+          "name": "rct_refresh",
+          "path": "/api/auth",
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "Strict"
+        }
+      ]
+    }
+  },
+  "error": "Postgres assertion query failed (docker exit 1): ERROR:  column \"teacher_id\" of relation \"schedule_items\" does not exist\r\nLINE 2:     group_id, subject_id, teacher_id, semester_id, day_of_we...\r\n                                  ^",
+  "completedAt": "2026-09-06T22:51:18.3110314+03:00"
+}

@@ -1,0 +1,128 @@
+{
+  "schema": "rct.runtime-evidence.v1",
+  "task": "JS-STUDENT-01-r1",
+  "runId": "20260906-220011",
+  "startedAt": "2026-09-06T22:00:11.8805653+03:00",
+  "status": "FAIL",
+  "stage": "pwa-browser-runtime",
+  "resources": {
+    "network": "rct-js-student-01",
+    "containers": [
+      "rct-js-student-01-pg-academic",
+      "rct-js-student-01-pg-schedule",
+      "rct-js-student-01-mongo",
+      "rct-js-student-01-redis",
+      "rct-js-student-01-rabbit"
+    ],
+    "ports": [
+      25431,
+      25432,
+      27027,
+      26379,
+      25672,
+      35672,
+      29090,
+      29091,
+      29191,
+      29092,
+      29192,
+      29093,
+      29193,
+      29080,
+      28080,
+      28443
+    ]
+  },
+  "services": {
+    "academic": {
+      "pid": 18352,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\academic.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\academic.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29091/actuator/health"
+    },
+    "auth": {
+      "pid": 34476,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\auth.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\auth.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29090/actuator/health"
+    },
+    "schedule": {
+      "pid": 3496,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\schedule.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\schedule.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29092/actuator/health"
+    },
+    "attendance": {
+      "pid": 19708,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\attendance.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\attendance.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29093/actuator/health"
+    },
+    "mobile-bff": {
+      "pid": 40620,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\mobile-bff.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\mobile-bff.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:29080/actuator/health"
+    },
+    "gateway": {
+      "pid": 28744,
+      "stdout": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\gateway.out.log",
+      "stderr": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\gateway.err.log",
+      "health": "UP",
+      "healthUrl": "http://127.0.0.1:28080/actuator/health"
+    }
+  },
+  "assertions": [
+    {
+      "name": "isolated infrastructure ready",
+      "passed": true,
+      "evidence": {
+        "anonymousStorage": true,
+        "containers": 5
+      }
+    },
+    {
+      "name": "six real service processes ready",
+      "passed": true,
+      "evidence": {
+        "serviceCount": 6,
+        "hiddenProcesses": true
+      }
+    }
+  ],
+  "directGatewayLogin": {
+    "statusCode": 200,
+    "contentType": "application/json",
+    "server": "",
+    "via": "",
+    "bodyLength": 1553,
+    "origin": "https://js-student-01.test:28443"
+  },
+  "pwaBrowser": {
+    "status": "FAIL",
+    "phase": "gateway login seed",
+    "origin": "https://js-student-01.test:28443",
+    "error": "Gateway login returned 499: <!DOCTYPE html>\r\n<html dir=\"ltr\" lang=\"ru\" data-theme=\"&UiTheme&\">\r\n\t<head>\r\n\t\t<title>Обнаружена проблема при проверке сертификата</title>\r\n\t\t<meta charset=\"UTF-8\" />\r\n\t\t<meta content=\"IE=edge\" http-equiv=\"X-UA-Compatible\"/>\r\n\t\t<meta http-equiv=\"Pragma\" content=\"no-cache\" />\r\n\t\t<meta http-equiv=\"Cache-Control\" content=\"no-cache\" />\r\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\r\n\t\t<meta name=\"color-scheme\" content=\"light dark\" />\r\n\t\t<style type=\"text/css\">\r\n\t\t\t:root {\r\n    cursor: default;\r\n    line-height: 1;\r\n    overflow-wrap: break-word;\r\n}\r\nhtml, body, div, span, h1, h2, p, a, strong, b, ul, li, form, label, canvas, time, mark, button, input, u, i {\r\n    margin:0;\r\n    padding:0;\r\n    border:0;\r\n    vertical-align:baseline;\r\n\tbox-sizing: border-box;\r\n}\r\nhtml, body {\r\n\twidth:100%;\r\n}\r\nhtml {\r\n\toverflow: auto;\r\n\theight: auto;\r\n}\r\na {\r\n    background-color: transparent;\r\n\toutline-color: currentcolor;\r\n\tborder-radius:2px;\r\n\ttext-decoration: none;\r\n\tfont-weig",
+    "online": null,
+    "offline": null,
+    "apiRequests": [],
+    "apiResponses": [],
+    "offlineApiRequests": [],
+    "offlineApiResponses": [],
+    "bodyText": "Kaspersky Premium\n\n \nОстановлен переход на недоверенный сайт\n\nОдин или более сертификатов этого сайта недействительны, и мы не можем гарантировать его подлинность. Такое бывает, когда владелец сайта вовремя не обновил сертификат или когда сайт поддельный. Посещение таких сайтов делает вас более уязвимыми для атак.\n\n\"Лаборатория Касперского\" защитила вас от перехода на этот сайт. Можете закрыть его без риска.\n\nПоказать детали",
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 499 (Request has been forbidden by antivirus)",
+      "Failed to load resource: the server responded with a status of 499 (Request has been forbidden by antivirus)",
+      "Failed to load resource: the server responded with a status of 499 (Request has been forbidden by antivirus)"
+    ],
+    "failedRequests": [],
+    "screenshot": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\js-student-01\\integration\\.agent\\vertical-js-student-01\\runtime-evidence\\20260906-220011\\pwa-offline-reload.png"
+  },
+  "error": "PWA browser runtime failed at 'gateway login seed': Gateway login returned 499: <!DOCTYPE html>\r\n<html dir=\"ltr\" lang=\"ru\" data-theme=\"&UiTheme&\">\r\n\t<head>\r\n\t\t<title>Обнаружена проблема при проверке сертификата</title>\r\n\t\t<meta charset=\"UTF-8\" />\r\n\t\t<meta content=\"IE=edge\" http-equiv=\"X-UA-Compatible\"/>\r\n\t\t<meta http-equiv=\"Pragma\" content=\"no-cache\" />\r\n\t\t<meta http-equiv=\"Cache-Control\" content=\"no-cache\" />\r\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\r\n\t\t<meta name=\"color-scheme\" content=\"light dark\" />\r\n\t\t<style type=\"text/css\">\r\n\t\t\t:root {\r\n    cursor: default;\r\n    line-height: 1;\r\n    overflow-wrap: break-word;\r\n}\r\nhtml, body, div, span, h1, h2, p, a, strong, b, ul, li, form, label, canvas, time, mark, button, input, u, i {\r\n    margin:0;\r\n    padding:0;\r\n    border:0;\r\n    vertical-align:baseline;\r\n\tbox-sizing: border-box;\r\n}\r\nhtml, body {\r\n\twidth:100%;\r\n}\r\nhtml {\r\n\toverflow: auto;\r\n\theight: auto;\r\n}\r\na {\r\n    background-color: transparent;\r\n\toutline-color: currentcolor;\r\n\tborder-radius:2px;\r\n\ttext-decoration: none;\r\n\tfont-weig",
+  "completedAt": "2026-09-06T22:02:12.1854174+03:00"
+}

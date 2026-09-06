@@ -29,8 +29,11 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(
@@ -153,6 +156,68 @@ class OpenApiSnapshotIT {
                                 {"geo":{"kind":"COORDINATES","latitude":null,"longitude":37.618423}}
                                 """))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void clientInputFailuresUseTypedProblemDetails() throws Exception {
+        expectProblem(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
+                                """),
+                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_IDEMPOTENCY_KEY);
+
+        expectProblem(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
+                        .header("Idempotency-Key", "short-key")
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
+                                """),
+                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_IDEMPOTENCY_KEY);
+
+        expectProblem(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
+                        .header("Idempotency-Key", "contract-key-0005")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"geo\":"),
+                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST);
+
+        expectProblem(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
+                        .header("Idempotency-Key", "contract-key-0006")
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"geo":{"kind":"UNEXPECTED"}}
+                                """),
+                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST);
+
+        expectProblem(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
+                        .header("Idempotency-Key", "contract-key-0007")
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"geo":{"kind":"COORDINATES","latitude":99,"longitude":37.618423}}
+                                """),
+                HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST);
+
+        expectProblem(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
+                        .header("Idempotency-Key", "contract-key-0008")
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
+                                """),
+                HttpStatus.NOT_FOUND, ProblemCode.LESSON_NOT_FOUND);
+    }
+
+    private void expectProblem(org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request,
+                               HttpStatus expectedStatus, ProblemCode code) throws Exception {
+        mockMvc.perform(request)
+                .andExpect(status().is(expectedStatus.value()))
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.code").value(code.name()));
     }
 
     private static String studentToken() {

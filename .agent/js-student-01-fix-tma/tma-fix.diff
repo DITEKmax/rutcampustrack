@@ -1,0 +1,558 @@
+diff --git a/.agent/js-student-01-fix-tma/checks.json b/.agent/js-student-01-fix-tma/checks.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6168e256a06c903014efda82ed7f7a8e4485504f
+--- /dev/null
++++ b/.agent/js-student-01-fix-tma/checks.json
+@@ -0,0 +1,101 @@
++{
++  "schema": "rct.checks.v1",
++  "task": "JS-STUDENT-01-FIX-r2",
++  "revision": "cedce8c60aee04261ca87a18b898b148719bee89",
++  "branch": "codex/js-student-01-fix-tma",
++  "model": "gpt-5.6-luna",
++  "effort": "max",
++  "recordedAt": "2026-09-06T20:01:00+03:00",
++  "environment": "Windows; Node 24.14.0; npm 11.9.0; Vite 7.3.6; Vitest 4.1.4; checks run in the assigned TMA worktree with a local junction to already-installed frontend dependencies; no downloads or secrets used.",
++  "checks": [
++    {
++      "name": "Pre-fix TMA auth regression",
++      "phase": "before-fix",
++      "cwd": "frontends",
++      "command": "npm test --workspace @rct/tma-vue",
++      "exitCode": 1,
++      "evidence": "Expected failure: the new regression suite could not import the missing src/tma-auth module from the old App.vue path. This records the old auth path as unimplemented for the required contract."
++    },
++    {
++      "name": "Pre-fix Telegram entry regression",
++      "phase": "before-fix",
++      "cwd": "frontends/tma-vue",
++      "command": "node --test tests/tma-entry.test.mjs",
++      "exitCode": 1,
++      "evidence": "Expected failure: index.html had no official telegram.org WebApp SDK script in head."
++    },
++    {
++      "name": "TMA regression suite",
++      "cwd": "frontends",
++      "command": "npm test --workspace @rct/tma-vue",
++      "exitCode": 0,
++      "evidence": "Vitest: 6 tests passed; Node entry test: 1 test passed. Coverage includes exact JSON body/content type/credentials, fixture reuse of the same request init, access token extraction, 401 handling, real-host preservation, empty SDK-shell fixture replacement, missing-host handling, and SDK script order."
++    },
++    {
++      "name": "TMA strict typecheck",
++      "cwd": "frontends",
++      "command": "npm run typecheck --workspace @rct/tma-vue",
++      "exitCode": 0,
++      "evidence": "vue-tsc -p tsconfig.json --noEmit passed."
++    },
++    {
++      "name": "TMA strict lint",
++      "cwd": "frontends",
++      "command": "npm run lint --workspace @rct/tma-vue",
++      "exitCode": 0,
++      "evidence": "ESLint passed with --max-warnings=0."
++    },
++    {
++      "name": "TMA production build",
++      "cwd": "frontends",
++      "command": "npm run build --workspace @rct/tma-vue",
++      "exitCode": 0,
++      "evidence": "Build passed with VITE_MOBILE_FIXTURE_MODE unset; 99 modules transformed and dist/index.html contains the official SDK before the generated app module."
++    },
++    {
++      "name": "Stable diff whitespace",
++      "cwd": ".",
++      "command": "git diff --check",
++      "exitCode": 0,
++      "evidence": "No whitespace errors. Git emitted only the known LF/CRLF normalization warnings for edited text files."
++    }
++  ],
++  "runtime": {
++    "fixture": {
++      "command": "$env:VITE_MOBILE_FIXTURE_MODE='true'; npm run dev --workspace @rct/tma-vue -- --host 127.0.0.1 --port 5186",
++      "startup": "Vite 7.3.6 ready; http://127.0.0.1:5186/",
++      "browser": "Codex in-app browser tab 1",
++      "observations": [
++        "?fixtureToday=default rendered Today rows and an enabled Отметиться action.",
++        "Clicking Отметиться moved the active lesson to Отметка подтверждена.",
++        "?fixtureApi=unauthorized rendered Не удалось получить данные / Telegram не подтвердил сессию."
++      ],
++      "status": "PASS synthetic fixture flow; server stopped after check"
++    },
++    "productionLike": {
++      "command": "npm run dev --workspace @rct/tma-vue -- --host 127.0.0.1 --port 5187",
++      "startup": "Vite 7.3.6 ready; http://127.0.0.1:5187/",
++      "browser": "Codex in-app browser tab 1",
++      "observations": [
++        "Without VITE_MOBILE_FIXTURE_MODE, the page rendered Не удалось получить данные / Открой приложение из Telegram.",
++        "The live DOM exposed https://telegram.org/js/telegram-web-app.js before the /src/main.ts module (Vite client injection is visible separately)."
++      ],
++      "status": "PASS clean missing-host handling and SDK entry order; server stopped after check"
++    }
++  },
++  "diagnostics": [
++    {
++      "check": "sandboxed dev/test startup",
++      "exitCode": 1,
++      "link": "environment-only dependency serving restriction",
++      "reproduction": "Using a junction to the already-installed sibling frontend dependencies made Vite/esbuild report the sibling font files/config path outside the assigned fs allow list.",
++      "correction": "No product code changed for this warning; reran the same test and runtime commands with the permitted local runtime.",
++      "recheck": "TMA tests, typecheck, lint, build and both browser flows passed; the warnings are retained as an environment limitation."
++    }
++  ],
++  "limitations": [
++    "No real Telegram host/session was available; the fixture host is synthetic and does not prove Telegram HMAC signing.",
++    "No real auth-service HTTP request was run in this FE lane. The Java TmaAuthRequest/AuthApi contract and backend integration remain root-owned runtime evidence.",
++    "The dependency junction is local and ignored; a clean checkout needs the existing frontend dependency install before running npm checks."
++  ]
++}
+diff --git a/.agent/js-student-01-fix-tma/decisions.md b/.agent/js-student-01-fix-tma/decisions.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..c3a557cbea4b163ca267b68c5f5ad5870122bb60
+--- /dev/null
++++ b/.agent/js-student-01-fix-tma/decisions.md
+@@ -0,0 +1,31 @@
++# Decisions — JS-STUDENT-01 FIX-r2 TMA
++
++## 2026-09-06 — official SDK bootstrap and canonical auth wire
++
++The production entry now loads Telegram's official
++`https://telegram.org/js/telegram-web-app.js` in `<head>` before the app module,
++following the Telegram Mini Apps documentation. The server continues to receive
++the raw signed `WebApp.initData` value, nested in the existing canonical
++`TmaAuthRequest` JSON object.
++
++## 2026-09-06 — one auth request path for production and fixtures
++
++`src/tma-auth.ts` owns request serialization and response handling. Both the
++production browser `fetch` and the explicit fixture transport call this helper,
++so fixture checks exercise the same `{ initData }`, `application/json`,
++`Accept`, and cookie credentials path. Fixture responses remain synthetic and do
++not represent Telegram HMAC validation or an auth-service integration.
++
++## 2026-09-06 — empty SDK shell in fixture mode
++
++An SDK loaded in an ordinary browser can expose an empty `window.Telegram` shell.
++The fixture installer therefore preserves a host only when `WebApp.initData` is
++non-empty; it replaces an empty shell only when the caller explicitly enables
++fixture mode. Production never calls the installer.
++
++## 2026-09-06 — auth failure visibility
++
++The Today loading predicate remains pending while an authenticated query is
++loading, but stops treating a disabled query as pending after auth fails. This
++allows the existing error state to render missing-host and 401 failures without
++changing the screen or auth contract.
+diff --git a/.agent/js-student-01-fix-tma/evidence.json b/.agent/js-student-01-fix-tma/evidence.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..9c1a6bd4b315a3b330eab2c837acc70e09dd1752
+--- /dev/null
++++ b/.agent/js-student-01-fix-tma/evidence.json
+@@ -0,0 +1,31 @@
++{
++  "schema": "rct.evidence.v1",
++  "task": "JS-STUDENT-01-FIX-r2",
++  "baseRevision": "cedce8c60aee04261ca87a18b898b148719bee89",
++  "scope": [
++    "frontends/tma-vue/index.html",
++    "frontends/tma-vue/package.json",
++    "frontends/tma-vue/src/App.vue",
++    "frontends/tma-vue/src/telegram.ts",
++    "frontends/tma-vue/src/tma-auth.ts",
++    "frontends/tma-vue/src/tma-auth.test.ts",
++    "frontends/tma-vue/tests/tma-entry.test.mjs"
++  ],
++  "findings": {
++    "F1": {
++      "before": "index.html had no Telegram WebApp SDK script; TelegramHost could not rely on window.Telegram.WebApp in a real Mini App entry.",
++      "after": "The official telegram.org SDK is in head before the application module.",
++      "evidence": "Source and generated dist entry tests pass; production-like browser DOM lists the official script before the app module."
++    },
++    "F2": {
++      "before": "App.vue sent raw initData with text/plain in production and used a separate fixture body path.",
++      "after": "authenticateTma serializes exactly { initData }, sets application/json and Accept headers, includes credentials, and is called by both production fetch and the fixture transport.",
++      "evidence": "6 Vitest tests pass, including JSON parse/header assertions and a fixture transport wrapper that captures the same request init."
++    },
++    "negative": {
++      "evidence": "Unit test and production-like browser show missing-host error; unit test and fixtureApi=unauthorized browser show 401 error."
++    }
++  },
++  "runtimeStatus": "PASS for local synthetic/production-like shell checks; real Telegram/auth-service gate pending root",
++  "secretHandling": "No token, initData from a real user, or credential was read or recorded. Backend variable name TMA_BOT_TOKEN is documented only."
++}
+diff --git a/.agent/js-student-01-fix-tma/local-run.md b/.agent/js-student-01-fix-tma/local-run.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..6546d75c6416e8e3a7718eb66b6d59725c17e95f
+--- /dev/null
++++ b/.agent/js-student-01-fix-tma/local-run.md
+@@ -0,0 +1,35 @@
++# Local TMA run — FIX-r2
++
++The TMA frontend runs locally at:
++
++`http://127.0.0.1:5186/`
++
++Start the synthetic fixture host on an isolated port from `frontends/`:
++
++```powershell
++$env:VITE_MOBILE_FIXTURE_MODE='true'
++npm run dev --workspace @rct/tma-vue -- --host 127.0.0.1 --port 5186
++```
++
++Useful fixture URLs:
++
++- `http://127.0.0.1:5186/?fixtureToday=default` — Today rows and synthetic
++  geolocation check-in.
++- `http://127.0.0.1:5186/?fixtureApi=unauthorized` — clean auth 401 state.
++
++For a production-like browser bootstrap with no synthetic host, omit
++`VITE_MOBILE_FIXTURE_MODE` and use another isolated port, for example
++`http://127.0.0.1:5187/`. It should show the existing missing-host error until
++opened by Telegram.
++
++The auth-service validates Telegram `initData` with the backend variable
++`TMA_BOT_TOKEN` (`services/auth-service/auth-app/src/main/resources/application.yml`).
++Keep that value out of the frontend and browser. If a local auth stack needs a
++file-backed value, use the Git-ignored repository-root `.env.local` path (the
++`.gitignore` rule is `*.env.local`) or an equivalent local secret store, and
++export only `TMA_BOT_TOKEN` to the auth-service process. Do not create, print, or
++commit the secret in this TMA worktree.
++
++The local fixture and production-like URLs are browser checks only. A real
++Telegram host and a real auth-service request still require root's separate
++runtime gate; the fixture token is not signed Telegram data.
+diff --git a/.agent/js-student-01-fix-tma/packet.md b/.agent/js-student-01-fix-tma/packet.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..46470f342910363df67488cd41233f74cfc6b68a
+--- /dev/null
++++ b/.agent/js-student-01-fix-tma/packet.md
+@@ -0,0 +1,82 @@
++# Task packet — JS-STUDENT-01 FIX-r2 TMA
++
++Date: 2026-09-06  
++Risk: S2 (Telegram bootstrap and auth wire contract)  
++Model/effort: `gpt-5.6-luna` / `max`  
++Base revision: `cedce8c60aee04261ca87a18b898b148719bee89`  
++Branch: `codex/js-student-01-fix-tma`  
++Worktree: `.agent/worktrees/js-student-01/fix-tma`
++
++## Goal
++
++Fix the two actual high findings in the production TMA entry path:
++
++- F1: load Telegram's official WebApp SDK before the application module so
++  `window.Telegram.WebApp` exists in a real Mini App host.
++- F2: send `POST /api/auth/tma` as the canonical JSON DTO `{ initData }` with
++  `Content-Type: application/json`, while retaining memory-only access tokens and
++  401 reauthentication through fresh Telegram init data.
++
++## Context and evidence
++
++- `frontends/tma-vue/index.html` currently has only the app module and does not
++  load `https://telegram.org/js/telegram-web-app.js`.
++- `frontends/tma-vue/src/telegram.ts` reads `window.Telegram.WebApp` during
++  module bootstrap and `TelegramHost.start()` requires `initData`.
++- `frontends/tma-vue/src/App.vue` currently posts raw `initData` as
++  `text/plain;charset=UTF-8`; the fixture branch also bypasses the production
++  serialization path.
++- `services/auth-service/auth-api-contract/.../AuthApi.java:106-107` accepts
++  `@RequestBody TmaAuthRequest`; its record contains one `initData` field.
++- Existing Java TMA integration tests use the same DTO and remain outside this
++  FE lane. A real auth-service run is a root-owned runtime gate.
++- Official Telegram guidance requires the SDK script in `<head>` before other
++  scripts and identifies `WebApp.initData` as the server-validation input:
++  `https://core.telegram.org/bots/webapps`.
++
++## Relevant scope
++
++Own only `frontends/tma-vue/**` and isolated TMA tests/evidence under
++`.agent/js-student-01-fix-tma/`. No changes to `frontends/mobile-core`, generated
++types, lockfiles, shared workspace config, backend/API contract, Figma, deploy,
++push, Telegram messages, or secrets.
++
++## Required behavior
++
++1. The official Telegram SDK URL is present in `<head>` before `/src/main.ts`.
++2. Production and fixture auth use one JSON serialization/request helper with
++   `{ initData }`, `application/json`, `Accept: application/json`, and
++   `credentials: include`.
++3. The fixture transport receives the same request init/body/header path as
++   production; it remains a synthetic host and does not claim signed Telegram
++   verification.
++4. Access tokens remain only in the Vue ref; existing 401 reauthentication is
++   preserved.
++5. Missing host data and HTTP 401 produce clean errors.
++
++## Acceptance criteria
++
++- `frontends/tma-vue` typechecks, lints with zero warnings, and builds with
++  `VITE_MOBILE_FIXTURE_MODE` unset.
++- Regression tests fail on the old entry/auth behavior and pass after the fix:
++  SDK ordering/static entry check, exact JSON wire body/content type, success
++  token extraction, 401 failure, and missing-host failure.
++- The diff contains only TMA code/tests plus this packet/check/evidence/summary.
++- Local evidence explicitly distinguishes synthetic fixture verification from
++  the pending real Telegram host and real auth-service runtime.
++
++## Verification
++
++- `npm run typecheck --workspace @rct/tma-vue`
++- `npm run lint --workspace @rct/tma-vue`
++- `npm run build --workspace @rct/tma-vue` with no fixture-mode variable
++- `npm run test --workspace @rct/tma-vue`
++- `git diff --check` for the stable branch diff
++- Run the changed app locally on an isolated port and record the URL/process
++  result; root runs the real auth backend/Telegram host gate separately.
++
++## Do not
++
++Do not add a new auth protocol, alter the Java DTO or gateway route, persist any
++token/init data, hide missing-host/401 failures, redesign UI, or treat a fixture
++host/mock response as Telegram signature or backend integration proof.
+diff --git a/.agent/js-student-01-fix-tma/summary.md b/.agent/js-student-01-fix-tma/summary.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..2915c1ca17da0a3a74afcd51a20741bffc0f5f15
+--- /dev/null
++++ b/.agent/js-student-01-fix-tma/summary.md
+@@ -0,0 +1,25 @@
++# Summary — JS-STUDENT-01 FIX-r2 TMA
++
++Implemented the two production TMA corrections from FIX-r2. The entry now loads
++Telegram's official WebApp SDK in `<head>` before the app module. Auth now has one
++request helper that posts the existing `TmaAuthRequest` shape as JSON with
++`application/json`, `Accept: application/json`, and `credentials: include`; both
++production and explicit fixture mode use that path. Access tokens remain in the
++existing in-memory Vue ref and the 401 `onUnauthorized` reauthentication callback
++still uses fresh Telegram init data.
++
++The fixture installer now handles an empty SDK shell without weakening production:
++it replaces that shell only under explicit fixture mode and preserves a host with
++non-empty init data. The existing Today error state also renders after auth fails
++instead of being masked by a disabled query's pending flag.
++
++Checks and runtime evidence are in `checks.json` and `evidence.json`. Regression
++tests intentionally failed on the old state, then passed after the fix. Final
++local checks: TMA regression 7 tests, strict typecheck, zero-warning lint,
++production build with fixture mode unset, and `git diff --check` all exit 0.
++
++Runtime passed on the synthetic fixture URL `http://127.0.0.1:5186/` (Today and
++confirmed check-in) and production-like `http://127.0.0.1:5187/` (clean missing
++host). `?fixtureApi=unauthorized` rendered the clean 401 state. These runs do not
++claim Telegram signature validation or a real auth-service request; root owns that
++remaining gate and the real host/session.
+diff --git a/frontends/tma-vue/index.html b/frontends/tma-vue/index.html
+index d66d7e6e6f08bea7a1aee3ffad966e3053dc7ae2..caaa166f78795b21d7be7163bb0dbdef2fe7a677 100644
+--- a/frontends/tma-vue/index.html
++++ b/frontends/tma-vue/index.html
+@@ -1,2 +1,2 @@
+ <!doctype html>
+-<html lang="ru"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>RutCampusTrack</title></head><body><div id="app"></div><script type="module" src="/src/main.ts"></script></body></html>
++<html lang="ru"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><script src="https://telegram.org/js/telegram-web-app.js"></script><title>RutCampusTrack</title></head><body><div id="app"></div><script type="module" src="/src/main.ts"></script></body></html>
+diff --git a/frontends/tma-vue/package.json b/frontends/tma-vue/package.json
+index 448c187136f1d84022e1f4dd6711b8621feab8e0..bdf88ab04ec0d612b518cfb367100b144fd04e91 100644
+--- a/frontends/tma-vue/package.json
++++ b/frontends/tma-vue/package.json
+@@ -7,7 +7,8 @@
+     "dev": "vite",
+     "build": "vue-tsc -p tsconfig.json --noEmit && vite build",
+     "typecheck": "vue-tsc -p tsconfig.json --noEmit",
+-    "lint": "eslint src vite.config.ts --max-warnings=0"
++    "lint": "eslint src vite.config.ts --max-warnings=0",
++    "test": "vitest run src/tma-auth.test.ts && node --test tests/tma-entry.test.mjs"
+   },
+   "dependencies": {
+     "@fontsource-variable/onest": "5.2.8",
+diff --git a/frontends/tma-vue/src/App.vue b/frontends/tma-vue/src/App.vue
+index 9d1146277c0c08330428c8c43fef27944b7dc7ee..6c5d1f0b4dfe8530d9463a8b5debc3f8f7d80e46 100644
+--- a/frontends/tma-vue/src/App.vue
++++ b/frontends/tma-vue/src/App.vue
+@@ -3,27 +3,25 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+ import { TodayScreen, StudentApi, StudentApiError, createFixtureTransport, newIdempotencyKey, useToday } from '@rct/mobile-core'
+ import type { TodayLesson } from '@rct/mobile-core'
+ import { installFixtureTelegramHost, TelegramHost } from './telegram'
++import { authenticateTma } from './tma-auth'
+ 
+ const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true'
+ if (fixtureMode) installFixtureTelegramHost()
++const fixtureTransport = fixtureMode ? createFixtureTransport() : undefined
+ const host = new TelegramHost()
+ const accessToken = ref<string | null>(null)
+ const ready = ref(false)
+ const offline = ref(!navigator.onLine)
+ const error = ref<string | null>(null)
+-const api = new StudentApi({ accessToken: () => accessToken.value, onUnauthorized: authenticate, ...(fixtureMode ? { fetcher: createFixtureTransport() } : {}) })
++const api = new StudentApi({ accessToken: () => accessToken.value, onUnauthorized: authenticate, ...(fixtureTransport ? { fetcher: fixtureTransport } : {}) })
+ const { query, mutation } = useToday(api, computed(() => ready.value && accessToken.value !== null), offline)
++const todayLoading = computed(() => !ready.value || (accessToken.value !== null && query.isPending.value))
+ 
+ async function authenticate(): Promise<void> {
+   const initData = host.start()
+   if (!initData) throw new Error('Открой приложение из Telegram')
+-  const response = fixtureMode
+-    ? await createFixtureTransport()('/api/auth/tma', { method: 'POST', body: initData })
+-    : await fetch('/api/auth/tma', { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8', Accept: 'application/json' }, body: initData, credentials: 'include' })
+-  if (!response.ok) throw new Error('Telegram не подтвердил сессию')
+-  const token = await response.json() as { accessToken?: string }
+-  if (!token.accessToken) throw new Error('Сервер не вернул access token')
+-  accessToken.value = token.accessToken
++  const fetcher: typeof fetch = fixtureTransport ?? fetch
++  accessToken.value = await authenticateTma(fetcher, initData)
+ }
+ 
+ async function bootstrap(): Promise<void> {
+@@ -45,7 +43,7 @@ onBeforeUnmount(() => { window.removeEventListener('offline', offlineNow); windo
+ <template>
+   <TodayScreen
+     :today="query.data.value ?? null"
+-    :loading="!ready || query.isPending.value"
++    :loading="todayLoading"
+     :error="offline ? 'TMA работает только при подключении к интернету' : error ?? (query.error.value instanceof Error ? query.error.value.message : null)"
+     :offline="offline"
+     :updated-at="null"
+diff --git a/frontends/tma-vue/src/telegram.ts b/frontends/tma-vue/src/telegram.ts
+index 31f7a5f7daa23e72dc26016fc5a027d0763a265c..b38890af295e8a0e828dc95c801d65096083efc2 100644
+--- a/frontends/tma-vue/src/telegram.ts
++++ b/frontends/tma-vue/src/telegram.ts
+@@ -14,7 +14,7 @@ interface TelegramWebApp {
+ declare global { interface Window { Telegram?: { WebApp: TelegramWebApp } } }
+ 
+ export function installFixtureTelegramHost(): void {
+-  if (window.Telegram) return
++  if (window.Telegram?.WebApp?.initData) return
+   window.Telegram = { WebApp: {
+     initData: 'fixture-signed-init-data',
+     ready: () => undefined,
+diff --git a/frontends/tma-vue/src/tma-auth.test.ts b/frontends/tma-vue/src/tma-auth.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..6f2fa457fb37f1ae61d184452f76598e0f4415df
+--- /dev/null
++++ b/frontends/tma-vue/src/tma-auth.test.ts
+@@ -0,0 +1,77 @@
++import { afterEach, describe, expect, it, vi } from 'vitest'
++import { createFixtureTransport } from '@rct/mobile-core'
++import { installFixtureTelegramHost, TelegramHost } from './telegram'
++import { authenticateTma } from './tma-auth'
++
++const INIT_DATA = 'query_id=fixture-query&user=%7B%22id%22%3A77%7D&hash=fixture-hash'
++
++afterEach(() => {
++  vi.unstubAllGlobals()
++})
++
++describe('TMA authentication wire contract', () => {
++  it('sends the canonical JSON DTO and returns the in-memory access token', async () => {
++    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
++      new Response(JSON.stringify({ accessToken: 'memory-only-token' }), {
++        status: 200,
++        headers: { 'Content-Type': 'application/json' },
++      }),
++    )
++
++    await expect(authenticateTma(fetcher, INIT_DATA)).resolves.toBe('memory-only-token')
++
++    const [input, init] = fetcher.mock.calls[0] ?? []
++    expect(fetcher).toHaveBeenCalledOnce()
++    expect(input).toBe('/api/auth/tma')
++    expect(init?.method).toBe('POST')
++    expect(new Headers(init?.headers).get('Content-Type')).toBe('application/json')
++    expect(new Headers(init?.headers).get('Accept')).toBe('application/json')
++    expect(JSON.parse(String(init?.body))).toEqual({ initData: INIT_DATA })
++    expect(init?.credentials).toBe('include')
++  })
++
++  it('passes the same canonical request to the synthetic fixture transport', async () => {
++    const fixture = createFixtureTransport()
++    let capturedInit: RequestInit | undefined
++    const fetcher = vi.fn<typeof fetch>((input, init) => {
++      capturedInit = init
++      return fixture(input, init)
++    })
++
++    await expect(authenticateTma(fetcher, INIT_DATA)).resolves.toBe('fixture-access-token')
++    expect(JSON.parse(String(capturedInit?.body))).toEqual({ initData: INIT_DATA })
++    expect(new Headers(capturedInit?.headers).get('Content-Type')).toBe('application/json')
++  })
++
++  it('surfaces an unauthorized response as a clean authentication error', async () => {
++    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 401 }))
++
++    await expect(authenticateTma(fetcher, INIT_DATA)).rejects.toThrow('Telegram не подтвердил сессию')
++  })
++})
++
++describe('Telegram host boundary', () => {
++  it('preserves a real host that already provides init data', () => {
++    const app = { initData: INIT_DATA }
++    const windowStub = { Telegram: { WebApp: app }, innerHeight: 720 } as unknown as Window & typeof globalThis
++    vi.stubGlobal('window', windowStub)
++
++    installFixtureTelegramHost()
++
++    expect(windowStub.Telegram?.WebApp).toBe(app)
++  })
++
++  it('replaces an empty SDK shell only for the explicit fixture host', () => {
++    const windowStub = { Telegram: { WebApp: { initData: '' } }, innerHeight: 720 } as unknown as Window & typeof globalThis
++    vi.stubGlobal('window', windowStub)
++
++    installFixtureTelegramHost()
++
++    expect(windowStub.Telegram?.WebApp.initData).toBe('fixture-signed-init-data')
++  })
++
++  it('returns no init data when the app is opened outside Telegram', () => {
++    vi.stubGlobal('window', { Telegram: undefined, innerHeight: 720 })
++    expect(new TelegramHost().start()).toBeNull()
++  })
++})
+diff --git a/frontends/tma-vue/src/tma-auth.ts b/frontends/tma-vue/src/tma-auth.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..d938eab396f81e93780899b1bbf26335217e7a72
+--- /dev/null
++++ b/frontends/tma-vue/src/tma-auth.ts
+@@ -0,0 +1,18 @@
++interface TmaAuthResponse { accessToken?: string }
++
++export function createTmaAuthRequest(initData: string): RequestInit {
++  return {
++    method: 'POST',
++    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
++    body: JSON.stringify({ initData }),
++    credentials: 'include',
++  }
++}
++
++export async function authenticateTma(fetcher: typeof fetch, initData: string): Promise<string> {
++  const response = await fetcher('/api/auth/tma', createTmaAuthRequest(initData))
++  if (!response.ok) throw new Error('Telegram не подтвердил сессию')
++  const token = await response.json() as TmaAuthResponse
++  if (!token.accessToken) throw new Error('Сервер не вернул access token')
++  return token.accessToken
++}
+diff --git a/frontends/tma-vue/tests/tma-entry.test.mjs b/frontends/tma-vue/tests/tma-entry.test.mjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..261010908f7d1b76bf00d62df53f6ecca5d2a4dd
+--- /dev/null
++++ b/frontends/tma-vue/tests/tma-entry.test.mjs
+@@ -0,0 +1,22 @@
++import assert from 'node:assert/strict'
++import { readFile } from 'node:fs/promises'
++import test from 'node:test'
++import { fileURLToPath } from 'node:url'
++
++test('loads the official Telegram WebApp SDK in head before the app module', async () => {
++  const indexPath = fileURLToPath(new URL('../index.html', import.meta.url))
++  const html = await readFile(indexPath, 'utf8')
++  const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1]
++  assert.ok(head, 'index.html must contain a head section')
++  assert.match(
++    head,
++    /<script\b[^>]*src=["']https:\/\/telegram\.org\/js\/telegram-web-app\.js(?:\?[^"']*)?["'][^>]*><\/script>/i,
++    'the official Telegram WebApp SDK must be loaded from telegram.org in head',
++  )
++
++  const sdkPosition = html.indexOf('https://telegram.org/js/telegram-web-app.js')
++  const appModulePosition = html.indexOf('<script type="module" src="/src/main.ts"></script>')
++  assert.notEqual(sdkPosition, -1, 'SDK script must be present')
++  assert.notEqual(appModulePosition, -1, 'app module must be present')
++  assert.ok(sdkPosition < appModulePosition, 'SDK script must precede the app module')
++})

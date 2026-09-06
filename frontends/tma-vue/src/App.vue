@@ -3,27 +3,25 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { TodayScreen, StudentApi, StudentApiError, createFixtureTransport, newIdempotencyKey, useToday } from '@rct/mobile-core'
 import type { TodayLesson } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
+import { authenticateTma } from './tma-auth'
 
 const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true'
 if (fixtureMode) installFixtureTelegramHost()
+const fixtureTransport = fixtureMode ? createFixtureTransport() : undefined
 const host = new TelegramHost()
 const accessToken = ref<string | null>(null)
 const ready = ref(false)
 const offline = ref(!navigator.onLine)
 const error = ref<string | null>(null)
-const api = new StudentApi({ accessToken: () => accessToken.value, onUnauthorized: authenticate, ...(fixtureMode ? { fetcher: createFixtureTransport() } : {}) })
+const api = new StudentApi({ accessToken: () => accessToken.value, onUnauthorized: authenticate, ...(fixtureTransport ? { fetcher: fixtureTransport } : {}) })
 const { query, mutation } = useToday(api, computed(() => ready.value && accessToken.value !== null), offline)
+const todayLoading = computed(() => !ready.value || (accessToken.value !== null && query.isPending.value))
 
 async function authenticate(): Promise<void> {
   const initData = host.start()
   if (!initData) throw new Error('Открой приложение из Telegram')
-  const response = fixtureMode
-    ? await createFixtureTransport()('/api/auth/tma', { method: 'POST', body: initData })
-    : await fetch('/api/auth/tma', { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8', Accept: 'application/json' }, body: initData, credentials: 'include' })
-  if (!response.ok) throw new Error('Telegram не подтвердил сессию')
-  const token = await response.json() as { accessToken?: string }
-  if (!token.accessToken) throw new Error('Сервер не вернул access token')
-  accessToken.value = token.accessToken
+  const fetcher: typeof fetch = fixtureTransport ?? fetch
+  accessToken.value = await authenticateTma(fetcher, initData)
 }
 
 async function bootstrap(): Promise<void> {
@@ -45,7 +43,7 @@ onBeforeUnmount(() => { window.removeEventListener('offline', offlineNow); windo
 <template>
   <TodayScreen
     :today="query.data.value ?? null"
-    :loading="!ready || query.isPending.value"
+    :loading="todayLoading"
     :error="offline ? 'TMA работает только при подключении к интернету' : error ?? (query.error.value instanceof Error ? query.error.value.message : null)"
     :offline="offline"
     :updated-at="null"

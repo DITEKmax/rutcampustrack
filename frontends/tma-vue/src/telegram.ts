@@ -14,7 +14,7 @@ interface TelegramWebApp {
 declare global { interface Window { Telegram?: { WebApp: TelegramWebApp } } }
 
 export function installFixtureTelegramHost(): void {
-  if (window.Telegram) return
+  if (window.Telegram?.WebApp?.initData) return
   window.Telegram = { WebApp: {
     initData: 'fixture-signed-init-data',
     ready: () => undefined,

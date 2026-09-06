@@ -13,7 +13,7 @@ function runtime(mode: string) {
   const env = loadEnv(mode, '.', '')
   return {
     apiTarget: env.VITE_API_PROXY_TARGET ?? 'http://localhost:8080',
-    serviceWorkerEnabled: mode === 'production' && env.VITE_ENABLE_LOCAL_PWA_SW === 'true',
+    serviceWorkerEnabled: mode === 'production',
   }
 }
 

@@ -8,7 +8,7 @@ import { isRecoverableReadFailure } from '@rct/mobile-core'
 const auth = usePwaAuth()
 const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true'
 const fixtureDiagnosticsMode = fixtureMode && new URLSearchParams(window.location.search).get('fixtureDiagnostics') === 'true'
-const fixtureServiceWorkerBuildEnabled = import.meta.env.PROD && import.meta.env.VITE_ENABLE_LOCAL_PWA_SW === 'true'
+const fixtureServiceWorkerBuildEnabled = import.meta.env.PROD
 const offline = ref(!navigator.onLine)
 const bootstrapError = ref<string | null>(null)
 const fixtureDiagnosticLines = ref<string[]>([])

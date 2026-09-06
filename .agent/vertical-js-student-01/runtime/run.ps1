@@ -10,6 +10,10 @@ $ProgressPreference = 'SilentlyContinue'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $taskState = [IO.Path]::GetFullPath((Join-Path $repo '.agent\runtime-js-student-01'))
 $keysDir = Join-Path $taskState 'keys'
+$pwaCertificatePath = Join-Path $keysDir 'pwa.crt'
+$pwaPrivateKeyPath = Join-Path $keysDir 'pwa.key'
+$pwaRuntimeHost = 'js-student-01.test'
+$pwaBrowserScript = Join-Path $PSScriptRoot 'pwa-browser-check.mjs'
 $evidenceRoot = Join-Path $repo '.agent\vertical-js-student-01\runtime-evidence'
 $runId = [DateTimeOffset]::Now.ToString('yyyyMMdd-HHmmss')
 $evidenceDir = Join-Path $evidenceRoot $runId
@@ -305,15 +309,91 @@ function Read-PsqlScalar {
     return (@($output | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })[-1]).Trim()
 }
 
+function Read-MongoMutationCounts {
+    return Read-MongoJson 'print(JSON.stringify({attendances:db.attendances.countDocuments({}),requests:db.late_checkin_requests.countDocuments({}),receipts:db.student_checkin_receipts.countDocuments({}),pairs:db.student_checkin_pairs.countDocuments({}),outbox:db.attendance_outbox.countDocuments({})}))'
+}
+
+function New-PwaRuntimeCertificate {
+    $opensslCandidates = @(
+        'C:\Program Files\Git\usr\bin\openssl.exe',
+        'C:\Program Files\Git\mingw64\bin\openssl.exe'
+    )
+    $openssl = @($opensslCandidates | Where-Object { Test-Path -LiteralPath $_ }) | Select-Object -First 1
+    Assert-That (-not [string]::IsNullOrWhiteSpace($openssl)) 'task-scoped OpenSSL is available for the HTTPS PWA runtime'
+    $opensslArgs = @(
+        'req', '-x509', '-nodes', '-newkey', 'rsa:2048', '-days', '1',
+        '-keyout', $pwaPrivateKeyPath, '-out', $pwaCertificatePath,
+        '-subj', "/CN=$pwaRuntimeHost", '-addext', "subjectAltName=DNS:$pwaRuntimeHost"
+    )
+    $output = @(& $openssl @opensslArgs 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "task PWA certificate generation failed (openssl exit $LASTEXITCODE): $($output -join [Environment]::NewLine)"
+    }
+    Assert-That (Test-Path -LiteralPath $pwaCertificatePath) 'task PWA certificate exists'
+    Assert-That (Test-Path -LiteralPath $pwaPrivateKeyPath) 'task PWA private key exists'
+}
+
+function Invoke-PwaBrowserRuntime {
+    $distDirectory = Join-Path $repo 'frontends\pwa-vue\dist'
+    Assert-That (Test-Path -LiteralPath $pwaBrowserScript) 'PWA browser runtime script exists'
+    Assert-That (Test-Path -LiteralPath (Join-Path $distDirectory 'index.html')) 'production PWA dist exists'
+    Assert-That (Test-Path -LiteralPath (Join-Path $distDirectory 'sw.js')) 'production PWA service worker exists'
+    Assert-That (Test-Path -LiteralPath (Join-Path $distDirectory 'sw-assets.js')) 'production PWA precache manifest exists'
+    $playwrightCandidates = @(
+        (Join-Path $repo 'tests\e2e\node_modules\playwright\index.mjs'),
+        (Join-Path $repo 'node_modules\playwright\index.mjs')
+    )
+    $playwrightModule = @($playwrightCandidates | Where-Object { Test-Path -LiteralPath $_ }) | Select-Object -First 1
+    Assert-That (-not [string]::IsNullOrWhiteSpace($playwrightModule)) 'Playwright module is available for the PWA browser runtime'
+
+    $environmentNames = @(
+        'RCT_PWA_DIST', 'RCT_PWA_GATEWAY_URL', 'RCT_PWA_RUNTIME_HOST', 'RCT_PWA_CERT',
+        'RCT_PWA_KEY', 'RCT_PWA_LOGIN', 'RCT_PWA_PASSWORD', 'RCT_PWA_SCREENSHOT',
+        'RCT_PLAYWRIGHT_MODULE'
+    )
+    $oldEnvironment = @{}
+    foreach ($name in $environmentNames) { $oldEnvironment[$name] = [Environment]::GetEnvironmentVariable($name) }
+    try {
+        $env:RCT_PWA_DIST = $distDirectory
+        $env:RCT_PWA_GATEWAY_URL = 'http://127.0.0.1:28080'
+        $env:RCT_PWA_RUNTIME_HOST = $pwaRuntimeHost
+        $env:RCT_PWA_CERT = $pwaCertificatePath
+        $env:RCT_PWA_KEY = $pwaPrivateKeyPath
+        $env:RCT_PWA_LOGIN = 'student'
+        $env:RCT_PWA_PASSWORD = $studentPassword
+        $env:RCT_PWA_SCREENSHOT = Join-Path $evidenceDir 'pwa-offline-reload.png'
+        $env:RCT_PLAYWRIGHT_MODULE = $playwrightModule
+        $output = @(& node $pwaBrowserScript 2>&1)
+        $jsonLine = @($output | ForEach-Object { [string]$_ } |
+            Where-Object { $_.TrimStart().StartsWith('{') } | Select-Object -Last 1)
+        Assert-That ($jsonLine.Count -eq 1) "PWA browser runtime did not return JSON evidence: $($output | Select-Object -Last 1)"
+        $result = $jsonLine | ConvertFrom-Json
+        if ($result.status -ne 'PASS') {
+            $failure = if ($null -ne $result.error) { [string]$result.error } else { 'no error detail' }
+            throw "PWA browser runtime failed at '$($result.phase)': $failure"
+        }
+        return $result
+    } finally {
+        foreach ($name in $environmentNames) {
+            [Environment]::SetEnvironmentVariable($name, $oldEnvironment[$name])
+        }
+    }
+}
+
 if ($ValidateOnly) {
     $null = Get-Command docker -ErrorAction Stop
     $null = Get-Command java -ErrorAction Stop
+    $null = Get-Command node -ErrorAction Stop
     $null = Get-BootJar 'services\auth-service\auth-app\build\libs'
     $null = Get-BootJar 'services\academic-service\academic-app\build\libs'
     $null = Get-BootJar 'services\schedule-service\schedule-app\build\libs'
     $null = Get-BootJar 'services\attendance-service\attendance-app\build\libs'
     $null = Get-BootJar 'services\mobile-bff\mobile-bff-app\build\libs'
     $null = Get-BootJar 'services\api-gateway\build\libs'
+    Assert-That (Test-Path -LiteralPath $pwaBrowserScript) 'PWA browser runtime script exists'
+    Assert-That (Test-Path -LiteralPath (Join-Path $repo 'frontends\pwa-vue\dist\index.html')) 'production PWA dist exists'
+    Assert-That (Test-Path -LiteralPath (Join-Path $repo 'frontends\pwa-vue\dist\sw.js')) 'production PWA service worker exists'
+    Assert-That (Test-Path -LiteralPath (Join-Path $repo 'frontends\pwa-vue\dist\sw-assets.js')) 'production PWA precache manifest exists'
     Assert-That (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'seed-academic.sql')) 'academic seed exists'
     Assert-That (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'seed-schedule.sql')) 'schedule seed exists'
     Write-Host 'VALID: runtime harness prerequisites and boot jars are present.'
@@ -343,6 +423,7 @@ try {
     New-Item -ItemType Directory -Force -Path $keysDir | Out-Null
     Assert-SafeOwnedPath -Path $keysDir
     $createdKeysDir = $true
+    New-PwaRuntimeCertificate
 
     $jars = [ordered]@{
         academic = Get-BootJar 'services\academic-service\academic-app\build\libs'
@@ -489,6 +570,22 @@ try {
     Wait-ServiceHealth $gateway 'http://127.0.0.1:28080/actuator/health' 150
     Add-Assertion 'six real service processes ready' @{ serviceCount = 6; hiddenProcesses = $true }
 
+    $report.stage = 'pwa-browser-runtime'
+    Write-Host 'Running production PWA HTTPS login, refresh-cookie and offline reload probes...'
+    $pwaBrowserResult = Invoke-PwaBrowserRuntime
+    $report.pwaBrowser = $pwaBrowserResult
+    Add-Assertion 'production PWA uses scoped HTTPS refresh cookie and offline shell' @{
+        origin = $pwaBrowserResult.origin
+        cookie = $pwaBrowserResult.cookie
+        onlineServiceWorker = $pwaBrowserResult.online.registrationState
+        onlinePrecache = $pwaBrowserResult.online.precacheCoverage
+        offlineRows = $pwaBrowserResult.offline.todayRowCount
+        offlineMutationsDisabled = $pwaBrowserResult.offline.mutationDisabled
+        apiCacheEntries = $pwaBrowserResult.offline.cacheApiEntries
+        persistentJwt = $pwaBrowserResult.offline.jwtLikeInStorage -or $pwaBrowserResult.offline.indexedDbJwtLike
+        screenshot = $pwaBrowserResult.screenshot
+    }
+
     $evidenceQueue = 'rct-js-student-01-evidence'
     $queueResponse = Invoke-RabbitManagement PUT "queues/%2F/$evidenceQueue" `
         '{"durable":true,"auto_delete":false,"arguments":{}}'
@@ -510,6 +607,72 @@ try {
     Assert-That (-not [string]::IsNullOrWhiteSpace($login.accessToken)) 'login returned an access token'
     $accessToken = [string]$login.accessToken
     Add-Assertion 'real auth login through gateway' @{ httpStatus = 200; tokenRecorded = $false }
+
+    $report.stage = 'headman-block-and-legacy-retirement'
+    Write-Host 'Exercising headman-blocked student rejection and retired legacy check-in...'
+    $blockedScheduleItemId = [long](Read-PsqlScalar $containers.SchedulePostgres 'schedule_db' @"
+INSERT INTO schedule_items (
+    group_id, subject_id, teacher_id, semester_id, day_of_week, lesson_number,
+    start_time, end_time, week_type, room, is_active
+)
+VALUES (1, 1, 1, 1, 0, 3, TIME '00:00:00', TIME '23:59:59', 'all', 'РТ-03', TRUE)
+RETURNING id
+"@)
+    $blockedLessonId = [long](Read-PsqlScalar $containers.SchedulePostgres 'schedule_db' @"
+INSERT INTO lessons (schedule_item_id, date, status, is_geo_blocked, is_blocked_by_headman)
+VALUES ($blockedScheduleItemId, CURRENT_DATE, 'active', FALSE, TRUE)
+RETURNING id
+"@)
+    $blockedStateBefore = Read-MongoMutationCounts
+    $blockedKey = "runtime-headman-blocked-$runId"
+    $blockedHeaders = @{
+        Authorization = "Bearer $accessToken"
+        'Idempotency-Key' = $blockedKey
+        'X-User-Id' = '999999'
+        'X-User-Role' = 'ADMIN'
+    }
+    $blockedBody = @{ geo = @{ kind = 'UNAVAILABLE'; reason = 'TIMEOUT' } } | ConvertTo-Json -Compress -Depth 4
+    $blockedUri = "http://127.0.0.1:28080/api/v1/student/lessons/$blockedLessonId/checkin"
+    $blockedResponse = Invoke-HttpJson POST $blockedUri $blockedHeaders $blockedBody
+    $blockedProblem = Get-HttpBodyText $blockedResponse | ConvertFrom-Json
+    Assert-That ($blockedResponse.StatusCode -eq 409 -and $blockedProblem.code -eq 'CHECKIN_NOT_ELIGIBLE') "headman-blocked student POST returned $($blockedResponse.StatusCode) with code $($blockedProblem.code)"
+    $blockedStateAfter = Read-MongoMutationCounts
+    Assert-That (
+        $blockedStateAfter.attendances -eq $blockedStateBefore.attendances -and
+        $blockedStateAfter.requests -eq $blockedStateBefore.requests -and
+        $blockedStateAfter.receipts -eq $blockedStateBefore.receipts -and
+        $blockedStateAfter.pairs -eq $blockedStateBefore.pairs -and
+        $blockedStateAfter.outbox -eq $blockedStateBefore.outbox
+    ) 'headman-blocked student POST caused no attendance, request, receipt, cooldown or outbox write'
+    Add-Assertion 'headman-blocked student POST is mutation-free' @{
+        lessonId = $blockedLessonId
+        httpStatus = $blockedResponse.StatusCode
+        problemCode = $blockedProblem.code
+        countsBefore = $blockedStateBefore
+        countsAfter = $blockedStateAfter
+    }
+
+    $legacyStateBefore = Read-MongoMutationCounts
+    $legacyHeaders = @{ Authorization = "Bearer $accessToken" }
+    $legacyBody = @{ lat = 55.788204; lng = 37.606762 } | ConvertTo-Json -Compress
+    $legacyResponse = Invoke-HttpJson POST 'http://127.0.0.1:28080/api/attendance/checkin' $legacyHeaders $legacyBody
+    $legacyProblem = Get-HttpBodyText $legacyResponse | ConvertFrom-Json
+    Assert-That ($legacyResponse.StatusCode -eq 410) "legacy attendance/checkin returned $($legacyResponse.StatusCode), expected 410"
+    Assert-That ([string]$legacyProblem.type -match 'legacy-checkin-retired') 'legacy attendance/checkin identifies the retired endpoint'
+    $legacyStateAfter = Read-MongoMutationCounts
+    Assert-That (
+        $legacyStateAfter.attendances -eq $legacyStateBefore.attendances -and
+        $legacyStateAfter.requests -eq $legacyStateBefore.requests -and
+        $legacyStateAfter.receipts -eq $legacyStateBefore.receipts -and
+        $legacyStateAfter.pairs -eq $legacyStateBefore.pairs -and
+        $legacyStateAfter.outbox -eq $legacyStateBefore.outbox
+    ) 'retired legacy attendance/checkin caused no attendance, request, receipt, cooldown or outbox write'
+    Add-Assertion 'legacy attendance/checkin is retired before mutation' @{
+        httpStatus = $legacyResponse.StatusCode
+        problemType = $legacyProblem.type
+        countsBefore = $legacyStateBefore
+        countsAfter = $legacyStateAfter
+    }
 
     $report.stage = 'student-read-api'
     $readHeaders = @{ Authorization = "Bearer $accessToken" }

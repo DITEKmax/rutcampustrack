@@ -151,7 +151,8 @@ export interface paths {
         put?: never;
         /**
          * Геоотметка студента
-         * @description Студент отправляет координаты. Система проверяет геофенс, активную пару и временное окно.
+         * @deprecated
+         * @description Устаревший путь отключён. Используйте канонический student check-in API.
          */
         post: operations["checkin"];
         delete?: never;
@@ -1585,15 +1586,6 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Отметка успешно поставлена */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["EntityModelCheckinResponse"];
-                };
-            };
             /** @description Ошибка валидации запроса */
             400: {
                 headers: {
@@ -1612,44 +1604,8 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Геоотметка заблокирована для данной пары */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Активная пара не найдена */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Отметка уже существует */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Координаты вне зоны геофенса */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Превышен лимит запросов */
-            429: {
+            /** @description Устаревший путь отключён */
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };

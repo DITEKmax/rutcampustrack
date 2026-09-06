@@ -32,6 +32,7 @@ import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -63,6 +64,7 @@ class LateCheckinServiceTest {
     private static final Long OTHER_GROUP_ID = 99L;
     private static final Long LESSON_ID = 42L;
     private static final Long SUBJECT_ID = 7L;
+    private static final Long SEMESTER_ID = 1L;
     private static final String REQUEST_ID = "req-1";
     private static final Instant NOW = Instant.parse("2026-04-23T10:00:00Z");
 
@@ -299,9 +301,10 @@ class LateCheckinServiceTest {
         assertThat(captor.getValue().getDecisionBy()).isEqualTo(headmanId);
         assertThat(captor.getValue().getDecisionAt()).isEqualTo(NOW);
 
-        verify(attendanceWritePort).mark(
-                STUDENT_ID, LESSON_ID, GROUP_ID,
-                AttendanceStatus.PRESENT, AttendanceSource.LATE_CHECKIN);
+        verify(attendanceWritePort).markWithLesson(
+                STUDENT_ID, LESSON_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID, 3,
+                LocalDate.of(2026, 4, 23), AttendanceStatus.PRESENT,
+                AttendanceSource.LATE_CHECKIN, headmanId);
         verify(eventPublisher).publishDecided(any(), any(), eq(3), eq(SUBJECT_ID), eq("Математика"));
         assertThat(decided).isNotNull();
     }
@@ -422,6 +425,10 @@ class LateCheckinServiceTest {
                 .studentId(STUDENT_ID)
                 .groupId(GROUP_ID)
                 .lessonId(LESSON_ID)
+                .subjectId(SUBJECT_ID)
+                .semesterId(SEMESTER_ID)
+                .lessonNumber(3)
+                .lessonDate(LocalDate.of(2026, 4, 23))
                 .studentName("Иванов И.")
                 .status(LateCheckinRequestStatus.PENDING)
                 .createdAt(NOW)

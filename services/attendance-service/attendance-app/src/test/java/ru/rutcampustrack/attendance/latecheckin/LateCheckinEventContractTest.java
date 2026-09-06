@@ -5,6 +5,7 @@ import com.networknt.schema.ValidationMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 import ru.rutcampustrack.attendance.events.EventSchemaValidator;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
@@ -140,6 +141,30 @@ class LateCheckinEventContractTest {
 
         var payload = mapper.readTree(record.payload()).get("payload");
         assertThat(payload.get("status").asText()).isEqualTo("rejected");
+    }
+
+    @Test
+    void publishDecided_geoCancelledProducesTerminalConsumerEvent() throws Exception {
+        LateCheckinRequest request = LateCheckinRequest.builder()
+                .id("req-3")
+                .studentId(100L)
+                .groupId(10L)
+                .lessonId(42L)
+                .status(LateCheckinRequestStatus.CANCELLED)
+                .resolutionReason(LateCheckinResolutionReason.GEO_CONFIRMED)
+                .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
+                .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
+                .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
+                .build();
+
+        publisher.publishDecided(request, LocalDate.of(2026, 4, 23), 3, 7L, null);
+
+        OutboxRecord record = outbox.captured.getFirst();
+        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", record.payload())).isEmpty();
+        var payload = mapper.readTree(record.payload()).get("payload");
+        assertThat(payload.get("status").asText()).isEqualTo("cancelled");
+        assertThat(payload.get("resolution_reason").asText()).isEqualTo("geo_confirmed");
+        assertThat(payload.get("decision_by").isNull()).isTrue();
     }
 
     // =========================================================== helper

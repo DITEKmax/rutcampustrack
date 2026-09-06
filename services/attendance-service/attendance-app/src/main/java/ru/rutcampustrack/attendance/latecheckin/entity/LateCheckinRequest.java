@@ -8,8 +8,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestOrigin;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 /**
  * MongoDB document for late-checkin requests.
@@ -39,12 +42,31 @@ public class LateCheckinRequest {
     @Field("lesson_id")
     private Long lessonId;
 
+    @Field("subject_id")
+    private Long subjectId;
+
+    @Field("semester_id")
+    private Long semesterId;
+
+    @Field("lesson_number")
+    private Integer lessonNumber;
+
+    @Field("lesson_date")
+    private LocalDate lessonDate;
+
     @Field("student_name")
     private String studentName;
 
     @Field("status")
     @Builder.Default
     private LateCheckinRequestStatus status = LateCheckinRequestStatus.PENDING;
+
+    @Field("origin")
+    @Builder.Default
+    private LateCheckinRequestOrigin origin = LateCheckinRequestOrigin.MANUAL;
+
+    @Field("resolution_reason")
+    private LateCheckinResolutionReason resolutionReason;
 
     @Field("decision_by")
     private Long decisionBy;

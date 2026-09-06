@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.index.PartialIndexFilter;
 import org.springframework.data.mongodb.core.index.IndexOperations;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
@@ -110,6 +111,21 @@ public class MongoConfig {
                 .on("status", Sort.Direction.ASC)
                 .on("updated_at", Sort.Direction.DESC)
                 .named("lcr_group_status_updated"));
+        lcrOps.ensureIndex(new Index()
+                .on("student_id", Sort.Direction.ASC)
+                .on("lesson_id", Sort.Direction.ASC)
+                .unique()
+                .partial(PartialIndexFilter.of(
+                        org.springframework.data.mongodb.core.query.Criteria.where("status").is("PENDING")))
+                .named("uniq_lcr_pending_student_lesson"));
+
+        IndexOperations receiptOps = mongoTemplate.indexOps("student_checkin_receipts");
+        receiptOps.ensureIndex(new Index()
+                .on("student_id", Sort.Direction.ASC)
+                .on("lesson_id", Sort.Direction.ASC)
+                .on("idempotency_key", Sort.Direction.ASC)
+                .unique()
+                .named("uniq_student_lesson_idempotency_key"));
 
         // M13 G8 — consumer-side dedup. Compound unique
         // (consumer_id, event_id) делает MongoIdempotencyStore.tryClaim

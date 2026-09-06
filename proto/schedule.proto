@@ -78,6 +78,8 @@ message LessonResponse {
 
 message LessonsResponse {
   repeated LessonResponse lessons = 1;
+  // Stable source timestamp for authorized schedule caching/ETag generation.
+  optional string updated_at = 2;
 }
 
 message LessonsByIdsRequest {

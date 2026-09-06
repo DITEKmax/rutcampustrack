@@ -25,8 +25,8 @@ async def test_approve_publishes_decision_and_edits_text(
         {"request_id": "req-42", "approved": True, "decision_by": 777},
     )
     edited = cb.message.edit_text.await_args.args[0]
-    assert "✅ Подтверждено" in edited
-    cb.answer.assert_awaited_once_with("✅ Подтверждено")
+    assert "⏳ Решение отправлено" in edited
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 @pytest.mark.asyncio
@@ -42,8 +42,8 @@ async def test_reject_publishes_decision_with_approved_false(
         {"request_id": "req-99", "approved": False, "decision_by": 777},
     )
     edited = cb.message.edit_text.await_args.args[0]
-    assert "❌ Отклонено" in edited
-    cb.answer.assert_awaited_once_with("❌ Отклонено")
+    assert "⏳ Решение отправлено" in edited
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 @pytest.mark.asyncio
@@ -96,7 +96,7 @@ async def test_edit_text_failure_still_answers(callback_query_factory, event_pub
     await handle_late_checkin_decision(cb, event_publisher=event_publisher_mock, academic_client=academic_client_mock)
 
     event_publisher_mock.publish.assert_awaited_once()
-    cb.answer.assert_awaited_once_with("✅ Подтверждено")
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 # ================================================== M09 G6 role check

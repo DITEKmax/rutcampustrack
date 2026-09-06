@@ -53,7 +53,9 @@ public class LateCheckinEventPublisher {
         payload.put("lesson_date", lessonDate != null ? lessonDate.toString() : null);
         payload.put("lesson_number", lessonNumber);
         payload.put("subject_id", subjectId);
-        payload.put("subject_name", subjectName);
+        if (subjectName != null) {
+            payload.put("subject_name", subjectName);
+        }
 
         saveToOutbox(EVENT_REQUESTED, payload);
     }
@@ -73,12 +75,18 @@ public class LateCheckinEventPublisher {
         payload.put("decision_by", request.getDecisionBy());
         payload.put("status",
                 request.getStatus() != null ? request.getStatus().name().toLowerCase() : null);
+        payload.put("resolution_reason",
+                request.getResolutionReason() != null
+                        ? request.getResolutionReason().name().toLowerCase()
+                        : null);
         payload.put("decided_at",
                 request.getDecisionAt() != null ? request.getDecisionAt().toString() : null);
         payload.put("lesson_date", lessonDate != null ? lessonDate.toString() : null);
         payload.put("lesson_number", lessonNumber);
         payload.put("subject_id", subjectId);
-        payload.put("subject_name", subjectName);
+        if (subjectName != null) {
+            payload.put("subject_name", subjectName);
+        }
 
         saveToOutbox(EVENT_DECIDED, payload);
     }

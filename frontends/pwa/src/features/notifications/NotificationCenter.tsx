@@ -150,6 +150,7 @@ function buildTitle(type: string, payload: Record<string, unknown>): string {
     case 'late_checkin.requested':
       return 'Запрос опоздалой отметки'
     case 'late_checkin.decided':
+      if (payload.status === 'cancelled') return 'Присутствие подтверждено'
       return payload.status === 'approved'
         ? 'Запрос одобрен'
         : 'Запрос отклонён'
@@ -382,6 +383,9 @@ function buildBody(
     }
     case 'excuse.decided':
     case 'late_checkin.decided': {
+      if (payload.status === 'cancelled') {
+        return 'Запрос закрыт после успешной геоотметки'
+      }
       const decisionComment = str(payload, 'decision_comment')
       if (decisionComment) return decisionComment
       return payload.status === 'approved'
@@ -466,6 +470,15 @@ export function NotificationCenterProvider({ children }: { children: ReactNode }
           if (STUDENT_REQUEST_REFRESH_TYPES.has(envelope.type)) {
             queryClient.invalidateQueries({ queryKey: ['studentRequests'] })
             queryClient.invalidateQueries({ queryKey: ['studentRecords'] })
+          }
+
+          // Успешная геоотметка уже подтверждена ответом check-in. Decided нужен
+          // для закрытия headman action, но не должен выглядеть как отказ студенту.
+          if (
+            envelope.type === 'late_checkin.decided' &&
+            envelope.payload?.['status'] === 'cancelled'
+          ) {
+            return
           }
 
           if (!STORED_TYPES.has(envelope.type)) return

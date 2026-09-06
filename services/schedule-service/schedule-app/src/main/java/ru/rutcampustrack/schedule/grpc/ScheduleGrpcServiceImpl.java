@@ -11,6 +11,7 @@ import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -113,7 +114,24 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .map(l -> buildResponse(l, itemById.get(l.getScheduleItemId())))
                 .toList();
 
-        responseObserver.onNext(LessonsResponse.newBuilder().addAllLessons(responses).build());
+        OffsetDateTime updatedAt = items.stream()
+                .map(ScheduleItem::getCreatedAt)
+                .filter(java.util.Objects::nonNull)
+                .max(OffsetDateTime::compareTo)
+                .orElse(null);
+        for (Lesson lesson : lessons) {
+            for (OffsetDateTime candidate : new OffsetDateTime[] {
+                    lesson.getCreatedAt(),
+                    lesson.getClosedAt(),
+                    lesson.getCancelledAt()}) {
+                if (candidate != null && (updatedAt == null || candidate.isAfter(updatedAt))) {
+                    updatedAt = candidate;
+                }
+            }
+        }
+        LessonsResponse.Builder result = LessonsResponse.newBuilder().addAllLessons(responses);
+        if (updatedAt != null) result.setUpdatedAt(updatedAt.toInstant().toString());
+        responseObserver.onNext(result.build());
         responseObserver.onCompleted();
     }
 
@@ -232,6 +250,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .setIsGeoBlocked(lesson.isGeoBlocked())
                 .setRoom(item.getRoom() != null ? item.getRoom() : "")
                 .setIsBlockedByHeadman(lesson.isBlockedByHeadman())
+                .setRoomChangeState("unknown")
                 .build();
     }
 }

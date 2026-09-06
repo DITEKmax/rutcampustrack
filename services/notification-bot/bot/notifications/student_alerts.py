@@ -50,6 +50,10 @@ async def handle_student_alert(
             text = "✅ Присутствие подтверждено\n\nСтароста подтвердил ваше присутствие на паре."
         elif status == "rejected":
             text = "❌ Запрос отклонён\n\nСтароста отклонил подтверждение присутствия."
+        elif status == "cancelled":
+            # GEO_CONFIRMED closes the headman's action without creating a
+            # second student notification for the student's own successful check-in.
+            return
         else:
             logger.debug("late_checkin.decided with unexpected status=%s", status)
             return

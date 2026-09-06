@@ -1861,7 +1861,7 @@
       "get" : {
         "tags" : [ "Late Check-in" ],
         "summary" : "Group late-checkin requests",
-        "description" : "Headman sees PENDING/APPROVED/REJECTED late-checkin requests for their group updated during the last 30 days.",
+        "description" : "Headman sees PENDING/APPROVED/REJECTED/CANCELLED late-checkin requests for their group updated during the last 30 days.",
         "operationId" : "listGroupRequests",
         "parameters" : [ {
           "name" : "groupId",
@@ -1884,7 +1884,7 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "PENDING", "APPROVED", "REJECTED" ]
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
           }
         } ],
         "responses" : {
@@ -2648,7 +2648,8 @@
             "type" : "string"
           },
           "status" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "pending", "approved", "rejected", "cancelled" ]
           },
           "decisionBy" : {
             "type" : "integer",

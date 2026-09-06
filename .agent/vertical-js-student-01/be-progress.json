@@ -1,0 +1,42 @@
+{
+  "schema": "rct.be-progress.v1",
+  "task": "vertical-js-student-01",
+  "contractRevision": "JS-STUDENT-01-r1",
+  "risk": "S3",
+  "owner": "/root/geo_contract_owner",
+  "role": "developer, contract owner and future integrator",
+  "routing": {
+    "requestedModel": "gpt-5.6-sol",
+    "requestedEffort": "high",
+    "observedRuntimeModel": null,
+    "observedRuntimeEffort": null
+  },
+  "baseline": {
+    "commit": "3df5fbe6736cb2add826392ee30a4e786e96fbe1",
+    "whitelistPayloadSha256": "3d0e7ce4111d94aff511636dd8d8ecf77cd3654e80bd9d595c6464777081e367",
+    "worktree": ".agent/worktrees/js-student-01/be",
+    "branch": "codex/js-student-01-be"
+  },
+  "phase": "backend-freeze",
+  "status": "VERIFIED_PENDING_FRESH_S3_REVIEW",
+  "scope": [
+    "attendance student check-in transaction and durable concurrency controls",
+    "attendance student gRPC auth and typed errors",
+    "mobile BFF strict auth, composition and REST handlers",
+    "gateway mobile BFF route",
+    "minimal schedule room provenance and late-checkin CANCELLED consumer closure",
+    "owned shared contracts, generated artifacts, config, docs and evidence"
+  ],
+  "acceptanceEvidenceRequired": [
+    "unit and Mongo replica-set integration tests for timing, idempotency and races",
+    "auth boundary negative tests",
+    "OpenAPI and generated artifact drift checks after any contract change",
+    "task-isolated runtime with gateway to BFF to attendance gRPC"
+  ],
+  "constraints": [
+    "no product or public contract revision without explicit r2 propagation",
+    "no production mutation, secret disclosure, push or unrelated refactor",
+    "root owns Git mutations",
+    "do not overwrite frontend lane edits"
+  ]
+}

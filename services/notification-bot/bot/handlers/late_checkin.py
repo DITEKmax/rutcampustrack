@@ -5,10 +5,9 @@ Callback data format: "lcr:approve:<request_id>" | "lcr:reject:<request_id>".
 On press the bot publishes a late_checkin.decision event via RabbitMQ; the
 attendance-service consumes it, applies the decision, and publishes
 late_checkin.decided which notifies the student. The bot also edits the original
-message so the headman sees immediate feedback ("⏳ Обрабатываем…" → final verdict
-once late_checkin.decided arrives — see student_alerts.py). For simplicity we edit
-straight to the final label here, since the decision event is fire-and-forget and
-the attendance-service is authoritative.
+message so the headman sees immediate feedback. The callback only shows that the
+command was sent; the authoritative final verdict arrives in late_checkin.decided.
+This matters when a geo retry has already cancelled the request.
 
 M09 G6 (06 P1-1): перед publish проверяем is_headman через academic_client
 (симметрично excuse.py). Student или unlinked Telegram получает alert
@@ -62,7 +61,7 @@ async def handle_late_checkin_decision(callback: CallbackQuery, **data) -> None:
         await callback.answer("Не удалось отправить решение, попробуйте ещё раз", show_alert=True)
         return
 
-    verdict_line = "✅ Подтверждено" if approved else "❌ Отклонено"
+    verdict_line = "⏳ Решение отправлено"
     original = callback.message.text or ""
     new_text = f"{original}\n\nРешение: {verdict_line}"
     try:

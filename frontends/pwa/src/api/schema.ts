@@ -182,7 +182,9 @@ export type ExcuseTicket = Omit<
   decisionAt: string | null
 }
 
-export type LateCheckinRequestStatus = 'pending' | 'approved' | 'rejected'
+export type LateCheckinRequestStatus = NonNullable<
+  AttendanceSchemas['EntityModelLateCheckinRequestResponse']['status']
+>
 
 export type LateCheckinRequest = Omit<
   Strict<

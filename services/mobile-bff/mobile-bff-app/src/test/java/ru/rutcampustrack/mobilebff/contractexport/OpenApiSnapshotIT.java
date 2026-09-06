@@ -4,35 +4,66 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.rutcampustrack.mobilebff.MobileBffApplication;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
+import ru.rutcampustrack.mobilebff.error.MobileBffException;
+import ru.rutcampustrack.mobilebff.student.StudentCheckinFacade;
+import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
+import ru.rutcampustrack.shared.security.PublicKeyProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(
-        classes = {MobileBffApplication.class, ContractExportController.class},
-        properties = "springdoc.api-docs.path=/api-docs"
+        classes = MobileBffApplication.class,
+        properties = {
+                "springdoc.api-docs.path=/api-docs",
+                "springdoc.enable-hateoas=false",
+                "spring.autoconfigure.exclude="
+                        + "ru.rutcampustrack.shared.web.autoconfigure.SharedWebAutoConfiguration"
+        }
 )
 @AutoConfigureMockMvc
 class OpenApiSnapshotIT {
 
     private static final Path SNAPSHOT_PATH = Path.of("../../..", "docs", "openapi", "mobile-bff.json")
             .toAbsolutePath().normalize();
+    private static final InternalJwtTestFactory JWT = new InternalJwtTestFactory();
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private PublicKeyProvider publicKeyProvider;
+
+    @MockitoBean
+    private StudentCheckinFacade checkins;
+
+    @BeforeEach
+    void setUpRuntimeSeam() {
+        when(publicKeyProvider.getPublicKey()).thenReturn(JWT.publicKey());
+        when(checkins.checkin(anyLong(), anyString(), any())).thenThrow(new MobileBffException(
+                HttpStatus.NOT_FOUND, ProblemCode.LESSON_NOT_FOUND, "Пара не найдена"));
+    }
 
     @Test
     void apiDocsMatchCanonicalSnapshot() throws Exception {
@@ -85,6 +116,7 @@ class OpenApiSnapshotIT {
     @Test
     void bothValidGeoKindsReachTheContractSeam() throws Exception {
         mockMvc.perform(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
                         .header("Idempotency-Key", "contract-key-0001")
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -93,6 +125,7 @@ class OpenApiSnapshotIT {
                 .andExpect(status().isNotFound());
 
         mockMvc.perform(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
                         .header("Idempotency-Key", "contract-key-0002")
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -104,6 +137,7 @@ class OpenApiSnapshotIT {
     @Test
     void missingOrNullCoordinateIsRejectedBeforeTheSeam() throws Exception {
         mockMvc.perform(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
                         .header("Idempotency-Key", "contract-key-0003")
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -112,11 +146,16 @@ class OpenApiSnapshotIT {
                 .andExpect(status().isBadRequest());
 
         mockMvc.perform(post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
                         .header("Idempotency-Key", "contract-key-0004")
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"geo":{"kind":"COORDINATES","latitude":null,"longitude":37.618423}}
                                 """))
                 .andExpect(status().isBadRequest());
+    }
+
+    private static String studentToken() {
+        return JWT.validToken(100L, "STUDENT", 10L, false);
     }
 }

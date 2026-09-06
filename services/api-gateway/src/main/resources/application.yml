@@ -26,6 +26,8 @@ spring:
               - "http://localhost:5173"
               - "http://localhost:80"
               - "http://localhost:5174"
+              - "http://localhost:5175"
+              - "http://localhost:5176"
               - "http://localhost:3000"
               - "http://localhost:4200"
             allowed-methods:
@@ -160,6 +162,31 @@ spring:
                 key-resolver: "#{@userIdKeyResolver}"
 
         # === Regular routes (unchanged) ===
+
+        - id: mobile-bff-checkin
+          uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+          predicates:
+            - Path=/api/v1/student/lessons/*/checkin
+            - Method=POST
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 60
+                redis-rate-limiter.requestedTokens: 6
+                key-resolver: "#{@userIdKeyResolver}"
+
+        - id: mobile-bff
+          uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+          predicates:
+            - Path=/api/v1/student/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 600
+                redis-rate-limiter.burstCapacity: 600
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         - id: auth-service
           uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
@@ -308,6 +335,13 @@ spring:
           filters:
             - RewritePath=/openapi/attendance-service, /api-docs
 
+        - id: mobile-bff-openapi
+          uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+          predicates:
+            - Path=/openapi/mobile-bff
+          filters:
+            - RewritePath=/openapi/mobile-bff, /api-docs
+
 springdoc:
   enable-native-support: true
   api-docs:
@@ -325,6 +359,8 @@ springdoc:
         name: Schedule Service
       - url: /openapi/attendance-service
         name: Attendance Service
+      - url: /openapi/mobile-bff
+        name: Mobile BFF
 
 gateway:
   auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}

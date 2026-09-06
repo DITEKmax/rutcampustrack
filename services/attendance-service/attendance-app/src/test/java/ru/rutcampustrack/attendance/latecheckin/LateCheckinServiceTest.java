@@ -24,7 +24,9 @@ import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
+import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
@@ -73,6 +75,8 @@ class LateCheckinServiceTest {
     @Mock private LateCheckinEventPublisher eventPublisher;
     @Mock private BusinessMetrics businessMetrics;
     @Mock private Counter lateCheckinCreatedCounter;
+    @Mock private PairWriteCoordinator pairWriteCoordinator;
+    @Mock private SemesterCacheService semesterCacheService;
 
     private final Clock clock = Clock.fixed(NOW, ZoneId.of("UTC"));
 
@@ -83,7 +87,7 @@ class LateCheckinServiceTest {
         service = new LateCheckinService(
                 repository, requestContext, scheduleGrpcClient, academicGrpcClient,
                 attendanceRepository, attendanceWritePort, eventPublisher,
-                businessMetrics, clock);
+                businessMetrics, clock, pairWriteCoordinator, semesterCacheService);
         lenient().when(businessMetrics.lateCheckinCreatedCounter()).thenReturn(lateCheckinCreatedCounter);
     }
 

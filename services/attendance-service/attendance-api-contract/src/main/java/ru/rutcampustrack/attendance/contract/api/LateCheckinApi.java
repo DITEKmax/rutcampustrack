@@ -69,7 +69,7 @@ public interface LateCheckinApi {
 
     @Operation(
             summary = "Group late-checkin requests",
-            description = "Headman sees PENDING/APPROVED/REJECTED late-checkin requests for their group updated during the last 30 days."
+            description = "Headman sees PENDING/APPROVED/REJECTED/CANCELLED late-checkin requests for their group updated during the last 30 days."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Group request list"),

@@ -450,4 +450,19 @@ class WebPushDeliveryServiceTest {
 
         verify(webPushService, never()).send(any(Notification.class));
     }
+
+    @Test
+    void sendToGroup_geoCancelledLateCheckinDoesNotSendFalseRejectedPush() throws Exception {
+        PushSubscriptionDocument target = sub(2L, "https://push.example.com/target");
+        when(repository.findAllByGroupId(10L)).thenReturn(List.of(target));
+
+        service.sendToGroup(10L, "late_checkin.decided", Map.of(
+                "group_id", 10,
+                "user_id", 2,
+                "status", "cancelled",
+                "resolution_reason", "geo_confirmed"
+        )).join();
+
+        verify(webPushService, never()).send(any(Notification.class));
+    }
 }

@@ -231,7 +231,12 @@ class EventDispatcher:
         request_id = payload.get("request_id")
         status = payload.get("status")
         if request_id and self._request_tracker is not None:
-            verdict = "✅ Подтверждено" if status == "approved" else "❌ Отклонено"
+            if status == "approved":
+                verdict = "✅ Подтверждено"
+            elif status == "cancelled":
+                verdict = "✅ Уже подтверждено по геолокации"
+            else:
+                verdict = "❌ Отклонено"
             await self._close_tracked_messages("late_checkin", str(request_id), verdict)
 
     async def _close_tracked_messages(self, kind: str, request_id: str, verdict_line: str) -> None:

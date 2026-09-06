@@ -79,7 +79,7 @@ function normalizeExcuseStatus(value: unknown): ExcuseTicketStatus {
 
 function normalizeLateCheckinStatus(value: unknown): LateCheckinRequestStatus {
   const status = String(value ?? 'pending').toLowerCase()
-  if (status === 'approved' || status === 'rejected') return status
+  if (status === 'approved' || status === 'rejected' || status === 'cancelled') return status
   return 'pending'
 }
 

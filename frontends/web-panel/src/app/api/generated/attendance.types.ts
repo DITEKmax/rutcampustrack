@@ -328,7 +328,7 @@ export interface paths {
         };
         /**
          * Group late-checkin requests
-         * @description Headman sees PENDING/APPROVED/REJECTED late-checkin requests for their group updated during the last 30 days.
+         * @description Headman sees PENDING/APPROVED/REJECTED/CANCELLED late-checkin requests for their group updated during the last 30 days.
          */
         get: operations["listGroupRequests"];
         put?: never;
@@ -586,7 +586,8 @@ export interface components {
             /** Format: int64 */
             lessonId?: number;
             studentName?: string;
-            status?: string;
+            /** @enum {string} */
+            status?: "pending" | "approved" | "rejected" | "cancelled";
             /** Format: int64 */
             decisionBy?: number;
             /** Format: date-time */
@@ -2467,7 +2468,7 @@ export interface operations {
         parameters: {
             query: {
                 pageable: components["schemas"]["Pageable"];
-                status?: "PENDING" | "APPROVED" | "REJECTED";
+                status?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
             };
             header?: never;
             path: {

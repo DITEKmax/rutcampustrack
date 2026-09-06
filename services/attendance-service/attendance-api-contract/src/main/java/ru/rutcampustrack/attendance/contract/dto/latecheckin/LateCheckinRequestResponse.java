@@ -54,6 +54,7 @@ public class LateCheckinRequestResponse extends RepresentationModel<LateCheckinR
     public Long getGroupId() { return groupId; }
     public Long getLessonId() { return lessonId; }
     public String getStudentName() { return studentName; }
+    @Schema(allowableValues = {"pending", "approved", "rejected", "cancelled"})
     public String getStatus() { return status; }
     public Long getDecisionBy() { return decisionBy; }
     public Instant getDecisionAt() { return decisionAt; }

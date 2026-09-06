@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils'
 
 type LateCheckinTab = 'pending' | 'resolved'
 
-const RESOLVED_STATUSES: LateCheckinRequest['status'][] = ['approved', 'rejected']
+const RESOLVED_STATUSES: LateCheckinRequest['status'][] = ['approved', 'rejected', 'cancelled']
 
 export function HeadmanLateCheckinPage() {
   const { user } = useAuth()
@@ -372,7 +372,7 @@ function DecisionButton({
 
 function StatusChip({ status }: { status: LateCheckinRequest['status'] }) {
   const color =
-    status === 'approved'
+    status === 'approved' || status === 'cancelled'
       ? 'var(--accent-info)'
       : status === 'rejected'
         ? 'var(--accent-danger)'

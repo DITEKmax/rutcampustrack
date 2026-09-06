@@ -1,0 +1,9 @@
+{
+  "name": "RutCampusTrack",
+  "short_name": "RutTrack",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#17141d",
+  "theme_color": "#17141d"
+}

@@ -5,17 +5,19 @@ React applications remain active until an explicit integration cutover.
 
 | Surface | Local runtime | Existing production URL | Foundation behavior |
 |---|---:|---|---|
-| PWA Vue | http://localhost:5175/ | /app/ | local root only; no service worker is emitted or registered |
+| PWA Vue | http://localhost:5175/ | /app/ | isolated local root; service worker is enabled only by an explicit production-preview flag |
 | TMA Vue | http://localhost:5176/ | /mini-app/ | local root only; online-only |
 | Mobile BFF | http://localhost:9080 | /api/v1/student/** via gateway | contract-export/runtime foundation |
 
 VITE_PUBLIC_BASE may set a non-root preview mount and must begin and end with
-/. A build must not claim /app/ while the legacy PWA is still served there.
+/. `VITE_API_PROXY_TARGET` points `/api` at the API Gateway (default
+`http://localhost:8080`), never directly at the internal-only BFF. A build must not
+claim /app/ while the legacy PWA is still served there.
 The integration owner may switch the Vue PWA to /app/ only in the explicit
-legacy-retirement revision. That same revision may introduce a service worker
-whose manifest id, start URL, registration scope, navigation fallback and
-cache cleanup are all bounded to /app/. Until then this workspace owns no
-service-worker scope and cannot control or evict the legacy application.
+legacy-retirement revision. For this story, an isolated local production preview
+may set `VITE_ENABLE_LOCAL_PWA_SW=true`. The application must additionally require
+the localhost origin before registering its root-scoped worker. This proves offline
+behavior without claiming or evicting the existing `/app/` production worker.
 
 The TMA target URL remains /mini-app/, with no service worker. Its production
 mount changes only during an explicit TMA cutover.

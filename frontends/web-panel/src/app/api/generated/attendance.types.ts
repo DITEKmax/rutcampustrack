@@ -659,15 +659,6 @@ export interface components {
              */
             lng: number;
         };
-        EntityModelCheckinResponse: {
-            /** @enum {string} */
-            status?: "PRESENT" | "ABSENT" | "EXCUSED" | "FREE_ATTENDANCE" | "CANCELLED";
-            /** Format: int64 */
-            lessonId?: number;
-            /** Format: date-time */
-            timestamp?: string;
-            _links?: components["schemas"]["Links"];
-        };
         /** @description Запрос на обновление статуса excuse-тикета (решение старосты) */
         UpdateExcuseStatusRequest: {
             /**
@@ -1604,6 +1595,33 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Устаревший путь отключён */
             410: {
                 headers: {
@@ -1611,6 +1629,15 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Внутренняя ошибка сервера */

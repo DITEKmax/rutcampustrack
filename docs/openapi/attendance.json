@@ -811,7 +811,6 @@
         "tags" : [ "Checkin" ],
         "summary" : "Геоотметка студента",
         "description" : "Устаревший путь отключён. Используйте канонический student check-in API.",
-        "deprecated" : true,
         "operationId" : "checkin",
         "requestBody" : {
           "content" : {
@@ -854,6 +853,46 @@
               }
             }
           },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "500" : {
             "description" : "Внутренняя ошибка сервера",
             "content" : {
@@ -864,7 +903,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated" : true
       }
     },
     "/attendance/excuses/{id}/status" : {
@@ -2733,26 +2773,6 @@
           }
         },
         "required" : [ "lat", "lng" ]
-      },
-      "EntityModelCheckinResponse" : {
-        "type" : "object",
-        "properties" : {
-          "status" : {
-            "type" : "string",
-            "enum" : [ "PRESENT", "ABSENT", "EXCUSED", "FREE_ATTENDANCE", "CANCELLED" ]
-          },
-          "lessonId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "timestamp" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "_links" : {
-            "$ref" : "#/components/schemas/Links"
-          }
-        }
       },
       "UpdateExcuseStatusRequest" : {
         "type" : "object",

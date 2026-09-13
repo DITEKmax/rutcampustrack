@@ -1,19 +1,3 @@
-## Решение владельца 2026-09-13 — orchestration v2
-
-Для rutcampustrackFULL приняты новые правила: обязательно прочитай
-`C:/Users/maksd/IntelliJIDEA/rutcampustrack/.agent/orchestration-v2/RULES.md`,
-`CURRENT.md` и свой пакет из той же директории до работы.
-Это явное project-only решение заменяет несовместимые старые routing-пункты
-ниже и в global AGENTS: главный **Astra medium**, четыре направления **Astra low**;
-поиск/код Luna max, важное review Sol high, **Terra NEVER**.
-Каждый fresh leaf получает абсолютную ссылку и хеш правил + scoped contract;
-не полагайся на память/наследование. Код только assigned developer, один writer
-на worktree; max3 активных leaves на проект и одна heavy queue у главного.
-Никаких новых детей у leaves/reviewers; no full access/push/deploy/main merge.
-После compaction прочитай CURRENT и свой handoff. Совместимые правила ниже
-сохраняются; другие проекты/global config не изменяются.
-
----
 # Backend / BFF
 
 - Java 21, Spring Boot, Gradle wrapper; версии/команды — из build и CI. Сверяй

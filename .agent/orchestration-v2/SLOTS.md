@@ -1,0 +1,2 @@
+# Global slots — initial handoff
+Active leaves: 0/3. Heavy lease: none. Main orchestrator owns assignments after MIGRATION_COMPLETE. Directions must receive a slot before spawn; reviewers/scouts count too.

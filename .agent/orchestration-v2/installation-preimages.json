@@ -1,0 +1,27 @@
+[
+  {
+    "path": "AGENTS.md",
+    "sha256": "DF68AD6EE6A15EAA3DCE3E7D624C35DAD837ACC7E1D9DC7AFC23DB51F23577E0",
+    "backup": "preimages/AGENTS.md.before.txt"
+  },
+  {
+    "path": "frontends/AGENTS.md",
+    "sha256": "4FF6EFFD59E9EB3AFC3245B4F0C28CDD6B4D53178870D01C8EDB1EB1201A3B50",
+    "backup": "preimages/frontends__AGENTS.md.before.txt"
+  },
+  {
+    "path": "services/AGENTS.md",
+    "sha256": "DADAD5FED3F707C52A3C5824198B75A564F3F2D5918D4DA172BDD6B9DB50D476",
+    "backup": "preimages/services__AGENTS.md.before.txt"
+  },
+  {
+    "path": "tests/AGENTS.md",
+    "sha256": "58C78156EBABC076DC482A6F1AC90D6E813598920ABD2CC33B974B051346D867",
+    "backup": "preimages/tests__AGENTS.md.before.txt"
+  },
+  {
+    "path": "docs/agent-workflow.md",
+    "sha256": "315FBBFCBB3F141BED520EEE40DD8CAAAF72C46710140E6BE694DD2D85037C2A",
+    "backup": "preimages/docs__agent-workflow.md.before.txt"
+  }
+]

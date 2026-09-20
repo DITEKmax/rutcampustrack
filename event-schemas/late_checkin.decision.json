@@ -3,6 +3,7 @@
   "title": "late_checkin.decision",
   "description": "Староста нажал кнопку одобрения/отклонения в Telegram. Публикуется notification-bot и потребляется Attendance Service для применения решения.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "event_type",
     "event_id",
@@ -24,6 +25,7 @@
     },
     "payload": {
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "request_id",
         "approved",
@@ -31,7 +33,8 @@
       ],
       "properties": {
         "request_id": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{24}$"
         },
         "approved": {
           "type": "boolean"
@@ -44,14 +47,13 @@
       }
     },
     "event_version": {
-      "$ref": "_common.json#/$defs/eventVersion"
+      "const": 1
     },
     "trace_id": {
       "$ref": "_common.json#/$defs/traceId"
     },
     "source": {
-      "type": "string",
-      "description": "Имя сервиса-источника (academic-service / schedule-service / attendance-service / auth-service)."
+      "const": "notification-bot"
     }
   }
 }

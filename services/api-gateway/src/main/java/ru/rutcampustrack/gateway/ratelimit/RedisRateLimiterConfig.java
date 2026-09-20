@@ -6,8 +6,11 @@ import org.springframework.cloud.gateway.support.ConfigurationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
+import ru.rutcampustrack.gateway.clientip.TrustedClientIpResolver;
+import ru.rutcampustrack.gateway.filter.JwtAuthenticationFilter;
+
+import java.util.Locale;
 
 /**
  * M03a Группа 9: {@link KeyResolver} бины для Spring Cloud Gateway RedisRateLimiter.
@@ -24,63 +27,51 @@ import reactor.core.publisher.Mono;
 public class RedisRateLimiterConfig {
 
     /**
-     * Ключ — IP клиента из X-Forwarded-For (первый) или RemoteAddr.
+     * Ключ — канонический IP, вычисленный {@link TrustedClientIpResolver} по
+     * raw peer и доверенному edge. До запуска глобального фильтра используется
+     * только raw peer; клиентский X-Forwarded-For здесь никогда не разбирается.
      * {@code @Primary} — default для {@code RequestRateLimiterGatewayFilterFactory}
      * когда в route-конфиге не указан явный {@code key-resolver}.
      */
     @Bean
     @Primary
     public KeyResolver ipKeyResolver() {
-        return exchange -> Mono.just(resolveIp(exchange.getRequest().getHeaders(),
-                exchange.getRequest().getRemoteAddress() == null
-                        ? "unknown"
-                        : exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()));
+        return exchange -> Mono.just(resolveCanonicalIp(exchange));
     }
 
     /**
-     * Ключ — user-id из заголовка {@code X-User-Id}, поставленного
-     * {@link ru.rutcampustrack.gateway.filter.JwtAuthenticationFilter} после валидации
-     * внешнего JWT. Если header отсутствует (неаутентифицированный роут) — fallback на IP.
+     * Ключ — user-id из внутреннего exchange attribute, поставленного после
+     * успешной live admission в {@code InternalJwtIssuerFilter}. Если identity
+     * отсутствует — fallback на IP; клиентские identity headers никогда не
+     * являются источником ключа.
      */
     @Bean
     public KeyResolver userIdKeyResolver() {
         return exchange -> {
-            String userId = exchange.getRequest().getHeaders().getFirst("X-User-Id");
+            String userId = exchange.getAttribute(JwtAuthenticationFilter.AUTHENTICATED_USER_ID_ATTRIBUTE);
             if (userId != null && !userId.isBlank()) {
                 return Mono.just("user:" + userId);
             }
-            return Mono.just("ip:" + resolveIp(exchange.getRequest().getHeaders(),
-                    exchange.getRequest().getRemoteAddress() == null
-                            ? "unknown"
-                            : exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()));
+            return Mono.just("ip:" + resolveCanonicalIp(exchange));
         };
     }
 
     /**
      * Ключ — login из заголовка {@code X-Login}.
      *
-     * <p><b>Безопасность:</b> {@code JwtAuthenticationFilter} strip'ает клиентский
-     * {@code X-Login} (вместе с X-User-*, X-Internal-Token) чтобы избежать
-     * DoS-by-rate-limit атаки и обхода composite-ключа. Значит в текущей реализации
-     * header может поставить ТОЛЬКО внутренний Gateway-фильтр — сейчас такого
-     * фильтра нет, поэтому резолвер всегда fallback'ится на IP-ключ.</p>
-     *
-     * <p>Чтобы composite {@code (ip, login)} начал реально защищать, нужен
-     * Gateway pre-filter который читает {@code login} из JSON body (через
-     * {@code CacheRequestBody}) и ставит {@code X-Login} в mutated request.
-     * Запланировано: hot-patch после v0.0.0-alpha.3 либо в M03b.</p>
+     * <p><b>Безопасность:</b> {@code JwtAuthenticationFilter} strip'ает
+     * клиентский {@code X-Login}; {@link LoginBodyExtractionFilter} добавляет
+     * его только после bounded body parsing на login route. Composite seam
+     * остаётся dormant, пока отдельное policy decision не включит его.</p>
      */
     @Bean
     public KeyResolver loginKeyResolver() {
         return exchange -> {
             String login = exchange.getRequest().getHeaders().getFirst("X-Login");
             if (login != null && !login.isBlank()) {
-                return Mono.just("login:" + login.toLowerCase());
+                return Mono.just("login:" + login.strip().toLowerCase(Locale.ROOT));
             }
-            return Mono.just("ip:" + resolveIp(exchange.getRequest().getHeaders(),
-                    exchange.getRequest().getRemoteAddress() == null
-                            ? "unknown"
-                            : exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()));
+            return Mono.just("ip:" + resolveCanonicalIp(exchange));
         };
     }
 
@@ -91,25 +82,21 @@ public class RedisRateLimiterConfig {
     @Bean
     public KeyResolver ipLoginKeyResolver() {
         return exchange -> {
-            String ip = resolveIp(exchange.getRequest().getHeaders(),
-                    exchange.getRequest().getRemoteAddress() == null
-                            ? "unknown"
-                            : exchange.getRequest().getRemoteAddress().getAddress().getHostAddress());
+            String ip = resolveCanonicalIp(exchange);
             String login = exchange.getRequest().getHeaders().getFirst("X-Login");
             if (login == null || login.isBlank()) {
                 return Mono.just("ip:" + ip);
             }
-            return Mono.just("ip:" + ip + ":login:" + login.toLowerCase());
+            return Mono.just("ip:" + ip + ":login:" + login.strip().toLowerCase(Locale.ROOT));
         };
     }
 
-    private static String resolveIp(HttpHeaders headers, String fallback) {
-        String xff = headers.getFirst("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            int comma = xff.indexOf(',');
-            return (comma > 0 ? xff.substring(0, comma) : xff).trim();
+    private static String resolveCanonicalIp(org.springframework.web.server.ServerWebExchange exchange) {
+        String normalized = exchange.getAttribute(TrustedClientIpResolver.CLIENT_IP_ATTRIBUTE);
+        if (normalized != null && !normalized.isBlank()) {
+            return normalized;
         }
-        return fallback;
+        return TrustedClientIpResolver.canonicalizeRemoteAddress(exchange.getRequest().getRemoteAddress());
     }
 
     /**

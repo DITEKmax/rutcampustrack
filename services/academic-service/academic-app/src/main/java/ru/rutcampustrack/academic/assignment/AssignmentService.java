@@ -8,34 +8,51 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignTeacherRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.academic.entity.Assignment;
 import ru.rutcampustrack.academic.entity.Semester;
-import ru.rutcampustrack.academic.entity.TeacherSubjectGroup;
+import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
+import ru.rutcampustrack.academic.exception.AssignmentClosureNotReadyException;
 import ru.rutcampustrack.academic.exception.BadRequestException;
-import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.repository.AssignmentRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
-import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
+import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.academic.repository.UserRoleGrantRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class AssignmentService {
 
-    private final TeacherSubjectGroupRepository assignmentRepository;
+    private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
+
+    private final AssignmentRepository assignmentRepository;
+    private final AssignmentAuthority assignmentAuthority;
     private final UserRepository userRepository;
     private final SemesterRepository semesterRepository;
+    private final SubjectRepository subjectRepository;
+    private final UserRoleGrantRepository grantRepository;
     private final RequestContext requestContext;
 
-    public AssignmentService(TeacherSubjectGroupRepository assignmentRepository,
-                              UserRepository userRepository,
-                              SemesterRepository semesterRepository,
-                              RequestContext requestContext) {
+    public AssignmentService(AssignmentRepository assignmentRepository,
+                             AssignmentAuthority assignmentAuthority,
+                             UserRepository userRepository,
+                             SemesterRepository semesterRepository,
+                             SubjectRepository subjectRepository,
+                             UserRoleGrantRepository grantRepository,
+                             RequestContext requestContext) {
         this.assignmentRepository = assignmentRepository;
+        this.assignmentAuthority = assignmentAuthority;
         this.userRepository = userRepository;
         this.semesterRepository = semesterRepository;
+        this.subjectRepository = subjectRepository;
+        this.grantRepository = grantRepository;
         this.requestContext = requestContext;
     }
 
@@ -45,13 +62,8 @@ public class AssignmentService {
         }
     }
 
-    /**
-     * M13 G9 — headman управляет назначениями только своей группы.
-     * ADMIN видит всё, TEACHER читает свои назначения через {@link #getMyAssignments}.
-     */
     private void assertOwnGroup(Long groupId) {
-        UserRole role = requestContext.getRole();
-        if (role == UserRole.ADMIN) {
+        if (requestContext.getRole() == UserRole.ADMIN) {
             return;
         }
         Long ownGroupId = requestContext.getGroupId();
@@ -61,63 +73,82 @@ public class AssignmentService {
     }
 
     @Transactional
-    public TeacherSubjectGroup assignTeacher(AssignTeacherRequest request) {
+    public Assignment assignTeacher(AssignTeacherRequest request) {
         requireHeadman();
-        // M13 G9 — request.groupId должен совпадать с группой headman'а
         assertOwnGroup(request.groupId());
-
-        // Find teacher by employee number
+        if (request.lessonType() == null || request.validFrom() == null) {
+            throw new BadRequestException("lessonType/validFrom", "Тип занятия и дата начала обязательны");
+        }
         User teacher = userRepository.findByEmployeeNumber(request.employeeNumber())
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher", "employeeNumber", request.employeeNumber()));
-
-        // Validate teacher role
-        if (teacher.getRole() != UserRole.TEACHER) {
-            throw new BadRequestException("Пользователь с табельным номером " + request.employeeNumber() + " не является преподавателем");
+        Subject subject = subjectRepository.findById(request.subjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", request.subjectId()));
+        if (!subject.getGroupId().equals(request.groupId())) {
+            throw new AccessDeniedException("Предмет не принадлежит вашей группе");
         }
-
-        // Check no existing assignment
-        assignmentRepository.findByTeacherIdAndSubjectIdAndGroupIdAndSemesterId(
-                teacher.getId(), request.subjectId(), request.groupId(), request.semesterId())
-                .ifPresent(existing -> {
-                    throw new ConflictException("Назначение уже существует для данного преподавателя, предмета, группы и семестра");
-                });
-
-        TeacherSubjectGroup assignment = new TeacherSubjectGroup(
-                teacher.getId(), request.subjectId(), request.groupId(), request.semesterId()
-        );
-        return assignmentRepository.save(assignment);
+        return assignmentAuthority.create(
+                teacher.getId(), request.subjectId(), request.groupId(), request.semesterId(),
+                request.lessonType(), request.validFrom(), request.validUntilExclusive());
     }
 
     @Transactional(readOnly = true)
-    public Page<TeacherSubjectGroup> listAssignments(Long groupId, Long semesterId, Pageable pageable) {
-        // M13 G9 — STUDENT/headman читает только свою группу; ADMIN — любую
+    public Page<Assignment> listAssignments(Long groupId, Long semesterId, Pageable pageable) {
         assertOwnGroup(groupId);
-        List<TeacherSubjectGroup> list = assignmentRepository.findByGroupIdAndSemesterId(groupId, semesterId);
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), list.size());
-        List<TeacherSubjectGroup> page = start >= list.size() ? List.of() : list.subList(start, end);
-        return new PageImpl<>(page, pageable, list.size());
+        List<Assignment> list = assignmentRepository.findByGroupIdAndSemesterId(groupId, semesterId)
+                .stream()
+                .sorted(Comparator.comparing(Assignment::getSemesterId)
+                        .thenComparing(a -> a.getLessonType().name())
+                        .thenComparing(Assignment::getTeacherId)
+                        .thenComparing(Assignment::getValidFrom)
+                        .thenComparing(Assignment::getId))
+                .toList();
+        return page(list, pageable);
     }
 
     @Transactional
-    public void removeAssignment(Long id) {
+    public void removeAssignment(Long id, LocalDate requestedEnd) {
         requireHeadman();
-        TeacherSubjectGroup assignment = assignmentRepository.findById(id)
+        if (requestedEnd == null) {
+            throw new BadRequestException("validUntilExclusive", "Дата окончания обязательна");
+        }
+        Assignment assignment = assignmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment", "id", id));
-        // M13 G9 — assignment должен принадлежать группе headman'а
         assertOwnGroup(assignment.getGroupId());
-        assignmentRepository.delete(assignment);
+        throw new AssignmentClosureNotReadyException();
     }
 
     @Transactional(readOnly = true)
-    public Page<TeacherSubjectGroup> getMyAssignments(Pageable pageable) {
+    public Page<Assignment> getMyAssignments(Pageable pageable) {
         Long teacherId = requestContext.getUserId();
+        if (teacherId == null || teacherId <= 0) {
+            throw new AccessDeniedException("Идентификатор преподавателя не определён");
+        }
+        if (grantRepository.findByUserIdAndRoleAndStatus(
+                teacherId, AssignmentAuthority.TEACHER_ROLE, AssignmentAuthority.ACTIVE_STATUS).isEmpty()) {
+            throw new AccessDeniedException("У преподавателя нет активного права TEACHER");
+        }
         Semester activeSemester = semesterRepository.findByIsActiveTrue()
                 .orElseThrow(() -> new ResourceNotFoundException("Semester", "isActive", true));
-        List<TeacherSubjectGroup> list = assignmentRepository.findByTeacherIdAndSemesterId(teacherId, activeSemester.getId());
-        int start = (int) pageable.getOffset();
+        LocalDate today = LocalDate.now(MOSCOW);
+        if (today.isBefore(activeSemester.getDateFrom()) || today.isAfter(activeSemester.getDateTo())) {
+            return Page.empty(pageable);
+        }
+        List<Assignment> list = assignmentRepository.findByTeacherIdAndSemesterId(teacherId, activeSemester.getId())
+                .stream()
+                .filter(a -> !a.getValidFrom().isAfter(today))
+                .filter(a -> today.isBefore(AssignmentAuthority.effectiveEnd(a, activeSemester)))
+                .sorted(Comparator.comparing(Assignment::getSemesterId)
+                        .thenComparing(a -> a.getLessonType().name())
+                        .thenComparing(Assignment::getTeacherId)
+                        .thenComparing(Assignment::getValidFrom)
+                        .thenComparing(Assignment::getId))
+                .toList();
+        return page(list, pageable);
+    }
+
+    private static Page<Assignment> page(List<Assignment> list, Pageable pageable) {
+        int start = (int) Math.min(pageable.getOffset(), list.size());
         int end = Math.min(start + pageable.getPageSize(), list.size());
-        List<TeacherSubjectGroup> page = start >= list.size() ? List.of() : list.subList(start, end);
-        return new PageImpl<>(page, pageable, list.size());
+        return new PageImpl<>(list.subList(start, end), pageable, list.size());
     }
 }

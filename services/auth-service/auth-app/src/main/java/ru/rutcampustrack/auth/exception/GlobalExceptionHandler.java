@@ -7,11 +7,15 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.CacheControl;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.rutcampustrack.auth.session.SessionAdmissionException;
+import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 import java.time.Instant;
+import java.util.Map;
 
 /**
  * Domain-level exception handler для auth-service.
@@ -86,6 +90,60 @@ public class GlobalExceptionHandler {
                 ex.getMessage(), request);
     }
 
+    @ExceptionHandler(SessionAdmissionException.class)
+    public ResponseEntity<ErrorResponse> handleSessionAdmission(
+            SessionAdmissionException ex,
+            HttpServletRequest request) {
+        HttpStatus status = switch (ex.code()) {
+            case INVALID_SESSION, SESSION_REVOKED -> HttpStatus.UNAUTHORIZED;
+            case ROLE_NOT_GRANTED, ROLE_NOT_SELECTABLE -> HttpStatus.FORBIDDEN;
+            case SESSION_STATE_STALE -> HttpStatus.CONFLICT;
+            case AUTHORITY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+        };
+        ErrorResponse body = new ErrorResponse(
+                status.value(),
+                ErrorResponse.PROBLEM_BASE + "session-admission-failed",
+                "Session admission failed",
+                "Session admission was denied",
+                request.getRequestURI(),
+                Instant.now(),
+                MDC.get(MDC_TRACE_ID),
+                null,
+                null,
+                Map.of("code", ex.code().name())
+        );
+        return ResponseEntity.status(status)
+                .cacheControl(CacheControl.noStore())
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(body);
+    }
+
+    @ExceptionHandler(AuthSessionException.class)
+    public ResponseEntity<ErrorResponse> handleAuthSession(
+            AuthSessionException ex,
+            HttpServletRequest request) {
+        HttpStatus status = switch (ex.code()) {
+            case PASSWORD_POLICY_VIOLATION, INVALID_CURSOR -> HttpStatus.BAD_REQUEST;
+            case CURRENT_PASSWORD_INVALID -> HttpStatus.BAD_REQUEST;
+            case INVALID_SESSION, SESSION_REVOKED, REFRESH_REJECTED -> HttpStatus.UNAUTHORIZED;
+            case ROLE_NOT_GRANTED, ROLE_NOT_SELECTABLE, ROLE_READ_ONLY,
+                    BOOTSTRAP_SCOPE_DENIED -> HttpStatus.FORBIDDEN;
+            case SESSION_STATE_STALE, SESSION_VERSION_CONFLICT,
+                    REFRESH_ALREADY_ROTATED -> HttpStatus.CONFLICT;
+            case AUTHORITY_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+        };
+        ErrorResponse body = new ErrorResponse(
+                status.value(), ErrorResponse.PROBLEM_BASE + "auth-session-failed",
+                "Authentication session request failed",
+                "The authentication session request was denied",
+                request.getRequestURI(), Instant.now(), MDC.get(MDC_TRACE_ID), null, null,
+                Map.of("code", ex.code().name()));
+        return ResponseEntity.status(status)
+                .cacheControl(CacheControl.noStore())
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(body);
+    }
+
     private static ResponseEntity<ErrorResponse> problem(
             HttpStatus status,
             String problemType,
@@ -105,6 +163,7 @@ public class GlobalExceptionHandler {
                 null,
                 null);
         return ResponseEntity.status(status)
+                .cacheControl(CacheControl.noStore())
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .body(body);
     }

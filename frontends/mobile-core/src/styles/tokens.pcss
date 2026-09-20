@@ -1,4 +1,6 @@
 :root {
+  color-scheme: dark;
+  /* Dark semantic aliases reference canonical primitives. */
   --rct-color-surface-base: #0b0b0c;
   --rct-color-surface-raised: #1c1922;
   --rct-color-surface-float: #292531;
@@ -8,17 +10,27 @@
   --rct-color-border-default: #3d3846;
   --rct-color-accent-now: #b79cfa;
   --rct-color-accent-on-now: #0b0b0c;
+  --rct-color-text-on-fill-strong: #ffffff; /* canonical color/text/on-fill-strong, for fixed dark fills */
   --rct-color-success-text: #61dfb8;
+  /* Homework aliases: canonical color/surface/success = #063429. */
+  --rct-color-success-surface: #063429;
   --rct-color-warning-text: #f5b443;
   --rct-color-danger-text: #f27f7f;
   --rct-color-disabled-surface: #262626;
   --rct-color-disabled-text: #6b6b6b;
+  --rct-mobile-dock-opacity: 78%; /* component/mobile-bottom-nav/glass-surface-opacity */
+  --rct-mobile-dock-blur: 1.5625rem; /* component/mobile-bottom-nav/glass-background-blur */
+  --rct-control-min-touch: 2.75rem; /* canonical control/min-touch: 44px */
   --rct-font-family-sans: 'Onest Variable', Onest, sans-serif;
   --rct-font-size-body: 1rem;
   --rct-font-size-dense: 0.875rem;
   --rct-font-size-caption: 0.8125rem;
   --rct-font-size-micro: 0.75rem;
   --rct-font-size-title: 1.125rem;
+  /* Homework aliases: canonical dimension/font/size/title-block = 1.125rem. */
+  --rct-font-size-title-block: var(--rct-font-size-title);
+  /* Homework alias: canonical dimension/font/size/title-screen = 1.5rem. */
+  --rct-font-size-title-screen: 1.5rem;
   --rct-font-weight-regular: 400;
   --rct-font-weight-medium: 500;
   --rct-font-weight-bold: 600;
@@ -45,7 +57,7 @@
   --rct-mobile-time-column: 3.375rem;
   --rct-mobile-dock-height: 4.75rem;
   --rct-mobile-dock-bottom: 1rem;
-  --rct-mobile-blur: 1.5625rem;
+  --rct-mobile-blur: var(--rct-mobile-dock-blur);
   --rct-today-role-width: 7rem;
   --rct-today-role-height: 2.75rem;
   --rct-today-action-height: 2.8125rem;
@@ -73,8 +85,59 @@
   --rct-today-present-font-size: 1rem;
   --rct-today-present-leading: 1.25;
   --rct-today-dock-label-leading: 1.35;
+  /* Accepted Homework date heading: final source 4601-142.txt, lines 34/69 (17px). */
+  --rct-homework-date-heading-size: 1.0625rem;
   --rct-today-role-gradient: linear-gradient(104.93deg, #3b1a7a -5.26%, #5729a1 49.47%, #2e1f4d 100%);
   --rct-today-action-gradient: linear-gradient(90deg, #171229 0%, #29174d 55%, #3b146b 100%);
+}
+
+/* Light semantic aliases reference canonical primitives. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --rct-color-surface-base: #fcfbfe;
+  --rct-color-surface-raised: #ffffff;
+  --rct-color-surface-float: #ffffff;
+  --rct-color-text-primary: #292531;
+  --rct-color-text-secondary: #565061;
+  --rct-color-text-muted: #6e6779;
+  --rct-color-border-default: #ded9e8;
+  --rct-color-accent-now: #6d28d9;
+  --rct-color-accent-on-now: #ffffff;
+  --rct-color-text-on-fill-strong: #ffffff;
+  --rct-color-success-text: #0c6a53;
+  --rct-color-success-surface: #e4f9f1;
+  --rct-color-warning-text: #764b09;
+  --rct-color-danger-text: #8e1d1d;
+  --rct-color-disabled-surface: #ededed;
+  --rct-color-disabled-text: #a3a3a3;
+  --rct-mobile-dock-opacity: 90%;
+  --rct-mobile-dock-blur: 1.5625rem;
+}
+
+/* System is the default when no explicit light/dark override is present. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]),
+  :root[data-theme='system'] {
+    color-scheme: light;
+    --rct-color-surface-base: #fcfbfe;
+    --rct-color-surface-raised: #ffffff;
+    --rct-color-surface-float: #ffffff;
+    --rct-color-text-primary: #292531;
+    --rct-color-text-secondary: #565061;
+    --rct-color-text-muted: #6e6779;
+    --rct-color-border-default: #ded9e8;
+    --rct-color-accent-now: #6d28d9;
+    --rct-color-accent-on-now: #ffffff;
+    --rct-color-text-on-fill-strong: #ffffff;
+    --rct-color-success-text: #0c6a53;
+    --rct-color-success-surface: #e4f9f1;
+    --rct-color-warning-text: #764b09;
+    --rct-color-danger-text: #8e1d1d;
+    --rct-color-disabled-surface: #ededed;
+    --rct-color-disabled-text: #a3a3a3;
+    --rct-mobile-dock-opacity: 90%;
+    --rct-mobile-dock-blur: 1.5625rem;
+  }
 }
 
 @define-mixin rct-type-body {

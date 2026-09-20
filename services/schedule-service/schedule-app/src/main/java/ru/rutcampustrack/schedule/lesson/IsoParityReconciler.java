@@ -14,6 +14,7 @@ import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -72,6 +73,10 @@ public class IsoParityReconciler {
             Integer regenerated = txTemplate.execute(status -> doReconcile());
             txTemplate.executeWithoutResult(status -> markExecuted(regenerated == null ? 0 : regenerated));
             log.info("ISO parity reconciliation complete: {} schedule items regenerated", regenerated);
+        } catch (RecurringLifecycleNotReadyException e) {
+            // Canonical recurring history is retained; no marker or delete
+            // may be recorded while reconciliation remains gated.
+            log.info("ISO parity reconciliation is not ready for canonical history: {}", e.getMessage());
         } catch (Exception e) {
             // Any failure (no active semester, academic-service unreachable, etc.) is
             // logged but not rethrown — the application must still start. Next healthy

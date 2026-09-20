@@ -8,6 +8,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -15,6 +16,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 class DualModeUserContextFilterTest {
+
+    private static final UUID SESSION_ID = UUID.fromString("22222222-2222-4222-8222-222222222222");
 
     private InternalJwtTestFactory factory;
     private FilterChain chain;
@@ -42,15 +45,15 @@ class DualModeUserContextFilterTest {
     void internalToken_applied_chainContinues() throws Exception {
         TestFilter filter = filter(true);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("X-Internal-Token", factory.validToken(42L, "ADMIN", 7L, true));
+        request.addHeader("X-Internal-Token", factory.validToken(
+                42L, SESSION_ID, 1L, 1L, "HEADMAN", "ACTIVE", 7L, true, false));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(request, response, chain);
 
         assertThat(filter.appliedClaims.get())
-                .isNotNull()
-                .extracting(InternalJwtClaims::userId)
-                .isEqualTo(42L);
+                .isEqualTo(new InternalJwtClaims(
+                        42L, SESSION_ID, 1L, 1L, "HEADMAN", "ACTIVE", 7L, true, false));
         assertThat(filter.legacyApplied).isFalse();
         assertThat(response.getStatus()).isEqualTo(200);
         verify(chain).doFilter(request, response);
@@ -60,7 +63,12 @@ class DualModeUserContextFilterTest {
     void invalidInternalToken_returns401() throws Exception {
         TestFilter filter = filter(true);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("X-Internal-Token", factory.invalidSignature(42L, "ADMIN"));
+        request.addHeader("X-Internal-Token", new InternalJwtTestFactory().buildToken(
+                42L, SESSION_ID, 1L, 1L, "ADMIN", "ACTIVE", null, false, false,
+                java.time.Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS),
+                java.time.Instant.now().plusSeconds(60).truncatedTo(java.time.temporal.ChronoUnit.SECONDS),
+                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, "internal",
+                new InternalJwtTestFactory().keyPair()));
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(request, response, chain);
@@ -150,7 +158,8 @@ class DualModeUserContextFilterTest {
     void internalTokenTakesPrecedence_overLegacyHeaders() throws Exception {
         TestFilter filter = filter(true);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("X-Internal-Token", factory.validToken(99L, "STUDENT", null, false));
+        request.addHeader("X-Internal-Token", factory.validToken(
+                99L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", null, false, false));
         request.addHeader("X-User-Id", "1"); // should be ignored
         request.addHeader("X-User-Role", "ADMIN"); // should be ignored
         MockHttpServletResponse response = new MockHttpServletResponse();

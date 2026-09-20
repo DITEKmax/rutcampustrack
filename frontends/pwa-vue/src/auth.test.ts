@@ -1,5 +1,129 @@
 import { describe, expect, it, vi } from 'vitest'
-import { usePwaAuth } from './auth'
+import { usePwaAuth, type PwaAuthInvalidationChannel, type PwaAuthInvalidationReason } from './auth'
+import { AuthRequestError } from './auth-client'
+import { StaleSessionGenerationError } from '../../mobile-core/src/shared/session-owner'
+import { ProfileState } from '../../mobile-core/src/features/profile/profile-state'
+import type { ProfileSnapshot } from '../../mobile-core/src/features/profile/profile-types'
+
+const profile: ProfileSnapshot = {
+  sessionId: '00000000-0000-4000-8000-000000000001',
+  userId: '42',
+  displayName: 'Анна Смирнова',
+  groupLabel: 'ИВТ-21',
+  sessionVersion: '3',
+  rolesVersion: '4',
+  activeRole: 'STUDENT',
+  roles: [{
+    grantId: '17',
+    role: 'STUDENT',
+    status: 'ACTIVE',
+    groupId: '17',
+    contextLabel: 'ИВТ-21',
+    selectable: true,
+    readOnly: false,
+  }],
+  readOnly: false,
+  passwordPolicy: {
+    minCodePoints: 12,
+    maxUtf8Bytes: 72,
+    requiresDecimalDigit: true,
+    specialCategories: ['P', 'S'],
+    normalization: 'NONE',
+  },
+}
+
+function response(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+type DurableMutation = 'changePassword' | 'logoutAll'
+
+function invokeDurableMutation(state: ProfileState, mutation: DurableMutation): Promise<void> {
+  return mutation === 'changePassword'
+    ? state.changePassword({ currentPassword: 'old', newPassword: 'new' })
+    : state.logoutAll()
+}
+
+function emptyMutationResponse(options: {
+  contentLength?: string
+  text?: string
+  textError?: unknown
+} = {}): Response {
+  const text = options.textError === undefined
+    ? vi.fn(async () => options.text ?? '')
+    : vi.fn(async () => { throw options.textError })
+  return {
+    ok: true,
+    status: 204,
+    headers: new Headers(options.contentLength === undefined ? undefined : { 'Content-Length': options.contentLength }),
+    body: null,
+    text,
+  } as unknown as Response
+}
+
+function readableMutationResponse(payload: Uint8Array): {
+  response: Response
+  text: ReturnType<typeof vi.fn>
+  readCount: () => number
+} {
+  let readCount = 0
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      if (payload.byteLength > 0) controller.enqueue(payload)
+      controller.close()
+    },
+  })
+  const text = vi.fn(async () => {
+    const reader = body.getReader()
+    let byteCount = 0
+    while (true) {
+      const result = await reader.read()
+      readCount += 1
+      if (result.done) break
+      byteCount += result.value.byteLength
+    }
+    return byteCount === 0 ? '' : 'unexpected'
+  })
+  return {
+    response: {
+      ok: true,
+      status: 204,
+      headers: new Headers({ 'Content-Length': '0' }),
+      body,
+      text,
+    } as unknown as Response,
+    text,
+    readCount: () => readCount,
+  }
+}
+
+const durableMutations: readonly DurableMutation[] = ['changePassword', 'logoutAll']
+
+class TestInvalidationChannel implements PwaAuthInvalidationChannel {
+  private readonly listeners = new Set<(event: MessageEvent<unknown>) => void>()
+  peer?: TestInvalidationChannel
+  closed = false
+
+  postMessage(message: unknown): void {
+    this.peer?.listeners.forEach((listener) => listener({ data: message } as MessageEvent<unknown>))
+  }
+
+  addEventListener(_type: 'message', listener: (event: MessageEvent<unknown>) => void): void {
+    this.listeners.add(listener)
+  }
+
+  removeEventListener(_type: 'message', listener: (event: MessageEvent<unknown>) => void): void {
+    this.listeners.delete(listener)
+  }
+
+  close(): void {
+    this.closed = true
+    this.listeners.clear()
+  }
+}
 
 describe('PWA memory session', () => {
   it('uses one refresh request for concurrent bootstrap callers and retains only the access token in memory', async () => {
@@ -20,5 +144,261 @@ describe('PWA memory session', () => {
     expect(auth.accessToken.value).toBeNull()
     expect(clearSnapshot).toHaveBeenCalledOnce()
     vi.unstubAllGlobals()
+  })
+
+  it('observes a fast snapshot cleanup rejection before the remote logout resolves', async () => {
+    let resolveRemote!: (response: Response) => void
+    const remote = new Promise<Response>((resolve) => { resolveRemote = resolve })
+    const fetcher = vi.fn().mockReturnValue(remote)
+    vi.stubGlobal('fetch', fetcher)
+    const cleanupError = new Error('storage unavailable')
+    const clearSnapshot = vi.fn().mockRejectedValue(cleanupError)
+    const auth = usePwaAuth()
+    const unhandled: unknown[] = []
+    const onUnhandled = (reason: unknown): void => { unhandled.push(reason) }
+    process.on('unhandledRejection', onUnhandled)
+
+    const logout = auth.logout(clearSnapshot)
+    await Promise.resolve()
+    expect(fetcher).toHaveBeenCalledWith('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    resolveRemote(new Response(null, { status: 204 }))
+    await expect(logout).rejects.toBe(cleanupError)
+    await new Promise<void>((resolve) => setImmediate(resolve))
+
+    expect(unhandled).toEqual([])
+    process.off('unhandledRejection', onUnhandled)
+    vi.unstubAllGlobals()
+  })
+
+  it('invalidates another tab without sending a token or looping the signal', () => {
+    const firstChannel = new TestInvalidationChannel()
+    const secondChannel = new TestInvalidationChannel()
+    firstChannel.peer = secondChannel
+    secondChannel.peer = firstChannel
+    const first = usePwaAuth({ channel: firstChannel })
+    const second = usePwaAuth({ channel: secondChannel })
+    const invalidated = vi.fn()
+    second.subscribeInvalidation(invalidated)
+    first.setToken('first-tab-token')
+
+    first.clear()
+
+    expect(first.accessToken.value).toBeNull()
+    expect(second.accessToken.value).toBeNull()
+    expect(second.currentGeneration()).toBe(1)
+    expect(invalidated).toHaveBeenCalledOnce()
+    expect(firstChannel.closed).toBe(false)
+    expect(secondChannel.closed).toBe(false)
+    first.dispose()
+    second.dispose()
+  })
+
+  it('rejects a login response that arrives after its generation was cleared', async () => {
+    let resolveLogin!: (response: Response) => void
+    const fetcher = vi.fn<typeof fetch>().mockReturnValue(new Promise<Response>((resolve) => { resolveLogin = resolve }))
+    const auth = usePwaAuth({ fetcher })
+    const pending = auth.login({ login: 'anna', password: 'secret' })
+    auth.clear({ broadcast: false })
+    resolveLogin(new Response(JSON.stringify({ accessToken: 'late-token' }), { status: 200 }))
+
+    await expect(pending).rejects.toBeInstanceOf(Error)
+    expect(auth.accessToken.value).toBeNull()
+  })
+
+  it('generation-binds profile reads so a late owner response cannot restore a cleared session', async () => {
+    let resolveProfile!: (response: Response) => void
+    const fetcher = vi.fn<typeof fetch>().mockReturnValue(new Promise<Response>((resolve) => { resolveProfile = resolve }))
+    const auth = usePwaAuth({ fetcher })
+    auth.setToken('owner-token')
+    const port = auth.createProfilePort(0)
+    const pending = port.getSnapshot()
+
+    auth.clear({ broadcast: false })
+    resolveProfile(response(profile))
+
+    await expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    expect(auth.accessToken.value).toBeNull()
+    expect(auth.currentGeneration()).toBe(1)
+  })
+
+  it('keeps typed Auth conflict details available to the role UI', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
+      status: 409,
+      title: 'Конфликт',
+      detail: 'Сессия устарела',
+      extras: { code: 'SESSION_VERSION_CONFLICT' },
+    }), { status: 409 }))
+    const auth = usePwaAuth({ fetcher })
+    await expect(auth.refresh()).rejects.toBeInstanceOf(AuthRequestError)
+  })
+
+  it.each(durableMutations)('preserves the owner and skips invalidation for non-204 %s responses', async (mutation) => {
+    const mutationResponses = [
+      ['JSON 200', () => response({}, 200), 200],
+      ['empty 205', () => new Response(null, { status: 205 }), 205],
+    ] as const
+
+    for (const [, makeResponse, status] of mutationResponses) {
+      const fetcher = vi.fn<typeof fetch>()
+        .mockResolvedValueOnce(response(profile))
+        .mockResolvedValueOnce(makeResponse())
+      const auth = usePwaAuth({ fetcher })
+      auth.setToken('owner-token')
+      const onInvalidated = vi.fn()
+      const state = new ProfileState(auth.createProfilePort(0, { onInvalidated }))
+      await state.loadSnapshot()
+      const snapshotBefore = state.view.snapshot
+
+      await expect(invokeDurableMutation(state, mutation)).rejects.toMatchObject({
+        name: 'AuthProtocolError',
+        status,
+      })
+      expect(onInvalidated).not.toHaveBeenCalled()
+      expect(state.view.snapshot).toBe(snapshotBefore)
+      expect(auth.accessToken.value).toBe('owner-token')
+      expect(auth.currentGeneration()).toBe(0)
+    }
+  })
+
+  it.each(durableMutations)('preserves the owner and skips invalidation for malformed empty 204 %s responses', async (mutation) => {
+    const malformedResponses = [
+      ['Content-Length: 2', () => emptyMutationResponse({ contentLength: '2' })],
+      ['negative Content-Length', () => emptyMutationResponse({ contentLength: '-1' })],
+      ['invalid Content-Length', () => emptyMutationResponse({ contentLength: 'not-a-number' })],
+      ['combined Content-Length', () => emptyMutationResponse({ contentLength: '0, 0' })],
+      ['non-empty response body', () => readableMutationResponse(new Uint8Array([1])).response],
+      ['non-empty response text', () => emptyMutationResponse({ text: 'unexpected' })],
+      ['body read error', () => emptyMutationResponse({ textError: new Error('body read failed') })],
+    ] as const
+
+    for (const [, makeResponse] of malformedResponses) {
+      const fetcher = vi.fn<typeof fetch>()
+        .mockResolvedValueOnce(response(profile))
+        .mockResolvedValueOnce(makeResponse())
+      const auth = usePwaAuth({ fetcher })
+      auth.setToken('owner-token')
+      const onInvalidated = vi.fn()
+      const state = new ProfileState(auth.createProfilePort(0, { onInvalidated }))
+      await state.loadSnapshot()
+      const snapshotBefore = state.view.snapshot
+
+      await expect(invokeDurableMutation(state, mutation)).rejects.toMatchObject({
+        name: 'AuthProtocolError',
+        status: 204,
+      })
+      expect(onInvalidated).not.toHaveBeenCalled()
+      expect(state.view.snapshot).toBe(snapshotBefore)
+      expect(auth.accessToken.value).toBe('owner-token')
+      expect(auth.currentGeneration()).toBe(0)
+    }
+  })
+
+  it.each(durableMutations)('consumes a non-null empty ReadableStream and invalidates exactly once for %s', async (mutation) => {
+    const readable = readableMutationResponse(new Uint8Array())
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(response(profile))
+      .mockResolvedValueOnce(readable.response)
+    const auth = usePwaAuth({ fetcher })
+    auth.setToken('owner-token')
+    const onInvalidated = vi.fn((reason: 'password-changed' | 'logout-all' | 'account-invalidated') => {
+      expect(reason).toBe(mutation === 'changePassword' ? 'password-changed' : 'logout-all')
+      auth.clear({ broadcast: false })
+    })
+    const state = new ProfileState(auth.createProfilePort(0, { onInvalidated }))
+    await state.loadSnapshot()
+
+    await expect(invokeDurableMutation(state, mutation)).resolves.toBeUndefined()
+    expect(readable.text).toHaveBeenCalledTimes(1)
+    expect(readable.readCount()).toBe(1)
+    expect(onInvalidated).toHaveBeenCalledTimes(1)
+    expect(state.view.snapshot).toBeNull()
+    expect(auth.accessToken.value).toBeNull()
+    expect(auth.currentGeneration()).toBe(1)
+  })
+
+  it.each([
+    ['changePassword', 'password-changed'],
+    ['logoutAll', 'logout-all'],
+  ] as const)('invalidates exactly once after an exact empty 204 %s', async (mutation, reason) => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(response(profile))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+    const auth = usePwaAuth({ fetcher })
+    auth.setToken('owner-token')
+    const onInvalidated = vi.fn((actualReason: 'password-changed' | 'logout-all' | 'account-invalidated') => {
+      expect(actualReason).toBe(reason)
+      auth.clear({ broadcast: false })
+    })
+    const state = new ProfileState(auth.createProfilePort(0, { onInvalidated }))
+    await state.loadSnapshot()
+
+    await expect(invokeDurableMutation(state, mutation)).resolves.toBeUndefined()
+    expect(onInvalidated).toHaveBeenCalledTimes(1)
+    expect(state.view.snapshot).toBeNull()
+    expect(auth.accessToken.value).toBeNull()
+    expect(auth.currentGeneration()).toBe(1)
+  })
+
+  it('probes the refreshed authority before allowing the old StudentApi one retry', async () => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(response(profile))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(response({ accessToken: 'new-token', expiresIn: 3600 }))
+      .mockResolvedValueOnce(response(profile))
+      .mockResolvedValueOnce(response({ lessons: [] }))
+    const auth = usePwaAuth({ fetcher })
+    auth.setToken('old-token')
+    await auth.getSessionFor(0)
+
+    const api = auth.createApi(fetcher)
+    await expect(api.getToday()).resolves.toEqual({ lessons: [] })
+
+    const todayCalls = fetcher.mock.calls.filter(([input]) => String(input).includes('/today'))
+    expect(todayCalls).toHaveLength(2)
+    expect(new Headers(todayCalls[1]?.[1]?.headers).get('Authorization')).toBe('Bearer new-token')
+    expect(fetcher).toHaveBeenCalledTimes(5)
+  })
+
+  it.each([
+    ['sid', (value: ProfileSnapshot): ProfileSnapshot => ({
+      ...value,
+      sessionId: '00000000-0000-4000-8000-000000000002',
+    })],
+    ['user', (value: ProfileSnapshot): ProfileSnapshot => ({ ...value, userId: '43' })],
+    ['role', (value: ProfileSnapshot): ProfileSnapshot => ({ ...value, activeRole: null })],
+    ['sessionVersion', (value: ProfileSnapshot): ProfileSnapshot => ({ ...value, sessionVersion: '5' })],
+    ['rolesVersion', (value: ProfileSnapshot): ProfileSnapshot => ({ ...value, rolesVersion: '6' })],
+    ['readOnly', (value: ProfileSnapshot): ProfileSnapshot => ({
+      ...value,
+      readOnly: true,
+      roles: value.roles.map((grant) => ({ ...grant, readOnly: true })),
+    })],
+    ['group grant context', (value: ProfileSnapshot): ProfileSnapshot => ({
+      ...value,
+      groupLabel: 'ПМ-22',
+      roles: value.roles.map((grant) => ({ ...grant, groupId: '18', contextLabel: 'ПМ-22' })),
+    })],
+  ] as const)('invalidates the old generation when refresh changes %s', async (_label, change) => {
+    const changedProfile = change(profile)
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(response(profile))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(response({ accessToken: 'changed-token', expiresIn: 3600 }))
+      .mockResolvedValueOnce(response(changedProfile))
+    const auth = usePwaAuth({ fetcher })
+    const reasons: PwaAuthInvalidationReason[] = []
+    auth.subscribeInvalidation((reason) => reasons.push(reason))
+    auth.setToken('old-token')
+    await auth.getSessionFor(0)
+
+    const api = auth.createApi(fetcher)
+    await expect(api.getToday()).rejects.toBeInstanceOf(StaleSessionGenerationError)
+
+    const todayCalls = fetcher.mock.calls.filter(([input]) => String(input).includes('/today'))
+    expect(todayCalls).toHaveLength(1)
+    expect(fetcher).toHaveBeenCalledTimes(4)
+    expect(auth.currentGeneration()).toBe(1)
+    expect(auth.accessToken.value).toBe('changed-token')
+    expect(reasons).toEqual(['authority-changed'])
   })
 })

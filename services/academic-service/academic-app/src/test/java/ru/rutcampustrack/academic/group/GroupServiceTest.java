@@ -18,21 +18,27 @@ import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.group.GroupResponse;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.event.GroupRenamedEvent;
 import ru.rutcampustrack.academic.event.GroupUpdatedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
+import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
 import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,6 +59,8 @@ class GroupServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private RequestContext requestContext;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private SemesterRepository semesterRepository;
+    @Mock private GroupHistoryCoverageRepository coverageRepository;
     // 58-06: real parser, чтобы GroupService.createGroup мог извлечь тип программы
     // без мокирования чистой логики.
     @Spy private GroupNameParser nameParser = new GroupNameParser();
@@ -61,6 +69,12 @@ class GroupServiceTest {
 
     @BeforeEach
     void setUpValidator() {
+        Semester activeSemester = new Semester();
+        activeSemester.setDateFrom(LocalDate.of(2026, 9, 1));
+        activeSemester.setDateTo(LocalDate.of(2027, 1, 31));
+        activeSemester.setActive(true);
+        lenient().when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
+                .thenReturn(List.of(activeSemester));
         if (validator == null) {
             try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
                 validator = factory.getValidator();

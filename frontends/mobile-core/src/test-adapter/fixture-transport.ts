@@ -4,7 +4,19 @@ import schedule from '../../fixtures/semester-schedule.json'
 import session from '../../fixtures/session.json'
 import pendingToday from '../../fixtures/today-pending.json'
 import presentToday from '../../fixtures/today-present.json'
-import type { StudentCheckinAck, StudentCheckinCommand, StudentSemesterSchedule, StudentSession, StudentToday, TodayLesson } from '../api/types'
+import type {
+  StudentCheckinAck,
+  StudentCheckinCommand,
+  StudentHomework,
+  StudentHomeworkCompletion,
+  StudentHomeworkCompletionCommand,
+  StudentSemesterSchedule,
+  StudentSession,
+  StudentToday,
+  TodayLesson,
+} from '../api/types'
+import type { ProfileSnapshot } from '../features/profile/profile-types'
+import { fixtureHomeworkFeed } from './homework-fixtures'
 
 const fixtureSession = session as StudentSession
 const fixturePendingToday = pendingToday as StudentToday
@@ -12,6 +24,32 @@ const fixturePresentToday = presentToday as StudentToday
 const fixturePendingAck = pendingAck as StudentCheckinAck
 const fixturePresentAck = presentAck as StudentCheckinAck
 const fixtureSchedule = fixtureScheduleProjection()
+const fixtureAuthSnapshot: ProfileSnapshot = {
+  sessionId: fixtureSession.sessionId,
+  userId: fixtureSession.user.id,
+  displayName: fixtureSession.user.displayName,
+  groupLabel: fixtureSession.group?.name ?? null,
+  sessionVersion: fixtureSession.sessionVersion,
+  rolesVersion: fixtureSession.rolesVersion,
+  activeRole: 'STUDENT',
+  roles: [{
+    grantId: '1',
+    role: 'STUDENT',
+    status: 'ACTIVE',
+    groupId: fixtureSession.group?.id ?? null,
+    contextLabel: fixtureSession.group?.name ?? null,
+    selectable: true,
+    readOnly: fixtureSession.readOnly,
+  }],
+  readOnly: fixtureSession.readOnly,
+  passwordPolicy: {
+    minCodePoints: 12,
+    maxUtf8Bytes: 72,
+    requiresDecimalDigit: true,
+    specialCategories: ['P', 'S'],
+    normalization: 'NONE',
+  },
+}
 
 type FixtureTodayState = 'default' | 'pending' | 'confirmed'
 type FixtureApiState = 'normal' | 'network' | 'unauthorized' | 'forbidden'
@@ -26,23 +64,74 @@ type FixtureApiState = 'normal' | 'network' | 'unauthorized' | 'forbidden'
  */
 export function createFixtureTransport(): typeof fetch {
   let todayState = selectedTodayState()
+  let homeworkState: StudentHomework = {
+    ...fixtureHomeworkFeed,
+    items: fixtureHomeworkFeed.items.map((item) => ({ ...item, subject: { ...item.subject } })),
+  }
   return async (input, init) => {
     const url = typeof input === 'string' ? input : input.toString()
+    const endpoint = url.split('?', 1)[0] ?? url
     const method = init?.method ?? 'GET'
     const apiState = selectedApiState()
     if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new TypeError('Fixture network unavailable')
     if (apiState === 'network') throw new TypeError('Fixture network unavailable')
     if (apiState === 'unauthorized') return new Response(null, { status: 401 })
     if (apiState === 'forbidden') return new Response(null, { status: 403 })
-    if (url.includes('/session')) return json(fixtureSession)
+    if (url.endsWith('/auth/login') && method === 'POST') return json({ accessToken: 'fixture-access-token', expiresIn: 3600 })
+    if (url.endsWith('/auth/session/active-role') && method === 'PUT') {
+      const body = JSON.parse(String(init?.body ?? '{}')) as { role?: string }
+      if (body.role !== 'STUDENT') return new Response(null, { status: 403 })
+      return json({ accessToken: 'fixture-student-role-token', expiresIn: 3600, session: fixtureAuthSnapshot })
+    }
+    if (url.endsWith('/auth/session') && method === 'GET') return json(fixtureAuthSnapshot)
+    if (endpoint.endsWith('/auth/sessions') && method === 'GET') {
+      return json({
+        items: [{
+          sessionId: fixtureSession.sessionId,
+          authMethod: 'PASSWORD',
+          clientLabel: 'Fixture browser',
+          locationLabel: null,
+          createdAt: fixtureSession.serverNow,
+          lastSeenAt: fixtureSession.serverNow,
+          current: true,
+        }],
+        nextCursor: null,
+      })
+    }
+    if (endpoint.endsWith('/auth/account-history') && method === 'GET') return json({ items: [], nextCursor: null })
+    if (endpoint.endsWith('/auth/change-password') && method === 'POST') return new Response(null, { status: 204 })
+    if (endpoint.endsWith('/auth/logout-all') && method === 'POST') return new Response(null, { status: 204 })
+    if (url.endsWith('/auth/logout') && method === 'POST') return new Response(null, { status: 204 })
+    if (url.endsWith('/auth/refresh') && method === 'POST') return json({ accessToken: 'fixture-access-token', expiresIn: 3600 })
+    if (url.includes('/v1/student/session')) return json(fixtureSession)
     if (url.includes('/schedule')) return json(fixtureSchedule, { ETag: '"fixture-semester-v1"' })
     if (url.includes('/today')) return json(todayProjection(todayState))
+    if (url.includes('/homework/') && url.endsWith('/completion') && method === 'PUT') {
+      const match = url.match(/\/homework\/([^/]+)\/completion$/)
+      const id = match ? decodeURIComponent(match[1] ?? '') : ''
+      const command = JSON.parse(String(init?.body ?? '{}')) as StudentHomeworkCompletionCommand
+      const item = homeworkState.items.find((candidate) => candidate.id === id)
+      if (!item || typeof command.completed !== 'boolean') return new Response(null, { status: 404 })
+      // Keep the fixture receipt on the same server clock as the feed. Using
+      // the host clock here can move a just-completed item out of
+      // `Выполнено сегодня` when the fixture is run on another date.
+      const completedAt = command.completed ? homeworkState.serverNow : null
+      homeworkState = {
+        ...homeworkState,
+        items: homeworkState.items.map((candidate) => candidate.id === id
+          ? { ...candidate, completed: command.completed, completedAt }
+          : candidate),
+      }
+      const completion: StudentHomeworkCompletion = { id, completed: command.completed, completedAt }
+      return json(completion)
+    }
+    if (url.includes('/homework')) return json(homeworkState)
     if (url.includes('/checkin') && method === 'POST') {
       const command = JSON.parse(String(init?.body ?? '{}')) as StudentCheckinCommand
       todayState = command.geo.kind === 'UNAVAILABLE' ? 'pending' : 'confirmed'
       return json(todayState === 'pending' ? pendingAckProjection() : presentAckProjection())
     }
-    if (url.includes('/auth/refresh') || url.includes('/auth/tma')) return json({ accessToken: 'fixture-access-token' })
+    if (url.includes('/auth/tma')) return json({ accessToken: 'fixture-access-token' })
     return new Response(null, { status: 404 })
   }
 }

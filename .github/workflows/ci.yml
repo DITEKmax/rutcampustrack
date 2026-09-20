@@ -292,14 +292,15 @@ jobs:
       - name: Boot e2e stack (docker-compose.e2e.yml)
         run: |
           cp tests/e2e/.env.ci .env
-          docker compose -f docker-compose.e2e.yml up -d --build
+          docker compose --env-file .env -f docker-compose.e2e.yml config --quiet
+          docker compose --env-file .env -f docker-compose.e2e.yml up -d --build
           # Polling до 8 мин — full prod-like stack (5 backend Java
           # сервисов с Gradle build, Bitnami Mongo RS init, gateway
           # depends_on chain). Cold CI runner pulls images + builds
           # ~3-5 мин до первого health check.
           for i in $(seq 1 96); do
-            unhealthy=$(docker compose -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="unhealthy") | .Name' || echo "")
-            starting=$(docker compose -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="starting") | .Name' || echo "")
+            unhealthy=$(docker compose --env-file .env -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="unhealthy") | .Name' || echo "")
+            starting=$(docker compose --env-file .env -f docker-compose.e2e.yml ps --format json | jq -r 'select(.Health=="starting") | .Name' || echo "")
             if [ -z "$unhealthy" ] && [ -z "$starting" ]; then
               echo "All services healthy"
               break
@@ -307,7 +308,7 @@ jobs:
             echo "[$i/96] waiting — starting: $starting | unhealthy: $unhealthy"
             sleep 5
           done
-          docker compose -f docker-compose.e2e.yml ps
+          docker compose --env-file .env -f docker-compose.e2e.yml ps
 
       - name: Install Playwright + browsers
         working-directory: tests/e2e
@@ -339,11 +340,11 @@ jobs:
           # `ps --services` без флагов выводит только running сервисы — exited
           # контейнеры (Mongo crash на старте) пропадают. `config --services`
           # возвращает все сервисы из compose-файла, гарантирует полный snapshot.
-          for c in $(docker compose -f docker-compose.e2e.yml config --services); do
-            docker compose -f docker-compose.e2e.yml logs --no-color "$c" > "docker-logs/$c.log" 2>&1 || true
+          for c in $(docker compose --env-file .env -f docker-compose.e2e.yml config --services); do
+            docker compose --env-file .env -f docker-compose.e2e.yml logs --no-color "$c" > "docker-logs/$c.log" 2>&1 || true
           done
           # Дополнительно — `docker compose ps -a` для exit codes / health.
-          docker compose -f docker-compose.e2e.yml ps -a > docker-logs/_compose-ps.txt 2>&1 || true
+          docker compose --env-file .env -f docker-compose.e2e.yml ps -a > docker-logs/_compose-ps.txt 2>&1 || true
 
       - name: Upload docker logs
         if: failure()

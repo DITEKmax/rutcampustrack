@@ -68,8 +68,6 @@ export type ScheduleItemResponse = Strict<
 
 export type CreateScheduleItemRequest = ScheduleSchemas['CreateScheduleItemRequest'];
 export type UpdateScheduleItemRequest = ScheduleSchemas['UpdateScheduleItemRequest'];
-export type MassCancelRequest = ScheduleSchemas['MassCancelRequest'];
-export type MassCancelResponse = Required<ScheduleSchemas['MassCancelResponse']>;
 export type GeoBlockRequest = ScheduleSchemas['GeoBlockRequest'];
 export type CancelLessonRequest = ScheduleSchemas['CancelLessonRequest'];
 export type CreateOneOffLessonRequest = ScheduleSchemas['CreateOneOffLessonRequest'];

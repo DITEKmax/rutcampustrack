@@ -72,7 +72,7 @@ class ScheduleItemSecurityTest {
 
     private CreateScheduleItemRequest buildRequest(Long groupId) {
         return new CreateScheduleItemRequest(
-                groupId, 500L, SEMESTER_ID,
+                501L, groupId, 500L, SEMESTER_ID,
                 (short) 1, (short) 1,
                 LocalTime.of(8, 30), LocalTime.of(10, 0),
                 WeekType.ALL, "A-101");

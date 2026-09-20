@@ -83,6 +83,22 @@ public class GlobalExceptionHandler {
                 "Conflict", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(RecurringLifecycleNotReadyException.class)
+    public ResponseEntity<ErrorResponse> handleRecurringLifecycleNotReady(
+            RecurringLifecycleNotReadyException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.CONFLICT, "lifecycle-not-ready",
+                "Schedule lifecycle is not ready", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(RecurringProtocolConflictException.class)
+    public ResponseEntity<ErrorResponse> handleRecurringProtocolConflict(
+            RecurringProtocolConflictException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.CONFLICT, "recurring-protocol-conflict",
+                "Recurring request conflicts with durable authority", ex.getMessage(), request);
+    }
+
     /**
      * Schedule-custom {@link AccessDeniedException} (НЕ Spring Security).
      * Spring Security AccessDeniedException обрабатывается shared handler'ом.

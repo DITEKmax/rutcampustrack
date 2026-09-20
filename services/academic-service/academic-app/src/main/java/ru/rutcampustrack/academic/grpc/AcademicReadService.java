@@ -1,12 +1,14 @@
 package ru.rutcampustrack.academic.grpc;
 
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.CampusSetting;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.history.HistoricalMembershipService;
 import ru.rutcampustrack.academic.repository.CampusSettingRepository;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
@@ -14,6 +16,7 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 /**
  * Separate Spring bean for cached gRPC read operations.
@@ -27,15 +30,27 @@ public class AcademicReadService {
     private final UserRepository userRepository;
     private final SemesterRepository semesterRepository;
     private final CampusSettingRepository campusSettingRepository;
+    private final HistoricalMembershipService historicalMembershipService;
 
+    @Autowired
     public AcademicReadService(GroupRepository groupRepository,
                                UserRepository userRepository,
                                SemesterRepository semesterRepository,
-                               CampusSettingRepository campusSettingRepository) {
+                               CampusSettingRepository campusSettingRepository,
+                               HistoricalMembershipService historicalMembershipService) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.semesterRepository = semesterRepository;
         this.campusSettingRepository = campusSettingRepository;
+        this.historicalMembershipService = historicalMembershipService;
+    }
+
+    /** Compatibility constructor for source-era unit tests and undated reads. */
+    public AcademicReadService(GroupRepository groupRepository,
+                               UserRepository userRepository,
+                               SemesterRepository semesterRepository,
+                               CampusSettingRepository campusSettingRepository) {
+        this(groupRepository, userRepository, semesterRepository, campusSettingRepository, null);
     }
 
     @Cacheable(value = "groups", key = "#groupId")
@@ -47,6 +62,14 @@ public class AcademicReadService {
     @Cacheable(value = "group_members", key = "#groupId")
     public List<User> fetchGroupMembers(Long groupId) {
         return userRepository.findByGroupId(groupId);
+    }
+
+    public HistoricalMembershipService.RosterSnapshot fetchHistoricalGroupMembers(
+            Long groupId, LocalDate asOfDate, Long semesterId) {
+        if (historicalMembershipService == null) {
+            throw new IllegalStateException("Historical membership service is unavailable");
+        }
+        return historicalMembershipService.readRoster(groupId, asOfDate, semesterId);
     }
 
     @Cacheable(value = "active_semester", key = "'current'")

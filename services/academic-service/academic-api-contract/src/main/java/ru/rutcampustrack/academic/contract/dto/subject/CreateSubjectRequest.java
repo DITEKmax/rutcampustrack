@@ -5,19 +5,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**
  * Request DTO for creating a new subject (HEADMAN/ADMIN).
  *
- * <p>Phase 60-01 / D-02: староста указывает название, тип и список
- * преподавателей-наблюдателей (N штук, все равноправные, D-15). Группа
- * берётся из {@code RequestContext} (JWT claim), не из тела запроса.
- *
- * @param name       human-readable subject name
- * @param type       subject type (LECTURE / PRACTICE / LAB)
- * @param teacherIds идентификаторы преподавателей для текущего семестра;
- *                   может быть пустым списком, но не {@code null}.
+ * <p>Группа берётся из {@code RequestContext}; assignments contain all
+ * identity and validity fields and are created in the same transaction.
  */
 @Schema(description = "Запрос на создание нового предмета (HEADMAN/ADMIN)")
 public record CreateSubjectRequest(
@@ -33,9 +28,26 @@ public record CreateSubjectRequest(
         @NotNull(message = "Тип предмета обязателен")
         SubjectType type,
 
-        @Schema(description = "ID преподавателей-наблюдателей (может быть пустым, но не null)",
-                example = "[42, 43]",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull(message = "Список преподавателей обязателен")
+        @Schema(description = "Канонические типы занятий (1-3)", example = "[\"LECTURE\", \"PRACTICE\"]")
+        List<SubjectType> lessonTypes,
+
+        @Schema(description = "Начальные назначения, создаваемые атомарно")
+        List<@NotNull @Valid InitialAssignmentRequest> initialAssignments,
+
+        @Schema(description = "Устаревший список преподавателей; непустой список отклоняется")
         List<Long> teacherIds
-) {}
+) {
+
+    /** Source compatibility for the former {name,type,teacherIds} payload. */
+    public CreateSubjectRequest(String name, SubjectType type, List<Long> teacherIds) {
+        this(name, type, null, null, teacherIds);
+    }
+
+    /** Canonical convenience constructor without the legacy field. */
+    public CreateSubjectRequest(String name,
+                                SubjectType type,
+                                List<SubjectType> lessonTypes,
+                                List<InitialAssignmentRequest> initialAssignments) {
+        this(name, type, lessonTypes, initialAssignments, null);
+    }
+}

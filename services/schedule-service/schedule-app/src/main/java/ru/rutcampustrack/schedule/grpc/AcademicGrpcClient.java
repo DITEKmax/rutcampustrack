@@ -9,11 +9,14 @@ import ru.rutcampustrack.academic.grpc.GroupRequest;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.HeadmanCheckRequest;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.AssignmentInfo;
+import ru.rutcampustrack.academic.grpc.AssignmentsByIdsRequest;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 /**
  * gRPC client wrapper for Academic Service.
@@ -104,6 +107,27 @@ public class AcademicGrpcClient {
                     .getIsHeadman();
         } catch (StatusRuntimeException e) {
             throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+        }
+    }
+
+    /**
+     * Reads the complete immutable assignment authority before any local
+     * recurring write begins. The wrapper keeps the deadline and failure
+     * translation in one place and does not expose the internal stub.
+     */
+    public List<AssignmentInfo> getAssignmentsByIds(List<Long> assignmentIds) {
+        try {
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getAssignmentsByIds(AssignmentsByIdsRequest.newBuilder()
+                            .addAllAssignmentIds(assignmentIds)
+                            .build())
+                    .getAssignmentsList();
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
+                throw new ResourceNotFoundException("Assignment", "id", assignmentIds);
+            }
+            throw new AcademicServiceUnavailableException(
+                    "Academic Service unavailable: " + e.getStatus());
         }
     }
 }

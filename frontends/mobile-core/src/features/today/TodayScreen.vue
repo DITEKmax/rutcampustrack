@@ -2,20 +2,25 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { countdownLabel, eligibilityLabel, remainingSeconds } from '../../domain/checkin'
 import type { StudentSemesterSchedule, StudentToday, TodayLesson } from '../../api/types'
-import attendanceTab from '../../assets/attendance-tab.svg'
 import chevronDown from '../../assets/chevron-down.svg'
 import lessonTypeDark from '../../assets/lesson-type-dark.svg'
 import lessonTypeLight from '../../assets/lesson-type-light.svg'
-import moreTab from '../../assets/more-tab.svg'
-import profileTab from '../../assets/profile-tab.svg'
 import roomChangeStrike from '../../assets/room-change-strike.svg'
 import roomDark from '../../assets/room-dark.svg'
 import roomLight from '../../assets/room-light.svg'
-import scheduleTab from '../../assets/schedule-tab.svg'
-import todayTabActive from '../../assets/today-tab-active.svg'
+import MobileShell from '../../shared/components/MobileShell.vue'
+import {
+  rootRoute,
+  type MobileBottomNavItems,
+  type MobileNavigationStack,
+  type MobileRootRouteId,
+  type MobileRoute,
+} from '../../shared/navigation'
+import type { MobileHostAdapter } from '../../shared/host'
+import { createStudentNavigationItems } from '../../shared/mobile-navigation-items'
 import './today-screen.pcss'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   today: StudentToday | null
   loading: boolean
   error: string | null
@@ -24,9 +29,36 @@ const props = defineProps<{
   submittingLessonId: string | null
   semesterSchedule: StudentSemesterSchedule | null
   selectedDate: string
+  navItems?: MobileBottomNavItems
+  route?: MobileRoute | null
+  navigation?: MobileNavigationStack | null
+  activeId?: MobileRootRouteId
+  keyboardVisible?: boolean
+  host?: MobileHostAdapter | null
+  readOnly?: boolean
+}>(), {
+  navItems: undefined as never,
+  route: null,
+  navigation: null,
+  activeId: 'today',
+  keyboardVisible: undefined as never,
+  host: null,
+  readOnly: false,
+})
+
+const emit = defineEmits<{
+  checkin: [lesson: TodayLesson]
+  selectDate: [date: string]
+  navigate: [route: MobileRootRouteId]
 }>()
 
-const emit = defineEmits<{ checkin: [lesson: TodayLesson]; selectDate: [date: string] }>()
+const todayRoute = rootRoute('today')
+const todayNavigationItems = createStudentNavigationItems()
+const navigationItems = computed(() => props.navItems ?? todayNavigationItems)
+const shellOptionalProps = computed(() => props.keyboardVisible === undefined
+  ? {}
+  : { keyboardVisible: props.keyboardVisible })
+
 const now = ref(Date.now())
 let timer: number | null = null
 
@@ -56,7 +88,7 @@ function lessonKind(lesson: TodayLesson): string {
 
 function canCheckin(lesson: TodayLesson): boolean {
   const retryAllowed = countdown(lesson) === 0 && (lesson.checkinEligibility.reason === 'PENDING_CONFIRMATION' || lesson.checkinEligibility.reason === 'COOLDOWN')
-  return !props.offline && (lesson.checkinEligibility.allowed || retryAllowed) && props.submittingLessonId === null
+  return !props.offline && !props.readOnly && (lesson.checkinEligibility.allowed || retryAllowed) && props.submittingLessonId === null
 }
 
 function isPending(lesson: TodayLesson): boolean {
@@ -96,276 +128,224 @@ function heroKindIcon(lesson: TodayLesson): string {
   return isConfirmed(lesson) ? lessonTypeLight : lessonTypeDark
 }
 
+function iconStyle(icon: string): Record<string, string> {
+  return { '--rct-icon-mask': `url("${icon}")` }
+}
+
 function semesterDate(date: string): string {
   return new Date(`${date}T12:00:00Z`).toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: 'numeric', month: 'long' })
 }
 </script>
 
 <template>
-  <main
-    class="today-shell"
-    aria-labelledby="today-title"
+  <MobileShell
+    :route="route ?? todayRoute"
+    :navigation="navigation"
+    :nav-items="navigationItems"
+    :active-id="activeId"
+    v-bind="shellOptionalProps"
+    :host="host"
+    @navigate="emit('navigate', $event)"
   >
-    <header class="today-topbar">
-      <button
-        class="today-role"
-        type="button"
-        disabled
-        aria-label="Активная роль: студент"
-      >
-        Студент
-        <img
-          :src="chevronDown"
-          alt=""
-          aria-hidden="true"
-        >
-      </button>
-      <h1
-        id="today-title"
-        class="today-visually-hidden"
-      >
-        Сегодня
-      </h1>
-      <p
-        v-if="offline"
-        class="today-offline"
-        role="status"
-      >
-        Офлайн · данные обновлены {{ updatedAt ? new Date(updatedAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : 'ранее' }}
-      </p>
-    </header>
-
-    <section
-      v-if="loading"
-      class="today-state"
-      aria-live="polite"
+    <main
+      class="today-shell"
+      aria-labelledby="today-title"
     >
-      <span
-        class="today-state__spinner"
-        aria-hidden="true"
-      />
-      Загружаем сегодняшнее расписание…
-    </section>
-    <section
-      v-else-if="error"
-      class="today-state today-state--error"
-      role="alert"
-    >
-      <h2>Не удалось получить данные</h2>
-      <p>{{ error }}</p>
-    </section>
-    <section
-      v-else-if="!hero"
-      class="today-state"
-    >
-      <h2>На сегодня пар нет</h2>
-      <p>Следи за расписанием, когда появится следующая пара.</p>
-    </section>
-    <template v-else>
-      <section
-        class="today-hero"
-        :data-state="isPending(hero) ? 'pending' : isConfirmed(hero) ? 'confirmed' : 'default'"
-        aria-label="Текущая или ближайшая пара"
-      >
-        <p class="today-hero__time">
-          {{ lessonTime(hero) }}
-        </p>
-        <h2>{{ hero.schedule.subject.name }}</h2>
-        <div class="today-hero__metadata">
-          <p>
-            <img
-              :src="heroRoomIcon(hero)"
-              alt=""
-              aria-hidden="true"
-            >
-            {{ hero.schedule.room.current ?? 'Аудитория уточняется' }}
-          </p>
-          <p>
-            <img
-              :src="heroKindIcon(hero)"
-              alt=""
-              aria-hidden="true"
-            >
-            {{ lessonKind(hero) }}
-          </p>
-        </div>
+      <header class="today-topbar">
         <button
-          class="today-hero__action"
+          class="today-role"
           type="button"
-          :disabled="!canCheckin(hero)"
-          @click="emit('checkin', hero)"
+          disabled
+          aria-label="Активная роль: студент"
         >
+          Студент
           <span
-            v-if="submittingLessonId === hero.schedule.id"
-            class="today-state__spinner"
+            class="today-icon today-icon--chevron"
+            :style="iconStyle(chevronDown)"
             aria-hidden="true"
           />
-          {{ heroActionLabel(hero) }}
         </button>
+        <h1
+          id="today-title"
+          class="today-visually-hidden"
+        >
+          Сегодня
+        </h1>
         <p
-          v-if="isPending(hero)"
-          class="today-hero__retry"
+          v-if="offline"
+          class="today-offline"
           role="status"
         >
-          Отметиться повторно через: {{ countdownLabel(countdown(hero)) }}
+          Офлайн · данные обновлены {{ updatedAt ? new Date(updatedAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }) : 'ранее' }}
         </p>
-      </section>
+      </header>
 
       <section
-        class="today-list"
-        aria-label="Пары на сегодня"
+        v-if="loading"
+        class="today-state"
+        aria-live="polite"
       >
-        <h2>Пары на сегодня</h2>
-        <ol>
-          <li
-            v-for="lesson in today?.lessons"
-            :key="lesson.schedule.id"
-            class="today-row"
-            :data-current="isAccentCurrent(lesson)"
-            :aria-label="`${lessonTime(lesson)}. ${lesson.schedule.subject.name}. ${stateLabel(lesson)}`"
-          >
-            <p class="today-row__time">
-              <span>{{ lesson.schedule.startsAt.slice(0, 5) }}</span>
-              <span>{{ lesson.schedule.endsAt.slice(0, 5) }}</span>
-            </p>
-            <article class="today-card">
-              <h3>{{ lesson.schedule.subject.name }}</h3>
-              <p class="today-card__meta">
-                <img
-                  :src="roomIcon(lesson)"
-                  alt=""
-                  aria-hidden="true"
-                >
-                <span :class="{ 'today-card__room--changed': lesson.schedule.room.changeState === 'CHANGED' }">{{ lesson.schedule.room.current ?? 'Аудитория уточняется' }}</span>
-                <span
-                  v-if="lesson.schedule.room.previous"
-                  class="today-card__room-change"
-                >
-                  <img
-                    :src="roomChangeStrike"
-                    alt=""
-                    aria-hidden="true"
-                  >
-                  <s>{{ lesson.schedule.room.previous }}</s>
-                </span>
-              </p>
-              <p class="today-card__meta">
-                <img
-                  :src="kindIcon(lesson)"
-                  alt=""
-                  aria-hidden="true"
-                >
-                {{ lessonKind(lesson) }}
-              </p>
-              <span
-                v-if="isConfirmed(lesson)"
-                class="today-card__present"
-                aria-label="Отметка подтверждена"
-              >+</span>
-            </article>
-          </li>
-        </ol>
+        <span
+          class="today-state__spinner"
+          aria-hidden="true"
+        />
+        Загружаем сегодняшнее расписание…
       </section>
-
-      <details
-        v-if="semesterSchedule"
-        class="today-semester"
+      <section
+        v-else-if="error"
+        class="today-state today-state--error"
+        role="alert"
       >
-        <summary>Расписание семестра</summary>
-        <label>
-          Дата
-          <select
-            :value="selectedDate"
-            @change="emit('selectDate', ($event.target as HTMLSelectElement).value)"
-          >
-            <option
-              v-for="date in semesterDates"
-              :key="date"
-              :value="date"
-            >{{ semesterDate(date) }}</option>
-          </select>
-        </label>
-        <p
-          v-if="selectedLessons.length === 0"
-          class="today-semester__empty"
+        <h2>Не удалось получить данные</h2>
+        <p>{{ error }}</p>
+      </section>
+      <section
+        v-else-if="!hero"
+        class="today-state"
+      >
+        <h2>На сегодня пар нет</h2>
+        <p>Следи за расписанием, когда появится следующая пара.</p>
+      </section>
+      <template v-else>
+        <section
+          class="today-hero"
+          :data-state="isPending(hero) ? 'pending' : isConfirmed(hero) ? 'confirmed' : 'default'"
+          aria-label="Текущая или ближайшая пара"
         >
-          На выбранную дату пар нет.
-        </p>
-        <ul v-else>
-          <li
-            v-for="lesson in selectedLessons"
-            :key="lesson.id"
+          <p class="today-hero__time">
+            {{ lessonTime(hero) }}
+          </p>
+          <h2>{{ hero.schedule.subject.name }}</h2>
+          <div class="today-hero__metadata">
+            <p>
+              <span
+                class="today-icon today-icon--metadata"
+                :style="iconStyle(heroRoomIcon(hero))"
+                aria-hidden="true"
+              />
+              {{ hero.schedule.room.current ?? 'Аудитория уточняется' }}
+            </p>
+            <p>
+              <span
+                class="today-icon today-icon--metadata"
+                :style="iconStyle(heroKindIcon(hero))"
+                aria-hidden="true"
+              />
+              {{ lessonKind(hero) }}
+            </p>
+          </div>
+          <button
+            class="today-hero__action"
+            type="button"
+            :disabled="!canCheckin(hero)"
+            @click="emit('checkin', hero)"
           >
-            {{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }} · {{ lesson.subject.name }}
-          </li>
-        </ul>
-      </details>
-    </template>
+            <span
+              v-if="submittingLessonId === hero.schedule.id"
+              class="today-state__spinner"
+              aria-hidden="true"
+            />
+            {{ heroActionLabel(hero) }}
+          </button>
+          <p
+            v-if="isPending(hero)"
+            class="today-hero__retry"
+            role="status"
+          >
+            Отметиться повторно через: {{ countdownLabel(countdown(hero)) }}
+          </p>
+        </section>
 
-    <nav
-      class="today-dock"
-      aria-label="Основная навигация"
-    >
-      <span
-        class="today-dock__item today-dock__item--active"
-        aria-current="page"
-      >
-        <span class="today-dock__icon"><img
-          :src="todayTabActive"
-          alt=""
-          aria-hidden="true"
-        ></span>
-        <span class="today-dock__label">Сегодня</span>
-      </span>
-      <button
-        class="today-dock__item"
-        type="button"
-        disabled
-      >
-        <span class="today-dock__icon"><img
-          :src="scheduleTab"
-          alt=""
-          aria-hidden="true"
-        ></span>
-        <span class="today-dock__label">Задания</span>
-      </button>
-      <button
-        class="today-dock__item"
-        type="button"
-        disabled
-        aria-label="Посещаемость"
-      >
-        <span class="today-dock__icon"><img
-          :src="attendanceTab"
-          alt=""
-          aria-hidden="true"
-        ></span>
-        <span class="today-dock__label">Учёт</span>
-      </button>
-      <button
-        class="today-dock__item"
-        type="button"
-        disabled
-      >
-        <span class="today-dock__icon"><img
-          :src="moreTab"
-          alt=""
-          aria-hidden="true"
-        ></span>
-        <span class="today-dock__label">Ещё</span>
-      </button>
-      <button
-        class="today-dock__item"
-        type="button"
-        disabled
-      >
-        <span class="today-dock__icon"><img
-          :src="profileTab"
-          alt=""
-          aria-hidden="true"
-        ></span>
-        <span class="today-dock__label">Профиль</span>
-      </button>
-    </nav>
-  </main>
+        <section
+          class="today-list"
+          aria-label="Пары на сегодня"
+        >
+          <h2>Пары на сегодня</h2>
+          <ol>
+            <li
+              v-for="lesson in today?.lessons"
+              :key="lesson.schedule.id"
+              class="today-row"
+              :data-current="isAccentCurrent(lesson)"
+              :aria-label="`${lessonTime(lesson)}. ${lesson.schedule.subject.name}. ${stateLabel(lesson)}`"
+            >
+              <p class="today-row__time">
+                <span>{{ lesson.schedule.startsAt.slice(0, 5) }}</span>
+                <span>{{ lesson.schedule.endsAt.slice(0, 5) }}</span>
+              </p>
+              <article class="today-card">
+                <h3>{{ lesson.schedule.subject.name }}</h3>
+                <p class="today-card__meta">
+                  <span
+                    class="today-icon today-icon--metadata"
+                    :style="iconStyle(roomIcon(lesson))"
+                    aria-hidden="true"
+                  />
+                  <span :class="{ 'today-card__room--changed': lesson.schedule.room.changeState === 'CHANGED' }">{{ lesson.schedule.room.current ?? 'Аудитория уточняется' }}</span>
+                  <span
+                    v-if="lesson.schedule.room.previous"
+                    class="today-card__room-change"
+                  >
+                    <span
+                      class="today-icon today-icon--room-change"
+                      :style="iconStyle(roomChangeStrike)"
+                      aria-hidden="true"
+                    />
+                    <s>{{ lesson.schedule.room.previous }}</s>
+                  </span>
+                </p>
+                <p class="today-card__meta">
+                  <span
+                    class="today-icon today-icon--metadata"
+                    :style="iconStyle(kindIcon(lesson))"
+                    aria-hidden="true"
+                  />
+                  {{ lessonKind(lesson) }}
+                </p>
+                <span
+                  v-if="isConfirmed(lesson)"
+                  class="today-card__present"
+                  aria-label="Отметка подтверждена"
+                >+</span>
+              </article>
+            </li>
+          </ol>
+        </section>
+
+        <details
+          v-if="semesterSchedule"
+          class="today-semester"
+        >
+          <summary>Расписание семестра</summary>
+          <label>
+            Дата
+            <select
+              :value="selectedDate"
+              @change="emit('selectDate', ($event.target as HTMLSelectElement).value)"
+            >
+              <option
+                v-for="date in semesterDates"
+                :key="date"
+                :value="date"
+              >{{ semesterDate(date) }}</option>
+            </select>
+          </label>
+          <p
+            v-if="selectedLessons.length === 0"
+            class="today-semester__empty"
+          >
+            На выбранную дату пар нет.
+          </p>
+          <ul v-else>
+            <li
+              v-for="lesson in selectedLessons"
+              :key="lesson.id"
+            >
+              {{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }} · {{ lesson.subject.name }}
+            </li>
+          </ul>
+        </details>
+      </template>
+    </main>
+  </MobileShell>
 </template>

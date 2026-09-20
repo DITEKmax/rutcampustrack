@@ -16,6 +16,8 @@ import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.security.RequireRole;
 
+import java.util.UUID;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -39,8 +41,9 @@ public class ScheduleItemController implements ScheduleItemApi {
     @Override
     @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
     public ResponseEntity<EntityModel<ScheduleItemResponse>> createScheduleItem(
+            UUID idempotencyKey,
             CreateScheduleItemRequest request) {
-        ScheduleItem result = scheduleItemService.createScheduleItem(request);
+        ScheduleItem result = scheduleItemService.createScheduleItem(request, idempotencyKey);
         return ResponseEntity.status(HttpStatus.CREATED).body(scheduleItemAssembler.toModel(result));
     }
 

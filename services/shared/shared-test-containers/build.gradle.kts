@@ -9,7 +9,9 @@ version = "0.1.0"
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
+        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
+        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
         mavenBom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainersBom.get()}")
     }
 }

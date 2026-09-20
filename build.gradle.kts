@@ -1,8 +1,9 @@
+import java.io.File
 import java.time.OffsetDateTime
 
 plugins {
     java
-    id("org.springframework.boot") version "3.4.1" apply false
+    id("org.springframework.boot") version "3.5.16" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
 }
 
@@ -19,6 +20,15 @@ allprojects {
 
 subprojects {
     apply(plugin = "java")
+
+    // Dependency security repair — keep patch overrides in one root policy.
+    // Spring Boot's dependency-management plugin consumes these properties
+    // for every Boot application and shared module that imports its BOM.
+    extra["netty.version"] = "4.1.137.Final"
+    extra["tomcat.version"] = "10.1.59"
+    extra["rabbit-amqp-client.version"] = "5.33.1"
+    extra["postgresql.version"] = "42.7.12"
+
     // M08 Группа 10 (QD2) — JaCoCo per-module 60% line gate.
     // Применяется только к Java-подпроектам. Frontend/Python coverage
     // — через vitest + pytest-cov (см. frontends/*/vitest.config.ts и
@@ -102,14 +112,48 @@ subprojects {
     // "cannot be executed in the current context" при tasks.withType {}.
     val jacocoExcludes = listOf(
         "**/generated/**",
-        "**/grpc/proto/**",
-        "ru/rutcampustrack/**/grpc/**/*OuterClass*.class",
-        "ru/rutcampustrack/**/grpc/**/*Grpc*.class",
         "ru/rutcampustrack/**/*Application.class",
         "ru/rutcampustrack/**/*Dto.class",
         "ru/rutcampustrack/**/dto/**",
         "ru/rutcampustrack/**/config/**",
     )
+
+    // Generated protobuf/gRPC classes are identified from the Java source
+    // roots produced by the protobuf plugin. This keeps handwritten gRPC
+    // implementations (for example DocumentRendererGrpcServiceImpl) in the
+    // report while excluding their generated outer/nested classes.
+    val generatedProtoSourceRoots = listOf(
+        layout.buildDirectory.dir("generated/source/proto/main/java"),
+        layout.buildDirectory.dir("generated/source/proto/main/grpc"),
+    )
+
+    fun generatedProtoClassExcludes(): List<String> = generatedProtoSourceRoots.flatMap { rootProvider ->
+        val root = rootProvider.get().asFile
+        if (!root.isDirectory) {
+            return@flatMap emptyList()
+        }
+        root.walkTopDown()
+            .filter { it.isFile && it.extension == "java" }
+            .flatMap { sourceFile ->
+                val classPath = sourceFile.relativeTo(root)
+                    .invariantSeparatorsPath
+                    .removeSuffix(".java")
+                sequenceOf(
+                    "$classPath.class",
+                    classPath + '$' + "*.class",
+                )
+            }
+            .toList()
+    }
+
+    fun filteredJacocoClassDirectories(original: Set<File>) = project.files(project.provider {
+        val generatedExcludes = generatedProtoClassExcludes()
+        original.map { directory ->
+            project.fileTree(directory) {
+                exclude(jacocoExcludes + generatedExcludes)
+            }
+        }
+    })
 
     afterEvaluate {
         // jacocoTestReport / jacocoTestCoverageVerification создаются JaCoCo-плагином
@@ -128,11 +172,7 @@ subprojects {
                     html.required.set(true)
                     csv.required.set(false)
                 }
-                classDirectories.setFrom(
-                    classDirectories.files.map {
-                        fileTree(it) { exclude(jacocoExcludes) }
-                    }
-                )
+                classDirectories.setFrom(filteredJacocoClassDirectories(classDirectories.files))
             }
         }
 
@@ -142,11 +182,7 @@ subprojects {
                 executionData.setFrom(
                     fileTree(layout.buildDirectory.dir("jacoco")).include("*.exec")
                 )
-                classDirectories.setFrom(
-                    classDirectories.files.map {
-                        fileTree(it) { exclude(jacocoExcludes) }
-                    }
-                )
+                classDirectories.setFrom(filteredJacocoClassDirectories(classDirectories.files))
                 // M08 G12 — ratchet baseline (OWNER-ANSWERS QD2 + D3).
                 // Global target: 60% LINE per-module. Baseline-модули ниже
                 // 60% получают module-level override (floor = current - 2%

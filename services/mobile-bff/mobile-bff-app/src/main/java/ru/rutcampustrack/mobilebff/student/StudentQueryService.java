@@ -3,7 +3,10 @@ package ru.rutcampustrack.mobilebff.student;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
+import ru.rutcampustrack.academic.grpc.HomeworkInfo;
+import ru.rutcampustrack.academic.grpc.HomeworksForWeekResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.academic.grpc.SetHomeworkCompletionResponse;
 import ru.rutcampustrack.academic.grpc.SubjectInfo;
 import ru.rutcampustrack.academic.grpc.UserResponse;
 import ru.rutcampustrack.attendance.grpc.AutomaticCheckinRequest;
@@ -25,6 +28,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -58,6 +62,10 @@ public class StudentQueryService {
         GroupSummary group = claims.groupId() == null ? null : group(academic.group(claims.groupId()));
         SemesterSummary semester = claims.groupId() == null ? null : semester(academic.activeSemester());
         return new SessionResponse(
+                claims.sessionId().toString(),
+                Long.toString(claims.sessionVersion()),
+                Long.toString(claims.rolesVersion()),
+                claims.readOnly(),
                 new StudentUser(Long.toString(user.getId()), user.getDisplayName()),
                 ActiveRole.STUDENT, group, semester,
                 List.of(Capability.TODAY, Capability.GEO_CHECKIN, Capability.OFFLINE_SEMESTER_SCHEDULE),
@@ -106,13 +114,74 @@ public class StudentQueryService {
                         "today", "/api/v1/student/today"));
     }
 
+    public HomeworkResponse homework(String fromRaw, String toRaw) {
+        InternalJwtClaims claims = requireStudent(true);
+        SemesterResponse active = academic.activeSemesterForHomework();
+        LocalDate activeFrom = LocalDate.parse(active.getDateFrom());
+        LocalDate activeTo = LocalDate.parse(active.getDateTo());
+        Instant serverNow = clock.instant();
+        LocalDate today = LocalDate.ofInstant(serverNow, MOSCOW);
+
+        LocalDate from = fromRaw == null ? clamp(today, activeFrom, activeTo)
+                : parseHomeworkDate(fromRaw, "from");
+        LocalDate to = toRaw == null ? activeTo : parseHomeworkDate(toRaw, "to");
+        if (from.isBefore(activeFrom) || to.isAfter(activeTo) || from.isAfter(to)) {
+            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
+                    "Диапазон ДЗ должен входить в активный семестр");
+        }
+
+        boolean includeCompletedToday = !today.isBefore(from) && !today.isAfter(to);
+        HomeworksForWeekResponse response;
+        if (includeCompletedToday) {
+            ZonedDateTime completedTodayFrom = today.atStartOfDay(MOSCOW);
+            ZonedDateTime completedTodayTo = today.plusDays(1).atStartOfDay(MOSCOW);
+            response = academic.homeworks(
+                    claims.groupId(), active.getId(), claims.userId(), from.toString(), to.toString(),
+                    true, completedTodayFrom.toInstant().toString(), completedTodayTo.toInstant().toString());
+        } else {
+            response = academic.homeworks(
+                    claims.groupId(), active.getId(), claims.userId(), from.toString(), to.toString());
+        }
+        List<HomeworkItem> items = response.getHomeworksList().stream()
+                .sorted(Comparator.comparing((HomeworkInfo item) -> LocalDate.parse(item.getLessonDate()))
+                        .thenComparingInt(item -> item.getCompleted() ? 1 : 0)
+                        .thenComparingInt(HomeworkInfo::getLessonNumber)
+                        .thenComparingLong(HomeworkInfo::getHomeworkId))
+                .map(StudentQueryService::homeworkItem)
+                .toList();
+        return new HomeworkResponse(
+                new HomeworkSemester(Long.toString(active.getId()), active.getName(), activeFrom, activeTo),
+                from, to, serverNow, items);
+    }
+
+    public HomeworkCompletionResponse setHomeworkCompletion(String homeworkId,
+                                                             HomeworkCompletionRequest request) {
+        InternalJwtClaims claims = requireStudent(false);
+        if (claims.readOnly()) {
+            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.ROLE_READ_ONLY,
+                    "Терминальная student-сессия доступна только для чтения");
+        }
+        if (claims.groupId() == null || claims.groupId() <= 0) {
+            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE,
+                    "Не хватает student/group scope");
+        }
+        long id = parseHomeworkId(homeworkId);
+        SemesterResponse active = academic.activeSemesterForHomework();
+        SetHomeworkCompletionResponse response = academic.setHomeworkCompletion(
+                id, active.getId(), request.completed());
+        Instant completedAt = completionAt(response.getCompleted(), response.hasCompletedAt(),
+                response.getCompletedAt());
+        return new HomeworkCompletionResponse(
+                Long.toString(response.getHomeworkId()), response.getCompleted(), completedAt);
+    }
+
     private InternalJwtClaims requireStudent(boolean groupRequired) {
         InternalJwtClaims claims = requestContext.claims();
-        if (!"STUDENT".equalsIgnoreCase(claims.role())) {
+        if (!"STUDENT".equalsIgnoreCase(claims.domainRole())) {
             throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.WRONG_ROLE,
                     "Мобильный student API доступен роли STUDENT");
         }
-        if (claims.userId() == null || claims.userId() <= 0
+        if (claims.userId() <= 0
                 || groupRequired && (claims.groupId() == null || claims.groupId() <= 0)) {
             throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE,
                     "Не хватает student/group scope");
@@ -129,6 +198,64 @@ public class StudentQueryService {
                 .comparing((LessonResponse l) -> LocalDate.parse(l.getDate()))
                 .thenComparingInt(LessonResponse::getLessonNumber)
                 .thenComparingLong(LessonResponse::getId)).toList();
+    }
+
+    private static LocalDate parseHomeworkDate(String value, String field) {
+        try {
+            return LocalDate.parse(value);
+        } catch (RuntimeException error) {
+            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
+                    "Параметр " + field + " должен быть датой ISO-8601");
+        }
+    }
+
+    private static long parseHomeworkId(String value) {
+        try {
+            long id = Long.parseLong(value);
+            if (id <= 0) {
+                throw new NumberFormatException("non-positive homework id");
+            }
+            return id;
+        } catch (NumberFormatException error) {
+            throw new MobileBffException(HttpStatus.BAD_REQUEST, ProblemCode.INVALID_REQUEST,
+                    "Идентификатор ДЗ должен быть положительным целым числом");
+        }
+    }
+
+    private static LocalDate clamp(LocalDate value, LocalDate from, LocalDate to) {
+        if (value.isBefore(from)) return from;
+        if (value.isAfter(to)) return to;
+        return value;
+    }
+
+    private static HomeworkItem homeworkItem(HomeworkInfo item) {
+        String link = item.getLink().isBlank() ? null : item.getLink();
+        Instant completedAt = completionAt(item.getCompleted(), item.hasCompletedAt(), item.getCompletedAt());
+        return new HomeworkItem(
+                Long.toString(item.getHomeworkId()),
+                new HomeworkSubject(Long.toString(item.getSubjectId()), item.getSubjectName()),
+                item.getTitle(), item.getDescription(), link,
+                LocalDate.parse(item.getLessonDate()), item.getLessonNumber(), item.getCompleted(), completedAt);
+    }
+
+    private static Instant completionAt(boolean completed, boolean hasCompletedAt, String rawCompletedAt) {
+        if (!completed) {
+            if (hasCompletedAt) {
+                throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                        "Academic Service вернул timestamp для незавершённого ДЗ");
+            }
+            return null;
+        }
+        if (!hasCompletedAt) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Academic Service не вернул timestamp завершения ДЗ");
+        }
+        try {
+            return Instant.parse(rawCompletedAt);
+        } catch (RuntimeException error) {
+            throw new MobileBffException(HttpStatus.SERVICE_UNAVAILABLE, ProblemCode.DEPENDENCY_UNAVAILABLE,
+                    "Academic Service вернул некорректный timestamp завершения ДЗ");
+        }
     }
 
     private static LessonScheduleProjection lesson(LessonResponse lesson, SubjectInfo subject) {

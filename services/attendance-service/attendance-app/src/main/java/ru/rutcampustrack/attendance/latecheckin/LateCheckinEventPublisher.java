@@ -3,6 +3,7 @@ package ru.rutcampustrack.attendance.latecheckin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
+import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 import ru.rutcampustrack.attendance.event.EventEnvelope;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
@@ -77,7 +78,7 @@ public class LateCheckinEventPublisher {
                 request.getStatus() != null ? request.getStatus().name().toLowerCase() : null);
         payload.put("resolution_reason",
                 request.getResolutionReason() != null
-                        ? request.getResolutionReason().name().toLowerCase()
+                        ? wireResolutionReason(request.getResolutionReason())
                         : null);
         payload.put("decided_at",
                 request.getDecisionAt() != null ? request.getDecisionAt().toString() : null);
@@ -89,6 +90,11 @@ public class LateCheckinEventPublisher {
         }
 
         saveToOutbox(EVENT_DECIDED, payload);
+    }
+
+    private static String wireResolutionReason(LateCheckinResolutionReason reason) {
+        return reason == LateCheckinResolutionReason.CANCELLED_BY_STUDENT
+                ? "student_cancelled" : reason.name().toLowerCase();
     }
 
     private void saveToOutbox(String eventType, Map<String, Object> payload) {

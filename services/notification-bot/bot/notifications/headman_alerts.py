@@ -1,19 +1,34 @@
-"""Handler for headman alert events — sends notifications to group headmen only."""
+"""Headman request alerts built from canonical Attendance request context."""
 
-import base64
-import binascii
 import logging
+from typing import Any
 
+import grpc
 from aiogram import Bot
 from aiogram.types import BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup
 
+from bot.grpc_client import attendance_pb2
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
 logger = logging.getLogger(__name__)
 
-# Telegram's hard limit for bot uploads is 50 MB; the Java side caps at 10 MB.
-# Anything larger is dropped with a warning — we never silently truncate.
+# Java Attendance caps each retained attachment at 10 MiB.
 MAX_FORWARDED_FILE_BYTES = 10 * 1024 * 1024
+
+_EVENT_KIND = {
+    "excuse.requested": attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE,
+    "late_checkin.requested": attendance_pb2.STUDENT_REQUEST_KIND_LATE_CHECKIN,
+}
+_EXCUSE_REASON_LABELS = {
+    attendance_pb2.STUDENT_EXCUSE_REASON_ILLNESS: "Болезнь",
+    attendance_pb2.STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION: "Медицинское обследование",
+    attendance_pb2.STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION: "Участие в соревнованиях",
+    attendance_pb2.STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES: "Семейные обстоятельства",
+    attendance_pb2.STUDENT_EXCUSE_REASON_OTHER: "Другое",
+}
+_ACTIVE_ATTACHMENT_STATE = attendance_pb2.STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE
+_PENDING_STATUS = attendance_pb2.STUDENT_REQUEST_STATUS_PENDING
+_TERMINAL_LOOKUP_CODES = frozenset({grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT})
 
 
 async def handle_headman_alert(
@@ -24,129 +39,93 @@ async def handle_headman_alert(
     request_tracker=None,
     **kwargs,
 ) -> None:
-    """Send alert to headman(s) of the group only.
+    """Queue a pending request alert for current headmen of its stored group.
 
-    Handles excuse.requested and late_checkin.requested events.
-    Threat T-24-06: only headmen (is_headman=True) receive these notifications.
-    Threat T-24-07: validates required fields before processing.
+    The event kind and request id are lookup keys only. Every private field,
+    recipient group and action button comes from ``ResolveRequestNotification``
+    and a fresh Academic membership read.
     """
-    event_type = event.get("event_type")
-    payload = event.get("payload", {})
-
-    try:
-        group_id = payload["group_id"]
-        user_id = payload["user_id"]
-    except KeyError as exc:
-        logger.warning("headman alert event missing required field: %s", exc)
+    event_type = event.get("event_type") if isinstance(event, dict) else None
+    payload = event.get("payload") if isinstance(event, dict) else None
+    attendance_client = kwargs.get("attendance_client")
+    context = await _resolve_notification_context(
+        event_type,
+        payload,
+        attendance_client=attendance_client,
+        academic_client=academic_client,
+    )
+    if context is None:
         return
 
-    members = await academic_client.get_group_members(group_id)
-
-    # T-24-06: filter headmen with telegram_id only
-    headmen = [m for m in members if m.is_headman and m.telegram_id]
-
-    if not headmen:
-        logger.warning("No headman with telegram_id found for group_id=%s, skipping headman alert", group_id)
-        return
-
-    # Resolve student name: payload > member lookup > fallback
-    student_name = payload.get("student_name")
-    if not student_name:
-        matching = next((m for m in members if m.user_id == user_id), None)
-        if matching:
-            student_name = matching.display_name
-        else:
-            student_name = f"Студент #{user_id}"
-
-    reply_markup = None
-
-    file_bytes: bytes | None = None
-    file_name: str | None = None
-
-    # kind+id для RequestMessageTracker — заполняются ниже, чтобы сохранить
-    # message_id каждого старосты после send_message/send_document и потом
-    # отредактировать их при получении *.decided (двусторонняя sync TG ↔ Web).
-    tracking_kind: str | None = None
-    tracking_id: str | None = None
+    result, headmen = context
+    detail = result.detail
+    request_id = str(detail.summary.id)
+    tracking_kind = "excuse" if event_type == "excuse.requested" else "late_checkin"
+    tracking_id = request_id
 
     if event_type == "excuse.requested":
-        excuse_type_label = _excuse_type_label(payload.get("excuse_type"))
-        text = f"🧾 Запрос на уважительную причину\n\nСтудент: {student_name}\nТип: {excuse_type_label}"
-
-        lessons = payload.get("lessons") or []
-        if lessons:
-            text += "\n\nПары:"
-            for lesson in lessons:
-                text += "\n• " + _format_lesson(lesson)
-
-        comment = payload.get("comment")
-        if comment:
-            text += f"\n\nКомментарий:\n{comment}"
-
-        ticket_id = payload.get("ticket_id")
-        if ticket_id:
-            tracking_kind = "excuse"
-            tracking_id = str(ticket_id)
-            reply_markup = InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(text="✅ Одобрить", callback_data=f"ex:approve:{ticket_id}"),
-                        InlineKeyboardButton(text="❌ Отклонить", callback_data=f"ex:reject:{ticket_id}"),
-                    ]
+        text = _build_excuse_text(result)
+        if text is None:
+            return
+        reply_markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="✅ Одобрить", callback_data=f"ex:approve:{request_id}"),
+                    InlineKeyboardButton(text="❌ Отклонить", callback_data=f"ex:reject:{request_id}"),
                 ]
-            )
-        else:
-            logger.warning("excuse.requested missing ticket_id, sending without buttons")
-
-        file_b64 = payload.get("file_payload_b64")
-        if file_b64:
-            try:
-                file_bytes = base64.b64decode(file_b64, validate=True)
-            except (binascii.Error, ValueError) as exc:
-                logger.warning("excuse.requested file_payload_b64 decode failed: %s", exc)
-                file_bytes = None
-            if file_bytes is not None and len(file_bytes) > MAX_FORWARDED_FILE_BYTES:
-                logger.warning(
-                    "excuse.requested attachment too large (%d bytes), skipping",
-                    len(file_bytes),
-                )
-                file_bytes = None
-            file_name = payload.get("file_name") or "attachment"
-    elif event_type == "late_checkin.requested":
-        text = f"✅ Запрос подтверждения присутствия\n\nСтудент: {student_name}"
-        subject_name = payload.get("subject_name")
-        if subject_name:
-            text += f"\nПредмет: {subject_name}"
-        lesson_number = payload.get("lesson_number")
-        if lesson_number:
-            text += f"\nПара: №{lesson_number}"
-        lesson_date = payload.get("lesson_date")
-        if lesson_date:
-            text += f"\nДата: {lesson_date}"
-        request_id = payload.get("request_id")
-        if request_id:
-            tracking_kind = "late_checkin"
-            tracking_id = str(request_id)
-            reply_markup = InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(text="✅ Подтвердить", callback_data=f"lcr:approve:{request_id}"),
-                        InlineKeyboardButton(text="❌ Отклонить", callback_data=f"lcr:reject:{request_id}"),
-                    ]
-                ]
-            )
-        else:
-            logger.warning("late_checkin.requested missing request_id, sending without buttons")
+            ]
+        )
     else:
-        logger.debug("handle_headman_alert called with unexpected event_type: %s", event_type)
-        return
+        text = _build_late_checkin_text(result)
+        if text is None:
+            return
+        reply_markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="✅ Подтвердить", callback_data=f"lcr:approve:{request_id}"),
+                    InlineKeyboardButton(text="❌ Отклонить", callback_data=f"lcr:reject:{request_id}"),
+                ]
+            ]
+        )
+
+    attachments_by_user: dict[int, list[tuple[bytes, str]]] = {}
+    descriptors = list(detail.attachments)
+    if descriptors:
+        if attendance_client is None:
+            return
+        for headman in headmen:
+            actor_id = _positive_int(getattr(headman, "user_id", None))
+            if actor_id is None:
+                return
+            fetched: list[tuple[bytes, str]] = []
+            for descriptor in descriptors:
+                if not _valid_attachment_descriptor(descriptor):
+                    return
+                # Fetch failures deliberately escape the handler. The event
+                # consumer then releases the processing lease and sends the
+                # message to DLQ; silently omitting an attachment would ACK a
+                # private notification that has not been fully materialized.
+                response = await attendance_client.fetch_excuse_attachment(
+                    actor_id,
+                    request_id,
+                    str(descriptor.id),
+                )
+                data = bytes(getattr(response, "data", b""))
+                if not data or len(data) > MAX_FORWARDED_FILE_BYTES:
+                    raise ValueError("canonical excuse attachment has an invalid size")
+                if len(data) != descriptor.size_bytes:
+                    raise ValueError("canonical excuse attachment size does not match its descriptor")
+                # The filename and all displayed attachment metadata come
+                # from the canonical descriptor, never from event payload.
+                fetched.append((data, str(descriptor.name)))
+            attachments_by_user[actor_id] = fetched
 
     def _build_on_sent(chat_id_value: int):
-        if request_tracker is None or tracking_kind is None or tracking_id is None:
+        if request_tracker is None:
             return None
 
-        async def _on_sent(result):
-            message_id = getattr(result, "message_id", None)
+        async def _on_sent(result_value):
+            message_id = getattr(result_value, "message_id", None)
             if message_id is None:
                 return
             await request_tracker.add(tracking_kind, tracking_id, chat_id_value, int(message_id))
@@ -154,92 +133,206 @@ async def handle_headman_alert(
         return _on_sent
 
     for headman in headmen:
-        if file_bytes:
-            # Telegram caption limit is 1024 chars — truncate defensively so the
-            # send never fails because a long comment pushed us over the edge.
-            caption = text if len(text) <= 1024 else text[:1020] + "…"
+        actor_id = _positive_int(getattr(headman, "user_id", None))
+        telegram_id = _positive_int(getattr(headman, "telegram_id", None))
+        if actor_id is None or telegram_id is None:
+            continue
+        headman_attachments = attachments_by_user.get(actor_id, [])
+        if headman_attachments:
+            for file_bytes, file_name in headman_attachments:
+                # Telegram caption limit is 1024 chars.
+                caption = text if len(text) <= 1024 else text[:1020] + "…"
 
-            async def _send_document(
-                h=headman,
-                markup=reply_markup,
-                payload_bytes=file_bytes,
-                payload_name=file_name,
-                payload_caption=caption,
-            ):
-                return await bot.send_document(
-                    chat_id=h.telegram_id,
-                    document=BufferedInputFile(payload_bytes, filename=payload_name),
-                    caption=payload_caption,
-                    reply_markup=markup,
-                )
+                async def _send_document(
+                    h=headman,
+                    markup=reply_markup,
+                    payload_bytes=file_bytes,
+                    payload_name=file_name,
+                    payload_caption=caption,
+                ):
+                    return await bot.send_document(
+                        chat_id=h.telegram_id,
+                        document=BufferedInputFile(payload_bytes, filename=payload_name),
+                        caption=payload_caption,
+                        reply_markup=markup,
+                    )
 
-            await send_queue.put(
-                SendTask(
-                    coroutine_factory=_send_document,
-                    user_id=headman.user_id,
-                    chat_id=headman.telegram_id,
-                    on_sent=_build_on_sent(headman.telegram_id),
-                    category="tickets",
+                await send_queue.put(
+                    SendTask(
+                        coroutine_factory=_send_document,
+                        user_id=actor_id,
+                        chat_id=telegram_id,
+                        on_sent=_build_on_sent(telegram_id),
+                        category="tickets",
+                    )
                 )
-            )
         else:
             await send_queue.put(
                 SendTask(
-                    coroutine_factory=lambda h=headman, markup=reply_markup: bot.send_message(
-                        chat_id=h.telegram_id, text=text, reply_markup=markup
+                    coroutine_factory=lambda chat_id=telegram_id, markup=reply_markup: bot.send_message(
+                        chat_id=chat_id,
+                        text=text,
+                        reply_markup=markup,
                     ),
-                    user_id=headman.user_id,
-                    chat_id=headman.telegram_id,
-                    on_sent=_build_on_sent(headman.telegram_id),
+                    user_id=actor_id,
+                    chat_id=telegram_id,
+                    on_sent=_build_on_sent(telegram_id),
                     category="tickets",
                 )
             )
 
 
-_EXCUSE_TYPE_LABELS = {
-    "illness": "Болезнь",
-    "summons": "Повестка",
-    "university_order": "Приказ университета",
-    "exemption": "Освобождение",
-    "free_attendance": "Свободное посещение",
-    "other": "Другое",
-}
+async def _resolve_notification_context(
+    event_type: str | None,
+    payload: Any,
+    *,
+    attendance_client,
+    academic_client,
+) -> tuple[Any, list[Any]] | None:
+    kind = _EVENT_KIND.get(event_type)
+    if kind is None or not isinstance(payload, dict) or attendance_client is None:
+        return None
 
-_RU_WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
+    request_field = "ticket_id" if event_type == "excuse.requested" else "request_id"
+    request_id = payload.get(request_field)
+    if not isinstance(request_id, str) or not request_id or request_id != request_id.strip():
+        return None
+    payload_group_id = _positive_int(payload.get("group_id"))
+    if payload_group_id is None:
+        return None
+
+    try:
+        result = await attendance_client.resolve_request_notification(kind, request_id)
+    except grpc.aio.AioRpcError as error:
+        if error.code() in _TERMINAL_LOOKUP_CODES:
+            return None
+        raise
+
+    if result is None:
+        return None
+    group_id = _positive_int(getattr(result, "group_id", None))
+    student_id = _positive_int(getattr(result, "student_id", None))
+    student_name = getattr(result, "student_name", None)
+    detail = getattr(result, "detail", None)
+    summary = getattr(detail, "summary", None)
+    if (
+        group_id is None
+        or student_id is None
+        or not isinstance(student_name, str)
+        or not student_name.strip()
+        or detail is None
+        or summary is None
+        or not summary.id
+        or summary.id != request_id
+        or summary.kind != kind
+        or summary.status != _PENDING_STATUS
+        or not summary.lessons
+        or any(_positive_int(getattr(lesson, "id", None)) is None for lesson in summary.lessons)
+        or payload_group_id != group_id
+    ):
+        return None
+    if event_type == "excuse.requested":
+        if not _has_field(detail, "reason") or detail.reason not in _EXCUSE_REASON_LABELS:
+            return None
+
+    try:
+        # AcademicGrpcClient caches members for ordinary reminders. Invalidate
+        # this group before an authority-sensitive request notification so a
+        # revoked headman is not treated as current.
+        invalidate = getattr(academic_client, "invalidate", None)
+        if callable(invalidate):
+            invalidate(group_id)
+        members = await academic_client.get_group_members(group_id)
+    except grpc.aio.AioRpcError as error:
+        if error.code() in _TERMINAL_LOOKUP_CODES:
+            return None
+        raise
+
+    headmen = [
+        member
+        for member in (members or [])
+        if bool(getattr(member, "is_headman", False))
+        and _positive_int(getattr(member, "user_id", None)) is not None
+        and _positive_int(getattr(member, "telegram_id", None)) is not None
+    ]
+    if not headmen:
+        return None
+    return result, headmen
 
 
-def _excuse_type_label(code: str | None) -> str:
-    if not code:
-        return "не указан"
-    return _EXCUSE_TYPE_LABELS.get(code, code)
+def _build_excuse_text(result: Any) -> str | None:
+    detail = result.detail
+    summary = detail.summary
+    reason_label = _EXCUSE_REASON_LABELS.get(detail.reason)
+    if reason_label is None:
+        raise ValueError("canonical excuse reason is invalid")
+    text = f"🧾 Запрос на уважительную причину\n\nСтудент: {result.student_name}\nТип: {reason_label}"
+    text += "\n\nПары:\n" + "\n".join(f"• {_format_lesson(lesson)}" for lesson in summary.lessons)
+    if _has_field(detail, "comment") and detail.comment.strip():
+        text += f"\n\nКомментарий:\n{detail.comment}"
+    if detail.attachments:
+        metadata: list[str] = []
+        for descriptor in detail.attachments:
+            if not _valid_attachment_descriptor(descriptor):
+                raise ValueError("canonical excuse attachment descriptor is invalid")
+            metadata.append(
+                f"• {descriptor.name} ({descriptor.content_type}, {descriptor.size_bytes} Б)"
+            )
+        text += "\n\nВложения:\n" + "\n".join(metadata)
+    return text
 
 
-def _format_lesson(lesson: dict) -> str:
-    """Строка вида «№3 Матанализ, пн 14.04» для карточки в TG."""
+def _build_late_checkin_text(result: Any) -> str | None:
+    summary = result.detail.summary
+    if not summary.lessons:
+        return None
+    text = f"✅ Запрос подтверждения присутствия\n\nСтудент: {result.student_name}"
+    text += "\n\nПары:\n" + "\n".join(f"• {_format_lesson(lesson)}" for lesson in summary.lessons)
+    return text
+
+
+def _valid_attachment_descriptor(descriptor: Any) -> bool:
+    return bool(
+        descriptor is not None
+        and isinstance(getattr(descriptor, "id", None), str)
+        and descriptor.id
+        and isinstance(getattr(descriptor, "name", None), str)
+        and descriptor.name.strip()
+        and isinstance(getattr(descriptor, "content_type", None), str)
+        and descriptor.content_type
+        and descriptor.state == _ACTIVE_ATTACHMENT_STATE
+        and 0 < descriptor.size_bytes <= MAX_FORWARDED_FILE_BYTES
+    )
+
+
+def _has_field(message: Any, field: str) -> bool:
+    try:
+        return message.HasField(field)
+    except (AttributeError, ValueError):
+        value = getattr(message, field, None)
+        return value is not None and value != ""
+
+
+def _positive_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    try:
+        result = int(value)
+    except (TypeError, ValueError):
+        return None
+    return result if result > 0 else None
+
+
+def _format_lesson(lesson: Any) -> str:
+    """Format one lesson using only fields from the canonical proto detail."""
+    lesson_number = getattr(lesson, "lesson_number", 0)
+    subject_name = getattr(lesson, "subject_name", "")
+    date_value = getattr(lesson, "date", "")
     parts: list[str] = []
-    lesson_number = lesson.get("lesson_number")
     if lesson_number:
         parts.append(f"№{lesson_number}")
-    subject_name = lesson.get("subject_name")
     if subject_name:
         parts.append(str(subject_name))
-    head = " ".join(parts).strip()
-    date_str = lesson.get("date")
-    date_part = _format_ru_date(date_str) if date_str else ""
-    if not head and not date_part:
-        return f"Пара #{lesson.get('lesson_id', '?')}"
-    return f"{head}, {date_part}" if date_part else head
-
-
-def _format_ru_date(iso: str) -> str:
-    """YYYY-MM-DD → «пн 14.04». На ошибке возвращает вход как есть."""
-    try:
-        from datetime import date
-
-        y, m, d = iso[:10].split("-")
-        parsed = date(int(y), int(m), int(d))
-        # date.weekday(): пн=0, вс=6 — совпадает с _RU_WEEKDAYS.
-        dow = _RU_WEEKDAYS[parsed.weekday()]
-        return f"{dow} {int(d):02d}.{int(m):02d}"
-    except (ValueError, IndexError, TypeError):
-        return iso
+    if date_value:
+        parts.append(str(date_value))
+    return " ".join(parts) if parts else f"Пара #{getattr(lesson, 'id', '?')}"

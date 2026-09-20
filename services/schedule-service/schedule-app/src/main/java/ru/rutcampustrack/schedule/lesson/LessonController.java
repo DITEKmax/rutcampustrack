@@ -11,8 +11,6 @@ import ru.rutcampustrack.schedule.contract.api.LessonApi;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
-import ru.rutcampustrack.schedule.contract.dto.lesson.MassCancelRequest;
-import ru.rutcampustrack.schedule.contract.dto.lesson.MassCancelResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.security.RequireRole;
@@ -48,13 +46,6 @@ public class LessonController implements LessonApi {
     public ResponseEntity<EntityModel<LessonResponse>> restoreLesson(Long id) {
         LessonWithItem result = lessonService.restoreLesson(id);
         return ResponseEntity.ok(lessonAssembler.toModel(result));
-    }
-
-    @Override
-    @RequireRole({UserRole.ADMIN, UserRole.STUDENT})
-    public ResponseEntity<MassCancelResponse> massCancelLessons(MassCancelRequest request) {
-        int count = lessonService.massCancelLessons(request);
-        return ResponseEntity.ok(new MassCancelResponse(count));
     }
 
     @Override

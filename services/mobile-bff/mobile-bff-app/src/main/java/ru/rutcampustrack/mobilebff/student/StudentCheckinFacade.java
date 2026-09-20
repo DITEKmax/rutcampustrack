@@ -63,11 +63,15 @@ public class StudentCheckinFacade {
 
     private void requireStudentScope() {
         InternalJwtClaims claims = requestContext.claims();
-        if (!"STUDENT".equalsIgnoreCase(claims.role())) {
+        if (!"STUDENT".equalsIgnoreCase(claims.domainRole())) {
             throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.WRONG_ROLE,
                     "Мобильный student API доступен роли STUDENT");
         }
-        if (claims.userId() == null || claims.userId() <= 0
+        if (claims.readOnly()) {
+            throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.ROLE_READ_ONLY,
+                    "Терминальная student-сессия доступна только для чтения");
+        }
+        if (claims.userId() <= 0
                 || claims.groupId() == null || claims.groupId() <= 0) {
             throw new MobileBffException(HttpStatus.FORBIDDEN, ProblemCode.OUT_OF_SCOPE,
                     "Не хватает student/group scope");

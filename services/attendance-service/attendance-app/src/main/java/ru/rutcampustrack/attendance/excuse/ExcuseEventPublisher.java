@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.attendance.event.EventEnvelope;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,24 +72,31 @@ public class ExcuseEventPublisher {
     }
 
     /**
-     * Variant of {@link #publishRequested(ExcuseTicket, List)} that carries a
-     * supporting document. The document is base64-encoded so it can travel
-     * inside the JSON envelope; notification-bot decodes it and forwards to
-     * Telegram via {@code send_document}. The server never persists the file —
-     * once the message is acked by the bot, the bytes are gone.
+     * Publishes the student-request representation with attachment metadata.
+     * Attachment bytes are retained in {@code request_attachments}; the outbox
+     * carries descriptors only so a retry cannot duplicate or expose binary data.
      */
-    public void publishRequestedWithFile(ExcuseTicket ticket,
-                                         List<Map<String, Object>> lessonDetails,
-                                         String fileName,
-                                         String contentType,
-                                         byte[] fileBytes) {
+    public void publishRequested(ExcuseTicket ticket,
+                                 List<Map<String, Object>> lessonDetails,
+                                 List<RequestAttachmentDescriptorDocument> descriptors) {
         Map<String, Object> payload = buildRequestedPayload(ticket, lessonDetails);
-        if (fileBytes != null && fileBytes.length > 0) {
-            payload.put("file_name", fileName);
-            payload.put("file_mime_type", contentType);
-            payload.put("file_size", fileBytes.length);
-            payload.put("file_payload_b64", Base64.getEncoder().encodeToString(fileBytes));
+        List<Map<String, Object>> attachments = new ArrayList<>();
+        if (descriptors != null) {
+            for (RequestAttachmentDescriptorDocument descriptor : descriptors) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("id", descriptor.getId());
+                item.put("name", descriptor.getName());
+                item.put("content_type", descriptor.getContentType());
+                item.put("size", descriptor.getSize());
+                item.put("sha256", descriptor.getSha256());
+                item.put("state", descriptor.getState() == null ? null : descriptor.getState().name().toLowerCase());
+                item.put("uploaded_at", descriptor.getUploadedAt() == null ? null : descriptor.getUploadedAt().toString());
+                item.put("expires_at", descriptor.getExpiresAt() == null ? null : descriptor.getExpiresAt().toString());
+                attachments.add(item);
+            }
         }
+        payload.put("attachments", attachments);
+        payload.put("has_attachments", !attachments.isEmpty());
         saveToOutbox(EVENT_REQUESTED, payload);
     }
 

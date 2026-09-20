@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.jdbc.Sql;
@@ -14,7 +15,13 @@ import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,6 +35,9 @@ class OtpIT extends AbstractIntegrationTest {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @BeforeEach
     void cleanOtpRedisKeys() {
         Set<String> otpKeys = redisTemplate.keys("otp:*");
@@ -38,6 +48,10 @@ class OtpIT extends AbstractIntegrationTest {
         if (sentKeys != null && !sentKeys.isEmpty()) redisTemplate.delete(sentKeys);
         Set<String> codeKeys = redisTemplate.keys("otp_code:*");
         if (codeKeys != null && !codeKeys.isEmpty()) redisTemplate.delete(codeKeys);
+        Set<String> verifyMissKeys = redisTemplate.keys("otp_verify_by_code_miss:*");
+        if (verifyMissKeys != null && !verifyMissKeys.isEmpty()) redisTemplate.delete(verifyMissKeys);
+        Set<String> verifyAttemptKeys = redisTemplate.keys("otp_verify_attempts:*");
+        if (verifyAttemptKeys != null && !verifyAttemptKeys.isEmpty()) redisTemplate.delete(verifyAttemptKeys);
     }
 
     @Test
@@ -111,6 +125,42 @@ class OtpIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void otpVerify_directAndByCodeConcurrent_sameProofHasOneWinnerAndOneSession() throws Exception {
+        ResponseEntity<Void> requestResponse = restTemplate.postForEntity(
+                "/auth/otp/request", new OtpRequest(123456789L), Void.class);
+        assertThat(requestResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        String code = redisTemplate.opsForValue().get("otp:123456789");
+        assertThat(code).isNotBlank();
+
+        int before = sessionCountForTelegramId(123456789L);
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<ResponseEntity<String>> direct = executor.submit(() -> {
+                start.await(10, TimeUnit.SECONDS);
+                return restTemplate.postForEntity(
+                        "/auth/otp/verify", new OtpVerifyRequest(123456789L, code), String.class);
+            });
+            Future<ResponseEntity<String>> byCode = executor.submit(() -> {
+                start.await(10, TimeUnit.SECONDS);
+                return restTemplate.postForEntity(
+                        "/auth/otp/verify-by-code", new OtpVerifyByCodeRequest(code), String.class);
+            });
+            start.countDown();
+
+            List<HttpStatusCode> statuses = List.of(
+                    direct.get(20, TimeUnit.SECONDS).getStatusCode(),
+                    byCode.get(20, TimeUnit.SECONDS).getStatusCode());
+            assertThat(statuses).contains(HttpStatus.OK);
+            assertThat(statuses).contains(HttpStatus.UNAUTHORIZED);
+            assertThat(statuses.stream().filter(HttpStatus.OK::equals).count()).isEqualTo(1L);
+            assertThat(sessionCountForTelegramId(123456789L) - before).isEqualTo(1);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
     void otpVerifyByCode_withUnknownCode_returns401() {
         OtpVerifyByCodeRequest verifyRequest = new OtpVerifyByCodeRequest("000000");
         ResponseEntity<String> verifyResponse = restTemplate.postForEntity(
@@ -146,7 +196,7 @@ class OtpIT extends AbstractIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        ChangePasswordRequest changeRequest = new ChangePasswordRequest("password", "NewPass1x");
+        ChangePasswordRequest changeRequest = new ChangePasswordRequest("password", "NewPassword1!");
         HttpEntity<ChangePasswordRequest> entity = new HttpEntity<>(changeRequest, headers);
 
         ResponseEntity<Void> changeResponse = restTemplate.postForEntity(
@@ -154,16 +204,16 @@ class OtpIT extends AbstractIntegrationTest {
         assertThat(changeResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
         // Verify can login with new password
-        LoginRequest newLoginRequest = new LoginRequest("student", "NewPass1x");
+        LoginRequest newLoginRequest = new LoginRequest("student", "NewPassword1!");
         ResponseEntity<TokenResponse> newLoginResponse = restTemplate.postForEntity(
                 "/auth/login", newLoginRequest, TokenResponse.class);
         assertThat(newLoginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
-    void changePassword_withWrongCurrent_returns401() {
-        // Login as admin to get access token
-        LoginRequest loginRequest = new LoginRequest("admin", "password");
+    void changePassword_withWrongCurrent_returns400() {
+        // Login as student to get selected access token
+        LoginRequest loginRequest = new LoginRequest("student", "password");
         ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
                 "/auth/login", loginRequest, TokenResponse.class);
         assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -174,11 +224,20 @@ class OtpIT extends AbstractIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        ChangePasswordRequest changeRequest = new ChangePasswordRequest("wrongpass", "NewPass1x");
+        ChangePasswordRequest changeRequest = new ChangePasswordRequest("wrongpass", "NewPassword1!");
         HttpEntity<ChangePasswordRequest> entity = new HttpEntity<>(changeRequest, headers);
 
         ResponseEntity<String> changeResponse = restTemplate.postForEntity(
                 "/auth/change-password", entity, String.class);
-        assertThat(changeResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(changeResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(changeResponse.getBody()).contains("CURRENT_PASSWORD_INVALID");
+    }
+
+    private int sessionCountForTelegramId(long telegramId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM auth_sessions "
+                        + "WHERE user_id = (SELECT id FROM users WHERE telegram_id = ?)",
+                Integer.class, telegramId);
+        return count == null ? 0 : count;
     }
 }

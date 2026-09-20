@@ -11,6 +11,8 @@ version = "0.1.0"
 dependencyManagement {
     imports {
         mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
+        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
+        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
     }
 }
 
@@ -50,14 +52,20 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
 
     // M17 — headman weekly .docx export template renderer spike.
     implementation("pro.verron:docx-stamper:1.6.9")
-    runtimeOnly("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
+    runtimeOnly("org.docx4j:docx4j-JAXB-ReferenceImpl:11.5.14")
 
-    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
-    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
+    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
+    implementation("io.grpc:grpc-netty")
+    implementation("com.google.protobuf:protobuf-java")
     implementation("com.google.api.grpc:proto-google-common-protos:2.29.0")
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 
@@ -89,11 +97,11 @@ sourceSets {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.25.3"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
     }
     plugins {
         create("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
         }
     }
     generateProtoTasks {

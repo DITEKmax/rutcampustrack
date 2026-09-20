@@ -91,6 +91,9 @@ class RateLimitIT {
         r.add("spring.data.redis.host", REDIS::getHost);
         r.add("spring.data.redis.port", () -> REDIS.getMappedPort(6379));
         r.add("spring.data.redis.password", () -> "");  // no auth in testcontainer
+        // Synthetic trusted-edge fixture: WebTestClient connects from loopback and sends the edge XFF.
+        r.add("rutcampustrack.gateway.client-ip.trusted-proxy-addresses", () -> "127.0.0.1");
+        r.add("rutcampustrack.gateway.client-ip.required", () -> true);
         r.add("gateway.auth-service-url", () -> "http://localhost:" + WIREMOCK.port());
         r.add("rutcampustrack.security.internal-issuer-client.auth-service-url",
                 () -> "http://localhost:" + WIREMOCK.port());

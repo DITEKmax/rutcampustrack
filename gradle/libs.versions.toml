@@ -2,13 +2,14 @@
 # M01 — shared modules foundations
 # Добавляем минимальный набор версий, используемых shared-* модулями.
 # Остальные сервисы мигрируют на catalog постепенно (не scope M01).
-springBoot = "3.4.1"
+springBoot = "3.5.16"
 springDependencyManagement = "1.1.7"
 logstashLogback = "7.4"
 testcontainersBom = "1.20.4"
-grpc = "1.63.0"
+grpc = "1.82.4"
+protobuf = "3.25.8"
 wiremock = "3.9.1"
-springdocOpenapi = "2.8.6"
+springdocOpenapi = "2.8.9"
 
 # M02 — reliable eventing (ShedLock + outbox + contract-тесты)
 shedlock = "5.16.0"

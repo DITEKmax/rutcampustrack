@@ -9,7 +9,8 @@ version = "0.1.0"
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
+        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
     }
 }
 
@@ -32,6 +33,8 @@ dependencies {
     compileOnly("io.micrometer:micrometer-core")
 
     // Spring-аннотации + OncePerRequestFilter. compileOnly — сервис приносит.
+    // gRPC identity primitives are deliberately not auto-configured.
+    compileOnly("io.grpc:grpc-api")
     compileOnly("org.springframework:spring-context")
     compileOnly("org.springframework:spring-web")
     compileOnly("org.springframework.boot:spring-boot-autoconfigure")
@@ -44,6 +47,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-security")
+    testImplementation("io.grpc:grpc-api")
+    testImplementation("io.grpc:grpc-inprocess")
+    testImplementation("io.grpc:grpc-netty")
+    testImplementation("io.grpc:grpc-stub")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // Test fixtures для других модулей (InternalJwtTestFactory)

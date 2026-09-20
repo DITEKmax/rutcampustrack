@@ -2,16 +2,23 @@ package ru.rutcampustrack.attendance.grpc;
 
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinResolutionReason;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.StudentAttendanceSnapshotService;
 import ru.rutcampustrack.attendance.student.StudentCheckinException;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels;
 import ru.rutcampustrack.attendance.student.StudentCheckinService;
+import ru.rutcampustrack.attendance.studentrequest.RequestBucket;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
@@ -28,6 +35,7 @@ public class AttendanceStudentGrpcServiceImpl
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final AcademicGrpcClient academicGrpcClient;
     private final SemesterCacheService semesterCacheService;
+    private final StudentRequestService requestService;
 
     public AttendanceStudentGrpcServiceImpl(
             StudentCheckinService checkinService,
@@ -36,11 +44,25 @@ public class AttendanceStudentGrpcServiceImpl
             AcademicGrpcClient academicGrpcClient,
             SemesterCacheService semesterCacheService
     ) {
+        this(checkinService, snapshotService, scheduleGrpcClient, academicGrpcClient,
+                semesterCacheService, null);
+    }
+
+    @Autowired
+    public AttendanceStudentGrpcServiceImpl(
+            StudentCheckinService checkinService,
+            StudentAttendanceSnapshotService snapshotService,
+            ScheduleGrpcClient scheduleGrpcClient,
+            AcademicGrpcClient academicGrpcClient,
+            SemesterCacheService semesterCacheService,
+            StudentRequestService requestService
+    ) {
         this.checkinService = checkinService;
         this.snapshotService = snapshotService;
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.academicGrpcClient = academicGrpcClient;
         this.semesterCacheService = semesterCacheService;
+        this.requestService = requestService;
     }
 
     @Override
@@ -65,6 +87,10 @@ public class AttendanceStudentGrpcServiceImpl
     public void checkin(StudentCheckinCommand command, StreamObserver<StudentCheckinResult> observer) {
         try {
             InternalJwtClaims claims = requireClaims();
+            if (claims.readOnly()) {
+                throw new StudentCheckinException(StudentCheckinException.Code.OUT_OF_SCOPE,
+                        "Терминальная student-сессия доступна только для чтения");
+            }
             StudentCheckinModels.Geo geo = parseGeo(command);
             StudentCheckinModels.Identity identity = identity(claims, null);
             var replay = checkinService.replay(
@@ -91,6 +117,174 @@ public class AttendanceStudentGrpcServiceImpl
         }
     }
 
+    @Override
+    public void listStudentRequests(StudentRequestListQuery query,
+                                    StreamObserver<StudentRequestPage> observer) {
+        try {
+            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
+            RequestBucket bucket = query.getBucket() == StudentRequestBucket.STUDENT_REQUEST_BUCKET_ARCHIVE
+                    ? RequestBucket.ARCHIVE : RequestBucket.OPEN;
+            Integer page = query.hasPage() ? query.getPage() : null;
+            Integer size = query.hasSize() ? query.getSize() : null;
+            observer.onNext(StudentRequestGrpcMapper.page(requireRequestService()
+                    .list(identity, bucket, page, size)));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(StudentRequestGrpcErrors.toStatus(error));
+        }
+    }
+
+    @Override
+    public void getStudentRequest(StudentRequestId request,
+                                  StreamObserver<StudentRequestDetail> observer) {
+        try {
+            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
+            validateObjectId(request.getRequestId(), "request_id");
+            observer.onNext(StudentRequestGrpcMapper.detail(
+                    requireRequestService().get(identity, request.getRequestId())));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(StudentRequestGrpcErrors.toStatus(error));
+        }
+    }
+
+    @Override
+    public void getStudentRequestOptions(StudentRequestOptionsQuery query,
+                                         StreamObserver<StudentRequestOptions> observer) {
+        try {
+            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
+            observer.onNext(StudentRequestGrpcMapper.options(requireRequestService().options(identity)));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(StudentRequestGrpcErrors.toStatus(error));
+        }
+    }
+
+    @Override
+    public void submitStudentExcuse(SubmitStudentExcuseCommand command,
+                                    StreamObserver<StudentRequestDetail> observer) {
+        try {
+            InternalJwtClaims claims = requireClaims();
+            requireMutableRequestClaims(claims);
+            StudentRequestModels.Identity identity = requestIdentity(claims);
+            if (command.getIdempotencyKey().isBlank()) {
+                throw new ru.rutcampustrack.attendance.exception.InvalidIdempotencyKeyException();
+            }
+            List<StudentRequestModels.AttachmentInput> attachments = command.getAttachmentsList().stream()
+                    .map(file -> new StudentRequestModels.AttachmentInput(
+                            file.getName(), file.getDeclaredContentType(), file.getData().toByteArray()))
+                    .toList();
+            StudentRequestModels.ExcuseSubmission submission = new StudentRequestModels.ExcuseSubmission(
+                    command.getLessonIdsList(), parseReason(command.getReason()),
+                    command.hasComment() ? command.getComment() : null,
+                    attachments, command.getIdempotencyKey());
+            observer.onNext(StudentRequestGrpcMapper.detail(
+                    requireRequestService().submitExcuse(identity, submission)));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(StudentRequestGrpcErrors.toStatus(error));
+        }
+    }
+
+    @Override
+    public void submitStudentLateCheckin(SubmitStudentLateCheckinCommand command,
+                                         StreamObserver<StudentRequestDetail> observer) {
+        try {
+            InternalJwtClaims claims = requireClaims();
+            requireMutableRequestClaims(claims);
+            StudentRequestModels.Identity identity = requestIdentity(claims);
+            if (command.getIdempotencyKey().isBlank()) {
+                throw new ru.rutcampustrack.attendance.exception.InvalidIdempotencyKeyException();
+            }
+            observer.onNext(StudentRequestGrpcMapper.detail(requireRequestService().submitLateCheckin(
+                    identity, new StudentRequestModels.LateCheckinSubmission(
+                            command.getLessonId(), command.getIdempotencyKey()))));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(StudentRequestGrpcErrors.toStatus(error));
+        }
+    }
+
+    @Override
+    public void cancelStudentRequest(StudentRequestId request,
+                                     StreamObserver<StudentRequestDetail> observer) {
+        try {
+            InternalJwtClaims claims = requireClaims();
+            requireMutableRequestClaims(claims);
+            StudentRequestModels.Identity identity = requestIdentity(claims);
+            validateObjectId(request.getRequestId(), "request_id");
+            observer.onNext(StudentRequestGrpcMapper.detail(
+                    requireRequestService().cancel(identity, request.getRequestId())));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(StudentRequestGrpcErrors.toStatus(error));
+        }
+    }
+
+    @Override
+    public void downloadStudentRequestAttachment(StudentRequestAttachmentId request,
+                                                  StreamObserver<StudentRequestAttachmentDownload> observer) {
+        try {
+            StudentRequestModels.Identity identity = requestIdentity(requireClaims());
+            validateObjectId(request.getRequestId(), "request_id");
+            validateObjectId(request.getAttachmentId(), "attachment_id");
+            observer.onNext(StudentRequestGrpcMapper.download(requireRequestService().download(
+                    identity, request.getRequestId(), request.getAttachmentId())));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(StudentRequestGrpcErrors.toStatus(error));
+        }
+    }
+
+    private StudentRequestService requireRequestService() {
+        if (requestService == null) {
+            throw new AcademicServiceUnavailableException("Student request transport is not configured");
+        }
+        return requestService;
+    }
+
+    private static StudentRequestModels.Identity requestIdentity(InternalJwtClaims claims) {
+        if (claims == null || claims.userId() <= 0
+                || claims.groupId() == null || claims.groupId() <= 0) {
+            throw new StudentRequestTransportException(
+                    StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE,
+                    "Authenticated student scope is missing");
+        }
+        if (claims.domainRole() == null || !"STUDENT".equalsIgnoreCase(claims.domainRole())) {
+            throw new StudentRequestTransportException(
+                    StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_WRONG_ROLE,
+                    "Student request API requires STUDENT role");
+        }
+        return new StudentRequestModels.Identity(claims.userId(), UserRole.STUDENT,
+                claims.groupId(), claims.isHeadman());
+    }
+
+    private static void requireMutableRequestClaims(InternalJwtClaims claims) {
+        if (claims.readOnly()) {
+            throw new StudentRequestTransportException(
+                    StudentRequestErrorCode.STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE,
+                    "Терминальная student-сессия доступна только для чтения");
+        }
+    }
+
+    private static ExcuseType parseReason(StudentExcuseReason reason) {
+        if (reason == null || reason == StudentExcuseReason.STUDENT_EXCUSE_REASON_UNSPECIFIED
+                || reason == StudentExcuseReason.UNRECOGNIZED) {
+            throw new BadRequestException("Excuse reason is required");
+        }
+        try {
+            return ExcuseType.valueOf(reason.name().replace("STUDENT_EXCUSE_REASON_", ""));
+        } catch (IllegalArgumentException error) {
+            throw new BadRequestException("Excuse reason is not supported");
+        }
+    }
+
+    private static void validateObjectId(String value, String field) {
+        if (value == null || !value.matches("[0-9a-fA-F]{24}")) {
+            throw new BadRequestException(field + " must be a 24-character hexadecimal id");
+        }
+    }
+
     private static InternalJwtClaims requireClaims() {
         InternalJwtClaims claims = StudentGrpcIdentity.CLAIMS.get();
         if (claims == null) {
@@ -102,8 +296,8 @@ public class AttendanceStudentGrpcServiceImpl
 
     private static StudentCheckinModels.Identity identity(InternalJwtClaims claims, String displayName) {
         return new StudentCheckinModels.Identity(
-                claims.userId() == null ? 0 : claims.userId(),
-                claims.role(), claims.groupId(), claims.isHeadman(), displayName);
+                claims.userId(), claims.domainRole(), claims.groupId(), claims.isHeadman(), displayName,
+                claims.readOnly());
     }
 
     private static StudentCheckinModels.Geo parseGeo(StudentCheckinCommand command) {
@@ -184,6 +378,8 @@ public class AttendanceStudentGrpcServiceImpl
                 case GEO_CONFIRMED -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_GEO_CONFIRMED;
                 case HEADMAN_APPROVED -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_APPROVED;
                 case HEADMAN_REJECTED -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_REJECTED;
+                case CANCELLED_BY_STUDENT -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_STUDENT_CANCELLED;
+                case PRESENT_PRIORITY -> AutomaticCheckinResolutionReason.AUTOMATIC_CHECKIN_RESOLUTION_REASON_PRESENT_PRIORITY;
             });
         }
         return result.build();

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # M13 G23 — pre-deploy diagnostics aggregator.
 #
-# Запускается до `docker compose up -d` на VPS чтобы catch'ить config
+# Запускается до `docker compose --env-file .env.prod -f docker-compose.prod.yml up -d` на VPS чтобы catch'ить config
 # проблемы (missing secrets, broken configs, invalid YAML) до того как
 # stack попытается стартануть. Объединяет все pre-flight checks из
 # других M13 групп в один entrypoint.
@@ -101,13 +101,16 @@ fi
 hdr "4. docker-compose.prod.yml syntax"
 if command -v docker >/dev/null 2>&1; then
     # config --quiet exit 0 если синтаксис валидный, errors на stderr.
-    # Используем --env-file чтобы compose читал реальные secrets.
-    if docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" \
-        config --quiet 2>&1 | grep -E "error|invalid"; then
-        err "docker-compose config validation failed"
-        OVERALL_FAIL=4
+    # Используем --env-file чтобы compose читал реальные secrets. Проверяем
+    # собственный exit code: pipefail + grep не должны превратить failure без
+    # слов error/invalid в ложный OK.
+    if docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" \
+        config --quiet; then
+        ok "docker compose --env-file \"$ENV_FILE\" -f \"$COMPOSE_FILE\" config OK"
     else
-        ok "docker compose config OK"
+        compose_status=$?
+        err "docker-compose config validation failed (exit $compose_status)"
+        OVERALL_FAIL=4
     fi
 else
     warn "docker не найден — compose validation skipped"
@@ -160,7 +163,7 @@ fi
 echo
 if [ $OVERALL_FAIL -eq 0 ]; then
     echo -e "${GREEN}${BOLD}✓ Все pre-flight проверки прошли${NC}"
-    echo "Можно деплоить: docker compose -f $COMPOSE_FILE --env-file $ENV_FILE up -d"
+    echo "Можно деплоить: docker compose --env-file \"$ENV_FILE\" -f \"$COMPOSE_FILE\" up -d"
     exit 0
 else
     echo -e "${RED}${BOLD}✗ Pre-flight failed (exit $OVERALL_FAIL)${NC}"

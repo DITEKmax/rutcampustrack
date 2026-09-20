@@ -8,7 +8,7 @@ version = "0.1.0"
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
     }
 }
 

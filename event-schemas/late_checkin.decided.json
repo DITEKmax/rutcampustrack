@@ -66,6 +66,8 @@
             "headman_approved",
             "headman_rejected",
             "geo_confirmed",
+            "student_cancelled",
+            "present_priority",
             null
           ]
         },

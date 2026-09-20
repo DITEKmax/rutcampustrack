@@ -17,6 +17,7 @@ import ru.rutcampustrack.shared.security.InternalJwtException;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 
 import java.time.Instant;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +26,8 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 class StudentGrpcBoundaryTest {
+
+    private static final UUID SESSION_ID = UUID.fromString("66666666-6666-4666-8666-666666666666");
 
     private InternalJwtValidator validator;
     private StudentGrpcIdentityInterceptor interceptor;
@@ -65,7 +68,8 @@ class StudentGrpcBoundaryTest {
 
     @Test
     void validStudentTokenPropagatesClaimsThroughGrpcContext() {
-        InternalJwtClaims claims = new InternalJwtClaims(100L, "STUDENT", 10L, false);
+        InternalJwtClaims claims = new InternalJwtClaims(
+                100L, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
         when(validator.validate("valid-token")).thenReturn(claims);
         ServerCall<Object, Object> call = callFor(StudentGrpcIdentityInterceptor.STUDENT_SERVICE);
         ServerCallHandler<Object, Object> next = mock(ServerCallHandler.class);

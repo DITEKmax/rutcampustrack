@@ -79,14 +79,29 @@ class StudentAttendanceSnapshotServiceTest {
                 .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.ELIGIBLE);
     }
 
+    @Test
+    void readOnlyIdentityCanReadSnapshotEligibility() {
+        StudentAttendanceSnapshotService.Entry entry = snapshot(
+                LateCheckinRequestStatus.PENDING, NOW.plusSeconds(300), true);
+
+        assertThat(entry.eligibility().allowed()).isFalse();
+        assertThat(entry.eligibility().reason())
+                .isEqualTo(StudentAttendanceSnapshotService.EligibilityReason.PENDING_CONFIRMATION);
+    }
+
     private StudentAttendanceSnapshotService.Entry snapshot(LateCheckinRequestStatus status, Instant retryAt) {
+        return snapshot(status, retryAt, false);
+    }
+
+    private StudentAttendanceSnapshotService.Entry snapshot(
+            LateCheckinRequestStatus status, Instant retryAt, boolean readOnly) {
         when(lateCheckinRepository.findFirstByStudentIdAndLessonIdAndOriginOrderByUpdatedAtDesc(
                 STUDENT_ID, LESSON_ID, LateCheckinRequestOrigin.AUTO_GEO_FAILURE))
                 .thenReturn(Optional.of(LateCheckinRequest.builder().studentId(STUDENT_ID).lessonId(LESSON_ID)
                         .groupId(GROUP_ID).status(status).origin(LateCheckinRequestOrigin.AUTO_GEO_FAILURE).build()));
         when(pairRepository.findById(any())).thenReturn(Optional.of(CheckinPairStateDocument.builder()
                 .studentId(STUDENT_ID).lessonId(LESSON_ID).groupId(GROUP_ID).retryAt(retryAt).build()));
-        return service.getSnapshot(new Identity(STUDENT_ID, "STUDENT", GROUP_ID, false, "Student"), List.of(LESSON_ID))
+        return service.getSnapshot(new Identity(STUDENT_ID, "STUDENT", GROUP_ID, false, "Student", readOnly), List.of(LESSON_ID))
                 .entries().getFirst();
     }
 }

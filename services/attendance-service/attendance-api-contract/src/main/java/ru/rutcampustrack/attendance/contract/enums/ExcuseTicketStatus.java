@@ -4,5 +4,6 @@ public enum ExcuseTicketStatus {
     DRAFT,
     SUBMITTED,
     APPROVED,
-    REJECTED;
+    REJECTED,
+    CANCELLED;
 }

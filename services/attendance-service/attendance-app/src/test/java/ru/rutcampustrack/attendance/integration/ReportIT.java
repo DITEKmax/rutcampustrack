@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -71,14 +72,14 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                         SUBJECT_ID, subjectDetails("Mathematics", "lecture"),
                         SUBJECT_ID_2, subjectDetails("Physics", "lab")));
 
-        // Every lesson id passed to scheduleGrpcClient.getLessonsByIds is considered alive —
-        // ReportService uses this to filter orphan attendance docs, and these tests don't
-        // exercise that path.
+        // Every lesson id passed to scheduleGrpcClient.getLessonsByIds is a valid
+        // non-terminal lesson for the happy-path report tests.
         lenient().when(scheduleGrpcClient.getLessonsByIds(any())).thenAnswer(inv -> {
             java.util.List<Long> ids = inv.getArgument(0);
             return ids.stream()
                     .map(id -> ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
                             .setLessonId(id)
+                            .setStatus("closed")
                             .build())
                     .toList();
         });
@@ -200,6 +201,29 @@ class ReportIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(jsonPath("$.subjects[0].subjectName").value("Mathematics"))
                 .andExpect(jsonPath("$.subjects[0].subjectType").value("lecture"))
                 .andExpect(jsonPath("$.overall.total").value(2));
+    }
+
+    @Test
+    void getStudentStats_excludesAuthoritativeCancelledAndTransferredStoredRecords() throws Exception {
+        insertAttendance(11L, STUDENT_USER_ID, SUBJECT_ID, AttendanceStatus.PRESENT,
+                LocalDate.of(2026, 4, 1));
+        insertAttendance(12L, STUDENT_USER_ID, SUBJECT_ID, AttendanceStatus.ABSENT,
+                LocalDate.of(2026, 4, 2));
+        doReturn(java.util.List.of(
+                ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
+                        .setLessonId(11L).setStatus("cancelled").build(),
+                ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
+                        .setLessonId(12L).setStatus("transferred").build()))
+                .when(scheduleGrpcClient).getLessonsByIds(any());
+
+        mockMvc.perform(get("/attendance/reports/student/stats")
+                        .header("X-User-Id", STUDENT_USER_ID.toString())
+                        .header("X-User-Role", "STUDENT")
+                        .header("X-Group-Id", GROUP_ID.toString())
+                        .header("X-Is-Headman", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.subjects").isEmpty())
+                .andExpect(jsonPath("$.overall.total").value(0));
     }
 
     // -------------------------------------------------------------------------

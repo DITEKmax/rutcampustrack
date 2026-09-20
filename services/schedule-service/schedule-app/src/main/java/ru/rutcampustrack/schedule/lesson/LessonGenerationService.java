@@ -8,6 +8,7 @@ import ru.rutcampustrack.schedule.event.LessonDeletedEvent;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
 
 import java.time.Clock;
 import java.time.DayOfWeek;
@@ -129,12 +130,7 @@ public class LessonGenerationService {
             LocalDate semesterEnd,
             WeekType firstWeekType) {
 
-        List<LocalDate> dates = computeLessonDates(
-                semesterStart, semesterEnd, firstWeekType,
-                item.getDayOfWeek(), item.getWeekType());
-
-        List<Lesson> lessons = buildLessons(item.getId(), dates);
-        lessonRepository.saveAll(lessons);
+        throw new RecurringLifecycleNotReadyException("legacy generateLessons");
     }
 
     /**
@@ -156,18 +152,7 @@ public class LessonGenerationService {
             WeekType firstWeekType,
             LocalDate fromDate) {
 
-        List<Long> staleIds = lessonRepository.findPlannedIdsFromDate(item.getId(), fromDate);
-        lessonRepository.deletePlannedFromDate(item.getId(), fromDate);
-        publishDeleted(staleIds);
-
-        // Only generate dates >= fromDate (no backfill for already-passed dates)
-        LocalDate effectiveStart = fromDate.isAfter(semesterStart) ? fromDate : semesterStart;
-        List<LocalDate> dates = computeLessonDates(
-                effectiveStart, semesterEnd, firstWeekType,
-                item.getDayOfWeek(), item.getWeekType());
-
-        List<Lesson> lessons = buildLessons(item.getId(), dates);
-        lessonRepository.saveAll(lessons);
+        throw new RecurringLifecycleNotReadyException("regenerateFromDate");
     }
 
     /**
@@ -189,17 +174,7 @@ public class LessonGenerationService {
             WeekType firstWeekType,
             LocalDate fromDate) {
 
-        List<Long> staleIds = lessonRepository.findPlannedOrCancelledIdsFromDate(item.getId(), fromDate);
-        lessonRepository.deletePlannedOrCancelledFromDate(item.getId(), fromDate);
-        publishDeleted(staleIds);
-
-        LocalDate effectiveStart = fromDate.isAfter(semesterStart) ? fromDate : semesterStart;
-        List<LocalDate> dates = computeLessonDates(
-                effectiveStart, semesterEnd, firstWeekType,
-                item.getDayOfWeek(), item.getWeekType());
-
-        List<Lesson> lessons = buildLessons(item.getId(), dates);
-        lessonRepository.saveAll(lessons);
+        throw new RecurringLifecycleNotReadyException("regenerateFromDateForReconciliation");
     }
 
     /**
@@ -212,10 +187,7 @@ public class LessonGenerationService {
      */
     @Transactional
     public void deletePlannedLessonsFromToday(Long scheduleItemId) {
-        LocalDate today = LocalDate.now(clock);
-        List<Long> staleIds = lessonRepository.findPlannedIdsFromDate(scheduleItemId, today);
-        lessonRepository.deletePlannedFromDate(scheduleItemId, today);
-        publishDeleted(staleIds);
+        throw new RecurringLifecycleNotReadyException("deletePlannedLessonsFromToday");
     }
 
     // -------------------------------------------------------------------------

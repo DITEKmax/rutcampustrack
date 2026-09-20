@@ -1,16 +1,25 @@
 package ru.rutcampustrack.academic.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.rutcampustrack.academic.entity.Semester;
+import jakarta.persistence.LockModeType;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.List;
 
 public interface SemesterRepository extends JpaRepository<Semester, Long> {
     Optional<Semester> findByIsActiveTrue();
+
+    List<Semester> findAllByIsActiveTrueOrderByIdAsc();
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from Semester s where s.id = :id")
+    Optional<Semester> findByIdForUpdate(@Param("id") Long id);
 
     @Modifying
     @Query("UPDATE Semester s SET s.isActive = false WHERE s.isActive = true")

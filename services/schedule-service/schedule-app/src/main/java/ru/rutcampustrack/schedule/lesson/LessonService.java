@@ -10,12 +10,12 @@ import ru.rutcampustrack.schedule.event.LessonBlockedEvent;
 import ru.rutcampustrack.schedule.event.LessonCancelledEvent;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
-import ru.rutcampustrack.schedule.contract.dto.lesson.MassCancelRequest;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
 import ru.rutcampustrack.schedule.exception.InvalidLessonStateException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
+import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Business logic for lesson operations: cancel, restore, mass-cancel, geo-block toggle, and schedule view.
+ * Business logic for lesson operations: cancel, restore, geo-block toggle, and schedule view.
  * All write operations require headman authorization via gRPC group ownership check.
  */
 @Service
@@ -94,7 +94,7 @@ public class LessonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson", "id", lessonId));
         ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
-        requireHeadmanForGroup(item.getGroupId());
+        requireHeadmanForGroup(lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId());
         return new LessonWithItem(lesson, item);
     }
 
@@ -126,10 +126,16 @@ public class LessonService {
         lesson.setCancelledBy(requestContext.getUserId());
         lesson.setCancelledAt(cancelledAt);
         Lesson saved = lessonRepository.save(lesson);
+        java.time.LocalTime startTime = saved.getStartTime() != null
+                ? saved.getStartTime() : item.getStartTime();
+        java.time.LocalTime endTime = saved.getEndTime() != null
+                ? saved.getEndTime() : item.getEndTime();
         eventPublisher.publishEvent(new LessonCancelledEvent(this,
-                saved.getId(), item.getGroupId(), item.getSubjectId(),
-                saved.getDate(), item.getStartTime(), item.getEndTime(),
-                item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null,
+                saved.getId(), saved.getGroupId() != null ? saved.getGroupId() : item.getGroupId(),
+                saved.getSubjectId() != null ? saved.getSubjectId() : item.getSubjectId(),
+                saved.getDate(), startTime, endTime,
+                saved.getLessonNumber() != null ? saved.getLessonNumber().intValue()
+                        : (item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null),
                 saved.getCancelReason(), saved.getCancelledBy(), saved.getCancelledAt()));
         return new LessonWithItem(saved, item);
     }
@@ -144,6 +150,9 @@ public class LessonService {
     public LessonWithItem restoreLesson(Long lessonId) {
         LessonWithItem lwi = findLessonAndValidateGroup(lessonId);
         Lesson lesson = lwi.lesson();
+        if (lesson.getOccurrenceId() != null) {
+            throw new RecurringLifecycleNotReadyException("restore canonical recurring lesson");
+        }
         if (lesson.getStatus() != LessonStatus.CANCELLED) {
             throw new InvalidLessonStateException(
                     "Only cancelled lessons can be restored, current status: " + lesson.getStatus());
@@ -154,44 +163,6 @@ public class LessonService {
         lesson.setCancelledBy(null);
         lesson.setCancelledAt(null);
         return new LessonWithItem(lessonRepository.save(lesson), lwi.scheduleItem());
-    }
-
-    /**
-     * Mass-cancels all PLANNED lessons for a group within a date range (LSSN-06, D-12).
-     * Validates headman ownership BEFORE any repository access.
-     * Returns the count of cancelled lessons.
-     */
-    public int massCancelLessons(MassCancelRequest request) {
-        requireHeadmanForGroup(request.groupId());
-        List<ScheduleItem> items = scheduleItemRepository.findByGroupId(request.groupId());
-        List<Long> itemIds = items.stream().map(ScheduleItem::getId).toList();
-        if (itemIds.isEmpty()) {
-            return 0;
-        }
-        List<Lesson> toCancel = lessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn(
-                itemIds, request.dateFrom(), request.dateTo(), List.of(LessonStatus.PLANNED.name().toLowerCase()));
-        // M09 G5 — фиксируем единый cancelledAt для всей пачки, чтобы легче
-        // было сгруппировать audit-записи downstream (и event-timeline в UI).
-        OffsetDateTime cancelledAt = OffsetDateTime.now();
-        Long cancelledBy = requestContext.getUserId();
-        for (Lesson l : toCancel) {
-            l.setStatus(LessonStatus.CANCELLED);
-            l.setCancelReason(request.reason());
-            l.setCancelledBy(cancelledBy);
-            l.setCancelledAt(cancelledAt);
-        }
-        lessonRepository.saveAll(toCancel);
-        Map<Long, ScheduleItem> itemMap = items.stream()
-                .collect(Collectors.toMap(ScheduleItem::getId, si -> si));
-        for (Lesson l : toCancel) {
-            ScheduleItem item = itemMap.get(l.getScheduleItemId());
-            eventPublisher.publishEvent(new LessonCancelledEvent(this,
-                    l.getId(), item.getGroupId(), item.getSubjectId(),
-                    l.getDate(), item.getStartTime(), item.getEndTime(),
-                    item.getLessonNumber() != null ? item.getLessonNumber().intValue() : null,
-                    l.getCancelReason(), l.getCancelledBy(), l.getCancelledAt()));
-        }
-        return toCancel.size();
     }
 
     /**
@@ -270,19 +241,17 @@ public class LessonService {
                           LessonStatus.CLOSED.name().toLowerCase())
                 : statuses.stream().map(s -> s.name().toLowerCase()).toList();
 
-        List<ScheduleItem> items = scheduleItemRepository.findByGroupId(groupId);
-        List<Long> itemIds = items.stream().map(ScheduleItem::getId).toList();
-        if (itemIds.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
         Page<Lesson> lessonPage = lessonRepository
-                .pageByScheduleItemIdInAndDateBetweenAndStatusIn(
-                        itemIds, from, to, effectiveStatuses, pageable);
+                .pageByGroupIdAndDateBetweenAndStatusIn(
+                        groupId, from, to,
+                        effectiveStatuses, pageable);
+
+        List<ScheduleItem> items = scheduleItemRepository.findByGroupId(groupId);
 
         Map<Long, ScheduleItem> itemMap = items.stream()
                 .collect(Collectors.toMap(ScheduleItem::getId, si -> si));
 
         return lessonPage.map(l -> new LessonWithItem(l, itemMap.get(l.getScheduleItemId())));
     }
+
 }

@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     schedule_grpc_host: str = "schedule-service"
     schedule_grpc_port: int = 19092
 
+    # Attendance request attachment gRPC (bot-only shared-secret boundary)
+    attendance_grpc_host: str = "attendance-service"
+    attendance_grpc_port: int = 19093
+
     # Auth Service HTTP (direct, not through Gateway — per D-06)
     auth_service_host: str = "auth-service"
     auth_service_port: int = 9090

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 
@@ -29,6 +30,10 @@ public class ScheduleItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Setter
+    @Column(name = "assignment_id", nullable = false, updatable = false)
+    private Long assignmentId;
 
     @Setter
     @Column(name = "group_id", nullable = false)
@@ -76,4 +81,16 @@ public class ScheduleItem {
     @Setter
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
+
+    @Setter
+    @Column(name = "generated_count")
+    private Long generatedCount;
+
+    @Setter
+    @Column(name = "generated_from")
+    private LocalDate generatedFrom;
+
+    @Setter
+    @Column(name = "generated_until")
+    private LocalDate generatedUntil;
 }

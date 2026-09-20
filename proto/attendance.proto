@@ -11,6 +11,23 @@ service AttendanceStudentGrpcService {
   rpc GetStudentAttendanceSnapshot (StudentAttendanceSnapshotRequest)
       returns (StudentAttendanceSnapshotResponse);
   rpc Checkin (StudentCheckinCommand) returns (StudentCheckinResult);
+  rpc ListStudentRequests (StudentRequestListQuery) returns (StudentRequestPage);
+  rpc GetStudentRequest (StudentRequestId) returns (StudentRequestDetail);
+  rpc GetStudentRequestOptions (StudentRequestOptionsQuery) returns (StudentRequestOptions);
+  rpc SubmitStudentExcuse (SubmitStudentExcuseCommand) returns (StudentRequestDetail);
+  rpc SubmitStudentLateCheckin (SubmitStudentLateCheckinCommand) returns (StudentRequestDetail);
+  rpc CancelStudentRequest (StudentRequestId) returns (StudentRequestDetail);
+  rpc DownloadStudentRequestAttachment (StudentRequestAttachmentId)
+      returns (StudentRequestAttachmentDownload);
+}
+
+// Separate service for notification-bot attachment reads. It has its own
+// x-grpc-secret interceptor; public student JWT protection never applies here.
+service AttendanceRequestBotGrpcService {
+  rpc FetchExcuseAttachment (FetchExcuseAttachmentRequest)
+      returns (FetchExcuseAttachmentResponse);
+  rpc ResolveRequestNotification (ResolveRequestNotificationRequest)
+      returns (ResolveRequestNotificationResponse);
 }
 
 message StudentAttendanceSnapshotRequest {
@@ -139,6 +156,7 @@ enum AutomaticCheckinResolutionReason {
   AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_APPROVED = 2;
   AUTOMATIC_CHECKIN_RESOLUTION_REASON_HEADMAN_REJECTED = 3;
   AUTOMATIC_CHECKIN_RESOLUTION_REASON_STUDENT_CANCELLED = 4;
+  AUTOMATIC_CHECKIN_RESOLUTION_REASON_PRESENT_PRIORITY = 5;
 }
 
 // Packed into gRPC status details. The BFF maps this stable code and retry_at
@@ -161,4 +179,230 @@ enum StudentCheckinErrorCode {
   STUDENT_CHECKIN_ERROR_CODE_IDEMPOTENCY_PAYLOAD_MISMATCH = 9;
   STUDENT_CHECKIN_ERROR_CODE_CHECKIN_NOT_ELIGIBLE = 10;
   STUDENT_CHECKIN_ERROR_CODE_DEPENDENCY_UNAVAILABLE = 11;
+}
+
+enum StudentRequestBucket {
+  STUDENT_REQUEST_BUCKET_UNSPECIFIED = 0;
+  STUDENT_REQUEST_BUCKET_OPEN = 1;
+  STUDENT_REQUEST_BUCKET_ARCHIVE = 2;
+}
+
+enum StudentRequestKind {
+  STUDENT_REQUEST_KIND_UNSPECIFIED = 0;
+  STUDENT_REQUEST_KIND_EXCUSE = 1;
+  STUDENT_REQUEST_KIND_LATE_CHECKIN = 2;
+}
+
+enum StudentRequestStatus {
+  STUDENT_REQUEST_STATUS_UNSPECIFIED = 0;
+  STUDENT_REQUEST_STATUS_PENDING = 1;
+  STUDENT_REQUEST_STATUS_APPROVED = 2;
+  STUDENT_REQUEST_STATUS_REJECTED = 3;
+  STUDENT_REQUEST_STATUS_CANCELLED = 4;
+}
+
+enum StudentRequestOrigin {
+  STUDENT_REQUEST_ORIGIN_UNSPECIFIED = 0;
+  STUDENT_REQUEST_ORIGIN_MANUAL = 1;
+  STUDENT_REQUEST_ORIGIN_AUTO_GEO_FAILURE = 2;
+}
+
+enum StudentExcuseReason {
+  STUDENT_EXCUSE_REASON_UNSPECIFIED = 0;
+  STUDENT_EXCUSE_REASON_ILLNESS = 1;
+  STUDENT_EXCUSE_REASON_MEDICAL_EXAMINATION = 2;
+  STUDENT_EXCUSE_REASON_COMPETITION_PARTICIPATION = 3;
+  STUDENT_EXCUSE_REASON_FAMILY_CIRCUMSTANCES = 4;
+  STUDENT_EXCUSE_REASON_OTHER = 5;
+}
+
+enum StudentRequestAttachmentState {
+  STUDENT_REQUEST_ATTACHMENT_STATE_UNSPECIFIED = 0;
+  STUDENT_REQUEST_ATTACHMENT_STATE_ACTIVE = 1;
+  STUDENT_REQUEST_ATTACHMENT_STATE_EXPIRED = 2;
+}
+
+message StudentRequestListQuery {
+  StudentRequestBucket bucket = 1;
+  optional int32 page = 2;
+  optional int32 size = 3;
+}
+
+message StudentRequestOptionsQuery {}
+
+message StudentRequestId {
+  string request_id = 1;
+}
+
+message StudentRequestAttachmentId {
+  string request_id = 1;
+  string attachment_id = 2;
+}
+
+message StudentRequestAttachmentUpload {
+  string name = 1;
+  string declared_content_type = 2;
+  bytes data = 3;
+}
+
+message SubmitStudentExcuseCommand {
+  repeated int64 lesson_ids = 1;
+  StudentExcuseReason reason = 2;
+  optional string comment = 3;
+  repeated StudentRequestAttachmentUpload attachments = 4;
+  string idempotency_key = 5;
+}
+
+message SubmitStudentLateCheckinCommand {
+  int64 lesson_id = 1;
+  string idempotency_key = 2;
+}
+
+message StudentRequestLesson {
+  int64 id = 1;
+  int32 lesson_number = 2;
+  string status = 3;
+  bool blocked = 4;
+  optional int64 subject_id = 5;
+  optional string subject_name = 6;
+  optional string subject_type = 7;
+  optional int64 semester_id = 8;
+  optional string date = 9;
+  optional string starts_at = 10;
+  optional string ends_at = 11;
+}
+
+message StudentRequestSummary {
+  string id = 1;
+  StudentRequestKind kind = 2;
+  StudentRequestStatus status = 3;
+  StudentRequestOrigin origin = 4;
+  repeated StudentRequestLesson lessons = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message StudentRequestDecision {
+  optional string comment = 1;
+  optional string decided_at = 2;
+}
+
+message StudentRequestAttachment {
+  string id = 1;
+  string name = 2;
+  string content_type = 3;
+  int64 size_bytes = 4;
+  string sha256 = 5;
+  StudentRequestAttachmentState state = 6;
+  string uploaded_at = 7;
+  string expires_at = 8;
+  optional string expired_at = 9;
+}
+
+message StudentRequestDetail {
+  StudentRequestSummary summary = 1;
+  optional StudentExcuseReason reason = 2;
+  optional string comment = 3;
+  repeated StudentRequestAttachment attachments = 4;
+  optional StudentRequestDecision decision = 5;
+}
+
+message StudentRequestPage {
+  repeated StudentRequestSummary content = 1;
+  int32 page = 2;
+  int32 size = 3;
+  int64 total_elements = 4;
+  int32 total_pages = 5;
+}
+
+message StudentRequestReasonOption {
+  StudentExcuseReason code = 1;
+  string label = 2;
+  bool comment_required = 3;
+}
+
+message StudentRequestFileLimits {
+  int32 max_files = 1;
+  int64 max_bytes_per_file = 2;
+  int64 max_bytes_total = 3;
+  repeated string content_types = 4;
+  repeated string extensions = 5;
+}
+
+message StudentRequestBudget {
+  int64 semester_id = 1;
+  int32 limit = 2;
+  int32 used = 3;
+  int32 remaining = 4;
+}
+
+message StudentRequestPendingRef {
+  string id = 1;
+  StudentRequestKind kind = 2;
+  StudentRequestOrigin origin = 3;
+}
+
+message StudentRequestLessonOption {
+  StudentRequestLesson lesson = 1;
+  bool excuse_eligible = 2;
+  bool late_checkin_eligible = 3;
+  repeated StudentRequestPendingRef pending_requests = 4;
+}
+
+message StudentRequestOptions {
+  repeated StudentRequestReasonOption reasons = 1;
+  StudentRequestFileLimits files = 2;
+  StudentRequestBudget budget = 3;
+  repeated StudentRequestLessonOption lessons = 4;
+}
+
+message StudentRequestAttachmentDownload {
+  bytes data = 1;
+  string content_type = 2;
+  string filename = 3;
+  int64 size = 4;
+}
+
+message StudentRequestErrorDetail {
+  StudentRequestErrorCode code = 1;
+}
+
+enum StudentRequestErrorCode {
+  STUDENT_REQUEST_ERROR_CODE_UNSPECIFIED = 0;
+  STUDENT_REQUEST_ERROR_CODE_INVALID_REQUEST = 1;
+  STUDENT_REQUEST_ERROR_CODE_INVALID_IDEMPOTENCY_KEY = 2;
+  STUDENT_REQUEST_ERROR_CODE_INVALID_SESSION = 3;
+  STUDENT_REQUEST_ERROR_CODE_WRONG_ROLE = 4;
+  STUDENT_REQUEST_ERROR_CODE_OUT_OF_SCOPE = 5;
+  STUDENT_REQUEST_ERROR_CODE_REQUEST_NOT_FOUND = 6;
+  STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_NOT_FOUND = 7;
+  STUDENT_REQUEST_ERROR_CODE_REQUEST_CONFLICT = 8;
+  STUDENT_REQUEST_ERROR_CODE_ATTACHMENT_EXPIRED = 9;
+  STUDENT_REQUEST_ERROR_CODE_PAYLOAD_TOO_LARGE = 10;
+  STUDENT_REQUEST_ERROR_CODE_DEPENDENCY_UNAVAILABLE = 11;
+}
+
+message FetchExcuseAttachmentRequest {
+  int64 actor_user_id = 1;
+  string request_id = 2;
+  string attachment_id = 3;
+}
+
+message FetchExcuseAttachmentResponse {
+  bytes data = 1;
+  string content_type = 2;
+  string filename = 3;
+  int64 size = 4;
+}
+
+message ResolveRequestNotificationRequest {
+  StudentRequestKind kind = 1;
+  string request_id = 2;
+}
+
+message ResolveRequestNotificationResponse {
+  int64 group_id = 1;
+  int64 student_id = 2;
+  string student_name = 3;
+  StudentRequestDetail detail = 4;
 }

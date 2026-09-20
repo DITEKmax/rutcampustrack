@@ -8,7 +8,7 @@ attendance-документы, если APPROVED). Сообщение редак
 attendance-service авторитетен, дубли идемпотентны на его стороне.
 
 Файл-аттачмент (если был) приходит отдельным сообщением выше/ниже текста.
-В будущем можно отредактировать и документ, но пока трогаем только текст.
+Окончательный статус приходит только из authoritative ``excuse.decided``.
 
 M09 G6 (06 P1-1): перед publish проверяем is_headman через
 academic_client.get_user_by_telegram_id. Student или unlinked Telegram
@@ -74,9 +74,12 @@ async def handle_excuse_decision(callback: CallbackQuery, **data) -> None:
     approved = action == "approve"
 
     # M09 G6 (06 P1-1) — role check ДО publish: student или не-headman
-    # не должен иметь возможность решать тикет через forwarded кнопку.
+    # не должен иметь возможность решать тикет через forwarded кнопку.  The
+    # resolved internal id is the only actor identity accepted by Attendance;
+    # Telegram ids never enter the decision event.
     academic_client = data.get("academic_client")
-    if not await _verify_headman(callback, academic_client):
+    headman = await _resolve_headman(callback, academic_client)
+    if headman is None:
         return
 
     event_publisher = data.get("event_publisher")
@@ -91,7 +94,7 @@ async def handle_excuse_decision(callback: CallbackQuery, **data) -> None:
             {
                 "ticket_id": ticket_id,
                 "approved": approved,
-                "decision_by": callback.from_user.id,
+                "decision_by": headman.user_id,
             },
         )
     except Exception:
@@ -99,7 +102,10 @@ async def handle_excuse_decision(callback: CallbackQuery, **data) -> None:
         await callback.answer("Не удалось отправить решение, попробуйте ещё раз", show_alert=True)
         return
 
-    verdict_line = "✅ Одобрено" if approved else "❌ Отклонено"
+    # Callback acknowledgement is deliberately pending.  The authoritative
+    # ``excuse.decided`` event supplies the final approved/rejected text after
+    # Attendance has committed the decision.
+    verdict_line = "⏳ Решение отправлено"
     # Берём caption, если это document/photo, иначе — text.
     original = callback.message.caption if callback.message.caption else (callback.message.text or "")
     new_text = f"{original}\n\nРешение: {verdict_line}"

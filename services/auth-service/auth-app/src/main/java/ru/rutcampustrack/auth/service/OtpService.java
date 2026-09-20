@@ -1,56 +1,87 @@
 package ru.rutcampustrack.auth.service;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
-import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.config.OtpProperties;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.entity.enums.AccountStatus;
 import ru.rutcampustrack.auth.event.OtpRequestedEvent;
 import ru.rutcampustrack.auth.event.OtpVerifiedEvent;
 import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
 import ru.rutcampustrack.auth.exception.OtpExpiredException;
 import ru.rutcampustrack.auth.exception.OtpRateLimitException;
 import ru.rutcampustrack.auth.repository.UserRepository;
+import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class OtpService {
 
+    private static final long PROOF_MISSING = 0L;
+    private static final long PROOF_CONSUMED = 1L;
+    private static final long PROOF_MISMATCH = 2L;
+
+    /**
+     * The forward and reverse proof indexes are consumed together.  The
+     * reverse lookup path rechecks both indexes after it has resolved the
+     * owner, so a direct verify and a verify-by-code request share one Redis
+     * winner.  All proof cleanup is part of the same atomic operation.
+     */
+    private static final String CONSUME_PROOF_SCRIPT = """
+            local direct = redis.call('GET', KEYS[1])
+            if not direct then
+                return 0
+            end
+            if direct ~= ARGV[1] then
+                return 2
+            end
+            local reverse = redis.call('GET', KEYS[2])
+            if not reverse then
+                return 0
+            end
+            if reverse ~= ARGV[2] then
+                return 2
+            end
+            redis.call('DEL', KEYS[1], KEYS[2], KEYS[3], KEYS[4], KEYS[5])
+            return 1
+            """;
+
     private final StringRedisTemplate redisTemplate;
     private final OtpProperties otpProperties;
     private final UserRepository userRepository;
-    private final JwtService jwtService;
-    private final JwtProperties jwtProperties;
     private final ApplicationEventPublisher eventPublisher;
     private final BusinessMetrics businessMetrics;
+    private final AuthService authService;
     private final SecureRandom secureRandom = new SecureRandom();
+    private final DefaultRedisScript<Long> consumeProofScript;
 
+    /** OTP proof ends at the common session seam. */
     public OtpService(StringRedisTemplate redisTemplate,
                       OtpProperties otpProperties,
                       UserRepository userRepository,
-                      JwtService jwtService,
-                      JwtProperties jwtProperties,
+                      AuthService authService,
                       ApplicationEventPublisher eventPublisher,
                       BusinessMetrics businessMetrics) {
         this.redisTemplate = redisTemplate;
         this.otpProperties = otpProperties;
         this.userRepository = userRepository;
-        this.jwtService = jwtService;
-        this.jwtProperties = jwtProperties;
         this.eventPublisher = eventPublisher;
         this.businessMetrics = businessMetrics;
+        this.authService = authService;
+        this.consumeProofScript = new DefaultRedisScript<>(CONSUME_PROOF_SCRIPT, Long.class);
     }
 
     /**
@@ -62,12 +93,7 @@ public class OtpService {
     public void requestOtp(OtpRequest request) {
         Long telegramId = request.telegramId();
 
-        User user = userRepository.findByTelegramId(telegramId)
-                .orElseThrow(InvalidCredentialsException::new);
-
-        if (user.getStatus() != AccountStatus.ACTIVE) {
-            throw new InvalidCredentialsException();
-        }
+        findUserByTelegramId(telegramId);
 
         // Check resend cooldown
         if (Boolean.TRUE.equals(redisTemplate.hasKey("otp_sent:" + telegramId))) {
@@ -131,14 +157,10 @@ public class OtpService {
     public TokenResponse verifyOtp(OtpVerifyRequest request) {
         Long telegramId = request.telegramId();
 
-        User user = userRepository.findByTelegramId(telegramId)
-                .orElseThrow(InvalidCredentialsException::new);
+        User user = findUserByTelegramId(telegramId);
 
-        if (user.getStatus() != AccountStatus.ACTIVE) {
-            throw new InvalidCredentialsException();
-        }
-
-        String storedCode = redisTemplate.opsForValue().get("otp:" + telegramId);
+        String requestCode = request.code() == null ? "" : request.code();
+        String storedCode = redisValue("otp:" + telegramId);
         if (storedCode == null) {
             businessMetrics.otpVerifyCounter("expired").increment();
             throw new OtpExpiredException();
@@ -146,29 +168,20 @@ public class OtpService {
 
         // M09 Группа 1 (01 P0-5): constant-time compare — путь не ветвится
         // по содержимому кода, устраняя timing side-channel.
-        String requestCode = request.code() == null ? "" : request.code();
-        boolean matches = MessageDigest.isEqual(
-                storedCode.getBytes(StandardCharsets.UTF_8),
-                requestCode.getBytes(StandardCharsets.UTF_8));
-        if (!matches) {
-            // IMP-03: Track verification attempts, annul OTP after 3 failures
-            String verifyKey = "otp_verify_attempts:" + telegramId;
-            Long attempts = redisTemplate.opsForValue().increment(verifyKey);
-            if (attempts != null && attempts == 1L) {
-                redisTemplate.expire(verifyKey, otpProperties.ttlSeconds(), TimeUnit.SECONDS);
+        if (!constantTimeCodeEquals(storedCode, requestCode)) {
+            throw directMismatch(telegramId);
+        }
+
+        long proofStatus = consumeProof(telegramId, requestCode, false);
+        if (proofStatus != PROOF_CONSUMED) {
+            if (proofStatus == PROOF_MISMATCH) {
+                throw directMismatch(telegramId);
             }
-            if (attempts != null && attempts >= 3) {
-                // Annul the OTP — force user to request a new one
-                redisTemplate.delete("otp:" + telegramId);
-                redisTemplate.delete(verifyKey);
-                businessMetrics.otpVerifyCounter("annulled").increment();
-                throw new OtpRateLimitException("Too many verification attempts. Request a new code");
-            }
-            businessMetrics.otpVerifyCounter("mismatch").increment();
+            businessMetrics.otpVerifyCounter("expired").increment();
             throw new OtpExpiredException();
         }
 
-        TokenResponse response = issueTokens(user, telegramId, request.code());
+        TokenResponse response = issueTokens(user, telegramId, requestCode);
         businessMetrics.otpVerifyCounter("success").increment();
         return response;
     }
@@ -192,36 +205,43 @@ public class OtpService {
      * угадать valid code, обнулить counter и продолжить перебор.
      */
     public TokenResponse verifyOtpByCode(OtpVerifyByCodeRequest request, String clientIp) {
-        String code = request.code();
+        String code = request.code() == null ? "" : request.code();
         String missKey = "otp_verify_by_code_miss:" + (clientIp == null ? "unknown" : clientIp);
 
         // Pre-check: уже исчерпал лимит → сразу 429 без проверки кода.
-        String currentMisses = redisTemplate.opsForValue().get(missKey);
+        String currentMisses = redisValue(missKey);
         if (currentMisses != null
                 && Integer.parseInt(currentMisses) >= otpProperties.verifyByCodeMissesPerWindow()) {
             businessMetrics.otpVerifyCounter("throttled").increment();
             throw new OtpRateLimitException("Too many verification attempts");
         }
 
-        String telegramIdStr = redisTemplate.opsForValue().get("otp_code:" + code);
+        String telegramIdStr = redisValue("otp_code:" + code);
         if (telegramIdStr == null) {
-            // Mismatch — инкрементим counter (TTL ставим только на первый INCR).
-            Long newMisses = redisTemplate.opsForValue().increment(missKey);
-            if (newMisses != null && newMisses == 1L) {
-                redisTemplate.expire(missKey,
-                        otpProperties.verifyByCodeWindowSeconds(), TimeUnit.SECONDS);
-            }
-            businessMetrics.otpVerifyCounter("mismatch").increment();
-            throw new OtpExpiredException();
+            throw reverseMismatch(missKey);
         }
 
-        Long telegramId = Long.valueOf(telegramIdStr);
+        Long telegramId;
+        try {
+            telegramId = Long.valueOf(telegramIdStr);
+        } catch (NumberFormatException exception) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
 
-        User user = userRepository.findByTelegramId(telegramId)
-                .orElseThrow(InvalidCredentialsException::new);
+        String storedCode = redisValue("otp:" + telegramId);
+        if (storedCode == null || !constantTimeCodeEquals(storedCode, code)) {
+            throw reverseMismatch(missKey);
+        }
 
-        if (user.getStatus() != AccountStatus.ACTIVE) {
-            throw new InvalidCredentialsException();
+        User user = findUserByTelegramId(telegramId);
+
+        long proofStatus = consumeProof(telegramId, code, true);
+        if (proofStatus != PROOF_CONSUMED) {
+            if (proofStatus == PROOF_MISMATCH) {
+                throw reverseMismatch(missKey);
+            }
+            businessMetrics.otpVerifyCounter("expired").increment();
+            throw new OtpExpiredException();
         }
 
         TokenResponse response = issueTokens(user, telegramId, code);
@@ -230,20 +250,10 @@ public class OtpService {
     }
 
     private TokenResponse issueTokens(User user, Long telegramId, String code) {
-        // Clean up all OTP-related Redis keys
-        redisTemplate.delete("otp:" + telegramId);
-        redisTemplate.delete("otp_code:" + code);
-        redisTemplate.delete("otp_attempts:" + telegramId);
-        redisTemplate.delete("otp_sent:" + telegramId);
-        redisTemplate.delete("otp_verify_attempts:" + telegramId);
-
-        // Generate JWT pair
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-        String jti = jwtService.extractJti(refreshToken);
-
-        redisTemplate.opsForValue().set("refresh:" + user.getId() + ":" + jti, "valid",
-                Duration.ofSeconds(jwtProperties.refreshTokenExpiration()));
+        // Proof keys and counters were consumed atomically before this seam.
+        TokenResponse response = authService.issueSession(user,
+                ru.rutcampustrack.auth.session.model.AuthMethod.OTP,
+                null, null, null);
 
         // Notify notification-bot that OTP was consumed — triggers removal of
         // Telegram messages with the code and the preceding user request.
@@ -251,6 +261,87 @@ public class OtpService {
             eventPublisher.publishEvent(new OtpVerifiedEvent(this, telegramId));
         }
 
-        return new TokenResponse(accessToken, refreshToken, jwtProperties.accessTokenExpiration());
+        return response;
+    }
+
+    private long consumeProof(long telegramId, String code, boolean byCode) {
+        try {
+            Long result = redisTemplate.execute(
+                    consumeProofScript,
+                    List.of(
+                            "otp:" + telegramId,
+                            "otp_code:" + code,
+                            "otp_attempts:" + telegramId,
+                            "otp_sent:" + telegramId,
+                            "otp_verify_attempts:" + telegramId),
+                    code,
+                    Long.toString(telegramId),
+                    byCode ? "by-code" : "by-telegram");
+            return result == null ? PROOF_MISSING : result;
+        } catch (DataAccessException exception) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+    }
+
+    private String redisValue(String key) {
+        try {
+            return redisTemplate.opsForValue().get(key);
+        } catch (DataAccessException exception) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+    }
+
+    private User findUserByTelegramId(Long telegramId) {
+        try {
+            return userRepository.findByTelegramId(telegramId)
+                    .orElseThrow(InvalidCredentialsException::new);
+        } catch (DataAccessException exception) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+    }
+
+    private OtpExpiredException directMismatch(long telegramId) {
+        String verifyKey = "otp_verify_attempts:" + telegramId;
+        Long attempts;
+        try {
+            // IMP-03: Track verification attempts, annul OTP after 3 failures.
+            attempts = redisTemplate.opsForValue().increment(verifyKey);
+            if (attempts != null && attempts == 1L) {
+                redisTemplate.expire(verifyKey, otpProperties.ttlSeconds(), TimeUnit.SECONDS);
+            }
+            if (attempts != null && attempts >= 3) {
+                redisTemplate.delete("otp:" + telegramId);
+                redisTemplate.delete(verifyKey);
+            }
+        } catch (DataAccessException exception) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+        if (attempts != null && attempts >= 3) {
+            businessMetrics.otpVerifyCounter("annulled").increment();
+            throw new OtpRateLimitException("Too many verification attempts. Request a new code");
+        }
+        businessMetrics.otpVerifyCounter("mismatch").increment();
+        return new OtpExpiredException();
+    }
+
+    private OtpExpiredException reverseMismatch(String missKey) {
+        try {
+            // Mismatch counter TTL is set only on its first increment.
+            Long newMisses = redisTemplate.opsForValue().increment(missKey);
+            if (newMisses != null && newMisses == 1L) {
+                redisTemplate.expire(missKey,
+                        otpProperties.verifyByCodeWindowSeconds(), TimeUnit.SECONDS);
+            }
+        } catch (DataAccessException exception) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+        businessMetrics.otpVerifyCounter("mismatch").increment();
+        return new OtpExpiredException();
+    }
+
+    private static boolean constantTimeCodeEquals(String expected, String actual) {
+        return MessageDigest.isEqual(
+                expected.getBytes(StandardCharsets.UTF_8),
+                actual.getBytes(StandardCharsets.UTF_8));
     }
 }

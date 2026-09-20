@@ -8,7 +8,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import ru.rutcampustrack.auth.dto.ConsumeWsTicketRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.dto.WsTicketResponse;
@@ -29,6 +31,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * </ol>
  */
 class LogoutLifecycleIT extends AbstractIntegrationTest {
+
+    private static final String INTERNAL_SECRET =
+            "test-internal-issuer-secret-32-bytes-or-more-for-test-env";
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -97,11 +102,55 @@ class LogoutLifecycleIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void logout_withAuthorityFailureDoesNotInvalidateWsTickets() {
+        ResponseEntity<TokenResponse> studentLogin = restTemplate.postForEntity(
+                "/auth/login", new LoginRequest("student", "password"), TokenResponse.class);
+        assertThat(studentLogin.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(studentLogin.getBody()).isNotNull();
+        String studentAccessToken = studentLogin.getBody().accessToken();
+        String ticket = issueWsTicket(studentAccessToken);
+        String userSetKey = redisTemplate.keys("ws_ticket_user:*").stream()
+                .filter(key -> Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(key, ticket)))
+                .findFirst()
+                .orElseThrow();
+
+        ResponseEntity<TokenResponse> teacherLogin = restTemplate.postForEntity(
+                "/auth/login", new LoginRequest("teacher", "password"), TokenResponse.class);
+        assertThat(teacherLogin.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String foreignCookie = extractCookieValue(teacherLogin, "rct_refresh");
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(studentAccessToken);
+            headers.add(HttpHeaders.COOKIE, "rct_refresh=" + foreignCookie);
+            ResponseEntity<String> logoutResponse = restTemplate.exchange(
+                    "/auth/logout", HttpMethod.POST,
+                    new HttpEntity<>(null, headers), String.class);
+
+            assertThat(logoutResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+            assertThat(logoutResponse.getHeaders().get(HttpHeaders.SET_COOKIE)).isNull();
+            assertThat(logoutResponse.getBody()).contains("INVALID_SESSION");
+            assertThat(redisTemplate.hasKey("ws_ticket:" + ticket)).isTrue();
+            assertThat(redisTemplate.opsForSet().isMember(userSetKey, ticket)).isTrue();
+        } finally {
+            redisTemplate.delete("ws_ticket:" + ticket);
+            redisTemplate.opsForSet().remove(userSetKey, ticket);
+        }
+    }
+
+    @Test
     void logout_withoutBearer_stillClearsCookieAndRevokesRefresh() {
-        // Edge-case: access истёк, refresh в cookie. Логаут принимается,
-        // ticket'ы не invalidate'ятся (их и не должно быть), но cookie clear'ится.
+        // Edge-case: access не передан, refresh в cookie. Cookie-only logout
+        // сам атрибутирует durable revoke и удаляет пользовательские ticket'ы.
         ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
                 "/auth/login", new LoginRequest("teacher", "password"), TokenResponse.class);
+        assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(loginResponse.getBody()).isNotNull();
+        String ticket = issueWsTicket(loginResponse.getBody().accessToken());
+        String userSetKey = redisTemplate.keys("ws_ticket_user:*").stream()
+                .filter(key -> Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(key, ticket)))
+                .findFirst()
+                .orElseThrow();
         String cookieValue = extractCookieValue(loginResponse, "rct_refresh");
         String cookieHeader = "rct_refresh=" + cookieValue;
 
@@ -116,6 +165,13 @@ class LogoutLifecycleIT extends AbstractIntegrationTest {
         assertThat(setCookies).isNotNull();
         assertThat(setCookies.stream().anyMatch(c ->
                 c.startsWith("rct_refresh=") && c.contains("Max-Age=0"))).isTrue();
+
+        assertThat(redisTemplate.hasKey("ws_ticket:" + ticket)).isFalse();
+        assertThat(redisTemplate.hasKey(userSetKey)).isFalse();
+        ResponseEntity<String> consumeResponse = restTemplate.exchange(
+                "/internal/consume-ws-ticket", HttpMethod.POST,
+                internalEntity(new ConsumeWsTicketRequest(ticket)), String.class);
+        assertThat(consumeResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
         // Refresh после logout → 401
         ResponseEntity<String> refreshResponse = restTemplate.exchange(
@@ -132,6 +188,13 @@ class LogoutLifecycleIT extends AbstractIntegrationTest {
                 new HttpEntity<>(null, headers), WsTicketResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         return response.getBody().ticket();
+    }
+
+    private HttpEntity<ConsumeWsTicketRequest> internalEntity(ConsumeWsTicketRequest body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("X-Internal-Issuer-Secret", INTERNAL_SECRET);
+        return new HttpEntity<>(body, headers);
     }
 
     private static String extractCookieValue(ResponseEntity<?> response, String cookieName) {

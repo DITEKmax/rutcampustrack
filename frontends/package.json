@@ -15,6 +15,8 @@
   "scripts": {
     "generate:types": "node mobile-core/scripts/generate-types.mjs",
     "generate:types:check": "node mobile-core/scripts/generate-types.mjs --check",
+    "generate:auth-types": "node mobile-core/scripts/generate-auth-types.mjs",
+    "generate:auth-types:check": "node mobile-core/scripts/generate-auth-types.mjs --check",
     "validate:fixtures": "node mobile-core/scripts/validate-fixtures.mjs",
     "test:contract": "node --test mobile-core/tests/*.test.mjs",
     "typecheck:foundation": "tsc -p tsconfig.foundation.json --noEmit",

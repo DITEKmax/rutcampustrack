@@ -10,6 +10,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import ru.rutcampustrack.academic.grpc.AssignmentInfo;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
@@ -26,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -58,6 +60,8 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
     private static final Long SEMESTER_ID = 10L;
     private static final Long SUBJECT_ID = 101L;
     private static final Long USER_ID = 43L;
+    private static final Long ASSIGNMENT_ID = 501L;
+    private static final Long TEACHER_ID = 700L;
 
     // Short 3-week semester: Feb 2 (Mon) to Feb 22 (Sun) 2026
     // firstWeekType=ODD => week 0 (Feb 2-8) = ODD, week 1 (Feb 9-15) = EVEN, week 2 (Feb 16-22) = ODD
@@ -86,8 +90,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
+        resetScheduleData();
 
         when(academicGrpcClient.getActiveSemester()).thenReturn(MOCK_SEMESTER);
         when(academicGrpcClient.parseSemesterFirstWeekType(MOCK_SEMESTER)).thenReturn(WeekType.ODD);
@@ -98,6 +101,17 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
                         .setIsActive(true)
                         .build());
         when(academicGrpcClient.isHeadman(anyLong(), anyLong())).thenReturn(true);
+        when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID)))
+                .thenReturn(List.of(AssignmentInfo.newBuilder()
+                        .setId(ASSIGNMENT_ID)
+                        .setTeacherId(TEACHER_ID)
+                        .setSubjectId(SUBJECT_ID)
+                        .setGroupId(GROUP_ID)
+                        .setSemesterId(SEMESTER_ID)
+                        .setLessonType("lecture")
+                        .setValidFrom("2026-02-02")
+                        .setValidUntilExclusive("2026-02-23")
+                        .build()));
     }
 
     // ---------- Header helpers ----------
@@ -114,7 +128,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
 
     private String createRequestJson(short dayOfWeek, WeekType weekType) throws Exception {
         return objectMapper.writeValueAsString(new CreateScheduleItemRequest(
-                GROUP_ID, SUBJECT_ID, SEMESTER_ID,
+                ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID,
                 dayOfWeek, (short) 1,
                 LocalTime.of(8, 30), LocalTime.of(10, 0),
                 weekType, "A-101"
@@ -134,6 +148,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
     private Long createItemViaApi(short dayOfWeek, WeekType weekType) throws Exception {
         MvcResult result = mockMvc.perform(withHeadmanHeaders(post("/schedule/items"))
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Idempotency-Key", UUID.randomUUID().toString())
                 .content(createRequestJson(dayOfWeek, weekType)))
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -197,7 +212,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequestJson((short) 3, WeekType.ALL, "A-101")))
-                .andExpect(status().isOk());
+                .andExpect(status().isConflict());
 
         // All PLANNED Tuesdays should be replaced by Wednesdays
         // (assuming today > Feb 22, so regenerateFromDate uses today which is after semester end => no new lessons)
@@ -236,7 +251,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequestJson((short) 2, WeekType.ALL, "NEW-ROOM")))
-                .andExpect(status().isOk());
+                .andExpect(status().isConflict());
 
         // Lesson count must remain exactly the same
         assertThat(lessonRepository.count()).isEqualTo(countBefore);
@@ -271,7 +286,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(withHeadmanHeaders(put("/schedule/items/{id}", itemId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequestJson((short) 3, WeekType.ALL, "A-101")))
-                .andExpect(status().isOk());
+                .andExpect(status().isConflict());
 
         // The CANCELLED lesson must still exist (only PLANNED lessons are deleted by regenerateFromDate)
         boolean cancelledLessonExists = lessonRepository.findById(cancelledLesson.getId()).isPresent();
@@ -304,6 +319,7 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
     @Test
     void directDbSaveDoesNotTriggerGeneration() {
         ScheduleItem item = new ScheduleItem();
+        item.setAssignmentId(ASSIGNMENT_ID);
         item.setGroupId(GROUP_ID);
         item.setSubjectId(SUBJECT_ID);
         item.setSemesterId(SEMESTER_ID);

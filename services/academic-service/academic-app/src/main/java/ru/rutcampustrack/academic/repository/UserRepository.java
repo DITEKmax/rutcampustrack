@@ -4,8 +4,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.User;
 import java.util.List;
@@ -80,6 +82,24 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
      */
     @Query(value = "SELECT * FROM users WHERE id = :id", nativeQuery = true)
     Optional<User> findByIdIncludingArchived(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.id = :id")
+    Optional<User> findByIdForUpdate(@Param("id") Long id);
+
+    /**
+     * Locks a row even after it has been archived so status/grant revocation
+     * remains atomic and idempotent.
+     */
+    @Query(value = "SELECT * FROM users WHERE id = :id FOR UPDATE", nativeQuery = true)
+    Optional<User> findByIdIncludingArchivedForUpdate(@Param("id") Long id);
+
+    @Query(value = "SELECT * FROM users WHERE id IN (:ids)", nativeQuery = true)
+    List<User> findAllIncludingArchivedByIds(@Param("ids") List<Long> ids);
+
+    @Query(value = "SELECT * FROM users WHERE group_id = :groupId AND role = 'student'",
+            nativeQuery = true)
+    List<User> findAllStudentAssignmentsIncludingArchived(@Param("groupId") Long groupId);
 
     /** Returns all archived users. Bypasses @SQLRestriction (per D-02). */
     @Query(value = "SELECT * FROM users WHERE status = 'archived'", nativeQuery = true)

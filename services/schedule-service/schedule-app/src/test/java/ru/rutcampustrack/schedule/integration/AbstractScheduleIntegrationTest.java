@@ -8,6 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -40,6 +41,9 @@ public abstract class AbstractScheduleIntegrationTest {
     @Autowired(required = false)
     protected OutboxStorage outboxStorage;
 
+    @Autowired
+    protected JdbcTemplate jdbcTemplate;
+
     @Autowired(required = false)
     private PlatformTransactionManager transactionManager;
 
@@ -54,6 +58,29 @@ public abstract class AbstractScheduleIntegrationTest {
             List<OutboxRecord> pending = outboxStorage.findPending(1000);
             pending.forEach(r -> outboxStorage.markSent(r.id()));
         });
+    }
+
+    /**
+     * V17/V18 retain physical lessons and reject ordinary DELETE statements.
+     * Integration fixtures use an isolated TRUNCATE reset instead of weakening
+     * the production retention trigger for test cleanup.
+     */
+    protected void resetScheduleData() {
+        jdbcTemplate.execute("""
+                TRUNCATE TABLE
+                    schedule_outbox,
+                    lesson_homework_bindings,
+                    schedule_transfer_replay,
+                    lesson_lifecycle_entries,
+                    lessons,
+                    lesson_occurrences,
+                    schedule_recurring_create_replay,
+                    schedule_assignment_fences,
+                    schedule_items,
+                    schedule_one_off_lessons,
+                    iso_parity_reconciliation
+                    RESTART IDENTITY CASCADE
+                """);
     }
 
     static final PostgreSQLContainer<?> POSTGRES;

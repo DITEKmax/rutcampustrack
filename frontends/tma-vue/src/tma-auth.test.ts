@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createFixtureTransport } from '@rct/mobile-core'
 import { installFixtureTelegramHost, TelegramHost } from './telegram'
-import { authenticateTma } from './tma-auth'
+import { authenticateTma, TmaAuthError } from './tma-auth'
 
 const INIT_DATA = 'query_id=fixture-query&user=%7B%22id%22%3A77%7D&hash=fixture-hash'
 
@@ -46,7 +46,11 @@ describe('TMA authentication wire contract', () => {
   it('surfaces an unauthorized response as a clean authentication error', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 401 }))
 
-    await expect(authenticateTma(fetcher, INIT_DATA)).rejects.toThrow('Telegram не подтвердил сессию')
+    await expect(authenticateTma(fetcher, INIT_DATA)).rejects.toMatchObject({
+      name: 'TmaAuthError',
+      status: 401,
+      message: 'Telegram не подтвердил сессию',
+    } satisfies Partial<TmaAuthError>)
   })
 })
 

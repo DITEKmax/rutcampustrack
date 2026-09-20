@@ -23,6 +23,7 @@ import ru.rutcampustrack.academic.grpc.SubjectsByIdsResponse;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 
+import java.time.LocalDate;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -102,6 +103,19 @@ class AcademicGrpcClientTest {
                 .thenThrow(new StatusRuntimeException(Status.UNAVAILABLE));
 
         assertThrows(AcademicServiceUnavailableException.class, () -> client.getGroupMembers(7L));
+    }
+
+    @Test
+    void getHistoricalGroupMembers_buildsPairedDatedRequest() {
+        when(mockStub.getGroupMembers(any())).thenReturn(GroupMembersResponse.getDefaultInstance());
+
+        client.getGroupMembers(7L, LocalDate.of(2026, 4, 20), 3L);
+
+        verify(mockStub).getGroupMembers(GroupMembersRequest.newBuilder()
+                .setGroupId(7L)
+                .setAsOfDate("2026-04-20")
+                .setSemesterId(3L)
+                .build());
     }
 
     @Test

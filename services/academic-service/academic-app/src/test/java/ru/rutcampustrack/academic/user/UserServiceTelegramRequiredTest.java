@@ -9,8 +9,14 @@ import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
+import ru.rutcampustrack.academic.entity.Group;
+import ru.rutcampustrack.academic.entity.GroupHistoryCoverage;
+import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.exception.BadRequestException;
+import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
+import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
+import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
@@ -23,6 +29,10 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * BUG-006-3 / D-08..D-11: telegramId is required for STUDENT, optional for
@@ -41,9 +51,29 @@ class UserServiceTelegramRequiredTest {
     @Mock private UserAssembler userAssembler;
     @Mock private CacheManager cacheManager;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private GroupRepository groupRepository;
+    @Mock private SemesterRepository semesterRepository;
+    @Mock private GroupHistoryCoverageRepository coverageRepository;
 
     @InjectMocks
     private UserService service;
+
+    @org.junit.jupiter.api.BeforeEach
+    void managedEnrollmentFixture() {
+        Group group = org.mockito.Mockito.mock(Group.class);
+        lenient().when(group.getId()).thenReturn(1L);
+        lenient().when(group.isActive()).thenReturn(true);
+        Semester semester = org.mockito.Mockito.mock(Semester.class);
+        lenient().when(semester.getDateFrom()).thenReturn(LocalDate.of(2026, 9, 1));
+        lenient().when(semester.getDateTo()).thenReturn(LocalDate.of(2027, 1, 31));
+        GroupHistoryCoverage coverage = org.mockito.Mockito.mock(GroupHistoryCoverage.class);
+        lenient().when(coverage.getCoverageFrom()).thenReturn(LocalDate.of(2026, 9, 1));
+        lenient().when(coverage.getWriterVersion()).thenReturn("managed_v1");
+        lenient().when(groupRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(group));
+        lenient().when(semesterRepository.findAllByIsActiveTrueOrderByIdAsc())
+                .thenReturn(List.of(semester));
+        lenient().when(coverageRepository.findById(1L)).thenReturn(Optional.of(coverage));
+    }
 
     private CreateUserRequest req(UserRole role, Long telegramId, String employeeNumber) {
         return new CreateUserRequest(

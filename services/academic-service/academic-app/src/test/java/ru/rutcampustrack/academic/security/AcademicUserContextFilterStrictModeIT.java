@@ -9,6 +9,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,6 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=false")
 class AcademicUserContextFilterStrictModeIT extends AbstractAcademicIntegrationTest {
+
+    private static final UUID SESSION_ID = UUID.fromString("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,7 +49,8 @@ class AcademicUserContextFilterStrictModeIT extends AbstractAcademicIntegrationT
 
     @Test
     void validInternalToken_strictMode_passes() throws Exception {
-        String token = factory.validToken(1L, "ADMIN", null, false);
+        String token = factory.validToken(1L, SESSION_ID, 1L, 1L,
+                "ADMIN", "ACTIVE", null, false, false);
         MvcResult result = mockMvc.perform(get("/academic/users")
                         .header("X-Internal-Token", token))
                 .andReturn();

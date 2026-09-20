@@ -22,7 +22,10 @@ fi
 
 DOMAIN="${DOMAIN:?Set DOMAIN in .env.prod (e.g. rutcampustrack.ru)}"
 CERTBOT_EMAIL="${CERTBOT_EMAIL:?Set CERTBOT_EMAIL in .env.prod}"
-COMPOSE="docker compose -f docker-compose.prod.yml"
+# Keep the production input explicit for every Compose invocation. An array
+# preserves paths and arguments exactly, including the `--`-prefixed certbot
+# options below, without relying on shell word splitting.
+COMPOSE=(docker compose --env-file .env.prod -f docker-compose.prod.yml)
 
 echo "=== RutCampusTrack SSL Bootstrap ==="
 echo "Domain: $DOMAIN"
@@ -50,12 +53,12 @@ fi
 
 # Step 3: Start nginx with HTTP-only config
 echo ">>> Starting nginx (HTTP-only mode)..."
-$COMPOSE up -d nginx
+"${COMPOSE[@]}" up -d nginx
 sleep 5
 
 # Step 4: Test with staging cert first (no rate limit risk)
 echo ">>> Requesting STAGING certificate (test run)..."
-$COMPOSE run --rm certbot certonly \
+"${COMPOSE[@]}" run --rm certbot certonly \
   --webroot \
   --webroot-path /var/www/certbot \
   --email "$CERTBOT_EMAIL" \
@@ -77,7 +80,7 @@ fi
 
 # Step 5: Issue real production certificate
 echo ">>> Requesting PRODUCTION certificate..."
-$COMPOSE run --rm certbot certonly \
+"${COMPOSE[@]}" run --rm certbot certonly \
   --webroot \
   --webroot-path /var/www/certbot \
   --email "$CERTBOT_EMAIL" \
@@ -93,7 +96,7 @@ mv nginx/conf.d/http-only.conf nginx/conf.d/http-only.conf.bak
 echo ">>> Activated production nginx config (HTTPS enabled)."
 
 # Step 7: Reload nginx to pick up SSL cert and new config
-$COMPOSE exec nginx nginx -s reload
+"${COMPOSE[@]}" exec nginx nginx -s reload
 echo ""
 echo "=== SSL Bootstrap Complete ==="
 echo "Test: curl -I https://$DOMAIN"

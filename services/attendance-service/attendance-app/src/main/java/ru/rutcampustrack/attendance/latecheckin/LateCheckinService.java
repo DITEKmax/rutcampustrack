@@ -208,6 +208,12 @@ public class LateCheckinService {
                 groupId, cutoff, effectivePageable);
     }
 
+    /** Read the persisted request after the canonical decision adapter commits it. */
+    public LateCheckinRequest getRequestById(String requestId) {
+        return repository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+    }
+
     private Pageable withDefaultSort(Pageable pageable) {
         if (pageable == null) {
             return PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "updatedAt"));

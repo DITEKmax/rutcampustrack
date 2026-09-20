@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
@@ -53,6 +54,9 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     @Autowired
     ScheduleItemRepository scheduleItemRepository;
 
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
     @MockitoBean
     Clock clock;
 
@@ -61,6 +65,11 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
 
     @BeforeEach
     void configureClock() {
+        // The Testcontainers database is shared by integration classes; this
+        // class previously relied only on its @AfterEach cleanup. Reset before
+        // the first method too so a prior recurring test cannot leave fence
+        // 501 with a different group/subject/semester interval.
+        resetScheduleData();
         // Default: Moscow 2026-04-03 10:00 (after a typical 08:30 start, before 10:05+5 end)
         Instant fixedInstant = ZonedDateTime.of(2026, 4, 3, 10, 0, 0, 0, MOSCOW).toInstant();
         when(clock.getZone()).thenReturn(MOSCOW);
@@ -69,8 +78,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
 
     @AfterEach
     void cleanup() {
-        lessonRepository.deleteAll();
-        scheduleItemRepository.deleteAll();
+        resetScheduleData();
         drainOutbox();
     }
 
@@ -229,6 +237,7 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
 
     private ScheduleItem createScheduleItem(LocalTime startTime, LocalTime endTime) {
         ScheduleItem item = new ScheduleItem();
+        item.setAssignmentId(501L);
         item.setGroupId(1L);
         item.setSubjectId(100L);
         item.setSemesterId(1L);
@@ -244,11 +253,47 @@ class LessonStatusTransitionJobIT extends AbstractScheduleIntegrationTest {
     }
 
     private Lesson createLesson(Long scheduleItemId, LocalDate date, LessonStatus status) {
+        ScheduleItem item = scheduleItemRepository.findById(scheduleItemId).orElseThrow();
+        jdbcTemplate.update("""
+                INSERT INTO schedule_assignment_fences
+                    (assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+                     lesson_type, valid_from, cap_until_exclusive, created_at)
+                VALUES (501, ?, ?, ?, 700, 'lecture', DATE '2026-04-01', DATE '2026-05-01', NOW())
+                ON CONFLICT (assignment_id) DO NOTHING
+                """, item.getGroupId(), item.getSubjectId(), item.getSemesterId());
+        Long occurrenceId = jdbcTemplate.queryForObject("""
+                INSERT INTO lesson_occurrences
+                    (schedule_item_id, occurrence_date, assignment_id, group_id,
+                     subject_id, semester_id, assigned_teacher_id, lesson_type,
+                     generation, revision, created_at)
+                VALUES (?, ?, 501, ?, ?, ?, 700, 'lecture', 1, 1, NOW())
+                RETURNING id
+                """, Long.class, scheduleItemId, date, item.getGroupId(),
+                item.getSubjectId(), item.getSemesterId());
+
         Lesson lesson = new Lesson();
         lesson.setScheduleItemId(scheduleItemId);
+        lesson.setOccurrenceId(occurrenceId);
+        lesson.setAssignmentId(501L);
+        lesson.setGroupId(item.getGroupId());
+        lesson.setSubjectId(item.getSubjectId());
+        lesson.setSemesterId(item.getSemesterId());
+        lesson.setAssignedTeacherId(700L);
+        lesson.setLessonType("lecture");
         lesson.setDate(date);
+        lesson.setLessonNumber(item.getLessonNumber());
+        lesson.setDayOfWeek(item.getDayOfWeek());
+        lesson.setStartTime(item.getStartTime());
+        lesson.setEndTime(item.getEndTime());
+        lesson.setRoomSnapshot(item.getRoom());
+        lesson.setWeekTypeSnapshot("all");
+        lesson.setGeneration(1L);
+        lesson.setRevision(1L);
         lesson.setStatus(status);
         lesson.setCreatedAt(OffsetDateTime.now());
-        return lessonRepository.save(lesson);
+        Lesson saved = lessonRepository.saveAndFlush(lesson);
+        jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id = ? WHERE id = ?",
+                saved.getId(), occurrenceId);
+        return saved;
     }
 }

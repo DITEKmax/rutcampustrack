@@ -173,7 +173,7 @@ class StudentCheckinTransactionIT {
     @MockitoBean
     SemesterCacheService semesterCacheService;
 
-    private final Identity student = new Identity(100, "STUDENT", 10L, false, "Иван Иванов");
+    private final Identity student = new Identity(100, "STUDENT", 10L, false, "Иван Иванов", false);
 
     @BeforeEach
     void setUp() {
@@ -224,6 +224,33 @@ class StudentCheckinTransactionIT {
                 .extracting(CheckinPairStateDocument::getRetryAt)
                 .isEqualTo(Instant.parse("2026-09-06T07:05:00Z"));
         verify(lateCheckinEvents).publishRequested(any(), any(), anyInt(), any(), any());
+    }
+
+    @Test
+    void readOnlyCheckinAndReplayRejectBothGeoVariantsBeforeAnySideEffect() {
+        Identity readOnly = new Identity(100, "STUDENT", 10L, false, "Иван Иванов", true);
+
+        for (Geo geo : List.of(
+                new Coordinates(55.75, 37.61),
+                new Unavailable("TIMEOUT"))) {
+            assertThatThrownBy(() -> service.checkin(
+                    readOnly, lesson(), "readonly-key-0001", geo))
+                    .isInstanceOf(StudentCheckinException.class)
+                    .satisfies(error -> assertThat(((StudentCheckinException) error).code())
+                            .isEqualTo(Code.OUT_OF_SCOPE));
+            assertThatThrownBy(() -> service.replay(
+                    readOnly, 1L, "readonly-key-0001", geo))
+                    .isInstanceOf(StudentCheckinException.class)
+                    .satisfies(error -> assertThat(((StudentCheckinException) error).code())
+                            .isEqualTo(Code.OUT_OF_SCOPE));
+        }
+
+        assertThat(attendanceRepository.findAll()).isEmpty();
+        assertThat(pairRepository.findAll()).isEmpty();
+        assertThat(receiptRepository.findAll()).isEmpty();
+        assertThat(lateCheckinRepository.findAll()).isEmpty();
+        verifyNoInteractions(geofence, attendanceEvents, lateCheckinEvents,
+                scheduleGrpcClient, academicGrpcClient, semesterCacheService);
     }
 
     @Test

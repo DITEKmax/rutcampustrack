@@ -42,7 +42,7 @@ body,
   border: 0;
   border-radius: var(--rct-radius-2xl);
   padding: 0.5625rem var(--rct-space-3);
-  color: var(--rct-color-text-primary);
+  color: var(--rct-color-text-on-fill-strong);
   background: var(--rct-today-role-gradient);
   font: inherit;
   font-size: var(--rct-today-hero-meta-size);
@@ -50,14 +50,27 @@ body,
   line-height: var(--rct-today-hero-meta-leading);
 }
 
-.today-role:disabled,
-.today-dock__item:disabled {
+.today-role:disabled {
   opacity: 1;
 }
 
-.today-role img {
+.today-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  mask-image: var(--rct-icon-mask);
+  mask-position: center;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: var(--rct-icon-mask);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+}
+
+.today-icon--chevron {
   inline-size: 1rem;
   block-size: 1rem;
+  mask-size: 1rem 1rem;
+  -webkit-mask-size: 1rem 1rem;
 }
 
 .today-offline {
@@ -133,10 +146,19 @@ body,
   line-height: var(--rct-today-hero-meta-leading);
 }
 
-.today-hero__metadata img,
-.today-card__meta > img {
+.today-icon--metadata {
   inline-size: 0.625rem;
   block-size: 0.625rem;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+}
+
+.today-icon--room-change {
+  position: absolute;
+  inline-size: 1.875rem;
+  block-size: 0.9375rem;
+  mask-size: contain;
+  -webkit-mask-size: contain;
 }
 
 .today-hero__action {
@@ -148,7 +170,7 @@ body,
   border: 0;
   border-radius: var(--rct-radius-2xl);
   padding: 0.8125rem var(--rct-space-4);
-  color: var(--rct-color-text-primary);
+  color: var(--rct-color-text-on-fill-strong);
   background: var(--rct-today-action-gradient);
   font: inherit;
   font-size: var(--rct-today-action-size);
@@ -256,13 +278,10 @@ body,
 }
 
 .today-card h3 {
-  overflow: hidden;
-  padding-inline-end: 2.5rem;
+  inline-size: 100%;
   font-size: var(--rct-today-card-title-size);
   font-weight: var(--rct-font-weight-bold);
   line-height: var(--rct-today-card-title-leading);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .today-card__meta {
@@ -300,10 +319,7 @@ body,
   opacity: 0.42;
 }
 
-.today-card__room-change img {
-  position: absolute;
-  inline-size: 1.875rem;
-  block-size: 0.9375rem;
+.today-card__room-change .today-icon--room-change {
   opacity: 0.72;
 }
 
@@ -370,72 +386,6 @@ body,
 
 .today-semester__empty {
   margin: var(--rct-space-3) 0 0;
-}
-
-.today-dock {
-  position: fixed;
-  inset-inline: var(--rct-space-4);
-  inset-block-end: calc(env(safe-area-inset-bottom) + var(--rct-mobile-dock-bottom));
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  align-items: center;
-  gap: var(--rct-space-1);
-  max-inline-size: var(--rct-mobile-content-width);
-  min-block-size: var(--rct-mobile-dock-height);
-  margin-inline: auto;
-  border: 0;
-  border-radius: var(--rct-radius-2xl);
-  padding: var(--rct-space-2);
-  background: color-mix(in srgb, var(--rct-color-surface-float) 78%, transparent);
-  backdrop-filter: blur(var(--rct-mobile-blur));
-}
-
-.today-dock__item {
-  display: grid;
-  grid-template-rows: 1.25rem auto;
-  gap: var(--rct-space-1);
-  justify-items: center;
-  align-content: center;
-  inline-size: 100%;
-  min-block-size: var(--rct-today-dock-item-height);
-  min-inline-size: 0;
-  border: 0;
-  border-radius: var(--rct-radius-lg);
-  padding: 0;
-  color: var(--rct-color-text-primary);
-  background: transparent;
-  font: inherit;
-  font-size: var(--rct-font-size-micro);
-  font-weight: var(--rct-font-weight-medium);
-  letter-spacing: 0.01em;
-  line-height: var(--rct-today-dock-label-leading);
-  text-align: center;
-}
-
-.today-dock__item--active {
-  border-radius: var(--rct-radius-xl);
-  color: var(--rct-color-accent-on-now);
-  background: var(--rct-color-accent-now);
-}
-
-.today-dock__icon {
-  display: grid;
-  place-items: center;
-  inline-size: 1.75rem;
-  block-size: 1.25rem;
-}
-
-.today-dock__icon img {
-  inline-size: 1rem;
-  block-size: 1rem;
-}
-
-.today-dock__label {
-  min-inline-size: 0;
-  max-inline-size: 100%;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  white-space: normal;
 }
 
 .today-state {

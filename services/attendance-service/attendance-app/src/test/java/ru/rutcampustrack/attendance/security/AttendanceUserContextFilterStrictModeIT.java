@@ -7,12 +7,16 @@ import org.springframework.test.web.servlet.MvcResult;
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=false")
 class AttendanceUserContextFilterStrictModeIT extends AbstractAttendanceIntegrationTest {
+
+    private static final UUID SESSION_ID = UUID.fromString("dddddddd-dddd-4ddd-8ddd-dddddddddddd");
 
     @Autowired
     private InternalJwtTestFactory factory;
@@ -33,7 +37,8 @@ class AttendanceUserContextFilterStrictModeIT extends AbstractAttendanceIntegrat
 
     @Test
     void validInternalToken_strictMode_passes() throws Exception {
-        String token = factory.validToken(1L, "STUDENT", 5L, false);
+        String token = factory.validToken(1L, SESSION_ID, 1L, 1L,
+                "STUDENT", "ACTIVE", 5L, false, false);
         MvcResult result = mockMvc.perform(get("/attendance/reports/student/stats")
                         .header("X-Internal-Token", token))
                 .andReturn();

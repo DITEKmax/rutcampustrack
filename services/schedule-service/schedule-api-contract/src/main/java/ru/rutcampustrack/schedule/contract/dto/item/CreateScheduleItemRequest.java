@@ -19,6 +19,13 @@ import java.time.LocalTime;
 @Schema(description = "Запрос на создание шаблона пары в расписании (повторяющийся слот)")
 public record CreateScheduleItemRequest(
 
+        @Schema(description = "ID авторитетного назначения преподаватель–предмет–группа",
+                example = "501",
+                minimum = "1",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotNull @jakarta.validation.constraints.Positive
+        Long assignmentId,
+
         @Schema(description = "ID группы",
                 example = "10",
                 requiredMode = Schema.RequiredMode.REQUIRED)

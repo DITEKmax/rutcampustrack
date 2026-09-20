@@ -58,8 +58,9 @@ class AuthApiContractTest {
                     .that().areAnnotatedWith(RestController.class)
                     .and().resideInAPackage("..controller..")
                     .should().implement(ru.rutcampustrack.auth.api.AuthApi.class)
+                    .orShould().implement(ru.rutcampustrack.auth.api.AuthSessionApi.class)
                     .orShould().implement(ru.rutcampustrack.auth.api.WsTicketApi.class)
-                    .orShould().implement(ru.rutcampustrack.auth.api.InternalIssuerApi.class)
+                    .orShould().implement(ru.rutcampustrack.auth.api.InternalSessionAdmissionApi.class)
                     .orShould().implement(ru.rutcampustrack.auth.api.InternalWsTicketApi.class)
                     .because("M12 01 P0-1: каждый @RestController реализует interface из auth-api-contract");
 }

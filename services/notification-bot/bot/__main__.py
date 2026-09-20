@@ -9,6 +9,7 @@ from bot.config import config, validate_startup_config
 from bot.consumers.event_consumer import start_consumer
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
+from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
 from bot.grpc_client.schedule_client import ScheduleGrpcClient
 from bot.handlers import (
     excuse_router,
@@ -98,6 +99,9 @@ async def create_clients():
     )
     auth_client = AuthHttpClient(base_url=f"http://{config.auth_service_host}:{config.auth_service_port}")
     attendance_client = AttendanceHttpClient(base_url=config.api_gateway_url)
+    attendance_request_client = AttendanceRequestGrpcClient(
+        config.attendance_grpc_host, config.attendance_grpc_port, config.grpc_secret
+    )
     academic_http_client = AcademicHttpClient(base_url=config.api_gateway_url)
 
     # Start HTTP sessions (must be in async context — Pitfall 3)
@@ -105,7 +109,8 @@ async def create_clients():
     await attendance_client.start()
     await academic_http_client.start()
 
-    return academic_client, schedule_client, jwt_redis, auth_client, attendance_client, academic_http_client
+    return (academic_client, schedule_client, jwt_redis, auth_client, attendance_client,
+            academic_http_client, attendance_request_client)
 
 
 async def main() -> None:
@@ -126,6 +131,7 @@ async def main() -> None:
         auth_client,
         attendance_client,
         academic_http_client,
+        attendance_request_client,
     ) = await create_clients()
 
     # Create Bot and Dispatcher
@@ -220,6 +226,7 @@ async def main() -> None:
         config=config,
         otp_tracker=otp_tracker,
         request_tracker=request_tracker,
+        attendance_client=attendance_request_client,
     )
 
     # Start watchdog with dispatcher
@@ -268,6 +275,7 @@ async def main() -> None:
         await otp_tracker.close()
         await auth_client.close()
         await attendance_client.close()
+        await attendance_request_client.close()
         await academic_http_client.close()
         await jwt_redis.close()
         await prefs_client.close()

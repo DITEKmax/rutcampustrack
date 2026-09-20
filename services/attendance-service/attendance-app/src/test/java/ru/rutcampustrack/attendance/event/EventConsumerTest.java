@@ -6,9 +6,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.rutcampustrack.attendance.excuse.ExcuseService;
-import ru.rutcampustrack.attendance.latecheckin.LateCheckinService;
+import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
 import java.time.Instant;
@@ -24,6 +24,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.doThrow;
 
 /**
  * Unit tests for EventConsumer routing logic.
@@ -48,10 +51,7 @@ class EventConsumerTest {
     private SemesterCacheService semesterCacheService;
 
     @Mock
-    private LateCheckinService lateCheckinService;
-
-    @Mock
-    private ExcuseService excuseService;
+    private StudentRequestService studentRequestService;
 
     @Mock
     private IdempotencyGuard idempotencyGuard;
@@ -75,6 +75,8 @@ class EventConsumerTest {
                 "event_type", eventType,
                 "event_id", UUID.randomUUID().toString(),
                 "occurred_at", Instant.now().toString(),
+                "event_version", 1,
+                "source", "notification-bot",
                 "payload", payload
         );
     }
@@ -124,22 +126,44 @@ class EventConsumerTest {
 
     @Test
     void lateCheckinDecision_passesPositiveInternalActorToTheService() {
+        String requestId = "0123456789abcdef01234567";
         eventConsumer.onEvent(envelope("late_checkin.decision", Map.of(
-                "request_id", "req-42", "decision_by", 42L, "approved", true
+                "request_id", requestId, "decision_by", 42L, "approved", true
         )));
 
-        verify(lateCheckinService).applyDecision("req-42", 42L, true);
+        verify(studentRequestService).decideLateCheckinFromBot(requestId, 42L, true);
     }
 
     @Test
-    void lateCheckinDecision_missingOrInvalidActorIsIgnored() {
-        eventConsumer.onEvent(envelope("late_checkin.decision", Map.of(
-                "request_id", "req-missing", "approved", true
-        )));
-        eventConsumer.onEvent(envelope("late_checkin.decision", Map.of(
-                "request_id", "req-zero", "decision_by", 0L, "approved", true
-        )));
+    void lateCheckinDecision_missingOrInvalidActorIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> eventConsumer.onEvent(envelope(
+                "late_checkin.decision", Map.of(
+                        "request_id", "0123456789abcdef01234567", "approved", true))));
+        assertThrows(IllegalArgumentException.class, () -> eventConsumer.onEvent(envelope(
+                "late_checkin.decision", Map.of(
+                        "request_id", "0123456789abcdef01234567", "decision_by", 0L, "approved", true))));
 
-        verify(lateCheckinService, never()).applyDecision(anyString(), anyLong(), anyBoolean());
+        verifyNoInteractions(studentRequestService);
+    }
+
+    @Test
+    void decisionWithUntrustedSourceIsRejectedBeforeDomain() {
+        Map<String, Object> event = new java.util.HashMap<>(envelope("late_checkin.decision", Map.of(
+                "request_id", "0123456789abcdef01234567", "decision_by", 42L, "approved", true)));
+        event.put("source", "web-client");
+
+        assertThrows(IllegalArgumentException.class, () -> eventConsumer.onEvent(event));
+        verifyNoInteractions(studentRequestService);
+    }
+
+    @Test
+    void authenticatedStaleLateDecisionIsAcknowledgedWithoutMutation() {
+        String requestId = "0123456789abcdef01234567";
+        doThrow(new ConflictException("Решение по запросу уже принято"))
+                .when(studentRequestService).decideLateCheckinFromBot(requestId, 42L, true);
+
+        assertDoesNotThrow(() -> eventConsumer.onEvent(envelope("late_checkin.decision", Map.of(
+                "request_id", requestId, "decision_by", 42L, "approved", true))));
+        verify(studentRequestService).decideLateCheckinFromBot(requestId, 42L, true);
     }
 }

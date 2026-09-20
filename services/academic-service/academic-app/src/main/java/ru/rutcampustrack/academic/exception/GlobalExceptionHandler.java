@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.academic.history.HistoricalMembershipException;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 import java.time.Instant;
@@ -63,7 +64,9 @@ public class GlobalExceptionHandler {
             "users_telegram_id_key", "telegramId",
             "users_employee_number_key", "employeeNumber",
             "groups_name_key", "name",
-            "semesters_no_overlap", "dates"
+            "semesters_no_overlap", "dates",
+            "assignments_no_same_teacher_overlap", "validFrom",
+            "assignments_validity_chk", "validUntilExclusive"
     );
 
     /** Matches {@code constraint "xxx"} fragment in PG/Hibernate error messages. */
@@ -77,7 +80,9 @@ public class GlobalExceptionHandler {
             "telegramId", "Telegram ID уже привязан к другой учётной записи",
             "employeeNumber", "Табельный номер уже используется",
             "name", "Название уже используется",
-            "dates", "Даты семестра пересекаются с существующим"
+            "dates", "Даты семестра пересекаются с существующим",
+            "validFrom", "Период назначения пересекается с существующим",
+            "validUntilExclusive", "Недопустимые границы периода назначения"
     );
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -116,6 +121,28 @@ public class GlobalExceptionHandler {
                                                         HttpServletRequest request) {
         return problem(HttpStatus.CONFLICT, "conflict",
                 "Конфликт данных", ex.getMessage(), request, ex.getField(), ex.getExtras());
+    }
+
+    @ExceptionHandler(HistoricalMembershipException.class)
+    public ResponseEntity<ErrorResponse> handleHistoricalMembership(
+            HistoricalMembershipException ex,
+            HttpServletRequest request) {
+        HttpStatus status = switch (ex.code()) {
+            case INVALID_ARGUMENT -> HttpStatus.BAD_REQUEST;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case FAILED_PRECONDITION, UNSUPPORTED_MUTATION -> HttpStatus.CONFLICT;
+        };
+        return problem(status, "historical-membership-" + ex.code().name().toLowerCase(),
+                "Операция с историей посещаемости недоступна", ex.getMessage(),
+                request, null, null);
+    }
+
+    @ExceptionHandler(AssignmentClosureNotReadyException.class)
+    public ResponseEntity<ErrorResponse> handleAssignmentClosureNotReady(
+            AssignmentClosureNotReadyException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.CONFLICT, "assignment-closure-not-ready",
+                "Закрытие назначения пока недоступно", ex.getMessage(), request, null, null);
     }
 
     /**

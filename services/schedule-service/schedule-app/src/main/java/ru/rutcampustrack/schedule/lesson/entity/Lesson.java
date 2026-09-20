@@ -32,12 +32,80 @@ public class Lesson {
     private Long id;
 
     @Setter
-    @Column(name = "schedule_item_id", nullable = false)
+    @Column(name = "schedule_item_id")
     private Long scheduleItemId;
+
+    @Setter
+    @Column(name = "one_off_lesson_id")
+    private Long oneOffLessonId;
+
+    @Setter
+    @Column(name = "occurrence_id", nullable = false)
+    private Long occurrenceId;
+
+    @Setter
+    @Column(name = "assignment_id", nullable = false)
+    private Long assignmentId;
+
+    @Setter
+    @Column(name = "group_id", nullable = false)
+    private Long groupId;
+
+    @Setter
+    @Column(name = "subject_id", nullable = false)
+    private Long subjectId;
+
+    @Setter
+    @Column(name = "semester_id", nullable = false)
+    private Long semesterId;
+
+    @Setter
+    @Column(name = "assigned_teacher_id", nullable = false)
+    private Long assignedTeacherId;
+
+    @Setter
+    @Column(name = "lesson_type", nullable = false)
+    private String lessonType;
 
     @Setter
     @Column(nullable = false)
     private LocalDate date;
+
+    @Setter
+    @Column(name = "lesson_number", nullable = false)
+    private Short lessonNumber;
+
+    @Setter
+    @Column(name = "day_of_week")
+    private Short dayOfWeek;
+
+    @Setter
+    @Column(name = "start_time")
+    private java.time.LocalTime startTime;
+
+    @Setter
+    @Column(name = "end_time")
+    private java.time.LocalTime endTime;
+
+    @Setter
+    @Column(name = "room_snapshot", length = 64)
+    private String roomSnapshot;
+
+    @Setter
+    @Column(name = "week_type_snapshot", length = 8)
+    private String weekTypeSnapshot;
+
+    @Setter
+    @Column(name = "generation", nullable = false)
+    private Long generation = 1L;
+
+    @Setter
+    @Column(name = "revision", nullable = false)
+    private Long revision = 1L;
+
+    /** Filled by snapshot readers; V17's current pointer is the durable source. */
+    @Transient
+    private boolean current = true;
 
     @Setter
     @Column(nullable = false)

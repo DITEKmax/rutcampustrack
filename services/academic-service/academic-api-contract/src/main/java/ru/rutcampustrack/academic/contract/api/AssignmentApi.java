@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignTeacherRequest;
 import ru.rutcampustrack.academic.contract.dto.assignment.AssignmentResponse;
 
+import java.time.LocalDate;
+
 /**
  * REST API contract for teacher-subject-group assignment management.
  */
@@ -27,7 +29,7 @@ import ru.rutcampustrack.academic.contract.dto.assignment.AssignmentResponse;
 @RequestMapping("/academic/assignments")
 public interface AssignmentApi {
 
-    @Operation(summary = "Назначить преподавателя на предмет/группу/семестр (HEADMAN/ADMIN)")
+    @Operation(summary = "Назначить преподавателя на предмет/группу/семестр (HEADMAN)")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Назначение создано"),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
@@ -48,14 +50,18 @@ public interface AssignmentApi {
             Pageable pageable,
             PagedResourcesAssembler<AssignmentResponse> assembler);
 
-    @Operation(summary = "Удалить назначение (HEADMAN/ADMIN)")
+    @Operation(summary = "Закрыть назначение (HEADMAN)",
+            description = "До активации общего lifecycle fence операция возвращает typed 409 без мутаций.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Назначение удалено"),
+            @ApiResponse(responseCode = "409", description = "Закрытие назначения пока недоступно"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
             @ApiResponse(responseCode = "404", description = "Назначение не найдено")
     })
     @DeleteMapping("/{id}")
-    ResponseEntity<Void> removeAssignment(@PathVariable Long id);
+    ResponseEntity<Void> removeAssignment(
+            @PathVariable Long id,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            LocalDate validUntilExclusive);
 
     @Operation(summary = "Мои назначения (TEACHER)", description = "Возвращает все предметы и группы текущего преподавателя для активного семестра.")
     @ApiResponses({

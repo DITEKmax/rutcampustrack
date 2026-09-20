@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import java.net.URI;
 import java.time.Instant;
@@ -48,7 +50,9 @@ public final class StudentApiModels {
     }
     public enum RequestStatus { PENDING, APPROVED, REJECTED, CANCELLED }
     public enum RequestOrigin { AUTO_GEO_FAILURE }
-    public enum ResolutionReason { GEO_CONFIRMED, HEADMAN_APPROVED, HEADMAN_REJECTED, STUDENT_CANCELLED }
+    public enum ResolutionReason {
+        GEO_CONFIRMED, HEADMAN_APPROVED, HEADMAN_REJECTED, STUDENT_CANCELLED, PRESENT_PRIORITY
+    }
     public enum CheckinOutcome { PRESENT, PENDING_CONFIRMATION }
     public enum GeoKind { COORDINATES, UNAVAILABLE }
     public enum GeoUnavailableReason { PERMISSION_DENIED, POSITION_UNAVAILABLE, TIMEOUT }
@@ -58,12 +62,20 @@ public final class StudentApiModels {
         INVALID_SESSION,
         WRONG_ROLE,
         OUT_OF_SCOPE,
+        ROLE_READ_ONLY,
+        HOMEWORK_NOT_FOUND,
         LESSON_NOT_FOUND,
+        REQUEST_NOT_FOUND,
+        ATTACHMENT_NOT_FOUND,
+        REQUEST_CONFLICT,
+        ATTACHMENT_EXPIRED,
+        PAYLOAD_TOO_LARGE,
         CHECKIN_COOLDOWN,
         MANUAL_ABSENCE_REQUIRES_APPEAL,
         IDEMPOTENCY_PAYLOAD_MISMATCH,
         CHECKIN_NOT_ELIGIBLE,
-        DEPENDENCY_UNAVAILABLE
+        DEPENDENCY_UNAVAILABLE,
+        INTERNAL_ERROR
     }
 
     @Schema(name = "Link", requiredProperties = {"href"})
@@ -84,9 +96,21 @@ public final class StudentApiModels {
 
     @Schema(
             name = "StudentSession",
-            requiredProperties = {"user", "activeRole", "group", "semester", "capabilities", "serverNow", "_links"}
+            requiredProperties = {
+                    "sessionId", "sessionVersion", "rolesVersion", "readOnly",
+                    "user", "activeRole", "group", "semester", "capabilities", "serverNow", "_links"
+            }
     )
     public record SessionResponse(
+            @NotBlank
+            @Schema(
+                    format = "uuid",
+                    pattern = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            )
+            String sessionId,
+            @NotBlank @Pattern(regexp = "^[1-9][0-9]*$") String sessionVersion,
+            @NotBlank @Pattern(regexp = "^[1-9][0-9]*$") String rolesVersion,
+            boolean readOnly,
             StudentUser user,
             ActiveRole activeRole,
             @Schema(nullable = true) GroupSummary group,
@@ -191,6 +215,59 @@ public final class StudentApiModels {
             Instant updatedAt,
             List<LessonScheduleProjection> lessons,
             @JsonProperty("_links") Map<String, Link> links
+    ) {
+    }
+
+    @Schema(name = "StudentHomeworkSemester", requiredProperties = {"id", "name", "dateFrom", "dateTo"})
+    public record HomeworkSemester(String id, String name, LocalDate dateFrom, LocalDate dateTo) {
+    }
+
+    @Schema(name = "StudentHomeworkSubject", requiredProperties = {"id", "name"})
+    public record HomeworkSubject(String id, String name) {
+    }
+
+    @Schema(
+            name = "StudentHomeworkItem",
+            requiredProperties = {
+                    "id", "subject", "title", "description", "link", "lessonDate", "lessonNumber", "completed",
+                    "completedAt"
+            }
+    )
+    public record HomeworkItem(
+            String id,
+            HomeworkSubject subject,
+            String title,
+            String description,
+            @Schema(nullable = true) String link,
+            LocalDate lessonDate,
+            int lessonNumber,
+            boolean completed,
+            @Schema(nullable = true) Instant completedAt
+    ) {
+    }
+
+    @Schema(
+            name = "StudentHomework",
+            requiredProperties = {"semester", "from", "to", "serverNow", "items"}
+    )
+    public record HomeworkResponse(
+            HomeworkSemester semester,
+            LocalDate from,
+            LocalDate to,
+            Instant serverNow,
+            List<HomeworkItem> items
+    ) {
+    }
+
+    @Schema(name = "StudentHomeworkCompletionCommand", requiredProperties = {"completed"})
+    public record HomeworkCompletionRequest(@NotNull Boolean completed) {
+    }
+
+    @Schema(name = "StudentHomeworkCompletion", requiredProperties = {"id", "completed", "completedAt"})
+    public record HomeworkCompletionResponse(
+            String id,
+            boolean completed,
+            @Schema(nullable = true) Instant completedAt
     ) {
     }
 

@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.schedule.contract.dto.lesson.CancelLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.GeoBlockRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
-import ru.rutcampustrack.schedule.contract.dto.lesson.MassCancelRequest;
-import ru.rutcampustrack.schedule.contract.dto.lesson.MassCancelResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 
 import java.time.LocalDate;
@@ -60,16 +58,6 @@ public interface LessonApi {
     })
     @PatchMapping("/lessons/{id}/restore")
     ResponseEntity<EntityModel<LessonResponse>> restoreLesson(@PathVariable Long id);
-
-    @Operation(summary = "Массовая отмена уроков для группы (HEADMAN/ADMIN)")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Уроки отменены"),
-            @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
-            @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-            @ApiResponse(responseCode = "503", description = "Academic Service недоступен")
-    })
-    @PostMapping("/lessons/mass-cancel")
-    ResponseEntity<MassCancelResponse> massCancelLessons(@Valid @RequestBody MassCancelRequest request);
 
     @Operation(summary = "Включить/выключить гео-блокировку урока (HEADMAN/ADMIN)")
     @ApiResponses({

@@ -1,309 +1,259 @@
 package ru.rutcampustrack.academic.subject;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Phase 60-01 / Task 2: end-to-end integration tests for {@link SubjectService}.
- *
- * <ul>
- *   <li>{@link #createSubject_withTwoTeachers_atomicInsert()} — 1 insert subjects + N TSG</li>
- *   <li>{@link #createSubject_rollbackOnTeacherSaveFail()} — rollback при сбое TSG</li>
- *   <li>{@link #addTeacher_and_removeTeacher()} — endpoints управления</li>
- *   <li>{@link #listSubjects_filteredByGroup()} — HEADMAN видит только свою группу</li>
- * </ul>
- */
+/** Legacy subject routes exercised against the canonical V25 assignment model. */
 @AutoConfigureMockMvc
-class SubjectServiceIT extends AbstractAcademicIntegrationTest {
+class SubjectServiceIT extends AbstractAssignmentAuthorityIT {
+
+    private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    private Long seedGroupId;
-    private Long seedStudentId;
-    private Long seedTeacherId;
-    private Long seedAdminId;
-    private Long otherGroupId;
-    private Long otherTeacherId;
+    private Fixture fixture;
+    private Fixture otherFixture;
+    private List<Long> priorActiveSemesters;
 
     @BeforeEach
-    void loadSeedIds() {
-        seedGroupId = jdbcTemplate.queryForObject(
-                "SELECT id FROM groups WHERE name = 'ИВТ-211'", Long.class);
-        seedStudentId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'student'", Long.class);
-        seedTeacherId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'teacher'", Long.class);
-        seedAdminId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'admin'", Long.class);
-
-        // V2 seed содержит активный 'Spring 2026' семестр, но предыдущие IT могут оставить
-        // его деактивированным (RestApi testHomeworkCompletionToggle / EventIT activateSemester).
-        // Восстанавливаем активный статус, чтобы SubjectService.requireActiveSemesterId() работал.
-        jdbcTemplate.update(
-                "UPDATE semesters SET is_active = true WHERE name = 'Spring 2026'");
-        // Деактивируем любые другие, чтобы не нарушить ожидание "ровно один активный".
-        jdbcTemplate.update(
-                "UPDATE semesters SET is_active = false WHERE name <> 'Spring 2026'");
+    void createFixtures() {
+        fixture = newFixture("legacy-subject");
+        otherFixture = newFixture("legacy-other");
+        priorActiveSemesters = activeSemesterIds();
     }
 
     @AfterEach
-    void cleanup() {
-        // Тесты, работающие вне @Transactional, должны чистить созданные записи вручную,
-        // чтобы не просачивались в другие тесты. FK ON DELETE CASCADE на teacher_subject_groups.
-        jdbcTemplate.update("DELETE FROM teacher_subject_groups");
-        jdbcTemplate.update("DELETE FROM subjects");
-        jdbcTemplate.update("DELETE FROM users WHERE login = 'teacher02'");
-        jdbcTemplate.update("DELETE FROM groups WHERE name = 'УИТ-311'");
+    void restoreActiveSemester() {
+        restoreActiveSemesterIds(priorActiveSemesters);
     }
-
-    // =========================================================================
-    // Helpers
-    // =========================================================================
-
-    private void seedOtherGroupAndTeacher() {
-        jdbcTemplate.update("INSERT INTO groups (name, is_active) VALUES ('УИТ-311', true)");
-        otherGroupId = jdbcTemplate.queryForObject(
-                "SELECT id FROM groups WHERE name = 'УИТ-311'", Long.class);
-        jdbcTemplate.update(
-                "INSERT INTO users (login, password_hash, last_name, first_name, middle_name, role, status, is_headman, employee_number) "
-              + "VALUES ('teacher02', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', "
-              + "'Иванов', 'Иван', 'Иванович', 'teacher', 'active', false, 'T00002')");
-        otherTeacherId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'teacher02'", Long.class);
-    }
-
-    private int countSubjectsByName(String name) {
-        Integer c = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM subjects WHERE name = ?", Integer.class, name);
-        return c == null ? 0 : c;
-    }
-
-    private int countTsgBySubjectId(Long subjectId) {
-        Integer c = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM teacher_subject_groups WHERE subject_id = ?", Integer.class, subjectId);
-        return c == null ? 0 : c;
-    }
-
-    // =========================================================================
-    // Test 1 — атомарное создание: subjects + N TSG
-    // =========================================================================
 
     @Test
     void createSubject_withTwoTeachers_atomicInsert() throws Exception {
-        seedOtherGroupAndTeacher();
+        long semesterId = ensureCurrentActiveSemester();
+        LocalDate from = LocalDate.now(MOSCOW).minusDays(1);
+        JsonNode response = createSubject("L5A legacy two teachers " + UUID.randomUUID(), "LECTURE",
+                List.of("LECTURE", "PRACTICE"), List.of(
+                        assignment(fixture.teacher1Id(), semesterId, "LECTURE", from, null),
+                        assignment(fixture.teacher2Id(), semesterId, "PRACTICE", from, null)));
 
-        String body = """
-                {
-                  "name": "Дискретная математика",
-                  "type": "LECTURE",
-                  "teacherIds": [%d, %d]
-                }
-                """.formatted(seedTeacherId, otherTeacherId);
-
-        MvcResult result = mockMvc.perform(post("/academic/subjects")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId.toString())
-                        .header("X-Is-Headman", "true"))
-                .andExpect(status().isCreated())
-                .andReturn();
-
-        JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
-        Long subjectId = json.get("id").asLong();
-        assertThat(json.get("groupId").asLong()).isEqualTo(seedGroupId);
-        assertThat(json.get("teacherIds")).hasSize(2);
-
-        // В БД: 1 запись в subjects + 2 в teacher_subject_groups
-        assertThat(countSubjectsByName("Дискретная математика")).isEqualTo(1);
-        assertThat(countTsgBySubjectId(subjectId)).isEqualTo(2);
+        assertThat(response.get("groupId").asLong()).isEqualTo(fixture.groupId());
+        assertThat(response.get("createdAssignmentIds")).hasSize(2);
+        assertThat(assignmentCount(response.get("id").asLong())).isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM teacher_subject_groups WHERE subject_id = ?",
+                Integer.class, response.get("id").asLong())).isZero();
     }
-
-    // =========================================================================
-    // Test 2 — rollback при сбое вставки TSG (несуществующий teacherId → FK violation)
-    // =========================================================================
 
     @Test
     void createSubject_rollbackOnTeacherSaveFail() throws Exception {
+        long semesterId = ensureCurrentActiveSemester();
+        String name = "L5A legacy rollback " + UUID.randomUUID();
+        LocalDate from = LocalDate.now(MOSCOW).minusDays(1);
         String body = """
                 {
-                  "name": "Rollback Test",
-                  "type": "PRACTICE",
-                  "teacherIds": [%d, 999999999]
+                  "name":"%s",
+                  "type":"PRACTICE",
+                  "lessonTypes":["PRACTICE"],
+                  "initialAssignments":[
+                    %s,
+                    {"teacherId":999999999,"semesterId":%d,"lessonType":"PRACTICE", "validFrom":"%s"}
+                  ]
                 }
-                """.formatted(seedTeacherId);
+                """.formatted(name, assignment(fixture.teacher1Id(), semesterId, "PRACTICE", from, null),
+                semesterId, from);
 
-        mockMvc.perform(post("/academic/subjects")
+        mockMvc.perform(headman(MockMvcRequestBuilders.post("/academic/subjects")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId.toString())
-                        .header("X-Is-Headman", "true"))
-                .andExpect(status().is5xxServerError());
+                        .content(body)))
+                .andExpect(status().isNotFound());
 
-        // Откат: записи subjects по имени нет
-        assertThat(countSubjectsByName("Rollback Test")).isEqualTo(0);
+        assertThat(countSubjectsByName(name)).isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM assignments WHERE teacher_id = ?", Integer.class,
+                fixture.teacher1Id())).isZero();
     }
-
-    // =========================================================================
-    // Test 3 — addTeacher / removeTeacher endpoints + 409 на дубле
-    // =========================================================================
 
     @Test
     void addTeacher_and_removeTeacher() throws Exception {
-        // 1. создать предмет без преподавателей
-        String createBody = """
-                {
-                  "name": "Физика",
-                  "type": "LECTURE",
-                  "teacherIds": []
-                }
-                """;
+        long semesterId = ensureCurrentActiveSemester();
+        JsonNode created = createSubject("L5A legacy add teacher " + UUID.randomUUID(), "LECTURE",
+                List.of("LECTURE"), List.of());
+        long subjectId = created.get("id").asLong();
+        LocalDate from = LocalDate.now(MOSCOW).minusDays(1);
+        String request = """
+                {"semesterId":%d,"lessonType":"LECTURE","validFrom":"%s","validUntilExclusive":null}
+                """.formatted(semesterId, from);
 
-        MvcResult res = mockMvc.perform(post("/academic/subjects")
+        MvcResult added = mockMvc.perform(headman(MockMvcRequestBuilders.post(
+                                "/academic/subjects/{id}/teachers/{teacherId}", subjectId, fixture.teacher1Id())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(createBody)
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId.toString())
-                        .header("X-Is-Headman", "true"))
+                        .content(request)))
                 .andExpect(status().isCreated())
                 .andReturn();
+        long assignmentId = objectMapper.readTree(added.getResponse().getContentAsString()).get("id").asLong();
+        assertThat(assignmentCount(subjectId)).isEqualTo(1);
 
-        Long subjectId = objectMapper.readTree(res.getResponse().getContentAsString())
-                .get("id").asLong();
-        assertThat(countTsgBySubjectId(subjectId)).isEqualTo(0);
-
-        // 2. POST teacher → 201
-        mockMvc.perform(post("/academic/subjects/{id}/teachers/{teacherId}", subjectId, seedTeacherId)
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId.toString())
-                        .header("X-Is-Headman", "true"))
-                .andExpect(status().isCreated());
-
-        assertThat(countTsgBySubjectId(subjectId)).isEqualTo(1);
-
-        // 3. повторный POST → 409
-        mockMvc.perform(post("/academic/subjects/{id}/teachers/{teacherId}", subjectId, seedTeacherId)
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId.toString())
-                        .header("X-Is-Headman", "true"))
+        mockMvc.perform(headman(MockMvcRequestBuilders.post(
+                                "/academic/subjects/{id}/teachers/{teacherId}", subjectId, fixture.teacher1Id())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request)))
                 .andExpect(status().isConflict());
 
-        // 4. DELETE teacher → 204
-        mockMvc.perform(delete("/academic/subjects/{id}/teachers/{teacherId}", subjectId, seedTeacherId)
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId.toString())
-                        .header("X-Is-Headman", "true"))
-                .andExpect(status().isNoContent());
-
-        assertThat(countTsgBySubjectId(subjectId)).isEqualTo(0);
+        mockMvc.perform(headman(MockMvcRequestBuilders.delete(
+                                "/academic/subjects/{id}/teachers/{teacherId}", subjectId, fixture.teacher1Id())
+                        .param("assignmentId", Long.toString(assignmentId))
+                        .param("validUntilExclusive", from.plusDays(5).toString())))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type")
+                        .value("https://api.rutcampustrack.ru/problems/assignment-closure-not-ready"));
+        assertThat(assignmentCount(subjectId)).isEqualTo(1);
     }
-
-    // =========================================================================
-    // Test 4 — listSubjects фильтруется по группе (HEADMAN)
-    // =========================================================================
 
     @Test
     void listSubjects_filteredByGroup() throws Exception {
-        seedOtherGroupAndTeacher();
+        String ownName = "L5A own list " + UUID.randomUUID();
+        String otherName = "L5A other list " + UUID.randomUUID();
+        insertSubject(fixture.groupId(), ownName, "lecture");
+        insertSubject(otherFixture.groupId(), otherName, "lecture");
 
-        // seed предметы в двух разных группах напрямую через JDBC
-        jdbcTemplate.update(
-                "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?)",
-                "Own Group Subject", seedGroupId);
-        jdbcTemplate.update(
-                "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?)",
-                "Other Group Subject", otherGroupId);
-
-        MvcResult res = mockMvc.perform(get("/academic/subjects")
-                        .header("X-User-Id", seedStudentId)
-                        .header("X-User-Role", "STUDENT")
-                        .header("X-Group-Id", seedGroupId.toString())
-                        .header("X-Is-Headman", "true"))
+        String body = mockMvc.perform(headman(MockMvcRequestBuilders.get("/academic/subjects")))
                 .andExpect(status().isOk())
-                .andReturn();
+                .andReturn().getResponse().getContentAsString();
+        assertThat(body).contains(ownName).doesNotContain(otherName);
 
-        String body = res.getResponse().getContentAsString();
-        assertThat(body).contains("Own Group Subject");
-        assertThat(body).doesNotContain("Other Group Subject");
-
-        // ADMIN видит оба
-        MvcResult adminRes = mockMvc.perform(get("/academic/subjects")
-                        .header("X-User-Id", seedAdminId)
-                        .header("X-User-Role", "ADMIN")
-                        .header("X-Group-Id", "")
-                        .header("X-Is-Headman", "false"))
+        long adminId = jdbcTemplate.queryForObject(
+                "SELECT id FROM users WHERE login = 'admin'", Long.class);
+        MockHttpServletRequestBuilder adminRequest = MockMvcRequestBuilders.get("/academic/subjects")
+                .header("X-User-Id", adminId)
+                .header("X-User-Role", "ADMIN")
+                .header("X-Group-Id", "")
+                .header("X-Is-Headman", "false");
+        JsonNode firstPage = objectMapper.readTree(mockMvc.perform(adminRequest)
                 .andExpect(status().isOk())
-                .andReturn();
-        String adminBody = adminRes.getResponse().getContentAsString();
-        assertThat(adminBody).contains("Own Group Subject");
-        assertThat(adminBody).contains("Other Group Subject");
+                .andReturn().getResponse().getContentAsString());
+        int totalPages = firstPage.path("page").path("totalPages").asInt();
+        Set<String> adminNames = new HashSet<>();
+        collectSubjectNames(firstPage, adminNames);
+        for (int page = 1; page < totalPages; page++) {
+            JsonNode pageBody = objectMapper.readTree(mockMvc.perform(MockMvcRequestBuilders.get("/academic/subjects")
+                            .param("page", Integer.toString(page))
+                            .header("X-User-Id", adminId)
+                            .header("X-User-Role", "ADMIN")
+                            .header("X-Group-Id", "")
+                            .header("X-Is-Headman", "false"))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString());
+            collectSubjectNames(pageBody, adminNames);
+        }
+        assertThat(adminNames).contains(ownName, otherName);
     }
 
     @Test
     void listSubjects_forTeacher_returnsAssignedSubjects() throws Exception {
-        seedOtherGroupAndTeacher();
+        long semesterId = ensureCurrentActiveSemester();
+        LocalDate from = LocalDate.now(MOSCOW).minusDays(1);
+        String assignedName = "L5A assigned list " + UUID.randomUUID();
+        String unassignedName = "L5A unassigned list " + UUID.randomUUID();
+        String otherName = "L5A other teacher list " + UUID.randomUUID();
+        long assignedSubjectId = insertSubject(fixture.groupId(), assignedName, "lecture");
+        insertSubject(fixture.groupId(), unassignedName, "lecture");
+        insertSubject(otherFixture.groupId(), otherName, "lecture");
 
-        Long semesterId = jdbcTemplate.queryForObject(
-                "SELECT id FROM semesters WHERE name = 'Spring 2026'", Long.class);
-        Long assignedSubjectId = jdbcTemplate.queryForObject(
-                "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?) RETURNING id",
-                Long.class, "Assigned Teacher Subject", seedGroupId);
-        jdbcTemplate.queryForObject(
-                "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?) RETURNING id",
-                Long.class, "Unassigned Teacher Subject", seedGroupId);
-        Long otherTeacherSubjectId = jdbcTemplate.queryForObject(
-                "INSERT INTO subjects (name, type, group_id) VALUES (?, 'lecture', ?) RETURNING id",
-                Long.class, "Other Teacher Subject", otherGroupId);
+        mockMvc.perform(headman(MockMvcRequestBuilders.post("/academic/assignments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"employeeNumber":"%s","subjectId":%d,"groupId":%d,
+                                 "semesterId":%d,"lessonType":"LECTURE","validFrom":"%s",
+                                 "validUntilExclusive":null}
+                                """.formatted(fixture.employee1(), assignedSubjectId, fixture.groupId(),
+                                semesterId, from))))
+                .andExpect(status().isCreated());
 
-        jdbcTemplate.update(
-                "INSERT INTO teacher_subject_groups (teacher_id, subject_id, group_id, semester_id) VALUES (?, ?, ?, ?)",
-                seedTeacherId, assignedSubjectId, seedGroupId, semesterId);
-        jdbcTemplate.update(
-                "INSERT INTO teacher_subject_groups (teacher_id, subject_id, group_id, semester_id) VALUES (?, ?, ?, ?)",
-                otherTeacherId, otherTeacherSubjectId, otherGroupId, semesterId);
-
-        MvcResult res = mockMvc.perform(get("/academic/subjects")
-                        .header("X-User-Id", seedTeacherId)
+        String body = mockMvc.perform(MockMvcRequestBuilders.get("/academic/subjects")
+                        .header("X-User-Id", fixture.teacher1Id())
                         .header("X-User-Role", "TEACHER")
                         .header("X-Group-Id", "")
                         .header("X-Is-Headman", "false"))
                 .andExpect(status().isOk())
-                .andReturn();
+                .andReturn().getResponse().getContentAsString();
+        assertThat(body).contains(assignedName)
+                .doesNotContain(unassignedName)
+                .doesNotContain(otherName);
+    }
 
-        String body = res.getResponse().getContentAsString();
-        assertThat(body).contains("Assigned Teacher Subject");
-        assertThat(body).doesNotContain("Unassigned Teacher Subject");
-        assertThat(body).doesNotContain("Other Teacher Subject");
+    private void collectSubjectNames(JsonNode page, Set<String> names) {
+        page.path("_embedded").path("subjectResponseList")
+                .forEach(subject -> names.add(subject.path("name").asText()));
+    }
+
+    private JsonNode createSubject(String name,
+                                   String scalarType,
+                                   List<String> lessonTypes,
+                                   List<String> assignments) throws Exception {
+        String body = """
+                {
+                  "name":"%s",
+                  "type":"%s",
+                  "lessonTypes":%s,
+                  "initialAssignments":[%s]
+                }
+                """.formatted(name, scalarType, quotedArray(lessonTypes), String.join(",", assignments));
+        MvcResult result = mockMvc.perform(headman(MockMvcRequestBuilders.post("/academic/subjects")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString());
+    }
+
+    private MockHttpServletRequestBuilder headman(MockHttpServletRequestBuilder request) {
+        return request.header("X-User-Id", fixture.headmanId())
+                .header("X-User-Role", "STUDENT")
+                .header("X-Group-Id", fixture.groupId())
+                .header("X-Is-Headman", "true");
+    }
+
+    private String assignment(long teacherId,
+                              long semesterId,
+                              String lessonType,
+                              LocalDate validFrom,
+                              LocalDate validUntilExclusive) {
+        String end = validUntilExclusive == null ? "null" : "\"" + validUntilExclusive + "\"";
+        return "{\"teacherId\":%d,\"semesterId\":%d,\"lessonType\":\"%s\","
+                .formatted(teacherId, semesterId, lessonType)
+                + "\"validFrom\":\"" + validFrom + "\",\"validUntilExclusive\":" + end + "}";
+    }
+
+    private String quotedArray(List<String> values) {
+        return "[" + values.stream().map(value -> "\"" + value + "\"")
+                .reduce((left, right) -> left + "," + right).orElse("") + "]";
+    }
+
+    private int countSubjectsByName(String name) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM subjects WHERE name = ?", Integer.class, name);
+        return count == null ? 0 : count;
     }
 }

@@ -13,17 +13,17 @@ dependencies {
     api("jakarta.validation:jakarta.validation-api:3.1.0")
 
     // Spring Web annotations (для @RequestMapping, @GetMapping и т.д.)
-    api("org.springframework:spring-web:6.2.1")
+    api("org.springframework:spring-web:6.2.19")
 
     // M12 G3: auth-service controllers принимают Authentication + HttpServletRequest
     // в interface signatures. Поэтому контракту нужны spring-security-core + servlet-api.
     // Не прокачиваем до Spring Boot starter — контракт остаётся java-library.
-    api("org.springframework.security:spring-security-core:6.4.2")
+    api("org.springframework.security:spring-security-core:6.5.11")
     api("jakarta.servlet:jakarta.servlet-api:6.1.0")
 
     // OpenAPI / Swagger annotations
     api("io.swagger.core.v3:swagger-annotations-jakarta:2.2.22")
 
     // Jackson annotations (для @JsonInclude и т.д.)
-    api("com.fasterxml.jackson.core:jackson-annotations:2.18.2")
+    api("com.fasterxml.jackson.core:jackson-annotations:2.21")
 }

@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.events.EventSchemaValidator;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 /**
  * Unit tests for ExcuseEventPublisher (Phase 59-05 + M02 Группа 5).
@@ -129,6 +131,38 @@ class ExcuseEventPublisherTest {
         assertThat(payload.get("status").asText()).isEqualTo("approved");
         assertThat(payload.get("decision_comment").asText()).isEqualTo("справка предоставлена");
         assertThat(payload.get("decided_at").asText()).isEqualTo(decidedAt.toString());
+    }
+
+    @Test
+    void publishDecided_allTerminalVariantsWithNullCommentMatchSchema() throws Exception {
+        Instant decidedAt = Instant.parse("2026-04-14T13:00:00Z");
+        for (ExcuseTicketStatus status : List.of(ExcuseTicketStatus.APPROVED,
+                ExcuseTicketStatus.REJECTED, ExcuseTicketStatus.CANCELLED)) {
+            publisher().publishDecided(ExcuseTicket.builder()
+                    .id("terminal-" + status.name().toLowerCase())
+                    .studentId(100L).groupId(10L).lessonIds(List.of(1L))
+                    .excuseType(ExcuseType.ILLNESS).status(status)
+                    .decisionBy(status == ExcuseTicketStatus.CANCELLED ? null : 777L)
+                    .decisionAt(decidedAt).createdAt(decidedAt).updatedAt(decidedAt)
+                    .build());
+        }
+
+        ArgumentCaptor<String> payloads = ArgumentCaptor.forClass(String.class);
+        verify(outboxStorage, times(3)).save(eq("excuse.decided"), payloads.capture());
+        assertThat(payloads.getAllValues()).allSatisfy(payload -> {
+            try {
+                assertThat(EventSchemaValidator.validate("excuse.decided.json", payload)).isEmpty();
+            } catch (Exception error) {
+                throw new AssertionError("excuse.decided must validate", error);
+            }
+        });
+        assertThat(payloads.getAllValues()).extracting(payload -> {
+            try {
+                return objectMapper.readTree(payload).get("payload").get("status").asText();
+            } catch (Exception error) {
+                throw new AssertionError("valid JSON expected", error);
+            }
+        }).containsExactlyInAnyOrder("approved", "rejected", "cancelled");
     }
 
     // D-27 regression

@@ -25,6 +25,7 @@ import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableExceptio
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -59,6 +60,30 @@ public class AcademicGrpcClient {
             return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
                     .getGroupMembers(GroupMembersRequest.newBuilder()
                             .setGroupId(groupId)
+                            .build());
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
+                throw new ResourceNotFoundException("Group", "id", groupId);
+            }
+            throw new AcademicServiceUnavailableException("Academic Service unavailable: " + e.getStatus());
+        }
+    }
+
+    /**
+     * Reads a complete historical roster.  The paired fields are mandatory
+     * here; callers must validate the response echoes before materializing any
+     * attendance document.
+     */
+    public GroupMembersResponse getGroupMembers(Long groupId, LocalDate asOfDate, Long semesterId) {
+        if (groupId == null || groupId <= 0 || asOfDate == null || semesterId == null || semesterId <= 0) {
+            throw new IllegalArgumentException("groupId, asOfDate and semesterId are required");
+        }
+        try {
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getGroupMembers(GroupMembersRequest.newBuilder()
+                            .setGroupId(groupId)
+                            .setAsOfDate(asOfDate.toString())
+                            .setSemesterId(semesterId)
                             .build());
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {

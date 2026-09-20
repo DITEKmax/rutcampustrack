@@ -6,18 +6,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ru.rutcampustrack.auth.dto.ChangePasswordRequest;
 import ru.rutcampustrack.auth.dto.LoginRequest;
 import ru.rutcampustrack.auth.dto.OtpRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyByCodeRequest;
 import ru.rutcampustrack.auth.dto.OtpVerifyRequest;
 import ru.rutcampustrack.auth.dto.PublicKeyResponse;
-import ru.rutcampustrack.auth.dto.RefreshRequest;
 import ru.rutcampustrack.auth.dto.TmaAuthRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,14 +48,6 @@ public interface AuthApi {
     @PostMapping("/refresh")
     ResponseEntity<TokenResponse> refresh(
             @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshCookie);
-
-    @Operation(summary = "Logout", description = "Invalidate refresh token, ws-tickets, and clear refresh cookie")
-    @ApiResponse(responseCode = "204", description = "Successfully logged out")
-    @PostMapping("/logout")
-    ResponseEntity<Void> logout(
-            @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshCookie,
-            @RequestBody(required = false) RefreshRequest body,
-            Authentication authentication);
 
     @Operation(summary = "Get RSA public key",
             description = "Returns RSA public key in PEM format for JWT verification")
@@ -106,10 +95,4 @@ public interface AuthApi {
     @PostMapping("/tma")
     ResponseEntity<TokenResponse> tmaAuth(@Valid @RequestBody TmaAuthRequest request);
 
-    @Operation(summary = "Change password", description = "Change password for authenticated user")
-    @ApiResponse(responseCode = "204", description = "Password changed successfully")
-    @ApiResponse(responseCode = "401", description = "Current password is incorrect")
-    @PostMapping("/change-password")
-    ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request,
-                                        Authentication authentication);
 }

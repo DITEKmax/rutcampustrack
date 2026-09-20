@@ -58,23 +58,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/schedule/lessons/mass-cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Массовая отмена уроков для группы (HEADMAN/ADMIN) */
-        post: operations["massCancelLessons"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/schedule/items": {
         parameters: {
             query?: never;
@@ -244,6 +227,8 @@ export interface components {
             /** Format: int64 */
             id?: number;
             /** Format: int64 */
+            assignmentId?: number;
+            /** Format: int64 */
             groupId?: number;
             /** Format: int64 */
             subjectId?: number;
@@ -253,9 +238,7 @@ export interface components {
             dayOfWeek?: number;
             /** Format: int32 */
             lessonNumber?: number;
-            /** @example 14:30:00 */
             startTime?: string;
-            /** @example 14:30:00 */
             endTime?: string;
             /** @enum {string} */
             weekType?: "ALL" | "ODD" | "EVEN";
@@ -263,6 +246,12 @@ export interface components {
             active?: boolean;
             /** Format: date-time */
             createdAt?: string;
+            /** Format: int64 */
+            generatedCount?: number;
+            /** Format: date */
+            generatedFrom?: string;
+            /** Format: date */
+            generatedUntil?: string;
             _links?: components["schemas"]["Links"];
         };
         /** @description Запрос на создание разовой пары вне шаблона расписания (semesterId определяется по дате на сервере, D-23) */
@@ -334,9 +323,7 @@ export interface components {
             dayOfWeek?: number;
             /** Format: int32 */
             lessonNumber?: number;
-            /** @example 14:30:00 */
             startTime?: string;
-            /** @example 14:30:00 */
             endTime?: string;
             /** @enum {string} */
             weekType?: "ALL" | "ODD" | "EVEN";
@@ -354,45 +341,30 @@ export interface components {
             cancelledAt?: string;
             /** Format: date-time */
             createdAt?: string;
+            /** Format: int64 */
+            occurrenceId?: number;
+            /** Format: int64 */
+            assignmentId?: number;
+            /** Format: int64 */
+            semesterId?: number;
+            /** Format: int64 */
+            assignedTeacherId?: number;
+            lessonType?: string;
+            /** Format: int64 */
+            generation?: number;
+            /** Format: int64 */
+            revision?: number;
+            current?: boolean;
             _links?: components["schemas"]["Links"];
-        };
-        /** @description Запрос на массовую отмену пар группы в диапазоне дат */
-        MassCancelRequest: {
-            /**
-             * Format: int64
-             * @description ID группы, для которой отменяются пары
-             * @example 10
-             */
-            groupId: number;
-            /**
-             * Format: date
-             * @description Начало диапазона дат (включительно)
-             * @example 2026-04-24
-             */
-            dateFrom: string;
-            /**
-             * Format: date
-             * @description Конец диапазона дат (включительно)
-             * @example 2026-04-30
-             */
-            dateTo: string;
-            /**
-             * @description Причина массовой отмены пар
-             * @example Карантин в корпусе
-             */
-            reason: string;
-        };
-        /** @description Результат массовой отмены пар с количеством отменённых записей */
-        MassCancelResponse: {
-            /**
-             * Format: int32
-             * @description Количество фактически отменённых пар
-             * @example 12
-             */
-            cancelledCount?: number;
         };
         /** @description Запрос на создание шаблона пары в расписании (повторяющийся слот) */
         CreateScheduleItemRequest: {
+            /**
+             * Format: int64
+             * @description ID авторитетного назначения преподаватель–предмет–группа
+             * @example 501
+             */
+            assignmentId: number;
             /**
              * Format: int64
              * @description ID группы
@@ -1225,102 +1197,6 @@ export interface operations {
             };
         };
     };
-    massCancelLessons: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MassCancelRequest"];
-            };
-        };
-        responses: {
-            /** @description Уроки отменены */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MassCancelResponse"];
-                };
-            };
-            /** @description Ошибка валидации */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MassCancelResponse"];
-                };
-            };
-            /** @description Требуется аутентификация */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Нет прав доступа */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MassCancelResponse"];
-                };
-            };
-            /** @description Ресурс не найден */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Конфликт данных */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Превышен лимит запросов */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Внутренняя ошибка сервера */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Academic Service недоступен */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MassCancelResponse"];
-                };
-            };
-        };
-    };
     listScheduleItems: {
         parameters: {
             query: {
@@ -1412,7 +1288,9 @@ export interface operations {
     createScheduleItem: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -1467,13 +1345,13 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Конфликт assignment fence или idempotency replay */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                    "*/*": components["schemas"]["EntityModelScheduleItemResponse"];
                 };
             };
             /** @description Превышен лимит запросов */

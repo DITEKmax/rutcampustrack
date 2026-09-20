@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
+import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
+import ru.rutcampustrack.attendance.studentrequest.entity.StudentLessonSnapshotDocument;
 
 import java.time.Instant;
 import java.util.List;
@@ -40,11 +42,23 @@ public class ExcuseTicket {
     @Field("lesson_ids")
     private List<Long> lessonIds;
 
+    /** Active semester used for student request budget/options ownership. */
+    @Field("semester_id")
+    private Long semesterId;
+
+    /** Immutable schedule data used by archive/detail reads after schedule changes. */
+    @Field("lesson_snapshots")
+    private List<StudentLessonSnapshotDocument> lessonSnapshots;
+
     @Field("excuse_type")
     private ExcuseType excuseType;
 
     @Field("comment")
     private String comment;
+
+    /** Descriptors only; binary bytes live in request_attachments. */
+    @Field("attachment_descriptors")
+    private List<RequestAttachmentDescriptorDocument> attachmentDescriptors;
 
     @Field("status")
     @Builder.Default

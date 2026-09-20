@@ -5,14 +5,21 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.MobileProblemDetails;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
 
@@ -33,6 +40,7 @@ public class MobileProblemHandler {
     ResponseEntity<MobileProblemDetails> handle(MobileBffException error, HttpServletRequest request) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        headers.setCacheControl(CacheControl.noStore());
         if (error.status() == HttpStatus.TOO_MANY_REQUESTS && error.retryAt() != null) {
             long seconds = Math.max(0, (long) Math.ceil(
                     Duration.between(clock.instant(), error.retryAt()).toMillis() / 1000.0));
@@ -42,9 +50,22 @@ public class MobileProblemHandler {
                 error.retryAt(), request), headers, error.status());
     }
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class,
+            MissingServletRequestPartException.class, MultipartException.class,
+            HttpMediaTypeNotSupportedException.class, MissingPathVariableException.class,
+            MethodArgumentTypeMismatchException.class})
     ResponseEntity<MobileProblemDetails> invalid(Exception error, HttpServletRequest request) {
         return badRequest(ProblemCode.INVALID_REQUEST, request);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ResponseEntity<MobileProblemDetails> tooLarge(MaxUploadSizeExceededException error,
+                                                   HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .cacheControl(CacheControl.noStore())
+                .body(problem(HttpStatus.PAYLOAD_TOO_LARGE, ProblemCode.PAYLOAD_TOO_LARGE,
+                        "Размер запроса превышает допустимый предел", null, request));
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
@@ -76,6 +97,7 @@ public class MobileProblemHandler {
     private ResponseEntity<MobileProblemDetails> badRequest(ProblemCode code, HttpServletRequest request) {
         return ResponseEntity.badRequest()
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .cacheControl(CacheControl.noStore())
                 .body(problem(HttpStatus.BAD_REQUEST, code, "Запрос не прошёл проверку", null, request));
     }
 

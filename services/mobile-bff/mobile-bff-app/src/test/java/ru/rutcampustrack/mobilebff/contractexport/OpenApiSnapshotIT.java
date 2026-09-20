@@ -22,6 +22,7 @@ import ru.rutcampustrack.shared.security.PublicKeyProvider;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -84,6 +85,8 @@ class OpenApiSnapshotIT {
         assertThat(root.at("/paths/~1api~1v1~1student~1today/get")).isNotEmpty();
         assertThat(root.at("/paths/~1api~1v1~1student~1schedule/get")).isNotEmpty();
         assertThat(root.at("/paths/~1api~1v1~1student~1lessons~1{lessonId}~1checkin/post")).isNotEmpty();
+        assertThat(root.at("/paths/~1api~1v1~1student~1requests~1excuse/post/requestBody/required")
+                .asBoolean()).isTrue();
         assertThat(root.at("/components/schemas/GeoInput/oneOf")).hasSize(2);
         assertThat(root.at("/components/schemas/CoordinatesGeo/type").asText()).isEqualTo("object");
         assertThat(root.at("/components/schemas/CoordinatesGeo/required").toString())
@@ -104,7 +107,7 @@ class OpenApiSnapshotIT {
         ObjectWriter writer = mapper.writer()
                 .with(SerializationFeature.INDENT_OUTPUT)
                 .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-        String actual = writer.writeValueAsString(root) + "\n";
+        String actual = normalizeLineEndings(writer.writeValueAsString(root) + "\n");
 
         if (Boolean.getBoolean("openapi.snapshot.update")) {
             Files.createDirectories(SNAPSHOT_PATH.getParent());
@@ -113,7 +116,11 @@ class OpenApiSnapshotIT {
         }
 
         assertThat(SNAPSHOT_PATH).exists();
-        assertThat(actual).isEqualTo(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
+        assertThat(actual).isEqualTo(normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8)));
+    }
+
+    private static String normalizeLineEndings(String value) {
+        return value.replace("\r\n", "\n");
     }
 
     @Test
@@ -221,6 +228,7 @@ class OpenApiSnapshotIT {
     }
 
     private static String studentToken() {
-        return JWT.validToken(100L, "STUDENT", 10L, false);
+        return JWT.validToken(100L, UUID.fromString("88888888-8888-4888-8888-888888888888"),
+                1L, 1L, "STUDENT", "ACTIVE", 10L, false, false);
     }
 }

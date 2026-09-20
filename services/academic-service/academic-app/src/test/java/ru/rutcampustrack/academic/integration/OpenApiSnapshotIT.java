@@ -46,7 +46,7 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
     @Test
     @DisplayName("M11 G3: /api-docs matches committed snapshot")
     void apiDocsMatchesSnapshot() throws IOException {
-        String actual = fetchAndNormalize();
+        String actual = normalizeLineEndings(fetchAndNormalize());
 
         if (Boolean.getBoolean("openapi.snapshot.update")) {
             Files.createDirectories(SNAPSHOT_PATH.getParent());
@@ -60,7 +60,7 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
                         SNAPSHOT_PATH)
                 .exists();
 
-        String expected = Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8);
+        String expected = normalizeLineEndings(Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8));
         assertThat(actual)
                 .as("OpenAPI spec drifted from committed snapshot. " +
                         "To regenerate: ./gradlew :services:academic-service:academic-app:integrationTest " +
@@ -82,5 +82,9 @@ class OpenApiSnapshotIT extends AbstractAcademicIntegrationTest {
                 .with(SerializationFeature.INDENT_OUTPUT)
                 .with(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
         return writer.writeValueAsString(root) + "\n";
+    }
+
+    private static String normalizeLineEndings(String value) {
+        return value.replace("\r\n", "\n");
     }
 }

@@ -45,7 +45,8 @@
         "status": {
           "enum": [
             "approved",
-            "rejected"
+            "rejected",
+            "cancelled"
           ]
         },
         "decision_by": {
@@ -56,7 +57,10 @@
           "description": "user_id старосты, принявшего решение"
         },
         "decision_comment": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Необязательный комментарий старосты, показывается студенту"
         },
         "decided_at": {

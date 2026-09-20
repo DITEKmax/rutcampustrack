@@ -15,6 +15,7 @@ import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.event.SemesterArchivedEvent;
 import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
+import ru.rutcampustrack.academic.repository.AssignmentRepository;
 
 import ru.rutcampustrack.academic.contract.dto.semester.OverlapCheckResponse;
 import ru.rutcampustrack.academic.exception.ConflictException;
@@ -33,15 +34,18 @@ public class SemesterService {
     private final SemesterAssembler semesterAssembler;
     private final EntityManager entityManager;
     private final ApplicationEventPublisher eventPublisher;
+    private final AssignmentRepository assignmentRepository;
 
     public SemesterService(SemesterRepository semesterRepository,
                            SemesterAssembler semesterAssembler,
                            EntityManager entityManager,
-                           ApplicationEventPublisher eventPublisher) {
+                           ApplicationEventPublisher eventPublisher,
+                           AssignmentRepository assignmentRepository) {
         this.semesterRepository = semesterRepository;
         this.semesterAssembler = semesterAssembler;
         this.entityManager = entityManager;
         this.eventPublisher = eventPublisher;
+        this.assignmentRepository = assignmentRepository;
     }
 
     @Transactional
@@ -69,7 +73,7 @@ public class SemesterService {
 
     @Transactional
     public Semester updateSemester(Long id, UpdateSemesterRequest request) {
-        Semester semester = findSemesterById(id);
+        Semester semester = findSemesterForUpdate(id);
 
         // BUG-006-7: запрещаем редактировать завершённый семестр.
         if (semester.getDateTo().isBefore(LocalDate.now())) {
@@ -78,12 +82,23 @@ public class SemesterService {
         }
 
         validateDates(request.dateFrom(), request.dateTo(), false);
+        boolean datesChanged = !request.dateFrom().equals(semester.getDateFrom())
+                || !request.dateTo().equals(semester.getDateTo());
+        if (datesChanged && assignmentRepository.existsBySemesterId(id)) {
+            throw new ConflictException("dates", id,
+                    "Нельзя изменить даты семестра, на который ссылаются назначения");
+        }
         checkOverlapOrThrow(request.dateFrom(), request.dateTo(), id);
 
         semester.setName(request.name());
         semester.setDateFrom(request.dateFrom());
         semester.setDateTo(request.dateTo());
         return semesterRepository.save(semester);
+    }
+
+    private Semester findSemesterForUpdate(Long id) {
+        return semesterRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Semester", "id", id));
     }
 
     /**

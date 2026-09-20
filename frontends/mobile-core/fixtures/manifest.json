@@ -36,6 +36,18 @@
     {
       "file": "problem-cooldown.json",
       "schema": "MobileProblemDetails"
+    },
+    {
+      "file": "homework-feed.json",
+      "schema": "StudentHomework"
+    },
+    {
+      "file": "homework-completion-completed.json",
+      "schema": "StudentHomeworkCompletion"
+    },
+    {
+      "file": "homework-completion-undone.json",
+      "schema": "StudentHomeworkCompletion"
     }
   ]
 }

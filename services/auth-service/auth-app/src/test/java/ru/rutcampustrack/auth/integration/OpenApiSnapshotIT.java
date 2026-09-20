@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>Тест GET'ает {@code /api-docs} у running app и сравнивает с
  * committed snapshot'ом в {@code docs/openapi/auth.json}. При
  * расхождении падает с инструкцией обновить snapshot через
- * {@code -Dopenapi.snapshot.update=true}.
+ * {@code -Popenapi.snapshot.update=true}.
  *
  * <p>M12 binary-compatibility gate: после M12 split и M11 @Schema
  * policy, runtime /api-docs должен совпадать с ручным baseline из
@@ -56,7 +56,7 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
         }
 
         assertThat(SNAPSHOT_PATH)
-                .as("Snapshot file missing — run with -Dopenapi.snapshot.update=true to create %s",
+                .as("Snapshot file missing — run with -Popenapi.snapshot.update=true to create %s",
                         SNAPSHOT_PATH)
                 .exists();
 
@@ -64,7 +64,7 @@ class OpenApiSnapshotIT extends AbstractIntegrationTest {
         assertThat(actual)
                 .as("OpenAPI spec drifted from committed snapshot. " +
                         "To regenerate: ./gradlew :services:auth-service:auth-app:integrationTest " +
-                        "--tests OpenApiSnapshotIT -Dopenapi.snapshot.update=true")
+                        "--tests OpenApiSnapshotIT -Popenapi.snapshot.update=true")
                 .isEqualTo(expected);
     }
 

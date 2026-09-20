@@ -5,6 +5,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 import ru.rutcampustrack.schedule.contract.dto.lesson.LessonResponse;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
+import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 
@@ -26,19 +27,28 @@ public class LessonAssembler {
     public LessonResponse toResponse(LessonWithItem lwi) {
         Lesson l = lwi.lesson();
         ScheduleItem si = lwi.scheduleItem();
+        Short dayOfWeek = l.getDayOfWeek() != null ? l.getDayOfWeek() : si.getDayOfWeek();
+        Short lessonNumber = l.getLessonNumber() != null ? l.getLessonNumber() : si.getLessonNumber();
+        java.time.LocalTime startTime = l.getStartTime() != null ? l.getStartTime() : si.getStartTime();
+        java.time.LocalTime endTime = l.getEndTime() != null ? l.getEndTime() : si.getEndTime();
+        WeekType weekType = l.getWeekTypeSnapshot() == null
+                ? si.getWeekType() : WeekType.valueOf(l.getWeekTypeSnapshot().toUpperCase());
+        String room = l.getRoomSnapshot() != null ? l.getRoomSnapshot() : si.getRoom();
+        Long groupId = l.getGroupId() != null ? l.getGroupId() : si.getGroupId();
+        Long subjectId = l.getSubjectId() != null ? l.getSubjectId() : si.getSubjectId();
         return new LessonResponse(
                 l.getId(),
                 l.getScheduleItemId(),
-                si.getGroupId(),
-                si.getSubjectId(),
+                groupId,
+                subjectId,
                 l.getDate(),
                 l.getStatus(),
-                si.getDayOfWeek(),
-                si.getLessonNumber(),
-                si.getStartTime(),
-                si.getEndTime(),
-                si.getWeekType(),
-                si.getRoom(),
+                dayOfWeek,
+                lessonNumber,
+                startTime,
+                endTime,
+                weekType,
+                room,
                 l.isGeoBlocked(),
                 l.isBlockedByHeadman(),
                 l.getBlockedByUserId(),
@@ -46,7 +56,15 @@ public class LessonAssembler {
                 l.getCancelReason(),
                 l.getCancelledBy(),
                 l.getCancelledAt(),
-                l.getCreatedAt()
+                l.getCreatedAt(),
+                l.getOccurrenceId(),
+                l.getAssignmentId(),
+                l.getSemesterId(),
+                l.getAssignedTeacherId(),
+                l.getLessonType(),
+                l.getGeneration(),
+                l.getRevision(),
+                l.isCurrent()
         );
     }
 

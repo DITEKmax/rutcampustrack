@@ -52,7 +52,14 @@ dependencies {
     // needed at compile time because WebPushDeliveryService catches HttpResponseException (410)
     // and PushService.send() throws JoseException as a checked exception
     implementation("org.apache.httpcomponents:httpclient:4.5.13")
-    implementation("org.bitbucket.b_c:jose4j:0.7.9")
+    implementation("org.bitbucket.b_c:jose4j:0.9.6")
+
+    // Security repair: web-push 5.1.2 brings the vulnerable 2.12.4 client family.
+    // Keep the transitive client and its Netty utility module on one fixed release.
+    constraints {
+        implementation("org.asynchttpclient:async-http-client:2.15.0")
+        implementation("org.asynchttpclient:async-http-client-netty-utils:2.15.0")
+    }
 
     // NEW: MongoDB for push_subscriptions
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
@@ -78,7 +85,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // NEW: OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

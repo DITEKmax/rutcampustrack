@@ -20,8 +20,8 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     /**
      * M05 Группа 2 — reference-pattern для NEW-143 (Spring Data projection).
      *
-     * <p>Один JOIN + SELECT subset полей вместо {@code findById(lessonId)}
-     * + {@code findById(scheduleItemId)} (2 roundtrips). Alias columns
+     * <p>One snapshot SELECT avoids joining a mutable template for physical
+     * identity fields. Alias columns
      * совпадают с getters в {@link LessonDetailsProjection} (case-insensitive).
      *
      * <p>Boolean {@code is_blocked_by_headman} выставляется с алиасом
@@ -32,14 +32,13 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
                l.date            AS date,
                l.status::text    AS status,
                l.is_blocked_by_headman AS isBlockedByHeadman,
-               si.group_id       AS groupId,
-               si.subject_id     AS subjectId,
-               si.lesson_number  AS lessonNumber,
-               si.start_time     AS startTime,
-               si.end_time       AS endTime,
-               si.room           AS room
+               l.group_id        AS groupId,
+               l.subject_id      AS subjectId,
+               l.lesson_number   AS lessonNumber,
+               l.start_time      AS startTime,
+               l.end_time        AS endTime,
+               l.room_snapshot   AS room
           FROM lessons l
-          JOIN schedule_items si ON si.id = l.schedule_item_id
          WHERE l.id = :lessonId
         """, nativeQuery = true)
     Optional<LessonDetailsProjection> findLessonDetails(@Param("lessonId") Long lessonId);
@@ -89,6 +88,43 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
            nativeQuery = true)
     Page<Lesson> pageByScheduleItemIdInAndDateBetweenAndStatusIn(
             @Param("itemIds") List<Long> scheduleItemIds,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to,
+            @Param("statuses") List<String> statuses,
+            Pageable pageable);
+
+    @Query(value = "SELECT * FROM lessons WHERE group_id = :groupId AND semester_id = :semesterId "
+            + "AND date BETWEEN :from AND :to AND status::text IN :statuses "
+            + "ORDER BY date ASC, id ASC",
+           countQuery = "SELECT COUNT(*) FROM lessons WHERE group_id = :groupId AND semester_id = :semesterId "
+                   + "AND date BETWEEN :from AND :to AND status::text IN :statuses",
+           nativeQuery = true)
+    Page<Lesson> pageByGroupIdAndSemesterIdAndDateBetweenAndStatusIn(
+            @Param("groupId") Long groupId,
+            @Param("semesterId") Long semesterId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to,
+            @Param("statuses") List<String> statuses,
+            Pageable pageable);
+
+    @Query(value = "SELECT * FROM lessons WHERE group_id = :groupId AND semester_id = :semesterId "
+            + "AND date BETWEEN :from AND :to AND status::text IN :statuses ORDER BY date ASC, id ASC",
+            nativeQuery = true)
+    List<Lesson> findByGroupIdAndSemesterIdAndDateBetweenAndStatusIn(
+            @Param("groupId") Long groupId,
+            @Param("semesterId") Long semesterId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to,
+            @Param("statuses") List<String> statuses);
+
+    @Query(value = "SELECT * FROM lessons WHERE group_id = :groupId "
+            + "AND date BETWEEN :from AND :to AND status::text IN :statuses "
+            + "ORDER BY date ASC, id ASC",
+           countQuery = "SELECT COUNT(*) FROM lessons WHERE group_id = :groupId "
+                   + "AND date BETWEEN :from AND :to AND status::text IN :statuses",
+           nativeQuery = true)
+    Page<Lesson> pageByGroupIdAndDateBetweenAndStatusIn(
+            @Param("groupId") Long groupId,
             @Param("from") LocalDate from,
             @Param("to") LocalDate to,
             @Param("statuses") List<String> statuses,
@@ -154,11 +190,10 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      */
     @Query(value = """
         SELECT l.* FROM lessons l
-        JOIN schedule_items si ON si.id = l.schedule_item_id
         WHERE l.status::text = 'active'
-          AND si.group_id = :groupId
+          AND l.group_id = :groupId
           AND l.date = CAST(:date AS date)
-        ORDER BY si.lesson_number ASC
+        ORDER BY l.lesson_number ASC, l.id ASC
         LIMIT 1
         """, nativeQuery = true)
     Optional<Lesson> findActiveLessonForGroup(
@@ -172,9 +207,8 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      */
     @Query(value = """
         SELECT l.* FROM lessons l
-        JOIN schedule_items si ON si.id = l.schedule_item_id
-        WHERE si.group_id = :groupId
-          AND si.lesson_number = :lessonNumber
+        WHERE l.group_id = :groupId
+          AND l.lesson_number = :lessonNumber
           AND l.date = CAST(:date AS date)
           AND l.status::text IN ('planned','active','closed')
         ORDER BY l.date
@@ -193,10 +227,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      */
     @Query(value = """
         SELECT l.* FROM lessons l
-        JOIN schedule_items si ON si.id = l.schedule_item_id
         WHERE l.status::text = 'planned'
-          AND (l.date + si.start_time) <= CAST(:now AS timestamp)
-        ORDER BY l.date, si.start_time
+          AND (l.date + l.start_time) <= CAST(:now AS timestamp)
+        ORDER BY l.date, l.start_time
         """, nativeQuery = true)
     List<Lesson> findPlannedDueForActivation(@Param("now") LocalDateTime now);
 
@@ -205,10 +238,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      */
     @Query(value = """
         SELECT l.* FROM lessons l
-        JOIN schedule_items si ON si.id = l.schedule_item_id
         WHERE l.status::text = 'active'
-          AND (l.date + si.end_time + INTERVAL '5 minutes') <= CAST(:now AS timestamp)
-        ORDER BY l.date, si.end_time
+          AND (l.date + l.end_time + INTERVAL '5 minutes') <= CAST(:now AS timestamp)
+        ORDER BY l.date, l.end_time
         """, nativeQuery = true)
     List<Lesson> findActiveDueForClosure(@Param("now") LocalDateTime now);
 
@@ -223,24 +255,22 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      */
     @Query(value = """
         SELECT l.* FROM lessons l
-        JOIN schedule_items si ON si.id = l.schedule_item_id
         WHERE l.status::text = 'active'
           AND l.reminder_midpoint_sent_at IS NULL
-          AND (l.date + si.start_time + (si.end_time - si.start_time) / 2)
+          AND (l.date + l.start_time + (l.end_time - l.start_time) / 2)
                   <= CAST(:now AS timestamp)
-          AND (l.date + si.end_time - INTERVAL '5 minutes') > CAST(:now AS timestamp)
-        ORDER BY l.date, si.start_time
+          AND (l.date + l.end_time - INTERVAL '5 minutes') > CAST(:now AS timestamp)
+        ORDER BY l.date, l.start_time
         """, nativeQuery = true)
     List<Lesson> findActiveDueForMidpointReminder(@Param("now") LocalDateTime now);
 
     @Query(value = """
         SELECT l.* FROM lessons l
-        JOIN schedule_items si ON si.id = l.schedule_item_id
         WHERE l.status::text = 'active'
           AND l.reminder_near_end_sent_at IS NULL
-          AND (l.date + si.end_time - INTERVAL '5 minutes') <= CAST(:now AS timestamp)
-          AND (l.date + si.end_time) > CAST(:now AS timestamp)
-        ORDER BY l.date, si.end_time
+          AND (l.date + l.end_time - INTERVAL '5 minutes') <= CAST(:now AS timestamp)
+          AND (l.date + l.end_time) > CAST(:now AS timestamp)
+        ORDER BY l.date, l.end_time
         """, nativeQuery = true)
     List<Lesson> findActiveDueForNearEndReminder(@Param("now") LocalDateTime now);
 
@@ -252,8 +282,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      */
     @Query(value = """
         SELECT COUNT(l.id) FROM lessons l
-        JOIN schedule_items si ON si.id = l.schedule_item_id
-        WHERE si.subject_id = :subjectId
+        WHERE l.subject_id = :subjectId
           AND l.status::text <> 'planned'
         """, nativeQuery = true)
     long countNonPlannedBySubjectId(@Param("subjectId") Long subjectId);
@@ -264,10 +293,14 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      */
     @Query(value = """
         SELECT COUNT(l.id) FROM lessons l
-        JOIN schedule_items si ON si.id = l.schedule_item_id
-        WHERE si.subject_id = :subjectId
+        WHERE l.subject_id = :subjectId
         """, nativeQuery = true)
     long countAllBySubjectId(@Param("subjectId") Long subjectId);
+
+    /** Canonical V17 history is retained; subject deletion must fail closed. */
+    @Query(value = "SELECT COUNT(l.id) FROM lessons l WHERE l.subject_id = :subjectId",
+            nativeQuery = true)
+    long countCanonicalReferencesBySubjectId(@Param("subjectId") Long subjectId);
 
     /**
      * Returns the ids of all lessons attached to any schedule_item of the subject.
@@ -276,8 +309,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      */
     @Query(value = """
         SELECT l.id FROM lessons l
-        JOIN schedule_items si ON si.id = l.schedule_item_id
-        WHERE si.subject_id = :subjectId
+        WHERE l.subject_id = :subjectId
         """, nativeQuery = true)
     List<Long> findIdsBySubjectId(@Param("subjectId") Long subjectId);
 }

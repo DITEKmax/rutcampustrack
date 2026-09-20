@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
+import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.SubjectStats;
@@ -15,6 +17,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
@@ -22,6 +25,7 @@ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.LessonInfo;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -87,6 +92,7 @@ class ReportServiceTest {
             return ids.stream()
                     .map(id -> ru.rutcampustrack.schedule.grpc.LessonInfo.newBuilder()
                             .setLessonId(id)
+                            .setStatus("closed")
                             .build())
                     .toList();
         });
@@ -97,7 +103,11 @@ class ReportServiceTest {
     // -------------------------------------------------------------------------
 
     private AttendanceRecord record(Long subjectId, AttendanceStatus status) {
-        return new AttendanceRecord(LESSON_ID, USER_ID, GROUP_ID, subjectId,
+        return recordAtLesson(LESSON_ID, subjectId, status);
+    }
+
+    private AttendanceRecord recordAtLesson(Long lessonId, Long subjectId, AttendanceStatus status) {
+        return new AttendanceRecord(lessonId, USER_ID, GROUP_ID, subjectId,
                 LocalDate.of(2026, 4, 1), 1, status, AttendanceSource.STUDENT_GEO, null);
     }
 
@@ -255,6 +265,34 @@ class ReportServiceTest {
         assertThat(response.getOverall().getPercentage()).isEqualTo(0.0);
     }
 
+    @Test
+    void stats_excludesAuthoritativeCancelledAndTransferredLessons() {
+        when(attendanceReadPort.findByUserId(USER_ID, SEMESTER_ID))
+                .thenReturn(List.of(
+                        recordAtLesson(11L, SUBJECT_ID_1, AttendanceStatus.ABSENT),
+                        recordAtLesson(12L, SUBJECT_ID_1, AttendanceStatus.PRESENT)));
+        doReturn(List.of(
+                LessonInfo.newBuilder().setLessonId(11L).setStatus("cancelled").build(),
+                LessonInfo.newBuilder().setLessonId(12L).setStatus("transferred").build()))
+                .when(scheduleGrpcClient).getLessonsByIds(any());
+
+        StudentStatsResponse response = reportService.getStudentStats();
+
+        assertThat(response.getSubjects()).isEmpty();
+        assertThat(response.getOverall().getTotal()).isZero();
+    }
+
+    @Test
+    void stats_failsClosedWhenScheduleAuthorityIsMalformed() {
+        when(attendanceReadPort.findByUserId(USER_ID, SEMESTER_ID))
+                .thenReturn(List.of(record(SUBJECT_ID_1, AttendanceStatus.PRESENT)));
+        doReturn(List.of(LessonInfo.newBuilder().setLessonId(LESSON_ID).build()))
+                .when(scheduleGrpcClient).getLessonsByIds(any());
+
+        assertThatThrownBy(() -> reportService.getStudentStats())
+                .isInstanceOf(ScheduleServiceUnavailableException.class);
+    }
+
     // -------------------------------------------------------------------------
     // Test 7: Missing student shows ABSENT in left-join (RPRT-01 D-04)
     // -------------------------------------------------------------------------
@@ -350,6 +388,81 @@ class ReportServiceTest {
 
         assertThatThrownBy(() -> reportService.getLessonAttendance(LESSON_ID))
                 .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void authorizeTeacherWithCurrentAssignmentAllowsMatchingLesson() {
+        when(requestContext.getRole()).thenReturn(UserRole.TEACHER);
+        when(academicGrpcClient.getTeacherSubjects(USER_ID, SEMESTER_ID))
+                .thenReturn(TeacherSubjectsResponse.newBuilder()
+                        .addSubjects(TeacherSubjectInfo.newBuilder()
+                                .setSubjectId(SUBJECT_ID_1)
+                                .setGroupId(GROUP_ID)
+                                .build())
+                        .build());
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
+        when(academicGrpcClient.getGroupMembers(GROUP_ID)).thenReturn(GroupMembersResponse.getDefaultInstance());
+        when(attendanceReadPort.findByLessonId(LESSON_ID)).thenReturn(List.of());
+
+        LessonAttendanceResponse response = reportService.getLessonAttendance(LESSON_ID);
+
+        assertThat(response.getEntries()).isEmpty();
+        verify(academicGrpcClient).getTeacherSubjects(USER_ID, SEMESTER_ID);
+    }
+
+    @Test
+    void authorizeTeacherWithEmptyAcademicResponseDeniesLesson() {
+        when(requestContext.getRole()).thenReturn(UserRole.TEACHER);
+        when(academicGrpcClient.getTeacherSubjects(USER_ID, SEMESTER_ID))
+                .thenReturn(TeacherSubjectsResponse.getDefaultInstance());
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
+
+        assertThatThrownBy(() -> reportService.getLessonAttendance(LESSON_ID))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(academicGrpcClient).getTeacherSubjects(USER_ID, SEMESTER_ID);
+    }
+
+    @Test
+    void authorizeTeacherWithDifferentSubjectDeniesLesson() {
+        when(requestContext.getRole()).thenReturn(UserRole.TEACHER);
+        when(academicGrpcClient.getTeacherSubjects(USER_ID, SEMESTER_ID))
+                .thenReturn(TeacherSubjectsResponse.newBuilder()
+                        .addSubjects(TeacherSubjectInfo.newBuilder()
+                                .setSubjectId(SUBJECT_ID_2)
+                                .setGroupId(GROUP_ID)
+                                .build())
+                        .build());
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
+
+        assertThatThrownBy(() -> reportService.getLessonAttendance(LESSON_ID))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void authorizeTeacherWithDifferentGroupDeniesLesson() {
+        when(requestContext.getRole()).thenReturn(UserRole.TEACHER);
+        when(academicGrpcClient.getTeacherSubjects(USER_ID, SEMESTER_ID))
+                .thenReturn(TeacherSubjectsResponse.newBuilder()
+                        .addSubjects(TeacherSubjectInfo.newBuilder()
+                                .setSubjectId(SUBJECT_ID_1)
+                                .setGroupId(GROUP_ID + 1)
+                                .build())
+                        .build());
+        when(scheduleGrpcClient.getLessonById(LESSON_ID)).thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
+
+        assertThatThrownBy(() -> reportService.getLessonAttendance(LESSON_ID))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+    private LessonResponse lesson(Long subjectId, Long groupId) {
+        return LessonResponse.newBuilder()
+                .setId(LESSON_ID)
+                .setGroupId(groupId)
+                .setSubjectId(subjectId)
+                .setDate("2026-04-01")
+                .setLessonNumber(1)
+                .setStatus("active")
+                .build();
     }
 
     // -------------------------------------------------------------------------

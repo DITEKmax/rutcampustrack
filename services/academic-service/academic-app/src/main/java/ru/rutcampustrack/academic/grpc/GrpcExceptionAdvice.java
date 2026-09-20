@@ -6,6 +6,7 @@ import net.devh.boot.grpc.server.advice.GrpcExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
+import ru.rutcampustrack.academic.history.HistoricalMembershipException;
 
 @GrpcAdvice
 public class GrpcExceptionAdvice {
@@ -15,6 +16,16 @@ public class GrpcExceptionAdvice {
     @GrpcExceptionHandler(ResourceNotFoundException.class)
     public Status handleNotFound(ResourceNotFoundException e) {
         return Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e);
+    }
+
+    @GrpcExceptionHandler(HistoricalMembershipException.class)
+    public Status handleHistoricalMembership(HistoricalMembershipException e) {
+        Status status = switch (e.code()) {
+            case INVALID_ARGUMENT -> Status.INVALID_ARGUMENT;
+            case NOT_FOUND -> Status.NOT_FOUND;
+            case FAILED_PRECONDITION, UNSUPPORTED_MUTATION -> Status.FAILED_PRECONDITION;
+        };
+        return status.withDescription(e.getMessage()).withCause(e);
     }
 
     @GrpcExceptionHandler(IllegalArgumentException.class)

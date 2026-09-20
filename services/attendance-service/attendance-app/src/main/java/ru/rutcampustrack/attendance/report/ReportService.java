@@ -28,6 +28,8 @@ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.schedule.grpc.LessonInfo;
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -442,12 +444,45 @@ public class ReportService {
      */
     private List<AttendanceRecord> filterExistingLessons(List<AttendanceRecord> records) {
         if (records == null || records.isEmpty()) return List.of();
-        List<Long> ids = records.stream().map(AttendanceRecord::lessonId).distinct().toList();
-        java.util.Set<Long> alive = scheduleGrpcClient.getLessonsByIds(ids).stream()
-                .map(ru.rutcampustrack.schedule.grpc.LessonInfo::getLessonId)
-                .collect(Collectors.toSet());
+        List<Long> ids = records.stream()
+                .map(AttendanceRecord::lessonId)
+                .peek(id -> {
+                    if (id == null || id <= 0) {
+                        throw new ScheduleServiceUnavailableException(
+                                "Attendance returned a malformed lesson identity");
+                    }
+                })
+                .distinct()
+                .toList();
+        List<LessonInfo> lessons = scheduleGrpcClient.getLessonsByIds(ids);
+        if (lessons == null) {
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned no lesson authority response");
+        }
+        Map<Long, LessonInfo> authoritative = new java.util.HashMap<>();
+        for (LessonInfo lesson : lessons) {
+            if (lesson == null || lesson.getLessonId() <= 0 || lesson.getStatus().isBlank()
+                    || authoritative.put(lesson.getLessonId(), lesson) != null) {
+                throw new ScheduleServiceUnavailableException(
+                        "Schedule returned a malformed or duplicate lesson authority");
+            }
+            String status = lesson.getStatus().toLowerCase(java.util.Locale.ROOT);
+            if (!java.util.Set.of("planned", "active", "closed", "cancelled", "transferred")
+                    .contains(status)) {
+                throw new ScheduleServiceUnavailableException(
+                        "Schedule returned an unknown lesson status");
+            }
+        }
+        if (authoritative.size() != ids.size()) {
+            throw new ScheduleServiceUnavailableException(
+                    "Schedule returned an incomplete lesson authority response");
+        }
         return records.stream()
-                .filter(r -> alive.contains(r.lessonId()))
+                .filter(r -> {
+                    String status = authoritative.get(r.lessonId()).getStatus()
+                            .toLowerCase(java.util.Locale.ROOT);
+                    return !status.equals("cancelled") && !status.equals("transferred");
+                })
                 .toList();
     }
 

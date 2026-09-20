@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestHeader;
+import java.util.UUID;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
@@ -36,10 +38,12 @@ public interface ScheduleItemApi {
             @ApiResponse(responseCode = "201", description = "Шаблон создан"),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
+            @ApiResponse(responseCode = "409", description = "Конфликт assignment fence или idempotency replay"),
             @ApiResponse(responseCode = "503", description = "Academic Service недоступен")
     })
     @PostMapping
     ResponseEntity<EntityModel<ScheduleItemResponse>> createScheduleItem(
+            @RequestHeader("Idempotency-Key") UUID idempotencyKey,
             @Valid @RequestBody CreateScheduleItemRequest request);
 
     @Operation(summary = "Получить шаблон по ID")

@@ -14,7 +14,11 @@ import ru.rutcampustrack.attendance.contract.dto.latecheckin.LateCheckinRequestR
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
+import ru.rutcampustrack.attendance.exception.LegacyEndpointRetiredException;
 import ru.rutcampustrack.attendance.security.RequireRole;
+import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 
 import java.util.List;
 
@@ -23,17 +27,21 @@ public class LateCheckinController implements LateCheckinApi {
 
     private final LateCheckinService service;
     private final LateCheckinAssembler assembler;
+    private final StudentRequestService studentRequestService;
+    private final RequestContext requestContext;
 
-    public LateCheckinController(LateCheckinService service, LateCheckinAssembler assembler) {
+    public LateCheckinController(LateCheckinService service, LateCheckinAssembler assembler,
+                                 StudentRequestService studentRequestService, RequestContext requestContext) {
         this.service = service;
         this.assembler = assembler;
+        this.studentRequestService = studentRequestService;
+        this.requestContext = requestContext;
     }
 
     @Override
     @RequireRole(UserRole.STUDENT)
     public ResponseEntity<EntityModel<LateCheckinRequestResponse>> createRequest(Long lessonId) {
-        LateCheckinRequest request = service.createRequest(lessonId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(request));
+        throw new LegacyEndpointRetiredException();
     }
 
     @Override
@@ -58,7 +66,14 @@ public class LateCheckinController implements LateCheckinApi {
     @RequireRole(UserRole.STUDENT)
     public ResponseEntity<EntityModel<LateCheckinRequestResponse>> decideRequest(
             String requestId, LateCheckinDecisionRequest body) {
-        LateCheckinRequest request = service.applyDecisionFromWeb(requestId, body.approved());
+        studentRequestService.decideLateCheckin(identity(), requestId, body.approved());
+        LateCheckinRequest request = service.getRequestById(requestId);
         return ResponseEntity.ok(assembler.toModel(request));
+    }
+
+    private StudentRequestModels.Identity identity() {
+        Long userId = requestContext.getUserId();
+        return new StudentRequestModels.Identity(userId == null ? 0L : userId,
+                requestContext.getRole(), requestContext.getGroupId(), requestContext.isHeadman());
     }
 }

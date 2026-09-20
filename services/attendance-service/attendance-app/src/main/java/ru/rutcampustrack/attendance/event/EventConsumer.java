@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rutcampustrack.attendance.excuse.ExcuseService;
-import ru.rutcampustrack.attendance.latecheckin.LateCheckinService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
+import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
@@ -33,9 +33,11 @@ public class EventConsumer extends AbstractEventConsumer {
 
     private final LessonEventService lessonEventService;
     private final SemesterCacheService semesterCacheService;
-    private final LateCheckinService lateCheckinService;
-    private final ExcuseService excuseService;
+    private final StudentRequestService studentRequestService;
     private final IdempotencyGuard idempotencyGuard;
+
+    private static final int SUPPORTED_EVENT_VERSION = 1;
+    private static final String TRUSTED_BOT_SOURCE = "notification-bot";
 
     @RabbitListener(queues = "attendance-service.events")
     @EventIdempotent(consumer = CONSUMER_ID)
@@ -141,16 +143,24 @@ public class EventConsumer extends AbstractEventConsumer {
      * {@code approved} (bool).
      */
     private void handleLateCheckinDecision(Map<String, Object> envelope) {
+        requireTrustedBotDecisionEnvelope(envelope, "late_checkin.decision");
         Map<String, Object> payload = extractPayload(envelope);
         if (payload == null) return;
         String requestId = (String) payload.get("request_id");
         Long decisionBy = extractPositiveLong(payload.get("decision_by"));
         Object approvedRaw = payload.get("approved");
-        if (requestId == null || decisionBy == null || !(approvedRaw instanceof Boolean)) {
-            log.warn("late_checkin.decision: missing required fields, ignoring: {}", payload);
-            return;
+        if (requestId == null || requestId.isBlank() || decisionBy == null || !(approvedRaw instanceof Boolean)) {
+            throw new IllegalArgumentException("late_checkin.decision has invalid payload");
         }
-        lateCheckinService.applyDecision(requestId, decisionBy, (Boolean) approvedRaw);
+        try {
+            studentRequestService.decideLateCheckinFromBot(requestId, decisionBy, (Boolean) approvedRaw);
+        } catch (ConflictException stale) {
+            // A trusted event with a terminal request is an authenticated stale
+            // delivery.  The persisted terminal detail remains authoritative;
+            // acknowledge without mutating it or publishing a second event.
+            log.info("Ignoring stale late_checkin.decision for request_id={}: {}", requestId,
+                    stale.getMessage());
+        }
     }
 
     /**
@@ -159,17 +169,44 @@ public class EventConsumer extends AbstractEventConsumer {
      * опционально {@code decision_comment}.
      */
     private void handleExcuseDecision(Map<String, Object> envelope) {
+        requireTrustedBotDecisionEnvelope(envelope, "excuse.decision");
         Map<String, Object> payload = extractPayload(envelope);
         if (payload == null) return;
         String ticketId = (String) payload.get("ticket_id");
         Long decisionBy = extractLong(payload, "decision_by");
         Object approvedRaw = payload.get("approved");
-        String comment = (String) payload.get("decision_comment");
-        if (ticketId == null || !(approvedRaw instanceof Boolean)) {
-            log.warn("excuse.decision: missing required fields, ignoring: {}", payload);
-            return;
+        Object commentRaw = payload.get("decision_comment");
+        String comment;
+        if (commentRaw == null) {
+            comment = null;
+        } else if (commentRaw instanceof String value) {
+            comment = value;
+        } else {
+            throw new IllegalArgumentException("excuse.decision has invalid decision_comment");
         }
-        excuseService.applyDecisionFromBot(ticketId, decisionBy, (Boolean) approvedRaw, comment);
+        if (ticketId == null || ticketId.isBlank() || decisionBy == null
+                || decisionBy <= 0 || !(approvedRaw instanceof Boolean)) {
+            throw new IllegalArgumentException("excuse.decision has invalid payload");
+        }
+        try {
+            studentRequestService.decideExcuseFromBot(ticketId, decisionBy, (Boolean) approvedRaw, comment);
+        } catch (ConflictException stale) {
+            // See the late-checkin path: trusted stale commands are no-op ACKs,
+            // while malformed/unauthorized failures still propagate to DLQ.
+            log.info("Ignoring stale excuse.decision for ticket_id={}: {}", ticketId,
+                    stale.getMessage());
+        }
+    }
+
+    private void requireTrustedBotDecisionEnvelope(Map<String, Object> envelope, String expectedType) {
+        Object version = envelope.get("event_version");
+        Object source = envelope.get("source");
+        if (!(version instanceof Number number)
+                || number.intValue() != SUPPORTED_EVENT_VERSION
+                || !TRUSTED_BOT_SOURCE.equals(source)
+                || !expectedType.equals(envelope.get("event_type"))) {
+            throw new IllegalArgumentException("Unsupported or untrusted " + expectedType + " envelope");
+        }
     }
 
     @SuppressWarnings("unchecked")

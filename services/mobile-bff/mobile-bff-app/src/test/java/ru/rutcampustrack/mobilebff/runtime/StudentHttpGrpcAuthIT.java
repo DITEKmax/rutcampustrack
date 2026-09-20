@@ -60,9 +60,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.time.ZoneOffset;
 import java.util.HexFormat;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -71,7 +73,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(
@@ -85,6 +89,7 @@ class StudentHttpGrpcAuthIT {
     private static final long LESSON_ID = 77L;
     private static final String KEY = "runtime-key-00001";
     private static final String TOKEN_HEADER = "X-Internal-Token";
+    private static final UUID SESSION_ID = UUID.fromString("88888888-8888-4888-8888-888888888888");
     private static final InternalJwtTestFactory JWT = new InternalJwtTestFactory();
     private static final StudentCheckinReceiptRepository RECEIPTS = mock(StudentCheckinReceiptRepository.class);
     private static final AtomicInteger GRPC_CALLS = new AtomicInteger();
@@ -96,6 +101,7 @@ class StudentHttpGrpcAuthIT {
         registry.add("grpc.client.attendance-service.address",
                 () -> "static://127.0.0.1:" + grpcServer.getPort());
         registry.add("grpc.client.attendance-service.negotiation-type", () -> "plaintext");
+        registry.add("grpc.server.port", () -> 0);
         registry.add("rutcampustrack.security.internal-jwt.clock-skew-seconds", () -> "0");
     }
 
@@ -125,7 +131,7 @@ class StudentHttpGrpcAuthIT {
 
     @Test
     void signedStudentJwtTraversesRealHttpAndGrpcAndSpoofedHeadersAreIgnored() {
-        HttpHeaders headers = headers(JWT.validToken(STUDENT_ID, "STUDENT", GROUP_ID, false));
+        HttpHeaders headers = headers(validToken(STUDENT_ID, "STUDENT", "ACTIVE", GROUP_ID, false));
         headers.set("X-User-Id", "999999");
         headers.set("X-User-Role", "ADMIN");
         var response = http.exchange(url(), HttpMethod.POST, request(headers), String.class);
@@ -183,6 +189,106 @@ class StudentHttpGrpcAuthIT {
         assertThat(GRPC_CALLS).hasValue(0);
     }
 
+    @Test
+    void readOnlyStudentJwtIsRejectedBeforeCheckinGrpc() {
+        HttpHeaders headers = headers(validToken(STUDENT_ID, "STUDENT", "EXPELLED", GROUP_ID, true));
+        var response = http.exchange(url(), HttpMethod.POST, request(headers), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getHeaders().getCacheControl()).contains("no-store");
+        assertThat(response.getBody()).contains("\"code\":\"ROLE_READ_ONLY\"");
+        assertThat(GRPC_CALLS).hasValue(0);
+        verify(RECEIPTS, never()).findByStudentIdAndLessonIdAndIdempotencyKey(
+                STUDENT_ID, LESSON_ID, KEY);
+    }
+
+    @Test
+    void terminalWrongRoleReadOnlyJwtUsesCheckinFacadeBoundary() {
+        HttpHeaders headers = headers(validToken(STUDENT_ID, "ADMIN", "EXPELLED", GROUP_ID, true));
+        var response = http.exchange(url(), HttpMethod.POST, request(headers), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getBody())
+                .contains("\"status\":403")
+                .contains("\"code\":\"WRONG_ROLE\"")
+                .contains("\"type\":\"urn:rct:problem:wrong-role\"");
+        assertThat(GRPC_CALLS).hasValue(0);
+        verifyNoInteractions(RECEIPTS);
+    }
+
+    @Test
+    void activeStudentCanCheckinThroughMatrixDecoratedRoute() {
+        HttpHeaders headers = headers(validToken(STUDENT_ID, "STUDENT", "ACTIVE", GROUP_ID, false));
+        String path = "/api/v1/student;v=1/lessons/77;v=2/checkin;v=3";
+        var response = http.exchange(
+                "http://127.0.0.1:" + httpPort + path, HttpMethod.POST,
+                request(headers), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).contains("\"outcome\":\"PRESENT\"")
+                .contains("\"lessonId\":\"77\"")
+                .contains("\"source\":\"STUDENT_GEO\"");
+        assertThat(GRPC_CALLS).hasValue(1);
+        verify(RECEIPTS).findByStudentIdAndLessonIdAndIdempotencyKey(STUDENT_ID, LESSON_ID, KEY);
+    }
+
+    @ParameterizedTest(name = "read-only check-in mutation wins over {0}")
+    @MethodSource("readOnlyCheckinMutationInputs")
+    void readOnlyCheckinMutationIsRejectedBeforeMvcValidation(
+            String caseName, String path, String idempotencyKey, String body) {
+        HttpHeaders headers = headers(validToken(STUDENT_ID, "STUDENT", "EXPELLED", GROUP_ID, true));
+        if (idempotencyKey == null) {
+            headers.remove("Idempotency-Key");
+        } else {
+            headers.set("Idempotency-Key", idempotencyKey);
+        }
+
+        var response = http.exchange(
+                "http://127.0.0.1:" + httpPort + path, HttpMethod.POST,
+                new HttpEntity<>(body, headers), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getHeaders().getCacheControl()).contains("no-store");
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getBody())
+                .contains("\"status\":403")
+                .contains("\"code\":\"ROLE_READ_ONLY\"")
+                .contains("\"type\":\"urn:rct:problem:role-read-only\"")
+                .contains("\"instance\":\"" + path + "\"");
+        assertThat(GRPC_CALLS).hasValue(0);
+        verifyNoInteractions(RECEIPTS);
+    }
+
+    private static Stream<Arguments> readOnlyCheckinMutationInputs() {
+        return Stream.of(
+                Arguments.of("malformed path", "/api/v1/student/lessons/not-a-number/checkin", KEY,
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
+                Arguments.of("overflow path", "/api/v1/student/lessons/9223372036854775808/checkin", KEY,
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
+                Arguments.of("missing idempotency header", "/api/v1/student/lessons/77/checkin", null,
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
+                Arguments.of("invalid idempotency header", "/api/v1/student/lessons/77/checkin", "short-key",
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
+                Arguments.of("malformed body", "/api/v1/student/lessons/77/checkin", KEY, "{\"geo\":"),
+                Arguments.of("bean-invalid body", "/api/v1/student/lessons/77/checkin", KEY,
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":null,\"longitude\":37.61}}"),
+                Arguments.of("matrix on student prefix", "/api/v1/student;v=1/lessons/77/checkin", KEY,
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
+                Arguments.of("matrix on lesson variable", "/api/v1/student/lessons/77;v=2/checkin", KEY,
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
+                Arguments.of("matrix on check-in suffix", "/api/v1/student/lessons/77/checkin;v=3", KEY,
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
+                Arguments.of("matrix prefix with malformed body", "/api/v1/student;v=1/lessons/77/checkin", KEY,
+                        "{\"geo\":"),
+                Arguments.of("matrix suffix with bean-invalid body", "/api/v1/student/lessons/77/checkin;v=3", KEY,
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":null,\"longitude\":37.61}}"),
+                Arguments.of("matrix variable with missing idempotency header", "/api/v1/student/lessons/77;v=2/checkin", null,
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"),
+                Arguments.of("matrix suffix with invalid idempotency header", "/api/v1/student/lessons/77/checkin;v=3", "short-key",
+                        "{\"geo\":{\"kind\":\"COORDINATES\",\"latitude\":55.75,\"longitude\":37.61}}"));
+    }
+
     @ParameterizedTest(name = "BFF rejects signed token with {0}")
     @MethodSource("invalidStudentScopes")
     void roleAndGroupScopeAreRejectedAtBffBoundary(String caseName, String token, String code) {
@@ -195,18 +301,55 @@ class StudentHttpGrpcAuthIT {
 
     private static Stream<Arguments> invalidTokens() {
         return Stream.of(
-                Arguments.of("invalid signature", JWT.invalidSignature(STUDENT_ID, "STUDENT")),
-                Arguments.of("expired", JWT.expiredToken(STUDENT_ID, "STUDENT")),
-                Arguments.of("wrong issuer", JWT.wrongIssuer(STUDENT_ID, "STUDENT")),
-                Arguments.of("wrong audience", JWT.wrongAudience(STUDENT_ID, "STUDENT"))
+                Arguments.of("invalid signature", invalidSignatureToken()),
+                Arguments.of("expired", expiredToken()),
+                Arguments.of("wrong issuer", wrongIssuerToken()),
+                Arguments.of("wrong audience", wrongAudienceToken())
         );
     }
 
     private static Stream<Arguments> invalidStudentScopes() {
         return Stream.of(
-                Arguments.of("wrong role", JWT.validToken(STUDENT_ID, "ADMIN", GROUP_ID, false), "WRONG_ROLE"),
-                Arguments.of("missing group", JWT.validToken(STUDENT_ID, "STUDENT", null, false), "OUT_OF_SCOPE")
+                Arguments.of("wrong role", validToken(STUDENT_ID, "ADMIN", "ACTIVE", GROUP_ID, false), "WRONG_ROLE"),
+                Arguments.of("missing group", validToken(STUDENT_ID, "STUDENT", "ACTIVE", null, false), "OUT_OF_SCOPE")
         );
+    }
+
+    private static String validToken(long userId, String role, String status,
+                                     Long groupId, boolean readOnly) {
+        return JWT.validToken(userId, SESSION_ID, 1L, 1L, role, status, groupId,
+                "HEADMAN".equals(role), readOnly);
+    }
+
+    private static String invalidSignatureToken() {
+        InternalJwtTestFactory wrongSigner = new InternalJwtTestFactory();
+        return JWT.buildToken(STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID,
+                false, false, now().minusSeconds(1), now().plusSeconds(60),
+                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, "internal",
+                wrongSigner.keyPair());
+    }
+
+    private static String expiredToken() {
+        Instant now = now();
+        return JWT.buildToken(STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID,
+                false, false, now.minusSeconds(600), now.minusSeconds(300),
+                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, "internal", JWT.keyPair());
+    }
+
+    private static String wrongIssuerToken() {
+        return JWT.buildToken(STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID,
+                false, false, now().minusSeconds(1), now().plusSeconds(60),
+                "evil-issuer", InternalJwtTestFactory.AUDIENCE, "internal", JWT.keyPair());
+    }
+
+    private static String wrongAudienceToken() {
+        return JWT.buildToken(STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "ACTIVE", GROUP_ID,
+                false, false, now().minusSeconds(1), now().plusSeconds(60),
+                InternalJwtTestFactory.ISSUER, "other-audience", "internal", JWT.keyPair());
+    }
+
+    private static Instant now() {
+        return Instant.now().truncatedTo(ChronoUnit.SECONDS);
     }
 
     private String url() {

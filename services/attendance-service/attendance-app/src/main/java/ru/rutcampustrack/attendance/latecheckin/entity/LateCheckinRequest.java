@@ -45,6 +45,12 @@ public class LateCheckinRequest {
     @Field("subject_id")
     private Long subjectId;
 
+    @Field("subject_name")
+    private String subjectName;
+
+    @Field("subject_type")
+    private String subjectType;
+
     @Field("semester_id")
     private Long semesterId;
 

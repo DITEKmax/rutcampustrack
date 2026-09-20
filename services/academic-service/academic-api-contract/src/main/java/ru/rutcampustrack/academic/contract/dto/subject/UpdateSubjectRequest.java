@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 
+import java.util.List;
+
 /**
  * Request DTO for full replacement update of a subject (PUT semantics).
  */
@@ -20,5 +22,14 @@ public record UpdateSubjectRequest(
                 example = "LECTURE",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "Тип предмета обязателен")
-        SubjectType type
-) {}
+        SubjectType type,
+
+        @Schema(description = "Канонические типы занятий; отсутствие означает singleton type")
+        List<SubjectType> lessonTypes
+) {
+
+    /** Source compatibility for the former {name,type} payload. */
+    public UpdateSubjectRequest(String name, SubjectType type) {
+        this(name, type, null);
+    }
+}

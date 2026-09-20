@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: mobile-bff
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 24MB
 
 grpc:
   auth:
@@ -12,6 +17,7 @@ grpc:
     attendance-service:
       address: ${ATTENDANCE_GRPC_ADDRESS:static://attendance-service:19093}
       negotiation-type: plaintext
+      max-inbound-message-size: 25165824
     schedule-service:
       address: ${SCHEDULE_GRPC_ADDRESS:static://schedule-service:19092}
       negotiation-type: plaintext

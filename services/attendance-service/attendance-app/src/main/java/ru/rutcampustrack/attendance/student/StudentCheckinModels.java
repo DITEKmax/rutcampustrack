@@ -13,7 +13,8 @@ public final class StudentCheckinModels {
     private StudentCheckinModels() {
     }
 
-    public record Identity(long userId, String role, Long groupId, boolean headman, String displayName) {
+    public record Identity(long userId, String role, Long groupId, boolean headman, String displayName,
+                           boolean readOnly) {
     }
 
     public record Lesson(

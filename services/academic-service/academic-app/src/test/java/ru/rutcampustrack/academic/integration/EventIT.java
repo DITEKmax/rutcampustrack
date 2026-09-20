@@ -12,12 +12,16 @@ import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.rutcampustrack.academic.contract.dto.group.UpdateGroupRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.CreateHomeworkRequest;
 import ru.rutcampustrack.academic.contract.dto.homework.UpdateHomeworkRequest;
+import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
-import ru.rutcampustrack.academic.contract.enums.AccountStatus;
+import ru.rutcampustrack.academic.contract.dto.user.UserCreatedResponse;
 import ru.rutcampustrack.academic.contract.enums.SubjectType;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.entity.Group;
@@ -25,10 +29,12 @@ import ru.rutcampustrack.academic.entity.Homework;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.history.HistoricalMembershipException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.homework.HomeworkService;
 import ru.rutcampustrack.academic.repository.GroupRepository;
+import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
 import ru.rutcampustrack.academic.repository.HomeworkRepository;
 import ru.rutcampustrack.academic.repository.SemesterRepository;
 import ru.rutcampustrack.academic.repository.StudentGroupHistoryRepository;
@@ -36,13 +42,16 @@ import ru.rutcampustrack.academic.repository.SubjectRepository;
 import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.semester.SemesterService;
+import ru.rutcampustrack.academic.subject.SubjectService;
 import ru.rutcampustrack.academic.user.UserService;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -96,7 +105,13 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     private HomeworkService homeworkService;
 
     @Autowired
+    private SubjectService subjectService;
+
+    @Autowired
     private GroupRepository groupRepository;
+
+    @Autowired
+    private GroupHistoryCoverageRepository coverageRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -113,6 +128,9 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     @Autowired
     private StudentGroupHistoryRepository studentGroupHistoryRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     // Shared test entities created in @BeforeEach
     private Group groupA;
     private Group groupB;
@@ -122,26 +140,24 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
 
     @BeforeEach
     void setUpTestEntities() {
-        // Create two groups for use across tests
-        // 58-04: Entity Group.name @Pattern ^[А-ЯЁ][А-ЯЁа-яё]{1,3}-\d{3}$ + UNIQUE → собираем уникальное активное имя.
-        groupA = new Group();
-        groupA.setName("Тга-" + String.format("%03d", (int) (System.nanoTime() % 1000)));
-        groupA.setActive(true);
-        groupA.setCreatedAt(OffsetDateTime.now());
-        groupA = groupRepository.save(groupA);
+        // Create managed groups through the production writer so coverage
+        // provenance exists for the transfer test as well.
+        groupA = groupService.createGroup(new ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest(
+                firstAvailableManagedGroupName("УИТ")));
+        groupB = groupService.createGroup(new ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest(
+                firstAvailableManagedGroupName("УВП")));
 
-        groupB = new Group();
-        groupB.setName("Тгб-" + String.format("%03d", (int) ((System.nanoTime() + 1) % 1000)));
-        groupB.setActive(true);
-        groupB.setCreatedAt(OffsetDateTime.now());
-        groupB = groupRepository.save(groupB);
-
-        // Create a subject for homework tests
-        testSubject = new Subject();
-        testSubject.setName("Test Subject " + System.nanoTime());
-        testSubject.setType(SubjectType.LECTURE);
-        testSubject.setGroupId(groupA.getId()); // Phase 60-01 V12: subjects.group_id NOT NULL
-        testSubject = subjectRepository.save(testSubject);
+        // Create the subject and its canonical lesson type atomically through
+        // the managed writer; the database requires every subject to retain a
+        // corresponding subject_lesson_types row.
+        when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
+        when(requestContext.isHeadman()).thenReturn(true);
+        when(requestContext.getGroupId()).thenReturn(groupA.getId());
+        testSubject = subjectService.createSubject(new CreateSubjectRequest(
+                "Test Subject " + System.nanoTime(),
+                SubjectType.LECTURE,
+                List.of(SubjectType.LECTURE),
+                List.of()));
 
         // Create a semester for homework tests (inactive, so it doesn't conflict with exclusion constraint)
         testSemester = new Semester();
@@ -152,21 +168,12 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
         testSemester.setCreatedAt(OffsetDateTime.now());
         testSemester = semesterRepository.save(testSemester);
 
-        // Create a student user in groupA for transfer tests
-        long seq = userRepository.nextStudentLoginSeq();
-        testUser = new User();
-        testUser.setLogin("student" + String.format("%05d", seq));
-        testUser.setLastName("Студентов");
-        testUser.setFirstName("Тест" + seq);
-        testUser.setPasswordHash("$2a$10$dummy");
-        testUser.setRole(UserRole.STUDENT);
-        testUser.setStatus(AccountStatus.ACTIVE);
-        testUser.setGroupId(groupA.getId());
-        testUser.setHeadman(false);
-        testUser.setPasswordChanged(false);
-        testUser.setCreatedAt(OffsetDateTime.now());
-        testUser.setUpdatedAt(OffsetDateTime.now());
-        testUser = userRepository.save(testUser);
+        // Create the student through UserService so enrollment history is
+        // written atomically with the user row.
+        EntityModel<UserCreatedResponse> created = userService.createUser(new CreateUserRequest(
+                "Студентов", "Тест", null, UserRole.STUDENT, groupA.getId(), null,
+                Math.floorMod(System.nanoTime(), 9_000_000_000L) + 100_000L));
+        testUser = userRepository.findByIdIncludingArchived(created.getContent().getId()).orElseThrow();
 
         // Stub RequestContext mock for homework permission checks
         when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
@@ -183,15 +190,30 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
                                 .setLessonNumber(1)
                                 .setStatus("planned")
                                 .build()));
+        when(scheduleGrpcClient.countSubjectReferences(anyLong()))
+                .thenReturn(ru.rutcampustrack.schedule.grpc.CountSubjectReferencesResponse
+                        .getDefaultInstance());
+    }
+
+    private String firstAvailableManagedGroupName(String prefix) {
+        for (int number = 1; number <= 9; number++) {
+            String candidate = prefix + "-11" + number;
+            if (!groupRepository.existsByName(candidate)) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("No free managed test group name for " + prefix);
     }
 
     @AfterEach
     void cleanUpTestEntities() {
         // Clean up homework data first (FK dependencies)
-        if (groupA != null && groupA.getId() != null) {
+        if (testSemester != null && testSemester.getId() != null
+                && groupA != null && groupA.getId() != null) {
             homeworkRepository.deleteAll(homeworkRepository.findByGroupIdAndSemesterId(groupA.getId(), testSemester.getId()));
         }
-        if (groupB != null && groupB.getId() != null) {
+        if (testSemester != null && testSemester.getId() != null
+                && groupB != null && groupB.getId() != null) {
             homeworkRepository.deleteAll(homeworkRepository.findByGroupIdAndSemesterId(groupB.getId(), testSemester.getId()));
         }
 
@@ -203,19 +225,22 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
 
         // Remove test user (soft-deleted or hard delete for test cleanup)
         if (testUser != null && testUser.getId() != null) {
+            jdbcTemplate.update("DELETE FROM user_role_grants WHERE user_id = ?", testUser.getId());
             userRepository.deleteById(testUser.getId());
         }
 
         // Remove test subject FIRST (Phase 60-01 V12: subjects.group_id FK to groups)
         if (testSubject != null && testSubject.getId() != null) {
-            subjectRepository.deleteById(testSubject.getId());
+            subjectService.deleteSubject(testSubject.getId(), false);
         }
 
         // Remove test groups after subjects (FK dependency via subjects.group_id)
         if (groupA != null && groupA.getId() != null) {
+            coverageRepository.deleteById(groupA.getId());
             groupRepository.deleteById(groupA.getId());
         }
         if (groupB != null && groupB.getId() != null) {
+            coverageRepository.deleteById(groupB.getId());
             groupRepository.deleteById(groupB.getId());
         }
 
@@ -271,31 +296,12 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     }
 
     @Test
-    void deleteGroup_publishesGroupUpdatedEvent() throws Exception {
-        String queueName = bindTempQueue();
-        Long deletedGroupId = groupA.getId();
-
-        // Phase 60-01 V12: subjects.group_id FK — нужно удалить testSubject перед группой.
-        if (testSubject != null && testSubject.getId() != null) {
-            subjectRepository.deleteById(testSubject.getId());
-            testSubject = null; // чтобы AfterEach не пытался удалить повторно
-        }
-
-        groupService.deleteGroup(groupA.getId());
-        groupA = null; // prevent @AfterEach from trying to delete again
-        flushOutbox();
-
-        Message message = rabbitTemplate.receive(queueName, RECEIVE_TIMEOUT_MS);
-        assertThat(message).isNotNull();
-
-        JsonNode root = objectMapper.readTree(message.getBody());
-        assertThat(root.get("event_type").asText()).isEqualTo("group.updated");
-        assertThat(root.get("event_id").asText()).matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
-        assertThat(root.get("occurred_at")).isNotNull();
-
-        JsonNode payload = root.get("payload");
-        assertThat(payload).isNotNull();
-        assertThat(payload.get("group_id").asLong()).isEqualTo(deletedGroupId);
+    void deleteGroup_withManagedCoverageIsRejected() {
+        assertThatThrownBy(() -> groupService.deleteGroup(groupA.getId()))
+                .isInstanceOfSatisfying(HistoricalMembershipException.class, error ->
+                        assertThat(error.code())
+                                .isEqualTo(HistoricalMembershipException.Code.UNSUPPORTED_MUTATION));
+        assertThat(groupRepository.findById(groupA.getId())).isPresent();
     }
 
     @Test

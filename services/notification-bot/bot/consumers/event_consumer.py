@@ -107,20 +107,47 @@ async def start_consumer(
                     # отсекает повторную доставку того же event_id.
                     # G24-fix-2: try_claim теперь fail-closed — Redis
                     # exception пробрасывается → message NACK → DLQ.
+                    claim_token = None
                     if idempotency_guard is not None:
-                        if not await idempotency_guard.try_claim(event_id):
-                            continue
+                        # Two-phase Redis dedup: a short processing lease is
+                        # released on handler failure; only successful
+                        # handling receives the seven-day completion TTL.
+                        claim = getattr(idempotency_guard, "claim", None)
+                        if claim is None:
+                            # Keep compatibility with injected legacy guards,
+                            # while the production guard always exposes the
+                            # two-phase API above.
+                            if not await idempotency_guard.try_claim(event_id):
+                                continue
+                        else:
+                            claim_token = await claim(event_id)
+                            if claim_token is None:
+                                continue
                     logger.info("[notification-bot] Received event: %s", event_type)
-                    if dispatcher:
-                        # M13 G24-fix-2 + M16 G2: handler exceptions
-                        # пробрасываются → message NACK (requeue=False) →
-                        # DLQ → manual triage (см. docs/operations/runbooks/
-                        # dlq-triage.md). До M16 G2 dispatcher.dispatch()
-                        # swallow'ил exceptions локально — комментарий
-                        # обещал DLQ-flow, но фактически любой handler bug
-                        # приводил к silent loss event'а. Сейчас flow
-                        # консистентен: idempotency_guard отсекает дубли,
-                        # handler-bug → DLQ.
-                        await dispatcher.dispatch(body)
+                    try:
+                        if dispatcher:
+                            # Handler exceptions are deliberately propagated
+                            # so aio-pika NACKs the message into the DLQ.
+                            await dispatcher.dispatch(body)
+                    except BaseException:
+                        if claim_token is not None:
+                            try:
+                                await idempotency_guard.release(event_id, claim_token)
+                            except Exception:
+                                # Preserve the original handler failure; the
+                                # lease expiry remains a safe retry fallback.
+                                logger.warning(
+                                    "Failed to release processing lease for event_id=%s",
+                                    event_id,
+                                    exc_info=True,
+                                )
+                        raise
+                    else:
+                        if claim_token is not None:
+                            completed = await idempotency_guard.complete(event_id, claim_token)
+                            if not completed:
+                                raise RuntimeError(
+                                    f"Lost ownership while completing event_id={event_id}"
+                                )
 
     return connection

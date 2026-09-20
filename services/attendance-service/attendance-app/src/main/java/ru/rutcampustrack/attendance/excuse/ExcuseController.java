@@ -17,7 +17,11 @@ import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusReques
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+import ru.rutcampustrack.attendance.exception.LegacyEndpointRetiredException;
 import ru.rutcampustrack.attendance.security.RequireRole;
+import ru.rutcampustrack.attendance.security.RequestContext;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 
 /**
  * REST controller for excuse tickets (Phase 59, D-04..D-09).
@@ -34,26 +38,29 @@ public class ExcuseController implements ExcuseApi {
 
     private final ExcuseService excuseService;
     private final ExcuseAssembler excuseAssembler;
+    private final StudentRequestService studentRequestService;
+    private final RequestContext requestContext;
 
-    public ExcuseController(ExcuseService excuseService, ExcuseAssembler excuseAssembler) {
+    public ExcuseController(ExcuseService excuseService, ExcuseAssembler excuseAssembler,
+                            StudentRequestService studentRequestService, RequestContext requestContext) {
         this.excuseService = excuseService;
         this.excuseAssembler = excuseAssembler;
+        this.studentRequestService = studentRequestService;
+        this.requestContext = requestContext;
     }
 
     @Override
     @RequireRole(UserRole.STUDENT)
     public ResponseEntity<EntityModel<ExcuseTicketResponse>> createExcuse(
             @Valid @RequestBody CreateExcuseRequest request) {
-        ExcuseTicket ticket = excuseService.createExcuse(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(excuseAssembler.toModel(ticket));
+        throw new LegacyEndpointRetiredException();
     }
 
     @Override
     @RequireRole(UserRole.STUDENT)
     public ResponseEntity<EntityModel<ExcuseTicketResponse>> createExcuseWithFile(
             @Valid CreateExcuseRequest request, MultipartFile file) {
-        ExcuseTicket ticket = excuseService.createExcuseWithFile(request, file);
-        return ResponseEntity.status(HttpStatus.CREATED).body(excuseAssembler.toModel(ticket));
+        throw new LegacyEndpointRetiredException();
     }
 
     @Override
@@ -83,7 +90,15 @@ public class ExcuseController implements ExcuseApi {
     @RequireRole(UserRole.STUDENT)
     public ResponseEntity<EntityModel<ExcuseTicketResponse>> updateStatus(
             String id, @Valid @RequestBody UpdateExcuseStatusRequest request) {
-        ExcuseTicket ticket = excuseService.updateStatus(id, request);
+        studentRequestService.decideExcuse(identity(), id,
+                request.status() == ExcuseTicketStatus.APPROVED, request.decisionComment());
+        ExcuseTicket ticket = excuseService.getTicketById(id);
         return ResponseEntity.ok(excuseAssembler.toModel(ticket));
+    }
+
+    private StudentRequestModels.Identity identity() {
+        Long userId = requestContext.getUserId();
+        return new StudentRequestModels.Identity(userId == null ? 0L : userId,
+                requestContext.getRole(), requestContext.getGroupId(), requestContext.isHeadman());
     }
 }

@@ -11,6 +11,8 @@ version = "0.1.0"
 dependencyManagement {
     imports {
         mavenBom("org.testcontainers:testcontainers-bom:1.20.4")
+        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
+        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
     }
 }
 
@@ -54,7 +56,7 @@ dependencies {
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     // OpenAPI / Swagger UI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
 
     // Spring Security Crypto (BCrypt password encoding)
     implementation("org.springframework.security:spring-security-crypto")
@@ -63,6 +65,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
     // PostgreSQL
+    compileOnly("org.postgresql:postgresql")
+    testCompileOnly("org.postgresql:postgresql")
     runtimeOnly("org.postgresql:postgresql")
 
     // Flyway
@@ -70,16 +74,24 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
 
     // gRPC server
-    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
 
     // gRPC client (Phase 61 D-04: academic→schedule ResolveLesson)
-    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
+    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
+    implementation("io.grpc:grpc-netty")
+    implementation("com.google.protobuf:protobuf-java")
+    // Structured Academic projection errors use google.rpc.Status trailers.
+    implementation("com.google.api.grpc:proto-google-common-protos:2.29.0")
 
     // Required for generated gRPC stubs (javax.annotation.Generated removed in Java 9+)
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 
     // Jackson Hibernate6 module — normalizes Hibernate proxy class names during Redis serialization
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6:2.18.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6")
 
     // Lombok (только для entity и внутренних классов, НЕ для DTO контракта)
     compileOnly("org.projectlombok:lombok")
@@ -110,11 +122,11 @@ sourceSets {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.25.3"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
     }
     plugins {
         create("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
         }
     }
     generateProtoTasks {

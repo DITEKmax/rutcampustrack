@@ -15,6 +15,7 @@ import ru.rutcampustrack.shared.outbox.OutboxStorage;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -170,16 +171,39 @@ class LateCheckinEventContractTest {
     }
 
     @Test
+    void publishDecided_studentCancelledUsesCanonicalWireReasonAndSchema() throws Exception {
+        LateCheckinRequest request = LateCheckinRequest.builder()
+                .id("req-student-cancelled")
+                .studentId(100L)
+                .groupId(10L)
+                .lessonId(42L)
+                .status(LateCheckinRequestStatus.CANCELLED)
+                .resolutionReason(LateCheckinResolutionReason.CANCELLED_BY_STUDENT)
+                .decisionAt(Instant.parse("2026-04-23T10:30:00Z"))
+                .createdAt(Instant.parse("2026-04-23T09:00:00Z"))
+                .updatedAt(Instant.parse("2026-04-23T10:30:00Z"))
+                .build();
+
+        publisher.publishDecided(request, LocalDate.of(2026, 4, 23), 3, 7L, null);
+
+        OutboxRecord record = outbox.captured.getFirst();
+        assertThat(EventSchemaValidator.validate("late_checkin.decided.json", record.payload())).isEmpty();
+        assertThat(mapper.readTree(record.payload()).get("payload").get("resolution_reason").asText())
+                .isEqualTo("student_cancelled");
+    }
+
+    @Test
     void decisionCommandRequiresPositiveInternalActor() throws Exception {
-        String valid = mapper.writeValueAsString(EventEnvelope.build("late_checkin.decision", Map.of(
-                "request_id", "req-42", "approved", true, "decision_by", 42L
-        )));
-        String invalid = mapper.writeValueAsString(EventEnvelope.build("late_checkin.decision", Map.of(
-                "request_id", "req-42", "approved", true, "decision_by", 0L
-        )));
-        String missing = mapper.writeValueAsString(EventEnvelope.build("late_checkin.decision", Map.of(
-                "request_id", "req-42", "approved", true
-        )));
+        String requestId = "0123456789abcdef01234567";
+        String valid = botEnvelope("late_checkin.decision", Map.of(
+                "request_id", requestId, "approved", true, "decision_by", 42L
+        ));
+        String invalid = botEnvelope("late_checkin.decision", Map.of(
+                "request_id", requestId, "approved", true, "decision_by", 0L
+        ));
+        String missing = botEnvelope("late_checkin.decision", Map.of(
+                "request_id", requestId, "approved", true
+        ));
 
         assertThat(EventSchemaValidator.validate("late_checkin.decision.json", valid))
                 .as("bot command must carry the resolved internal academic user id")
@@ -190,6 +214,30 @@ class LateCheckinEventContractTest {
         assertThat(EventSchemaValidator.validate("late_checkin.decision.json", missing))
                 .as("a missing audit actor must be rejected")
                 .isNotEmpty();
+    }
+
+    @Test
+    void excuseDecisionRequiresTrustedSourceAndStrictPayload() throws Exception {
+        String ticketId = "0123456789abcdef01234567";
+        String valid = botEnvelope("excuse.decision", Map.of(
+                "ticket_id", ticketId, "approved", true, "decision_by", 42L,
+                "decision_comment", "Принято"));
+        String untrusted = mapper.writeValueAsString(EventEnvelope.build("excuse.decision", Map.of(
+                "ticket_id", ticketId, "approved", true, "decision_by", 42L,
+                "decision_comment", "Принято")));
+        String extra = botEnvelope("excuse.decision", Map.of(
+                "ticket_id", ticketId, "approved", true, "decision_by", 42L,
+                "unexpected", true));
+
+        assertThat(EventSchemaValidator.validate("excuse.decision.json", valid)).isEmpty();
+        assertThat(EventSchemaValidator.validate("excuse.decision.json", untrusted)).isNotEmpty();
+        assertThat(EventSchemaValidator.validate("excuse.decision.json", extra)).isNotEmpty();
+    }
+
+    private String botEnvelope(String eventType, Map<String, Object> payload) throws Exception {
+        Map<String, Object> envelope = new LinkedHashMap<>(EventEnvelope.build(eventType, payload));
+        envelope.put("source", "notification-bot");
+        return mapper.writeValueAsString(envelope);
     }
 
     // =========================================================== helper

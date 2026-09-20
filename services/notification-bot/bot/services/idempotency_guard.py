@@ -11,6 +11,7 @@ TTL 1 час (события старше уже не редоставляютс
 """
 
 import logging
+import secrets
 from typing import Optional
 
 import redis.asyncio as aioredis
@@ -31,12 +32,16 @@ class BotIdempotencyGuard:
     """
 
     DEFAULT_CONSUMER_ID = "notification-bot"
-    DEFAULT_TTL_SECONDS = 3600  # 1h — больше чем Rabbit redelivery window
+    # A short lease makes a crashed handler retryable.  Once a handler has
+    # completed, ``complete`` upgrades the same key to the DLQ retention TTL.
+    DEFAULT_TTL_SECONDS = 300
+    DEFAULT_COMPLETION_TTL_SECONDS = 7 * 24 * 60 * 60
 
     def __init__(
         self,
         consumer_id: str = DEFAULT_CONSUMER_ID,
         ttl_seconds: int = DEFAULT_TTL_SECONDS,
+        completion_ttl_seconds: int = DEFAULT_COMPLETION_TTL_SECONDS,
         host: str = "redis",
         port: int = 6379,
         password: str = "",
@@ -50,12 +55,18 @@ class BotIdempotencyGuard:
             self._redis = aioredis.from_url(url, max_connections=10, decode_responses=True)
         self._consumer_id = consumer_id
         self._ttl = ttl_seconds
+        self._completion_ttl = max(ttl_seconds, completion_ttl_seconds)
 
     def _key(self, event_id: str) -> str:
         return f"consumed:{self._consumer_id}:{event_id}"
 
-    async def try_claim(self, event_id: Optional[str]) -> bool:
-        """Пытается claim'ить event_id. True если новый, False если дубль.
+    async def claim(self, event_id: Optional[str]) -> str | None:
+        """Claim an event with a short processing lease.
+
+        Returns an opaque token for the owner, or ``None`` for an event that
+        is already processing/completed.  The token is required by
+        :meth:`complete` and :meth:`release`, so a late worker cannot mutate a
+        lease acquired by a newer delivery.
 
         - None / blank event_id → ValueError (M13 G24-fix-6 fail-closed).
           После M13 G8 все publisher'ы обязаны заполнять event_id
@@ -75,18 +86,62 @@ class BotIdempotencyGuard:
             )
             raise ValueError(f"Event без event_id rejected (fail-closed, M13 G24-fix-6): consumer={self._consumer_id}")
         key = self._key(event_id)
+        token = secrets.token_urlsafe(24)
         # SET key value NX EX ttl — атомарный insert-or-fail.
         # Redis exception пробрасывается — caller отлавливает и реджектит
         # message в DLQ (см. event_consumer.py).
-        ok = await self._redis.set(key, "1", nx=True, ex=self._ttl)
+        ok = await self._redis.set(key, f"processing:{token}", nx=True, ex=self._ttl)
         if ok:
-            return True
+            return token
         logger.info(
             "Idempotency: duplicate event skipped (consumer=%s, event_id=%s)",
             self._consumer_id,
             event_id,
         )
-        return False
+        return None
+
+    async def complete(self, event_id: Optional[str], token: str) -> bool:
+        """Mark an owned event complete for the retention period.
+
+        The compare-and-set is performed in Redis, preventing a stale worker
+        from overwriting a replacement lease after its original lease expired.
+        """
+        if not event_id or not token:
+            raise ValueError("event_id and claim token are required")
+        key = self._key(event_id)
+        script = """
+        if redis.call('get', KEYS[1]) == ARGV[1] then
+            redis.call('set', KEYS[1], 'completed', 'EX', ARGV[2])
+            return 1
+        end
+        return 0
+        """
+        result = await self._redis.eval(
+            script, 1, key, f"processing:{token}", str(self._completion_ttl)
+        )
+        return bool(result)
+
+    async def release(self, event_id: Optional[str], token: str) -> bool:
+        """Release an owned processing lease after handler failure."""
+        if not event_id or not token:
+            raise ValueError("event_id and claim token are required")
+        key = self._key(event_id)
+        script = """
+        if redis.call('get', KEYS[1]) == ARGV[1] then
+            return redis.call('del', KEYS[1])
+        end
+        return 0
+        """
+        result = await self._redis.eval(script, 1, key, f"processing:{token}")
+        return bool(result)
+
+    async def try_claim(self, event_id: Optional[str]) -> bool:
+        """Compatibility helper: claim an event and return a boolean.
+
+        New consumers should use ``claim``/``complete``/``release`` so a
+        failed handler does not leave a permanent dedup marker.
+        """
+        return (await self.claim(event_id)) is not None
 
     async def close(self) -> None:
         await self._redis.aclose()

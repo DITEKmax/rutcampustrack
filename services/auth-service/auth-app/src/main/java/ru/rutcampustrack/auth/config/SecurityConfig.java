@@ -10,6 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import ru.rutcampustrack.auth.security.InternalIssuerSecretFilter;
+import ru.rutcampustrack.auth.session.SessionLifecycleService;
+import ru.rutcampustrack.auth.session.port.CredentialSessionTransactionPort;
+import ru.rutcampustrack.auth.session.port.SessionStatePort;
 
 @Configuration
 @EnableWebSecurity
@@ -17,11 +20,17 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final InternalIssuerSecretFilter internalIssuerSecretFilter;
+    private final SessionStatePort sessionStatePort;
+    private final CredentialSessionTransactionPort credentialSessionTransactionPort;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          InternalIssuerSecretFilter internalIssuerSecretFilter) {
+                          InternalIssuerSecretFilter internalIssuerSecretFilter,
+                          SessionStatePort sessionStatePort,
+                          CredentialSessionTransactionPort credentialSessionTransactionPort) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.internalIssuerSecretFilter = internalIssuerSecretFilter;
+        this.sessionStatePort = sessionStatePort;
+        this.credentialSessionTransactionPort = credentialSessionTransactionPort;
     }
 
     @Bean
@@ -54,5 +63,10 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SessionLifecycleService sessionLifecycleService() {
+        return new SessionLifecycleService(sessionStatePort, credentialSessionTransactionPort);
     }
 }

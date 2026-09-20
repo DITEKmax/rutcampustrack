@@ -9,7 +9,9 @@ version = "0.1.0"
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.5.16")
+        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
+        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
     }
 }
 
@@ -36,19 +38,18 @@ dependencies {
     compileOnly("org.springframework.boot:spring-boot-autoconfigure")
     compileOnly("org.springframework:spring-context")
     compileOnly("org.slf4j:slf4j-api")
-    compileOnly("io.grpc:grpc-api:1.63.0")
+    compileOnly("io.grpc:grpc-api")
     // M13 G10 — SpanExportingPredicate / FinishedSpan interface для
-    // ActuatorTracingExcludeFilter. micrometer-tracing 1.4.1 совпадает с
-    // транзитивной версией bridge-otel 1.4.1 в *-app модулях.
-    compileOnly("io.micrometer:micrometer-tracing:1.4.1")
+    // ActuatorTracingExcludeFilter. Version is supplied by the Boot BOM.
+    compileOnly("io.micrometer:micrometer-tracing")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-actuator")
     testImplementation("io.micrometer:micrometer-registry-prometheus")
-    testImplementation("io.grpc:grpc-api:1.63.0")
-    testImplementation("io.grpc:grpc-inprocess:1.63.0")
+    testImplementation("io.grpc:grpc-api")
+    testImplementation("io.grpc:grpc-inprocess")
     // M13 G10 — для unit-тестов фильтра (FinishedSpan через Mockito).
-    testImplementation("io.micrometer:micrometer-tracing:1.4.1")
+    testImplementation("io.micrometer:micrometer-tracing")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testFixturesApi("io.micrometer:micrometer-core")

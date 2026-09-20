@@ -1,40 +1,40 @@
 package ru.rutcampustrack.gateway.security;
 
-import com.github.benmanes.caffeine.cache.AsyncCache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import ru.rutcampustrack.auth.dto.AuthAdmissionRequest;
+import ru.rutcampustrack.auth.dto.AuthAdmissionResponse;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.Objects;
 
 /**
- * M03a token-exchange client — calls auth-service {@code POST /internal/issue-internal-jwt}
- * with shared secret, caches the signed Internal JWT per-user for ~4 min.
- *
- * Cache key: {@link CacheKey} (userId + role) — role change triggers re-issue.
- * Cache value: {@link IssuedToken} with expiry timestamp.
- *
- * On auth-service 5xx / timeout → {@link InternalIssuerUnavailableException}
- * (mapped to 503 upstream).
+ * Per-request client for the auth authority's live session admission endpoint.
+ * The access token is sent only as the single field of {@link AuthAdmissionRequest}.
  */
 @Component
 public class InternalJwtIssuerClient {
 
     private static final Logger log = LoggerFactory.getLogger(InternalJwtIssuerClient.class);
     private static final String SECRET_HEADER = "X-Internal-Issuer-Secret";
-    private static final String ISSUE_PATH = "/internal/issue-internal-jwt";
+    private static final String ADMIT_PATH = "/internal/auth/admit";
+    private static final int MAX_RESPONSE_BYTES = 64 * 1024;
 
     private final InternalIssuerClientProperties properties;
     private final WebClient webClient;
-    private final AsyncCache<CacheKey, IssuedToken> cache;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     public InternalJwtIssuerClient(InternalIssuerClientProperties properties) {
@@ -46,91 +46,155 @@ public class InternalJwtIssuerClient {
     InternalJwtIssuerClient(InternalIssuerClientProperties properties, WebClient webClient) {
         this.properties = properties;
         this.webClient = webClient;
-        this.cache = Caffeine.newBuilder()
-                .maximumSize(properties.getCacheMaxSize())
-                .expireAfterWrite(Duration.ofSeconds(properties.getCacheTtlSeconds()))
-                .buildAsync();
+        this.objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
     }
 
     /**
-     * M03b Группа 9 (KI-3): защита от clock-drift edge-case.
-     * Токен считается «скоро истечёт» если до expiresAt < SKEW_THRESHOLD (5s).
-     * В таком случае invalidate ключ и перевыдать, чтобы downstream не получил
-     * токен с expiresAt в прошлом относительно своих часов.
+     * Admit one external access token against the live auth session authority.
+     * There is deliberately no cache, single-flight, retry, or stale fallback.
      */
-    private static final Duration CLOCK_SKEW_THRESHOLD = Duration.ofSeconds(5);
+    public Mono<AuthAdmissionResponse> admit(String accessToken) {
+        final AuthAdmissionRequest request;
+        try {
+            request = new AuthAdmissionRequest(accessToken);
+        } catch (RuntimeException e) {
+            return Mono.error(unavailable());
+        }
 
-    public Mono<String> issueFor(long userId, String role, Long groupId, boolean isHeadman) {
-        CacheKey key = new CacheKey(userId, role);
-        return Mono.fromFuture(cache.get(key, (k, executor) ->
-                        issueFromAuthService(userId, role, groupId, isHeadman)
-                                .toFuture()))
-                .flatMap(token -> {
-                    if (isAboutToExpire(token)) {
-                        log.debug("Cached internal JWT for userId={} near expiry ({}s skew threshold) — re-issuing",
-                                userId, CLOCK_SKEW_THRESHOLD.toSeconds());
-                        cache.synchronous().invalidate(key);
-                        return Mono.fromFuture(cache.get(key, (k, executor) ->
-                                        issueFromAuthService(userId, role, groupId, isHeadman)
-                                                .toFuture()))
-                                .map(IssuedToken::token);
+        return webClient.post()
+                .uri(ADMIT_PATH)
+                .header(SECRET_HEADER, properties.getSecret())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON, MediaType.APPLICATION_PROBLEM_JSON)
+                .bodyValue(request)
+                .exchangeToMono(response -> {
+                    if (response.statusCode().value() == HttpStatus.OK.value()) {
+                        return decodeAdmission(response);
                     }
-                    return Mono.just(token.token());
+                    return decodeError(response);
+                })
+                .timeout(Duration.ofMillis(properties.getTimeoutMillis()))
+                .onErrorMap(error -> error instanceof InternalIssuerUnavailableException
+                        || error instanceof InternalAdmissionDeniedException
+                        ? error
+                        : unavailable(error))
+                .doOnError(error -> log.warn("Auth admission request failed ({})",
+                        error.getClass().getSimpleName()));
+    }
+
+    private Mono<AuthAdmissionResponse> decodeAdmission(ClientResponse response) {
+        return boundedBody(response)
+                .flatMap(body -> {
+                    try {
+                        JsonNode root = objectMapper.readTree(body);
+                        validateAdmissionWire(root);
+                        return Mono.just(objectMapper.treeToValue(root, AuthAdmissionResponse.class));
+                    } catch (Exception e) {
+                        return Mono.error(unavailable());
+                    }
                 });
     }
 
-    private static boolean isAboutToExpire(IssuedToken token) {
-        return token.expiresAt() == null
-                || token.expiresAt().isBefore(Instant.now().plus(CLOCK_SKEW_THRESHOLD));
+    private Mono<AuthAdmissionResponse> decodeError(ClientResponse response) {
+        HttpStatusCode status = response.statusCode();
+        return boundedBody(response)
+                .flatMap(body -> {
+                    try {
+                        JsonNode root = objectMapper.readTree(body);
+                        String code = readExactErrorCode(root, status.value());
+                        return Mono.error(mapError(status.value(), code));
+                    } catch (InternalAdmissionDeniedException e) {
+                        return Mono.error(e);
+                    } catch (Exception e) {
+                        return Mono.error(unavailable());
+                    }
+                });
     }
 
-    /**
-     * Test-facing — clears cache (use sparingly, mostly for deterministic tests).
-     */
-    public void invalidateAll() {
-        cache.synchronous().invalidateAll();
+    private Mono<String> boundedBody(ClientResponse response) {
+        return response.bodyToMono(String.class)
+                .switchIfEmpty(Mono.error(unavailable()))
+                .flatMap(body -> {
+                    if (body.getBytes(StandardCharsets.UTF_8).length > MAX_RESPONSE_BYTES) {
+                        return Mono.error(unavailable());
+                    }
+                    return Mono.just(body);
+                });
     }
 
-    /**
-     * Test-facing — peek current size.
-     */
-    public long estimatedSize() {
-        return cache.synchronous().estimatedSize();
+    private static void validateAdmissionWire(JsonNode root) {
+        if (root == null || !root.isObject()) {
+            throw new IllegalArgumentException("admission response must be an object");
+        }
+        requireText(root, "internalToken");
+        requireText(root, "expiresAt");
+        requireText(root, "sessionId");
+        requireText(root, "userId");
+        requireText(root, "sessionVersion");
+        requireText(root, "rolesVersion");
+        requireText(root, "role");
+        requireText(root, "status");
+        JsonNode groupId = root.get("groupId");
+        if (groupId != null && !groupId.isNull() && !groupId.isTextual()) {
+            throw new IllegalArgumentException("groupId must be a string or null");
+        }
+        requireBoolean(root, "isHeadman");
+        requireBoolean(root, "readOnly");
     }
 
-    private Mono<IssuedToken> issueFromAuthService(long userId, String role, Long groupId, boolean isHeadman) {
-        IssueRequest request = new IssueRequest(userId, role, groupId, isHeadman);
-        return webClient.post()
-                .uri(ISSUE_PATH)
-                .header(SECRET_HEADER, properties.getSecret())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, resp -> resp.bodyToMono(String.class)
-                        .defaultIfEmpty("")
-                        .flatMap(body -> Mono.error(new InternalIssuerUnavailableException(
-                                "auth-service returned " + resp.statusCode() + " for /internal/issue-internal-jwt: " + body))))
-                .bodyToMono(IssueResponse.class)
-                .timeout(Duration.ofMillis(properties.getTimeoutMillis()))
-                .doOnError(e -> log.warn("Failed to obtain Internal JWT from auth-service: {}", e.getMessage()))
-                .map(r -> new IssuedToken(r.token(), r.expiresAt()))
-                .onErrorMap(e -> e instanceof InternalIssuerUnavailableException
-                        ? e
-                        : new InternalIssuerUnavailableException("Internal issuer call failed: " + e.getMessage(), e));
+    private static String readExactErrorCode(JsonNode root, int httpStatus) {
+        if (root == null || !root.isObject()) {
+            throw new IllegalArgumentException("error response must be an object");
+        }
+        JsonNode bodyStatus = root.get("status");
+        JsonNode extras = root.get("extras");
+        JsonNode code = extras == null ? null : extras.get("code");
+        if (bodyStatus == null || !bodyStatus.isIntegralNumber()
+                || bodyStatus.intValue() != httpStatus
+                || extras == null || !extras.isObject()
+                || code == null || !code.isTextual()) {
+            throw new IllegalArgumentException("error response does not have an exact typed code");
+        }
+        return code.textValue();
     }
 
-    record CacheKey(long userId, String role) {
-        CacheKey {
-            Objects.requireNonNull(role, "role");
+    private static RuntimeException mapError(int httpStatus, String code) {
+        if (httpStatus == HttpStatus.UNAUTHORIZED.value()
+                && ("INVALID_SESSION".equals(code) || "SESSION_REVOKED".equals(code))) {
+            return new InternalAdmissionDeniedException(HttpStatus.UNAUTHORIZED, "INVALID_SESSION");
+        }
+        if (httpStatus == HttpStatus.FORBIDDEN.value()
+                && ("ROLE_NOT_GRANTED".equals(code) || "ROLE_NOT_SELECTABLE".equals(code))) {
+            return new InternalAdmissionDeniedException(HttpStatus.FORBIDDEN, "WRONG_ROLE");
+        }
+        if (httpStatus == HttpStatus.CONFLICT.value()
+                && "SESSION_STATE_STALE".equals(code)) {
+            return new InternalAdmissionDeniedException(HttpStatus.CONFLICT, "SESSION_STATE_STALE");
+        }
+        return unavailable();
+    }
+
+    private static void requireText(JsonNode root, String name) {
+        JsonNode value = root.get(name);
+        if (value == null || !value.isTextual() || value.textValue().isBlank()) {
+            throw new IllegalArgumentException(name + " must be a non-blank string");
         }
     }
 
-    record IssuedToken(String token, Instant expiresAt) {
+    private static void requireBoolean(JsonNode root, String name) {
+        JsonNode value = root.get(name);
+        if (value == null || !value.isBoolean()) {
+            throw new IllegalArgumentException(name + " must be a boolean");
+        }
     }
 
-    record IssueRequest(long userId, String role, Long groupId, boolean isHeadman) {
+    private static InternalIssuerUnavailableException unavailable() {
+        return new InternalIssuerUnavailableException("Auth authority unavailable");
     }
 
-    record IssueResponse(String token, Instant expiresAt) {
+    private static InternalIssuerUnavailableException unavailable(Throwable cause) {
+        return new InternalIssuerUnavailableException("Auth authority unavailable", cause);
     }
 }

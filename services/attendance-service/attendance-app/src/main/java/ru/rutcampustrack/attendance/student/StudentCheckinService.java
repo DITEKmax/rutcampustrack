@@ -285,6 +285,10 @@ public class StudentCheckinService {
 
     private static void validateIdentityAndPayload(
             Identity identity, long lessonId, String idempotencyKey, Geo geo) {
+        if (identity != null && identity.readOnly()) {
+            throw new StudentCheckinException(Code.OUT_OF_SCOPE,
+                    "Терминальная student-сессия доступна только для чтения");
+        }
         if (identity == null || identity.userId() <= 0 || identity.groupId() == null || identity.groupId() <= 0) {
             throw new StudentCheckinException(Code.INVALID_SESSION, "Не хватает student/group scope");
         }

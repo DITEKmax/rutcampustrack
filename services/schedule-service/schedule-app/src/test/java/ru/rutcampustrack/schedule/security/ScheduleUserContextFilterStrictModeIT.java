@@ -1,5 +1,7 @@
 package ru.rutcampustrack.schedule.security;
 
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,6 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=false")
 class ScheduleUserContextFilterStrictModeIT extends AbstractScheduleIntegrationTest {
+
+    private static final UUID SESSION_ID = UUID.fromString("dddddddd-dddd-4ddd-8ddd-dddddddddddd");
 
     @Autowired
     private MockMvc mockMvc;
@@ -39,7 +43,8 @@ class ScheduleUserContextFilterStrictModeIT extends AbstractScheduleIntegrationT
 
     @Test
     void validInternalToken_strictMode_passes() throws Exception {
-        String token = factory.validToken(1L, "ADMIN", null, false);
+        String token = factory.validToken(1L, SESSION_ID, 1L, 1L,
+                "ADMIN", "ACTIVE", null, false, false);
         MvcResult result = mockMvc.perform(get("/schedule/items")
                         .header("X-Internal-Token", token))
                 .andReturn();

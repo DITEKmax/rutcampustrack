@@ -8,6 +8,13 @@ plugins {
 group = "ru.rutcampustrack"
 version = "0.1.0"
 
+dependencyManagement {
+    imports {
+        mavenBom("io.grpc:grpc-bom:${libs.versions.grpc.get()}")
+        mavenBom("com.google.protobuf:protobuf-bom:${libs.versions.protobuf.get()}")
+    }
+}
+
 dependencies {
     implementation(project(":services:mobile-bff:mobile-bff-api-contract"))
     implementation(project(":services:shared:shared-security"))
@@ -15,8 +22,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
-    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+    implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE") {
+        exclude(group = "io.grpc", module = "grpc-netty-shaded")
+    }
+    implementation("io.grpc:grpc-netty")
+    implementation("com.google.protobuf:protobuf-java")
     implementation("com.google.api.grpc:proto-google-common-protos:2.29.0")
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 
@@ -37,11 +48,11 @@ sourceSets {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.25.3"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
     }
     plugins {
         create("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
         }
     }
     generateProtoTasks {

@@ -9,6 +9,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -25,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = "rutcampustrack.security.internal-jwt.legacy-headers-enabled=true")
 class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
 
+    private static final UUID SESSION_ID = UUID.fromString("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -40,7 +46,11 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void expiredInternalToken_returns401() throws Exception {
-        String expired = factory.expiredToken(1L, "ADMIN");
+        Instant now = now();
+        String expired = factory.buildToken(1L, SESSION_ID, 1L, 1L,
+                "ADMIN", "ACTIVE", null, false, false,
+                now.minusSeconds(600), now.minusSeconds(300),
+                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, "internal", factory.keyPair());
         mockMvc.perform(get("/academic/users")
                         .header("X-Internal-Token", expired))
                 .andExpect(status().isUnauthorized());
@@ -48,7 +58,13 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void wrongSignatureInternalToken_returns401() throws Exception {
-        String wrong = factory.invalidSignature(1L, "ADMIN");
+        InternalJwtTestFactory wrongSigner = new InternalJwtTestFactory();
+        Instant now = now();
+        String wrong = factory.buildToken(1L, SESSION_ID, 1L, 1L,
+                "ADMIN", "ACTIVE", null, false, false,
+                now.minusSeconds(1), now.plusSeconds(60),
+                InternalJwtTestFactory.ISSUER, InternalJwtTestFactory.AUDIENCE, "internal",
+                wrongSigner.keyPair());
         mockMvc.perform(get("/academic/users")
                         .header("X-Internal-Token", wrong))
                 .andExpect(status().isUnauthorized());
@@ -56,7 +72,7 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void validInternalToken_passesFilter_notReturning401() throws Exception {
-        String token = factory.validToken(1L, "ADMIN", null, false);
+        String token = validToken();
         MvcResult result = mockMvc.perform(get("/academic/users")
                         .header("X-Internal-Token", token))
                 .andReturn();
@@ -65,7 +81,7 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
 
     @Test
     void validInternalToken_takesPrecedenceOverLegacyHeaders() throws Exception {
-        String token = factory.validToken(1L, "ADMIN", null, false);
+        String token = validToken();
         MvcResult result = mockMvc.perform(get("/academic/users")
                         .header("X-Internal-Token", token)
                         .header("X-User-Id", "999")
@@ -81,5 +97,14 @@ class AcademicUserContextFilterIT extends AbstractAcademicIntegrationTest {
                         .header("X-User-Role", "ADMIN"))
                 .andReturn();
         assertThat(result.getResponse().getStatus()).isNotEqualTo(401);
+    }
+
+    private String validToken() {
+        return factory.validToken(1L, SESSION_ID, 1L, 1L,
+                "ADMIN", "ACTIVE", null, false, false);
+    }
+
+    private static Instant now() {
+        return Instant.now().truncatedTo(ChronoUnit.SECONDS);
     }
 }

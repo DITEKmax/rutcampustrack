@@ -9,13 +9,18 @@ import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.rutcampustrack.academic.contract.dto.group.CreateGroupRequest;
+import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.TransferStudentRequest;
+import ru.rutcampustrack.academic.contract.enums.UserRole;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
 import ru.rutcampustrack.academic.grpc.GroupRequest;
 import ru.rutcampustrack.academic.grpc.UserRequest;
+import ru.rutcampustrack.academic.group.GroupService;
+import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.semester.SemesterService;
 import ru.rutcampustrack.academic.user.UserService;
 
@@ -78,10 +83,16 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
     private UserService userService;
 
     @Autowired
+    private GroupService groupService;
+
+    @Autowired
     private SemesterService semesterService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private GroupRepository groupRepository;
 
     @BeforeEach
     void clearCaches() {
@@ -247,10 +258,7 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         String userCacheKey = "users::" + testUserId;
         assertThat(redisTemplate.hasKey(userCacheKey)).isTrue();
 
-        // Mutation: archiveUser triggers @CacheEvict(users, key=#id)
         userService.archiveUser(testUserId);
-
-        // Cache must be evicted
         assertThat(redisTemplate.hasKey(userCacheKey)).isFalse();
 
         // Next gRPC call repopulates cache
@@ -264,27 +272,25 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
      */
     @Test
     void transferStudent_invalidatesBothGroupCaches() {
-        // Create a second group for the transfer target
-        Long group2Id = jdbcTemplate.queryForObject(
-                "INSERT INTO groups (name, is_active, created_at) " +
-                "VALUES ('ИВТ-212', true, NOW()) RETURNING id",
-                Long.class);
+        // Use the managed writers so both groups have coverage markers and the
+        // student has exactly one open source membership history row.
+        Long sourceGroupId = groupService.createGroup(
+                new CreateGroupRequest(firstAvailableManagedGroupName("УИТ"))).getId();
+        Long group2Id = groupService.createGroup(
+                new CreateGroupRequest(firstAvailableManagedGroupName("УВП"))).getId();
+        Long transferStudentId = userService.createUser(new CreateUserRequest(
+                "Cache", "TransferTest", null, UserRole.STUDENT, sourceGroupId, null,
+                Math.floorMod(System.nanoTime(), 9_000_000_000L) + 100_000L))
+                .getContent().getId();
 
-        // Create a dedicated student in group 1 for transfer (not the seed headman student)
-        Long transferStudentId = jdbcTemplate.queryForObject(
-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id, password_changed, created_at, updated_at) " +
-                "VALUES ('cache_transfer_test', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
-                "'Cache', 'TransferTest', 'student', 'active', false, " + GROUP_ID + ", false, NOW(), NOW()) RETURNING id",
-                Long.class);
-
-        GroupMembersRequest req1 = GroupMembersRequest.newBuilder().setGroupId(GROUP_ID).build();
+        GroupMembersRequest req1 = GroupMembersRequest.newBuilder().setGroupId(sourceGroupId).build();
         GroupMembersRequest req2 = GroupMembersRequest.newBuilder().setGroupId(group2Id).build();
 
         // Prime caches for both groups
         stub.getGroupMembers(req1);
         stub.getGroupMembers(req2);
 
-        String key1 = "group_members::" + GROUP_ID;
+        String key1 = "group_members::" + sourceGroupId;
         String key2 = "group_members::" + group2Id;
         assertThat(redisTemplate.hasKey(key1)).isTrue();
         assertThat(redisTemplate.hasKey(key2)).isTrue();
@@ -302,6 +308,16 @@ class CacheIT extends AbstractAcademicCacheIntegrationTest {
         stub.getGroupMembers(req2);
         assertThat(redisTemplate.hasKey(key1)).isTrue();
         assertThat(redisTemplate.hasKey(key2)).isTrue();
+    }
+
+    private String firstAvailableManagedGroupName(String prefix) {
+        for (int number = 1; number <= 9; number++) {
+            String candidate = prefix + "-11" + number;
+            if (!groupRepository.existsByName(candidate)) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("No free managed test group name for " + prefix);
     }
 
     /**

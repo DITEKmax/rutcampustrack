@@ -4,6 +4,7 @@ import com.google.rpc.Status;
 import io.grpc.Context;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -27,6 +28,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +39,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class AttendanceStudentGrpcServiceTest {
@@ -44,8 +47,10 @@ class AttendanceStudentGrpcServiceTest {
     private static final long STUDENT_ID = 100L;
     private static final long LESSON_ID = 77L;
     private static final String KEY = "headman-blocked-0001";
+    private static final UUID SESSION_ID = UUID.fromString("55555555-5555-4555-8555-555555555555");
     private static final InternalJwtClaims CLAIMS =
-            new InternalJwtClaims(STUDENT_ID, "STUDENT", 10L, false);
+            new InternalJwtClaims(STUDENT_ID, SESSION_ID, 1L, 1L,
+                    "STUDENT", "ACTIVE", 10L, false, false);
 
     @ParameterizedTest(name = "blocked lesson rejects {0} (geo={1}, headman={2}) before any write")
     @MethodSource("geoCommands")
@@ -120,6 +125,50 @@ class AttendanceStudentGrpcServiceTest {
         verify(geofenceService, never()).isWithinCampus(anyDouble(), anyDouble());
         verify(attendanceEvents, never()).publishMarked(any());
         verify(lateCheckinEvents, never()).publishRequested(any(), any(), anyInt(), any(), any());
+    }
+
+    @ParameterizedTest(name = "read-only check-in is denied before dependencies ({0})")
+    @MethodSource("readOnlyGeoCommands")
+    void readOnlyIdentityIsRejectedBeforeGeoParsingAndDependencies(
+            String geoKind, StudentCheckinCommand command) throws Exception {
+        StudentCheckinService checkinService = mock(StudentCheckinService.class);
+        StudentAttendanceSnapshotService snapshotService = mock(StudentAttendanceSnapshotService.class);
+        ScheduleGrpcClient scheduleGrpcClient = mock(ScheduleGrpcClient.class);
+        AcademicGrpcClient academicGrpcClient = mock(AcademicGrpcClient.class);
+        SemesterCacheService semesterCacheService = mock(SemesterCacheService.class);
+        AttendanceStudentGrpcServiceImpl service = new AttendanceStudentGrpcServiceImpl(
+                checkinService, snapshotService, scheduleGrpcClient, academicGrpcClient, semesterCacheService);
+        InternalJwtClaims readOnlyClaims = new InternalJwtClaims(
+                STUDENT_ID, SESSION_ID, 1L, 1L, "STUDENT", "EXPELLED", 10L, false, true);
+        RecordingObserver observer = new RecordingObserver();
+
+        Context.current().withValue(StudentGrpcIdentity.CLAIMS, readOnlyClaims)
+                .run(() -> service.checkin(StudentCheckinCommand.getDefaultInstance(), observer));
+
+        Status status = StatusProto.fromThrowable(observer.error);
+        assertThat(status.getCode()).isEqualTo(io.grpc.Status.Code.PERMISSION_DENIED.value());
+        assertThat(status.getDetails(0).unpack(StudentCheckinErrorDetail.class).getCode())
+                .isEqualTo(StudentCheckinErrorCode.STUDENT_CHECKIN_ERROR_CODE_OUT_OF_SCOPE);
+        assertThat(observer.value).as(geoKind).isNull();
+        verifyNoInteractions(checkinService, snapshotService, scheduleGrpcClient,
+                academicGrpcClient, semesterCacheService);
+    }
+
+    private static Stream<Arguments> readOnlyGeoCommands() {
+        return Stream.of(
+                Arguments.of("coordinates", StudentCheckinCommand.newBuilder()
+                        .setLessonId(LESSON_ID)
+                        .setIdempotencyKey(KEY)
+                        .setCoordinates(Coordinates.newBuilder()
+                                .setLatitude(55.75).setLongitude(37.61))
+                        .build()),
+                Arguments.of("unavailable", StudentCheckinCommand.newBuilder()
+                        .setLessonId(LESSON_ID)
+                        .setIdempotencyKey(KEY)
+                        .setUnavailable(GeoUnavailable.newBuilder()
+                                .setReason(GeoUnavailableReason.GEO_UNAVAILABLE_REASON_TIMEOUT))
+                        .build())
+        );
     }
 
     private static Stream<Arguments> geoCommands() {

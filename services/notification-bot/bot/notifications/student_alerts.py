@@ -30,8 +30,9 @@ async def handle_student_alert(
     Reads payload.user_id, payload.status ('approved' | 'rejected'),
     payload.decision_comment (optional ru text). Resolves the student's
     telegram_id via AcademicGrpcClient.get_user_by_id (gRPC). If the student
-    has no linked Telegram account, logs a warning and exits silently —
-    consumer must still ack the message (no infinite requeue).
+    has no linked Telegram account, logs a warning and exits silently. Lookup
+    failures propagate to the consumer boundary so transient failures can be
+    rejected/dead-lettered.
     """
     event_type = event.get("event_type")
     payload = event.get("payload", {})
@@ -44,16 +45,28 @@ async def handle_student_alert(
         return
 
     decision_comment = payload.get("decision_comment") or ""
+    status = str(status).lower()
+    resolution_reason = str(payload.get("resolution_reason") or "").lower()
 
     if event_type == "late_checkin.decided":
         if status == "approved":
-            text = "✅ Присутствие подтверждено\n\nСтароста подтвердил ваше присутствие на паре."
+            if resolution_reason == "present_priority":
+                text = "✅ Присутствие подтверждено\n\nПара уже была отмечена как присутствие."
+            else:
+                text = "✅ Присутствие подтверждено\n\nСтароста подтвердил ваше присутствие на паре."
         elif status == "rejected":
             text = "❌ Запрос отклонён\n\nСтароста отклонил подтверждение присутствия."
         elif status == "cancelled":
-            # GEO_CONFIRMED closes the headman's action without creating a
-            # second student notification for the student's own successful check-in.
-            return
+            if resolution_reason == "geo_confirmed":
+                text = "✅ Присутствие подтверждено по геолокации."
+            elif resolution_reason == "student_cancelled":
+                text = "ℹ️ Запрос отменён."
+            else:
+                logger.debug(
+                    "late_checkin.decided cancelled with unexpected reason=%s",
+                    resolution_reason,
+                )
+                return
         else:
             logger.debug("late_checkin.decided with unexpected status=%s", status)
             return
@@ -64,6 +77,8 @@ async def handle_student_alert(
     elif status == "rejected":
         comment_line = decision_comment if decision_comment else "без комментария"
         text = f"❌ Уважительная причина отклонена\n\nКомментарий:\n{comment_line}"
+    elif status == "cancelled":
+        text = "ℹ️ Заявка отменена студентом."
     else:
         logger.debug(
             "handle_student_alert called with unexpected status=%s event_type=%s",
@@ -73,16 +88,8 @@ async def handle_student_alert(
         return
 
     # Resolve student's telegram_id via gRPC (no local cache — fires rarely).
-    try:
-        user = await academic_client.get_user_by_id(user_id)
-    except Exception as exc:
-        logger.warning(
-            "Failed to resolve user_id=%s for %s: %s",
-            user_id,
-            event_type,
-            exc,
-        )
-        return
+    # Let lookup failures reach the consumer boundary for reject/DLQ handling.
+    user = await academic_client.get_user_by_id(user_id)
 
     telegram_id = getattr(user, "telegram_id", 0) if user is not None else 0
     if not telegram_id:

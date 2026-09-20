@@ -1,0 +1,192 @@
+@import '../../styles/tokens.pcss';
+
+.headman-schedule {
+  display: grid;
+  gap: var(--rct-space-4);
+  max-inline-size: var(--rct-mobile-content-width);
+  margin-inline: auto;
+  padding: var(--rct-space-5) var(--rct-space-4) 8rem;
+  color: var(--rct-color-text-primary);
+}
+
+.headman-schedule__header,
+.headman-schedule__form-header,
+.headman-schedule__slot,
+.headman-schedule__field-row {
+  display: flex;
+  gap: var(--rct-space-3);
+}
+
+.headman-schedule__header,
+.headman-schedule__form-header {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.headman-schedule__eyebrow,
+.headman-schedule__context,
+.headman-schedule__slot-copy span,
+.headman-schedule__slot-time span {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-schedule__eyebrow {
+  margin: 0 0 var(--rct-space-1);
+  color: var(--rct-color-accent-now);
+  font-weight: var(--rct-font-weight-medium);
+}
+
+.headman-schedule h1,
+.headman-schedule h2,
+.headman-schedule p {
+  margin: 0;
+}
+
+.headman-schedule h1 {
+  font-size: var(--rct-font-size-title-screen);
+  line-height: var(--rct-leading-tight);
+}
+
+.headman-schedule h2 {
+  font-size: var(--rct-font-size-title);
+}
+
+.headman-schedule__role-button,
+.headman-schedule__secondary,
+.headman-schedule__day,
+.headman-schedule__parity button {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.headman-schedule__role-button,
+.headman-schedule__secondary {
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-schedule__days,
+.headman-schedule__parity {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--rct-space-2);
+}
+
+.headman-schedule__day[data-selected='true'],
+.headman-schedule__parity button[data-selected='true'] {
+  border-color: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+
+.headman-schedule__list,
+.headman-schedule__form {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+.headman-schedule__slot {
+  align-items: center;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-3);
+  background: var(--rct-color-surface-raised);
+}
+
+.headman-schedule__slot-time {
+  display: grid;
+  flex: 0 0 4.5rem;
+  gap: var(--rct-space-1);
+}
+
+.headman-schedule__slot-copy {
+  display: grid;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+}
+
+.headman-schedule__empty,
+.headman-schedule__state {
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-4);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+}
+
+.headman-schedule__state--error,
+.headman-schedule__form-error {
+  color: var(--rct-color-danger-text);
+}
+
+.headman-schedule__state--success {
+  color: var(--rct-color-success-text);
+}
+
+.headman-schedule__primary {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-3) var(--rct-space-4);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font: inherit;
+  font-weight: var(--rct-font-weight-bold);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.headman-schedule__primary:disabled,
+.headman-schedule__role-button:disabled,
+.headman-schedule__secondary:disabled,
+.headman-schedule__day:disabled,
+.headman-schedule__parity button:disabled {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+.headman-schedule__form {
+  border-block-start: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  padding-block-start: var(--rct-space-4);
+}
+
+.headman-schedule__field {
+  display: grid;
+  flex: 1 1 0;
+  gap: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-schedule__field input,
+.headman-schedule__field select {
+  min-block-size: var(--rct-control-min-touch);
+  inline-size: 100%;
+  box-sizing: border-box;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  @mixin rct-focus-ring;
+}
+
+.headman-schedule__form-error {
+  font-size: var(--rct-font-size-caption);
+}
+
+@media (max-width: 24rem) {
+  .headman-schedule__header,
+  .headman-schedule__field-row {
+    flex-direction: column;
+  }
+}

@@ -7,6 +7,7 @@ from aiogram import Bot
 
 from bot.config import Settings
 from bot.grpc_client.academic_client import AcademicGrpcClient
+from bot.grpc_client.attendance_client import AttendanceRequestGrpcClient
 from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
 from bot.services.request_message_tracker import RequestMessageTracker
@@ -31,6 +32,7 @@ class EventDispatcher:
         config: Settings,
         otp_tracker: OtpMessageTracker,
         request_tracker: RequestMessageTracker | None = None,
+        attendance_client: AttendanceRequestGrpcClient | None = None,
     ) -> None:
         self._bot = bot
         self._academic_client = academic_client
@@ -39,6 +41,7 @@ class EventDispatcher:
         self._config = config
         self._otp_tracker = otp_tracker
         self._request_tracker = request_tracker
+        self._attendance_client = attendance_client
 
         # Import handlers here to avoid circular imports at module level
         from bot.notifications.alert_fired import _parse_admin_ids, handle_alert_fired
@@ -132,6 +135,7 @@ class EventDispatcher:
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
                 request_tracker=self._request_tracker,
+                attendance_client=self._attendance_client,
             ),
             # 59-06 / D-28: notify the student when their excuse ticket is decided
             "excuse.decided": lambda event: self._handle_excuse_decided(event),
@@ -141,6 +145,7 @@ class EventDispatcher:
                 academic_client=self._academic_client,
                 send_queue=self._send_queue,
                 request_tracker=self._request_tracker,
+                attendance_client=self._attendance_client,
             ),
             "late_checkin.decided": lambda event: self._handle_late_checkin_decided(event),
             "lesson.closed": lambda event: handle_lesson_closed(
@@ -211,9 +216,17 @@ class EventDispatcher:
 
         payload = event.get("payload") or {}
         ticket_id = payload.get("ticket_id")
-        status = payload.get("status")
+        status = str(payload.get("status") or "").lower()
         if ticket_id and self._request_tracker is not None:
-            verdict = "✅ Одобрено" if status == "approved" else "❌ Отклонено"
+            if status == "approved":
+                verdict = "✅ Одобрено"
+            elif status == "rejected":
+                verdict = "❌ Отклонено"
+            elif status == "cancelled":
+                verdict = "ℹ️ Заявка отменена"
+            else:
+                logger.warning("Ignoring excuse.decided with unsupported status=%s", status)
+                return
             await self._close_tracked_messages("excuse", str(ticket_id), verdict)
 
     async def _handle_late_checkin_decided(self, event: dict) -> None:
@@ -229,14 +242,20 @@ class EventDispatcher:
 
         payload = event.get("payload") or {}
         request_id = payload.get("request_id")
-        status = payload.get("status")
+        status = str(payload.get("status") or "").lower()
+        resolution_reason = str(payload.get("resolution_reason") or "").lower()
         if request_id and self._request_tracker is not None:
             if status == "approved":
-                verdict = "✅ Подтверждено"
+                verdict = "✅ Уже подтверждено" if resolution_reason == "present_priority" else "✅ Подтверждено"
             elif status == "cancelled":
-                verdict = "✅ Уже подтверждено по геолокации"
-            else:
+                verdict = ("✅ Уже подтверждено по геолокации"
+                           if resolution_reason == "geo_confirmed"
+                           else "ℹ️ Запрос отменён")
+            elif status == "rejected":
                 verdict = "❌ Отклонено"
+            else:
+                logger.warning("Ignoring late_checkin.decided with unsupported status=%s", status)
+                return
             await self._close_tracked_messages("late_checkin", str(request_id), verdict)
 
     async def _close_tracked_messages(self, kind: str, request_id: str, verdict_line: str) -> None:

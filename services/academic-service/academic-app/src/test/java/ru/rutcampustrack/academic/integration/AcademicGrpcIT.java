@@ -3,6 +3,7 @@ package ru.rutcampustrack.academic.integration;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import ru.rutcampustrack.academic.contract.enums.SubjectType;
-import ru.rutcampustrack.academic.entity.Subject;
-import ru.rutcampustrack.academic.entity.TeacherSubjectGroup;
 import ru.rutcampustrack.academic.grpc.AcademicGrpcServiceGrpc;
 import ru.rutcampustrack.academic.grpc.Empty;
 import ru.rutcampustrack.academic.grpc.GroupMembersRequest;
@@ -31,8 +29,11 @@ import ru.rutcampustrack.academic.grpc.UserByTelegramIdRequest;
 import ru.rutcampustrack.academic.grpc.UserByTelegramIdResponse;
 import ru.rutcampustrack.academic.grpc.UserRequest;
 import ru.rutcampustrack.academic.grpc.UserResponse;
-import ru.rutcampustrack.academic.repository.SubjectRepository;
-import ru.rutcampustrack.academic.repository.TeacherSubjectGroupRepository;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,9 +60,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
+    private static final ZoneId MOSCOW = ZoneId.of("Europe/Moscow");
+
     // Seed data constants — match V2__seed_test_data.sql exactly
     private static final long GROUP_ID = 1L;
-    private static final long SEMESTER_ID = 1L;
     private static final long ADMIN_ID = 1L;
     private static final long TEACHER_ID = 2L;
     private static final long STUDENT_ID = 3L; // is_headman=true, group_id=1
@@ -73,47 +75,115 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
     private AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub;
 
     @Autowired
-    private SubjectRepository subjectRepository;
-
-    @Autowired
-    private TeacherSubjectGroupRepository teacherSubjectGroupRepository;
-
-    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     private Long subjectId;
     private Long archivedUserId;
+    private Long testSemesterId;
+    private Long unassignedTeacherId;
+    private String testSemesterName;
+    private List<Long> priorActiveSemesterIds;
 
     @BeforeEach
     void setUpAdditionalData() {
-        // Insert subject for GRPC-03 tests (not in V2 seed data)
-        // Clean up first to avoid duplicate key on repeated test runs
-        teacherSubjectGroupRepository.deleteAll();
-        subjectRepository.deleteAll();
+        priorActiveSemesterIds = jdbcTemplate.query(
+                "SELECT id FROM semesters WHERE is_active = true ORDER BY id",
+                (rs, rowNum) -> rs.getLong(1));
+        testSemesterId = ensureCurrentSemester();
+        jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
+        jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", testSemesterId);
+        ensureTeacherGrant(TEACHER_ID);
+        subjectId = insertCanonicalSubject();
+        unassignedTeacherId = insertUnassignedTeacher();
 
-        Subject subject = new Subject();
-        subject.setName("Algorithms");
-        subject.setType(SubjectType.LECTURE);
-        subject.setGroupId(GROUP_ID); // Phase 60-01 V12: subjects.group_id NOT NULL
-        subject = subjectRepository.save(subject);
-        subjectId = subject.getId();
+        // Seed an archived user without deleting a reused row or its durable grant.
+        archivedUserId = ensureArchivedUser();
+    }
 
-        // Insert teacher-subject-group assignment for GRPC-03
-        TeacherSubjectGroup assignment = new TeacherSubjectGroup(
-                TEACHER_ID, subjectId, GROUP_ID, SEMESTER_ID);
-        teacherSubjectGroupRepository.save(assignment);
+    @AfterEach
+    void restoreActiveSemester() {
+        jdbcTemplate.update("UPDATE semesters SET is_active = false WHERE is_active = true");
+        for (Long id : priorActiveSemesterIds) {
+            jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", id);
+        }
+    }
 
-        // Insert archived user for GRPC-07 test via JdbcTemplate
-        // (cannot use JPA save because @SQLRestriction blocks archived users)
+    private Long ensureCurrentSemester() {
+        LocalDate today = LocalDate.now(MOSCOW);
+        List<Long> current = jdbcTemplate.query(
+                "SELECT id FROM semesters WHERE date_from <= ? AND date_to >= ? "
+                        + "ORDER BY id DESC LIMIT 1",
+                (rs, rowNum) -> rs.getLong(1), today, today);
+        if (!current.isEmpty()) {
+            testSemesterName = jdbcTemplate.queryForObject(
+                    "SELECT name FROM semesters WHERE id = ?", String.class, current.get(0));
+            return current.get(0);
+        }
+        testSemesterName = "L5A grpc current " + UUID.randomUUID();
+        return jdbcTemplate.queryForObject(
+                "INSERT INTO semesters (name, date_from, date_to, is_active, created_at) "
+                        + "VALUES (?, ?, ?, false, NOW()) RETURNING id",
+                Long.class, testSemesterName, today.minusDays(5), today.plusDays(30));
+    }
+
+    private void ensureTeacherGrant(long teacherId) {
         jdbcTemplate.update(
-                "DELETE FROM users WHERE login = 'archived_test'");
+                "INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updated_at) "
+                        + "VALUES (?, 'teacher', 'active', NULL, NOW(), NOW()) "
+                        + "ON CONFLICT (user_id, role) DO UPDATE SET status = 'active', updated_at = NOW()",
+                teacherId);
+    }
+
+    private long insertCanonicalSubject() {
+        String name = "Algorithms " + UUID.randomUUID();
+        LocalDate today = LocalDate.now(MOSCOW);
+        LocalDate semesterFrom = jdbcTemplate.queryForObject(
+                "SELECT date_from FROM semesters WHERE id = ?", LocalDate.class, testSemesterId);
+        LocalDate validFrom = semesterFrom.isAfter(today.minusDays(1)) ? semesterFrom : today.minusDays(1);
+        long id = jdbcTemplate.queryForObject(
+                "WITH inserted_subject AS ("
+                        + "INSERT INTO subjects (name, type, group_id) "
+                        + "VALUES (?, 'lecture'::subject_type, ?) RETURNING id) "
+                        + "INSERT INTO subject_lesson_types (subject_id, lesson_type) "
+                        + "SELECT id, 'lecture'::subject_type FROM inserted_subject RETURNING subject_id",
+                Long.class, name, GROUP_ID);
         jdbcTemplate.update(
-                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, password_changed, created_at, updated_at) " +
-                "VALUES ('archived_test', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
-                "'Archived', 'User', 'student', 'archived', false, false, NOW(), NOW())");
-        Long id = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'archived_test'", Long.class);
-        archivedUserId = id;
+                "INSERT INTO assignments (teacher_id, subject_id, group_id, semester_id, lesson_type, "
+                        + "valid_from, valid_until_exclusive) VALUES (?, ?, ?, ?, 'lecture'::subject_type, ?, NULL)",
+                TEACHER_ID, id, GROUP_ID, testSemesterId, validFrom);
+        return id;
+    }
+
+    private long insertUnassignedTeacher() {
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 18);
+        long id = jdbcTemplate.queryForObject(
+                "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
+                        + "is_headman, password_changed, created_at, updated_at) "
+                        + "VALUES (?, NULL, 'L5A', 'Unassigned', 'teacher'::user_role, "
+                        + "'active'::account_status, false, false, NOW(), NOW()) RETURNING id",
+                Long.class, "l5a-grpc-" + suffix);
+        ensureTeacherGrant(id);
+        return id;
+    }
+
+    private long ensureArchivedUser() {
+        List<Long> existing = jdbcTemplate.query(
+                "SELECT id FROM users WHERE login = 'archived_test'",
+                (rs, rowNum) -> rs.getLong(1));
+        if (existing.isEmpty()) {
+            return jdbcTemplate.queryForObject(
+                    "INSERT INTO users (login, password_hash, last_name, first_name, role, status, "
+                            + "is_headman, password_changed, created_at, updated_at) "
+                            + "VALUES ('archived_test', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', "
+                            + "'Archived', 'User', 'student'::user_role, 'archived'::account_status, "
+                            + "false, false, NOW(), NOW()) RETURNING id",
+                    Long.class);
+        }
+        long id = existing.get(0);
+        jdbcTemplate.update(
+                "UPDATE users SET status = 'archived'::account_status, is_headman = false, "
+                        + "group_id = NULL WHERE id = ?", id);
+        return id;
     }
 
     // =====================================================================
@@ -173,14 +243,13 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
     @Test
     void getGroupMembers_archivedUserInGroup_notReturned() {
         // Insert an archived student in group 1 and verify they are excluded
-        jdbcTemplate.update(
-                "DELETE FROM users WHERE login = 'archived_in_group'");
+        String login = "archived-in-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         jdbcTemplate.update(
                 "INSERT INTO users (login, password_hash, last_name, first_name, role, status, is_headman, group_id, password_changed, created_at, updated_at) " +
-                "VALUES ('archived_in_group', '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
-                "'Archived', 'InGroup', 'student', 'archived', false, 1, false, NOW(), NOW())");
+                "VALUES (?, '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi', " +
+                "'Archived', 'InGroup', 'student', 'archived', false, 1, false, NOW(), NOW())", login);
         Long archivedInGroupId = jdbcTemplate.queryForObject(
-                "SELECT id FROM users WHERE login = 'archived_in_group'", Long.class);
+                "SELECT id FROM users WHERE login = ?", Long.class, login);
 
         GroupMembersRequest request = GroupMembersRequest.newBuilder()
                 .setGroupId(GROUP_ID)
@@ -191,9 +260,6 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         // The archived user must NOT appear in the members list
         assertThat(response.getStudentsList())
                 .noneMatch(s -> s.getUserId() == archivedInGroupId);
-
-        // Cleanup
-        jdbcTemplate.update("DELETE FROM users WHERE login = 'archived_in_group'");
     }
 
     // =====================================================================
@@ -204,24 +270,27 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
     void getTeacherSubjects_returnsSubjectsWithGroups() {
         TeacherSubjectsRequest request = TeacherSubjectsRequest.newBuilder()
                 .setTeacherId(TEACHER_ID)
-                .setSemesterId(SEMESTER_ID)
+                .setSemesterId(testSemesterId)
                 .build();
 
         TeacherSubjectsResponse response = stub.getTeacherSubjects(request);
 
         assertThat(response.getSubjectsList()).isNotEmpty();
-        assertThat(response.getSubjectsList().get(0).getSubjectName()).isEqualTo("Algorithms");
-        assertThat(response.getSubjectsList().get(0).getGroupName()).isEqualTo("ИВТ-211");
-        assertThat(response.getSubjectsList().get(0).getSubjectType()).isEqualTo("lecture");
-        assertThat(response.getSubjectsList().get(0).getGroupId()).isEqualTo(GROUP_ID);
+        assertThat(response.getSubjectsList()).anySatisfy(info -> {
+            assertThat(info.getSubjectId()).isEqualTo(subjectId);
+            assertThat(info.getGroupName()).isEqualTo("ИВТ-211");
+            assertThat(info.getSubjectType()).isEqualTo("lecture");
+            assertThat(info.getGroupId()).isEqualTo(GROUP_ID);
+            assertThat(info.getSemesterId()).isEqualTo(testSemesterId);
+        });
     }
 
     @Test
     void getTeacherSubjects_noAssignments_returnsEmptyList() {
-        // ADMIN_ID (id=1) has no teacher_subject_groups assignments
+        // A real teacher grant with no assignment must receive an empty list.
         TeacherSubjectsRequest request = TeacherSubjectsRequest.newBuilder()
-                .setTeacherId(ADMIN_ID)
-                .setSemesterId(SEMESTER_ID)
+                .setTeacherId(unassignedTeacherId)
+                .setSemesterId(testSemesterId)
                 .build();
 
         TeacherSubjectsResponse response = stub.getTeacherSubjects(request);
@@ -238,7 +307,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
         SubjectsByIdsResponse response = stub.getSubjectsByIds(request);
 
         assertThat(response.getSubjectsList()).hasSize(1);
-        assertThat(response.getSubjectsList().get(0).getSubjectName()).isEqualTo("Algorithms");
+        assertThat(response.getSubjectsList().get(0).getSubjectName()).startsWith("Algorithms ");
         assertThat(response.getSubjectsList().get(0).getSubjectType()).isEqualTo("lecture");
     }
 
@@ -320,8 +389,8 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
         SemesterResponse response = stub.getActiveSemester(request);
 
-        assertThat(response.getId()).isEqualTo(SEMESTER_ID);
-        assertThat(response.getName()).isEqualTo("Spring 2026");
+        assertThat(response.getId()).isEqualTo(testSemesterId);
+        assertThat(response.getName()).isEqualTo(testSemesterName);
         assertThat(response.getDateFrom()).isNotEmpty();
         assertThat(response.getDateTo()).isNotEmpty();
         // V6 migration adds first_week_type with DEFAULT 'odd'
@@ -340,7 +409,7 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
             assertThat(ex.getStatus().getCode()).isEqualTo(Status.Code.NOT_FOUND);
         } finally {
             // Restore active semester for subsequent tests
-            jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = " + SEMESTER_ID);
+            jdbcTemplate.update("UPDATE semesters SET is_active = true WHERE id = ?", testSemesterId);
         }
     }
 

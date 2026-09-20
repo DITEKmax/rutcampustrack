@@ -19,8 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.rutcampustrack.academic.contract.dto.subject.CreateSubjectRequest;
+import ru.rutcampustrack.academic.contract.dto.subject.AddSubjectTeacherRequest;
 import ru.rutcampustrack.academic.contract.dto.subject.SubjectResponse;
 import ru.rutcampustrack.academic.contract.dto.subject.UpdateSubjectRequest;
+
+import java.time.LocalDate;
 
 /**
  * REST API contract for subject management.
@@ -29,7 +32,7 @@ import ru.rutcampustrack.academic.contract.dto.subject.UpdateSubjectRequest;
 @RequestMapping("/academic/subjects")
 public interface SubjectApi {
 
-    @Operation(summary = "Создать предмет (HEADMAN/ADMIN)")
+    @Operation(summary = "Создать предмет (HEADMAN)")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Предмет создан"),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
@@ -54,7 +57,7 @@ public interface SubjectApi {
             Pageable pageable,
             PagedResourcesAssembler<SubjectResponse> assembler);
 
-    @Operation(summary = "Полное обновление предмета (PUT, HEADMAN/ADMIN)")
+    @Operation(summary = "Полное обновление предмета (PUT, HEADMAN)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Предмет обновлён"),
             @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
@@ -66,10 +69,8 @@ public interface SubjectApi {
             @PathVariable Long id,
             @Valid @RequestBody UpdateSubjectRequest request);
 
-    @Operation(summary = "Удалить предмет (HEADMAN/ADMIN)",
-            description = "Если у предмета есть уроки с историей посещаемости, " +
-                    "возвращается 409 со счётчиками в extras. Повторный запрос " +
-                    "с force=true пропускает pre-check и удаляет данные каскадно.")
+    @Operation(summary = "Удалить предмет (HEADMAN)",
+            description = "Удаление отклоняется при наличии назначений или ссылок расписания; force не обходит историю.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Предмет удалён"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
@@ -84,7 +85,7 @@ public interface SubjectApi {
     // Phase 60-01 / D-19: управление преподавателями существующего предмета
     // =========================================================================
 
-    @Operation(summary = "Добавить преподавателя к предмету (HEADMAN/ADMIN)")
+    @Operation(summary = "Добавить преподавателя к предмету (HEADMAN)")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Преподаватель добавлен"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
@@ -92,14 +93,23 @@ public interface SubjectApi {
             @ApiResponse(responseCode = "409", description = "Преподаватель уже назначен")
     })
     @PostMapping("/{id}/teachers/{teacherId}")
-    ResponseEntity<Void> addTeacher(@PathVariable Long id, @PathVariable Long teacherId);
+    ResponseEntity<EntityModel<ru.rutcampustrack.academic.contract.dto.assignment.AssignmentResponse>> addTeacher(
+            @PathVariable Long id,
+            @PathVariable Long teacherId,
+            @Valid @RequestBody AddSubjectTeacherRequest request);
 
-    @Operation(summary = "Удалить преподавателя из предмета (HEADMAN/ADMIN)")
+    @Operation(summary = "Закрыть назначение преподавателя (HEADMAN)",
+            description = "До активации общего lifecycle fence операция возвращает typed 409 без мутаций.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Преподаватель удалён"),
+            @ApiResponse(responseCode = "409", description = "Закрытие назначения пока недоступно"),
             @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
             @ApiResponse(responseCode = "404", description = "Назначение не найдено")
     })
     @DeleteMapping("/{id}/teachers/{teacherId}")
-    ResponseEntity<Void> removeTeacher(@PathVariable Long id, @PathVariable Long teacherId);
+    ResponseEntity<Void> removeTeacher(
+            @PathVariable Long id,
+            @PathVariable Long teacherId,
+            @RequestParam Long assignmentId,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            LocalDate validUntilExclusive);
 }

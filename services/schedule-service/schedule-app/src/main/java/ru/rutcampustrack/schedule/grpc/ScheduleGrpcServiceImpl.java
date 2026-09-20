@@ -53,8 +53,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         Lesson lesson = lessonRepository.findActiveLessonForGroup(request.getGroupId(), date)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson", "group_id", request.getGroupId()));
 
-        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
-                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
+        ScheduleItem item = findTemplateForRead(lesson);
 
         responseObserver.onNext(buildResponse(lesson, item));
         responseObserver.onCompleted();
@@ -70,8 +69,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
         Lesson lesson = lessonRepository.findById(request.getLessonId())
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson", "id", request.getLessonId()));
 
-        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
-                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
+        ScheduleItem item = findTemplateForRead(lesson);
 
         responseObserver.onNext(buildResponse(lesson, item));
         responseObserver.onCompleted();
@@ -92,29 +90,25 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
             throw new IllegalArgumentException("date_from must not be after date_to");
         }
 
-        List<ScheduleItem> items = scheduleItemRepository
-                .findByGroupIdAndSemesterIdAndIsActiveTrue(request.getGroupId(), request.getSemesterId());
-
-        if (items.isEmpty()) {
+        List<Lesson> lessons = lessonRepository.findByGroupIdAndSemesterIdAndDateBetweenAndStatusIn(
+                request.getGroupId(), request.getSemesterId(), from, to,
+                List.of("planned", "active", "closed", "cancelled"));
+        if (lessons.isEmpty()) {
             responseObserver.onNext(LessonsResponse.newBuilder().build());
             responseObserver.onCompleted();
             return;
         }
-
-        List<Long> itemIds = items.stream().map(ScheduleItem::getId).toList();
-
-        List<Lesson> lessons = lessonRepository.findByScheduleItemIdInAndDateBetweenAndStatusIn(
-                itemIds, from, to, List.of("planned", "active", "closed", "cancelled"));
-
-        Map<Long, ScheduleItem> itemById = items.stream()
+        Map<Long, ScheduleItem> itemById = scheduleItemRepository.findAllById(lessons.stream()
+                        .map(Lesson::getScheduleItemId)
+                        .filter(java.util.Objects::nonNull)
+                        .distinct().toList()).stream()
                 .collect(Collectors.toMap(ScheduleItem::getId, i -> i));
 
         List<LessonResponse> responses = lessons.stream()
-                .filter(l -> itemById.containsKey(l.getScheduleItemId()))
                 .map(l -> buildResponse(l, itemById.get(l.getScheduleItemId())))
                 .toList();
 
-        OffsetDateTime updatedAt = items.stream()
+        OffsetDateTime updatedAt = itemById.values().stream()
                 .map(ScheduleItem::getCreatedAt)
                 .filter(java.util.Objects::nonNull)
                 .max(OffsetDateTime::compareTo)
@@ -163,6 +157,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
 
         List<Long> scheduleItemIds = lessons.stream()
                 .map(Lesson::getScheduleItemId)
+                .filter(java.util.Objects::nonNull)
                 .distinct()
                 .toList();
 
@@ -170,18 +165,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                 .collect(Collectors.toMap(ScheduleItem::getId, i -> i));
 
         List<LessonInfo> infos = lessons.stream()
-                .filter(l -> itemById.containsKey(l.getScheduleItemId()))
-                .map(l -> {
-                    ScheduleItem item = itemById.get(l.getScheduleItemId());
-                    return LessonInfo.newBuilder()
-                            .setLessonId(l.getId())
-                            .setGroupId(item.getGroupId())
-                            .setSubjectId(item.getSubjectId())
-                            .setStartsAt(l.getDate().toString() + "T" + item.getStartTime().toString())
-                            .setLessonNumber(item.getLessonNumber() != null ? item.getLessonNumber().intValue() : 0)
-                            .setDate(l.getDate().toString())
-                            .build();
-                })
+                .map(l -> lessonInfo(l, itemById.get(l.getScheduleItemId())))
                 .toList();
 
         responseObserver.onNext(LessonsByIdsResponse.newBuilder().addAllLessons(infos).build());
@@ -205,8 +189,7 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
                         "group_id/date/lesson_number",
                         request.getGroupId() + "/" + date + "/" + request.getLessonNumber()));
 
-        ScheduleItem item = scheduleItemRepository.findById(lesson.getScheduleItemId())
-                .orElseThrow(() -> new ResourceNotFoundException("ScheduleItem", "id", lesson.getScheduleItemId()));
+        ScheduleItem item = findTemplateForRead(lesson);
 
         responseObserver.onNext(buildResponse(lesson, item));
         responseObserver.onCompleted();
@@ -236,21 +219,71 @@ public class ScheduleGrpcServiceImpl extends ScheduleGrpcServiceGrpc.ScheduleGrp
     }
 
     private LessonResponse buildResponse(Lesson lesson, ScheduleItem item) {
+        Long groupId = lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
+        Long subjectId = lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
+        Short lessonNumber = lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
+        java.time.LocalTime start = lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime();
+        java.time.LocalTime end = lesson.getEndTime() != null ? lesson.getEndTime() : item.getEndTime();
+        String room = lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item.getRoom();
         return LessonResponse.newBuilder()
                 .setId(lesson.getId())
-                .setScheduleItemId(lesson.getScheduleItemId())
-                .setGroupId(item.getGroupId())
-                .setSubjectId(item.getSubjectId())
+                .setScheduleItemId(lesson.getScheduleItemId() == null ? 0 : lesson.getScheduleItemId())
+                .setGroupId(groupId)
+                .setSubjectId(subjectId)
                 // D-16: teacher_id is reserved in schedule.proto — no setter generated
                 .setDate(lesson.getDate().toString())
-                .setLessonNumber(item.getLessonNumber())
-                .setStartTime(item.getStartTime().toString())
-                .setEndTime(item.getEndTime().toString())
+                .setLessonNumber(lessonNumber)
+                .setStartTime(start.toString())
+                .setEndTime(end.toString())
                 .setStatus(lesson.getStatus().name().toLowerCase())
                 .setIsGeoBlocked(lesson.isGeoBlocked())
-                .setRoom(item.getRoom() != null ? item.getRoom() : "")
+                .setRoom(room != null ? room : "")
                 .setIsBlockedByHeadman(lesson.isBlockedByHeadman())
                 .setRoomChangeState("unknown")
+                .setOccurrenceId(lesson.getOccurrenceId() == null ? 0 : lesson.getOccurrenceId())
+                .setAssignmentId(lesson.getAssignmentId() == null ? 0 : lesson.getAssignmentId())
+                .setSemesterId(lesson.getSemesterId() == null ? 0 : lesson.getSemesterId())
+                .setAssignedTeacherId(lesson.getAssignedTeacherId() == null ? 0 : lesson.getAssignedTeacherId())
+                .setLessonType(lesson.getLessonType() == null ? "" : lesson.getLessonType())
+                .setGeneration(lesson.getGeneration() == null ? 0 : lesson.getGeneration())
+                .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
+                .setCurrent(lesson.isCurrent())
                 .build();
+    }
+
+    private LessonInfo lessonInfo(Lesson lesson, ScheduleItem item) {
+        Long groupId = lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
+        Long subjectId = lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
+        Short number = lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
+        java.time.LocalTime start = lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime();
+        return LessonInfo.newBuilder()
+                .setLessonId(lesson.getId())
+                .setGroupId(groupId)
+                .setSubjectId(subjectId)
+                .setStartsAt(lesson.getDate() + "T" + start)
+                .setLessonNumber(number == null ? 0 : number.intValue())
+                .setDate(lesson.getDate().toString())
+                .setOccurrenceId(lesson.getOccurrenceId() == null ? 0 : lesson.getOccurrenceId())
+                .setAssignmentId(lesson.getAssignmentId() == null ? 0 : lesson.getAssignmentId())
+                .setSemesterId(lesson.getSemesterId() == null ? 0 : lesson.getSemesterId())
+                .setTeacherId(lesson.getAssignedTeacherId() == null ? 0 : lesson.getAssignedTeacherId())
+                .setLessonType(lesson.getLessonType() == null ? "" : lesson.getLessonType())
+                .setGeneration(lesson.getGeneration() == null ? 0 : lesson.getGeneration())
+                .setRevision(lesson.getRevision() == null ? 0 : lesson.getRevision())
+                .setStatus(lesson.getStatus().name().toLowerCase())
+                .build();
+    }
+
+    /**
+     * Physical V17 rows carry their own identity snapshot. A read must remain
+     * valid when the mutable recurring template is inactive or when the row is
+     * a one-off with no schedule_item_id; the template is only a legacy
+     * fallback for pre-snapshot values.
+     */
+    private ScheduleItem findTemplateForRead(Lesson lesson) {
+        if (lesson.getScheduleItemId() == null) {
+            return null;
+        }
+        return scheduleItemRepository.findById(lesson.getScheduleItemId()).orElse(null);
     }
 }

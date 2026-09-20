@@ -4,8 +4,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * M03a: config for {@code InternalJwtIssuerClient} — WebClient parameters
- * and cache tuning for token-exchange calls to auth-service.
+ * Configuration for the per-request auth admission client.
  */
 @ConfigurationProperties(prefix = "rutcampustrack.security.internal-issuer-client")
 public class InternalIssuerClientProperties {
@@ -14,16 +13,7 @@ public class InternalIssuerClientProperties {
 
     private String authServiceUrl = "http://auth-service:9090";
     private String secret;
-    private long cacheTtlSeconds = 240;
-    private int cacheMaxSize = 10_000;
     private long timeoutMillis = 3_000;
-    /**
-     * M03a Группа 14 (strict mode toggle): если {@code true}, Gateway удаляет
-     * legacy {@code X-User-*} headers после успешного выпуска Internal JWT —
-     * downstream вынужден работать только через X-Internal-Token. Dev default
-     * {@code false} для dual-mode; prod включает после UAT golden path.
-     */
-    private boolean stripLegacyHeaders = false;
 
     public String getAuthServiceUrl() {
         return authServiceUrl;
@@ -41,36 +31,12 @@ public class InternalIssuerClientProperties {
         this.secret = secret;
     }
 
-    public long getCacheTtlSeconds() {
-        return cacheTtlSeconds;
-    }
-
-    public void setCacheTtlSeconds(long cacheTtlSeconds) {
-        this.cacheTtlSeconds = cacheTtlSeconds;
-    }
-
-    public int getCacheMaxSize() {
-        return cacheMaxSize;
-    }
-
-    public void setCacheMaxSize(int cacheMaxSize) {
-        this.cacheMaxSize = cacheMaxSize;
-    }
-
     public long getTimeoutMillis() {
         return timeoutMillis;
     }
 
     public void setTimeoutMillis(long timeoutMillis) {
         this.timeoutMillis = timeoutMillis;
-    }
-
-    public boolean isStripLegacyHeaders() {
-        return stripLegacyHeaders;
-    }
-
-    public void setStripLegacyHeaders(boolean stripLegacyHeaders) {
-        this.stripLegacyHeaders = stripLegacyHeaders;
     }
 
     @PostConstruct
@@ -85,11 +51,8 @@ public class InternalIssuerClientProperties {
             throw new IllegalStateException(
                     "Internal issuer secret must be at least " + MIN_SECRET_LENGTH + " bytes");
         }
-        if (cacheTtlSeconds <= 0 || cacheTtlSeconds > 290) {
-            // TTL must be strictly less than auth-service token TTL (300) so we never
-            // serve an expired token from cache (5-sec safety margin already baked in at 290).
-            throw new IllegalStateException(
-                    "cache-ttl-seconds must be in (0, 290] to stay under auth-service token TTL");
+        if (timeoutMillis <= 0) {
+            throw new IllegalStateException("timeout-millis must be positive");
         }
     }
 }

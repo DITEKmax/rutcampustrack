@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# M13 G13 — pre-flight validator для .env.prod перед docker compose deploy.
+# M13 G13 — pre-flight validator для .env.prod перед docker compose --env-file .env.prod -f docker-compose.prod.yml deploy.
 #
 # Проверяет:
 #   1. Файл существует и читаемый.
@@ -16,6 +16,12 @@
 #      - PASSWORD'ы — длина ≥ 8.
 #      - URL'ы (CORS_ALLOWED_ORIGIN, MINI_APP_URL, MINI_APP_WEB_URL,
 #        NOTIFICATION_WS_ALLOWED_ORIGINS) — начинаются с https://.
+#      - GATEWAY_PRIVATE_SUBNET — aligned RFC1918 parent IPv4 CIDR (/8..30).
+#      - GATEWAY_NETWORK_GATEWAY — canonical usable host inside that parent.
+#      - GATEWAY_NGINX_IPV4 — canonical usable host inside that parent;
+#        this is the sole trusted reverse-proxy address.
+#      - GATEWAY_DYNAMIC_IP_RANGE — aligned IPv4 CIDR fully inside the parent,
+#        excluding both fixed hosts from Docker's dynamic allocation range.
 #
 # Использование:
 #   scripts/validate-env-prod.sh                    # default: ./.env.prod
@@ -100,6 +106,8 @@ REQUIRED_VARS=(
     BOT_TOKEN TMA_BOT_TOKEN BOT_ALERT_TOKEN
     VAPID_PUBLIC_KEY VAPID_PRIVATE_KEY VAPID_SUBJECT
     MINI_APP_URL MINI_APP_WEB_URL CORS_ALLOWED_ORIGIN
+    GATEWAY_PRIVATE_SUBNET GATEWAY_NETWORK_GATEWAY GATEWAY_NGINX_IPV4
+    GATEWAY_DYNAMIC_IP_RANGE
     GRPC_SECRET INTERNAL_ISSUER_SECRET
     ALERT_WEBHOOK_SECRET GRAFANA_PASSWORD
     SWAGGER_HTPASSWD
@@ -132,6 +140,171 @@ ok "Все ${#REQUIRED_VARS[@]} required vars определены и не CHANG
 # -----------------------------------------------------------------------------
 # Format validation
 # -----------------------------------------------------------------------------
+
+# Convert a canonical dotted-decimal IPv4 address to an unsigned integer.
+# Leading-zero octets are rejected to avoid alternate numeric interpretations.
+ipv4_to_int() {
+    local address="$1"
+    local original_ifs="$IFS"
+    local -a octets=()
+    local octet
+
+    # Validate the complete dotted-decimal string before IFS splitting. Bash
+    # read can discard a trailing empty field, which would otherwise let
+    # `192.168.1.10.` through as four octets.
+    if ! [[ "$address" =~ ^(0|[1-9][0-9]{0,2})(\.(0|[1-9][0-9]{0,2})){3}$ ]]; then
+        return 1
+    fi
+
+    IFS='.' read -r -a octets <<< "$address"
+    IFS="$original_ifs"
+    if [ "${#octets[@]}" -ne 4 ]; then
+        return 1
+    fi
+
+    for octet in "${octets[@]}"; do
+        if ! [[ "$octet" =~ ^(0|[1-9][0-9]{0,2})$ ]]; then
+            return 1
+        fi
+        if (( 10#$octet > 255 )); then
+            return 1
+        fi
+    done
+
+    printf '%u\n' "$((
+        (10#${octets[0]} << 24) |
+        (10#${octets[1]} << 16) |
+        (10#${octets[2]} << 8) |
+        10#${octets[3]}
+    ))"
+}
+
+# Return network, broadcast and prefix for an aligned IPv4 CIDR.
+cidr_bounds() {
+    local cidr="$1"
+    local address prefix address_int host_bits mask network broadcast
+
+    if ! [[ "$cidr" =~ ^([^/]+)/((0|[1-9][0-9]?))$ ]]; then
+        return 1
+    fi
+    address="${BASH_REMATCH[1]}"
+    prefix="${BASH_REMATCH[2]}"
+    if (( 10#$prefix < 8 || 10#$prefix > 30 )); then
+        return 1
+    fi
+    if ! address_int=$(ipv4_to_int "$address"); then
+        return 1
+    fi
+
+    host_bits=$((32 - 10#$prefix))
+    mask=$(( (0xFFFFFFFF << host_bits) & 0xFFFFFFFF ))
+    network=$((address_int & mask))
+    if (( address_int != network )); then
+        return 1
+    fi
+    broadcast=$((network | (0xFFFFFFFF ^ mask)))
+    printf '%u %u %s\n' "$network" "$broadcast" "$prefix"
+}
+
+# Docker's private_net must remain within one RFC1918 range. Keep the range
+# constants explicit so this validator does not depend on ambient tooling.
+gateway_subnet=$(env_get GATEWAY_PRIVATE_SUBNET)
+gateway_network_gateway=$(env_get GATEWAY_NETWORK_GATEWAY)
+gateway_ipv4=$(env_get GATEWAY_NGINX_IPV4)
+gateway_dynamic_range=$(env_get GATEWAY_DYNAMIC_IP_RANGE)
+subnet_network=0
+subnet_broadcast=0
+subnet_prefix=0
+network_gateway_address=0
+gateway_address=0
+dynamic_network=0
+dynamic_broadcast=0
+dynamic_prefix=0
+subnet_valid=0
+network_gateway_valid=0
+gateway_valid=0
+dynamic_valid=0
+
+if subnet_bounds_value=$(cidr_bounds "$gateway_subnet"); then
+    read -r subnet_network subnet_broadcast subnet_prefix <<< "$subnet_bounds_value"
+    subnet_valid=1
+else
+    err "GATEWAY_PRIVATE_SUBNET must be an aligned RFC1918 IPv4 CIDR with prefix /8..30"
+fi
+
+if gateway_address=$(ipv4_to_int "$gateway_ipv4"); then
+    gateway_valid=1
+else
+    err "GATEWAY_NGINX_IPV4 must be a canonical dotted-decimal IPv4 address"
+fi
+
+if network_gateway_address=$(ipv4_to_int "$gateway_network_gateway"); then
+    network_gateway_valid=1
+else
+    err "GATEWAY_NETWORK_GATEWAY must be a canonical dotted-decimal IPv4 address"
+fi
+
+if dynamic_bounds_value=$(cidr_bounds "$gateway_dynamic_range"); then
+    read -r dynamic_network dynamic_broadcast dynamic_prefix <<< "$dynamic_bounds_value"
+    dynamic_valid=1
+else
+    err "GATEWAY_DYNAMIC_IP_RANGE must be an aligned IPv4 CIDR with prefix /8..30"
+fi
+
+if [ "$subnet_valid" -eq 1 ]; then
+    private_match=0
+    private_networks=(167772160 2886729728 3232235520)
+    private_broadcasts=(184549375 2887778303 3232301055)
+    for index in "${!private_networks[@]}"; do
+        if (( subnet_network >= private_networks[index] &&
+              subnet_broadcast <= private_broadcasts[index] )); then
+            private_match=1
+            break
+        fi
+    done
+    if [ "$private_match" -eq 0 ]; then
+        err "GATEWAY_PRIVATE_SUBNET must stay inside RFC1918 private ranges"
+    fi
+fi
+
+if [ "$subnet_valid" -eq 1 ] && [ "$gateway_valid" -eq 1 ]; then
+    if (( gateway_address <= subnet_network || gateway_address >= subnet_broadcast )); then
+        err "GATEWAY_NGINX_IPV4 must be a usable host address inside GATEWAY_PRIVATE_SUBNET"
+    else
+        ok "GATEWAY_NGINX_IPV4 is the exact trusted edge inside GATEWAY_PRIVATE_SUBNET (/${subnet_prefix})"
+    fi
+fi
+
+if [ "$subnet_valid" -eq 1 ] && [ "$network_gateway_valid" -eq 1 ]; then
+    if (( network_gateway_address <= subnet_network || network_gateway_address >= subnet_broadcast )); then
+        err "GATEWAY_NETWORK_GATEWAY must be a usable host address inside GATEWAY_PRIVATE_SUBNET"
+    else
+        ok "GATEWAY_NETWORK_GATEWAY is a usable host inside GATEWAY_PRIVATE_SUBNET (/${subnet_prefix})"
+    fi
+fi
+
+if [ "$subnet_valid" -eq 1 ] && [ "$dynamic_valid" -eq 1 ]; then
+    if (( dynamic_network < subnet_network || dynamic_broadcast > subnet_broadcast )); then
+        err "GATEWAY_DYNAMIC_IP_RANGE must be fully contained in GATEWAY_PRIVATE_SUBNET"
+    else
+        ok "GATEWAY_DYNAMIC_IP_RANGE is contained in GATEWAY_PRIVATE_SUBNET (/${dynamic_prefix})"
+    fi
+fi
+
+if [ "$gateway_valid" -eq 1 ] && [ "$network_gateway_valid" -eq 1 ]; then
+    if (( gateway_address == network_gateway_address )); then
+        err "GATEWAY_NETWORK_GATEWAY and GATEWAY_NGINX_IPV4 must be distinct usable hosts"
+    fi
+fi
+
+if [ "$dynamic_valid" -eq 1 ]; then
+    if [ "$gateway_valid" -eq 1 ] && (( gateway_address >= dynamic_network && gateway_address <= dynamic_broadcast )); then
+        err "GATEWAY_NGINX_IPV4 must be outside GATEWAY_DYNAMIC_IP_RANGE"
+    fi
+    if [ "$network_gateway_valid" -eq 1 ] && (( network_gateway_address >= dynamic_network && network_gateway_address <= dynamic_broadcast )); then
+        err "GATEWAY_NETWORK_GATEWAY must be outside GATEWAY_DYNAMIC_IP_RANGE"
+    fi
+fi
 
 # Helper: check минимальную длину
 check_min_length() {
@@ -257,7 +430,7 @@ fi
 # -----------------------------------------------------------------------------
 echo
 if [ $FAIL_COUNT -eq 0 ]; then
-    echo -e "${GREEN}✓ Все validations passed. .env.prod готов к docker compose up.${NC}"
+    echo -e "${GREEN}✓ Все validations passed. ${ENV_FILE} готов к docker compose --env-file \"${ENV_FILE}\" -f docker-compose.prod.yml up.${NC}"
     exit 0
 else
     echo -e "${RED}✗ $FAIL_COUNT validation(s) failed. Исправьте и запустите снова.${NC}" >&2

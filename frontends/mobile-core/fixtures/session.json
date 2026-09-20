@@ -4,6 +4,10 @@
     "displayName": "Анна Смирнова"
   },
   "activeRole": "STUDENT",
+  "sessionId": "99999999-9999-4999-8999-999999999999",
+  "sessionVersion": "9007199254740993",
+  "rolesVersion": "7",
+  "readOnly": false,
   "group": {
     "id": "17",
     "name": "ИВТ-21"

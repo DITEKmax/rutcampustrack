@@ -21,6 +21,7 @@ public class ScheduleItemAssembler {
     public EntityModel<ScheduleItemResponse> toModel(ScheduleItem item) {
         ScheduleItemResponse response = new ScheduleItemResponse(
                 item.getId(),
+                item.getAssignmentId(),
                 item.getGroupId(),
                 item.getSubjectId(),
                 item.getSemesterId(),
@@ -31,7 +32,10 @@ public class ScheduleItemAssembler {
                 item.getWeekType(),
                 item.getRoom(),
                 item.isActive(),
-                item.getCreatedAt()
+                item.getCreatedAt(),
+                item.getGeneratedCount(),
+                item.getGeneratedFrom(),
+                item.getGeneratedUntil()
         );
 
         return EntityModel.of(response,

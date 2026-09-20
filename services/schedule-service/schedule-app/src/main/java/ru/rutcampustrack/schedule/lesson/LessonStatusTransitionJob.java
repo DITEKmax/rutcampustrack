@@ -67,9 +67,9 @@ public class LessonStatusTransitionJob {
                     .orElseThrow(() -> new IllegalStateException(
                             "ScheduleItem not found for lesson " + lesson.getId()));
             eventPublisher.publishEvent(new LessonStartedEvent(this,
-                    lesson.getId(), item.getGroupId(), item.getSubjectId(),
-                    item.getLessonNumber(),
-                    item.getStartTime(), item.getEndTime(), item.getRoom()));
+                    lesson.getId(), snapshotGroup(lesson, item), snapshotSubject(lesson, item),
+                    snapshotLessonNumber(lesson, item),
+                    snapshotStart(lesson, item), snapshotEnd(lesson, item), snapshotRoom(lesson, item)));
         }
         lessonRepository.saveAll(toActivate);
 
@@ -82,10 +82,34 @@ public class LessonStatusTransitionJob {
                     .orElseThrow(() -> new IllegalStateException(
                             "ScheduleItem not found for lesson " + lesson.getId()));
             eventPublisher.publishEvent(new LessonClosedEvent(this,
-                    lesson.getId(), item.getGroupId(), item.getSubjectId()));
+                    lesson.getId(), snapshotGroup(lesson, item), snapshotSubject(lesson, item)));
         }
         lessonRepository.saveAll(toClose);
 
         log.info("Cron tick: activated={}, closed={}", toActivate.size(), toClose.size());
+    }
+
+    private static Long snapshotGroup(Lesson lesson, ScheduleItem item) {
+        return lesson.getGroupId() != null ? lesson.getGroupId() : item.getGroupId();
+    }
+
+    private static Long snapshotSubject(Lesson lesson, ScheduleItem item) {
+        return lesson.getSubjectId() != null ? lesson.getSubjectId() : item.getSubjectId();
+    }
+
+    private static Short snapshotLessonNumber(Lesson lesson, ScheduleItem item) {
+        return lesson.getLessonNumber() != null ? lesson.getLessonNumber() : item.getLessonNumber();
+    }
+
+    private static java.time.LocalTime snapshotStart(Lesson lesson, ScheduleItem item) {
+        return lesson.getStartTime() != null ? lesson.getStartTime() : item.getStartTime();
+    }
+
+    private static java.time.LocalTime snapshotEnd(Lesson lesson, ScheduleItem item) {
+        return lesson.getEndTime() != null ? lesson.getEndTime() : item.getEndTime();
+    }
+
+    private static String snapshotRoom(Lesson lesson, ScheduleItem item) {
+        return lesson.getRoomSnapshot() != null ? lesson.getRoomSnapshot() : item.getRoom();
     }
 }

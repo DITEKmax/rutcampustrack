@@ -7,16 +7,14 @@ import java.security.KeyPairGenerator;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
-/**
- * Helper for generating valid / invalid Internal JWT tokens in tests.
- * Each factory instance owns its own RSA keypair — call {@link #publicKey()}
- * to wire into a {@link PublicKeyProvider} stub.
- */
+/** Test-only signer for the complete internal JWT wire. */
 public final class InternalJwtTestFactory {
 
     public static final String ISSUER = "rutcampustrack-auth";
     public static final String AUDIENCE = "rutcampustrack-internal";
+    public static final String KEY_ID = "test-kid";
     public static final Duration DEFAULT_TTL = Duration.ofMinutes(5);
 
     private final KeyPair keyPair;
@@ -26,8 +24,8 @@ public final class InternalJwtTestFactory {
             KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
             gen.initialize(2048);
             this.keyPair = gen.generateKeyPair();
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to generate RSA keypair for tests", e);
+        } catch (Exception exception) {
+            throw new IllegalStateException("Failed to generate RSA keypair for tests", exception);
         }
     }
 
@@ -35,76 +33,76 @@ public final class InternalJwtTestFactory {
         return keyPair.getPublic();
     }
 
-    public String validToken(Long userId, String role, Long groupId, boolean isHeadman) {
-        return buildToken(userId, role, groupId, isHeadman, DEFAULT_TTL, ISSUER, AUDIENCE);
+    public KeyPair keyPair() {
+        return keyPair;
     }
 
-    public String expiredToken(Long userId, String role) {
-        Instant now = Instant.now();
-        return Jwts.builder()
-                .subject(userId.toString())
-                .issuer(ISSUER)
-                .audience().add(AUDIENCE).and()
-                .claim("role", role)
-                .issuedAt(Date.from(now.minus(Duration.ofMinutes(10))))
-                .expiration(Date.from(now.minus(Duration.ofMinutes(5))))
-                .signWith(keyPair.getPrivate(), Jwts.SIG.RS256)
-                .compact();
+    public String validToken(
+            long userId,
+            UUID sessionId,
+            long sessionVersion,
+            long rolesVersion,
+            String role,
+            String status,
+            Long groupId,
+            boolean isHeadman,
+            boolean readOnly
+    ) {
+        Instant issuedAt = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        return buildToken(
+                userId,
+                sessionId,
+                sessionVersion,
+                rolesVersion,
+                role,
+                status,
+                groupId,
+                isHeadman,
+                readOnly,
+                issuedAt,
+                issuedAt.plus(DEFAULT_TTL),
+                ISSUER,
+                AUDIENCE,
+                "internal",
+                keyPair
+        );
     }
 
-    public String invalidSignature(Long userId, String role) {
-        try {
-            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-            gen.initialize(2048);
-            KeyPair wrong = gen.generateKeyPair();
-            return Jwts.builder()
-                    .subject(userId.toString())
-                    .issuer(ISSUER)
-                    .audience().add(AUDIENCE).and()
-                    .claim("role", role)
-                    .issuedAt(new Date())
-                    .expiration(Date.from(Instant.now().plus(DEFAULT_TTL)))
-                    .signWith(wrong.getPrivate(), Jwts.SIG.RS256)
-                    .compact();
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    public String wrongIssuer(Long userId, String role) {
-        return buildToken(userId, role, null, false, DEFAULT_TTL, "evil-issuer", AUDIENCE);
-    }
-
-    public String wrongAudience(Long userId, String role) {
-        return buildToken(userId, role, null, false, DEFAULT_TTL, ISSUER, "some-other-audience");
-    }
-
-    public String missingRole(Long userId) {
-        Instant now = Instant.now();
-        return Jwts.builder()
-                .subject(userId.toString())
-                .issuer(ISSUER)
-                .audience().add(AUDIENCE).and()
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plus(DEFAULT_TTL)))
-                .signWith(keyPair.getPrivate(), Jwts.SIG.RS256)
-                .compact();
-    }
-
-    private String buildToken(Long userId, String role, Long groupId, boolean isHeadman,
-                              Duration ttl, String issuer, String audience) {
-        Instant now = Instant.now();
+    public String buildToken(
+            long userId,
+            UUID sessionId,
+            long sessionVersion,
+            long rolesVersion,
+            String role,
+            String status,
+            Long groupId,
+            boolean isHeadman,
+            boolean readOnly,
+            Instant issuedAt,
+            Instant expiration,
+            String issuer,
+            String audience,
+            String tokenUse,
+            KeyPair signer
+    ) {
         var builder = Jwts.builder()
-                .subject(userId.toString())
+                .header().keyId(KEY_ID).and()
+                .subject(Long.toString(userId))
                 .issuer(issuer)
                 .audience().add(audience).and()
+                .claim("token_use", tokenUse)
+                .claim("sid", sessionId.toString())
+                .claim("sv", Long.toString(sessionVersion))
+                .claim("rv", Long.toString(rolesVersion))
                 .claim("role", role)
+                .claim("status", status)
                 .claim("is_headman", isHeadman)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plus(ttl)));
+                .claim("readOnly", readOnly)
+                .issuedAt(Date.from(issuedAt))
+                .expiration(Date.from(expiration));
         if (groupId != null) {
-            builder.claim("group_id", groupId);
+            builder.claim("group_id", Long.toString(groupId));
         }
-        return builder.signWith(keyPair.getPrivate(), Jwts.SIG.RS256).compact();
+        return builder.signWith(signer.getPrivate(), Jwts.SIG.RS256).compact();
     }
 }

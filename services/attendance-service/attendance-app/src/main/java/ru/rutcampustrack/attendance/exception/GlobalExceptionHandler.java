@@ -7,6 +7,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -125,6 +126,14 @@ public class GlobalExceptionHandler {
                 "Старая геоотметка отключена", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(LegacyEndpointRetiredException.class)
+    public ResponseEntity<ErrorResponse> handleLegacyEndpointRetired(
+            LegacyEndpointRetiredException ex,
+            HttpServletRequest request) {
+        return problem(HttpStatus.GONE, "legacy-endpoint-retired",
+                "Старый endpoint отключён", ex.getMessage(), request);
+    }
+
     @ExceptionHandler({
             ScheduleServiceUnavailableException.class,
             AcademicServiceUnavailableException.class,
@@ -156,6 +165,7 @@ public class GlobalExceptionHandler {
                 null);
         return ResponseEntity.status(status)
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .cacheControl(CacheControl.noStore())
                 .body(body);
     }
 }

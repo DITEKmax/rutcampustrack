@@ -48,6 +48,14 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
      */
     private OffsetDateTime cancelledAt;
     private OffsetDateTime createdAt;
+    private Long occurrenceId;
+    private Long assignmentId;
+    private Long semesterId;
+    private Long assignedTeacherId;
+    private String lessonType;
+    private Long generation;
+    private Long revision;
+    private boolean current;
 
     public LessonResponse() {}
 
@@ -102,6 +110,30 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
         this.cancelledBy = cancelledBy;
         this.cancelledAt = cancelledAt;
         this.createdAt = createdAt;
+    }
+
+    public LessonResponse(Long id, Long scheduleItemId, Long groupId, Long subjectId,
+                           LocalDate date, LessonStatus status,
+                           Short dayOfWeek, Short lessonNumber, LocalTime startTime,
+                           LocalTime endTime, WeekType weekType, String room,
+                           boolean geoBlocked, boolean blockedByHeadman,
+                           Long blockedByUserId, OffsetDateTime blockedAt,
+                           String cancelReason, Long cancelledBy, OffsetDateTime cancelledAt,
+                           OffsetDateTime createdAt, Long occurrenceId, Long assignmentId,
+                           Long semesterId, Long assignedTeacherId, String lessonType,
+                           Long generation, Long revision, boolean current) {
+        this(id, scheduleItemId, groupId, subjectId, date, status,
+                dayOfWeek, lessonNumber, startTime, endTime, weekType, room,
+                geoBlocked, blockedByHeadman, blockedByUserId, blockedAt,
+                cancelReason, cancelledBy, cancelledAt, createdAt);
+        this.occurrenceId = occurrenceId;
+        this.assignmentId = assignmentId;
+        this.semesterId = semesterId;
+        this.assignedTeacherId = assignedTeacherId;
+        this.lessonType = lessonType;
+        this.generation = generation;
+        this.revision = revision;
+        this.current = current;
     }
 
     public Long getId() {
@@ -182,5 +214,37 @@ public class LessonResponse extends RepresentationModel<LessonResponse> {
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public Long getOccurrenceId() {
+        return occurrenceId;
+    }
+
+    public Long getAssignmentId() {
+        return assignmentId;
+    }
+
+    public Long getSemesterId() {
+        return semesterId;
+    }
+
+    public Long getAssignedTeacherId() {
+        return assignedTeacherId;
+    }
+
+    public String getLessonType() {
+        return lessonType;
+    }
+
+    public Long getGeneration() {
+        return generation;
+    }
+
+    public Long getRevision() {
+        return revision;
+    }
+
+    public boolean isCurrent() {
+        return current;
     }
 }

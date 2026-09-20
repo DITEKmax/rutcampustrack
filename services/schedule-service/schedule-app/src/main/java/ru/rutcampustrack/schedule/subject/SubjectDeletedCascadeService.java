@@ -12,6 +12,7 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.schedule.oneoff.entity.OneOffLesson;
 import ru.rutcampustrack.schedule.oneoff.repository.OneOffLessonRepository;
+import ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException;
 
 import java.util.List;
 
@@ -64,6 +65,10 @@ public class SubjectDeletedCascadeService {
         if (items.isEmpty() && oneOffs.isEmpty()) {
             log.info("subject.deleted: nothing to cascade for subject {}", subjectId);
             return;
+        }
+
+        if (lessonRepository.countCanonicalReferencesBySubjectId(subjectId) > 0) {
+            throw new RecurringLifecycleNotReadyException("subject cascade with retained canonical history");
         }
 
         if (!lessonIds.isEmpty()) {

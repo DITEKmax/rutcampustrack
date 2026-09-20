@@ -1,5 +1,7 @@
 server:
   port: 8080
+  # Gateway owns forwarding-header normalization from the raw socket peer.
+  forward-headers-strategy: none
 
 spring:
   application:
@@ -17,355 +19,386 @@ spring:
 
   cloud:
     gateway:
-      globalcors:
-        add-to-simple-url-handler-mapping: true
-        cors-configurations:
-          '[/**]':
-            allowed-origins:
-              - "${CORS_ALLOWED_ORIGIN:http://localhost:5173}"
-              - "http://localhost:5173"
-              - "http://localhost:80"
-              - "http://localhost:5174"
-              - "http://localhost:5175"
-              - "http://localhost:5176"
-              - "http://localhost:3000"
-              - "http://localhost:4200"
-            allowed-methods:
-              - GET
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
-            allowed-headers: "*"
-            allow-credentials: true
-            max-age: 3600
-      # M13 G25.22 — убран `default-filters: DedupeResponseHeader` (CORS dedup).
-      # Spring Cloud Gateway 4.x bug: DedupeResponseHeader пытается mutate
-      # response headers ПОСЛЕ того как RequestRateLimiter уже committed
-      # X-RateLimit-* + downstream service committed status+body. Второй mutator
-      # упирается в ReadOnlyHttpHeaders.add → UnsupportedOperationException →
-      # `Error finishing response. Closing connection` → клиент получает 200
-      # headers + part body, но TCP оборван прежде завершения chunked encoding.
-      # CORS дубликатов нет (только globalcors source), filter не нужен.
-      # default-filters:
-      #   - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
-      routes:
-        # === Rate-limited routes (specific first, wins over generic auth-service) ===
+      server:
+        webflux:
+          # TrustedClientIpFilter is the sole forwarding-header normalizer.
+          forwarded:
+            enabled: false
+          x-forwarded:
+            enabled: false
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                allowed-origins:
+                  - "${CORS_ALLOWED_ORIGIN:http://localhost:5173}"
+                  - "http://localhost:5173"
+                  - "http://localhost:80"
+                  - "http://localhost:5174"
+                  - "http://localhost:5175"
+                  - "http://localhost:5176"
+                  - "http://localhost:3000"
+                  - "http://localhost:4200"
+                allowed-methods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowed-headers: "*"
+                allow-credentials: true
+                max-age: 3600
+          # M13 G25.22 — убран `default-filters: DedupeResponseHeader` (CORS dedup).
+          # Spring Cloud Gateway 4.x bug: DedupeResponseHeader пытается mutate
+          # response headers ПОСЛЕ того как RequestRateLimiter уже committed
+          # X-RateLimit-* + downstream service committed status+body. Второй mutator
+          # упирается в ReadOnlyHttpHeaders.add → UnsupportedOperationException →
+          # `Error finishing response. Closing connection` → клиент получает 200
+          # headers + part body, но TCP оборван прежде завершения chunked encoding.
+          # CORS дубликатов нет (только globalcors source), filter не нужен.
+          # default-filters:
+          #   - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+          routes:
+            # === Rate-limited routes (specific first, wins over generic auth-service) ===
 
-        # M13 G2: real X/min semantics via token bucket.
-        # Формула (universal): replenishRate=1 tok/sec, burstCapacity=60 tok (= 1 min запас),
-        # requestedTokens = 60/X. Тогда steady-state = 60/60*X = X req/min.
-        # При первом запросе bucket полон (60 tok), даёт burst = X запросов залпом.
-        # Далее каждые 60/X секунд восполняется 1 слот.
-        # UX: после всплеска из X запросов → 60/X сек ожидания до следующего запроса.
-        # См. docs/api/api-rate-limits.md и docs/milestones/M13-pre-deploy-hardening/NOTES.md.
+            # M13 G2: real X/min semantics via token bucket.
+            # Формула (universal): replenishRate=1 tok/sec, burstCapacity=60 tok (= 1 min запас),
+            # requestedTokens = 60/X. Тогда steady-state = 60/60*X = X req/min.
+            # При первом запросе bucket полон (60 tok), даёт burst = X запросов залпом.
+            # Далее каждые 60/X секунд восполняется 1 слот.
+            # UX: после всплеска из X запросов → 60/X сек ожидания до следующего запроса.
+            # См. docs/api/api-rate-limits.md и docs/milestones/M13-pre-deploy-hardening/NOTES.md.
 
-        # /api/auth/otp/request — 1 req/min per IP (жёсткий SMS-cost guard)
-        - id: auth-otp-request
-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
-          predicates:
-            - Path=/api/auth/otp/request
-            - Method=POST
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 60
-                redis-rate-limiter.requestedTokens: 60
-                key-resolver: "#{@ipKeyResolver}"
+            # /api/auth/otp/request — 1 req/min per IP (жёсткий SMS-cost guard)
+            - id: auth-otp-request
+              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+              predicates:
+                - Path=/api/auth/otp/request
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 60
+                    key-resolver: "#{@ipKeyResolver}"
 
-        # /api/auth/otp/verify-by-code — 5 req/min per IP
-        - id: auth-otp-verify
-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
-          predicates:
-            - Path=/api/auth/otp/verify-by-code
-            - Method=POST
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 60
-                redis-rate-limiter.requestedTokens: 12
-                key-resolver: "#{@ipKeyResolver}"
+            # /api/auth/otp/verify-by-code — 5 req/min per IP
+            - id: auth-otp-verify
+              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+              predicates:
+                - Path=/api/auth/otp/verify-by-code
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 12
+                    key-resolver: "#{@ipKeyResolver}"
 
-        # /api/auth/login — 5 req/min per IP (single rate limiter).
-        #
-        # M13 G25.21 — убран второй RequestRateLimiter (ip+login composite key).
-        # Spring Cloud Gateway 4.x bug: при двух последовательных RL-фильтрах
-        # второй пытается добавить X-RateLimit-* headers после того как
-        # ServerHttpResponse уже committed (status+body отправлены downstream)
-        # → ReadOnlyHttpHeaders.add() throws UnsupportedOperationException →
-        # `Error finishing response. Closing connection` → клиент получает 200
-        # headers + part body, но TCP оборван прежде чем `Content-Length`
-        # завершён. Browser fetch / Playwright apiRequest aborted →
-        # login.component.error callback не получает clean 200.
-        #
-        # IP-only RL уже останавливает distributed brute force (5/min/IP).
-        # ip+login композитный планируется вернуть через custom filter
-        # (NEW-XXX) после G25 закрытия — НЕ блокер для v0.0.0-alpha.15 deploy.
-        - id: auth-login
-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
-          predicates:
-            - Path=/api/auth/login
-            - Method=POST
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                # M14 G8 (G26 F01): production default — burstCapacity=60.
-                # Формула: 60 / requestedTokens=12 = 5 запросов залпом, что
-                # точно совпадает с brute-force window 5/мин/IP per CSO threat
-                # model. M13 G25.22 поднял до 600 как CI workaround для
-                # параллельных smoke (8 specs × 2 workers × 2 retries = до
-                # 32 запросов). Workaround нельзя оставлять в production —
-                # ослабляет brute-force защиту в 10×.
-                #
-                # Override для e2e: docker-compose.e2e.yml выставляет
-                # AUTH_LOGIN_BURST_CAPACITY=600 (env var). Production остаётся
-                # на 60 без явного override.
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: ${AUTH_LOGIN_BURST_CAPACITY:60}
-                redis-rate-limiter.requestedTokens: 12
-                key-resolver: "#{@ipKeyResolver}"
+            # /api/auth/login — 5 req/min per IP (single rate limiter).
+            #
+            # M13 G25.21 — убран второй RequestRateLimiter (ip+login composite key).
+            # Spring Cloud Gateway 4.x bug: при двух последовательных RL-фильтрах
+            # второй пытается добавить X-RateLimit-* headers после того как
+            # ServerHttpResponse уже committed (status+body отправлены downstream)
+            # → ReadOnlyHttpHeaders.add() throws UnsupportedOperationException →
+            # `Error finishing response. Closing connection` → клиент получает 200
+            # headers + part body, но TCP оборван прежде чем `Content-Length`
+            # завершён. Browser fetch / Playwright apiRequest aborted →
+            # login.component.error callback не получает clean 200.
+            #
+            # IP-only RL уже останавливает distributed brute force (5/min/IP).
+            # ip+login композитный планируется вернуть через custom filter
+            # (NEW-XXX) после G25 закрытия — НЕ блокер для v0.0.0-alpha.15 deploy.
+            - id: auth-login
+              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+              predicates:
+                - Path=/api/auth/login
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    # M14 G8 (G26 F01): production default — burstCapacity=60.
+                    # Формула: 60 / requestedTokens=12 = 5 запросов залпом, что
+                    # точно совпадает с brute-force window 5/мин/IP per CSO threat
+                    # model. M13 G25.22 поднял до 600 как CI workaround для
+                    # параллельных smoke (8 specs × 2 workers × 2 retries = до
+                    # 32 запросов). Workaround нельзя оставлять в production —
+                    # ослабляет brute-force защиту в 10×.
+                    #
+                    # Override для e2e: docker-compose.e2e.yml выставляет
+                    # AUTH_LOGIN_BURST_CAPACITY=600 (env var). Production остаётся
+                    # на 60 без явного override.
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: ${AUTH_LOGIN_BURST_CAPACITY:60}
+                    redis-rate-limiter.requestedTokens: 12
+                    key-resolver: "#{@ipKeyResolver}"
 
-        # /api/auth/refresh — 30 req/min per user (из X-User-Id после JwtAuthenticationFilter)
-        - id: auth-refresh
-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
-          predicates:
-            - Path=/api/auth/refresh
-            - Method=POST
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 60
-                redis-rate-limiter.requestedTokens: 2
-                key-resolver: "#{@userIdKeyResolver}"
+            # /api/auth/refresh — 30 req/min per user (из X-User-Id после JwtAuthenticationFilter)
+            - id: auth-refresh
+              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+              predicates:
+                - Path=/api/auth/refresh
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 2
+                    key-resolver: "#{@userIdKeyResolver}"
 
-        # /api/attendance/check-in — 10 req/min per user (предотвращает multi-mark)
-        - id: attendance-checkin
-          uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
-          predicates:
-            - Path=/api/attendance/check-in
-            - Method=POST
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 60
-                redis-rate-limiter.requestedTokens: 6
-                key-resolver: "#{@userIdKeyResolver}"
+            # /api/attendance/check-in — 10 req/min per user (предотвращает multi-mark)
+            - id: attendance-checkin
+              uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+              predicates:
+                - Path=/api/attendance/check-in
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 6
+                    key-resolver: "#{@userIdKeyResolver}"
 
-        # === Regular routes (unchanged) ===
+            # === Regular routes (unchanged) ===
 
-        - id: mobile-bff-checkin
-          uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
-          predicates:
-            - Path=/api/v1/student/lessons/*/checkin
-            - Method=POST
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 60
-                redis-rate-limiter.requestedTokens: 6
-                key-resolver: "#{@userIdKeyResolver}"
+            - id: mobile-bff-checkin
+              uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+              predicates:
+                - Path=/api/v1/student/lessons/*/checkin
+                - Method=POST
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 6
+                    key-resolver: "#{@userIdKeyResolver}"
 
-        - id: mobile-bff
-          uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
-          predicates:
-            - Path=/api/v1/student/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 600
-                redis-rate-limiter.burstCapacity: 600
-                redis-rate-limiter.requestedTokens: 1
-                key-resolver: "#{@ipKeyResolver}"
+            # Exact Requests upload route must win over the generic student
+            # route so it can use the streaming transport cap.
+            - id: mobile-bff-student-requests-excuse
+              uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+              predicates:
+                - Path=/api/v1/student/requests/excuse
+                - Method=POST
+              filters:
+                - name: StreamingRequestSize
+                  args:
+                    maxBytes: 25165824
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 12
+                    key-resolver: "#{@userIdKeyResolver}"
 
-        - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
-          predicates:
-            - Path=/api/auth/**
-          filters:
-            - StripPrefix=1
+            - id: mobile-bff
+              uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+              predicates:
+                - Path=/api/v1/student/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 600
+                    redis-rate-limiter.burstCapacity: 600
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
 
-        - id: academic-service
-          uri: ${ACADEMIC_SERVICE_URL:http://academic-service:9091}
-          predicates:
-            - Path=/api/academic/**
-          filters:
-            - StripPrefix=1
-            # Глобальный DDoS-guard: 600 req/min per IP для academic endpoint'ов
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 600
-                redis-rate-limiter.burstCapacity: 600
-                redis-rate-limiter.requestedTokens: 1
-                key-resolver: "#{@ipKeyResolver}"
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+              predicates:
+                - Path=/api/auth/**
+              filters:
+                - StripPrefix=1
 
-        - id: schedule-service
-          uri: ${SCHEDULE_SERVICE_URL:http://schedule-service:9092}
-          predicates:
-            - Path=/api/schedule/**
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 600
-                redis-rate-limiter.burstCapacity: 600
-                redis-rate-limiter.requestedTokens: 1
-                key-resolver: "#{@ipKeyResolver}"
+            - id: academic-service
+              uri: ${ACADEMIC_SERVICE_URL:http://academic-service:9091}
+              predicates:
+                - Path=/api/academic/**
+              filters:
+                - StripPrefix=1
+                # Глобальный DDoS-guard: 600 req/min per IP для academic endpoint'ов
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 600
+                    redis-rate-limiter.burstCapacity: 600
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
 
-        # M07 G12 MED-1: tight RL для multipart-upload excuse tickets.
-        # 25 MB body × 600 rpm (generic attendance RL) = 15 GB/мин amplification.
-        # Ставим 5 req/min per-user, чтобы честный студент (1-2 excuse/неделю)
-        # не чувствовал ограничение, а abuse-сценарий блокировался при 6-й попытке.
-        # Должен объявляться ДО generic `/api/attendance/**` — Spring Cloud Gateway
-        # matcher выбирает первый совпавший.
-        - id: attendance-excuse-upload
-          uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
-          predicates:
-            - Path=/api/attendance/excuses/with-file
-            - Method=POST
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 60
-                redis-rate-limiter.requestedTokens: 12
-                key-resolver: "#{@userIdKeyResolver}"
+            - id: schedule-service
+              uri: ${SCHEDULE_SERVICE_URL:http://schedule-service:9092}
+              predicates:
+                - Path=/api/schedule/**
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 600
+                    redis-rate-limiter.burstCapacity: 600
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
 
-        - id: attendance-service
-          uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
-          predicates:
-            - Path=/api/attendance/**
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 600
-                redis-rate-limiter.burstCapacity: 600
-                redis-rate-limiter.requestedTokens: 1
-                key-resolver: "#{@ipKeyResolver}"
+            # M07 G12 MED-1: tight RL для multipart-upload excuse tickets.
+            # 25 MB body × 600 rpm (generic attendance RL) = 15 GB/мин amplification.
+            # Ставим 5 req/min per-user, чтобы честный студент (1-2 excuse/неделю)
+            # не чувствовал ограничение, а abuse-сценарий блокировался при 6-й попытке.
+            # Должен объявляться ДО generic `/api/attendance/**` — Spring Cloud Gateway
+            # matcher выбирает первый совпавший.
+            - id: attendance-excuse-upload
+              uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+              predicates:
+                - Path=/api/attendance/excuses/with-file
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 12
+                    key-resolver: "#{@userIdKeyResolver}"
 
-        - id: notification-web
-          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
-          predicates:
-            - Path=/api/ws/**
-          filters:
-            - StripPrefix=1
+            - id: attendance-service
+              uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+              predicates:
+                - Path=/api/attendance/**
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 600
+                    redis-rate-limiter.burstCapacity: 600
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
 
-        - id: notification-push
-          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
-          predicates:
-            - Path=/api/push/**
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 600
-                redis-rate-limiter.burstCapacity: 600
-                redis-rate-limiter.requestedTokens: 1
-                key-resolver: "#{@ipKeyResolver}"
+            - id: notification-web
+              uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+              predicates:
+                - Path=/api/ws/**
+              filters:
+                - StripPrefix=1
 
-        # M10 G5 — notification history (list / unread-count / mark-read).
-        - id: notification-history
-          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
-          predicates:
-            - Path=/api/notifications/**
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 600
-                redis-rate-limiter.burstCapacity: 600
-                redis-rate-limiter.requestedTokens: 1
-                key-resolver: "#{@ipKeyResolver}"
+            - id: notification-push
+              uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+              predicates:
+                - Path=/api/push/**
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 600
+                    redis-rate-limiter.burstCapacity: 600
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
 
-        # M13 G16 — CSP violation reports от браузеров.
-        # Публичный endpoint (no auth); rate-limit агрессивный per-IP
-        # (flood защита — malicious сайт с iframe может спамить).
-        # 60 req/min per IP = 1 req/sec bucket, burstCapacity 60.
-        - id: notification-csp-report
-          uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
-          predicates:
-            - Path=/api/csp-report
-            - Method=POST
-          filters:
-            - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 1
-                redis-rate-limiter.burstCapacity: 60
-                redis-rate-limiter.requestedTokens: 1
-                key-resolver: "#{@ipKeyResolver}"
+            # M10 G5 — notification history (list / unread-count / mark-read).
+            - id: notification-history
+              uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+              predicates:
+                - Path=/api/notifications/**
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 600
+                    redis-rate-limiter.burstCapacity: 600
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
 
-        - id: auth-service-openapi
-          uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
-          predicates:
-            - Path=/openapi/auth-service
-          filters:
-            - RewritePath=/openapi/auth-service, /api-docs
+            # M13 G16 — CSP violation reports от браузеров.
+            # Публичный endpoint (no auth); rate-limit агрессивный per-IP
+            # (flood защита — malicious сайт с iframe может спамить).
+            # 60 req/min per IP = 1 req/sec bucket, burstCapacity 60.
+            - id: notification-csp-report
+              uri: ${NOTIFICATION_WEB_URL:http://notification-web:9094}
+              predicates:
+                - Path=/api/csp-report
+                - Method=POST
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
 
-        - id: academic-service-openapi
-          uri: ${ACADEMIC_SERVICE_URL:http://academic-service:9091}
-          predicates:
-            - Path=/openapi/academic-service
-          filters:
-            - RewritePath=/openapi/academic-service, /api-docs
+            - id: auth-service-openapi
+              uri: ${AUTH_SERVICE_URL:http://auth-service:9090}
+              predicates:
+                - Path=/openapi/auth-service
+              filters:
+                - RewritePath=/openapi/auth-service, /api-docs
 
-        - id: schedule-service-openapi
-          uri: ${SCHEDULE_SERVICE_URL:http://schedule-service:9092}
-          predicates:
-            - Path=/openapi/schedule-service
-          filters:
-            - RewritePath=/openapi/schedule-service, /api-docs
+            - id: academic-service-openapi
+              uri: ${ACADEMIC_SERVICE_URL:http://academic-service:9091}
+              predicates:
+                - Path=/openapi/academic-service
+              filters:
+                - RewritePath=/openapi/academic-service, /api-docs
 
-        - id: attendance-service-openapi
-          uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
-          predicates:
-            - Path=/openapi/attendance-service
-          filters:
-            - RewritePath=/openapi/attendance-service, /api-docs
+            - id: schedule-service-openapi
+              uri: ${SCHEDULE_SERVICE_URL:http://schedule-service:9092}
+              predicates:
+                - Path=/openapi/schedule-service
+              filters:
+                - RewritePath=/openapi/schedule-service, /api-docs
 
-        - id: mobile-bff-openapi
-          uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
-          predicates:
-            - Path=/openapi/mobile-bff
-          filters:
-            - RewritePath=/openapi/mobile-bff, /api-docs
+            - id: attendance-service-openapi
+              uri: ${ATTENDANCE_SERVICE_URL:http://attendance-service:9093}
+              predicates:
+                - Path=/openapi/attendance-service
+              filters:
+                - RewritePath=/openapi/attendance-service, /api-docs
 
-springdoc:
-  enable-native-support: true
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-    config-url: /v3/api-docs/swagger-config
-    urls:
-      - url: /openapi/auth-service
-        name: Auth Service
-      - url: /openapi/academic-service
-        name: Academic Service
-      - url: /openapi/schedule-service
-        name: Schedule Service
-      - url: /openapi/attendance-service
-        name: Attendance Service
-      - url: /openapi/mobile-bff
-        name: Mobile BFF
+            - id: mobile-bff-openapi
+              uri: ${MOBILE_BFF_URL:http://mobile-bff:9080}
+              predicates:
+                - Path=/openapi/mobile-bff
+              filters:
+                - RewritePath=/openapi/mobile-bff, /api-docs
+
+    springdoc:
+      enable-native-support: true
+      api-docs:
+        enabled: true
+      swagger-ui:
+        enabled: true
+        path: /swagger-ui.html
+        config-url: /v3/api-docs/swagger-config
+        urls:
+          - url: /openapi/auth-service
+            name: Auth Service
+          - url: /openapi/academic-service
+            name: Academic Service
+          - url: /openapi/schedule-service
+            name: Schedule Service
+          - url: /openapi/attendance-service
+            name: Attendance Service
+          - url: /openapi/mobile-bff
+            name: Mobile BFF
 
 gateway:
   auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
 
 rutcampustrack:
+  gateway:
+    client-ip:
+      # Development has no implicit proxy trust. The prod profile replaces
+      # this list with the required static Nginx address.
+      trusted-proxy-addresses: []
+      required: false
   pwa:
     version-policy:
       enabled: ${PWA_VERSION_POLICY_ENABLED:false}
@@ -376,17 +409,10 @@ rutcampustrack:
     # M14 G4 v2 (CSO HIGH-06): см. shared-web/RequiredSecretsValidator.java.
     required-env-vars: REDIS_PASSWORD,INTERNAL_ISSUER_SECRET
     internal-issuer-client:
-      # M03a token-exchange — must match auth-service INTERNAL_ISSUER_SECRET
+      # Per-request session admission — must match auth-service INTERNAL_ISSUER_SECRET
       auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:9090}
       secret: ${INTERNAL_ISSUER_SECRET:dev-internal-issuer-secret-32-bytes-for-local-testing-only}
-      cache-ttl-seconds: 240     # Gateway cache < auth-service TTL (300) with safety margin
-      cache-max-size: 10000
       timeout-millis: 3000
-      # M14 G1 (CSO CRIT-01): strict by default — Gateway удаляет X-User-* перед proxy,
-      # downstream работает только через Internal JWT. Парная настройка с
-      # rutcampustrack.security.internal-jwt.legacy-headers-enabled=false в downstream.
-      # Для local dev можно явно отключить через env-override.
-      strip-legacy-headers: ${GATEWAY_STRIP_LEGACY_HEADERS:true}
 
 management:
   endpoints:

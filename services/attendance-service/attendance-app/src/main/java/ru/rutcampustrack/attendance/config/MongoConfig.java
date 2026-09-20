@@ -92,6 +92,15 @@ public class MongoConfig {
                 .on("lesson_id", Sort.Direction.ASC)
                 .named("idx_lesson_id"));
 
+        // Historical close/cancel convergence: one durable terminal marker per
+        // physical lesson id.  The unique index makes concurrent upserts
+        // converge on the same cancellation authority.
+        IndexOperations cancellationOps = mongoTemplate.indexOps("lesson_cancellation_markers");
+        cancellationOps.ensureIndex(new Index()
+                .on("lesson_id", Sort.Direction.ASC)
+                .unique()
+                .named("uniq_lesson_cancellation_marker"));
+
         // M05 Группа 1 — closes 04 P2-9.
         // Query: LateCheckinRepository.findByGroupIdAndStatusOrderByCreatedAtAsc
         // (headman dashboard late-checkins). До индекса — COLLSCAN +
@@ -118,6 +127,39 @@ public class MongoConfig {
                 .partial(PartialIndexFilter.of(
                         org.springframework.data.mongodb.core.query.Criteria.where("status").is("PENDING")))
                 .named("uniq_lcr_pending_student_lesson"));
+
+        // Student request union/list and owner-scoped attachment reads.
+        IndexOperations excuseOps = mongoTemplate.indexOps("excuse_tickets");
+        excuseOps.ensureIndex(new Index()
+                .on("student_id", Sort.Direction.ASC)
+                .on("updated_at", Sort.Direction.DESC)
+                .named("idx_excuse_student_updated"));
+
+        IndexOperations requestReceiptOps = mongoTemplate.indexOps("student_request_receipts");
+        requestReceiptOps.ensureIndex(new Index()
+                .on("student_id", Sort.Direction.ASC)
+                .on("command_kind", Sort.Direction.ASC)
+                .on("idempotency_key", Sort.Direction.ASC)
+                .unique()
+                .named("uniq_student_request_receipt"));
+
+        IndexOperations budgetOps = mongoTemplate.indexOps("student_late_checkin_budgets");
+        budgetOps.ensureIndex(new Index()
+                .on("student_id", Sort.Direction.ASC)
+                .on("semester_id", Sort.Direction.ASC)
+                .unique()
+                .named("uniq_student_late_budget"));
+
+        IndexOperations attachmentOps = mongoTemplate.indexOps("request_attachments");
+        attachmentOps.ensureIndex(new Index()
+                .on("request_id", Sort.Direction.ASC)
+                .on("owner_student_id", Sort.Direction.ASC)
+                .on("position", Sort.Direction.ASC)
+                .named("idx_request_attachment_owner_position"));
+        attachmentOps.ensureIndex(new Index()
+                .on("state", Sort.Direction.ASC)
+                .on("expires_at", Sort.Direction.ASC)
+                .named("idx_request_attachment_expiry"));
 
         IndexOperations receiptOps = mongoTemplate.indexOps("student_checkin_receipts");
         receiptOps.ensureIndex(new Index()

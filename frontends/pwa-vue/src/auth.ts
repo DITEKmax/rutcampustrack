@@ -1,37 +1,362 @@
 import { ref } from 'vue'
+import { createGenerationBoundHeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
+import { createGenerationBoundStudentApi, StaleSessionGenerationError } from '../../mobile-core/src/shared/session-owner'
+import type { HeadmanScheduleApi } from '../../mobile-core/src/features/schedule/headman-schedule-client'
+import type { StudentApi } from '../../mobile-core/src/api/student-client'
+import {
+  AuthRequestError,
+  createAuthClient,
+  type AuthClient,
+  type AuthLoginInput,
+  type AuthSelectRoleInput,
+  type AuthToken,
+} from './auth-client'
+import type {
+  ProfileHistoryPage,
+  ProfilePageRequest,
+  ProfilePort,
+  ProfileRoleGrant,
+  ProfileRoleSelection,
+  ProfileSnapshot,
+  ProfileSessionsPage,
+} from '../../mobile-core/src/features/profile/profile-types'
 
-interface TokenResponse { accessToken?: string }
+export interface PwaAuthInvalidationChannel {
+  postMessage(message: unknown): void
+  addEventListener(type: 'message', listener: (event: MessageEvent<unknown>) => void): void
+  removeEventListener(type: 'message', listener: (event: MessageEvent<unknown>) => void): void
+  close(): void
+}
 
-export function usePwaAuth() {
+export interface PwaAuthOptions {
+  fetcher?: typeof fetch
+  /** Injected in tests; production uses a browser BroadcastChannel when available. */
+  channel?: PwaAuthInvalidationChannel
+}
+
+export interface PwaProfilePortOptions {
+  onInvalidated?: ProfilePort['onInvalidated']
+  onRefreshAlreadyRotated?: ProfilePort['onRefreshAlreadyRotated']
+}
+
+export type PwaAuthInvalidationReason = 'external' | 'authority-changed'
+
+export interface PwaAuthLoginResult extends AuthToken {
+  generation: number
+}
+
+export interface PwaAuthRoleResult extends ProfileRoleSelection {
+  generation: number
+}
+
+export class PwaAuthError extends Error {
+  constructor(readonly status: number, message: string) {
+    super(message)
+    this.name = 'PwaAuthError'
+  }
+}
+
+const INVALIDATION_MESSAGE = 'rct-auth-invalidate-v1'
+
+export function usePwaAuth(options: PwaAuthOptions = {}) {
   const accessToken = ref<string | null>(null)
-  let refreshInFlight: Promise<void> | null = null
+  const resetGeneration = ref(0)
+  const request = options.fetcher ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init))
+  const client: AuthClient = createAuthClient({
+    fetcher: request,
+    accessToken: () => accessToken.value,
+  })
+  let refreshInFlight: { generation: number; promise: Promise<void> } | null = null
+  const invalidationListeners = new Set<(reason: PwaAuthInvalidationReason) => void>()
+  const channel = options.channel ?? createBrowserChannel()
+  let knownProfile: ProfileSnapshot | null = null
+  let knownProfileGeneration: number | null = null
 
-  async function refresh(): Promise<void> {
-    if (!refreshInFlight) {
-      refreshInFlight = fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
-        .then(async (response) => {
-          if (!response.ok) throw new Error('Сессию не удалось восстановить')
-          const token = await response.json() as TokenResponse
-          if (!token.accessToken) throw new Error('Сервер не вернул access token')
-          accessToken.value = token.accessToken
-        })
-        .finally(() => { refreshInFlight = null })
-    }
-    return refreshInFlight
+  function rememberProfile(profile: ProfileSnapshot, generation: number): void {
+    knownProfile = profile
+    knownProfileGeneration = generation
   }
 
-  function clear(): void { accessToken.value = null }
+  function notifyInvalidation(reason: PwaAuthInvalidationReason): void {
+    for (const listener of invalidationListeners) {
+      try {
+        listener(reason)
+      } catch {
+        // A UI listener cannot make the generation-bound invalidation unsafe.
+      }
+    }
+  }
+
+  function currentGeneration(): number {
+    return resetGeneration.value
+  }
+
+  function assertCurrent(generation: number): void {
+    if (generation !== currentGeneration()) throw new StaleSessionGenerationError()
+  }
+
+  function accessTokenFor(generation: number): string | null {
+    assertCurrent(generation)
+    return accessToken.value
+  }
+
+  async function refreshFor(generation: number): Promise<void> {
+    assertCurrent(generation)
+    if (refreshInFlight?.generation === generation) return refreshInFlight.promise
+
+    const promise = client.refresh()
+      .then(async (token) => {
+        assertCurrent(generation)
+        const expectedProfile = knownProfileGeneration === generation ? knownProfile : null
+        if (expectedProfile) {
+          // Validate the candidate bearer before exposing it to the
+          // generation-bound StudentApi. Refresh may succeed while the
+          // server has moved this cookie to another role/session/context.
+          const candidateClient = createAuthClient({
+            fetcher: request,
+            accessToken: () => token.accessToken,
+          })
+          const refreshedProfile = await candidateClient.getSnapshot()
+          assertCurrent(generation)
+          if (authAuthorityIdentity(expectedProfile) !== authAuthorityIdentity(refreshedProfile)) {
+            // Advance first: every API created for the old generation now
+            // fails closed. The candidate is only available to a new shell
+            // generation after its profile has passed validation.
+            const nextGeneration = clear()
+            accessToken.value = token.accessToken
+            rememberProfile(refreshedProfile, nextGeneration)
+            notifyInvalidation('authority-changed')
+            throw new StaleSessionGenerationError()
+          }
+          accessToken.value = token.accessToken
+          rememberProfile(refreshedProfile, generation)
+          return
+        }
+        accessToken.value = token.accessToken
+      })
+      .finally(() => {
+        if (refreshInFlight?.promise === promise) refreshInFlight = null
+      })
+    refreshInFlight = { generation, promise }
+    return promise
+  }
+
+  function refresh(): Promise<void> {
+    return refreshFor(currentGeneration())
+  }
+
+  async function login(input: AuthLoginInput): Promise<PwaAuthLoginResult> {
+    const generation = currentGeneration()
+    const token = await client.login(input)
+    assertCurrent(generation)
+    // A successful login replaces any old in-memory authority. The token is
+    // installed only in the new generation after the old one is invalidated.
+    const nextGeneration = clear()
+    accessToken.value = token.accessToken
+    return { ...token, generation: nextGeneration }
+  }
+
+  async function getSessionFor(generation: number): Promise<ProfileSnapshot> {
+    assertCurrent(generation)
+    const snapshot = await client.getSnapshot()
+    assertCurrent(generation)
+    rememberProfile(snapshot, generation)
+    return snapshot
+  }
+
+  async function selectRoleFor(generation: number, input: AuthSelectRoleInput): Promise<PwaAuthRoleResult> {
+    assertCurrent(generation)
+    const selection = await client.selectRole(input)
+    assertCurrent(generation)
+    // The old role's token must be unusable before the fresh role token is
+    // visible to any BFF client.
+    const nextGeneration = clear()
+    accessToken.value = selection.accessToken
+    rememberProfile(selection.session, nextGeneration)
+    return { ...selection, generation: nextGeneration }
+  }
+
+  function createApi(fetcher?: typeof fetch): StudentApi {
+    return createGenerationBoundStudentApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher)
+  }
+
+  function createHeadmanApi(fetcher?: typeof fetch): HeadmanScheduleApi {
+    return createGenerationBoundHeadmanScheduleApi({
+      currentGeneration,
+      accessTokenFor,
+      refreshFor,
+    }, fetcher)
+  }
+
+  function createProfilePort(generation = currentGeneration(), options: PwaProfilePortOptions = {}): ProfilePort {
+    function assertPortCurrent(): void {
+      assertCurrent(generation)
+    }
+
+    async function guarded<T>(requestProfile: () => Promise<T>): Promise<T> {
+      assertPortCurrent()
+      const value = await requestProfile()
+      assertPortCurrent()
+      return value
+    }
+
+    return {
+      getSnapshot: async () => {
+        const profile = await guarded(() => client.getSnapshot())
+        rememberProfile(profile, generation)
+        return profile
+      },
+      selectRole: (input) => guarded(() => client.selectRole(input)),
+      listSessions: (input?: ProfilePageRequest): Promise<ProfileSessionsPage> => guarded(() => client.listSessions(input)),
+      listHistory: (input?: ProfilePageRequest): Promise<ProfileHistoryPage> => guarded(() => client.listHistory(input)),
+      changePassword: (input) => guarded(() => client.changePassword(input)),
+      logoutAll: () => guarded(() => client.logoutAll()),
+      ...(options.onInvalidated ? { onInvalidated: options.onInvalidated } : {}),
+      ...(options.onRefreshAlreadyRotated ? { onRefreshAlreadyRotated: options.onRefreshAlreadyRotated } : {}),
+      isOnline: () => typeof navigator === 'undefined' || navigator.onLine !== false,
+    }
+  }
+
+  function setToken(token: string, generation = currentGeneration()): void {
+    assertCurrent(generation)
+    accessToken.value = token
+  }
+
+  /** Invalidates every API client captured before this call. */
+  function clear(options: { broadcast?: boolean } = {}): number {
+    resetGeneration.value += 1
+    accessToken.value = null
+    knownProfile = null
+    knownProfileGeneration = null
+    if (options.broadcast !== false) {
+      try {
+        channel?.postMessage({ type: INVALIDATION_MESSAGE })
+      } catch {
+        // A closed or unavailable channel cannot weaken local invalidation.
+      }
+    }
+    return currentGeneration()
+  }
+
+  function subscribeInvalidation(listener: (reason: PwaAuthInvalidationReason) => void): () => void {
+    invalidationListeners.add(listener)
+    return () => invalidationListeners.delete(listener)
+  }
 
   async function logout(clearSnapshot: () => Promise<void>): Promise<void> {
+    // Invalidate before the remote request so an in-flight 401 cannot retry
+    // with a replacement token while logout is still waiting on the network.
+    clear()
+    // Start local invalidation before the remote request completes. The
+    // storage owner has its own generation gate, so a queued old write cannot
+    // recreate the pointer while the logout request is in flight.
+    const snapshotCleared = clearSnapshot()
+    // Observe a fast storage rejection immediately while the remote request
+    // is still pending; the original promise is awaited in finally so its
+    // failure remains visible to the caller.
+    void snapshotCleared.catch(() => undefined)
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+      // Keep this request shape stable for the cookie-only logout endpoint.
+      await request('/api/auth/logout', { method: 'POST', credentials: 'include' })
     } catch {
       // Local token and partition cleanup is still an explicit logout.
     } finally {
-      clear()
-      await clearSnapshot()
+      await snapshotCleared
     }
   }
 
-  return { accessToken, refresh, clear, logout }
+  function dispose(): void {
+    if (!channel) return
+    channel.removeEventListener('message', onChannelMessage)
+    try { channel.close() } catch { /* already closed */ }
+  }
+
+  function onChannelMessage(event: MessageEvent<unknown>): void {
+    if (!isInvalidationMessage(event.data)) return
+    clear({ broadcast: false })
+    notifyInvalidation('external')
+  }
+
+  channel?.addEventListener('message', onChannelMessage)
+
+  return {
+    accessToken,
+    resetGeneration,
+    generation: resetGeneration,
+    currentGeneration,
+    isCurrent: (generation: number) => generation === currentGeneration(),
+    refresh,
+    refreshFor,
+    login,
+    getSessionFor,
+    selectRoleFor,
+    createApi,
+    createHeadmanApi,
+    createProfilePort,
+    setToken,
+    clear,
+    logout,
+    subscribeInvalidation,
+    dispose,
+    client,
+  }
 }
+
+/**
+ * Identity used to decide whether a refreshed bearer still belongs to the
+ * mounted authority. Optional grant fields are normalized so omission and an
+ * explicit null carry the same wire meaning, while every grant's group
+ * context remains part of the comparison.
+ */
+export function authAuthorityIdentity(profile: ProfileSnapshot): string {
+  const grants = [...profile.roles]
+    .map(normalizeRoleGrant)
+    .sort((left, right) => left[0] < right[0] ? -1 : left[0] > right[0] ? 1 : 0)
+  return JSON.stringify([
+    profile.sessionId,
+    profile.userId,
+    profile.activeRole,
+    profile.sessionVersion,
+    profile.rolesVersion,
+    profile.readOnly,
+    grants,
+  ])
+}
+
+function normalizeRoleGrant(grant: ProfileRoleGrant): readonly [
+  string,
+  string,
+  string,
+  string | null,
+  string | null,
+  boolean,
+  boolean,
+] {
+  return [
+    grant.grantId,
+    grant.role,
+    grant.status,
+    grant.groupId ?? null,
+    grant.contextLabel ?? null,
+    grant.selectable,
+    grant.readOnly,
+  ]
+}
+
+function createBrowserChannel(): PwaAuthInvalidationChannel | undefined {
+  if (typeof window === 'undefined' || typeof window.BroadcastChannel !== 'function') return undefined
+  return new window.BroadcastChannel('rct-auth-invalidation') as unknown as PwaAuthInvalidationChannel
+}
+
+function isInvalidationMessage(value: unknown): boolean {
+  return typeof value === 'object'
+    && value !== null
+    && 'type' in value
+    && value.type === INVALIDATION_MESSAGE
+}
+
+export { AuthRequestError }

@@ -137,7 +137,7 @@ class AuthIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void refresh_withUsedCookie_returns401() {
+    void refresh_withUsedCookie_returns409ForPreviousJti() {
         // Login → get cookie
         ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity(
                 "/auth/login", new LoginRequest("student", "password"), TokenResponse.class);
@@ -150,12 +150,16 @@ class AuthIT extends AbstractIntegrationTest {
         HttpEntity<Void> entity = new HttpEntity<>(null, headers);
 
         // First refresh — consumes the token
-        restTemplate.exchange("/auth/refresh", HttpMethod.POST, entity, TokenResponse.class);
+        ResponseEntity<TokenResponse> first = restTemplate.exchange(
+                "/auth/refresh", HttpMethod.POST, entity, TokenResponse.class);
+        assertThat(first.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        // Second refresh with same cookie — should 401
+        // Immediate previous-JTI replay is a typed conflict and does not revoke the session.
         ResponseEntity<String> second = restTemplate.exchange(
                 "/auth/refresh", HttpMethod.POST, entity, String.class);
-        assertThat(second.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(second.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(second.getHeaders().getCacheControl()).isEqualTo("no-store");
+        assertThat(second.getBody()).contains("REFRESH_ALREADY_ROTATED");
     }
 
     @Test

@@ -11,7 +11,6 @@ const specText = await readFile(specUrl, 'utf8')
 const specHash = createHash('sha256').update(specText).digest('hex')
 const ast = await openapiTS(JSON.parse(specText), {
   alphabetize: true,
-  pathParamsAsTypes: true,
 })
 const generated = [
   '/* eslint-disable */',

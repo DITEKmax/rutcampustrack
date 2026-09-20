@@ -15,6 +15,7 @@ import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.exception.LegacyEndpointRetiredException;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
@@ -25,7 +26,6 @@ import ru.rutcampustrack.attendance.shared.port.AttendanceWritePort;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.shared.observability.BusinessMetrics;
 
-import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -119,41 +119,9 @@ public class ExcuseService {
         return saved;
     }
 
-    /**
-     * Same lifecycle as {@link #createExcuse(CreateExcuseRequest)} plus a supporting
-     * document that is forwarded to the headman by notification-bot and never
-     * persisted server-side (per CLAUDE.md — excuse attachments do not live in
-     * our storage). The file is read into memory, base64-encoded, and shipped
-     * inside the {@code excuse.requested} event payload. Bot picks it up via
-     * the existing RabbitMQ consumer.
-     */
-    @Transactional
+    /** Legacy multipart creation is retired before any domain operation. */
     public ExcuseTicket createExcuseWithFile(CreateExcuseRequest request, MultipartFile file) {
-        final long MAX_BYTES = 10L * 1024 * 1024;
-        ExcuseTicket saved = createTicketInternal(request);
-        List<Map<String, Object>> lessonDetails = resolveLessonDetails(saved.getLessonIds());
-        // M04 Группа 8 — excuse.created counter бампим один раз независимо
-        // от того, есть файл или нет (сам ticket уже сохранён).
-        businessMetrics.excuseCreatedCounter(saved.getExcuseType().name().toLowerCase()).increment();
-        if (file == null || file.isEmpty()) {
-            excuseEventPublisher.publishRequested(saved, lessonDetails);
-            return saved;
-        }
-        if (file.getSize() > MAX_BYTES) {
-            throw new BadRequestException("Файл должен быть не больше 10 МБ");
-        }
-        byte[] bytes;
-        try {
-            bytes = file.getBytes();
-        } catch (IOException e) {
-            throw new BadRequestException("Не удалось прочитать файл: " + e.getMessage());
-        }
-        String fileName = file.getOriginalFilename() != null && !file.getOriginalFilename().isBlank()
-                ? file.getOriginalFilename()
-                : "attachment";
-        excuseEventPublisher.publishRequestedWithFile(
-                saved, lessonDetails, fileName, file.getContentType(), bytes);
-        return saved;
+        throw new LegacyEndpointRetiredException();
     }
 
     private ExcuseTicket createTicketInternal(CreateExcuseRequest request) {

@@ -743,115 +743,6 @@
         }
       }
     },
-    "/schedule/lessons/mass-cancel" : {
-      "post" : {
-        "tags" : [ "Lessons" ],
-        "summary" : "Массовая отмена уроков для группы (HEADMAN/ADMIN)",
-        "operationId" : "massCancelLessons",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/MassCancelRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Уроки отменены",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/MassCancelResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Ошибка валидации",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/MassCancelResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Нет прав доступа",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/MassCancelResponse"
-                }
-              }
-            }
-          },
-          "503" : {
-            "description" : "Academic Service недоступен",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/MassCancelResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Требуется аутентификация",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Ресурс не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429" : {
-            "description" : "Превышен лимит запросов",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Внутренняя ошибка сервера",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/schedule/items" : {
       "get" : {
         "tags" : [ "Schedule Items" ],
@@ -975,6 +866,15 @@
         "tags" : [ "Schedule Items" ],
         "summary" : "Создать шаблон расписания (HEADMAN/ADMIN)",
         "operationId" : "createScheduleItem",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1016,6 +916,16 @@
               }
             }
           },
+          "409" : {
+            "description" : "Конфликт assignment fence или idempotency replay",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelScheduleItemResponse"
+                }
+              }
+            }
+          },
           "503" : {
             "description" : "Academic Service недоступен",
             "content" : {
@@ -1038,16 +948,6 @@
           },
           "404" : {
             "description" : "Ресурс не найден",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -1796,6 +1696,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "assignmentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "groupId" : {
             "type" : "integer",
             "format" : "int64"
@@ -1817,12 +1721,10 @@
             "format" : "int32"
           },
           "startTime" : {
-            "type" : "string",
-            "example" : "14:30:00"
+            "type" : "string"
           },
           "endTime" : {
-            "type" : "string",
-            "example" : "14:30:00"
+            "type" : "string"
           },
           "weekType" : {
             "type" : "string",
@@ -1837,6 +1739,18 @@
           "createdAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "generatedCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "generatedFrom" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "generatedUntil" : {
+            "type" : "string",
+            "format" : "date"
           },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
@@ -1962,12 +1876,10 @@
             "format" : "int32"
           },
           "startTime" : {
-            "type" : "string",
-            "example" : "14:30:00"
+            "type" : "string"
           },
           "endTime" : {
-            "type" : "string",
-            "example" : "14:30:00"
+            "type" : "string"
           },
           "weekType" : {
             "type" : "string",
@@ -2005,52 +1917,38 @@
             "type" : "string",
             "format" : "date-time"
           },
+          "occurrenceId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "assignmentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "semesterId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "assignedTeacherId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lessonType" : {
+            "type" : "string"
+          },
+          "generation" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "revision" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "current" : {
+            "type" : "boolean"
+          },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
-          }
-        }
-      },
-      "MassCancelRequest" : {
-        "type" : "object",
-        "description" : "Запрос на массовую отмену пар группы в диапазоне дат",
-        "properties" : {
-          "groupId" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "ID группы, для которой отменяются пары",
-            "example" : 10
-          },
-          "dateFrom" : {
-            "type" : "string",
-            "format" : "date",
-            "description" : "Начало диапазона дат (включительно)",
-            "example" : "2026-04-24"
-          },
-          "dateTo" : {
-            "type" : "string",
-            "format" : "date",
-            "description" : "Конец диапазона дат (включительно)",
-            "example" : "2026-04-30"
-          },
-          "reason" : {
-            "type" : "string",
-            "description" : "Причина массовой отмены пар",
-            "example" : "Карантин в корпусе",
-            "maxLength" : 512,
-            "minLength" : 0
-          }
-        },
-        "required" : [ "dateFrom", "dateTo", "groupId", "reason" ]
-      },
-      "MassCancelResponse" : {
-        "type" : "object",
-        "description" : "Результат массовой отмены пар с количеством отменённых записей",
-        "properties" : {
-          "cancelledCount" : {
-            "type" : "integer",
-            "format" : "int32",
-            "description" : "Количество фактически отменённых пар",
-            "example" : 12
           }
         }
       },
@@ -2058,6 +1956,13 @@
         "type" : "object",
         "description" : "Запрос на создание шаблона пары в расписании (повторяющийся слот)",
         "properties" : {
+          "assignmentId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "ID авторитетного назначения преподаватель–предмет–группа",
+            "example" : 501,
+            "minimum" : 1
+          },
           "groupId" : {
             "type" : "integer",
             "format" : "int64",
@@ -2116,7 +2021,7 @@
             "minLength" : 0
           }
         },
-        "required" : [ "dayOfWeek", "endTime", "groupId", "lessonNumber", "semesterId", "startTime", "subjectId", "weekType" ]
+        "required" : [ "assignmentId", "dayOfWeek", "endTime", "groupId", "lessonNumber", "semesterId", "startTime", "subjectId", "weekType" ]
       },
       "GeoBlockRequest" : {
         "type" : "object",

@@ -1,24 +1,23 @@
 package ru.rutcampustrack.auth.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import ru.rutcampustrack.auth.config.JwtProperties;
 import ru.rutcampustrack.auth.config.TmaProperties;
 import ru.rutcampustrack.auth.dto.TmaAuthRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.entity.enums.AccountStatus;
 import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
 import ru.rutcampustrack.auth.exception.TmaValidationException;
 import ru.rutcampustrack.auth.repository.UserRepository;
+import ru.rutcampustrack.auth.session.AuthSessionException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.time.Duration;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,24 +27,22 @@ import java.util.stream.Collectors;
 public class TmaService {
 
     private final UserRepository userRepository;
-    private final JwtService jwtService;
     private final StringRedisTemplate redisTemplate;
-    private final JwtProperties jwtProperties;
     private final TmaProperties tmaProperties;
     private final ObjectMapper objectMapper;
+    private final AuthService authService;
 
+    /** Validated initData uses the common session seam. */
     public TmaService(UserRepository userRepository,
-                      JwtService jwtService,
+                      AuthService authService,
                       StringRedisTemplate redisTemplate,
-                      JwtProperties jwtProperties,
                       TmaProperties tmaProperties,
                       ObjectMapper objectMapper) {
         this.userRepository = userRepository;
-        this.jwtService = jwtService;
         this.redisTemplate = redisTemplate;
-        this.jwtProperties = jwtProperties;
         this.tmaProperties = tmaProperties;
         this.objectMapper = objectMapper;
+        this.authService = authService;
     }
 
     public TokenResponse authenticateWithInitData(TmaAuthRequest request) {
@@ -66,19 +63,16 @@ public class TmaService {
         String userJson = params.get("user");
         Long telegramId = extractTelegramId(userJson);
 
-        User user = userRepository.findByTelegramId(telegramId)
-                .filter(u -> u.getStatus() == AccountStatus.ACTIVE)
-                .orElseThrow(InvalidCredentialsException::new);
-
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-        String jti = jwtService.extractJti(refreshToken);
-
-        redisTemplate.opsForValue().set(
-                "refresh:" + user.getId() + ":" + jti, "valid",
-                Duration.ofSeconds(jwtProperties.refreshTokenExpiration()));
-
-        return new TokenResponse(accessToken, refreshToken, jwtProperties.accessTokenExpiration());
+        User user;
+        try {
+            user = userRepository.findByTelegramId(telegramId)
+                    .orElseThrow(InvalidCredentialsException::new);
+        } catch (DataAccessException exception) {
+            throw new AuthSessionException(AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
+        }
+        return authService.issueSession(user,
+                ru.rutcampustrack.auth.session.model.AuthMethod.TMA,
+                null, null, null);
     }
 
     private boolean validateInitData(String initData) {

@@ -40,6 +40,9 @@
           "type": "string",
           "enum": [
             "illness",
+            "medical_examination",
+            "competition_participation",
+            "family_circumstances",
             "summons",
             "university_order",
             "exemption",
@@ -94,6 +97,38 @@
         },
         "has_attachments": {
           "type": "boolean"
+        },
+        "attachments": {
+          "type": "array",
+          "description": "Metadata only. Binary attachment data is retained in attendance Mongo and is never placed in the outbox event.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "content_type",
+              "size",
+              "sha256",
+              "state",
+              "uploaded_at",
+              "expires_at"
+            ],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "content_type": { "type": "string" },
+              "size": { "type": "integer", "minimum": 0 },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "state": { "enum": ["active", "expired"] },
+              "uploaded_at": { "type": "string", "format": "date-time" },
+              "expires_at": { "type": "string", "format": "date-time" },
+              "expired_at": {
+                "type": ["string", "null"],
+                "format": "date-time"
+              }
+            },
+            "additionalProperties": false
+          }
         }
       }
     },

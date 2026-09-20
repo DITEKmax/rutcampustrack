@@ -523,6 +523,8 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       # M03a: Gateway → auth-service token-exchange shared secret
       INTERNAL_ISSUER_SECRET: ${INTERNAL_ISSUER_SECRET}
+      # Must equal the static address assigned to the sole Nginx edge below.
+      GATEWAY_TRUSTED_PROXY_ADDRESSES: ${GATEWAY_NGINX_IPV4:?GATEWAY_NGINX_IPV4 must be set}
       # PWA hard-update fallback: old clients that still call API get 426.
       PWA_VERSION_POLICY_ENABLED: "true"
       PWA_VERSION_POLICY_LATEST: 1-${IMAGE_TAG:-0.0.0}
@@ -896,7 +898,8 @@ services:
       - certbot-conf:/etc/letsencrypt:ro
       - certbot-www:/var/www/certbot:ro
     networks:
-      - private_net
+      private_net:
+        ipv4_address: ${GATEWAY_NGINX_IPV4:?GATEWAY_NGINX_IPV4 must be set}
     depends_on:
       api-gateway:
         condition: service_healthy
@@ -1006,6 +1009,11 @@ services:
 networks:
   private_net:
     driver: bridge
+    ipam:
+      config:
+        - subnet: ${GATEWAY_PRIVATE_SUBNET:?GATEWAY_PRIVATE_SUBNET must be set}
+          gateway: ${GATEWAY_NETWORK_GATEWAY:?GATEWAY_NETWORK_GATEWAY must be set}
+          ip_range: ${GATEWAY_DYNAMIC_IP_RANGE:?GATEWAY_DYNAMIC_IP_RANGE must be set}
 
 volumes:
   pg-academic-data:

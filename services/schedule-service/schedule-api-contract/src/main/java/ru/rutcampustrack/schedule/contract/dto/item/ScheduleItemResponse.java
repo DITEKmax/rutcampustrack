@@ -5,6 +5,7 @@ import org.springframework.hateoas.RepresentationModel;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 
 import java.time.LocalTime;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 /**
@@ -19,6 +20,7 @@ import java.time.OffsetDateTime;
 public class ScheduleItemResponse extends RepresentationModel<ScheduleItemResponse> {
 
     private Long id;
+    private Long assignmentId;
     private Long groupId;
     private Long subjectId;
     private Long semesterId;
@@ -30,6 +32,9 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
     private String room;
     private boolean active;
     private OffsetDateTime createdAt;
+    private Long generatedCount;
+    private LocalDate generatedFrom;
+    private LocalDate generatedUntil;
 
     public ScheduleItemResponse() {}
 
@@ -51,8 +56,26 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
         this.createdAt = createdAt;
     }
 
+    public ScheduleItemResponse(Long id, Long assignmentId, Long groupId, Long subjectId,
+                                Long semesterId, Short dayOfWeek, Short lessonNumber,
+                                LocalTime startTime, LocalTime endTime, WeekType weekType,
+                                String room, boolean active, OffsetDateTime createdAt,
+                                Long generatedCount, LocalDate generatedFrom,
+                                LocalDate generatedUntil) {
+        this(id, groupId, subjectId, semesterId, dayOfWeek, lessonNumber,
+                startTime, endTime, weekType, room, active, createdAt);
+        this.assignmentId = assignmentId;
+        this.generatedCount = generatedCount;
+        this.generatedFrom = generatedFrom;
+        this.generatedUntil = generatedUntil;
+    }
+
     public Long getId() {
         return id;
+    }
+
+    public Long getAssignmentId() {
+        return assignmentId;
     }
 
     public Long getGroupId() {
@@ -97,5 +120,17 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public Long getGeneratedCount() {
+        return generatedCount;
+    }
+
+    public LocalDate getGeneratedFrom() {
+        return generatedFrom;
+    }
+
+    public LocalDate getGeneratedUntil() {
+        return generatedUntil;
     }
 }

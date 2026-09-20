@@ -1,99 +1,706 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { CheckinCommandRecovery, TodayScreen, SemesterSnapshotStore, StudentApi, StudentApiError, commandFromCoordinates, createFixtureTransport, offlineToday, unavailableCommand, unavailableReason, useToday } from '@rct/mobile-core'
-import type { StudentCheckinCommand, StudentSemesterSchedule, TodayLesson } from '@rct/mobile-core'
-import { usePwaAuth } from './auth'
-import { isRecoverableReadFailure } from '@rct/mobile-core'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, toRaw } from 'vue'
+import {
+  SemesterSnapshotStore,
+  HeadmanScheduleApiError,
+  HeadmanScheduleScreen,
+  StudentApi,
+  StudentApiError,
+  StudentFeatureOwner,
+  ProfileRequestError,
+  RoleSwitchScreen,
+  StaleSessionGenerationError,
+  commandFromCoordinates,
+  createFixtureTransport,
+  createMobileTheme,
+  offlineToday,
+  studentFeatureScope,
+  studentFeatureScopeIdentity,
+  studentOfflineScopeKey,
+  unavailableCommand,
+  unavailableReason,
+  type SemesterSnapshot,
+  type SnapshotCleanupResult,
+  type StudentCheckinCommand,
+  type StudentFeatureScope,
+  type StudentHomework,
+  type StudentSemesterSchedule,
+  type StudentSession,
+  type HeadmanScheduleApi,
+} from '@rct/mobile-core'
+import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core'
+import { AuthRequestError } from './auth-client'
+import { PwaAuthError, usePwaAuth, type PwaAuthInvalidationReason } from './auth'
+import LoginScreen from './LoginScreen.vue'
+import { PwaHostAdapter } from './pwa-host'
+import { isOfflineBootstrapRecoveryError } from './bootstrap-policy'
+import { createPwaRoleSelection } from './role-flow'
+import { assertAuthBffCoherence } from './session-coherence'
 
-const auth = usePwaAuth()
 const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true'
 const fixtureDiagnosticsMode = fixtureMode && new URLSearchParams(window.location.search).get('fixtureDiagnostics') === 'true'
 const fixtureServiceWorkerBuildEnabled = import.meta.env.PROD
-const offline = ref(!navigator.onLine)
-const bootstrapError = ref<string | null>(null)
-const fixtureDiagnosticLines = ref<string[]>([])
-const sessionReady = ref(false)
-const cachedToday = ref<ReturnType<typeof offlineToday> | null>(null)
-const semesterSchedule = ref<StudentSemesterSchedule | null>(null)
-const selectedDate = ref(new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }))
+const fixtureTransport = fixtureMode ? createFixtureTransport() : undefined
+const auth = usePwaAuth(fixtureTransport ? { fetcher: fixtureTransport } : undefined)
+const host = new PwaHostAdapter()
+const theme = typeof document === 'undefined' ? null : createMobileTheme()
 const snapshotStore = new SemesterSnapshotStore()
-if (fixtureMode) installFixtureViewportControls()
-const api = new StudentApi({
-  accessToken: () => auth.accessToken.value,
-  onUnauthorized: fixtureMode ? async () => undefined : auth.refresh,
-  ...(fixtureMode ? { fetcher: createFixtureTransport() } : {}),
-})
-const session = ref<Awaited<ReturnType<typeof api.getSession>> | null>(null)
-const { query, mutation } = useToday(api, computed(() => sessionReady.value && auth.accessToken.value !== null), offline)
-const checkinRecovery = new CheckinCommandRecovery()
 
-async function cacheSemester(schedule: StudentSemesterSchedule): Promise<void> {
-  if (!session.value) return
-  semesterSchedule.value = schedule
-  await snapshotStore.write({ ownerId: session.value.user.id, schedule, etag: null })
+const api = shallowRef<StudentApi | null>(null)
+const headmanApi = shallowRef<HeadmanScheduleApi | null>(null)
+const session = shallowRef<StudentSession | null>(null)
+const scope = shallowRef<StudentFeatureScope | null>(null)
+const profilePort = shallowRef<ProfilePort | null>(null)
+const snapshot = shallowRef<SemesterSnapshot | null>(null)
+const semesterSchedule = shallowRef<StudentSemesterSchedule | null>(null)
+const onlineSemesterSchedule = shallowRef<StudentSemesterSchedule | null>(null)
+const offline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false)
+const readOnly = ref(false)
+const sessionReady = ref(false)
+const bootstrapping = ref(false)
+const bootstrapError = ref<string | null>(null)
+const authView = ref<'login' | 'role' | 'student' | 'headman'>('login')
+const authSnapshot = shallowRef<ProfileSnapshot | null>(null)
+const authError = shallowRef<ProfileRequestError | null>(null)
+const authLoading = ref(false)
+const pendingRole = ref<ProfileRole | null>(null)
+const fixtureDiagnosticLines = ref<string[]>([])
+const ownerRevision = ref(0)
+const cleanupResult = ref<SnapshotCleanupResult | null>(null)
+const cleanupRetrying = ref(false)
+let cleanupUiGeneration = 0
+let stopAuthInvalidation = (): void => undefined
+let queuedBootstrapAfterInvalidation = false
+
+const cachedToday = computed(() => {
+  const value = snapshot.value
+  if (!value) return null
+  const asOf = value.cachedAt ? new Date(value.cachedAt) : undefined
+  return offlineToday(value.schedule, asOf && Number.isFinite(asOf.getTime()) ? asOf : undefined)
+})
+const cachedHomework = computed(() => snapshot.value?.homework ?? null)
+const displayedSemesterSchedule = computed(() => offline.value ? semesterSchedule.value : onlineSemesterSchedule.value)
+const featureVisible = computed(() => api.value !== null || headmanApi.value !== null || snapshot.value !== null)
+const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value)
+const headmanViewVisible = computed(() => authView.value === 'headman' && headmanApi.value !== null)
+const headmanGroupId = ref<number | null>(null)
+const ownerKey = computed(() => scope.value
+  ? `${studentFeatureScopeIdentity(scope.value)}|${ownerRevision.value}`
+  : `${snapshot.value?.scopeKey ?? 'offline-read-model'}|${ownerRevision.value}`)
+
+function currentFetcher(): typeof fetch | undefined {
+  return fixtureTransport
+}
+
+function authDenialStatus(error: unknown): number | null {
+  if (error instanceof PwaAuthError) return error.status
+  if (error instanceof AuthRequestError) return error.status ?? null
+  if (error instanceof StudentApiError) return error.response.status
+  if (error instanceof HeadmanScheduleApiError) return error.response.status
+  return null
+}
+
+function isConfirmedOnlineAuthDenial(error: unknown): boolean {
+  if (authDenialStatus(error) === 401) return true
+  if (error instanceof AuthRequestError) {
+    return error.code === 'INVALID_SESSION'
+      || error.code === 'SESSION_REVOKED'
+      || error.code === 'ACCOUNT_INVALIDATED'
+      || error.code === 'REFRESH_REJECTED'
+  }
+  if (error instanceof StudentApiError) {
+    const code = error.problem?.extras?.code
+    return code === 'INVALID_SESSION' || code === 'SESSION_REVOKED' || code === 'ACCOUNT_INVALIDATED'
+  }
+  return false
+}
+
+function persistedScope(value: StudentFeatureScope) {
+  return {
+    userId: value.userId!,
+    activeRole: value.activeRole!,
+    groupId: value.groupId,
+    semesterId: value.semesterId!,
+  }
+}
+
+function makeSnapshot(
+  value: StudentFeatureScope,
+  schedule: StudentSemesterSchedule,
+  previous: SemesterSnapshot | null,
+  homework: StudentHomework | null | undefined,
+  etag: string | null,
+): SemesterSnapshot {
+  const nextHomework = homework === undefined ? previous?.homework ?? null : homework
+  const cachedAt = nextHomework?.serverNow ?? schedule.updatedAt ?? previous?.cachedAt ?? null
+  return {
+    ownerId: value.userId!,
+    scopeKey: studentOfflineScopeKey(value),
+    scope: persistedScope(value),
+    schedule,
+    etag,
+    homework: nextHomework ? structuredClone(toRaw(nextHomework)) : null,
+    ...(cachedAt ? { cachedAt } : {}),
+  }
+}
+
+function isPersistedSnapshot(value: SemesterSnapshot | null): value is SemesterSnapshot {
+  if (!value || typeof value.ownerId !== 'string' || !value.schedule || typeof value.schedule !== 'object') return false
+  const persisted = value.scope
+  if (!persisted || typeof value.scopeKey !== 'string') return false
+  return typeof persisted.userId === 'string'
+    && persisted.userId === value.ownerId
+    && persisted.activeRole === 'STUDENT'
+    && typeof persisted.semesterId === 'string'
+    && persisted.semesterId === value.schedule.semester.id
+    && (persisted.groupId === null || typeof persisted.groupId === 'string')
 }
 
 async function loadOfflineSnapshot(): Promise<boolean> {
+  if (authView.value === 'headman') return false
+  const generation = auth.currentGeneration()
+  // Do not keep a previous online query model alive while deciding whether a
+  // committed snapshot can be used. This also prevents a late query result
+  // from becoming the offline view after a reconnect failure.
+  scope.value = null
+  api.value = null
+  headmanApi.value = null
+  headmanGroupId.value = null
+  session.value = null
+  authSnapshot.value = null
+  authError.value = null
+  semesterSchedule.value = null
+  onlineSemesterSchedule.value = null
+  snapshot.value = null
+  ownerRevision.value += 1
+  // A known unresolved cleanup keeps every current-realm offline hydration
+  // blocked until the user completes the local retry.
+  if (snapshotStore.hasUnresolvedCleanup()) return false
   try {
-    const snapshot = await snapshotStore.readCurrent()
-    if (!snapshot) return false
-    semesterSchedule.value = snapshot.schedule
-    cachedToday.value = offlineToday(snapshot.schedule)
+    const value = await snapshotStore.readCurrent()
+    if (!auth.isCurrent(generation)) return false
+    if (!isPersistedSnapshot(value)) return false
+    const persisted = value.scope
+    if (!persisted) return false
+    snapshot.value = value
+    semesterSchedule.value = value.schedule
+    scope.value = {
+      userId: persisted.userId,
+      activeRole: persisted.activeRole,
+      groupId: persisted.groupId,
+      semesterId: persisted.semesterId,
+      sessionId: null,
+      sessionVersion: null,
+      rolesVersion: null,
+      readOnly: true,
+      resetGeneration: auth.currentGeneration(),
+    }
+    api.value = null
+    session.value = null
     offline.value = true
+    readOnly.value = true
+    authSnapshot.value = null
+    authError.value = null
+    authView.value = 'student'
+    ownerRevision.value += 1
     return true
   } catch {
     return false
   }
 }
 
-async function bootstrap(): Promise<void> {
+/** Invalidate reactive owner references before Vue unmounts its feature view. */
+function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): StudentSession | null {
+  const previous = session.value
+  cleanupUiGeneration += 1
+  cleanupRetrying.value = false
+  snapshotStore.invalidatePendingWrites()
+  if (options.clearAuth !== false) auth.clear()
+  profilePort.value = null
+  headmanApi.value = null
+  headmanGroupId.value = null
+  scope.value = null
+  api.value = null
+  session.value = null
+  semesterSchedule.value = null
+  onlineSemesterSchedule.value = null
+  snapshot.value = null
+  return previous
+}
+
+function observeCleanupResult(result: SnapshotCleanupResult): void {
+  if (result.retryRequired) {
+    cleanupResult.value = result
+    return
+  }
+  if (!snapshotStore.hasUnresolvedCleanup()) cleanupResult.value = null
+}
+
+async function clearOwnerSnapshot(previous: StudentSession | null): Promise<SnapshotCleanupResult> {
+  const uiGeneration = cleanupUiGeneration
+  const result = await snapshotStore.clearDetailed(previous?.user.id)
+  if (uiGeneration === cleanupUiGeneration) observeCleanupResult(result)
+  return result
+}
+
+async function handleProfileInvalidated(reason: 'logout-all' | 'password-changed' | 'account-invalidated'): Promise<void> {
+  const previous = invalidateOwnerSynchronously()
+  await clearOwnerSnapshot(previous)
+  authSnapshot.value = null
+  authError.value = null
+  authView.value = 'login'
+  sessionReady.value = true
+  offline.value = false
+  readOnly.value = true
+  bootstrapError.value = reason === 'password-changed'
+    ? 'Пароль изменён. Войди снова.'
+    : reason === 'logout-all'
+      ? 'Сеанс завершён на всех устройствах.'
+      : 'Сессия больше недоступна.'
+}
+
+async function retryPendingCleanup(): Promise<void> {
+  const pending = cleanupResult.value
+  if (!pending || cleanupRetrying.value) return
+  const uiGeneration = ++cleanupUiGeneration
+  cleanupRetrying.value = true
   try {
-    if (fixtureMode) auth.accessToken.value = 'fixture-access-token'
-    else await auth.refresh()
-    session.value = await api.getSession()
-    await snapshotStore.switchTo(session.value.user.id)
-    if (session.value.semester) {
-      const current = await snapshotStore.read(session.value.user.id)
-      const response = await api.getSemesterSchedule(session.value.semester.id, current?.etag ?? undefined)
-      if (response.data) await cacheSemester(response.data)
-      else if (current) semesterSchedule.value = current.schedule
-    }
-  } catch (error) {
-    const recovered = isRecoverableReadFailure(error) && await loadOfflineSnapshot()
-    if (!recovered) bootstrapError.value = error instanceof Error ? error.message : 'Не удалось открыть Today'
+    const result = await snapshotStore.retryCleanup(pending)
+    if (uiGeneration === cleanupUiGeneration) observeCleanupResult(result)
   } finally {
+    if (uiGeneration === cleanupUiGeneration) cleanupRetrying.value = false
+  }
+}
+
+async function handleOnlineAuthDenial(error: unknown): Promise<void> {
+  const previous = invalidateOwnerSynchronously()
+  await clearOwnerSnapshot(previous)
+  offline.value = false
+  readOnly.value = true
+  authSnapshot.value = null
+  authView.value = 'login'
+  authError.value = null
+  bootstrapError.value = error instanceof Error ? error.message : 'Сессия больше недоступна'
+}
+
+async function fetchAuthForCurrentGeneration(options: { refresh?: boolean } = {}): Promise<{
+  generation: number
+  profile: ProfileSnapshot
+}> {
+  const generation = auth.currentGeneration()
+  if (options.refresh !== false || auth.accessToken.value === null) await auth.refreshFor(generation)
+  const profile = await auth.getSessionFor(generation)
+  if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError()
+  return { generation, profile }
+}
+
+async function fetchStudentCandidate(
+  generation: number,
+  profile: ProfileSnapshot,
+): Promise<{ generation: number; api: StudentApi; session: StudentSession; profile: ProfileSnapshot } | null> {
+  if (profile.activeRole !== 'STUDENT') return null
+  const candidateApi = auth.createApi(currentFetcher())
+  const candidateSession = await candidateApi.getSession()
+  assertCandidateCurrent(generation)
+  assertAuthBffCoherence(profile, candidateSession)
+  return { generation, api: candidateApi, session: candidateSession, profile }
+}
+
+type HeadmanCandidate = {
+  generation: number
+  api: HeadmanScheduleApi
+  profile: ProfileSnapshot
+  groupId: number
+}
+
+function authorizedHeadmanGroupId(profile: ProfileSnapshot): number | null {
+  if (profile.activeRole !== 'HEADMAN') return null
+  const grant = profile.roles.find((candidate) => candidate.role === 'HEADMAN' && candidate.status === 'ACTIVE' && candidate.groupId)
+  const raw = grant?.groupId
+  if (!raw || !/^\d+$/.test(raw)) return null
+  const value = Number(raw)
+  return Number.isSafeInteger(value) && value > 0 ? value : null
+}
+
+async function fetchHeadmanCandidate(
+  generation: number,
+  profile: ProfileSnapshot,
+): Promise<HeadmanCandidate | null> {
+  const groupId = authorizedHeadmanGroupId(profile)
+  if (profile.activeRole !== 'HEADMAN' || groupId === null) {
+    throw new ProfileRequestError('BOOTSTRAP_SCOPE_DENIED', 'Для роли старосты не определена учебная группа')
+  }
+  const candidateApi = auth.createHeadmanApi(currentFetcher())
+  assertCandidateCurrent(generation)
+  return { generation, api: candidateApi, profile, groupId }
+}
+
+type StudentCandidate = {
+  generation: number
+  api: StudentApi
+  session: StudentSession
+  profile: ProfileSnapshot
+}
+
+async function activateCandidate(candidate: StudentCandidate): Promise<void> {
+  const nextScope = studentFeatureScope(candidate.session, candidate.generation)
+  const sameOwner = scope.value !== null
+    && studentFeatureScopeIdentity(scope.value) === studentFeatureScopeIdentity(nextScope)
+  // A snapshot-only shell was mounted with the inert API. It needs one fresh
+  // feature owner when authority returns; a live same-generation owner must
+  // stay mounted so an ambiguous check-in keeps its command and idempotency
+  // key across reconnect/auth refresh.
+  const needsFreshOwner = !sameOwner || api.value === null
+  let existing: SemesterSnapshot | null = null
+  try {
+    existing = await snapshotStore.read(candidate.session.user.id, studentOfflineScopeKey(nextScope))
+  } catch {
+    // Storage is an offline enhancement. An unavailable IDB/localStorage must
+    // not prevent an otherwise authenticated online shell from mounting.
+  }
+  assertCandidateCurrent(candidate.generation)
+  const committedSnapshot = isPersistedSnapshot(existing) ? existing : null
+  if (!sameOwner) {
+    snapshot.value = committedSnapshot
+    semesterSchedule.value = committedSnapshot?.schedule ?? null
+  } else if (committedSnapshot) {
+    snapshot.value = committedSnapshot
+    semesterSchedule.value = committedSnapshot.schedule
+  }
+  let nextSchedule = committedSnapshot?.schedule ?? null
+  let nextEtag = committedSnapshot?.etag ?? null
+
+  if (candidate.session.semester) {
+    const response = await candidate.api.getSemesterSchedule(candidate.session.semester.id, committedSnapshot?.etag ?? undefined)
+    assertCandidateCurrent(candidate.generation)
+    if (response.data) {
+      nextSchedule = response.data
+      nextEtag = response.etag
+    }
+  }
+
+  // The session and schedule have both passed the generation gate before the
+  // feature owner is mounted. A 304 keeps the matching owner/scope snapshot.
+  if (nextSchedule) {
+    const nextSnapshot = makeSnapshot(nextScope, nextSchedule, committedSnapshot, undefined, nextEtag)
+    onlineSemesterSchedule.value = nextSchedule
+    if (committedSnapshot) {
+      snapshot.value = committedSnapshot
+      semesterSchedule.value = committedSnapshot.schedule
+    }
+    try {
+      const switchResult = await snapshotStore.switchToDetailed(candidate.session.user.id)
+      assertCandidateCurrent(candidate.generation)
+      observeCleanupResult(switchResult)
+      await snapshotStore.write(nextSnapshot)
+      assertCandidateCurrent(candidate.generation)
+      snapshot.value = nextSnapshot
+      semesterSchedule.value = nextSchedule
+    } catch {
+      // Continue online when persistence is unavailable. The committed
+      // snapshot remains authoritative for the next offline transition.
+    }
+  } else {
+    snapshot.value = null
+    semesterSchedule.value = null
+    onlineSemesterSchedule.value = null
+    try {
+      const switchResult = await snapshotStore.switchToDetailed(candidate.session.user.id)
+      assertCandidateCurrent(candidate.generation)
+      observeCleanupResult(switchResult)
+    } catch { /* online auth remains usable */ }
+  }
+
+  assertCandidateCurrent(candidate.generation)
+  api.value = needsFreshOwner ? candidate.api : api.value
+  session.value = candidate.session
+  scope.value = nextScope
+  if (!sameOwner || profilePort.value === null) {
+    profilePort.value = auth.createProfilePort(candidate.generation, {
+      onInvalidated: handleProfileInvalidated,
+      onRefreshAlreadyRotated: () => handleProfileInvalidated('account-invalidated'),
+    })
+  }
+  if (needsFreshOwner) ownerRevision.value += 1
+  offline.value = false
+  readOnly.value = candidate.session.readOnly
+  bootstrapError.value = null
+}
+
+async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<void> {
+  const previous = invalidateOwnerSynchronously({ clearAuth: false })
+  await clearOwnerSnapshot(previous)
+  assertCandidateCurrent(candidate.generation)
+  headmanApi.value = candidate.api
+  headmanGroupId.value = candidate.groupId
+  authSnapshot.value = candidate.profile
+  offline.value = false
+  readOnly.value = candidate.profile.readOnly
+  bootstrapError.value = null
+  ownerRevision.value += 1
+}
+
+function assertCandidateCurrent(generation: number): void {
+  if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError()
+}
+
+async function bootstrap(options: { refresh?: boolean } = {}): Promise<void> {
+  if (bootstrapping.value) return
+  bootstrapping.value = true
+  try {
+    const authCandidate = await fetchAuthForCurrentGeneration(options)
+    authSnapshot.value = authCandidate.profile
+    authError.value = null
+    if (authCandidate.profile.activeRole === 'HEADMAN') {
+      const candidate = await fetchHeadmanCandidate(authCandidate.generation, authCandidate.profile)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль старосты недоступна')
+      await activateHeadmanCandidate(candidate)
+      authView.value = 'headman'
+      sessionReady.value = true
+    } else if (authCandidate.profile.activeRole !== 'STUDENT') {
+      const previous = invalidateOwnerSynchronously({ clearAuth: false })
+      await clearOwnerSnapshot(previous)
+      authView.value = 'role'
+      offline.value = false
+      readOnly.value = true
+      bootstrapError.value = null
+    } else {
+      const candidate = await fetchStudentCandidate(authCandidate.generation, authCandidate.profile)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна')
+      await activateCandidate(candidate)
+      authView.value = 'student'
+    }
     sessionReady.value = true
+  } catch (error) {
+    if (error instanceof StaleSessionGenerationError) {
+      return
+    }
+    if (isConfirmedOnlineAuthDenial(error)) {
+      await handleOnlineAuthDenial(error)
+    } else if (error instanceof AuthRequestError && authSnapshot.value && authView.value === 'role') {
+      authError.value = error
+      bootstrapError.value = error.message
+    } else if (error instanceof ProfileRequestError && error.code === 'SESSION_STATE_STALE') {
+      const previous = invalidateOwnerSynchronously()
+      await clearOwnerSnapshot(previous)
+      authSnapshot.value = null
+      authError.value = error
+      authView.value = 'login'
+      offline.value = false
+      readOnly.value = true
+      bootstrapError.value = error.message
+    } else if (!featureVisible.value && authView.value !== 'headman' && isOfflineBootstrapRecoveryError(error)) {
+      const recovered = await loadOfflineSnapshot()
+      if (!recovered) {
+        authView.value = 'login'
+        bootstrapError.value = error instanceof Error ? error.message : 'Не удалось открыть Today'
+        readOnly.value = true
+      }
+    } else if (error instanceof ProfileRequestError && !featureVisible.value) {
+      authError.value = error
+      bootstrapError.value = error.message
+    } else if (api.value !== null || snapshot.value !== null) {
+      // A transient reconnect failure cannot establish remote logout. Keep the
+      // currently committed owner mounted so an ambiguous action retains its
+      // command and idempotency key for the next successful recheck.
+      offline.value = true
+      readOnly.value = true
+      bootstrapError.value = error instanceof Error ? error.message : 'Не удалось проверить подключение'
+    } else {
+      authView.value = 'login'
+      bootstrapError.value = error instanceof Error ? error.message : 'Не удалось получить данные'
+      readOnly.value = true
+    }
+    sessionReady.value = true
+  } finally {
+    bootstrapping.value = false
+    if (queuedBootstrapAfterInvalidation) {
+      queuedBootstrapAfterInvalidation = false
+      void bootstrap({ refresh: false })
+    }
+  }
+}
+
+function retryBootstrap(): void {
+  void bootstrap()
+}
+
+function asProfileError(error: unknown): ProfileRequestError {
+  if (error instanceof ProfileRequestError) return error
+  if (error instanceof StudentApiError) {
+    return new ProfileRequestError('UNKNOWN', error.problem?.detail ?? error.message, error.response.status, error.problem)
+  }
+  return new ProfileRequestError('UNKNOWN', error instanceof Error ? error.message : 'Не удалось выполнить запрос')
+}
+
+async function submitLogin(input: { login: string; password: string }): Promise<void> {
+  if (authLoading.value) return
+  authLoading.value = true
+  authError.value = null
+  bootstrapError.value = null
+  try {
+    const result = await auth.login(input)
+    const profile = await auth.getSessionFor(result.generation)
+    authSnapshot.value = profile
+    if (profile.activeRole !== 'STUDENT' && profile.activeRole !== 'HEADMAN') {
+      authView.value = 'role'
+      readOnly.value = true
+      sessionReady.value = true
+      return
+    }
+    if (profile.activeRole === 'HEADMAN') {
+      const candidate = await fetchHeadmanCandidate(result.generation, profile)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль старосты недоступна')
+      await activateHeadmanCandidate(candidate)
+      authView.value = 'headman'
+    } else {
+      const candidate = await fetchStudentCandidate(result.generation, profile)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна')
+      await activateCandidate(candidate)
+      authView.value = 'student'
+    }
+    sessionReady.value = true
+  } catch (error) {
+    if (error instanceof StaleSessionGenerationError) return
+    authError.value = asProfileError(error)
+    bootstrapError.value = authError.value.message
+    authView.value = 'login'
+  } finally {
+    authLoading.value = false
+  }
+}
+
+async function selectRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
+  const request = createPwaRoleSelection(role, expectedSessionVersion)
+  if (!request || authLoading.value || !authSnapshot.value) return
+  authLoading.value = true
+  pendingRole.value = role
+  authError.value = null
+  bootstrapError.value = null
+  // Keep the old token available for the role PUT, while hiding the old
+  // feature owner until the response has passed the generation boundary.
+  authView.value = 'role'
+  const generation = auth.currentGeneration()
+  try {
+    const selection = await auth.selectRoleFor(generation, request)
+    authSnapshot.value = selection.session
+    if (selection.session.activeRole === 'HEADMAN') {
+      const candidate = await fetchHeadmanCandidate(selection.generation, selection.session)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль старосты недоступна')
+      await activateHeadmanCandidate(candidate)
+      authView.value = 'headman'
+    } else if (selection.session.activeRole === 'STUDENT') {
+      const candidate = await fetchStudentCandidate(selection.generation, selection.session)
+      if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна')
+      await activateCandidate(candidate)
+      authView.value = 'student'
+    } else {
+      throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Выбранная роль недоступна в этом приложении')
+    }
+    sessionReady.value = true
+  } catch (error) {
+    if (error instanceof StaleSessionGenerationError) return
+    authError.value = asProfileError(error)
+    bootstrapError.value = authError.value.message
+    // A version conflict belongs to the old generation. Read the new
+    // authoritative snapshot before rendering another selection attempt.
+    if (authError.value.code === 'SESSION_VERSION_CONFLICT' || authError.value.code === 'SESSION_STATE_STALE') {
+      try {
+        const current = await auth.getSessionFor(generation)
+        authSnapshot.value = current
+      } catch (refreshError) {
+        if (isConfirmedOnlineAuthDenial(refreshError)) await handleOnlineAuthDenial(refreshError)
+      }
+    }
+    authView.value = 'role'
+  } finally {
+    pendingRole.value = null
+    authLoading.value = false
+  }
+}
+
+async function logout(): Promise<void> {
+  const previous = invalidateOwnerSynchronously({ clearAuth: false })
+  await auth.logout(async () => { await clearOwnerSnapshot(previous) })
+  authSnapshot.value = null
+  authError.value = null
+  bootstrapError.value = null
+  authView.value = 'login'
+  sessionReady.value = true
+  offline.value = false
+  readOnly.value = true
+}
+
+function handleExternalInvalidation(reason: PwaAuthInvalidationReason = 'external'): void {
+  if (reason === 'authority-changed') {
+    // The auth layer has already advanced the generation and installed the
+    // validated candidate token. Detach the old owner synchronously, then
+    // reconcile that token/session without asking refresh to rotate again.
+    const wasHeadman = authView.value === 'headman'
+      || headmanApi.value !== null
+      || authSnapshot.value?.activeRole === 'HEADMAN'
+    invalidateOwnerSynchronously({ clearAuth: false })
+    authSnapshot.value = null
+    authError.value = null
+    bootstrapError.value = null
+    authView.value = wasHeadman ? 'headman' : 'student'
+    sessionReady.value = false
+    offline.value = true
+    readOnly.value = true
+    if (bootstrapping.value) {
+      queuedBootstrapAfterInvalidation = true
+      return
+    }
+    void bootstrap({ refresh: false })
+    return
+  }
+  const previous = invalidateOwnerSynchronously({ clearAuth: false })
+  authSnapshot.value = null
+  authError.value = null
+  bootstrapError.value = 'Сессия завершена в другой вкладке'
+  authView.value = 'login'
+  sessionReady.value = true
+  offline.value = false
+  readOnly.value = true
+  void clearOwnerSnapshot(previous)
+}
+
+async function persistHomework(homework: StudentHomework): Promise<void> {
+  const currentScope = scope.value
+  const currentSession = session.value
+  const currentSchedule = semesterSchedule.value
+  const currentSnapshot = snapshot.value
+  if (!currentScope || !currentSession || !currentSchedule || !currentSnapshot || offline.value || readOnly.value) return
+  if (auth.currentGeneration() !== currentScope.resetGeneration) return
+  try {
+    const nextSnapshot = makeSnapshot(currentScope, currentSchedule, currentSnapshot, homework, currentSnapshot.etag)
+    await snapshotStore.write(nextSnapshot)
+    assertCandidateCurrent(currentScope.resetGeneration)
+    if (offline.value || readOnly.value || scope.value !== currentScope || session.value !== currentSession || semesterSchedule.value !== currentSchedule || snapshot.value !== currentSnapshot) return
+    snapshot.value = nextSnapshot
+  } catch {
+    // The online feature remains authoritative in memory; keep the previous
+    // committed snapshot when storage rejects this candidate.
   }
 }
 
 async function readPosition(): Promise<GeolocationPosition | GeolocationPositionError | null> {
   if (!navigator.geolocation) return null
-  return new Promise((resolve) => navigator.geolocation.getCurrentPosition(resolve, resolve, { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 }))
+  return new Promise((resolve) => navigator.geolocation.getCurrentPosition(resolve, resolve, {
+    enableHighAccuracy: true,
+    timeout: 10_000,
+    maximumAge: 0,
+  }))
 }
 
-async function checkin(lesson: TodayLesson): Promise<void> {
-  bootstrapError.value = null
-  if (offline.value) return
-  try {
-    await checkinRecovery.execute(
-      lesson.schedule.id,
-      () => fixtureMode ? Promise.resolve(fixtureCheckinCommand()) : productionCheckinCommand(),
-      (attempt) => mutation.mutateAsync(attempt),
-    )
-  } catch (error) {
-    const problem = error instanceof StudentApiError ? error.problem : null
-    bootstrapError.value = problem?.detail ?? (error instanceof Error ? error.message : 'Не удалось отправить отметку')
-  }
-}
-
-async function productionCheckinCommand(): Promise<StudentCheckinCommand> {
-  const result = await readPosition()
-  return result && 'coords' in result
+function acquireCheckinCommand(): Promise<StudentCheckinCommand> {
+  if (fixtureMode) return Promise.resolve(fixtureCheckinCommand())
+  return readPosition().then((result) => result && 'coords' in result
     ? commandFromCoordinates(result)
-    : unavailableCommand(unavailableReason(result))
+    : unavailableCommand(unavailableReason(result)))
 }
 
-/** Fixture-only browser control: `fixtureGeo=unavailable|coordinates`; real GPS is never requested. */
+/** Fixture-only browser control; production always uses the real GPS API. */
 function fixtureCheckinCommand(): StudentCheckinCommand {
   const scenario = new URLSearchParams(window.location.search).get('fixtureGeo')
   return scenario === 'coordinates'
@@ -101,15 +708,49 @@ function fixtureCheckinCommand(): StudentCheckinCommand {
     : unavailableCommand('POSITION_UNAVAILABLE')
 }
 
-/** Fixture-only root-font control: `fixtureRootFont=16|20|24`; production keeps document defaults. */
-function installFixtureViewportControls(): void {
-  const requested = Number(new URLSearchParams(window.location.search).get('fixtureRootFont'))
-  if (requested === 16 || requested === 20 || requested === 24) {
-    document.documentElement.style.fontSize = `${requested}px`
+function openMaterial(url: string): void {
+  // HomeworkScreen already validates this boundary. Revalidate at the shell
+  // edge so an adapter callback can never open a relative or non-HTTP target.
+  try {
+    const parsed = new URL(url)
+    if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || !parsed.hostname) return
+    window.open(url, '_blank', 'noopener,noreferrer')
+  } catch {
+    // Unsupported server data remains inert.
   }
 }
 
-/** Test-only SW observability. It intentionally stays out of regular fixture screenshots. */
+function onOwnerError(error: unknown): void {
+  if (isConfirmedOnlineAuthDenial(error)) {
+    void handleOnlineAuthDenial(error)
+    return
+  }
+  if (error instanceof StudentApiError) bootstrapError.value = error.problem?.detail ?? error.message
+  else if (error instanceof Error) bootstrapError.value = error.message
+}
+
+function goOffline(): void {
+  offline.value = true
+  readOnly.value = true
+}
+
+function goOnline(): void {
+  // Reconnect must verify the current session before restoring mutation
+  // authority. Bootstrap mounts a fresh bound owner only after getSession and
+  // schedule have passed the generation gate.
+  offline.value = true
+  readOnly.value = true
+  void bootstrap()
+}
+
+function openRoleSwitch(): void {
+  authError.value = null
+  bootstrapError.value = null
+  authView.value = 'role'
+}
+
+const onServiceWorkerControllerChange = (): void => { void refreshFixtureDiagnostics() }
+
 async function refreshFixtureDiagnostics(): Promise<void> {
   if (!fixtureDiagnosticsMode) return
   const lines = [
@@ -153,44 +794,133 @@ async function refreshFixtureDiagnostics(): Promise<void> {
   }
 }
 
-function goOffline(): void { offline.value = true; void loadOfflineSnapshot() }
-function goOnline(): void { offline.value = false; void query.refetch() }
-
-function onServiceWorkerControllerChange(): void { void refreshFixtureDiagnostics() }
-
 onMounted(() => {
+  stopAuthInvalidation = auth.subscribeInvalidation(handleExternalInvalidation)
   window.addEventListener('offline', goOffline)
   window.addEventListener('online', goOnline)
   if (fixtureDiagnosticsMode && 'serviceWorker' in navigator) navigator.serviceWorker.addEventListener('controllerchange', onServiceWorkerControllerChange)
   void bootstrap()
   void refreshFixtureDiagnostics()
 })
+
 onBeforeUnmount(() => {
+  stopAuthInvalidation()
+  auth.dispose()
+  invalidateOwnerSynchronously()
   window.removeEventListener('offline', goOffline)
   window.removeEventListener('online', goOnline)
   if (fixtureDiagnosticsMode && 'serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('controllerchange', onServiceWorkerControllerChange)
+  theme?.dispose()
 })
-watch(() => query.error.value, (error) => {
-  if (error && isRecoverableReadFailure(error)) void loadOfflineSnapshot()
-})
-
-const displayToday = computed(() => offline.value ? cachedToday.value : query.data.value ?? cachedToday.value)
-const displayError = computed(() => bootstrapError.value ?? (query.error.value instanceof Error && !cachedToday.value ? query.error.value.message : null))
 </script>
 
 <template>
-  <TodayScreen
-    :today="displayToday"
-    :loading="!sessionReady || (query.isPending.value && !cachedToday)"
-    :error="displayError"
-    :offline="offline"
-    :updated-at="cachedToday?.serverNow ?? null"
-    :submitting-lesson-id="mutation.isPending.value ? mutation.variables.value?.lessonId ?? null : null"
-    :semester-schedule="semesterSchedule"
-    :selected-date="selectedDate"
-    @checkin="checkin"
-    @select-date="selectedDate = $event"
+  <section
+    v-if="!featureVisible && !sessionReady && authView === 'student'"
+    class="today-state"
+    aria-live="polite"
+  >
+    <span
+      class="today-state__spinner"
+      aria-hidden="true"
+    />
+    Подключаемся к сессии…
+  </section>
+  <LoginScreen
+    v-if="authView === 'login'"
+    :loading="authLoading || bootstrapping"
+    :error="authError"
+    @submit="submitLogin"
   />
+  <RoleSwitchScreen
+    v-else-if="authView === 'role'"
+    :snapshot="authSnapshot"
+    :pending-role="pendingRole"
+    :error="authError"
+    :loading="authLoading || bootstrapping"
+    :on-select-role="selectRole"
+  />
+  <HeadmanScheduleScreen
+    v-else-if="headmanViewVisible"
+    :key="`headman-${ownerRevision}`"
+    :api="headmanApi"
+    :profile="authSnapshot"
+    :group-id="headmanGroupId"
+    :offline="offline"
+    :read-only="readOnly"
+    :host="host"
+    :on-role-switch="openRoleSwitch"
+    @error="onOwnerError"
+  />
+  <StudentFeatureOwner
+    v-else-if="studentViewVisible"
+    :key="ownerKey"
+    :api="api"
+    :scope="scope"
+    :offline="offline"
+    :read-only="readOnly"
+    :today-fallback="cachedToday"
+    :homework-fallback="cachedHomework"
+    :semester-schedule="displayedSemesterSchedule"
+    :updated-at="snapshot?.cachedAt ?? null"
+    :host="host"
+    :profile-port="profilePort"
+    :profile-role-select="selectRole"
+    :theme-controller="theme"
+    :acquire-checkin-command="acquireCheckinCommand"
+    :open-material="openMaterial"
+    @homework-loaded="persistHomework"
+    @owner-error="onOwnerError"
+  />
+  <button
+    v-if="(authView === 'student' && session) || authView === 'headman'"
+    class="pwa-logout"
+    type="button"
+    :disabled="authLoading"
+    @click="logout"
+  >
+    Выйти
+  </button>
+  <section
+    v-if="cleanupResult?.retryRequired"
+    class="today-state today-state--error"
+    role="alert"
+    aria-live="polite"
+    data-cleanup-state="pending"
+  >
+    <p>Локальная очистка ещё не завершена. Офлайн-доступ временно заблокирован.</p>
+    <button
+      type="button"
+      :disabled="cleanupRetrying"
+      :aria-busy="cleanupRetrying"
+      @click="retryPendingCleanup"
+    >
+      {{ cleanupRetrying ? 'Повторяем очистку…' : 'Повторить очистку' }}
+    </button>
+  </section>
+  <section
+    v-if="(studentViewVisible || headmanViewVisible) && bootstrapError"
+    class="today-state today-state--error"
+    role="alert"
+    aria-live="polite"
+  >
+    <h2>Не удалось выполнить действие</h2>
+    <p>{{ bootstrapError }}</p>
+  </section>
+  <section
+    v-if="authView === 'login' && sessionReady && bootstrapError && !authError"
+    class="today-state today-state--error"
+    role="alert"
+  >
+    <h2>Не удалось получить данные</h2>
+    <p>{{ bootstrapError }}</p>
+    <button
+      type="button"
+      @click="retryBootstrap"
+    >
+      Повторить
+    </button>
+  </section>
   <section
     v-if="fixtureDiagnosticsMode"
     aria-label="Fixture service-worker diagnostics"

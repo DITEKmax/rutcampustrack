@@ -21,6 +21,8 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import com.mongodb.client.result.UpdateResult;
 
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -58,9 +60,8 @@ class LessonEventServiceTest {
 
     @BeforeEach
     void setUp() {
-        // M05 G8: SyncTaskExecutor запускает Runnable в текущем потоке —
-        // сохраняет детерминизм Mockito verify'ов, не вводя параллелизма
-        // в unit-тесте (он проверяет correctness, не latency).
+        // Keep the legacy constructor fixture; close processing now uses the
+        // canonical Schedule snapshot followed by a dated Academic read.
         lessonEventService = new LessonEventService(
                 mongoTemplate, scheduleGrpcClient, academicGrpcClient,
                 semesterCacheService, new SyncTaskExecutor());
@@ -81,6 +82,7 @@ class LessonEventServiceTest {
         LessonResponse lesson = LessonResponse.newBuilder()
                 .setId(1L).setGroupId(10L).setSubjectId(5L)
                 .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
+                .setSemesterId(1L)
                 .build();
         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
 
@@ -89,8 +91,12 @@ class LessonEventServiceTest {
                 .addStudents(StudentInfo.newBuilder().setUserId(101L).setDisplayName("Student 101").build())
                 .addStudents(StudentInfo.newBuilder().setUserId(102L).setDisplayName("Student 102").build())
                 .build();
-        when(academicGrpcClient.getGroupMembers(10L)).thenReturn(members);
-        when(semesterCacheService.getActiveSemesterId()).thenReturn(1L);
+        when(academicGrpcClient.getGroupMembers(10L, LocalDate.of(2026, 4, 1), 1L))
+                .thenReturn(GroupMembersResponse.newBuilder()
+                        .addAllStudents(members.getStudentsList())
+                        .setAsOfDate("2026-04-01")
+                        .setSemesterId(1L)
+                        .build());
 
         lessonEventService.processLessonClosed(1L, 10L);
 
@@ -107,9 +113,14 @@ class LessonEventServiceTest {
         LessonResponse lesson = LessonResponse.newBuilder()
                 .setId(1L).setGroupId(10L).setSubjectId(5L)
                 .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
+                .setSemesterId(1L)
                 .build();
         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
-        when(academicGrpcClient.getGroupMembers(10L)).thenReturn(GroupMembersResponse.newBuilder().build());
+        when(academicGrpcClient.getGroupMembers(10L, LocalDate.of(2026, 4, 1), 1L))
+                .thenReturn(GroupMembersResponse.newBuilder()
+                        .setAsOfDate("2026-04-01")
+                        .setSemesterId(1L)
+                        .build());
 
         lessonEventService.processLessonClosed(1L, 10L);
 
@@ -118,28 +129,20 @@ class LessonEventServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // Test 3: null semesterId (cache miss) still executes bulk ops
+    // Test 3: a missing canonical semester fails closed before Academic
     // -------------------------------------------------------------------------
 
     @Test
-    void processLessonClosed_nullSemesterId_stillExecutes() {
+    void processLessonClosed_missingSemesterId_failsClosed() {
         LessonResponse lesson = LessonResponse.newBuilder()
                 .setId(1L).setGroupId(10L).setSubjectId(5L)
                 .setDate("2026-04-01").setLessonNumber(1).setStatus("closed")
                 .build();
         when(scheduleGrpcClient.getLessonById(1L)).thenReturn(lesson);
 
-        GroupMembersResponse members = GroupMembersResponse.newBuilder()
-                .addStudents(StudentInfo.newBuilder().setUserId(100L).setDisplayName("Student 100").build())
-                .addStudents(StudentInfo.newBuilder().setUserId(101L).setDisplayName("Student 101").build())
-                .build();
-        when(academicGrpcClient.getGroupMembers(10L)).thenReturn(members);
-        when(semesterCacheService.getActiveSemesterId()).thenReturn(null);
-
-        lessonEventService.processLessonClosed(1L, 10L);
-
-        verify(bulkOps, times(2)).upsert(any(Query.class), any(Update.class));
-        verify(bulkOps, times(1)).execute();
+        assertThrows(ScheduleServiceUnavailableException.class,
+                () -> lessonEventService.processLessonClosed(1L, 10L));
+        verifyNoInteractions(academicGrpcClient);
     }
 
     // -------------------------------------------------------------------------
